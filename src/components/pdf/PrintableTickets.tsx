@@ -1,5 +1,5 @@
 import React from "react";
-import { Ticket as TicketIcon, Film, MapPin, Briefcase } from "lucide-react";
+import { Ticket as TicketIcon, Film, MapPin, Briefcase, User } from "lucide-react";
 import QRCode from "react-qr-code";
 import Barcode from "react-barcode";
 
@@ -22,30 +22,30 @@ function DynamicPrintablePass({ ticket }: { ticket: any }) {
       <div className="w-full h-full flex bg-[#dc2626] text-white">
         {/* Left Side: Main Info */}
         <div className="flex-1 flex flex-col justify-between p-8 border-r-2 border-dashed border-white/50 relative">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-5xl font-serif italic uppercase tracking-wider mb-2">{ticket.title}</h1>
-              <p className="text-xl uppercase tracking-widest text-white/80">{ticket.cinema}</p>
+        <div className="flex justify-between items-start">
+            <div className="flex-1 pr-4">
+              <h1 className="text-4xl font-serif italic uppercase tracking-wider mb-1 leading-tight">{ticket.title}</h1>
+              <p className="text-base uppercase tracking-widest text-white/80">{ticket.cinema}</p>
             </div>
-            <Film className="w-12 h-12 text-white/30" />
+            <Film className="w-10 h-10 text-white/30 flex-shrink-0" />
           </div>
           
-          <div className="grid grid-cols-4 gap-4 mt-8">
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-white/70 mb-1">Date</p>
-              <p className="text-lg font-bold">{ticket.date}</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-4">
+            <div className="bg-white/10 rounded px-3 py-2">
+              <p className="text-[9px] uppercase tracking-widest text-white/70 mb-0.5">Date</p>
+              <p className="text-base font-bold">{ticket.date}</p>
             </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-white/70 mb-1">Time</p>
-              <p className="text-lg font-bold">{ticket.showtimes?.[0] || "18:30"}</p>
+            <div className="bg-white/10 rounded px-3 py-2">
+              <p className="text-[9px] uppercase tracking-widest text-white/70 mb-0.5">Time</p>
+              <p className="text-base font-bold">{ticket.showtimes?.[0] || "18:30"}</p>
             </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-white/70 mb-1">Screen</p>
-              <p className="text-lg font-bold text-black bg-white px-2 py-0.5 inline-block">IMAX 4</p>
+            <div className="bg-white/10 rounded px-3 py-2">
+              <p className="text-[9px] uppercase tracking-widest text-white/70 mb-0.5">Screen</p>
+              <p className="text-base font-bold">IMAX 4</p>
             </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-white/70 mb-1">Seat</p>
-              <p className="text-lg font-bold text-black bg-white px-2 py-0.5 inline-block">{ticket.seat.split("·")[1]?.trim() || "H4"}</p>
+            <div className="bg-white/10 rounded px-3 py-2">
+              <p className="text-[9px] uppercase tracking-widest text-white/70 mb-0.5">Seat</p>
+              <p className="text-base font-bold">{ticket.seat?.split("·")[1]?.trim() || "H4"}</p>
             </div>
           </div>
         </div>
@@ -78,8 +78,8 @@ function DynamicPrintablePass({ ticket }: { ticket: any }) {
       <div className="w-full h-full flex bg-[#0ea5e9] text-white">
         <div className="flex-1 p-8 border-r-2 border-dashed border-white/50 flex flex-col justify-between">
           <div className="flex items-center gap-6">
-             <div className="w-24 h-24 rounded-full border-4 border-white overflow-hidden bg-white">
-                <img crossOrigin="anonymous" src="https://i.pravatar.cc/300?u=me" alt="Attendee" className="w-full h-full object-cover" />
+             <div className="w-24 h-24 rounded-full border-4 border-white bg-gray-200 flex items-center justify-center text-gray-400">
+                <User className="w-12 h-12" />
              </div>
              <div>
                 <p className="text-sm uppercase tracking-widest text-white/80 mb-1">Attendee</p>
@@ -132,7 +132,7 @@ function DynamicPrintablePass({ ticket }: { ticket: any }) {
       {/* Main Content Area */}
       <div className="flex-1 relative overflow-hidden flex flex-col">
         {ticket.cover && (
-           <img crossOrigin="anonymous" src={ticket.cover} alt="Event" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+           <img src={ticket.cover} alt="Event" className="absolute inset-0 w-full h-full object-cover opacity-60" />
         )}
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
         
@@ -142,19 +142,19 @@ function DynamicPrintablePass({ ticket }: { ticket: any }) {
               <h1 className="text-6xl font-black uppercase leading-none drop-shadow-lg max-w-[400px]">{ticket.title}</h1>
            </div>
            
-           <div className="flex gap-8 items-end drop-shadow-md">
+           <div className="flex gap-6 items-end drop-shadow-md bg-black/60 backdrop-blur-sm rounded-lg px-4 py-3">
              <div>
-               <p className="text-[10px] text-gray-300 uppercase tracking-widest mb-1">Location</p>
-               <p className="text-sm font-bold">{ticket.city}</p>
-               <p className="text-sm">{ticket.venue}</p>
+               <p className="text-[9px] text-white/70 uppercase tracking-widest mb-0.5">Location</p>
+               <p className="text-xs font-bold text-white">{ticket.city}</p>
+               <p className="text-xs text-white/80">{ticket.venue}</p>
              </div>
              <div>
-               <p className="text-[10px] text-gray-300 uppercase tracking-widest mb-1">Date</p>
-               <p className="text-sm font-bold">{ticket.date}</p>
+               <p className="text-[9px] text-white/70 uppercase tracking-widest mb-0.5">Date</p>
+               <p className="text-xs font-bold text-white">{ticket.date}</p>
              </div>
              <div>
-               <p className="text-[10px] text-gray-300 uppercase tracking-widest mb-1">Time</p>
-               <p className="text-sm font-bold">{ticket.time}</p>
+               <p className="text-[9px] text-white/70 uppercase tracking-widest mb-0.5">Time</p>
+               <p className="text-xs font-bold text-orange-400">{ticket.time}</p>
              </div>
            </div>
         </div>
@@ -165,20 +165,38 @@ function DynamicPrintablePass({ ticket }: { ticket: any }) {
         <div className="absolute -left-4 -top-4 w-8 h-8 bg-black rounded-full" />
         <div className="absolute -left-4 -bottom-4 w-8 h-8 bg-black rounded-full" />
         
-        <div className="w-full text-center space-y-6">
-          <div>
-            <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">Gate</p>
-            <p className="text-2xl font-black">12</p>
+        {ticket.ticketCategory === "experience" ? (
+          <div className="w-full text-center space-y-5">
+            <div>
+              <p className="text-[9px] uppercase text-gray-400 font-bold tracking-widest mb-1">Date</p>
+              <p className="text-sm font-black leading-tight">{ticket.date}</p>
+            </div>
+            <div>
+              <p className="text-[9px] uppercase text-gray-400 font-bold tracking-widest mb-1">Time</p>
+              <p className="text-sm font-black text-orange-600">{ticket.time}</p>
+            </div>
+            <div>
+              <p className="text-[9px] uppercase text-gray-400 font-bold tracking-widest mb-1">Location</p>
+              <p className="text-xs font-bold leading-tight">{ticket.city}</p>
+              <p className="text-[10px] text-gray-500 leading-tight">{ticket.venue}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">Row</p>
-            <p className="text-2xl font-black">24</p>
+        ) : (
+          <div className="w-full text-center space-y-6">
+            <div>
+              <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">Gate</p>
+              <p className="text-2xl font-black">12</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">Row</p>
+              <p className="text-2xl font-black">24</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">Seat</p>
+              <p className="text-lg font-black text-orange-600 leading-tight px-1">{ticket.seat || "36"}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">Seat</p>
-            <p className="text-lg font-black text-orange-600 leading-tight px-1">{ticket.seat || "36"}</p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
