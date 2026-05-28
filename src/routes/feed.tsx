@@ -4,6 +4,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Stories } from "@/components/site/Stories";
 import { Button } from "@/components/ui/button";
+import { FeedCard } from "@/components/site/FeedCard";
 import { events, feedPosts } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/feed")({
@@ -26,35 +27,8 @@ function Feed() {
         <main>
           <Stories />
           <div className="mt-8 space-y-8">
-            {feedPosts.map((p) => (
-              <article key={p.id} className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-[var(--shadow-card)]">
-                <header className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full" style={{ background: "var(--gradient-primary)" }} />
-                    <div>
-                      <p className="text-sm font-semibold">{p.user}</p>
-                      <p className="text-xs text-muted-foreground">@{p.handle}</p>
-                    </div>
-                  </div>
-                  <Link to="/events/$eventId" params={{ eventId: p.eventId }} className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
-                    <Ticket className="h-3 w-3" /> {p.eventTitle}
-                  </Link>
-                </header>
-                <div className="relative aspect-[4/5] w-full overflow-hidden bg-secondary">
-                  <img src={p.image} alt="" className="h-full w-full object-cover" loading="lazy" />
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-3 text-foreground">
-                    <button className="hover:text-primary transition"><Heart className="h-6 w-6" /></button>
-                    <button className="hover:text-primary transition"><MessageCircle className="h-6 w-6" /></button>
-                    <button className="hover:text-primary transition"><Send className="h-6 w-6" /></button>
-                    <button className="ml-auto hover:text-primary transition"><Bookmark className="h-6 w-6" /></button>
-                  </div>
-                  <p className="mt-3 text-sm font-semibold">{p.likes.toLocaleString()} likes</p>
-                  <p className="mt-1 text-sm"><span className="font-semibold">@{p.handle}</span> {p.caption}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">View all {p.comments} comments</p>
-                </div>
-              </article>
+            {feedPosts.map((p, i) => (
+              <FeedCard key={`${p.id}-${i}`} post={p} />
             ))}
           </div>
         </main>

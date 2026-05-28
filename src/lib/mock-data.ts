@@ -145,23 +145,23 @@ export const categories = [
 ];
 
 export const stories = [
-  { id: "1", name: "Nala Sound", cover: e1 },
-  { id: "2", name: "Skyline", cover: e2 },
-  { id: "3", name: "Baobab", cover: e3 },
-  { id: "4", name: "Starboy", cover: e4 },
-  { id: "5", name: "Soko", cover: e5 },
-  { id: "6", name: "BAL", cover: e6 },
-  { id: "7", name: "Afrochella", cover: e1 },
-  { id: "8", name: "Lagos Live", cover: e2 },
+  { id: "1", name: "Nala Sound", avatar: e1, items: [{ id: "1-1", image: e1 }, { id: "1-2", image: e2 }, { id: "1-3", image: e3 }] },
+  { id: "2", name: "Skyline", avatar: e2, items: [{ id: "2-1", image: e2 }, { id: "2-2", image: e3 }] },
+  { id: "3", name: "Baobab", avatar: e3, items: [{ id: "3-1", image: e3 }] },
+  { id: "4", name: "Starboy", avatar: e4, items: [{ id: "4-1", image: e4 }, { id: "4-2", image: e5 }] },
+  { id: "5", name: "Soko", avatar: e5, items: [{ id: "5-1", image: e5 }] },
+  { id: "6", name: "BAL", avatar: e6, items: [{ id: "6-1", image: e6 }] },
+  { id: "7", name: "Afrochella", avatar: e1, items: [{ id: "7-1", image: e1 }] },
+  { id: "8", name: "Lagos Live", avatar: e2, items: [{ id: "8-1", image: e2 }] },
 ];
 
 export const movieStories = [
-  { id: "m1", name: "Silverbird", cover: movie1 },
-  { id: "m2", name: "Genesis Cinemas", cover: movie2 },
-  { id: "m3", name: "Filmhouse", cover: movie1 },
-  { id: "m4", name: "Ster-Kinekor", cover: movie2 },
-  { id: "m5", name: "Prestige IMAX", cover: movie1 },
-  { id: "m6", name: "Nu Metro", cover: movie2 },
+  { id: "m1", name: "Silverbird", avatar: movie1, items: [{ id: "m1-1", image: movie1 }, { id: "m1-2", image: movie2 }] },
+  { id: "m2", name: "Genesis Cinemas", avatar: movie2, items: [{ id: "m2-1", image: movie2 }] },
+  { id: "m3", name: "Filmhouse", avatar: movie1, items: [{ id: "m3-1", image: movie1 }] },
+  { id: "m4", name: "Ster-Kinekor", avatar: movie2, items: [{ id: "m4-1", image: movie2 }] },
+  { id: "m5", name: "Prestige IMAX", avatar: movie1, items: [{ id: "m5-1", image: movie1 }] },
+  { id: "m6", name: "Nu Metro", avatar: movie2, items: [{ id: "m6-1", image: movie2 }] },
 ];
 
 export type Experience = {

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { feedPosts, events, experiences, movies } from "@/lib/mock-data";
-import { FeedCard } from "@/components/mobile/FeedCard";
+import { FeedCard } from "@/components/site/FeedCard";
 import { Camera, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
