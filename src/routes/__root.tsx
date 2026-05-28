@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -113,19 +114,25 @@ import { AppProvider } from "@/lib/AppContext";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const location = useRouterState({ select: (s) => s.location });
+  
+  // Hide bottom nav on detail/booking pages
+  const hideNav = location.pathname.match(/^\/(events|book)\/.+/);
 
   return (
     <AppProvider>
       <QueryClientProvider client={queryClient}>
         {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
-        <div className="min-h-screen pb-24 md:pb-0">
+        <div className={`min-h-screen md:pb-0 ${hideNav ? '' : 'pb-24'}`}>
           <Outlet />
         </div>
         
         {/* Floating Mobile Navigation - Hidden on Desktop */}
-        <div className="md:hidden">
-          <MobileNav />
-        </div>
+        {!hideNav && (
+          <div className="md:hidden">
+            <MobileNav />
+          </div>
+        )}
       </QueryClientProvider>
     </AppProvider>
   );

@@ -39,7 +39,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               <p className="text-xs text-muted-foreground mb-auto">{(event as any).date} • {(event as any).venue || (event as any).city}</p>
               <div className="flex justify-between items-end mt-2">
                 <span className="text-sm font-medium">1x General Admission</span>
-                <span className="font-bold">${event.price || 25}</span>
+                <span className="font-bold">{event.currency || '$'}{event.price || 25}</span>
               </div>
             </div>
           </div>
@@ -110,7 +110,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 z-40 pb-safe">
         <div className="flex items-center justify-between mb-3 px-2">
           <span className="text-sm font-medium text-muted-foreground">Total to pay</span>
-          <span className="text-xl font-bold">${event.price || 25}</span>
+          <span className="text-xl font-bold">{event.currency || '$'}{event.price || 25}</span>
         </div>
         <Button 
           onClick={handleCheckout}
@@ -118,7 +118,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           className="w-full h-14 rounded-full text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide" 
           style={{ background: "var(--gradient-primary)" }}
         >
-          {processing ? "Processing..." : `Pay $${event.price || 25}`}
+          {processing ? "Processing..." : `Pay ${event.currency || '$'}${event.price || 25}`}
         </Button>
         <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
           <Shield className="h-3.5 w-3.5" /> Secure encrypted checkout

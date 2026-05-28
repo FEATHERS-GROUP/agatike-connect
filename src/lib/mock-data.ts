@@ -22,6 +22,7 @@ export type Event = {
   date: string;
   time: string;
   category: string;
+  currency?: string;
   price: number;
   cover: string;
   attendees: number;
@@ -40,6 +41,7 @@ export const events: Event[] = [
     date: "Sat, Jun 14",
     time: "21:00",
     category: "Nightlife",
+    currency: "₦",
     price: 35,
     cover: e1,
     attendees: 1284,
@@ -170,6 +172,7 @@ export type Experience = {
   category: "Hiking" | "Running" | "Surf" | "Wellness" | "Food";
   duration: string;
   date: string;
+  currency?: string;
   price: number;
   cover: string;
   rating: number;
@@ -186,6 +189,7 @@ export const experiences: Experience[] = [
     category: "Hiking",
     duration: "6h",
     date: "Every Sat",
+    currency: "KSh",
     price: 45,
     cover: expHiking,
     rating: 4.9,
@@ -256,6 +260,7 @@ export const experiences: Experience[] = [
     category: "Wellness",
     duration: "1.5h",
     date: "Daily",
+    currency: "€",
     price: 18,
     cover: expSurf,
     rating: 4.7,
@@ -274,6 +279,7 @@ export type Movie = {
   city: string;
   cover: string;
   showtimes: string[];
+  currency?: string;
   price: number;
   synopsis: string;
 };
@@ -289,6 +295,7 @@ export const movies: Movie[] = [
     city: "Lagos, NG",
     cover: movie2,
     showtimes: ["12:30", "15:45", "18:30", "21:15"],
+    currency: "Frws",
     price: 8,
     synopsis: "A young accountant uncovers a conspiracy at the heart of Africa's biggest banking dynasty.",
   },

@@ -35,16 +35,14 @@ export function EventDetailsMobile({ eventId }: { eventId: string }) {
         
         <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
           <span className="bg-primary/90 text-primary-foreground backdrop-blur-md px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md border border-white/10 shadow-sm">
-            {event.category}
+            {event.category || event.genre || "Event"}
           </span>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-white shadow-sm leading-none mb-4">{event.title}</h1>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-white/90 text-sm font-medium">
-              <Calendar className="h-4 w-4 text-primary" /> {event.date} at {event.time}
-            </div>
-            <div className="flex items-center gap-2 text-white/90 text-sm font-medium">
-              <MapPin className="h-4 w-4 text-primary" /> {event.venue}, {event.city}
-            </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-white/90 text-sm font-medium">
+            <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4 text-primary" /> {event.date || 'Today'}</span>
+            <span className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-primary" /> {event.time || event.duration || 'All day'}</span>
+            <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-primary" /> {event.venue || event.cinema || event.city}, {event.city}</span>
+            <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-primary fill-primary" /> {event.rating || "5.0"}</span>
           </div>
         </div>
       </section>
@@ -103,7 +101,7 @@ export function EventDetailsMobile({ eventId }: { eventId: string }) {
               >
                 <div className="flex items-center justify-between mb-1">
                   <p className="font-bold text-base">{t.name}</p>
-                  <p className="font-bold text-lg text-primary">${t.price}</p>
+                  <p className="font-bold text-lg text-primary">{event.currency || '$'}{t.price}</p>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">{t.perks.join(" · ")}</p>
                 {tier === t.id && (
@@ -126,7 +124,7 @@ export function EventDetailsMobile({ eventId }: { eventId: string }) {
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 z-40 pb-safe">
         <div className="flex items-center justify-between mb-3 px-2">
           <span className="text-sm font-medium text-muted-foreground">Total</span>
-          <span className="text-xl font-bold">${total}</span>
+          <span className="text-xl font-bold">{event.currency || '$'}{total}</span>
         </div>
         <Button asChild className="w-full h-14 rounded-full text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide" style={{ background: "var(--gradient-primary)" }}>
           <Link to="/book/$eventId" params={{ eventId: event.id }} className="w-full block">

@@ -135,7 +135,7 @@ export function HomeDesktop() {
               <div className="p-4">
                 <p className="font-semibold">{x.title}</p>
                 <p className="text-xs text-muted-foreground">{x.host} · {x.city}</p>
-                <p className="mt-2 text-sm">{x.price === 0 ? "Free" : `From $${x.price}`} · {x.duration}</p>
+                <p className="mt-2 text-sm">{x.price === 0 ? "Free" : `From ${x.currency || '$'}${x.price}`} · {x.duration}</p>
               </div>
             </Link>
           ))}

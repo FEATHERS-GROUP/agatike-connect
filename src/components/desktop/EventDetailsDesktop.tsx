@@ -90,7 +90,7 @@ export function EventDetailsDesktop({ eventId }: { eventId: string }) {
                   <div className="p-3">
                     <p className="text-sm font-medium">{m.name}</p>
                     <div className="mt-2 flex items-center justify-between">
-                      <span className="text-sm font-semibold">${m.price}</span>
+                      <span className="text-sm font-semibold">{event.currency || '$'}{m.price}</span>
                       <Button size="sm" variant="outline" className="rounded-full">Add</Button>
                     </div>
                   </div>
@@ -129,7 +129,7 @@ export function EventDetailsDesktop({ eventId }: { eventId: string }) {
           <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
             <div className="flex items-baseline justify-between">
               <p className="text-sm text-muted-foreground">Starting from</p>
-              <p className="text-2xl font-semibold">${ticketTiers[0].price}</p>
+              <p className="text-2xl font-semibold">{event.currency || '$'}{ticketTiers[0].price}</p>
             </div>
 
             <div className="mt-5 space-y-2">
@@ -141,7 +141,7 @@ export function EventDetailsDesktop({ eventId }: { eventId: string }) {
                 >
                   <div className="flex items-center justify-between">
                     <p className="font-medium">{t.name}</p>
-                    <p className="font-semibold">${t.price}</p>
+                    <p className="font-semibold">{event.currency || '$'}{t.price}</p>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">{t.perks.join(" · ")}</p>
                   <p className="mt-1 text-xs text-primary">{t.remaining} left</p>
@@ -160,7 +160,7 @@ export function EventDetailsDesktop({ eventId }: { eventId: string }) {
 
             <div className="mt-5 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Total</span>
-              <span className="text-lg font-semibold">${total}</span>
+              <span className="text-lg font-semibold">{event.currency || '$'}{total}</span>
             </div>
 
             <Button asChild className="mt-4 h-12 w-full rounded-2xl text-base shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>

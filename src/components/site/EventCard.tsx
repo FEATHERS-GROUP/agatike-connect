@@ -37,7 +37,7 @@ export function EventCard({ event }: { event: Event }) {
       <div className="flex items-center justify-between px-4 py-3">
         <div className="text-xs text-muted-foreground">by <span className="text-foreground font-medium">{event.organizer}</span></div>
         <div className="text-sm font-semibold">
-          {event.price === 0 ? "Free" : `from $${event.price}`}
+          {event.price === 0 ? "Free" : `from ${event.currency || '$'}${event.price}`}
         </div>
       </div>
     </Link>

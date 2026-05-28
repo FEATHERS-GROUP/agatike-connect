@@ -63,7 +63,7 @@ function Experiences() {
                 </div>
                 <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{x.description}</p>
                 <div className="mt-4 flex items-center justify-between">
-                  <p className="text-sm font-semibold">{x.price === 0 ? "Free · Join club" : `From $${x.price}`}</p>
+                  <p className="text-sm font-semibold">{x.price === 0 ? "Free · Join club" : `From ${x.currency || '$'}${x.price}`}</p>
                   <Button asChild className="rounded-full" style={{ background: "var(--gradient-primary)" }}>
                     <Link to="/events/$eventId" params={{ eventId: x.id }}>
                       {x.price === 0 ? "Join" : "Book"}

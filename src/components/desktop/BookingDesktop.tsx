@@ -155,7 +155,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
               <div className="space-y-4 text-sm border-y border-border/60 py-4 mb-4">
                 <div className="flex justify-between items-center">
                   <span>1x General Admission</span>
-                  <span className="font-medium">${event.price || 25}</span>
+                  <span className="font-medium">{event.currency || '$'}{event.price || 25}</span>
                 </div>
                 <div className="flex justify-between items-center text-muted-foreground">
                   <span>Service Fee</span>
@@ -165,7 +165,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
               <div className="flex justify-between items-end mb-8">
                 <span className="font-semibold">Total</span>
-                <span className="text-2xl font-bold">${(event.price || 25) + 2.50}</span>
+                <span className="text-2xl font-bold">{event.currency || '$'}{(event.price || 25) + 2.50}</span>
               </div>
 
               <Button 
@@ -174,7 +174,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide mb-4" 
                 style={{ background: "var(--gradient-primary)" }}
               >
-                {processing ? "Processing..." : `Pay $${(event.price || 25) + 2.50}`}
+                {processing ? "Processing..." : `Pay ${event.currency || '$'}${(event.price || 25) + 2.50}`}
               </Button>
 
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
