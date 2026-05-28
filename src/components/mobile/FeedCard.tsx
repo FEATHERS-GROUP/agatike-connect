@@ -38,7 +38,7 @@ export function FeedCard({ post }: { post: any }) {
         </div>
 
         {/* Image */}
-        <Link to="/events/$eventId" params={{ eventId: post.id || '1' }} className="block w-full aspect-square bg-secondary relative">
+        <Link to="/events/$eventId" params={{ eventId: post.eventId || post.id || '1' }} className="block w-full aspect-square bg-secondary relative">
           <img 
             src={post.image || post.cover} 
             alt="Feed"

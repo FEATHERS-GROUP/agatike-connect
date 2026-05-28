@@ -4,7 +4,7 @@ import { FeedCard } from "@/components/mobile/FeedCard";
 import { Camera, Send } from "lucide-react";
 
 export function HomeMobile() {
-  const items = Array.from({ length: Math.max(feedPosts.length, events.length) }).flatMap((_, i) => [feedPosts[i], events[i]]).filter(Boolean);
+  const items = feedPosts;
 
   return (
     <div className="h-full w-full bg-background text-foreground pb-20">
