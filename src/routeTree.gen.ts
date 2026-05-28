@@ -10,20 +10,30 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkspacesRouteImport } from './routes/workspaces'
+import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ScannerRouteImport } from './routes/scanner'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as FeedRouteImport } from './routes/feed'
+import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as ExperiencesRouteImport } from './routes/experiences'
-import { Route as EventsRouteImport } from './routes/events'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CreateEventRouteImport } from './routes/create-event'
+import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
+import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
 
 const WorkspacesRoute = WorkspacesRouteImport.update({
   id: '/workspaces',
   path: '/workspaces',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalletRoute = WalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SigninRoute = SigninRouteImport.update({
@@ -36,6 +46,11 @@ const ScannerRoute = ScannerRouteImport.update({
   path: '/scanner',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MoviesRoute = MoviesRouteImport.update({
   id: '/movies',
   path: '/movies',
@@ -46,14 +61,14 @@ const FeedRoute = FeedRouteImport.update({
   path: '/feed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExperiencesRoute = ExperiencesRouteImport.update({
   id: '/experiences',
   path: '/experiences',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EventsRoute = EventsRouteImport.update({
-  id: '/events',
-  path: '/events',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -66,110 +81,161 @@ const CreateEventRoute = CreateEventRouteImport.update({
   path: '/create-event',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ActivityRoute = ActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventsIndexRoute = EventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsEventIdRoute = EventsEventIdRouteImport.update({
-  id: '/$eventId',
-  path: '/$eventId',
-  getParentRoute: () => EventsRoute,
+  id: '/events/$eventId',
+  path: '/events/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookEventIdRoute = BookEventIdRouteImport.update({
+  id: '/book/$eventId',
+  path: '/book/$eventId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
   '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRoute
-  '/events': typeof EventsRouteWithChildren
   '/experiences': typeof ExperiencesRoute
+  '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
   '/movies': typeof MoviesRoute
+  '/profile': typeof ProfileRoute
   '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
+  '/wallet': typeof WalletRoute
   '/workspaces': typeof WorkspacesRoute
+  '/book/$eventId': typeof BookEventIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/events/': typeof EventsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
   '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRoute
-  '/events': typeof EventsRouteWithChildren
   '/experiences': typeof ExperiencesRoute
+  '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
   '/movies': typeof MoviesRoute
+  '/profile': typeof ProfileRoute
   '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
+  '/wallet': typeof WalletRoute
   '/workspaces': typeof WorkspacesRoute
+  '/book/$eventId': typeof BookEventIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/events': typeof EventsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
   '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRoute
-  '/events': typeof EventsRouteWithChildren
   '/experiences': typeof ExperiencesRoute
+  '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
   '/movies': typeof MoviesRoute
+  '/profile': typeof ProfileRoute
   '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
+  '/wallet': typeof WalletRoute
   '/workspaces': typeof WorkspacesRoute
+  '/book/$eventId': typeof BookEventIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/events/': typeof EventsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/activity'
     | '/create-event'
     | '/dashboard'
-    | '/events'
     | '/experiences'
+    | '/explore'
     | '/feed'
     | '/movies'
+    | '/profile'
     | '/scanner'
     | '/signin'
+    | '/wallet'
     | '/workspaces'
+    | '/book/$eventId'
     | '/events/$eventId'
+    | '/events/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/activity'
     | '/create-event'
     | '/dashboard'
-    | '/events'
     | '/experiences'
+    | '/explore'
     | '/feed'
     | '/movies'
+    | '/profile'
     | '/scanner'
     | '/signin'
+    | '/wallet'
     | '/workspaces'
+    | '/book/$eventId'
     | '/events/$eventId'
+    | '/events'
   id:
     | '__root__'
     | '/'
+    | '/activity'
     | '/create-event'
     | '/dashboard'
-    | '/events'
     | '/experiences'
+    | '/explore'
     | '/feed'
     | '/movies'
+    | '/profile'
     | '/scanner'
     | '/signin'
+    | '/wallet'
     | '/workspaces'
+    | '/book/$eventId'
     | '/events/$eventId'
+    | '/events/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActivityRoute: typeof ActivityRoute
   CreateEventRoute: typeof CreateEventRoute
   DashboardRoute: typeof DashboardRoute
-  EventsRoute: typeof EventsRouteWithChildren
   ExperiencesRoute: typeof ExperiencesRoute
+  ExploreRoute: typeof ExploreRoute
   FeedRoute: typeof FeedRoute
   MoviesRoute: typeof MoviesRoute
+  ProfileRoute: typeof ProfileRoute
   ScannerRoute: typeof ScannerRoute
   SigninRoute: typeof SigninRoute
+  WalletRoute: typeof WalletRoute
   WorkspacesRoute: typeof WorkspacesRoute
+  BookEventIdRoute: typeof BookEventIdRoute
+  EventsEventIdRoute: typeof EventsEventIdRoute
+  EventsIndexRoute: typeof EventsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -179,6 +245,13 @@ declare module '@tanstack/react-router' {
       path: '/workspaces'
       fullPath: '/workspaces'
       preLoaderRoute: typeof WorkspacesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallet': {
+      id: '/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof WalletRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signin': {
@@ -195,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ScannerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/movies': {
       id: '/movies'
       path: '/movies'
@@ -209,18 +289,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/experiences': {
       id: '/experiences'
       path: '/experiences'
       fullPath: '/experiences'
       preLoaderRoute: typeof ExperiencesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/events': {
-      id: '/events'
-      path: '/events'
-      fullPath: '/events'
-      preLoaderRoute: typeof EventsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -237,6 +317,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreateEventRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/activity': {
+      id: '/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof ActivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -244,39 +331,58 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/events/': {
+      id: '/events/'
+      path: '/events'
+      fullPath: '/events/'
+      preLoaderRoute: typeof EventsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events/$eventId': {
       id: '/events/$eventId'
-      path: '/$eventId'
+      path: '/events/$eventId'
       fullPath: '/events/$eventId'
       preLoaderRoute: typeof EventsEventIdRouteImport
-      parentRoute: typeof EventsRoute
+      parentRoute: typeof rootRouteImport
+    }
+    '/book/$eventId': {
+      id: '/book/$eventId'
+      path: '/book/$eventId'
+      fullPath: '/book/$eventId'
+      preLoaderRoute: typeof BookEventIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface EventsRouteChildren {
-  EventsEventIdRoute: typeof EventsEventIdRoute
-}
-
-const EventsRouteChildren: EventsRouteChildren = {
-  EventsEventIdRoute: EventsEventIdRoute,
-}
-
-const EventsRouteWithChildren =
-  EventsRoute._addFileChildren(EventsRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActivityRoute: ActivityRoute,
   CreateEventRoute: CreateEventRoute,
   DashboardRoute: DashboardRoute,
-  EventsRoute: EventsRouteWithChildren,
   ExperiencesRoute: ExperiencesRoute,
+  ExploreRoute: ExploreRoute,
   FeedRoute: FeedRoute,
   MoviesRoute: MoviesRoute,
+  ProfileRoute: ProfileRoute,
   ScannerRoute: ScannerRoute,
   SigninRoute: SigninRoute,
+  WalletRoute: WalletRoute,
   WorkspacesRoute: WorkspacesRoute,
+  BookEventIdRoute: BookEventIdRoute,
+  EventsEventIdRoute: EventsEventIdRoute,
+  EventsIndexRoute: EventsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

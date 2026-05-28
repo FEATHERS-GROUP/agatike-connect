@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { MapPin, Clock, Users, Star, Mountain } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
@@ -6,7 +6,7 @@ import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { experiences } from "@/lib/mock-data";
 
-const cats = ["All", "Hiking", "Running", "Surf", "Wellness", "Food"] as const;
+const cats = ["All", "Hiking", "Running", "Surf", "Wellness", "Food", "Carft"] as const;
 
 export const Route = createFileRoute("/experiences")({
   head: () => ({
@@ -64,7 +64,11 @@ function Experiences() {
                 <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{x.description}</p>
                 <div className="mt-4 flex items-center justify-between">
                   <p className="text-sm font-semibold">{x.price === 0 ? "Free · Join club" : `From $${x.price}`}</p>
-                  <Button className="rounded-full" style={{ background: "var(--gradient-primary)" }}>{x.price === 0 ? "Join" : "Book"}</Button>
+                  <Button asChild className="rounded-full" style={{ background: "var(--gradient-primary)" }}>
+                    <Link to="/events/$eventId" params={{ eventId: x.id }}>
+                      {x.price === 0 ? "Join" : "Book"}
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </article>

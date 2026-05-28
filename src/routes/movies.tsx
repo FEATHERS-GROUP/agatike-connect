@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Clock, MapPin, Film, Ticket } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
@@ -48,8 +48,10 @@ function Movies() {
               ))}
             </div>
             <div className="mt-6 flex flex-wrap gap-2">
-              <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
-                <Ticket className="mr-2 h-4 w-4" /> Reserve seat — ${movie.price}
+              <Button asChild className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+                <Link to="/book/$eventId" params={{ eventId: movie.id }}>
+                  <Ticket className="mr-2 h-4 w-4" /> Reserve seat — ${movie.price}
+                </Link>
               </Button>
               <Button variant="outline" className="rounded-full">Watch trailer</Button>
             </div>

@@ -104,7 +104,7 @@ function SignIn() {
 
               {submitted && (
                 <p className="rounded-xl bg-accent px-3 py-2 text-center text-xs text-accent-foreground animate-fade-in">
-                  Demo mode — auth isn't wired yet. Hook this form up when Lovable Cloud is enabled.
+                  Demo mode — auth isn't wired yet. Hook this form up when Agatike Cloud is enabled.
                 </p>
               )}
             </form>

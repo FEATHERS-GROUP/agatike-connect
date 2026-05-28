@@ -72,14 +72,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Agatike App" },
+      { name: "description", content: "Agatike Generated Project" },
+      { name: "author", content: "Agatike" },
+      { property: "og:title", content: "Agatike App" },
+      { property: "og:description", content: "Agatike Generated Project" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@Agatike" },
     ],
     links: [
       {
@@ -108,13 +108,25 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+import { MobileNav } from "@/components/mobile/MobileNav";
+import { AppProvider } from "@/lib/AppContext";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-    </QueryClientProvider>
+    <AppProvider>
+      <QueryClientProvider client={queryClient}>
+        {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
+        <div className="min-h-screen pb-24 md:pb-0">
+          <Outlet />
+        </div>
+        
+        {/* Floating Mobile Navigation - Hidden on Desktop */}
+        <div className="md:hidden">
+          <MobileNav />
+        </div>
+      </QueryClientProvider>
+    </AppProvider>
   );
 }

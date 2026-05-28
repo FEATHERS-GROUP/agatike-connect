@@ -20,7 +20,6 @@ export function Navbar() {
           <Link to="/experiences" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Experiences</Link>
           <Link to="/movies" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Movies</Link>
           <Link to="/feed" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Stories</Link>
-          <Link to="/dashboard" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Dashboard</Link>
         </nav>
 
         <div className="ml-auto hidden flex-1 max-w-sm md:block">
