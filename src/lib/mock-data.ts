@@ -71,8 +71,8 @@ export const events: Event[] = [
     rating: 4.8,
     description:
       "Golden hour cocktails, live house, and panoramic views over Nairobi. Limited tickets.",
-    lat: -1.9500,
-    lng: 30.0580,
+    lat: -1.95,
+    lng: 30.058,
     hasStory: false,
   },
   {
@@ -89,10 +89,9 @@ export const events: Event[] = [
     cover: e3,
     attendees: 3200,
     rating: 4.7,
-    description:
-      "Three days of founders, investors, and operators shaping Africa's tech future.",
-    lat: -1.9540,
-    lng: 30.0930,
+    description: "Three days of founders, investors, and operators shaping Africa's tech future.",
+    lat: -1.954,
+    lng: 30.093,
     hasStory: true,
   },
   {
@@ -110,8 +109,8 @@ export const events: Event[] = [
     attendees: 18400,
     rating: 5.0,
     description: "Headline arena show with a full live band and special guests.",
-    lat: -1.9320,
-    lng: 30.0510,
+    lat: -1.932,
+    lng: 30.051,
     hasStory: true,
   },
   {
@@ -129,8 +128,8 @@ export const events: Event[] = [
     attendees: 4100,
     rating: 4.9,
     description: "Street food, craft makers, and live drumming across two open-air stages.",
-    lat: -1.9480,
-    lng: 30.0750,
+    lat: -1.948,
+    lng: 30.075,
     hasStory: false,
   },
   {
@@ -148,8 +147,8 @@ export const events: Event[] = [
     attendees: 9800,
     rating: 4.8,
     description: "The continent's biggest pro basketball finals — championship night.",
-    lat: -1.9600,
-    lng: 30.1100,
+    lat: -1.96,
+    lng: 30.11,
     hasStory: true,
   },
 ];
@@ -185,7 +184,7 @@ export const organizers: Organizer[] = [
     bio: "Curating the finest Afrobeats and amapiano experiences across East Africa.",
     followers: 12400,
     twitterUrl: "https://twitter.com/nalasound",
-    instagramUrl: "https://instagram.com/nalasound"
+    instagramUrl: "https://instagram.com/nalasound",
   },
   {
     id: "org-2",
@@ -195,7 +194,7 @@ export const organizers: Organizer[] = [
     bio: "Pioneering the underground house and techno scene in Kigali and beyond.",
     followers: 8200,
     twitterUrl: "https://twitter.com/skylineco",
-    instagramUrl: "https://instagram.com/skylineco"
+    instagramUrl: "https://instagram.com/skylineco",
   },
   {
     id: "org-3",
@@ -205,7 +204,7 @@ export const organizers: Organizer[] = [
     bio: "Connecting founders, investors, and builders shaping the future of African tech.",
     followers: 45000,
     twitterUrl: "https://twitter.com/baobabvc",
-    instagramUrl: "https://instagram.com/baobabvc"
+    instagramUrl: "https://instagram.com/baobabvc",
   },
   {
     id: "org-4",
@@ -215,7 +214,7 @@ export const organizers: Organizer[] = [
     bio: "The official touring company for the biggest stadium concerts in West Africa.",
     followers: 150000,
     twitterUrl: "https://twitter.com/starboylive",
-    instagramUrl: "https://instagram.com/starboylive"
+    instagramUrl: "https://instagram.com/starboylive",
   },
   {
     id: "org-5",
@@ -225,7 +224,7 @@ export const organizers: Organizer[] = [
     bio: "Celebrating local artisans, street food, and culture through vibrant pop-up markets.",
     followers: 22000,
     twitterUrl: "https://twitter.com/sokomarket",
-    instagramUrl: "https://instagram.com/sokomarket"
+    instagramUrl: "https://instagram.com/sokomarket",
   },
   {
     id: "org-6",
@@ -235,15 +234,40 @@ export const organizers: Organizer[] = [
     bio: "The premier professional basketball league in Africa. Watch the finals live.",
     followers: 320000,
     twitterUrl: "https://twitter.com/thebal",
-    instagramUrl: "https://instagram.com/thebal"
-  }
+    instagramUrl: "https://instagram.com/thebal",
+  },
 ];
 
 export const stories = [
-  { id: "1", name: "Nala Sound", avatar: e1, items: [{ id: "1-1", image: e1 }, { id: "1-2", image: e2 }, { id: "1-3", image: e3 }] },
-  { id: "2", name: "Skyline", avatar: e2, items: [{ id: "2-1", image: e2 }, { id: "2-2", image: e3 }] },
+  {
+    id: "1",
+    name: "Nala Sound",
+    avatar: e1,
+    items: [
+      { id: "1-1", image: e1 },
+      { id: "1-2", image: e2 },
+      { id: "1-3", image: e3 },
+    ],
+  },
+  {
+    id: "2",
+    name: "Skyline",
+    avatar: e2,
+    items: [
+      { id: "2-1", image: e2 },
+      { id: "2-2", image: e3 },
+    ],
+  },
   { id: "3", name: "Baobab", avatar: e3, items: [{ id: "3-1", image: e3 }] },
-  { id: "4", name: "Starboy", avatar: e4, items: [{ id: "4-1", image: e4 }, { id: "4-2", image: e5 }] },
+  {
+    id: "4",
+    name: "Starboy",
+    avatar: e4,
+    items: [
+      { id: "4-1", image: e4 },
+      { id: "4-2", image: e5 },
+    ],
+  },
   { id: "5", name: "Soko", avatar: e5, items: [{ id: "5-1", image: e5 }] },
   { id: "6", name: "BAL", avatar: e6, items: [{ id: "6-1", image: e6 }] },
   { id: "7", name: "Afrochella", avatar: e1, items: [{ id: "7-1", image: e1 }] },
@@ -251,7 +275,15 @@ export const stories = [
 ];
 
 export const movieStories = [
-  { id: "m1", name: "Silverbird", avatar: movie1, items: [{ id: "m1-1", image: movie1 }, { id: "m1-2", image: movie2 }] },
+  {
+    id: "m1",
+    name: "Silverbird",
+    avatar: movie1,
+    items: [
+      { id: "m1-1", image: movie1 },
+      { id: "m1-2", image: movie2 },
+    ],
+  },
   { id: "m2", name: "Genesis Cinemas", avatar: movie2, items: [{ id: "m2-1", image: movie2 }] },
   { id: "m3", name: "Filmhouse", avatar: movie1, items: [{ id: "m3-1", image: movie1 }] },
   { id: "m4", name: "Ster-Kinekor", avatar: movie2, items: [{ id: "m4-1", image: movie2 }] },
@@ -289,7 +321,8 @@ export const experiences: Experience[] = [
     cover: expHiking,
     rating: 4.9,
     spots: 12,
-    description: "Pre-dawn hike to catch the sunrise over Mount Meru. Guides, breakfast and shuttle included.",
+    description:
+      "Pre-dawn hike to catch the sunrise over Mount Meru. Guides, breakfast and shuttle included.",
   },
   {
     id: "lagos-run-club",
@@ -392,7 +425,8 @@ export const movies: Movie[] = [
     showtimes: ["12:30", "15:45", "18:30", "21:15"],
     currency: "Frws",
     price: 8,
-    synopsis: "A young accountant uncovers a conspiracy at the heart of Africa's biggest banking dynasty.",
+    synopsis:
+      "A young accountant uncovers a conspiracy at the heart of Africa's biggest banking dynasty.",
   },
   {
     id: "after-the-rains",
@@ -457,16 +491,52 @@ export const feedPosts = events.map((ev, i) => ({
   eventId: ev.id,
   eventTitle: ev.title,
   commentsList: [
-    { id: "c1", handle: "angryswan", text: "Can't wait for this one! 🔥", avatar: "https://i.pravatar.cc/100?img=5", time: "2h" },
-    { id: "c2", handle: "kigali_vibes", text: "Take my money! 💸", avatar: "https://i.pravatar.cc/100?img=6", time: "4h" },
-    { id: "c3", handle: "party_animal", text: "Who's going? Let's link up!", avatar: "https://i.pravatar.cc/100?img=7", time: "5h" }
-  ]
+    {
+      id: "c1",
+      handle: "angryswan",
+      text: "Can't wait for this one! 🔥",
+      avatar: "https://i.pravatar.cc/100?img=5",
+      time: "2h",
+    },
+    {
+      id: "c2",
+      handle: "kigali_vibes",
+      text: "Take my money! 💸",
+      avatar: "https://i.pravatar.cc/100?img=6",
+      time: "4h",
+    },
+    {
+      id: "c3",
+      handle: "party_animal",
+      text: "Who's going? Let's link up!",
+      avatar: "https://i.pravatar.cc/100?img=7",
+      time: "5h",
+    },
+  ],
 }));
 
 export const ticketTiers = [
-  { id: "ga", name: "General Admission", price: 35, perks: ["Entry", "Welcome drink"], remaining: 142 },
-  { id: "vip", name: "VIP Lounge", price: 95, perks: ["Priority entry", "VIP lounge", "2 premium drinks"], remaining: 24 },
-  { id: "table", name: "Bottle Table (x6)", price: 480, perks: ["Reserved table", "Bottle service", "Skip the line"], remaining: 3 },
+  {
+    id: "ga",
+    name: "General Admission",
+    price: 35,
+    perks: ["Entry", "Welcome drink"],
+    remaining: 142,
+  },
+  {
+    id: "vip",
+    name: "VIP Lounge",
+    price: 95,
+    perks: ["Priority entry", "VIP lounge", "2 premium drinks"],
+    remaining: 24,
+  },
+  {
+    id: "table",
+    name: "Bottle Table (x6)",
+    price: 480,
+    perks: ["Reserved table", "Bottle service", "Skip the line"],
+    remaining: 3,
+  },
 ];
 
 export const merch = [

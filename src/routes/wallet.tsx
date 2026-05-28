@@ -16,7 +16,9 @@ function WalletPage() {
 
         {/* Tabs */}
         <div className="flex gap-4 border-b border-border/40 pb-2 mb-6">
-          <button className="text-primary font-bold border-b-2 border-primary pb-2 px-1">Upcoming</button>
+          <button className="text-primary font-bold border-b-2 border-primary pb-2 px-1">
+            Upcoming
+          </button>
           <button className="text-muted-foreground font-medium pb-2 px-1">Past</button>
           <button className="text-muted-foreground font-medium pb-2 px-1">Passes</button>
         </div>
@@ -25,15 +27,21 @@ function WalletPage() {
         <div className="relative w-full rounded-[2rem] overflow-hidden shadow-2xl mb-8 group">
           {/* Animated Background Gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-background opacity-90 group-hover:scale-105 transition-transform duration-700" />
-          
+
           <div className="relative flex flex-col items-center p-6 text-white text-center">
             <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
               VIP Pass
             </span>
-            <img src={activeTicket.cover} alt="Event" className="h-20 w-20 rounded-2xl object-cover border-2 border-white/20 mb-3 shadow-lg" />
-            
+            <img
+              src={activeTicket.cover}
+              alt="Event"
+              className="h-20 w-20 rounded-2xl object-cover border-2 border-white/20 mb-3 shadow-lg"
+            />
+
             <h2 className="text-2xl font-bold leading-tight mb-1">{activeTicket.title}</h2>
-            <p className="text-white/80 text-sm mb-6">{activeTicket.date} • {activeTicket.time}</p>
+            <p className="text-white/80 text-sm mb-6">
+              {activeTicket.date} • {activeTicket.time}
+            </p>
 
             {/* QR Code Section */}
             <div className="bg-white p-4 rounded-3xl shadow-inner mb-6">
@@ -55,7 +63,7 @@ function WalletPage() {
               </div>
             </div>
           </div>
-          
+
           {/* Perforated edges effect */}
           <div className="absolute top-1/2 -left-3 h-6 w-6 bg-background rounded-full -translate-y-1/2" />
           <div className="absolute top-1/2 -right-3 h-6 w-6 bg-background rounded-full -translate-y-1/2" />

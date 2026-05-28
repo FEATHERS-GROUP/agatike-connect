@@ -4,9 +4,7 @@ import { BookingDesktop } from "@/components/desktop/BookingDesktop";
 
 export const Route = createFileRoute("/book/$eventId")({
   head: () => ({
-    meta: [
-      { title: "Checkout — Agatike" },
-    ],
+    meta: [{ title: "Checkout — Agatike" }],
   }),
   component: BookingRoute,
 });

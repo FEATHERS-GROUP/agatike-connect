@@ -26,18 +26,26 @@ export function EventCard({ event }: { event: Event }) {
           <Star className="h-3 w-3 fill-primary text-primary" /> {event.rating}
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-          <p className="text-xs uppercase tracking-wider opacity-80">{event.date} · {event.time}</p>
+          <p className="text-xs uppercase tracking-wider opacity-80">
+            {event.date} · {event.time}
+          </p>
           <h3 className="mt-1 text-lg font-semibold leading-tight line-clamp-2">{event.title}</h3>
           <div className="mt-2 flex items-center justify-between text-xs opacity-90">
-            <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {event.city}</span>
-            <span className="inline-flex items-center gap-1"><Users className="h-3 w-3" /> {event.attendees.toLocaleString()}</span>
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="h-3 w-3" /> {event.city}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Users className="h-3 w-3" /> {event.attendees.toLocaleString()}
+            </span>
           </div>
         </div>
       </div>
       <div className="flex items-center justify-between px-4 py-3">
-        <div className="text-xs text-muted-foreground">by <span className="text-foreground font-medium">{event.organizer}</span></div>
+        <div className="text-xs text-muted-foreground">
+          by <span className="text-foreground font-medium">{event.organizer}</span>
+        </div>
         <div className="text-sm font-semibold">
-          {event.price === 0 ? "Free" : `from ${event.currency || '$'}${event.price}`}
+          {event.price === 0 ? "Free" : `from ${event.currency || "$"}${event.price}`}
         </div>
       </div>
     </Link>

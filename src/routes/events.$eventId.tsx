@@ -5,9 +5,10 @@ import { EventDetailsDesktop } from "@/components/desktop/EventDetailsDesktop";
 
 export const Route = createFileRoute("/events/$eventId")({
   loader: ({ params }) => {
-    const ev = events.find((e) => e.id === params.eventId) || 
-               experiences.find((x) => x.id === params.eventId) || 
-               movies.find((m) => m.id === params.eventId);
+    const ev =
+      events.find((e) => e.id === params.eventId) ||
+      experiences.find((x) => x.id === params.eventId) ||
+      movies.find((m) => m.id === params.eventId);
     if (!ev) throw notFound();
     return { event: ev };
   },

@@ -20,17 +20,24 @@ export function Stories({ items = defaultStories }: { items?: Story[] }) {
     <>
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
         {items.map((s, i) => (
-          <div 
-            key={s.id} 
+          <div
+            key={s.id}
             className="flex shrink-0 flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105 active:scale-95"
             onClick={() => setActiveStoryIndex(i)}
           >
-            <div 
-              className={`rounded-full p-[2px] ${viewedStories.has(s.id) ? "bg-border" : ""}`} 
-              style={viewedStories.has(s.id) ? undefined : { background: "var(--gradient-primary)" }}
+            <div
+              className={`rounded-full p-[2px] ${viewedStories.has(s.id) ? "bg-border" : ""}`}
+              style={
+                viewedStories.has(s.id) ? undefined : { background: "var(--gradient-primary)" }
+              }
             >
               <div className="rounded-full bg-background p-[2px]">
-                <img src={s.avatar} alt={s.name} className="h-16 w-16 rounded-full object-cover" loading="lazy" />
+                <img
+                  src={s.avatar}
+                  alt={s.name}
+                  className="h-16 w-16 rounded-full object-cover"
+                  loading="lazy"
+                />
               </div>
             </div>
             <span className="text-xs text-muted-foreground">{s.name}</span>
@@ -39,10 +46,10 @@ export function Stories({ items = defaultStories }: { items?: Story[] }) {
       </div>
 
       {activeStoryIndex !== null && (
-        <StoryViewer 
-          stories={items} 
-          initialIndex={activeStoryIndex} 
-          onClose={() => setActiveStoryIndex(null)} 
+        <StoryViewer
+          stories={items}
+          initialIndex={activeStoryIndex}
+          onClose={() => setActiveStoryIndex(null)}
           onStoryFinished={handleStoryFinished}
         />
       )}

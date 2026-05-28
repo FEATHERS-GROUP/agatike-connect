@@ -11,9 +11,15 @@ export const Route = createFileRoute("/feed")({
   head: () => ({
     meta: [
       { title: "Feed — Agatike" },
-      { name: "description", content: "Live moments, reels and reviews from events across Africa." },
+      {
+        name: "description",
+        content: "Live moments, reels and reviews from events across Africa.",
+      },
       { property: "og:title", content: "Agatike Feed" },
-      { property: "og:description", content: "The social heartbeat of African nightlife and culture." },
+      {
+        property: "og:description",
+        content: "The social heartbeat of African nightlife and culture.",
+      },
     ],
   }),
   component: Feed,
@@ -38,11 +44,18 @@ function Feed() {
             <p className="text-sm font-semibold">Upcoming for you</p>
             <div className="mt-4 space-y-3">
               {events.slice(0, 3).map((e) => (
-                <Link key={e.id} to="/events/$eventId" params={{ eventId: e.id }} className="flex items-center gap-3 rounded-xl p-2 hover:bg-secondary transition">
+                <Link
+                  key={e.id}
+                  to="/events/$eventId"
+                  params={{ eventId: e.id }}
+                  className="flex items-center gap-3 rounded-xl p-2 hover:bg-secondary transition"
+                >
                   <img src={e.cover} className="h-12 w-12 rounded-lg object-cover" alt={e.title} />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{e.title}</p>
-                    <p className="text-xs text-muted-foreground">{e.date} · {e.city}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {e.date} · {e.city}
+                    </p>
                   </div>
                 </Link>
               ))}
@@ -54,12 +67,18 @@ function Feed() {
             <div className="mt-4 space-y-3">
               {events.slice(2, 5).map((e) => (
                 <div key={e.id} className="flex items-center gap-3">
-                  <img src={e.cover} className="h-10 w-10 rounded-full object-cover" alt={e.organizer} />
+                  <img
+                    src={e.cover}
+                    className="h-10 w-10 rounded-full object-cover"
+                    alt={e.organizer}
+                  />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{e.organizer}</p>
                     <p className="text-xs text-muted-foreground">@{e.organizerHandle}</p>
                   </div>
-                  <Button size="sm" variant="outline" className="ml-auto rounded-full">Follow</Button>
+                  <Button size="sm" variant="outline" className="ml-auto rounded-full">
+                    Follow
+                  </Button>
                 </div>
               ))}
             </div>

@@ -26,13 +26,11 @@ export function MobileNav() {
               to={tab.href as any}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 transition-all duration-300",
-                isActive ? "text-primary scale-110" : "text-muted-foreground hover:text-foreground"
+                isActive ? "text-primary scale-110" : "text-muted-foreground hover:text-foreground",
               )}
             >
               <Icon className={cn("h-6 w-6", isActive && "fill-primary/20 stroke-[2.5]")} />
-              {isActive && (
-                <span className="absolute -bottom-2 h-1 w-1 rounded-full bg-primary" />
-              )}
+              {isActive && <span className="absolute -bottom-2 h-1 w-1 rounded-full bg-primary" />}
             </Link>
           );
         })}

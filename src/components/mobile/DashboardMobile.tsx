@@ -1,5 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { DollarSign, Ticket, ScanLine, Users, Settings, Plus, TrendingUp, BarChart3, ChevronRight } from "lucide-react";
+import {
+  DollarSign,
+  Ticket,
+  ScanLine,
+  Users,
+  Settings,
+  Plus,
+  TrendingUp,
+  BarChart3,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function DashboardMobile() {
@@ -17,7 +27,6 @@ export function DashboardMobile() {
       </div>
 
       <div className="px-4 py-2 space-y-6">
-        
         {/* Main KPI Card */}
         <div className="rounded-3xl p-6 relative overflow-hidden bg-card border border-border/40 shadow-xl">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-transparent pointer-events-none" />
@@ -31,21 +40,31 @@ export function DashboardMobile() {
           <div className="mt-6 h-16 w-full flex items-end justify-between">
             {/* Mock mini chart */}
             {[4, 7, 5, 8, 6, 9, 12, 10, 14, 11, 15, 13].map((h, i) => (
-              <div key={i} className="w-1.5 bg-primary/80 rounded-t-sm" style={{ height: `${h * 10}%` }} />
+              <div
+                key={i}
+                className="w-1.5 bg-primary/80 rounded-t-sm"
+                style={{ height: `${h * 10}%` }}
+              />
             ))}
           </div>
         </div>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4">
-          <Link to="/create-event" className="bg-primary text-primary-foreground rounded-3xl p-4 flex flex-col items-start gap-4 shadow-[var(--shadow-glow)] transition-transform active:scale-95">
+          <Link
+            to="/create-event"
+            className="bg-primary text-primary-foreground rounded-3xl p-4 flex flex-col items-start gap-4 shadow-[var(--shadow-glow)] transition-transform active:scale-95"
+          >
             <div className="bg-white/20 p-3 rounded-2xl">
               <Plus className="h-6 w-6" />
             </div>
             <span className="font-bold">Create Event</span>
           </Link>
-          
-          <Link to="/scanner" className="bg-secondary text-foreground rounded-3xl p-4 flex flex-col items-start gap-4 border border-border/40 shadow-sm transition-transform active:scale-95">
+
+          <Link
+            to="/scanner"
+            className="bg-secondary text-foreground rounded-3xl p-4 flex flex-col items-start gap-4 border border-border/40 shadow-sm transition-transform active:scale-95"
+          >
             <div className="bg-background p-3 rounded-2xl border border-border/40">
               <ScanLine className="h-6 w-6 text-foreground" />
             </div>
@@ -69,7 +88,7 @@ export function DashboardMobile() {
                 <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-xs mb-1 font-medium">
@@ -107,7 +126,6 @@ export function DashboardMobile() {
             <p className="text-xs text-muted-foreground">Page Views</p>
           </div>
         </div>
-
       </div>
     </div>
   );

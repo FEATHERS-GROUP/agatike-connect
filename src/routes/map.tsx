@@ -9,7 +9,7 @@ const MapClient = lazy(() => import("@/components/site/MapClient"));
 
 function MapPage() {
   const [isClient, setIsClient] = useState(false);
-  
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -23,11 +23,13 @@ function MapPage() {
   }
 
   return (
-    <Suspense fallback={
-      <div className="h-[100dvh] w-full bg-background flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="h-[100dvh] w-full bg-background flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+        </div>
+      }
+    >
       <MapClient />
     </Suspense>
   );

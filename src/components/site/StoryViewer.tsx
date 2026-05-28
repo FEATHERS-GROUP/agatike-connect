@@ -71,17 +71,14 @@ export function StoryViewer({
         {/* Progress Bars for the current organizer */}
         <div className="absolute top-0 inset-x-0 z-20 flex gap-1 p-4 pt-safe-top">
           {currentOrg.items.map((item, i) => (
-            <div key={item.id} className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden backdrop-blur-sm">
+            <div
+              key={item.id}
+              className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden backdrop-blur-sm"
+            >
               <div
                 className="h-full bg-white transition-all duration-75 ease-linear rounded-full"
                 style={{
-                  width: `${
-                    i === currentStoryIndex
-                      ? progress
-                      : i < currentStoryIndex
-                      ? 100
-                      : 0
-                  }%`,
+                  width: `${i === currentStoryIndex ? progress : i < currentStoryIndex ? 100 : 0}%`,
                 }}
               />
             </div>
@@ -102,10 +99,7 @@ export function StoryViewer({
               {currentOrg.name}
             </span>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white hover:text-white/80 p-2 drop-shadow-md"
-          >
+          <button onClick={onClose} className="text-white hover:text-white/80 p-2 drop-shadow-md">
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -121,22 +115,20 @@ export function StoryViewer({
           {/* Overlay gradient for text readability */}
           <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
           <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
-          
+
           <div className="absolute bottom-10 inset-x-6 text-white z-20">
-            <h2 className="text-2xl font-bold mb-2 shadow-black drop-shadow-lg">{currentOrg.name}</h2>
-            <p className="text-sm text-white/90 shadow-black drop-shadow-md">Live moment from {currentOrg.name}</p>
+            <h2 className="text-2xl font-bold mb-2 shadow-black drop-shadow-lg">
+              {currentOrg.name}
+            </h2>
+            <p className="text-sm text-white/90 shadow-black drop-shadow-md">
+              Live moment from {currentOrg.name}
+            </p>
           </div>
         </div>
 
         {/* Navigation Touch Zones */}
-        <div
-          className="absolute inset-y-0 left-0 w-1/3 z-10"
-          onClick={handlePrev}
-        />
-        <div
-          className="absolute inset-y-0 right-0 w-2/3 z-10"
-          onClick={handleNext}
-        />
+        <div className="absolute inset-y-0 left-0 w-1/3 z-10" onClick={handlePrev} />
+        <div className="absolute inset-y-0 right-0 w-2/3 z-10" onClick={handleNext} />
       </div>
     </div>
   );

@@ -6,9 +6,16 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Agatike — Africa's premium social event platform" },
-      { name: "description", content: "Discover music, nightlife, sports, festivals and experiences across Africa. Buy tickets, share moments, follow organizers." },
+      {
+        name: "description",
+        content:
+          "Discover music, nightlife, sports, festivals and experiences across Africa. Buy tickets, share moments, follow organizers.",
+      },
       { property: "og:title", content: "Agatike — Africa's premium social event platform" },
-      { property: "og:description", content: "Discover and live the moments that matter, across Africa." },
+      {
+        property: "og:description",
+        content: "Discover and live the moments that matter, across Africa.",
+      },
     ],
   }),
   component: Home,

@@ -6,7 +6,10 @@ export const Route = createFileRoute("/scanner")({
   head: () => ({
     meta: [
       { title: "Scanner — Agatike" },
-      { name: "description", content: "Mobile scanner for event entrances. Fast, reliable, offline-ready." },
+      {
+        name: "description",
+        content: "Mobile scanner for event entrances. Fast, reliable, offline-ready.",
+      },
     ],
   }),
   component: ScannerRoute,

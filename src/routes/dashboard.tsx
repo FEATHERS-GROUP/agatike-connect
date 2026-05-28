@@ -6,7 +6,10 @@ export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "Organizer Dashboard — Agatike" },
-      { name: "description", content: "Sell tickets, run analytics, scan attendees and grow your events." },
+      {
+        name: "description",
+        content: "Sell tickets, run analytics, scan attendees and grow your events.",
+      },
     ],
   }),
   component: DashboardRoute,

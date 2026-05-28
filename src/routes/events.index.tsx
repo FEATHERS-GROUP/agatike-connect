@@ -12,9 +12,15 @@ export const Route = createFileRoute("/events/")({
   head: () => ({
     meta: [
       { title: "All events — Agatike" },
-      { name: "description", content: "Browse nightlife, music, sports, conferences and festivals across Africa." },
+      {
+        name: "description",
+        content: "Browse nightlife, music, sports, conferences and festivals across Africa.",
+      },
       { property: "og:title", content: "All events — Agatike" },
-      { property: "og:description", content: "Browse nightlife, music, sports, conferences and festivals across Africa." },
+      {
+        property: "og:description",
+        content: "Browse nightlife, music, sports, conferences and festivals across Africa.",
+      },
     ],
   }),
   component: EventsBrowse,
@@ -26,7 +32,8 @@ function EventsBrowse() {
 
   const filtered = useMemo(() => {
     return events.filter((e) => {
-      const matchesQ = !q || `${e.title} ${e.organizer} ${e.city}`.toLowerCase().includes(q.toLowerCase());
+      const matchesQ =
+        !q || `${e.title} ${e.organizer} ${e.city}`.toLowerCase().includes(q.toLowerCase());
       const matchesCat = !cat || e.category === cat;
       return matchesQ && matchesCat;
     });
@@ -36,11 +43,16 @@ function EventsBrowse() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none">
-      <div className="hidden md:block"><Navbar /></div>
-      
+      <div className="hidden md:block">
+        <Navbar />
+      </div>
+
       {/* Mobile Header */}
       <div className="md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center gap-3">
-        <button onClick={() => router.history.back()} className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground">
+        <button
+          onClick={() => router.history.back()}
+          className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+        >
           <ArrowLeft className="h-6 w-6" />
         </button>
         <h1 className="font-bold text-lg tracking-tight">All Events</h1>
@@ -50,14 +62,23 @@ function EventsBrowse() {
         <header className="hidden md:flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">All events</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{filtered.length} events across Africa</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {filtered.length} events across Africa
+            </p>
           </div>
           <div className="flex w-full max-w-md gap-2 md:w-auto">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search title, city, organizer" className="pl-9 rounded-full bg-secondary/60 border-transparent" />
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search title, city, organizer"
+                className="pl-9 rounded-full bg-secondary/60 border-transparent"
+              />
             </div>
-            <Button variant="outline" className="rounded-full"><SlidersHorizontal className="mr-2 h-4 w-4" /> Filters</Button>
+            <Button variant="outline" className="rounded-full">
+              <SlidersHorizontal className="mr-2 h-4 w-4" /> Filters
+            </Button>
           </div>
         </header>
 
@@ -65,15 +86,33 @@ function EventsBrowse() {
         <div className="md:hidden flex w-full gap-2 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search title, city..." className="pl-9 rounded-full bg-secondary/60 border-transparent text-sm" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search title, city..."
+              className="pl-9 rounded-full bg-secondary/60 border-transparent text-sm"
+            />
           </div>
-          <Button variant="outline" size="icon" className="rounded-full shrink-0"><SlidersHorizontal className="h-4 w-4" /></Button>
+          <Button variant="outline" size="icon" className="rounded-full shrink-0">
+            <SlidersHorizontal className="h-4 w-4" />
+          </Button>
         </div>
 
         <div className="mt-2 md:mt-6 flex overflow-x-auto hide-scrollbar gap-2 pb-2">
-          <button onClick={() => setCat(null)} className={`rounded-full border px-3 py-1 text-sm transition ${cat === null ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground hover:bg-secondary"}`}>All</button>
+          <button
+            onClick={() => setCat(null)}
+            className={`rounded-full border px-3 py-1 text-sm transition ${cat === null ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground hover:bg-secondary"}`}
+          >
+            All
+          </button>
           {categories.map((c) => (
-            <button key={c} onClick={() => setCat(c)} className={`rounded-full border px-3 py-1 text-sm transition ${cat === c ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground hover:bg-secondary"}`}>{c}</button>
+            <button
+              key={c}
+              onClick={() => setCat(c)}
+              className={`rounded-full border px-3 py-1 text-sm transition ${cat === c ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground hover:bg-secondary"}`}
+            >
+              {c}
+            </button>
           ))}
         </div>
 
@@ -84,11 +123,15 @@ function EventsBrowse() {
           </div>
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filtered.map((e) => <EventCard key={e.id} event={e} />)}
+            {filtered.map((e) => (
+              <EventCard key={e.id} event={e} />
+            ))}
           </div>
         )}
       </div>
-      <div className="hidden md:block"><Footer /></div>
+      <div className="hidden md:block">
+        <Footer />
+      </div>
     </div>
   );
 }

@@ -1,7 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Settings, Ticket, Star, MapPin, Calendar, ChevronRight,
-  Heart, QrCode, Clock, Bell, Trophy, Flame, Zap, Music, Film, Mic,
+  Settings,
+  Ticket,
+  Star,
+  MapPin,
+  Calendar,
+  ChevronRight,
+  Heart,
+  QrCode,
+  Clock,
+  Bell,
+  Trophy,
+  Flame,
+  Zap,
+  Music,
+  Film,
+  Mic,
   ScanLine,
 } from "lucide-react";
 import { events, organizers, movies, experiences } from "@/lib/mock-data";
@@ -61,7 +75,7 @@ export const upcomingTickets = [
     ticketType: "Guest",
     seat: "RSVP",
     orderId: "AGT-1004",
-  }
+  },
 ] as any[];
 
 const pastEvents = events.slice(2, 6).map((e, i) => ({
@@ -72,10 +86,34 @@ const pastEvents = events.slice(2, 6).map((e, i) => ({
 
 // Mock user favorite categories
 const favoriteCategories = [
-  { label: "Music", icon: Music, color: "text-purple-500", bg: "bg-purple-500/10", border: "border-purple-500/20" },
-  { label: "Sports", icon: Trophy, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-  { label: "Cinema", icon: Film, color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20" },
-  { label: "Conferences", icon: Mic, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+  {
+    label: "Music",
+    icon: Music,
+    color: "text-purple-500",
+    bg: "bg-purple-500/10",
+    border: "border-purple-500/20",
+  },
+  {
+    label: "Sports",
+    icon: Trophy,
+    color: "text-blue-500",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
+  },
+  {
+    label: "Cinema",
+    icon: Film,
+    color: "text-rose-500",
+    bg: "bg-rose-500/10",
+    border: "border-rose-500/20",
+  },
+  {
+    label: "Conferences",
+    icon: Mic,
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/20",
+  },
 ];
 
 type Tab = "upcoming" | "history" | "following";
@@ -83,25 +121,46 @@ type Tab = "upcoming" | "history" | "following";
 /* ─── Ticket Components ─── */
 function TicketCard({ ticket }: { ticket: any }) {
   return (
-    <Link to="/ticket/$ticketId" params={{ ticketId: ticket.id }} className="block rounded-3xl overflow-hidden border border-border/60 bg-card shadow-[var(--shadow-card)] hover:-translate-y-1 transition-transform">
+    <Link
+      to="/ticket/$ticketId"
+      params={{ ticketId: ticket.id }}
+      className="block rounded-3xl overflow-hidden border border-border/60 bg-card shadow-[var(--shadow-card)] hover:-translate-y-1 transition-transform"
+    >
       <div className="relative h-40">
         <img src={ticket.cover} alt={ticket.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-        <span className="absolute bottom-3 left-4 text-white font-bold text-sm leading-tight">{ticket.title}</span>
-        <span className={`absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${ticket.ticketType === "VIP" ? "bg-primary text-primary-foreground" : "bg-white/20 text-white backdrop-blur-sm"}`}>{ticket.ticketType}</span>
+        <span className="absolute bottom-3 left-4 text-white font-bold text-sm leading-tight">
+          {ticket.title}
+        </span>
+        <span
+          className={`absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${ticket.ticketType === "VIP" ? "bg-primary text-primary-foreground" : "bg-white/20 text-white backdrop-blur-sm"}`}
+        >
+          {ticket.ticketType}
+        </span>
       </div>
       <div className="px-4 py-3">
         <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-          <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{ticket.date}</span>
-          <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{ticket.time}</span>
+          <span className="flex items-center gap-1">
+            <Calendar className="h-3.5 w-3.5" />
+            {ticket.date}
+          </span>
+          <span className="flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5" />
+            {ticket.time}
+          </span>
         </div>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs text-muted-foreground">{ticket.seat}</p>
             <p className="text-xs font-mono text-primary mt-0.5">{ticket.orderId}</p>
           </div>
-          <Button size="sm" className="h-8 px-3 rounded-full text-xs font-bold" style={{ background: "var(--gradient-primary)" }}>
-            <QrCode className="h-3.5 w-3.5 mr-1" />Show
+          <Button
+            size="sm"
+            className="h-8 px-3 rounded-full text-xs font-bold"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            <QrCode className="h-3.5 w-3.5 mr-1" />
+            Show
           </Button>
         </div>
       </div>
@@ -109,25 +168,37 @@ function TicketCard({ ticket }: { ticket: any }) {
   );
 }
 
-
-
 /* ─── History Card ─── */
-function HistoryCard({ event }: { event: typeof pastEvents[0] }) {
+function HistoryCard({ event }: { event: (typeof pastEvents)[0] }) {
   return (
     <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] flex gap-3 p-3">
-      <img src={event.cover} alt={event.title} className="w-20 h-20 object-cover rounded-xl shrink-0" />
+      <img
+        src={event.cover}
+        alt={event.title}
+        className="w-20 h-20 object-cover rounded-xl shrink-0"
+      />
       <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
         <div>
           <p className="font-semibold text-sm leading-tight line-clamp-2">{event.title}</p>
-          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><MapPin className="h-3 w-3" />{event.city}</p>
+          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            {event.city}
+          </p>
         </div>
         <div className="flex items-center justify-between mt-2">
           <div className="flex gap-0.5">
-            {[1, 2, 3, 4, 5].map(s => (
-              <Star key={s} className={`h-3.5 w-3.5 ${s <= event.histRating ? "text-yellow-400 fill-yellow-400" : "text-border"}`} />
+            {[1, 2, 3, 4, 5].map((s) => (
+              <Star
+                key={s}
+                className={`h-3.5 w-3.5 ${s <= event.histRating ? "text-yellow-400 fill-yellow-400" : "text-border"}`}
+              />
             ))}
           </div>
-          {!event.rated && <button className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Rate</button>}
+          {!event.rated && (
+            <button className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+              Rate
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -143,18 +214,30 @@ function ProfilePage() {
     <div className="hidden md:flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <div className="flex-1 mx-auto max-w-7xl w-full px-6 py-10 grid grid-cols-[300px_1fr] gap-8 items-start">
-
         {/* Sidebar */}
         <aside className="sticky top-24 space-y-5">
           <div className="rounded-3xl border border-border/60 bg-card p-6 flex flex-col items-center text-center shadow-[var(--shadow-card)]">
-            <div className="h-24 w-24 rounded-2xl p-[3px] shadow-lg mb-4" style={{ background: "var(--gradient-primary)" }}>
-              <img src="https://i.pravatar.cc/150?u=me" alt="Alex Doe" className="h-full w-full rounded-[14px] object-cover" />
+            <div
+              className="h-24 w-24 rounded-2xl p-[3px] shadow-lg mb-4"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <img
+                src="https://i.pravatar.cc/150?u=me"
+                alt="Alex Doe"
+                className="h-full w-full rounded-[14px] object-cover"
+              />
             </div>
             <h2 className="font-bold text-xl">Alex Doe</h2>
-            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1"><MapPin className="h-3.5 w-3.5" /> Kigali, Rwanda</p>
+            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+              <MapPin className="h-3.5 w-3.5" /> Kigali, Rwanda
+            </p>
             <p className="text-xs text-muted-foreground mt-1">Member since Jan 2024</p>
             <div className="grid grid-cols-3 gap-3 w-full mt-5">
-              {[{ v: "24", l: "Attended" }, { v: "8", l: "Following" }, { v: "5", l: "Upcoming" }].map(({ v, l }) => (
+              {[
+                { v: "24", l: "Attended" },
+                { v: "8", l: "Following" },
+                { v: "5", l: "Upcoming" },
+              ].map(({ v, l }) => (
                 <div key={l} className="bg-secondary/60 rounded-xl p-2.5 text-center">
                   <p className="font-bold text-base">{v}</p>
                   <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{l}</p>
@@ -162,8 +245,12 @@ function ProfilePage() {
               ))}
             </div>
             <div className="flex gap-2 w-full mt-4">
-              <Button variant="secondary" className="flex-1 h-9 text-sm font-semibold rounded-xl">Edit Profile</Button>
-              <Button variant="secondary" size="icon" className="h-9 w-9 rounded-xl shrink-0"><Settings className="h-4 w-4" /></Button>
+              <Button variant="secondary" className="flex-1 h-9 text-sm font-semibold rounded-xl">
+                Edit Profile
+              </Button>
+              <Button variant="secondary" size="icon" className="h-9 w-9 rounded-xl shrink-0">
+                <Settings className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
@@ -172,7 +259,10 @@ function ProfilePage() {
             <p className="font-bold text-sm mb-4">Interests</p>
             <div className="flex flex-wrap gap-2">
               {favoriteCategories.map(({ label, icon: Icon, color, bg, border }) => (
-                <span key={label} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${bg} ${border} ${color}`}>
+                <span
+                  key={label}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${bg} ${border} ${color}`}
+                >
                   <Icon className="h-3.5 w-3.5" />
                   {label}
                 </span>
@@ -184,12 +274,18 @@ function ProfilePage() {
           <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
             <div className="flex items-center justify-between mb-4">
               <p className="font-bold text-sm">Following</p>
-              <Link to="/organizers" className="text-xs text-primary font-bold">See all</Link>
+              <Link to="/organizers" className="text-xs text-primary font-bold">
+                See all
+              </Link>
             </div>
             <div className="space-y-3">
-              {organizers.slice(0, 4).map(org => (
+              {organizers.slice(0, 4).map((org) => (
                 <div key={org.id} className="flex items-center gap-3">
-                  <img src={org.avatar} alt={org.name} className="h-9 w-9 rounded-full object-cover border border-border/40" />
+                  <img
+                    src={org.avatar}
+                    alt={org.name}
+                    className="h-9 w-9 rounded-full object-cover border border-border/40"
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">{org.name}</p>
                     <p className="text-xs text-muted-foreground">@{org.handle}</p>
@@ -205,18 +301,28 @@ function ProfilePage() {
         <main className="space-y-8">
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold flex items-center gap-2"><Ticket className="h-5 w-5 text-primary" /> Upcoming Tickets</h2>
-              <Link to="/events" className="text-sm text-primary font-bold flex items-center gap-1">Browse events <ChevronRight className="h-4 w-4" /></Link>
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Ticket className="h-5 w-5 text-primary" /> Upcoming Tickets
+              </h2>
+              <Link to="/events" className="text-sm text-primary font-bold flex items-center gap-1">
+                Browse events <ChevronRight className="h-4 w-4" />
+              </Link>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 items-start">
-              {upcomingTickets.map(t => <TicketCard key={t.id} ticket={t} />)}
+              {upcomingTickets.map((t) => (
+                <TicketCard key={t.id} ticket={t} />
+              ))}
             </div>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Calendar className="h-5 w-5 text-primary" /> Event History</h2>
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" /> Event History
+            </h2>
             <div className="grid grid-cols-2 gap-4">
-              {pastEvents.map(e => <HistoryCard key={e.id} event={e} />)}
+              {pastEvents.map((e) => (
+                <HistoryCard key={e.id} event={e} />
+              ))}
             </div>
           </section>
         </main>
@@ -236,8 +342,12 @@ function ProfilePage() {
             <Link to="/scanner" className="p-2 rounded-full hover:bg-secondary transition-colors">
               <QrCode className="h-5 w-5" />
             </Link>
-            <button className="p-2 rounded-full hover:bg-secondary transition-colors"><Bell className="h-5 w-5" /></button>
-            <button className="p-2 rounded-full hover:bg-secondary transition-colors"><Settings className="h-5 w-5" /></button>
+            <button className="p-2 rounded-full hover:bg-secondary transition-colors">
+              <Bell className="h-5 w-5" />
+            </button>
+            <button className="p-2 rounded-full hover:bg-secondary transition-colors">
+              <Settings className="h-5 w-5" />
+            </button>
           </div>
         </div>
       </div>
@@ -246,35 +356,60 @@ function ProfilePage() {
       <div className="relative px-4 pt-6 pb-4">
         <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-primary/8 to-transparent pointer-events-none" />
         <div className="flex items-center gap-4 relative z-10">
-          <div className="h-20 w-20 rounded-2xl p-[2px] shadow-lg shrink-0" style={{ background: "var(--gradient-primary)" }}>
-            <img src="https://i.pravatar.cc/150?u=me" alt="Alex Doe" className="h-full w-full rounded-[14px] object-cover bg-card" />
+          <div
+            className="h-20 w-20 rounded-2xl p-[2px] shadow-lg shrink-0"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            <img
+              src="https://i.pravatar.cc/150?u=me"
+              alt="Alex Doe"
+              className="h-full w-full rounded-[14px] object-cover bg-card"
+            />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="font-bold text-xl tracking-tight">Alex Doe</h2>
-            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5"><MapPin className="h-3.5 w-3.5 shrink-0" /> Kigali, Rwanda</p>
+            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
+              <MapPin className="h-3.5 w-3.5 shrink-0" /> Kigali, Rwanda
+            </p>
             <p className="text-xs text-muted-foreground mt-1">Member since Jan 2024</p>
           </div>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-3">
-          {[{ value: "24", label: "Events Attended" }, { value: "8", label: "Following" }, { value: "5", label: "Upcoming" }].map(({ value, label }) => (
-            <div key={label} className="bg-card rounded-2xl border border-border/40 p-3 text-center shadow-sm">
+          {[
+            { value: "24", label: "Events Attended" },
+            { value: "8", label: "Following" },
+            { value: "5", label: "Upcoming" },
+          ].map(({ value, label }) => (
+            <div
+              key={label}
+              className="bg-card rounded-2xl border border-border/40 p-3 text-center shadow-sm"
+            >
               <p className="font-bold text-xl">{value}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{label}</p>
             </div>
           ))}
         </div>
         <div className="flex gap-2 mt-4">
-          <Button variant="secondary" className="flex-1 h-9 text-sm font-semibold rounded-xl">Edit Profile</Button>
-          <Button variant="secondary" className="flex-1 h-9 text-sm font-semibold rounded-xl">Share</Button>
+          <Button variant="secondary" className="flex-1 h-9 text-sm font-semibold rounded-xl">
+            Edit Profile
+          </Button>
+          <Button variant="secondary" className="flex-1 h-9 text-sm font-semibold rounded-xl">
+            Share
+          </Button>
         </div>
       </div>
 
       {/* Favorite Categories */}
       <div className="px-4 mb-1">
-        <h3 className="font-bold text-sm mb-3 text-muted-foreground uppercase tracking-wider">Interests</h3>
+        <h3 className="font-bold text-sm mb-3 text-muted-foreground uppercase tracking-wider">
+          Interests
+        </h3>
         <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
           {favoriteCategories.map(({ label, icon: Icon, color, bg, border }) => (
-            <span key={label} className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border ${bg} ${border} ${color}`}>
+            <span
+              key={label}
+              className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border ${bg} ${border} ${color}`}
+            >
               <Icon className="h-4 w-4" />
               {label}
             </span>
@@ -284,16 +419,28 @@ function ProfilePage() {
 
       {/* Tabs */}
       <div className="flex border-b border-border/40 mt-4 px-4 gap-1">
-        {(["upcoming", "history", "following"] as Tab[]).map(t => (
+        {(["upcoming", "history", "following"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`flex-1 py-2.5 text-xs font-bold capitalize transition-all rounded-t-lg ${tab === t ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
           >
             <span className="flex items-center justify-center gap-1.5">
-              {t === "upcoming" && <><Ticket className="h-4 w-4" /> Upcoming</>}
-              {t === "history" && <><Calendar className="h-4 w-4" /> History</>}
-              {t === "following" && <><Heart className="h-4 w-4" /> Following</>}
+              {t === "upcoming" && (
+                <>
+                  <Ticket className="h-4 w-4" /> Upcoming
+                </>
+              )}
+              {t === "history" && (
+                <>
+                  <Calendar className="h-4 w-4" /> History
+                </>
+              )}
+              {t === "following" && (
+                <>
+                  <Heart className="h-4 w-4" /> Following
+                </>
+              )}
             </span>
           </button>
         ))}
@@ -302,9 +449,14 @@ function ProfilePage() {
       <div className="px-4 pt-4">
         {tab === "upcoming" && (
           <div className="space-y-4">
-            {upcomingTickets.map(t => <TicketCard key={t.id} ticket={t} />)}
-            
-            <Link to="/events" className="flex items-center justify-center gap-1 text-sm font-bold text-primary py-3">
+            {upcomingTickets.map((t) => (
+              <TicketCard key={t.id} ticket={t} />
+            ))}
+
+            <Link
+              to="/events"
+              className="flex items-center justify-center gap-1 text-sm font-bold text-primary py-3"
+            >
               Browse more events <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
@@ -312,25 +464,43 @@ function ProfilePage() {
 
         {tab === "history" && (
           <div className="space-y-3">
-            {pastEvents.map(event => <HistoryCard key={event.id} event={event} />)}
+            {pastEvents.map((event) => (
+              <HistoryCard key={event.id} event={event} />
+            ))}
           </div>
         )}
 
         {tab === "following" && (
           <div className="space-y-3">
-            {organizers.slice(0, 5).map(org => (
-              <div key={org.id} className="bg-card border border-border/40 rounded-2xl flex items-center gap-3 p-3 shadow-sm">
-                <img src={org.avatar} alt={org.name} className="h-12 w-12 rounded-full object-cover shrink-0 border border-border/40" />
+            {organizers.slice(0, 5).map((org) => (
+              <div
+                key={org.id}
+                className="bg-card border border-border/40 rounded-2xl flex items-center gap-3 p-3 shadow-sm"
+              >
+                <img
+                  src={org.avatar}
+                  alt={org.name}
+                  className="h-12 w-12 rounded-full object-cover shrink-0 border border-border/40"
+                />
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm">{org.name}</p>
-                  <p className="text-xs text-muted-foreground">@{org.handle} · {(org.followers / 1000).toFixed(1)}k followers</p>
+                  <p className="text-xs text-muted-foreground">
+                    @{org.handle} · {(org.followers / 1000).toFixed(1)}k followers
+                  </p>
                 </div>
-                <Button variant="secondary" size="sm" className="shrink-0 h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="shrink-0 h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1"
+                >
                   <Heart className="h-3 w-3 fill-primary text-primary" /> Following
                 </Button>
               </div>
             ))}
-            <Link to="/organizers" className="flex items-center justify-center gap-1 text-sm font-bold text-primary py-3">
+            <Link
+              to="/organizers"
+              className="flex items-center justify-center gap-1 text-sm font-bold text-primary py-3"
+            >
               Discover more organizers <ChevronRight className="h-4 w-4" />
             </Link>
           </div>

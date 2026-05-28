@@ -6,7 +6,10 @@ export const Route = createFileRoute("/create-event")({
   head: () => ({
     meta: [
       { title: "Create event — Agatike" },
-      { name: "description", content: "Publish your event in minutes: tickets, venue, merchandise and VIP." },
+      {
+        name: "description",
+        content: "Publish your event in minutes: tickets, venue, merchandise and VIP.",
+      },
     ],
   }),
   component: CreateEventRoute,

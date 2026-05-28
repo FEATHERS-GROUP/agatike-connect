@@ -54,10 +54,12 @@ function OrganizersPage() {
         <h2 className="text-xl font-bold">{org.name}</h2>
         <CheckCircle2 className="h-5 w-5 text-primary fill-primary/20" />
       </div>
-      <p className="text-sm font-medium text-muted-foreground mb-4">@{org.handle} • {(org.followers / 1000).toFixed(1)}k followers</p>
-      
+      <p className="text-sm font-medium text-muted-foreground mb-4">
+        @{org.handle} • {(org.followers / 1000).toFixed(1)}k followers
+      </p>
+
       <p className="text-center text-sm mb-6 max-w-xs">{org.bio}</p>
-      
+
       <div className="flex gap-4 w-full justify-center mb-6">
         <Button variant="outline" size="icon" className="rounded-full" asChild>
           <a href={org.twitterUrl} target="_blank" rel="noopener noreferrer">
@@ -71,7 +73,10 @@ function OrganizersPage() {
         </Button>
       </div>
 
-      <Button className="w-full max-w-xs rounded-full font-bold shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+      <Button
+        className="w-full max-w-xs rounded-full font-bold shadow-[var(--shadow-glow)]"
+        style={{ background: "var(--gradient-primary)" }}
+      >
         Follow
       </Button>
     </div>
@@ -79,13 +84,18 @@ function OrganizersPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none">
-      <div className="hidden md:block"><Navbar /></div>
+      <div className="hidden md:block">
+        <Navbar />
+      </div>
 
       {/* Mobile Header */}
       <div className="md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search organizers..." className="pl-9 rounded-full bg-secondary/60 border-transparent text-sm h-10" />
+          <Input
+            placeholder="Search organizers..."
+            className="pl-9 rounded-full bg-secondary/60 border-transparent text-sm h-10"
+          />
         </div>
       </div>
 
@@ -93,24 +103,36 @@ function OrganizersPage() {
         <header className="hidden md:flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">Popular Organizers</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Discover and follow Africa's best creators and venues.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Discover and follow Africa's best creators and venues.
+            </p>
           </div>
         </header>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
           {organizers.map((org) => (
-            <div 
-              key={org.id} 
+            <div
+              key={org.id}
               onClick={() => handleOrgClick(org)}
               className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-1 cursor-pointer flex flex-col items-center text-center"
             >
               <div className="relative h-20 w-20 mb-3 rounded-full overflow-hidden border border-border/40">
                 <img src={org.avatar} alt={org.name} className="w-full h-full object-cover" />
               </div>
-              <h3 className="font-semibold text-sm leading-tight line-clamp-1 w-full">{org.name}</h3>
-              <p className="text-xs text-muted-foreground mt-1">{(org.followers / 1000).toFixed(1)}k followers</p>
-              
-              <Button className="w-full mt-4 rounded-full text-xs font-semibold h-8 shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }} onClick={(e) => { e.stopPropagation(); }}>
+              <h3 className="font-semibold text-sm leading-tight line-clamp-1 w-full">
+                {org.name}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                {(org.followers / 1000).toFixed(1)}k followers
+              </p>
+
+              <Button
+                className="w-full mt-4 rounded-full text-xs font-semibold h-8 shadow-[var(--shadow-glow)]"
+                style={{ background: "var(--gradient-primary)" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
                 Follow
               </Button>
             </div>
@@ -118,7 +140,9 @@ function OrganizersPage() {
         </div>
       </div>
 
-      <div className="hidden md:block"><Footer /></div>
+      <div className="hidden md:block">
+        <Footer />
+      </div>
 
       {/* Profile Modals */}
       {isMobile ? (

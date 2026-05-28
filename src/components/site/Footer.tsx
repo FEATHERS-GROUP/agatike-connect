@@ -4,15 +4,31 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-6 py-14 grid gap-10 md:grid-cols-5">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground font-bold" style={{ background: "var(--gradient-primary)" }}>A</div>
+            <div
+              className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground font-bold"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              A
+            </div>
             <span className="text-lg font-semibold">Agatike</span>
           </div>
           <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-            Africa's premium social event platform. Discover, share and live the moments that matter.
+            Africa's premium social event platform. Discover, share and live the moments that
+            matter.
           </p>
           <div className="mt-5 flex gap-3 text-sm">
-            <a className="rounded-full border border-border bg-background px-4 py-2 hover:bg-secondary transition" href="#">App Store</a>
-            <a className="rounded-full border border-border bg-background px-4 py-2 hover:bg-secondary transition" href="#">Google Play</a>
+            <a
+              className="rounded-full border border-border bg-background px-4 py-2 hover:bg-secondary transition"
+              href="#"
+            >
+              App Store
+            </a>
+            <a
+              className="rounded-full border border-border bg-background px-4 py-2 hover:bg-secondary transition"
+              href="#"
+            >
+              Google Play
+            </a>
           </div>
         </div>
         {[
@@ -24,7 +40,11 @@ export function Footer() {
             <p className="text-sm font-semibold">{col.title}</p>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               {col.links.map((l) => (
-                <li key={l}><a href="#" className="hover:text-foreground transition">{l}</a></li>
+                <li key={l}>
+                  <a href="#" className="hover:text-foreground transition">
+                    {l}
+                  </a>
+                </li>
               ))}
             </ul>
           </div>

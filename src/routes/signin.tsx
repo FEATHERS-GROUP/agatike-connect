@@ -11,7 +11,10 @@ export const Route = createFileRoute("/signin")({
   head: () => ({
     meta: [
       { title: "Sign in — Agatike" },
-      { name: "description", content: "Sign in to discover events, save tickets and follow organizers." },
+      {
+        name: "description",
+        content: "Sign in to discover events, save tickets and follow organizers.",
+      },
     ],
   }),
   component: SignIn,
@@ -39,8 +42,12 @@ function SignIn() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-10 text-white">
             <p className="text-sm opacity-80">Africa's premium social event platform</p>
-            <h2 className="mt-2 text-3xl font-semibold leading-tight">Where the culture meets the calendar.</h2>
-            <p className="mt-3 text-sm opacity-80">Sign in to save events, follow organizers and unlock VIP drops.</p>
+            <h2 className="mt-2 text-3xl font-semibold leading-tight">
+              Where the culture meets the calendar.
+            </h2>
+            <p className="mt-3 text-sm opacity-80">
+              Sign in to save events, follow organizers and unlock VIP drops.
+            </p>
           </div>
         </div>
 
@@ -48,12 +55,21 @@ function SignIn() {
         <div className="mx-auto w-full max-w-md">
           <div className="rounded-3xl border border-border/60 bg-card p-8 shadow-[var(--shadow-card)]">
             <div className="flex items-center gap-2">
-              <div className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground font-bold" style={{ background: "var(--gradient-primary)" }}>A</div>
+              <div
+                className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground font-bold"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                A
+              </div>
               <span className="text-lg font-semibold">Agatike</span>
             </div>
-            <h1 className="mt-6 text-2xl font-semibold tracking-tight">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
+            <h1 className="mt-6 text-2xl font-semibold tracking-tight">
+              {mode === "signin" ? "Welcome back" : "Create your account"}
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {mode === "signin" ? "Sign in to keep the culture moving." : "Join thousands discovering events across Africa."}
+              {mode === "signin"
+                ? "Sign in to keep the culture moving."
+                : "Join thousands discovering events across Africa."}
             </p>
 
             <div className="mt-6 grid grid-cols-2 gap-2">
@@ -67,7 +83,8 @@ function SignIn() {
             </div>
 
             <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="h-px flex-1 bg-border" /> or with email <span className="h-px flex-1 bg-border" />
+              <span className="h-px flex-1 bg-border" /> or with email{" "}
+              <span className="h-px flex-1 bg-border" />
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4">
@@ -81,24 +98,50 @@ function SignIn() {
                 <Label htmlFor="email">Email</Label>
                 <div className="relative mt-1">
                   <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input id="email" required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@agatike.com" className="pl-9" />
+                  <Input
+                    id="email"
+                    required
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@agatike.com"
+                    className="pl-9"
+                  />
                 </div>
               </div>
               <div>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="pw">Password</Label>
-                  {mode === "signin" && <button type="button" className="text-xs text-primary hover:underline">Forgot?</button>}
+                  {mode === "signin" && (
+                    <button type="button" className="text-xs text-primary hover:underline">
+                      Forgot?
+                    </button>
+                  )}
                 </div>
                 <div className="relative mt-1">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input id="pw" required type={showPw ? "text" : "password"} placeholder="••••••••" className="pl-9 pr-10" />
-                  <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <Input
+                    id="pw"
+                    required
+                    type={showPw ? "text" : "password"}
+                    placeholder="••••••••"
+                    className="pl-9 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw(!showPw)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
 
-              <Button type="submit" className="h-11 w-full rounded-xl shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+              <Button
+                type="submit"
+                className="h-11 w-full rounded-xl shadow-[var(--shadow-glow)]"
+                style={{ background: "var(--gradient-primary)" }}
+              >
                 {mode === "signin" ? "Sign in" : "Create account"}
               </Button>
 
@@ -111,13 +154,24 @@ function SignIn() {
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
               {mode === "signin" ? "New to Agatike?" : "Already have an account?"}{" "}
-              <button onClick={() => setMode(mode === "signin" ? "signup" : "signin")} className="font-medium text-primary hover:underline">
+              <button
+                onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                className="font-medium text-primary hover:underline"
+              >
                 {mode === "signin" ? "Create an account" : "Sign in"}
               </button>
             </p>
           </div>
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            By continuing you agree to our <Link to="/" className="underline">Terms</Link> and <Link to="/" className="underline">Privacy</Link>.
+            By continuing you agree to our{" "}
+            <Link to="/" className="underline">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link to="/" className="underline">
+              Privacy
+            </Link>
+            .
           </p>
         </div>
       </div>

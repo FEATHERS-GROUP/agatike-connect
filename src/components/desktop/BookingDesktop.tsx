@@ -10,7 +10,8 @@ import { events, experiences } from "@/lib/mock-data";
 
 export function BookingDesktop({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
-  const event = events.find((e) => e.id === eventId) || experiences.find((x) => x.id === eventId) || events[0];
+  const event =
+    events.find((e) => e.id === eventId) || experiences.find((x) => x.id === eventId) || events[0];
   const [paymentMethod, setPaymentMethod] = useState("apple");
   const [processing, setProcessing] = useState(false);
 
@@ -26,16 +27,20 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       <Navbar />
 
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <Link to="/events/$eventId" params={{ eventId }} className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-8">
+        <Link
+          to="/events/$eventId"
+          params={{ eventId }}
+          className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-8"
+        >
           <ChevronLeft className="mr-1 h-4 w-4" /> Back to event
         </Link>
-        
+
         <div className="grid lg:grid-cols-[1fr_400px] gap-12">
           {/* Left Column: Form & Payment */}
           <div className="space-y-10">
             <div>
               <h1 className="text-3xl font-bold mb-6">Checkout</h1>
-              
+
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold">Contact Information</h2>
                 <div className="grid grid-cols-2 gap-4">
@@ -61,12 +66,14 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
             <div className="pt-8 border-t border-border/40">
               <h2 className="text-xl font-semibold mb-6">Payment Method</h2>
-              
+
               <div className="grid gap-4">
                 <button
                   onClick={() => setPaymentMethod("apple")}
                   className={`flex items-center gap-4 p-5 rounded-2xl border transition-all ${
-                    paymentMethod === "apple" ? "border-primary bg-primary/5" : "border-border/60 hover:bg-secondary/40"
+                    paymentMethod === "apple"
+                      ? "border-primary bg-primary/5"
+                      : "border-border/60 hover:bg-secondary/40"
                   }`}
                 >
                   <div className="h-12 w-12 bg-foreground text-background rounded-full flex items-center justify-center shrink-0">
@@ -76,15 +83,21 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                     <p className="font-semibold text-lg">Apple Pay</p>
                     <p className="text-sm text-muted-foreground">Fast, secure checkout</p>
                   </div>
-                  <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === "apple" ? "border-primary" : "border-muted-foreground"}`}>
-                    {paymentMethod === "apple" && <div className="h-3 w-3 rounded-full bg-primary" />}
+                  <div
+                    className={`h-6 w-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === "apple" ? "border-primary" : "border-muted-foreground"}`}
+                  >
+                    {paymentMethod === "apple" && (
+                      <div className="h-3 w-3 rounded-full bg-primary" />
+                    )}
                   </div>
                 </button>
 
                 <button
                   onClick={() => setPaymentMethod("card")}
                   className={`flex items-center gap-4 p-5 rounded-2xl border transition-all ${
-                    paymentMethod === "card" ? "border-primary bg-primary/5" : "border-border/60 hover:bg-secondary/40"
+                    paymentMethod === "card"
+                      ? "border-primary bg-primary/5"
+                      : "border-border/60 hover:bg-secondary/40"
                   }`}
                 >
                   <div className="h-12 w-12 bg-secondary rounded-full flex items-center justify-center shrink-0">
@@ -94,8 +107,12 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                     <p className="font-semibold text-lg">Credit Card</p>
                     <p className="text-sm text-muted-foreground">Visa, Mastercard, Amex</p>
                   </div>
-                  <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === "card" ? "border-primary" : "border-muted-foreground"}`}>
-                    {paymentMethod === "card" && <div className="h-3 w-3 rounded-full bg-primary" />}
+                  <div
+                    className={`h-6 w-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === "card" ? "border-primary" : "border-muted-foreground"}`}
+                  >
+                    {paymentMethod === "card" && (
+                      <div className="h-3 w-3 rounded-full bg-primary" />
+                    )}
                   </div>
                 </button>
 
@@ -121,7 +138,9 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                 <button
                   onClick={() => setPaymentMethod("momo")}
                   className={`flex items-center gap-4 p-5 rounded-2xl border transition-all ${
-                    paymentMethod === "momo" ? "border-primary bg-primary/5" : "border-border/60 hover:bg-secondary/40"
+                    paymentMethod === "momo"
+                      ? "border-primary bg-primary/5"
+                      : "border-border/60 hover:bg-secondary/40"
                   }`}
                 >
                   <div className="h-12 w-12 bg-yellow-500 text-yellow-950 rounded-full flex items-center justify-center shrink-0">
@@ -131,8 +150,12 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                     <p className="font-semibold text-lg">Mobile Money</p>
                     <p className="text-sm text-muted-foreground">MTN MoMo, Airtel Money</p>
                   </div>
-                  <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === "momo" ? "border-primary" : "border-muted-foreground"}`}>
-                    {paymentMethod === "momo" && <div className="h-3 w-3 rounded-full bg-primary" />}
+                  <div
+                    className={`h-6 w-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === "momo" ? "border-primary" : "border-muted-foreground"}`}
+                  >
+                    {paymentMethod === "momo" && (
+                      <div className="h-3 w-3 rounded-full bg-primary" />
+                    )}
                   </div>
                 </button>
               </div>
@@ -143,19 +166,24 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           <div>
             <div className="sticky top-24 rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
               <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
-              
+
               <div className="flex gap-4 mb-6">
                 <img src={event.cover} className="h-24 w-20 rounded-xl object-cover" />
                 <div className="flex flex-col">
                   <h3 className="font-semibold leading-tight">{event.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{(event as any).date} • {(event as any).venue || (event as any).city}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {(event as any).date} • {(event as any).venue || (event as any).city}
+                  </p>
                 </div>
               </div>
 
               <div className="space-y-4 text-sm border-y border-border/60 py-4 mb-4">
                 <div className="flex justify-between items-center">
                   <span>1x General Admission</span>
-                  <span className="font-medium">{event.currency || '$'}{event.price || 25}</span>
+                  <span className="font-medium">
+                    {event.currency || "$"}
+                    {event.price || 25}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center text-muted-foreground">
                   <span>Service Fee</span>
@@ -165,16 +193,21 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
               <div className="flex justify-between items-end mb-8">
                 <span className="font-semibold">Total</span>
-                <span className="text-2xl font-bold">{event.currency || '$'}{(event.price || 25) + 2.50}</span>
+                <span className="text-2xl font-bold">
+                  {event.currency || "$"}
+                  {(event.price || 25) + 2.5}
+                </span>
               </div>
 
-              <Button 
+              <Button
                 onClick={handleCheckout}
                 disabled={processing}
-                className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide mb-4" 
+                className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide mb-4"
                 style={{ background: "var(--gradient-primary)" }}
               >
-                {processing ? "Processing..." : `Pay ${event.currency || '$'}${(event.price || 25) + 2.50}`}
+                {processing
+                  ? "Processing..."
+                  : `Pay ${event.currency || "$"}${(event.price || 25) + 2.5}`}
               </Button>
 
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
