@@ -1,0 +1,43 @@
+import { Link } from "@tanstack/react-router";
+import { Search, Plus, Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+export function Navbar() {
+  return (
+    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/70 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground font-bold" style={{ background: "var(--gradient-primary)" }}>
+            A
+          </div>
+          <span className="text-lg font-semibold tracking-tight">Agatike</span>
+        </Link>
+
+        <nav className="ml-6 hidden items-center gap-6 md:flex text-sm text-muted-foreground">
+          <Link to="/" activeOptions={{ exact: true }} className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Explore</Link>
+          <Link to="/" className="hover:text-foreground transition-colors">Events</Link>
+          <Link to="/" className="hover:text-foreground transition-colors">Experiences</Link>
+          <Link to="/" className="hover:text-foreground transition-colors">Organizers</Link>
+          <Link to="/feed" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Stories</Link>
+          <Link to="/dashboard" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Dashboard</Link>
+        </nav>
+
+        <div className="ml-auto hidden flex-1 max-w-sm md:block">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Search events, cities, organizers" className="pl-9 rounded-full bg-secondary/60 border-transparent focus-visible:bg-background" />
+          </div>
+        </div>
+
+        <div className="ml-auto flex items-center gap-2 md:ml-2">
+          <Button variant="ghost" className="hidden sm:inline-flex">Sign in</Button>
+          <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+            <Plus className="mr-1 h-4 w-4" /> Create event
+          </Button>
+          <Button variant="ghost" size="icon" className="md:hidden"><Menu /></Button>
+        </div>
+      </div>
+    </header>
+  );
+}
