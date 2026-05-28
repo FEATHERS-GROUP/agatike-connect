@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Settings, Ticket, Star, MapPin, Calendar, ChevronRight,
-  Heart, QrCode, Clock, Bell, Trophy, Flame, Zap,
+  Heart, QrCode, Clock, Bell, Trophy, Flame, Zap, Music, Film, Mic,
+  ScanLine,
 } from "lucide-react";
-import { events, organizers } from "@/lib/mock-data";
+import { events, organizers, movies, experiences } from "@/lib/mock-data";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/site/Navbar";
@@ -19,12 +20,49 @@ export const Route = createFileRoute("/profile")({
   component: ProfilePage,
 });
 
-const upcomingTickets = events.slice(0, 2).map((e, i) => ({
-  ...e,
-  ticketType: i === 0 ? "VIP" : "General",
-  seat: i === 0 ? "Section A · Row 3 · Seat 12" : "Standing",
-  orderId: `AGT-${1000 + i}`,
-}));
+export const upcomingTickets = [
+  {
+    ...events[0],
+    id: "t1",
+    ticketCategory: "event",
+    ticketType: "VIP",
+    seat: "Section A · Row 3 · Seat 12",
+    orderId: "AGT-1000",
+  },
+  {
+    ...movies[0],
+    id: "t2",
+    ticketCategory: "movie",
+    ticketType: "Standard",
+    seat: "Row H · Seat 4",
+    orderId: "AGT-1001",
+  },
+  {
+    ...experiences[0],
+    id: "t3",
+    ticketCategory: "experience",
+    ticketType: "Pass",
+    seat: "General Admission",
+    orderId: "AGT-1002",
+  },
+  {
+    ...events[2], // "Africa Tech Summit"
+    id: "t4",
+    ticketCategory: "conference",
+    ticketType: "Attendee",
+    seat: "All Access",
+    orderId: "AGT-1003",
+  },
+  {
+    ...events[4], // Free Fest
+    id: "t5",
+    price: 0,
+    ticketCategory: "free",
+    ticketType: "Guest",
+    seat: "RSVP",
+    orderId: "AGT-1004",
+  }
+] as any[];
 
 const pastEvents = events.slice(2, 6).map((e, i) => ({
   ...e,
@@ -32,19 +70,20 @@ const pastEvents = events.slice(2, 6).map((e, i) => ({
   rated: i % 2 === 0,
 }));
 
-const badges = [
-  { icon: Flame, label: "Early Bird", color: "text-orange-400", bg: "bg-orange-400/10" },
-  { icon: Trophy, label: "Super Fan", color: "text-yellow-400", bg: "bg-yellow-400/10" },
-  { icon: Zap, label: "VIP Club", color: "text-primary", bg: "bg-primary/10" },
-  { icon: Star, label: "Top Rater", color: "text-blue-400", bg: "bg-blue-400/10" },
+// Mock user favorite categories
+const favoriteCategories = [
+  { label: "Music", icon: Music, color: "text-purple-500", bg: "bg-purple-500/10", border: "border-purple-500/20" },
+  { label: "Sports", icon: Trophy, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+  { label: "Cinema", icon: Film, color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20" },
+  { label: "Conferences", icon: Mic, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
 ];
 
 type Tab = "upcoming" | "history" | "following";
 
-/* ─── Shared sub-components ─── */
-function TicketCard({ ticket }: { ticket: typeof upcomingTickets[0] }) {
+/* ─── Ticket Components ─── */
+function TicketCard({ ticket }: { ticket: any }) {
   return (
-    <Link to="/events/$eventId" params={{ eventId: ticket.id }} className="block rounded-3xl overflow-hidden border border-border/60 bg-card shadow-[var(--shadow-card)] hover:-translate-y-1 transition-transform">
+    <Link to="/ticket/$ticketId" params={{ ticketId: ticket.id }} className="block rounded-3xl overflow-hidden border border-border/60 bg-card shadow-[var(--shadow-card)] hover:-translate-y-1 transition-transform">
       <div className="relative h-40">
         <img src={ticket.cover} alt={ticket.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
@@ -70,6 +109,9 @@ function TicketCard({ ticket }: { ticket: typeof upcomingTickets[0] }) {
   );
 }
 
+
+
+/* ─── History Card ─── */
 function HistoryCard({ event }: { event: typeof pastEvents[0] }) {
   return (
     <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] flex gap-3 p-3">
@@ -112,7 +154,7 @@ function ProfilePage() {
             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1"><MapPin className="h-3.5 w-3.5" /> Kigali, Rwanda</p>
             <p className="text-xs text-muted-foreground mt-1">Member since Jan 2024</p>
             <div className="grid grid-cols-3 gap-3 w-full mt-5">
-              {[{ v: "24", l: "Attended" }, { v: "8", l: "Following" }, { v: "3", l: "Upcoming" }].map(({ v, l }) => (
+              {[{ v: "24", l: "Attended" }, { v: "8", l: "Following" }, { v: "5", l: "Upcoming" }].map(({ v, l }) => (
                 <div key={l} className="bg-secondary/60 rounded-xl p-2.5 text-center">
                   <p className="font-bold text-base">{v}</p>
                   <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{l}</p>
@@ -125,15 +167,15 @@ function ProfilePage() {
             </div>
           </div>
 
-          {/* Badges */}
+          {/* Favorite Categories */}
           <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
-            <p className="font-bold text-sm mb-4">Achievements</p>
-            <div className="grid grid-cols-2 gap-2">
-              {badges.map(({ icon: Icon, label, color, bg }) => (
-                <div key={label} className={`flex items-center gap-2 rounded-xl p-2.5 ${bg}`}>
-                  <Icon className={`h-5 w-5 shrink-0 ${color}`} />
-                  <span className="text-xs font-semibold">{label}</span>
-                </div>
+            <p className="font-bold text-sm mb-4">Interests</p>
+            <div className="flex flex-wrap gap-2">
+              {favoriteCategories.map(({ label, icon: Icon, color, bg, border }) => (
+                <span key={label} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${bg} ${border} ${color}`}>
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </span>
               ))}
             </div>
           </div>
@@ -166,7 +208,7 @@ function ProfilePage() {
               <h2 className="text-xl font-bold flex items-center gap-2"><Ticket className="h-5 w-5 text-primary" /> Upcoming Tickets</h2>
               <Link to="/events" className="text-sm text-primary font-bold flex items-center gap-1">Browse events <ChevronRight className="h-4 w-4" /></Link>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 items-start">
               {upcomingTickets.map(t => <TicketCard key={t.id} ticket={t} />)}
             </div>
           </section>
@@ -214,7 +256,7 @@ function ProfilePage() {
           </div>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-3">
-          {[{ value: "24", label: "Events Attended" }, { value: "8", label: "Following" }, { value: "3", label: "Upcoming" }].map(({ value, label }) => (
+          {[{ value: "24", label: "Events Attended" }, { value: "8", label: "Following" }, { value: "5", label: "Upcoming" }].map(({ value, label }) => (
             <div key={label} className="bg-card rounded-2xl border border-border/40 p-3 text-center shadow-sm">
               <p className="font-bold text-xl">{value}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{label}</p>
@@ -227,15 +269,15 @@ function ProfilePage() {
         </div>
       </div>
 
-      {/* Badges */}
+      {/* Favorite Categories */}
       <div className="px-4 mb-1">
-        <h3 className="font-bold text-sm mb-3 text-muted-foreground uppercase tracking-wider">Achievements</h3>
-        <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
-          {badges.map(({ icon: Icon, label, color, bg }) => (
-            <div key={label} className={`shrink-0 flex flex-col items-center gap-1.5 rounded-2xl border border-border/40 p-3 w-20 text-center ${bg}`}>
-              <Icon className={`h-6 w-6 ${color}`} />
-              <span className="text-[10px] font-semibold leading-tight">{label}</span>
-            </div>
+        <h3 className="font-bold text-sm mb-3 text-muted-foreground uppercase tracking-wider">Interests</h3>
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+          {favoriteCategories.map(({ label, icon: Icon, color, bg, border }) => (
+            <span key={label} className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border ${bg} ${border} ${color}`}>
+              <Icon className="h-4 w-4" />
+              {label}
+            </span>
           ))}
         </div>
       </div>
@@ -259,35 +301,9 @@ function ProfilePage() {
 
       <div className="px-4 pt-4">
         {tab === "upcoming" && (
-          <div className="space-y-3">
-            {upcomingTickets.map(t => (
-              <Link key={t.id} to="/events/$eventId" params={{ eventId: t.id }} className="block">
-                <div className="bg-card border border-border/40 rounded-3xl overflow-hidden shadow-sm">
-                  <div className="relative h-28 overflow-hidden">
-                    <img src={t.cover} alt={t.title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    <span className="absolute bottom-3 left-4 text-white font-bold text-base leading-tight">{t.title}</span>
-                    <span className={`absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${t.ticketType === "VIP" ? "bg-primary text-primary-foreground shadow-lg" : "bg-white/20 text-white backdrop-blur-sm"}`}>{t.ticketType}</span>
-                  </div>
-                  <div className="px-4 py-3">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                      <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {t.date}</span>
-                      <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {t.time}</span>
-                      <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {t.city}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-muted-foreground">{t.seat}</p>
-                        <p className="text-xs font-mono text-primary mt-0.5">{t.orderId}</p>
-                      </div>
-                      <Button size="sm" className="h-8 px-3 rounded-full text-xs font-bold shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
-                        <QrCode className="h-3.5 w-3.5 mr-1" /> Show Ticket
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
+          <div className="space-y-4">
+            {upcomingTickets.map(t => <TicketCard key={t.id} ticket={t} />)}
+            
             <Link to="/events" className="flex items-center justify-center gap-1 text-sm font-bold text-primary py-3">
               Browse more events <ChevronRight className="h-4 w-4" />
             </Link>
