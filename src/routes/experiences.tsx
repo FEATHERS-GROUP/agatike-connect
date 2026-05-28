@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { MapPin, Clock, Users, Star, Mountain } from "lucide-react";
+import { MapPin, Clock, Users, Star, Mountain, ArrowLeft } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
@@ -24,12 +24,22 @@ function Experiences() {
   const [cat, setCat] = useState<(typeof cats)[number]>("All");
   const list = useMemo(() => (cat === "All" ? experiences : experiences.filter((e) => e.category === cat)), [cat]);
 
+  const router = useRouter();
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+    <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none">
+      <div className="hidden md:block"><Navbar /></div>
+
+      {/* Mobile Header */}
+      <div className="md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center gap-3">
+        <button onClick={() => router.history.back()} className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground">
+          <ArrowLeft className="h-6 w-6" />
+        </button>
+        <h1 className="font-bold text-lg tracking-tight">Experiences</h1>
+      </div>
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden hidden md:block">
         <div className="absolute inset-0" style={{ background: "var(--gradient-warm)" }} />
         <div className="relative mx-auto max-w-7xl px-6 py-16 text-primary-foreground md:py-24">
           <span className="inline-flex items-center gap-2 rounded-full bg-background/15 px-3 py-1 text-xs backdrop-blur"><Mountain className="h-3.5 w-3.5" /> Outdoor & active</span>
@@ -38,10 +48,10 @@ function Experiences() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="flex flex-wrap gap-2">
+      <div className="mx-auto max-w-7xl px-4 md:px-6 py-4 md:py-10">
+        <div className="flex overflow-x-auto hide-scrollbar gap-2 pb-2">
           {cats.map((c) => (
-            <button key={c} onClick={() => setCat(c)} className={`rounded-full border px-4 py-1.5 text-sm transition ${cat === c ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground hover:bg-secondary"}`}>{c}</button>
+            <button key={c} onClick={() => setCat(c)} className={`rounded-full border px-4 py-1.5 text-sm shrink-0 transition ${cat === c ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground hover:bg-secondary"}`}>{c}</button>
           ))}
         </div>
 
@@ -75,7 +85,7 @@ function Experiences() {
           ))}
         </div>
       </div>
-      <Footer />
+      <div className="hidden md:block"><Footer /></div>
     </div>
   );
 }
