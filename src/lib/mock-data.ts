@@ -4,6 +4,11 @@ import e3 from "@/assets/event-3.jpg";
 import e4 from "@/assets/event-4.jpg";
 import e5 from "@/assets/event-5.jpg";
 import e6 from "@/assets/event-6.jpg";
+import expHiking from "@/assets/exp-hiking.jpg";
+import expRunning from "@/assets/exp-running.jpg";
+import expSurf from "@/assets/exp-surf.jpg";
+import movie1 from "@/assets/movie-1.jpg";
+import movie2 from "@/assets/movie-2.jpg";
 
 export const eventImages = [e1, e2, e3, e4, e5, e6];
 
@@ -146,6 +151,193 @@ export const stories = [
   { id: "6", name: "BAL", cover: e6 },
   { id: "7", name: "Afrochella", cover: e1 },
   { id: "8", name: "Lagos Live", cover: e2 },
+];
+
+export const movieStories = [
+  { id: "m1", name: "Silverbird", cover: movie1 },
+  { id: "m2", name: "Genesis Cinemas", cover: movie2 },
+  { id: "m3", name: "Filmhouse", cover: movie1 },
+  { id: "m4", name: "Ster-Kinekor", cover: movie2 },
+  { id: "m5", name: "Prestige IMAX", cover: movie1 },
+  { id: "m6", name: "Nu Metro", cover: movie2 },
+];
+
+export type Experience = {
+  id: string;
+  title: string;
+  host: string;
+  city: string;
+  category: "Hiking" | "Running" | "Surf" | "Wellness" | "Food";
+  duration: string;
+  date: string;
+  price: number;
+  cover: string;
+  rating: number;
+  spots: number;
+  description: string;
+};
+
+export const experiences: Experience[] = [
+  {
+    id: "mount-meru-sunrise",
+    title: "Mount Meru Sunrise Hike",
+    host: "Trail Tribe",
+    city: "Arusha, TZ",
+    category: "Hiking",
+    duration: "6h",
+    date: "Every Sat",
+    price: 45,
+    cover: expHiking,
+    rating: 4.9,
+    spots: 12,
+    description: "Pre-dawn hike to catch the sunrise over Mount Meru. Guides, breakfast and shuttle included.",
+  },
+  {
+    id: "lagos-run-club",
+    title: "Lagos Run Club — Sunday Long Run",
+    host: "Run LDN-LOS",
+    city: "Lagos, NG",
+    category: "Running",
+    duration: "1.5h",
+    date: "Every Sun",
+    price: 0,
+    cover: expRunning,
+    rating: 4.8,
+    spots: 80,
+    description: "Weekly 10K social run along Lekki. All paces welcome — pacers up to 7:30/km.",
+  },
+  {
+    id: "dakar-kite-camp",
+    title: "Dakar Kitesurf Day Camp",
+    host: "North Coast Wind",
+    city: "Dakar, SN",
+    category: "Surf",
+    duration: "1 day",
+    date: "Fri–Sun",
+    price: 95,
+    cover: expSurf,
+    rating: 4.9,
+    spots: 8,
+    description: "Full-day kitesurf session with gear, instructor and lunch at the lagoon.",
+  },
+  {
+    id: "kilimanjaro-trek",
+    title: "Kilimanjaro 7-Day Trek",
+    host: "Summit Co.",
+    city: "Moshi, TZ",
+    category: "Hiking",
+    duration: "7 days",
+    date: "Aug 10",
+    price: 1850,
+    cover: expHiking,
+    rating: 5.0,
+    spots: 14,
+    description: "Machame route, certified guides, all permits, gear and camp meals included.",
+  },
+  {
+    id: "nairobi-trail-runners",
+    title: "Nairobi Trail Runners",
+    host: "Karura Crew",
+    city: "Nairobi, KE",
+    category: "Running",
+    duration: "2h",
+    date: "Every Wed",
+    price: 0,
+    cover: expRunning,
+    rating: 4.9,
+    spots: 60,
+    description: "Mid-week trail session in Karura forest. Bring trail shoes.",
+  },
+  {
+    id: "zanzibar-wellness-retreat",
+    title: "Zanzibar Sunrise Yoga",
+    host: "Indian Ocean Wellness",
+    city: "Zanzibar, TZ",
+    category: "Wellness",
+    duration: "1.5h",
+    date: "Daily",
+    price: 18,
+    cover: expSurf,
+    rating: 4.7,
+    spots: 20,
+    description: "Beachfront vinyasa flow at sunrise, with fresh juice after class.",
+  },
+];
+
+export type Movie = {
+  id: string;
+  title: string;
+  genre: string;
+  rating: string;
+  duration: string;
+  cinema: string;
+  city: string;
+  cover: string;
+  showtimes: string[];
+  price: number;
+  synopsis: string;
+};
+
+export const movies: Movie[] = [
+  {
+    id: "the-gilded-age",
+    title: "The Gilded Age",
+    genre: "Drama · Crime",
+    rating: "PG-13",
+    duration: "2h 14m",
+    cinema: "Silverbird Galleria",
+    city: "Lagos, NG",
+    cover: movie2,
+    showtimes: ["12:30", "15:45", "18:30", "21:15"],
+    price: 8,
+    synopsis: "A young accountant uncovers a conspiracy at the heart of Africa's biggest banking dynasty.",
+  },
+  {
+    id: "after-the-rains",
+    title: "After the Rains",
+    genre: "Romance · Drama",
+    rating: "PG",
+    duration: "1h 48m",
+    cinema: "Genesis Cinemas",
+    city: "Accra, GH",
+    cover: movie1,
+    showtimes: ["14:00", "17:00", "20:00"],
+    price: 7,
+    synopsis: "Two strangers, one monsoon, and a city that won't let them say goodbye.",
+  },
+  {
+    id: "lions-of-the-sahel",
+    title: "Lions of the Sahel",
+    genre: "Action · Thriller",
+    rating: "R",
+    duration: "2h 02m",
+    cinema: "Filmhouse IMAX",
+    city: "Abuja, NG",
+    cover: movie2,
+    showtimes: ["11:00", "14:30", "18:00", "21:45"],
+    price: 10,
+    synopsis: "An elite rangers unit takes on a poaching syndicate across three borders.",
+  },
+  {
+    id: "summer-on-eko",
+    title: "Summer on Eko",
+    genre: "Comedy",
+    rating: "PG-13",
+    duration: "1h 36m",
+    cinema: "Nu Metro V&A",
+    city: "Cape Town, ZA",
+    cover: movie1,
+    showtimes: ["13:15", "16:00", "19:30"],
+    price: 7,
+    synopsis: "Three cousins, one rented beach house, and the worst-best summer of their lives.",
+  },
+];
+
+export const cinemas = [
+  { id: "silverbird", name: "Silverbird Galleria", city: "Lagos, NG", screens: 8, image: movie1 },
+  { id: "genesis", name: "Genesis Cinemas", city: "Accra, GH", screens: 6, image: movie2 },
+  { id: "filmhouse", name: "Filmhouse IMAX", city: "Abuja, NG", screens: 10, image: movie1 },
+  { id: "numetro", name: "Nu Metro V&A", city: "Cape Town, ZA", screens: 12, image: movie2 },
 ];
 
 export const feedPosts = events.map((ev, i) => ({
