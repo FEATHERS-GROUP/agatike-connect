@@ -165,6 +165,80 @@ export const categories = [
   "Experiences",
 ];
 
+export type Organizer = {
+  id: string;
+  name: string;
+  handle: string;
+  avatar: string;
+  bio: string;
+  followers: number;
+  twitterUrl: string;
+  instagramUrl: string;
+};
+
+export const organizers: Organizer[] = [
+  {
+    id: "org-1",
+    name: "Nala Sound",
+    handle: "nalasound",
+    avatar: e1,
+    bio: "Curating the finest Afrobeats and amapiano experiences across East Africa.",
+    followers: 12400,
+    twitterUrl: "https://twitter.com/nalasound",
+    instagramUrl: "https://instagram.com/nalasound"
+  },
+  {
+    id: "org-2",
+    name: "Skyline Collective",
+    handle: "skylineco",
+    avatar: e2,
+    bio: "Pioneering the underground house and techno scene in Kigali and beyond.",
+    followers: 8200,
+    twitterUrl: "https://twitter.com/skylineco",
+    instagramUrl: "https://instagram.com/skylineco"
+  },
+  {
+    id: "org-3",
+    name: "Baobab Ventures",
+    handle: "baobabvc",
+    avatar: e3,
+    bio: "Connecting founders, investors, and builders shaping the future of African tech.",
+    followers: 45000,
+    twitterUrl: "https://twitter.com/baobabvc",
+    instagramUrl: "https://instagram.com/baobabvc"
+  },
+  {
+    id: "org-4",
+    name: "Starboy Live",
+    handle: "starboylive",
+    avatar: e4,
+    bio: "The official touring company for the biggest stadium concerts in West Africa.",
+    followers: 150000,
+    twitterUrl: "https://twitter.com/starboylive",
+    instagramUrl: "https://instagram.com/starboylive"
+  },
+  {
+    id: "org-5",
+    name: "Soko Market",
+    handle: "sokomarket",
+    avatar: e5,
+    bio: "Celebrating local artisans, street food, and culture through vibrant pop-up markets.",
+    followers: 22000,
+    twitterUrl: "https://twitter.com/sokomarket",
+    instagramUrl: "https://instagram.com/sokomarket"
+  },
+  {
+    id: "org-6",
+    name: "BAL League",
+    handle: "ballafrica",
+    avatar: e6,
+    bio: "The premier professional basketball league in Africa. Watch the finals live.",
+    followers: 320000,
+    twitterUrl: "https://twitter.com/thebal",
+    instagramUrl: "https://instagram.com/thebal"
+  }
+];
+
 export const stories = [
   { id: "1", name: "Nala Sound", avatar: e1, items: [{ id: "1-1", image: e1 }, { id: "1-2", image: e2 }, { id: "1-3", image: e3 }] },
   { id: "2", name: "Skyline", avatar: e2, items: [{ id: "2-1", image: e2 }, { id: "2-2", image: e3 }] },

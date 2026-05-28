@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Search, Map as MapIcon, SlidersHorizontal, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { categories, events, experiences, movies } from "@/lib/mock-data";
+import { categories, events, experiences, movies, organizers } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/explore")({
@@ -81,15 +81,16 @@ function ExplorePage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold tracking-tight">Popular Organizers</h2>
+            <Link to="/organizers" className="text-sm font-bold text-primary">See all</Link>
           </div>
           <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-2">
-            {events.slice(0, 6).map(e => (
-              <div key={e.id} className="w-36 shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center text-center">
-                <img src={e.cover} alt={e.organizer} className="w-16 h-16 rounded-full object-cover mb-3" />
-                <p className="font-semibold text-sm leading-tight line-clamp-1">{e.organizer}</p>
-                <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">@{e.organizerHandle}</p>
-                <Button size="sm" className="mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider">Follow</Button>
-              </div>
+            {organizers.map(org => (
+              <Link key={org.id} to="/organizers" className="w-36 shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center text-center transition-transform active:scale-95 block">
+                <img src={org.avatar} alt={org.name} className="w-16 h-16 rounded-full object-cover mb-3" />
+                <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
+                <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">@{org.handle}</p>
+                <Button size="sm" className="mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider" onClick={(e) => e.preventDefault()}>Follow</Button>
+              </Link>
             ))}
           </div>
         </section>

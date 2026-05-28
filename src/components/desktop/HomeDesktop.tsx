@@ -149,6 +149,7 @@ export function HomeDesktop() {
             <h2 className="text-xl font-semibold">Popular organizers</h2>
             <p className="text-sm text-muted-foreground">Africa's most loved creators and venues</p>
           </div>
+          <Link to="/organizers" className="text-sm text-primary hover:underline">See all →</Link>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {events.slice(0, 4).map((e) => (
