@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WorkspacesRouteImport } from './routes/workspaces'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ScannerRouteImport } from './routes/scanner'
 import { Route as MoviesRouteImport } from './routes/movies'
@@ -16,9 +17,15 @@ import { Route as FeedRouteImport } from './routes/feed'
 import { Route as ExperiencesRouteImport } from './routes/experiences'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CreateEventRouteImport } from './routes/create-event'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 
+const WorkspacesRoute = WorkspacesRouteImport.update({
+  id: '/workspaces',
+  path: '/workspaces',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
@@ -54,6 +61,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreateEventRoute = CreateEventRouteImport.update({
+  id: '/create-event',
+  path: '/create-event',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -67,6 +79,7 @@ const EventsEventIdRoute = EventsEventIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRouteWithChildren
   '/experiences': typeof ExperiencesRoute
@@ -74,10 +87,12 @@ export interface FileRoutesByFullPath {
   '/movies': typeof MoviesRoute
   '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
+  '/workspaces': typeof WorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRouteWithChildren
   '/experiences': typeof ExperiencesRoute
@@ -85,11 +100,13 @@ export interface FileRoutesByTo {
   '/movies': typeof MoviesRoute
   '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
+  '/workspaces': typeof WorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRouteWithChildren
   '/experiences': typeof ExperiencesRoute
@@ -97,12 +114,14 @@ export interface FileRoutesById {
   '/movies': typeof MoviesRoute
   '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
+  '/workspaces': typeof WorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/create-event'
     | '/dashboard'
     | '/events'
     | '/experiences'
@@ -110,10 +129,12 @@ export interface FileRouteTypes {
     | '/movies'
     | '/scanner'
     | '/signin'
+    | '/workspaces'
     | '/events/$eventId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/create-event'
     | '/dashboard'
     | '/events'
     | '/experiences'
@@ -121,10 +142,12 @@ export interface FileRouteTypes {
     | '/movies'
     | '/scanner'
     | '/signin'
+    | '/workspaces'
     | '/events/$eventId'
   id:
     | '__root__'
     | '/'
+    | '/create-event'
     | '/dashboard'
     | '/events'
     | '/experiences'
@@ -132,11 +155,13 @@ export interface FileRouteTypes {
     | '/movies'
     | '/scanner'
     | '/signin'
+    | '/workspaces'
     | '/events/$eventId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CreateEventRoute: typeof CreateEventRoute
   DashboardRoute: typeof DashboardRoute
   EventsRoute: typeof EventsRouteWithChildren
   ExperiencesRoute: typeof ExperiencesRoute
@@ -144,10 +169,18 @@ export interface RootRouteChildren {
   MoviesRoute: typeof MoviesRoute
   ScannerRoute: typeof ScannerRoute
   SigninRoute: typeof SigninRoute
+  WorkspacesRoute: typeof WorkspacesRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/workspaces': {
+      id: '/workspaces'
+      path: '/workspaces'
+      fullPath: '/workspaces'
+      preLoaderRoute: typeof WorkspacesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signin': {
       id: '/signin'
       path: '/signin'
@@ -197,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/create-event': {
+      id: '/create-event'
+      path: '/create-event'
+      fullPath: '/create-event'
+      preLoaderRoute: typeof CreateEventRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -227,6 +267,7 @@ const EventsRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CreateEventRoute: CreateEventRoute,
   DashboardRoute: DashboardRoute,
   EventsRoute: EventsRouteWithChildren,
   ExperiencesRoute: ExperiencesRoute,
@@ -234,6 +275,7 @@ const rootRouteChildren: RootRouteChildren = {
   MoviesRoute: MoviesRoute,
   ScannerRoute: ScannerRoute,
   SigninRoute: SigninRoute,
+  WorkspacesRoute: WorkspacesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
