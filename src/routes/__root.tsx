@@ -116,8 +116,8 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const location = useRouterState({ select: (s) => s.location });
   
-  // Hide bottom nav on detail/booking/community pages
-  const hideNav = location.pathname.match(/^\/(events|book|community)\/.+/);
+  // Hide bottom nav on detail/booking/community/ticket pages
+  const hideNav = location.pathname.match(/^\/(events|book|community|ticket)\/.+/);
 
   return (
     <AppProvider>

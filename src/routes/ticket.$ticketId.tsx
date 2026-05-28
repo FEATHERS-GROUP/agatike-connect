@@ -1,6 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, Download, Ticket as TicketIcon, MapPin, Film, Calendar, Briefcase, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Download, Ticket as TicketIcon, MapPin, Film, Calendar, Briefcase, CheckCircle2, Loader2 } from "lucide-react";
 import { upcomingTickets } from "./profile";
+import { useState } from "react";
+import * as htmlToImage from "html-to-image";
+import { jsPDF } from "jspdf";
+import { PrintableTicket } from "@/components/pdf/PrintableTickets";
 
 export const Route = createFileRoute("/ticket/$ticketId")({
   component: TicketViewer,
@@ -9,6 +13,43 @@ export const Route = createFileRoute("/ticket/$ticketId")({
 function TicketViewer() {
   const { ticketId } = Route.useParams();
   const ticket = upcomingTickets.find((t) => t.id === ticketId);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+    try {
+      const element = document.getElementById("printable-ticket");
+      if (!element) throw new Error("Ticket element not found");
+
+      // html-to-image uses the browser's native renderer via SVG foreignObject,
+      // which safely supports all modern CSS like oklch variables.
+      // cacheBust is critical for preventing blank outputs in WebKit browsers with external images.
+      const imgData = await htmlToImage.toPng(element, {
+        pixelRatio: 2,
+        backgroundColor: "transparent",
+        style: {
+          opacity: "1",
+        }
+      });
+      
+      // Landscape orientation, A4 size (approx), measuring pixels
+      // A typical horizontal ticket is roughly 800x300, which is an 8:3 ratio
+      // We will output a custom sized PDF that matches the ticket dimensions
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "px",
+        format: [800, 300]
+      });
+
+      pdf.addImage(imgData, "PNG", 0, 0, 800, 300);
+      pdf.save(`agatike-ticket-${ticket?.orderId || ticketId}.pdf`);
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   if (!ticket) {
     return (
@@ -20,31 +61,58 @@ function TicketViewer() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans px-5 pt-14 pb-32 relative">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <Link to="/profile" className="w-12 h-12 bg-secondary rounded-2xl flex items-center justify-center hover:bg-secondary/70 transition-colors">
-          <ChevronLeft className="w-6 h-6" />
-        </Link>
-        <span className="font-bold text-lg">Upcoming {ticket.ticketCategory === 'movie' ? 'Movie' : ticket.ticketCategory === 'conference' ? 'Conference' : 'Event'}</span>
-        <div className="w-12" /> {/* Spacer */}
-      </div>
+    <div className="relative min-h-screen font-sans overflow-hidden">
+      {/* Ambient background — blurred cover image */}
+      {ticket.cover && (
+        <>
+          <img
+            src={ticket.cover}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 w-full h-full object-cover scale-110 blur-3xl opacity-60 pointer-events-none select-none"
+          />
+          {/* Dark gradient scrim so text stays readable */}
+          <div className="absolute inset-0 bg-black/50 pointer-events-none" />
+        </>
+      )}
 
-      {/* Event Meta */}
-      <div className="mb-6 px-1">
-        <p className="text-gray-400 text-sm mb-1">{ticket.date}, {ticket.time || ticket.showtimes?.[0]}</p>
-        <h1 className="text-3xl font-bold tracking-tight">{ticket.title}</h1>
-      </div>
+      {/* Page content sits above the ambient bg */}
+      <div className="relative z-10 px-5 pt-14 pb-36">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <Link to="/profile" className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center hover:bg-white/30 transition-colors">
+            <ChevronLeft className="w-6 h-6 text-white" />
+          </Link>
+          <span className="font-bold text-lg text-white">
+            Upcoming {ticket.ticketCategory === 'movie' ? 'Movie' : ticket.ticketCategory === 'conference' ? 'Conference' : 'Event'}
+          </span>
+          <div className="w-12" />
+        </div>
 
-      {/* Dynamic Ticket Card */}
-      <DynamicPass ticket={ticket} />
+        {/* Event Meta */}
+        <div className="mb-6 px-1">
+          <p className="text-white/60 text-sm mb-1">{ticket.date}, {ticket.time || ticket.showtimes?.[0]}</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-md">{ticket.title}</h1>
+        </div>
+
+        {/* Dynamic Ticket Card */}
+        <DynamicPass ticket={ticket} />
+      </div>
 
       {/* Download Button */}
       <div className="fixed bottom-8 left-0 right-0 flex justify-center px-5 z-50">
-        <button className="bg-[#2dd4bf] text-[#0f172a] font-bold py-4 px-8 rounded-2xl w-full flex items-center justify-center gap-2 shadow-[0_8px_30px_rgb(45,212,191,0.3)] hover:bg-[#14b8a6] transition-colors text-lg">
-          <Download className="w-6 h-6" /> Download PDF
+        <button 
+          onClick={handleDownload}
+          disabled={isDownloading}
+          className="bg-orange-500 text-white font-bold py-4 px-8 rounded-2xl w-full flex items-center justify-center gap-2 shadow-[0_8px_30px_rgb(249,115,22,0.4)] hover:bg-orange-600 transition-colors text-lg disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {isDownloading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Download className="w-6 h-6" />}
+          {isDownloading ? "Generating PDF..." : "Download PDF"}
         </button>
       </div>
+
+      {/* Hidden PDF Printable Layer */}
+      <PrintableTicket id="printable-ticket" ticket={ticket} />
     </div>
   );
 }
@@ -109,8 +177,8 @@ function DynamicPass({ ticket }: { ticket: any }) {
           </div>
         </div>
 
-        <div className="absolute -left-5 bottom-28 w-10 h-10 bg-background rounded-full" />
-        <div className="absolute -right-5 bottom-28 w-10 h-10 bg-background rounded-full" />
+        <div className="absolute -left-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
+        <div className="absolute -right-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
         <div className="absolute left-6 right-6 bottom-[132px] border-t-2 border-dashed border-gray-200" />
 
         <Barcode />
@@ -169,8 +237,8 @@ function DynamicPass({ ticket }: { ticket: any }) {
           </div>
         </div>
 
-        <div className="absolute -left-5 bottom-28 w-10 h-10 bg-background rounded-full" />
-        <div className="absolute -right-5 bottom-28 w-10 h-10 bg-background rounded-full" />
+        <div className="absolute -left-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
+        <div className="absolute -right-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
         <div className="absolute left-6 right-6 bottom-[132px] border-t-2 border-dashed border-gray-200" />
 
         <Barcode />
@@ -228,8 +296,8 @@ function DynamicPass({ ticket }: { ticket: any }) {
         </div>
       </div>
 
-      <div className="absolute -left-5 bottom-28 w-10 h-10 bg-background rounded-full" />
-      <div className="absolute -right-5 bottom-28 w-10 h-10 bg-background rounded-full" />
+      <div className="absolute -left-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
+      <div className="absolute -right-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
       <div className="absolute left-6 right-6 bottom-[132px] border-t-2 border-dashed border-gray-200" />
 
       <Barcode />
