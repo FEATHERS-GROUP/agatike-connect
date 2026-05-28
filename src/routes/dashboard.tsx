@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   LayoutDashboard, CalendarDays, Ticket, BarChart3, Users, ScanLine,
-  ShoppingBag, Crown, Megaphone, Wallet, Settings, TrendingUp, DollarSign, Eye, Plus
+  ShoppingBag, Crown, Megaphone, Wallet, Settings, TrendingUp, DollarSign, Eye, Plus, Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { events } from "@/lib/mock-data";
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/dashboard")({
 
 const nav = [
   { label: "Dashboard", icon: LayoutDashboard, active: true },
+  { label: "Workspaces", icon: Building2 },
   { label: "Events", icon: CalendarDays },
   { label: "Tickets", icon: Ticket },
   { label: "Analytics", icon: BarChart3 },
@@ -41,11 +42,15 @@ function Dashboard() {
             <span className="text-lg font-semibold">Agatike</span>
           </Link>
           <nav className="space-y-1 text-sm">
-            {nav.map((n) => (
-              <button key={n.label} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${n.active ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:bg-secondary"}`}>
-                <n.icon className="h-4 w-4" /> {n.label}
-              </button>
-            ))}
+            {nav.map((n) => {
+              const href = n.label === "Workspaces" ? "/workspaces" : n.label === "Scanning" ? "/scanner" : null;
+              const cls = `flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${n.active ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:bg-secondary"}`;
+              return href ? (
+                <Link key={n.label} to={href} className={cls}><n.icon className="h-4 w-4" /> {n.label}</Link>
+              ) : (
+                <button key={n.label} className={cls}><n.icon className="h-4 w-4" /> {n.label}</button>
+              );
+            })}
           </nav>
           <div className="mt-8 rounded-2xl border border-border/60 p-4">
             <p className="text-sm font-semibold">Upgrade to Pro</p>
@@ -62,9 +67,12 @@ function Dashboard() {
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" className="rounded-full">Export</Button>
-              <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
-                <Plus className="mr-1 h-4 w-4" /> New event
-              </Button>
+              <Link to="/workspaces"><Button variant="outline" className="rounded-full">Workspaces</Button></Link>
+              <Link to="/create-event">
+                <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+                  <Plus className="mr-1 h-4 w-4" /> New event
+                </Button>
+              </Link>
             </div>
           </header>
 
