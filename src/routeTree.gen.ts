@@ -24,6 +24,7 @@ import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
+import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
 
 const WorkspacesRoute = WorkspacesRouteImport.update({
@@ -101,6 +102,11 @@ const EventsEventIdRoute = EventsEventIdRouteImport.update({
   path: '/events/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunityPostIdRoute = CommunityPostIdRouteImport.update({
+  id: '/community/$postId',
+  path: '/community/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookEventIdRoute = BookEventIdRouteImport.update({
   id: '/book/$eventId',
   path: '/book/$eventId',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/wallet': typeof WalletRoute
   '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
+  '/community/$postId': typeof CommunityPostIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/events/': typeof EventsIndexRoute
 }
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/wallet': typeof WalletRoute
   '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
+  '/community/$postId': typeof CommunityPostIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/events': typeof EventsIndexRoute
 }
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/wallet': typeof WalletRoute
   '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
+  '/community/$postId': typeof CommunityPostIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/events/': typeof EventsIndexRoute
 }
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/workspaces'
     | '/book/$eventId'
+    | '/community/$postId'
     | '/events/$eventId'
     | '/events/'
   fileRoutesByTo: FileRoutesByTo
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/workspaces'
     | '/book/$eventId'
+    | '/community/$postId'
     | '/events/$eventId'
     | '/events'
   id:
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/workspaces'
     | '/book/$eventId'
+    | '/community/$postId'
     | '/events/$eventId'
     | '/events/'
   fileRoutesById: FileRoutesById
@@ -234,6 +246,7 @@ export interface RootRouteChildren {
   WalletRoute: typeof WalletRoute
   WorkspacesRoute: typeof WorkspacesRoute
   BookEventIdRoute: typeof BookEventIdRoute
+  CommunityPostIdRoute: typeof CommunityPostIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   EventsIndexRoute: typeof EventsIndexRoute
 }
@@ -345,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/community/$postId': {
+      id: '/community/$postId'
+      path: '/community/$postId'
+      fullPath: '/community/$postId'
+      preLoaderRoute: typeof CommunityPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/book/$eventId': {
       id: '/book/$eventId'
       path: '/book/$eventId'
@@ -370,6 +390,7 @@ const rootRouteChildren: RootRouteChildren = {
   WalletRoute: WalletRoute,
   WorkspacesRoute: WorkspacesRoute,
   BookEventIdRoute: BookEventIdRoute,
+  CommunityPostIdRoute: CommunityPostIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   EventsIndexRoute: EventsIndexRoute,
 }

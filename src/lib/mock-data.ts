@@ -352,6 +352,7 @@ export const feedPosts = events.map((ev, i) => ({
   user: ev.organizer,
   handle: ev.organizerHandle,
   image: ev.cover,
+  avatar: ev.cover, // Reusing cover as avatar for convenience
   caption:
     i % 2 === 0
       ? `Last night was unreal at ${ev.title} — tag yourself in the moments below.`
@@ -360,6 +361,11 @@ export const feedPosts = events.map((ev, i) => ({
   comments: 48 + i * 11,
   eventId: ev.id,
   eventTitle: ev.title,
+  commentsList: [
+    { id: "c1", handle: "angryswan", text: "Can't wait for this one! 🔥", avatar: "https://i.pravatar.cc/100?img=5", time: "2h" },
+    { id: "c2", handle: "kigali_vibes", text: "Take my money! 💸", avatar: "https://i.pravatar.cc/100?img=6", time: "4h" },
+    { id: "c3", handle: "party_animal", text: "Who's going? Let's link up!", avatar: "https://i.pravatar.cc/100?img=7", time: "5h" }
+  ]
 }));
 
 export const ticketTiers = [
