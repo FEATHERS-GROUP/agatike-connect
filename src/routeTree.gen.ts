@@ -15,6 +15,7 @@ import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ScannerRouteImport } from './routes/scanner'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MoviesRouteImport } from './routes/movies'
+import { Route as MapRouteImport } from './routes/map'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as ExperiencesRouteImport } from './routes/experiences'
@@ -55,6 +56,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const MoviesRoute = MoviesRouteImport.update({
   id: '/movies',
   path: '/movies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedRoute = FeedRouteImport.update({
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
+  '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/profile': typeof ProfileRoute
   '/scanner': typeof ScannerRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
+  '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/profile': typeof ProfileRoute
   '/scanner': typeof ScannerRoute
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
+  '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/profile': typeof ProfileRoute
   '/scanner': typeof ScannerRoute
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/experiences'
     | '/explore'
     | '/feed'
+    | '/map'
     | '/movies'
     | '/profile'
     | '/scanner'
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/experiences'
     | '/explore'
     | '/feed'
+    | '/map'
     | '/movies'
     | '/profile'
     | '/scanner'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/experiences'
     | '/explore'
     | '/feed'
+    | '/map'
     | '/movies'
     | '/profile'
     | '/scanner'
@@ -239,6 +251,7 @@ export interface RootRouteChildren {
   ExperiencesRoute: typeof ExperiencesRoute
   ExploreRoute: typeof ExploreRoute
   FeedRoute: typeof FeedRoute
+  MapRoute: typeof MapRoute
   MoviesRoute: typeof MoviesRoute
   ProfileRoute: typeof ProfileRoute
   ScannerRoute: typeof ScannerRoute
@@ -293,6 +306,13 @@ declare module '@tanstack/react-router' {
       path: '/movies'
       fullPath: '/movies'
       preLoaderRoute: typeof MoviesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed': {
@@ -383,6 +403,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExperiencesRoute: ExperiencesRoute,
   ExploreRoute: ExploreRoute,
   FeedRoute: FeedRoute,
+  MapRoute: MapRoute,
   MoviesRoute: MoviesRoute,
   ProfileRoute: ProfileRoute,
   ScannerRoute: ScannerRoute,

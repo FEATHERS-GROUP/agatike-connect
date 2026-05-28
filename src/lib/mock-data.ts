@@ -28,6 +28,9 @@ export type Event = {
   attendees: number;
   rating: number;
   description: string;
+  lat?: number;
+  lng?: number;
+  hasStory?: boolean;
 };
 
 export const events: Event[] = [
@@ -48,6 +51,9 @@ export const events: Event[] = [
     rating: 4.9,
     description:
       "An electric night of Afrobeats with top DJs from across the continent. Rooftop bars, surprise live sets, and the best crowd in the city.",
+    lat: -1.9441,
+    lng: 30.0619,
+    hasStory: true,
   },
   {
     id: "sunset-rooftop-nairobi",
@@ -65,6 +71,9 @@ export const events: Event[] = [
     rating: 4.8,
     description:
       "Golden hour cocktails, live house, and panoramic views over Nairobi. Limited tickets.",
+    lat: -1.9500,
+    lng: 30.0580,
+    hasStory: false,
   },
   {
     id: "africa-tech-summit",
@@ -82,6 +91,9 @@ export const events: Event[] = [
     rating: 4.7,
     description:
       "Three days of founders, investors, and operators shaping Africa's tech future.",
+    lat: -1.9540,
+    lng: 30.0930,
+    hasStory: true,
   },
   {
     id: "wizkid-arena-tour",
@@ -98,6 +110,9 @@ export const events: Event[] = [
     attendees: 18400,
     rating: 5.0,
     description: "Headline arena show with a full live band and special guests.",
+    lat: -1.9320,
+    lng: 30.0510,
+    hasStory: true,
   },
   {
     id: "afro-food-festival",
@@ -114,6 +129,9 @@ export const events: Event[] = [
     attendees: 4100,
     rating: 4.9,
     description: "Street food, craft makers, and live drumming across two open-air stages.",
+    lat: -1.9480,
+    lng: 30.0750,
+    hasStory: false,
   },
   {
     id: "abj-basketball-finals",
@@ -130,6 +148,9 @@ export const events: Event[] = [
     attendees: 9800,
     rating: 4.8,
     description: "The continent's biggest pro basketball finals — championship night.",
+    lat: -1.9600,
+    lng: 30.1100,
+    hasStory: true,
   },
 ];
 

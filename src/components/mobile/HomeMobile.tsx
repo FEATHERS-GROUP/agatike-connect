@@ -70,7 +70,7 @@ export function HomeMobile() {
       <div className="pt-5 pb-3">
         <div className="flex items-center justify-between px-4 mb-3">
           <h2 className="text-lg font-bold tracking-tight text-foreground">Upcoming Events</h2>
-          <Link to="/explore" className="text-sm font-bold text-primary">See all</Link>
+          <Link to="/events" className="text-sm font-bold text-primary">See all</Link>
         </div>
         <div className="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2">
           {events.map(event => (
@@ -98,7 +98,7 @@ export function HomeMobile() {
       <div className="pt-5 pb-3">
         <div className="flex items-center justify-between px-4 mb-3">
           <h2 className="text-lg font-bold tracking-tight text-foreground">Discover Experiences</h2>
-          <Link to="/explore" className="text-sm font-bold text-primary">See all</Link>
+          <Link to="/experiences" className="text-sm font-bold text-primary">See all</Link>
         </div>
         <div className="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2">
           {experiences.map(x => (
