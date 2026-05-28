@@ -144,17 +144,17 @@ export default function MapClient() {
             
             <div className="mt-6 flex items-center gap-3">
               {selectedEvent.hasStory && (
-                <Link to="/community/$postId" params={{ postId: selectedEvent.id }} className="flex-1">
-                  <Button variant="outline" className="w-full rounded-xl h-12 font-bold">
+                <Button asChild variant="outline" className="flex-1 rounded-xl h-12 font-bold">
+                  <Link to="/community/$postId" params={{ postId: selectedEvent.id }}>
                     View Story
-                  </Button>
-                </Link>
-              )}
-              <Link to="/book/$eventId" params={{ eventId: selectedEvent.id }} className={selectedEvent.hasStory ? "flex-1" : "w-full"}>
-                <Button className="w-full rounded-xl h-12 font-bold shadow-lg shadow-primary/25 bg-gradient-to-r from-primary to-accent border-0">
-                  Book Tickets <ChevronRight className="ml-1 h-4 w-4" />
+                  </Link>
                 </Button>
-              </Link>
+              )}
+              <Button asChild className={`rounded-xl h-12 font-bold shadow-lg shadow-primary/25 bg-gradient-to-r from-primary to-accent border-0 ${selectedEvent.hasStory ? "flex-1" : "w-full"}`}>
+                <Link to="/book/$eventId" params={{ eventId: selectedEvent.id }}>
+                  Book Tickets <ChevronRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         )}

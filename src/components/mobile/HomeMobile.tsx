@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { feedPosts, events, experiences, movies, organizers } from "@/lib/mock-data";
+import { feedPosts, events, experiences, movies, organizers, stories } from "@/lib/mock-data";
 import { FeedCard } from "@/components/site/FeedCard";
+import { Stories } from "@/components/site/Stories";
 import { Camera, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,29 +25,8 @@ export function HomeMobile() {
       </div>
 
       {/* Top Stories Row */}
-      <div className="flex gap-4 px-4 py-3 overflow-x-auto hide-scrollbar border-b border-border/40">
-        <div className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer">
-          <div className="relative">
-            <div className="h-16 w-16 rounded-full border-2 border-transparent p-0.5" style={{ background: "linear-gradient(white, white) padding-box, var(--gradient-primary) border-box" }}>
-              <img src="https://i.pravatar.cc/150?u=me" alt="Your Story" className="w-full h-full rounded-full object-cover" />
-            </div>
-            <div className="absolute bottom-0 right-0 h-5 w-5 bg-primary rounded-full border-2 border-background flex items-center justify-center">
-              <span className="text-[14px] text-primary-foreground font-bold leading-none mb-0.5">+</span>
-            </div>
-          </div>
-          <span className="text-xs text-foreground font-medium">Your story</span>
-        </div>
-
-        {events.slice(0, 8).map((event, i) => (
-          <div key={i} className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer">
-            <div className="h-16 w-16 rounded-full border-2 border-transparent p-0.5" style={{ background: "linear-gradient(white, white) padding-box, var(--gradient-warm) border-box" }}>
-              <img src={event.cover} alt={event.organizer} className="w-full h-full rounded-full object-cover" />
-            </div>
-            <span className="text-xs text-foreground font-medium truncate w-16 text-center">
-              {event.organizerHandle || "user"}
-            </span>
-          </div>
-        ))}
+      <div className="px-4 py-3 border-b border-border/40">
+        <Stories items={stories} />
       </div>
 
       {/* Popular Organizers */}
