@@ -66,7 +66,7 @@ export function StoryViewer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
       <div className="relative w-full h-full max-w-md bg-black">
         {/* Progress Bars for the current organizer */}
         <div className="absolute top-0 inset-x-0 z-20 flex gap-1 p-4 pt-safe-top">
