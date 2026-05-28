@@ -9,15 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WorkspacesRouteImport } from './routes/workspaces'
+import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ScannerRouteImport } from './routes/scanner'
+import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as FeedRouteImport } from './routes/feed'
+import { Route as ExperiencesRouteImport } from './routes/experiences'
+import { Route as EventsRouteImport } from './routes/events'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CreateEventRouteImport } from './routes/create-event'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 
+const WorkspacesRoute = WorkspacesRouteImport.update({
+  id: '/workspaces',
+  path: '/workspaces',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SigninRoute = SigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScannerRoute = ScannerRouteImport.update({
   id: '/scanner',
   path: '/scanner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoviesRoute = MoviesRouteImport.update({
+  id: '/movies',
+  path: '/movies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedRoute = FeedRouteImport.update({
@@ -25,9 +46,24 @@ const FeedRoute = FeedRouteImport.update({
   path: '/feed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExperiencesRoute = ExperiencesRouteImport.update({
+  id: '/experiences',
+  path: '/experiences',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsRoute = EventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreateEventRoute = CreateEventRouteImport.update({
+  id: '/create-event',
+  path: '/create-event',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -36,62 +72,134 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsEventIdRoute = EventsEventIdRouteImport.update({
-  id: '/events/$eventId',
-  path: '/events/$eventId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$eventId',
+  path: '/$eventId',
+  getParentRoute: () => EventsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRoute
+  '/events': typeof EventsRouteWithChildren
+  '/experiences': typeof ExperiencesRoute
   '/feed': typeof FeedRoute
+  '/movies': typeof MoviesRoute
   '/scanner': typeof ScannerRoute
+  '/signin': typeof SigninRoute
+  '/workspaces': typeof WorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRoute
+  '/events': typeof EventsRouteWithChildren
+  '/experiences': typeof ExperiencesRoute
   '/feed': typeof FeedRoute
+  '/movies': typeof MoviesRoute
   '/scanner': typeof ScannerRoute
+  '/signin': typeof SigninRoute
+  '/workspaces': typeof WorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRoute
+  '/events': typeof EventsRouteWithChildren
+  '/experiences': typeof ExperiencesRoute
   '/feed': typeof FeedRoute
+  '/movies': typeof MoviesRoute
   '/scanner': typeof ScannerRoute
+  '/signin': typeof SigninRoute
+  '/workspaces': typeof WorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/feed' | '/scanner' | '/events/$eventId'
+  fullPaths:
+    | '/'
+    | '/create-event'
+    | '/dashboard'
+    | '/events'
+    | '/experiences'
+    | '/feed'
+    | '/movies'
+    | '/scanner'
+    | '/signin'
+    | '/workspaces'
+    | '/events/$eventId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/feed' | '/scanner' | '/events/$eventId'
+  to:
+    | '/'
+    | '/create-event'
+    | '/dashboard'
+    | '/events'
+    | '/experiences'
+    | '/feed'
+    | '/movies'
+    | '/scanner'
+    | '/signin'
+    | '/workspaces'
+    | '/events/$eventId'
   id:
     | '__root__'
     | '/'
+    | '/create-event'
     | '/dashboard'
+    | '/events'
+    | '/experiences'
     | '/feed'
+    | '/movies'
     | '/scanner'
+    | '/signin'
+    | '/workspaces'
     | '/events/$eventId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CreateEventRoute: typeof CreateEventRoute
   DashboardRoute: typeof DashboardRoute
+  EventsRoute: typeof EventsRouteWithChildren
+  ExperiencesRoute: typeof ExperiencesRoute
   FeedRoute: typeof FeedRoute
+  MoviesRoute: typeof MoviesRoute
   ScannerRoute: typeof ScannerRoute
-  EventsEventIdRoute: typeof EventsEventIdRoute
+  SigninRoute: typeof SigninRoute
+  WorkspacesRoute: typeof WorkspacesRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/workspaces': {
+      id: '/workspaces'
+      path: '/workspaces'
+      fullPath: '/workspaces'
+      preLoaderRoute: typeof WorkspacesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signin': {
+      id: '/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/scanner': {
       id: '/scanner'
       path: '/scanner'
       fullPath: '/scanner'
       preLoaderRoute: typeof ScannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/movies': {
+      id: '/movies'
+      path: '/movies'
+      fullPath: '/movies'
+      preLoaderRoute: typeof MoviesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed': {
@@ -101,11 +209,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/experiences': {
+      id: '/experiences'
+      path: '/experiences'
+      fullPath: '/experiences'
+      preLoaderRoute: typeof ExperiencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events': {
+      id: '/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof EventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/create-event': {
+      id: '/create-event'
+      path: '/create-event'
+      fullPath: '/create-event'
+      preLoaderRoute: typeof CreateEventRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -117,20 +246,36 @@ declare module '@tanstack/react-router' {
     }
     '/events/$eventId': {
       id: '/events/$eventId'
-      path: '/events/$eventId'
+      path: '/$eventId'
       fullPath: '/events/$eventId'
       preLoaderRoute: typeof EventsEventIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof EventsRoute
     }
   }
 }
 
+interface EventsRouteChildren {
+  EventsEventIdRoute: typeof EventsEventIdRoute
+}
+
+const EventsRouteChildren: EventsRouteChildren = {
+  EventsEventIdRoute: EventsEventIdRoute,
+}
+
+const EventsRouteWithChildren =
+  EventsRoute._addFileChildren(EventsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CreateEventRoute: CreateEventRoute,
   DashboardRoute: DashboardRoute,
+  EventsRoute: EventsRouteWithChildren,
+  ExperiencesRoute: ExperiencesRoute,
   FeedRoute: FeedRoute,
+  MoviesRoute: MoviesRoute,
   ScannerRoute: ScannerRoute,
-  EventsEventIdRoute: EventsEventIdRoute,
+  SigninRoute: SigninRoute,
+  WorkspacesRoute: WorkspacesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -16,9 +16,9 @@ export function Navbar() {
 
         <nav className="ml-6 hidden items-center gap-6 md:flex text-sm text-muted-foreground">
           <Link to="/" activeOptions={{ exact: true }} className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Explore</Link>
-          <Link to="/" className="hover:text-foreground transition-colors">Events</Link>
-          <Link to="/" className="hover:text-foreground transition-colors">Experiences</Link>
-          <Link to="/" className="hover:text-foreground transition-colors">Organizers</Link>
+          <Link to="/events" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Events</Link>
+          <Link to="/experiences" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Experiences</Link>
+          <Link to="/movies" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Movies</Link>
           <Link to="/feed" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Stories</Link>
           <Link to="/dashboard" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground font-medium" }}>Dashboard</Link>
         </nav>
@@ -31,10 +31,12 @@ export function Navbar() {
         </div>
 
         <div className="ml-auto flex items-center gap-2 md:ml-2">
-          <Button variant="ghost" className="hidden sm:inline-flex">Sign in</Button>
-          <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
-            <Plus className="mr-1 h-4 w-4" /> Create event
-          </Button>
+          <Link to="/signin"><Button variant="ghost" className="hidden sm:inline-flex">Sign in</Button></Link>
+          <Link to="/create-event">
+            <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+              <Plus className="mr-1 h-4 w-4" /> Create event
+            </Button>
+          </Link>
           <Button variant="ghost" size="icon" className="md:hidden"><Menu /></Button>
         </div>
       </div>
