@@ -17,6 +17,7 @@ import {
   Plus,
   Building2,
   Sparkles,
+  Map,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { events } from "@/lib/mock-data";
@@ -27,6 +28,7 @@ const nav = [
   { label: "Events", icon: CalendarDays },
   { label: "Tickets", icon: Ticket },
   { label: "Ticket Designer", icon: Sparkles },
+  { label: "Venue Designer", icon: Map },
   { label: "Analytics", icon: BarChart3 },
   { label: "Attendees", icon: Users },
   { label: "Scanning", icon: ScanLine },
@@ -61,6 +63,8 @@ export function DashboardDesktop() {
                     ? "/scanner"
                     : n.label === "Ticket Designer"
                       ? "/ticket-designer"
+                    : n.label === "Venue Designer"
+                      ? "/venue-designer"
                       : null;
               const cls = `flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${n.active ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:bg-secondary"}`;
               return href ? (
