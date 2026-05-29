@@ -1,7 +1,9 @@
-import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
 import { DesktopSidebar } from "@/components/desktop/dashboard/DesktopSidebar";
 import { EventSidebar } from "@/components/desktop/dashboard/EventSidebar";
 import { VenueSidebar } from "@/components/desktop/dashboard/VenueSidebar";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -18,8 +20,17 @@ export const Route = createFileRoute("/dashboard")({
 
 function DashboardLayout() {
   const location = useRouterState({ select: (s) => s.location });
+  const navigate = useNavigate();
+  const { workspaces, isLoaded } = useWorkspace();
+  
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/events\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/venues\/[^/]+/);
+
+  useEffect(() => {
+    if (isLoaded && workspaces.length === 0 && !location.pathname.includes("/dashboard/workspaces")) {
+      navigate({ to: "/dashboard/workspaces" });
+    }
+  }, [isLoaded, workspaces, location.pathname, navigate]);
 
   return (
     <>
@@ -37,7 +48,9 @@ function DashboardLayout() {
       <div className="hidden md:block min-h-screen bg-secondary/30">
         <div className="flex">
           {/* Sidebar */}
-          {isEventWorkspace ? <EventSidebar /> : isVenueWorkspace ? <VenueSidebar /> : <DesktopSidebar />}
+          {location.pathname !== "/dashboard/workspaces" && (
+            isEventWorkspace ? <EventSidebar /> : isVenueWorkspace ? <VenueSidebar /> : <DesktopSidebar />
+          )}
           
           {/* Main Content Area */}
           <main className="flex-1 p-6 lg:p-10">

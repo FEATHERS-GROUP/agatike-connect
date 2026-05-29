@@ -14,32 +14,55 @@ import {
   Building2,
   Map,
   Store,
+  Mountain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
-const nav = [
+const commonNav = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Workspaces", href: "/workspaces", icon: Building2 },
-  { label: "Events", href: "/dashboard/events", icon: CalendarDays },
-  { label: "Tickets", href: "/ticket-designer", icon: Ticket },
-  { label: "Venue Designer", href: "/venue-designer", icon: Map },
-  { label: "Venue Listings", href: "/dashboard/venue-rent", icon: Store },
   { label: "Analytics", icon: BarChart3 },
-  { label: "Attendees", icon: Users },
-  { label: "Scanning", href: "/scanner", icon: ScanLine },
-  { label: "Merchandise", icon: ShoppingBag },
-  { label: "VIP Access", icon: Crown },
   { label: "Campaigns", icon: Megaphone },
   { label: "Withdrawals", icon: Wallet },
   { label: "Settings", icon: Settings },
 ];
 
+const eventNav = [
+  { label: "Events", href: "/dashboard/events", icon: CalendarDays },
+  { label: "Tickets", href: "/ticket-designer", icon: Ticket },
+  { label: "Attendees", icon: Users },
+  { label: "Scanning", href: "/scanner", icon: ScanLine },
+  { label: "Merchandise", icon: ShoppingBag },
+  { label: "VIP Access", icon: Crown },
+];
+
+const venueNav = [
+  { label: "Venue Listings", href: "/dashboard/venue-rent", icon: Store },
+  { label: "Venue Designer", href: "/venue-designer", icon: Map },
+];
+
+const experienceNav = [
+  { label: "Experiences", href: "/dashboard/experiences", icon: Mountain },
+  { label: "Bookings", icon: Users },
+];
+
 export function DesktopSidebar() {
   const location = useRouterState({ select: (s) => s.location });
+  const { activeWorkspace } = useWorkspace();
+
+  let nav = [...commonNav];
+  if (activeWorkspace?.type === "VENUE") {
+    nav = [nav[0], ...venueNav, ...nav.slice(1)];
+  } else if (activeWorkspace?.type === "EVENT" || activeWorkspace?.type === "CINEMA") {
+    nav = [nav[0], ...eventNav, ...nav.slice(1)];
+  } else if (activeWorkspace?.type === "EXPERIENCE") {
+    nav = [nav[0], ...experienceNav, ...nav.slice(1)];
+  }
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:block">
-      <Link to="/" className="mb-6 flex items-center gap-2 px-2">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:flex md:flex-col overflow-y-auto">
+      <Link to="/" className="mb-6 flex items-center gap-2 px-2 shrink-0">
         <div
           className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground font-bold"
           style={{ background: "var(--gradient-primary)" }}
@@ -48,7 +71,10 @@ export function DesktopSidebar() {
         </div>
         <span className="text-lg font-semibold">Agatike</span>
       </Link>
-      <nav className="space-y-1 text-sm">
+      
+      <WorkspaceSwitcher />
+
+      <nav className="space-y-1 text-sm flex-1">
         {nav.map((n) => {
           const isActive = n.href && (location.pathname === n.href || (n.href !== "/dashboard" && location.pathname.startsWith(n.href)));
           
@@ -65,7 +91,8 @@ export function DesktopSidebar() {
           );
         })}
       </nav>
-      <div className="mt-8 rounded-2xl border border-border/60 p-4">
+      
+      <div className="mt-8 rounded-2xl border border-border/60 p-4 shrink-0">
         <p className="text-sm font-semibold">Upgrade to Pro</p>
         <p className="mt-1 text-xs text-muted-foreground">
           Branded pages, marketing & advanced analytics.

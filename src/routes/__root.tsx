@@ -111,6 +111,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 import { MobileNav } from "@/components/mobile/MobileNav";
 import { AppProvider } from "@/lib/AppContext";
+import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -121,19 +122,21 @@ function RootComponent() {
 
   return (
     <AppProvider>
-      <QueryClientProvider client={queryClient}>
-        {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
-        <div className={`min-h-screen md:pb-0 ${hideNav ? "" : "pb-24"}`}>
-          <Outlet />
-        </div>
-
-        {/* Floating Mobile Navigation - Hidden on Desktop */}
-        {!hideNav && (
-          <div className="md:hidden">
-            <MobileNav />
+      <WorkspaceProvider>
+        <QueryClientProvider client={queryClient}>
+          {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
+          <div className={`min-h-screen md:pb-0 ${hideNav ? "" : "pb-24"}`}>
+            <Outlet />
           </div>
-        )}
-      </QueryClientProvider>
+
+          {/* Floating Mobile Navigation - Hidden on Desktop */}
+          {!hideNav && (
+            <div className="md:hidden">
+              <MobileNav />
+            </div>
+          )}
+        </QueryClientProvider>
+      </WorkspaceProvider>
     </AppProvider>
   );
 }

@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WorkspacesRouteImport } from './routes/workspaces'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as VenueDesignerRouteImport } from './routes/venue-designer'
 import { Route as SigninRouteImport } from './routes/signin'
@@ -31,6 +30,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
 import { Route as TicketDesignerProjectIdRouteImport } from './routes/ticket-designer.$projectId'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
+import { Route as DashboardWorkspacesRouteImport } from './routes/dashboard.workspaces'
 import { Route as DashboardVenueRentRouteImport } from './routes/dashboard.venue-rent'
 import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
@@ -47,11 +47,6 @@ import { Route as DashboardEventsEventIdParkingRouteImport } from './routes/dash
 import { Route as DashboardEventsEventIdMerchandiseRouteImport } from './routes/dashboard.events.$eventId.merchandise'
 import { Route as DashboardEventsEventIdCustomersRouteImport } from './routes/dashboard.events.$eventId.customers'
 
-const WorkspacesRoute = WorkspacesRouteImport.update({
-  id: '/workspaces',
-  path: '/workspaces',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
   path: '/wallet',
@@ -157,6 +152,11 @@ const EventsEventIdRoute = EventsEventIdRouteImport.update({
   path: '/events/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardWorkspacesRoute = DashboardWorkspacesRouteImport.update({
+  id: '/workspaces',
+  path: '/workspaces',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardVenueRentRoute = DashboardVenueRentRouteImport.update({
   id: '/venue-rent',
   path: '/venue-rent',
@@ -259,10 +259,10 @@ export interface FileRoutesByFullPath {
   '/signin': typeof SigninRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
-  '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/venue-rent': typeof DashboardVenueRentRoute
+  '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -297,10 +297,10 @@ export interface FileRoutesByTo {
   '/signin': typeof SigninRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
-  '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/venue-rent': typeof DashboardVenueRentRoute
+  '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -337,10 +337,10 @@ export interface FileRoutesById {
   '/signin': typeof SigninRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
-  '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/venue-rent': typeof DashboardVenueRentRoute
+  '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -378,10 +378,10 @@ export interface FileRouteTypes {
     | '/signin'
     | '/venue-designer'
     | '/wallet'
-    | '/workspaces'
     | '/book/$eventId'
     | '/community/$postId'
     | '/dashboard/venue-rent'
+    | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
@@ -416,10 +416,10 @@ export interface FileRouteTypes {
     | '/signin'
     | '/venue-designer'
     | '/wallet'
-    | '/workspaces'
     | '/book/$eventId'
     | '/community/$postId'
     | '/dashboard/venue-rent'
+    | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
@@ -455,10 +455,10 @@ export interface FileRouteTypes {
     | '/signin'
     | '/venue-designer'
     | '/wallet'
-    | '/workspaces'
     | '/book/$eventId'
     | '/community/$postId'
     | '/dashboard/venue-rent'
+    | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
@@ -495,7 +495,6 @@ export interface RootRouteChildren {
   SigninRoute: typeof SigninRoute
   VenueDesignerRoute: typeof VenueDesignerRoute
   WalletRoute: typeof WalletRoute
-  WorkspacesRoute: typeof WorkspacesRoute
   BookEventIdRoute: typeof BookEventIdRoute
   CommunityPostIdRoute: typeof CommunityPostIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
@@ -507,13 +506,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/workspaces': {
-      id: '/workspaces'
-      path: '/workspaces'
-      fullPath: '/workspaces'
-      preLoaderRoute: typeof WorkspacesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/wallet': {
       id: '/wallet'
       path: '/wallet'
@@ -661,6 +653,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/workspaces': {
+      id: '/dashboard/workspaces'
+      path: '/workspaces'
+      fullPath: '/dashboard/workspaces'
+      preLoaderRoute: typeof DashboardWorkspacesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/venue-rent': {
       id: '/dashboard/venue-rent'
       path: '/venue-rent'
@@ -789,6 +788,7 @@ const DashboardVenuesVenueIdRouteWithChildren =
 
 interface DashboardRouteChildren {
   DashboardVenueRentRoute: typeof DashboardVenueRentRoute
+  DashboardWorkspacesRoute: typeof DashboardWorkspacesRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardVenuesVenueIdRoute: typeof DashboardVenuesVenueIdRouteWithChildren
   DashboardEventsIndexRoute: typeof DashboardEventsIndexRoute
@@ -803,6 +803,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardVenueRentRoute: DashboardVenueRentRoute,
+  DashboardWorkspacesRoute: DashboardWorkspacesRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardVenuesVenueIdRoute: DashboardVenuesVenueIdRouteWithChildren,
   DashboardEventsIndexRoute: DashboardEventsIndexRoute,
@@ -836,7 +837,6 @@ const rootRouteChildren: RootRouteChildren = {
   SigninRoute: SigninRoute,
   VenueDesignerRoute: VenueDesignerRoute,
   WalletRoute: WalletRoute,
-  WorkspacesRoute: WorkspacesRoute,
   BookEventIdRoute: BookEventIdRoute,
   CommunityPostIdRoute: CommunityPostIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
