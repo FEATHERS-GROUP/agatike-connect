@@ -621,3 +621,45 @@ export const merch = [
   { id: "parking", name: "Parking Pass", price: 15, image: e6 },
   { id: "drinks", name: "Drinks Bundle", price: 40, image: e2 },
 ];
+
+export type TicketProject = {
+  id: string;
+  name: string;
+  eventId?: string;
+  template: "concert" | "movie" | "experience" | "conference";
+  palette: { name: string; from: string; to: string };
+  font: { name: string; css: string };
+  tier: string;
+  title: string;
+  subtitle: string;
+  date: string;
+  time: string;
+  seat: string;
+  price: string;
+  currency: string;
+  cover: string;
+  logoText: string;
+  updatedAt: string;
+};
+
+export const ticketProjects: TicketProject[] = [
+  {
+    id: "proj-1",
+    name: "Summer Afrobeats VIP",
+    eventId: "afrobeats-night-lagos",
+    template: "concert",
+    palette: { name: "Sunset", from: "#f97316", to: "#db2777" },
+    font: { name: "Modern", css: "'Inter', sans-serif" },
+    tier: "VIP",
+    title: "Afrobeats Night Live",
+    subtitle: "Eko Convention Centre · Lagos",
+    date: "Sat, 14 Sep 2026",
+    time: "21:00",
+    seat: "Sec A · Row 12 · Seat 36",
+    price: "85",
+    currency: "₦",
+    cover: e1,
+    logoText: "AGATIKE",
+    updatedAt: "2026-05-28T14:30:00Z"
+  }
+];
