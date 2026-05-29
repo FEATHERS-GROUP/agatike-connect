@@ -25,10 +25,19 @@ import { Route as CreateEventRouteImport } from './routes/create-event'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
+import { Route as DashboardEventsIndexRouteImport } from './routes/dashboard.events.index'
+import { Route as DashboardEventsEventIdIndexRouteImport } from './routes/dashboard.events.$eventId.index'
+import { Route as DashboardEventsEventIdVenueRouteImport } from './routes/dashboard.events.$eventId.venue'
+import { Route as DashboardEventsEventIdStaffRouteImport } from './routes/dashboard.events.$eventId.staff'
+import { Route as DashboardEventsEventIdPlanningRouteImport } from './routes/dashboard.events.$eventId.planning'
+import { Route as DashboardEventsEventIdParkingRouteImport } from './routes/dashboard.events.$eventId.parking'
+import { Route as DashboardEventsEventIdMerchandiseRouteImport } from './routes/dashboard.events.$eventId.merchandise'
+import { Route as DashboardEventsEventIdCustomersRouteImport } from './routes/dashboard.events.$eventId.customers'
 
 const WorkspacesRoute = WorkspacesRouteImport.update({
   id: '/workspaces',
@@ -110,6 +119,11 @@ const EventsIndexRoute = EventsIndexRouteImport.update({
   path: '/events/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const TicketTicketIdRoute = TicketTicketIdRouteImport.update({
   id: '/ticket/$ticketId',
   path: '/ticket/$ticketId',
@@ -130,12 +144,59 @@ const BookEventIdRoute = BookEventIdRouteImport.update({
   path: '/book/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardEventsIndexRoute = DashboardEventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardEventsEventIdIndexRoute =
+  DashboardEventsEventIdIndexRouteImport.update({
+    id: '/events/$eventId/',
+    path: '/events/$eventId/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardEventsEventIdVenueRoute =
+  DashboardEventsEventIdVenueRouteImport.update({
+    id: '/events/$eventId/venue',
+    path: '/events/$eventId/venue',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardEventsEventIdStaffRoute =
+  DashboardEventsEventIdStaffRouteImport.update({
+    id: '/events/$eventId/staff',
+    path: '/events/$eventId/staff',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardEventsEventIdPlanningRoute =
+  DashboardEventsEventIdPlanningRouteImport.update({
+    id: '/events/$eventId/planning',
+    path: '/events/$eventId/planning',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardEventsEventIdParkingRoute =
+  DashboardEventsEventIdParkingRouteImport.update({
+    id: '/events/$eventId/parking',
+    path: '/events/$eventId/parking',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardEventsEventIdMerchandiseRoute =
+  DashboardEventsEventIdMerchandiseRouteImport.update({
+    id: '/events/$eventId/merchandise',
+    path: '/events/$eventId/merchandise',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardEventsEventIdCustomersRoute =
+  DashboardEventsEventIdCustomersRouteImport.update({
+    id: '/events/$eventId/customers',
+    path: '/events/$eventId/customers',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/create-event': typeof CreateEventRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
@@ -151,13 +212,21 @@ export interface FileRoutesByFullPath {
   '/community/$postId': typeof CommunityPostIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/dashboard/events/': typeof DashboardEventsIndexRoute
+  '/dashboard/events/$eventId/customers': typeof DashboardEventsEventIdCustomersRoute
+  '/dashboard/events/$eventId/merchandise': typeof DashboardEventsEventIdMerchandiseRoute
+  '/dashboard/events/$eventId/parking': typeof DashboardEventsEventIdParkingRoute
+  '/dashboard/events/$eventId/planning': typeof DashboardEventsEventIdPlanningRoute
+  '/dashboard/events/$eventId/staff': typeof DashboardEventsEventIdStaffRoute
+  '/dashboard/events/$eventId/venue': typeof DashboardEventsEventIdVenueRoute
+  '/dashboard/events/$eventId/': typeof DashboardEventsEventIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/create-event': typeof CreateEventRoute
-  '/dashboard': typeof DashboardRoute
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
@@ -173,14 +242,23 @@ export interface FileRoutesByTo {
   '/community/$postId': typeof CommunityPostIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/events': typeof EventsIndexRoute
+  '/dashboard/events': typeof DashboardEventsIndexRoute
+  '/dashboard/events/$eventId/customers': typeof DashboardEventsEventIdCustomersRoute
+  '/dashboard/events/$eventId/merchandise': typeof DashboardEventsEventIdMerchandiseRoute
+  '/dashboard/events/$eventId/parking': typeof DashboardEventsEventIdParkingRoute
+  '/dashboard/events/$eventId/planning': typeof DashboardEventsEventIdPlanningRoute
+  '/dashboard/events/$eventId/staff': typeof DashboardEventsEventIdStaffRoute
+  '/dashboard/events/$eventId/venue': typeof DashboardEventsEventIdVenueRoute
+  '/dashboard/events/$eventId': typeof DashboardEventsEventIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/create-event': typeof CreateEventRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
@@ -196,7 +274,16 @@ export interface FileRoutesById {
   '/community/$postId': typeof CommunityPostIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/dashboard/events/': typeof DashboardEventsIndexRoute
+  '/dashboard/events/$eventId/customers': typeof DashboardEventsEventIdCustomersRoute
+  '/dashboard/events/$eventId/merchandise': typeof DashboardEventsEventIdMerchandiseRoute
+  '/dashboard/events/$eventId/parking': typeof DashboardEventsEventIdParkingRoute
+  '/dashboard/events/$eventId/planning': typeof DashboardEventsEventIdPlanningRoute
+  '/dashboard/events/$eventId/staff': typeof DashboardEventsEventIdStaffRoute
+  '/dashboard/events/$eventId/venue': typeof DashboardEventsEventIdVenueRoute
+  '/dashboard/events/$eventId/': typeof DashboardEventsEventIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -220,13 +307,21 @@ export interface FileRouteTypes {
     | '/community/$postId'
     | '/events/$eventId'
     | '/ticket/$ticketId'
+    | '/dashboard/'
     | '/events/'
+    | '/dashboard/events/'
+    | '/dashboard/events/$eventId/customers'
+    | '/dashboard/events/$eventId/merchandise'
+    | '/dashboard/events/$eventId/parking'
+    | '/dashboard/events/$eventId/planning'
+    | '/dashboard/events/$eventId/staff'
+    | '/dashboard/events/$eventId/venue'
+    | '/dashboard/events/$eventId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/activity'
     | '/create-event'
-    | '/dashboard'
     | '/experiences'
     | '/explore'
     | '/feed'
@@ -242,7 +337,16 @@ export interface FileRouteTypes {
     | '/community/$postId'
     | '/events/$eventId'
     | '/ticket/$ticketId'
+    | '/dashboard'
     | '/events'
+    | '/dashboard/events'
+    | '/dashboard/events/$eventId/customers'
+    | '/dashboard/events/$eventId/merchandise'
+    | '/dashboard/events/$eventId/parking'
+    | '/dashboard/events/$eventId/planning'
+    | '/dashboard/events/$eventId/staff'
+    | '/dashboard/events/$eventId/venue'
+    | '/dashboard/events/$eventId'
   id:
     | '__root__'
     | '/'
@@ -264,14 +368,23 @@ export interface FileRouteTypes {
     | '/community/$postId'
     | '/events/$eventId'
     | '/ticket/$ticketId'
+    | '/dashboard/'
     | '/events/'
+    | '/dashboard/events/'
+    | '/dashboard/events/$eventId/customers'
+    | '/dashboard/events/$eventId/merchandise'
+    | '/dashboard/events/$eventId/parking'
+    | '/dashboard/events/$eventId/planning'
+    | '/dashboard/events/$eventId/staff'
+    | '/dashboard/events/$eventId/venue'
+    | '/dashboard/events/$eventId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivityRoute: typeof ActivityRoute
   CreateEventRoute: typeof CreateEventRoute
-  DashboardRoute: typeof DashboardRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   ExperiencesRoute: typeof ExperiencesRoute
   ExploreRoute: typeof ExploreRoute
   FeedRoute: typeof FeedRoute
@@ -404,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/ticket/$ticketId': {
       id: '/ticket/$ticketId'
       path: '/ticket/$ticketId'
@@ -432,14 +552,99 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/events/': {
+      id: '/dashboard/events/'
+      path: '/events'
+      fullPath: '/dashboard/events/'
+      preLoaderRoute: typeof DashboardEventsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/events/$eventId/': {
+      id: '/dashboard/events/$eventId/'
+      path: '/events/$eventId'
+      fullPath: '/dashboard/events/$eventId/'
+      preLoaderRoute: typeof DashboardEventsEventIdIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/events/$eventId/venue': {
+      id: '/dashboard/events/$eventId/venue'
+      path: '/events/$eventId/venue'
+      fullPath: '/dashboard/events/$eventId/venue'
+      preLoaderRoute: typeof DashboardEventsEventIdVenueRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/events/$eventId/staff': {
+      id: '/dashboard/events/$eventId/staff'
+      path: '/events/$eventId/staff'
+      fullPath: '/dashboard/events/$eventId/staff'
+      preLoaderRoute: typeof DashboardEventsEventIdStaffRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/events/$eventId/planning': {
+      id: '/dashboard/events/$eventId/planning'
+      path: '/events/$eventId/planning'
+      fullPath: '/dashboard/events/$eventId/planning'
+      preLoaderRoute: typeof DashboardEventsEventIdPlanningRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/events/$eventId/parking': {
+      id: '/dashboard/events/$eventId/parking'
+      path: '/events/$eventId/parking'
+      fullPath: '/dashboard/events/$eventId/parking'
+      preLoaderRoute: typeof DashboardEventsEventIdParkingRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/events/$eventId/merchandise': {
+      id: '/dashboard/events/$eventId/merchandise'
+      path: '/events/$eventId/merchandise'
+      fullPath: '/dashboard/events/$eventId/merchandise'
+      preLoaderRoute: typeof DashboardEventsEventIdMerchandiseRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/events/$eventId/customers': {
+      id: '/dashboard/events/$eventId/customers'
+      path: '/events/$eventId/customers'
+      fullPath: '/dashboard/events/$eventId/customers'
+      preLoaderRoute: typeof DashboardEventsEventIdCustomersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
+
+interface DashboardRouteChildren {
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardEventsIndexRoute: typeof DashboardEventsIndexRoute
+  DashboardEventsEventIdCustomersRoute: typeof DashboardEventsEventIdCustomersRoute
+  DashboardEventsEventIdMerchandiseRoute: typeof DashboardEventsEventIdMerchandiseRoute
+  DashboardEventsEventIdParkingRoute: typeof DashboardEventsEventIdParkingRoute
+  DashboardEventsEventIdPlanningRoute: typeof DashboardEventsEventIdPlanningRoute
+  DashboardEventsEventIdStaffRoute: typeof DashboardEventsEventIdStaffRoute
+  DashboardEventsEventIdVenueRoute: typeof DashboardEventsEventIdVenueRoute
+  DashboardEventsEventIdIndexRoute: typeof DashboardEventsEventIdIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardEventsIndexRoute: DashboardEventsIndexRoute,
+  DashboardEventsEventIdCustomersRoute: DashboardEventsEventIdCustomersRoute,
+  DashboardEventsEventIdMerchandiseRoute:
+    DashboardEventsEventIdMerchandiseRoute,
+  DashboardEventsEventIdParkingRoute: DashboardEventsEventIdParkingRoute,
+  DashboardEventsEventIdPlanningRoute: DashboardEventsEventIdPlanningRoute,
+  DashboardEventsEventIdStaffRoute: DashboardEventsEventIdStaffRoute,
+  DashboardEventsEventIdVenueRoute: DashboardEventsEventIdVenueRoute,
+  DashboardEventsEventIdIndexRoute: DashboardEventsEventIdIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityRoute: ActivityRoute,
   CreateEventRoute: CreateEventRoute,
-  DashboardRoute: DashboardRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   ExperiencesRoute: ExperiencesRoute,
   ExploreRoute: ExploreRoute,
   FeedRoute: FeedRoute,

@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -16,13 +16,13 @@ import {
 import { Button } from "@/components/ui/button";
 
 const nav = [
-  { label: "Dashboard", icon: LayoutDashboard, active: true },
-  { label: "Workspaces", icon: Building2 },
-  { label: "Events", icon: CalendarDays },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Workspaces", href: "/workspaces", icon: Building2 },
+  { label: "Events", href: "/dashboard/events", icon: CalendarDays },
   { label: "Tickets", icon: Ticket },
   { label: "Analytics", icon: BarChart3 },
   { label: "Attendees", icon: Users },
-  { label: "Scanning", icon: ScanLine },
+  { label: "Scanning", href: "/scanner", icon: ScanLine },
   { label: "Merchandise", icon: ShoppingBag },
   { label: "VIP Access", icon: Crown },
   { label: "Campaigns", icon: Megaphone },
@@ -31,6 +31,8 @@ const nav = [
 ];
 
 export function DesktopSidebar() {
+  const location = useRouterState({ select: (s) => s.location });
+
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:block">
       <Link to="/" className="mb-6 flex items-center gap-2 px-2">
@@ -44,15 +46,12 @@ export function DesktopSidebar() {
       </Link>
       <nav className="space-y-1 text-sm">
         {nav.map((n) => {
-          const href =
-            n.label === "Workspaces"
-              ? "/workspaces"
-              : n.label === "Scanning"
-                ? "/scanner"
-                : null;
-          const cls = `flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${n.active ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:bg-secondary"}`;
-          return href ? (
-            <Link key={n.label} to={href} className={cls}>
+          const isActive = n.href && (location.pathname === n.href || (n.href !== "/dashboard" && location.pathname.startsWith(n.href)));
+          
+          const cls = `flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${isActive ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:bg-secondary"}`;
+          
+          return n.href ? (
+            <Link key={n.label} to={n.href} className={cls}>
               <n.icon className="h-4 w-4" /> {n.label}
             </Link>
           ) : (

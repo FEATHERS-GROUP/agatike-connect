@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { DashboardDesktop } from "@/components/desktop/DashboardDesktop";
+import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router";
+import { DesktopSidebar } from "@/components/desktop/dashboard/DesktopSidebar";
+
+import { EventSidebar } from "@/components/desktop/dashboard/EventSidebar";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -11,10 +13,13 @@ export const Route = createFileRoute("/dashboard")({
       },
     ],
   }),
-  component: DashboardRoute,
+  component: DashboardLayout,
 });
 
-function DashboardRoute() {
+function DashboardLayout() {
+  const location = useRouterState({ select: (s) => s.location });
+  const isEventWorkspace = location.pathname.match(/^\/dashboard\/events\/[^/]+/);
+
   return (
     <>
       <div className="md:hidden flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">
@@ -28,8 +33,16 @@ function DashboardRoute() {
           The dashboard is optimized for desktop viewing. Please access it from a computer for the best experience.
         </p>
       </div>
-      <div className="hidden md:block">
-        <DashboardDesktop />
+      <div className="hidden md:block min-h-screen bg-secondary/30">
+        <div className="flex">
+          {/* Sidebar */}
+          {isEventWorkspace ? <EventSidebar /> : <DesktopSidebar />}
+          
+          {/* Main Content Area */}
+          <main className="flex-1 p-6 lg:p-10">
+            <Outlet />
+          </main>
+        </div>
       </div>
     </>
   );
