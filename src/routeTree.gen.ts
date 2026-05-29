@@ -25,6 +25,7 @@ import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 import { Route as DashboardWorkspacesRouteImport } from './routes/dashboard.workspaces'
+import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard.create-organizer'
 import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
 import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard.$workspaceSlug.index'
@@ -127,6 +128,12 @@ const DashboardWorkspacesRoute = DashboardWorkspacesRouteImport.update({
   path: '/workspaces',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCreateOrganizerRoute =
+  DashboardCreateOrganizerRouteImport.update({
+    id: '/create-organizer',
+    path: '/create-organizer',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const CommunityPostIdRoute = CommunityPostIdRouteImport.update({
   id: '/community/$postId',
   path: '/community/$postId',
@@ -267,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
+  '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -306,6 +314,7 @@ export interface FileRoutesByTo {
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
+  '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -346,6 +355,7 @@ export interface FileRoutesById {
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
+  '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -387,6 +397,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
+    | '/dashboard/create-organizer'
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/ticket/$ticketId'
@@ -426,6 +437,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
+    | '/dashboard/create-organizer'
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/ticket/$ticketId'
@@ -465,6 +477,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
+    | '/dashboard/create-organizer'
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/ticket/$ticketId'
@@ -622,6 +635,13 @@ declare module '@tanstack/react-router' {
       path: '/workspaces'
       fullPath: '/dashboard/workspaces'
       preLoaderRoute: typeof DashboardWorkspacesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/create-organizer': {
+      id: '/dashboard/create-organizer'
+      path: '/create-organizer'
+      fullPath: '/dashboard/create-organizer'
+      preLoaderRoute: typeof DashboardCreateOrganizerRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/community/$postId': {
@@ -796,6 +816,7 @@ const DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren =
   )
 
 interface DashboardRouteChildren {
+  DashboardCreateOrganizerRoute: typeof DashboardCreateOrganizerRoute
   DashboardWorkspacesRoute: typeof DashboardWorkspacesRoute
   DashboardWorkspaceSlugCreateEventRoute: typeof DashboardWorkspaceSlugCreateEventRoute
   DashboardWorkspaceSlugScannerRoute: typeof DashboardWorkspaceSlugScannerRoute
@@ -816,6 +837,7 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardCreateOrganizerRoute: DashboardCreateOrganizerRoute,
   DashboardWorkspacesRoute: DashboardWorkspacesRoute,
   DashboardWorkspaceSlugCreateEventRoute:
     DashboardWorkspaceSlugCreateEventRoute,

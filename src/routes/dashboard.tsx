@@ -25,10 +25,21 @@ function DashboardLayout() {
   
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
-  const hideSidebar = location.pathname === "/dashboard/workspaces" || location.pathname.match(/^\/dashboard\/[^/]+\/(venue-designer|ticket-designer|create-event)/);
+  const hideSidebar = location.pathname === "/dashboard/workspaces" || location.pathname === "/dashboard/create-organizer" || location.pathname.match(/^\/dashboard\/[^/]+\/(venue-designer|ticket-designer|create-event)/);
 
   useEffect(() => {
     if (!isLoaded) return;
+
+    // Route Protection: Require Organizer Account
+    const hasOrganizerAccount = localStorage.getItem("agatike_organizer_id");
+    
+    // Always allow access to create-organizer page
+    if (location.pathname === "/dashboard/create-organizer") return;
+
+    if (!hasOrganizerAccount) {
+      navigate({ to: "/dashboard/create-organizer" });
+      return;
+    }
     
     // Allow users to visit the workspaces page directly to create new ones
     if (location.pathname === "/dashboard/workspaces") return;
