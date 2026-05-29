@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Check, ChevronsUpDown, Plus, Building2, CalendarDays, Film, Mountain } from "lucide-react";
 import { useWorkspace, WorkspaceType } from "@/contexts/WorkspaceContext";
 import {
@@ -19,6 +19,7 @@ const typeIcons: Record<WorkspaceType, any> = {
 
 export function WorkspaceSwitcher() {
   const { workspaces, activeWorkspace, setActiveWorkspace, isLoaded } = useWorkspace();
+  const navigate = useNavigate();
 
   if (!isLoaded || !activeWorkspace) return null;
 
@@ -29,8 +30,14 @@ export function WorkspaceSwitcher() {
       <DropdownMenu>
         <DropdownMenuTrigger className="flex w-full items-center justify-between rounded-xl border border-border/60 bg-card px-3 py-2 text-left shadow-sm transition hover:bg-secondary/50 focus:outline-none">
           <div className="flex items-center gap-3">
-            <div className="grid h-8 w-8 place-items-center rounded-lg text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
-              <ActiveIcon className="h-4 w-4" />
+            <div className="grid h-8 w-8 place-items-center rounded-lg text-primary-foreground overflow-hidden" style={{ background: "var(--gradient-primary)" }}>
+              {activeWorkspace.icon?.startsWith("data:image") ? (
+                <img src={activeWorkspace.icon} alt="Logo" className="w-full h-full object-cover" />
+              ) : activeWorkspace.icon ? (
+                <span className="text-lg">{activeWorkspace.icon}</span>
+              ) : (
+                <ActiveIcon className="h-4 w-4" />
+              )}
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold leading-tight">{activeWorkspace.name}</span>
@@ -50,10 +57,21 @@ export function WorkspaceSwitcher() {
               <DropdownMenuItem
                 key={workspace.id}
                 className="flex cursor-pointer items-center justify-between rounded-lg px-3 py-2"
-                onClick={() => setActiveWorkspace(workspace)}
+                onClick={() => {
+                  setActiveWorkspace(workspace);
+                  navigate({ to: `/dashboard/${workspace.slug}` });
+                }}
               >
                 <div className="flex items-center gap-2">
-                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center justify-center w-5 h-5">
+                    {workspace.icon?.startsWith("data:image") ? (
+                      <img src={workspace.icon} alt="Logo" className="w-full h-full object-cover rounded-sm" />
+                    ) : workspace.icon ? (
+                      <span className="text-sm leading-none">{workspace.icon}</span>
+                    ) : (
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
                   <span className={isActive ? "font-medium" : ""}>{workspace.name}</span>
                 </div>
                 {isActive && <Check className="h-4 w-4 text-primary" />}

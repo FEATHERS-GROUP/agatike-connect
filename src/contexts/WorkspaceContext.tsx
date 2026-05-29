@@ -5,28 +5,55 @@ export type WorkspaceType = "VENUE" | "EVENT" | "CINEMA" | "EXPERIENCE";
 export type Workspace = {
   id: string;
   name: string;
+  slug: string;
   type: WorkspaceType;
   city: string;
-  avatarUrl?: string;
+  address?: string;
+  email?: string;
+  phone?: string;
+  instagram?: string;
+  tiktok?: string;
+  youtube?: string;
+  icon?: string;
+  modules: string[];
 };
 
 interface WorkspaceContextType {
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
   setActiveWorkspace: (workspace: Workspace) => void;
-  createWorkspace: (workspace: Omit<Workspace, "id">) => void;
+  createWorkspace: (workspace: Omit<Workspace, "id" | "slug">) => void;
   isLoaded: boolean;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
 
-const STORAGE_KEY = "agatike_workspaces";
-const ACTIVE_KEY = "agatike_active_workspace";
+const STORAGE_KEY = "agatike_workspaces_v3";
+const ACTIVE_KEY = "agatike_active_workspace_v3";
+
+// Default modules everyone should probably have
+const BASE_MODULES = ["dashboard", "analytics", "settings", "campaigns", "withdrawals"];
 
 // Seed data
 const initialWorkspaces: Workspace[] = [
-  { id: "ws-1", name: "Agatike Events", type: "EVENT", city: "Kigali, RW" },
-  { id: "ws-2", name: "Kigali Arenas", type: "VENUE", city: "Kigali, RW" },
+  { 
+    id: "ws-1", 
+    name: "Agatike Events", 
+    slug: "agatike-events",
+    type: "EVENT", 
+    city: "Kigali, RW",
+    icon: "🎉",
+    modules: [...BASE_MODULES, "events", "tickets", "attendees", "scanner", "merchandise", "vip"]
+  },
+  { 
+    id: "ws-2", 
+    name: "Kigali Arenas", 
+    slug: "kigali-arenas",
+    type: "VENUE", 
+    city: "Kigali, RW",
+    icon: "🏟️",
+    modules: [...BASE_MODULES, "venue_listings", "venue_designer"]
+  },
 ];
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
@@ -69,8 +96,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(ACTIVE_KEY, JSON.stringify(workspace));
   };
 
-  const createWorkspace = (workspaceData: Omit<Workspace, "id">) => {
-    const newWorkspace = { ...workspaceData, id: crypto.randomUUID() };
+  const createWorkspace = (workspaceData: Omit<Workspace, "id" | "slug">) => {
+    const slug = workspaceData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const newWorkspace = { ...workspaceData, id: crypto.randomUUID(), slug };
     const updated = [...workspaces, newWorkspace];
     setWorkspaces(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));

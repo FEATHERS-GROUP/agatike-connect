@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export const Route = createFileRoute("/dashboard/events/")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/events/")({
   component: DashboardEvents,
 });
 
@@ -114,7 +114,7 @@ function DashboardEvents() {
                   <tr 
                     key={event.id} 
                     className="hover:bg-secondary/20 transition-colors group cursor-pointer"
-                    onClick={() => navigate({ to: `/dashboard/events/${event.id}` })}
+                    onClick={() => navigate({ to: `/dashboard/${activeWorkspace?.slug}/events/${event.id}` })}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">

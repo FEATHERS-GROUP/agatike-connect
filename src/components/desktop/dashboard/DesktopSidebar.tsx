@@ -1,64 +1,21 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import {
-  LayoutDashboard,
-  CalendarDays,
-  Ticket,
-  BarChart3,
-  Users,
-  ScanLine,
-  ShoppingBag,
-  Crown,
-  Megaphone,
-  Wallet,
-  Settings,
-  Building2,
-  Map,
-  Store,
-  Mountain,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-
-const commonNav = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Analytics", icon: BarChart3 },
-  { label: "Campaigns", icon: Megaphone },
-  { label: "Withdrawals", icon: Wallet },
-  { label: "Settings", icon: Settings },
-];
-
-const eventNav = [
-  { label: "Events", href: "/dashboard/events", icon: CalendarDays },
-  { label: "Tickets", href: "/ticket-designer", icon: Ticket },
-  { label: "Attendees", icon: Users },
-  { label: "Scanning", href: "/scanner", icon: ScanLine },
-  { label: "Merchandise", icon: ShoppingBag },
-  { label: "VIP Access", icon: Crown },
-];
-
-const venueNav = [
-  { label: "Venue Listings", href: "/dashboard/venue-rent", icon: Store },
-  { label: "Venue Designer", href: "/venue-designer", icon: Map },
-];
-
-const experienceNav = [
-  { label: "Experiences", href: "/dashboard/experiences", icon: Mountain },
-  { label: "Bookings", icon: Users },
-];
+import { platformModules } from "@/lib/mock-modules";
 
 export function DesktopSidebar() {
   const location = useRouterState({ select: (s) => s.location });
   const { activeWorkspace } = useWorkspace();
 
-  let nav = [...commonNav];
-  if (activeWorkspace?.type === "VENUE") {
-    nav = [nav[0], ...venueNav, ...nav.slice(1)];
-  } else if (activeWorkspace?.type === "EVENT" || activeWorkspace?.type === "CINEMA") {
-    nav = [nav[0], ...eventNav, ...nav.slice(1)];
-  } else if (activeWorkspace?.type === "EXPERIENCE") {
-    nav = [nav[0], ...experienceNav, ...nav.slice(1)];
-  }
+  // If no workspace or modules are loaded, we can't show much
+  const userModuleIds = activeWorkspace?.modules || [];
+  
+  // Filter platform modules based on user's active workspace modules.
+  // We maintain the order defined in the mock database.
+  const nav = platformModules.filter(m => m.mandatory || userModuleIds.includes(m.id));
+
+  const workspacePrefix = activeWorkspace ? `/dashboard/${activeWorkspace.slug}` : "/dashboard";
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:flex md:flex-col overflow-y-auto">
@@ -76,12 +33,23 @@ export function DesktopSidebar() {
 
       <nav className="space-y-1 text-sm flex-1">
         {nav.map((n) => {
-          const isActive = n.href && (location.pathname === n.href || (n.href !== "/dashboard" && location.pathname.startsWith(n.href)));
+          // Construct the full href: e.g. /dashboard/kigali-arenas/events
+          const fullHref = n.href !== undefined ? (n.href === "" ? workspacePrefix : `${workspacePrefix}/${n.href}`) : null;
+          
+          let isActive = false;
+          if (fullHref) {
+            // Dashboard root is active exactly at the prefix
+            if (n.href === "") {
+              isActive = location.pathname === fullHref;
+            } else {
+              isActive = location.pathname.startsWith(fullHref);
+            }
+          }
           
           const cls = `flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${isActive ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:bg-secondary"}`;
           
-          return n.href ? (
-            <Link key={n.label} to={n.href} className={cls}>
+          return fullHref ? (
+            <Link key={n.label} to={fullHref} className={cls}>
               <n.icon className="h-4 w-4" /> {n.label}
             </Link>
           ) : (

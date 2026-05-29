@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/dashboard/events/$eventId/staff")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/staff")({
   component: StaffView,
 });
 

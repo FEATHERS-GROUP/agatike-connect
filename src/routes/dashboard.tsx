@@ -21,16 +21,40 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardLayout() {
   const location = useRouterState({ select: (s) => s.location });
   const navigate = useNavigate();
-  const { workspaces, isLoaded } = useWorkspace();
+  const { workspaces, activeWorkspace, isLoaded } = useWorkspace();
   
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/events\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/venues\/[^/]+/);
 
   useEffect(() => {
-    if (isLoaded && workspaces.length === 0 && !location.pathname.includes("/dashboard/workspaces")) {
+    if (!isLoaded) return;
+    
+    // Allow users to visit the workspaces page directly to create new ones
+    if (location.pathname === "/dashboard/workspaces") return;
+
+    if (workspaces.length === 0) {
       navigate({ to: "/dashboard/workspaces" });
+    } else if (activeWorkspace && location.pathname === "/dashboard") {
+      navigate({ to: `/dashboard/${activeWorkspace.slug}` });
+    } else if (activeWorkspace) {
+      // Check if current URL slug matches active workspace slug.
+      // E.g. /dashboard/kigali-arenas/events
+      const pathParts = location.pathname.split("/");
+      const urlSlug = pathParts[2];
+      
+      if (urlSlug && urlSlug !== "workspaces" && urlSlug !== activeWorkspace.slug) {
+        // If URL slug doesn't match active workspace, update active workspace to match URL
+        const workspaceFromUrl = workspaces.find(w => w.slug === urlSlug);
+        if (workspaceFromUrl) {
+          // Temporarily disable this switch to avoid infinite loops with useWorkspace setActiveWorkspace
+          // setActiveWorkspace(workspaceFromUrl);
+        } else {
+          // If URL slug is invalid, redirect to active workspace
+          navigate({ to: `/dashboard/${activeWorkspace.slug}` });
+        }
+      }
     }
-  }, [isLoaded, workspaces, location.pathname, navigate]);
+  }, [isLoaded, workspaces, activeWorkspace, location.pathname, navigate]);
 
   return (
     <>

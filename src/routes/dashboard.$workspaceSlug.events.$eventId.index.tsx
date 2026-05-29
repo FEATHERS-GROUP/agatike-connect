@@ -18,7 +18,7 @@ import {
 } from "recharts";
 import { useState } from "react";
 
-export const Route = createFileRoute("/dashboard/events/$eventId/")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/")({
   component: DashboardEventDetails,
 });
 

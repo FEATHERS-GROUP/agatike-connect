@@ -3,7 +3,7 @@ import { Search, Download, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export const Route = createFileRoute("/dashboard/events/$eventId/customers")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/customers")({
   component: CustomersView,
 });
 

@@ -24,7 +24,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-export const Route = createFileRoute("/dashboard/venues/$venueId/overview")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/overview")({
   component: VenueOverviewPage,
 });
 

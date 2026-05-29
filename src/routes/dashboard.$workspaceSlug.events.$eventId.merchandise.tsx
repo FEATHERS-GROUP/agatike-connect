@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/dashboard/events/$eventId/merchandise")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/merchandise")({
   component: MerchandiseView,
 });
 

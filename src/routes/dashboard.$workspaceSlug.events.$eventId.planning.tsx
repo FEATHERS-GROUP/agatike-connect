@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { DollarSign, Wallet, TrendingUp, PieChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/dashboard/events/$eventId/planning")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/planning")({
   component: PlanningView,
 });
 

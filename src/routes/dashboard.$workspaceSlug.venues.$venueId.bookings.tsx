@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { venueBookings, rentableVenues } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/dashboard/venues/$venueId/bookings")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/bookings")({
   component: VenueBookingsPage,
 });
 

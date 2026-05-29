@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MapPin, Image as ImageIcon, Map, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/dashboard/events/$eventId/venue")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/venue")({
   component: VenueView,
 });
 

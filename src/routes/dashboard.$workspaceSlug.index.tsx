@@ -6,7 +6,7 @@ import { DesktopRecentOrders } from "@/components/desktop/dashboard/DesktopRecen
 import { DesktopPricing } from "@/components/desktop/dashboard/DesktopPricing";
 import { DesktopWizardPreview } from "@/components/desktop/dashboard/DesktopWizardPreview";
 
-export const Route = createFileRoute("/dashboard/")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/")({
   component: DashboardIndex,
 });
 

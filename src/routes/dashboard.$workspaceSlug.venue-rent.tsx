@@ -3,7 +3,7 @@ import { Plus, MapPin, Users, CalendarDays, MoreHorizontal, Store, BarChart3, Cl
 import { Button } from "@/components/ui/button";
 import { rentableVenues, type RentableVenue } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/dashboard/venue-rent")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/venue-rent")({
   head: () => ({
     meta: [
       { title: "Venue Listings — Agatike" },
@@ -73,7 +73,7 @@ function VenueListingsPage() {
           {rentableVenues.map(venue => (
             <Link 
               key={venue.id} 
-              to={`/dashboard/venues/${venue.id}/overview`}
+              to={`/dashboard/${activeWorkspace?.slug}/venues/${venue.id}/overview`}
               className="group flex flex-col sm:flex-row rounded-3xl bg-card border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
             >
               {/* Image side */}

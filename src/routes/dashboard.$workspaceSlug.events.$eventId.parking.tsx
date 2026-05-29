@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Search, Car } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-export const Route = createFileRoute("/dashboard/events/$eventId/parking")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/parking")({
   component: ParkingView,
 });
 

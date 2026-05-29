@@ -26,26 +26,26 @@ import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TicketDesignerIndexRouteImport } from './routes/ticket-designer.index'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
-import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
 import { Route as TicketDesignerProjectIdRouteImport } from './routes/ticket-designer.$projectId'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 import { Route as DashboardWorkspacesRouteImport } from './routes/dashboard.workspaces'
-import { Route as DashboardVenueRentRouteImport } from './routes/dashboard.venue-rent'
 import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
-import { Route as DashboardEventsIndexRouteImport } from './routes/dashboard.events.index'
-import { Route as DashboardVenuesVenueIdRouteImport } from './routes/dashboard.venues.$venueId'
-import { Route as DashboardEventsEventIdIndexRouteImport } from './routes/dashboard.events.$eventId.index'
-import { Route as DashboardVenuesVenueIdSettingsRouteImport } from './routes/dashboard.venues.$venueId.settings'
-import { Route as DashboardVenuesVenueIdOverviewRouteImport } from './routes/dashboard.venues.$venueId.overview'
-import { Route as DashboardVenuesVenueIdBookingsRouteImport } from './routes/dashboard.venues.$venueId.bookings'
-import { Route as DashboardEventsEventIdVenueRouteImport } from './routes/dashboard.events.$eventId.venue'
-import { Route as DashboardEventsEventIdStaffRouteImport } from './routes/dashboard.events.$eventId.staff'
-import { Route as DashboardEventsEventIdPlanningRouteImport } from './routes/dashboard.events.$eventId.planning'
-import { Route as DashboardEventsEventIdParkingRouteImport } from './routes/dashboard.events.$eventId.parking'
-import { Route as DashboardEventsEventIdMerchandiseRouteImport } from './routes/dashboard.events.$eventId.merchandise'
-import { Route as DashboardEventsEventIdCustomersRouteImport } from './routes/dashboard.events.$eventId.customers'
+import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard.$workspaceSlug.index'
+import { Route as DashboardWorkspaceSlugVenueRentRouteImport } from './routes/dashboard.$workspaceSlug.venue-rent'
+import { Route as DashboardWorkspaceSlugEventsIndexRouteImport } from './routes/dashboard.$workspaceSlug.events.index'
+import { Route as DashboardWorkspaceSlugVenuesVenueIdRouteImport } from './routes/dashboard.$workspaceSlug.venues.$venueId'
+import { Route as DashboardWorkspaceSlugEventsEventIdIndexRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.index'
+import { Route as DashboardWorkspaceSlugVenuesVenueIdSettingsRouteImport } from './routes/dashboard.$workspaceSlug.venues.$venueId.settings'
+import { Route as DashboardWorkspaceSlugVenuesVenueIdOverviewRouteImport } from './routes/dashboard.$workspaceSlug.venues.$venueId.overview'
+import { Route as DashboardWorkspaceSlugVenuesVenueIdBookingsRouteImport } from './routes/dashboard.$workspaceSlug.venues.$venueId.bookings'
+import { Route as DashboardWorkspaceSlugEventsEventIdVenueRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.venue'
+import { Route as DashboardWorkspaceSlugEventsEventIdStaffRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.staff'
+import { Route as DashboardWorkspaceSlugEventsEventIdPlanningRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.planning'
+import { Route as DashboardWorkspaceSlugEventsEventIdParkingRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.parking'
+import { Route as DashboardWorkspaceSlugEventsEventIdMerchandiseRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.merchandise'
+import { Route as DashboardWorkspaceSlugEventsEventIdCustomersRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.customers'
 
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
@@ -132,11 +132,6 @@ const EventsIndexRoute = EventsIndexRouteImport.update({
   path: '/events/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const TicketTicketIdRoute = TicketTicketIdRouteImport.update({
   id: '/ticket/$ticketId',
   path: '/ticket/$ticketId',
@@ -157,11 +152,6 @@ const DashboardWorkspacesRoute = DashboardWorkspacesRouteImport.update({
   path: '/workspaces',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardVenueRentRoute = DashboardVenueRentRouteImport.update({
-  id: '/venue-rent',
-  path: '/venue-rent',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const CommunityPostIdRoute = CommunityPostIdRouteImport.update({
   id: '/community/$postId',
   path: '/community/$postId',
@@ -172,74 +162,88 @@ const BookEventIdRoute = BookEventIdRouteImport.update({
   path: '/book/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardEventsIndexRoute = DashboardEventsIndexRouteImport.update({
-  id: '/events/',
-  path: '/events/',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardVenuesVenueIdRoute = DashboardVenuesVenueIdRouteImport.update({
-  id: '/venues/$venueId',
-  path: '/venues/$venueId',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardEventsEventIdIndexRoute =
-  DashboardEventsEventIdIndexRouteImport.update({
-    id: '/events/$eventId/',
-    path: '/events/$eventId/',
+const DashboardWorkspaceSlugIndexRoute =
+  DashboardWorkspaceSlugIndexRouteImport.update({
+    id: '/$workspaceSlug/',
+    path: '/$workspaceSlug/',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardVenuesVenueIdSettingsRoute =
-  DashboardVenuesVenueIdSettingsRouteImport.update({
+const DashboardWorkspaceSlugVenueRentRoute =
+  DashboardWorkspaceSlugVenueRentRouteImport.update({
+    id: '/$workspaceSlug/venue-rent',
+    path: '/$workspaceSlug/venue-rent',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugEventsIndexRoute =
+  DashboardWorkspaceSlugEventsIndexRouteImport.update({
+    id: '/$workspaceSlug/events/',
+    path: '/$workspaceSlug/events/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugVenuesVenueIdRoute =
+  DashboardWorkspaceSlugVenuesVenueIdRouteImport.update({
+    id: '/$workspaceSlug/venues/$venueId',
+    path: '/$workspaceSlug/venues/$venueId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugEventsEventIdIndexRoute =
+  DashboardWorkspaceSlugEventsEventIdIndexRouteImport.update({
+    id: '/$workspaceSlug/events/$eventId/',
+    path: '/$workspaceSlug/events/$eventId/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugVenuesVenueIdSettingsRoute =
+  DashboardWorkspaceSlugVenuesVenueIdSettingsRouteImport.update({
     id: '/settings',
     path: '/settings',
-    getParentRoute: () => DashboardVenuesVenueIdRoute,
+    getParentRoute: () => DashboardWorkspaceSlugVenuesVenueIdRoute,
   } as any)
-const DashboardVenuesVenueIdOverviewRoute =
-  DashboardVenuesVenueIdOverviewRouteImport.update({
+const DashboardWorkspaceSlugVenuesVenueIdOverviewRoute =
+  DashboardWorkspaceSlugVenuesVenueIdOverviewRouteImport.update({
     id: '/overview',
     path: '/overview',
-    getParentRoute: () => DashboardVenuesVenueIdRoute,
+    getParentRoute: () => DashboardWorkspaceSlugVenuesVenueIdRoute,
   } as any)
-const DashboardVenuesVenueIdBookingsRoute =
-  DashboardVenuesVenueIdBookingsRouteImport.update({
+const DashboardWorkspaceSlugVenuesVenueIdBookingsRoute =
+  DashboardWorkspaceSlugVenuesVenueIdBookingsRouteImport.update({
     id: '/bookings',
     path: '/bookings',
-    getParentRoute: () => DashboardVenuesVenueIdRoute,
+    getParentRoute: () => DashboardWorkspaceSlugVenuesVenueIdRoute,
   } as any)
-const DashboardEventsEventIdVenueRoute =
-  DashboardEventsEventIdVenueRouteImport.update({
-    id: '/events/$eventId/venue',
-    path: '/events/$eventId/venue',
+const DashboardWorkspaceSlugEventsEventIdVenueRoute =
+  DashboardWorkspaceSlugEventsEventIdVenueRouteImport.update({
+    id: '/$workspaceSlug/events/$eventId/venue',
+    path: '/$workspaceSlug/events/$eventId/venue',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardEventsEventIdStaffRoute =
-  DashboardEventsEventIdStaffRouteImport.update({
-    id: '/events/$eventId/staff',
-    path: '/events/$eventId/staff',
+const DashboardWorkspaceSlugEventsEventIdStaffRoute =
+  DashboardWorkspaceSlugEventsEventIdStaffRouteImport.update({
+    id: '/$workspaceSlug/events/$eventId/staff',
+    path: '/$workspaceSlug/events/$eventId/staff',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardEventsEventIdPlanningRoute =
-  DashboardEventsEventIdPlanningRouteImport.update({
-    id: '/events/$eventId/planning',
-    path: '/events/$eventId/planning',
+const DashboardWorkspaceSlugEventsEventIdPlanningRoute =
+  DashboardWorkspaceSlugEventsEventIdPlanningRouteImport.update({
+    id: '/$workspaceSlug/events/$eventId/planning',
+    path: '/$workspaceSlug/events/$eventId/planning',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardEventsEventIdParkingRoute =
-  DashboardEventsEventIdParkingRouteImport.update({
-    id: '/events/$eventId/parking',
-    path: '/events/$eventId/parking',
+const DashboardWorkspaceSlugEventsEventIdParkingRoute =
+  DashboardWorkspaceSlugEventsEventIdParkingRouteImport.update({
+    id: '/$workspaceSlug/events/$eventId/parking',
+    path: '/$workspaceSlug/events/$eventId/parking',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardEventsEventIdMerchandiseRoute =
-  DashboardEventsEventIdMerchandiseRouteImport.update({
-    id: '/events/$eventId/merchandise',
-    path: '/events/$eventId/merchandise',
+const DashboardWorkspaceSlugEventsEventIdMerchandiseRoute =
+  DashboardWorkspaceSlugEventsEventIdMerchandiseRouteImport.update({
+    id: '/$workspaceSlug/events/$eventId/merchandise',
+    path: '/$workspaceSlug/events/$eventId/merchandise',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardEventsEventIdCustomersRoute =
-  DashboardEventsEventIdCustomersRouteImport.update({
-    id: '/events/$eventId/customers',
-    path: '/events/$eventId/customers',
+const DashboardWorkspaceSlugEventsEventIdCustomersRoute =
+  DashboardWorkspaceSlugEventsEventIdCustomersRouteImport.update({
+    id: '/$workspaceSlug/events/$eventId/customers',
+    path: '/$workspaceSlug/events/$eventId/customers',
     getParentRoute: () => DashboardRoute,
   } as any)
 
@@ -261,31 +265,32 @@ export interface FileRoutesByFullPath {
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
-  '/dashboard/venue-rent': typeof DashboardVenueRentRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
-  '/dashboard/': typeof DashboardIndexRoute
   '/events/': typeof EventsIndexRoute
   '/ticket-designer/': typeof TicketDesignerIndexRoute
-  '/dashboard/venues/$venueId': typeof DashboardVenuesVenueIdRouteWithChildren
-  '/dashboard/events/': typeof DashboardEventsIndexRoute
-  '/dashboard/events/$eventId/customers': typeof DashboardEventsEventIdCustomersRoute
-  '/dashboard/events/$eventId/merchandise': typeof DashboardEventsEventIdMerchandiseRoute
-  '/dashboard/events/$eventId/parking': typeof DashboardEventsEventIdParkingRoute
-  '/dashboard/events/$eventId/planning': typeof DashboardEventsEventIdPlanningRoute
-  '/dashboard/events/$eventId/staff': typeof DashboardEventsEventIdStaffRoute
-  '/dashboard/events/$eventId/venue': typeof DashboardEventsEventIdVenueRoute
-  '/dashboard/venues/$venueId/bookings': typeof DashboardVenuesVenueIdBookingsRoute
-  '/dashboard/venues/$venueId/overview': typeof DashboardVenuesVenueIdOverviewRoute
-  '/dashboard/venues/$venueId/settings': typeof DashboardVenuesVenueIdSettingsRoute
-  '/dashboard/events/$eventId/': typeof DashboardEventsEventIdIndexRoute
+  '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
+  '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
+  '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
+  '/dashboard/$workspaceSlug/events/': typeof DashboardWorkspaceSlugEventsIndexRoute
+  '/dashboard/$workspaceSlug/events/$eventId/customers': typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
+  '/dashboard/$workspaceSlug/events/$eventId/merchandise': typeof DashboardWorkspaceSlugEventsEventIdMerchandiseRoute
+  '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
+  '/dashboard/$workspaceSlug/events/$eventId/planning': typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
+  '/dashboard/$workspaceSlug/events/$eventId/staff': typeof DashboardWorkspaceSlugEventsEventIdStaffRoute
+  '/dashboard/$workspaceSlug/events/$eventId/venue': typeof DashboardWorkspaceSlugEventsEventIdVenueRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
+  '/dashboard/$workspaceSlug/events/$eventId/': typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/create-event': typeof CreateEventRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
@@ -299,26 +304,26 @@ export interface FileRoutesByTo {
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
-  '/dashboard/venue-rent': typeof DashboardVenueRentRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
-  '/dashboard': typeof DashboardIndexRoute
   '/events': typeof EventsIndexRoute
   '/ticket-designer': typeof TicketDesignerIndexRoute
-  '/dashboard/venues/$venueId': typeof DashboardVenuesVenueIdRouteWithChildren
-  '/dashboard/events': typeof DashboardEventsIndexRoute
-  '/dashboard/events/$eventId/customers': typeof DashboardEventsEventIdCustomersRoute
-  '/dashboard/events/$eventId/merchandise': typeof DashboardEventsEventIdMerchandiseRoute
-  '/dashboard/events/$eventId/parking': typeof DashboardEventsEventIdParkingRoute
-  '/dashboard/events/$eventId/planning': typeof DashboardEventsEventIdPlanningRoute
-  '/dashboard/events/$eventId/staff': typeof DashboardEventsEventIdStaffRoute
-  '/dashboard/events/$eventId/venue': typeof DashboardEventsEventIdVenueRoute
-  '/dashboard/venues/$venueId/bookings': typeof DashboardVenuesVenueIdBookingsRoute
-  '/dashboard/venues/$venueId/overview': typeof DashboardVenuesVenueIdOverviewRoute
-  '/dashboard/venues/$venueId/settings': typeof DashboardVenuesVenueIdSettingsRoute
-  '/dashboard/events/$eventId': typeof DashboardEventsEventIdIndexRoute
+  '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
+  '/dashboard/$workspaceSlug': typeof DashboardWorkspaceSlugIndexRoute
+  '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
+  '/dashboard/$workspaceSlug/events': typeof DashboardWorkspaceSlugEventsIndexRoute
+  '/dashboard/$workspaceSlug/events/$eventId/customers': typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
+  '/dashboard/$workspaceSlug/events/$eventId/merchandise': typeof DashboardWorkspaceSlugEventsEventIdMerchandiseRoute
+  '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
+  '/dashboard/$workspaceSlug/events/$eventId/planning': typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
+  '/dashboard/$workspaceSlug/events/$eventId/staff': typeof DashboardWorkspaceSlugEventsEventIdStaffRoute
+  '/dashboard/$workspaceSlug/events/$eventId/venue': typeof DashboardWorkspaceSlugEventsEventIdVenueRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
+  '/dashboard/$workspaceSlug/events/$eventId': typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -339,26 +344,26 @@ export interface FileRoutesById {
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
-  '/dashboard/venue-rent': typeof DashboardVenueRentRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
-  '/dashboard/': typeof DashboardIndexRoute
   '/events/': typeof EventsIndexRoute
   '/ticket-designer/': typeof TicketDesignerIndexRoute
-  '/dashboard/venues/$venueId': typeof DashboardVenuesVenueIdRouteWithChildren
-  '/dashboard/events/': typeof DashboardEventsIndexRoute
-  '/dashboard/events/$eventId/customers': typeof DashboardEventsEventIdCustomersRoute
-  '/dashboard/events/$eventId/merchandise': typeof DashboardEventsEventIdMerchandiseRoute
-  '/dashboard/events/$eventId/parking': typeof DashboardEventsEventIdParkingRoute
-  '/dashboard/events/$eventId/planning': typeof DashboardEventsEventIdPlanningRoute
-  '/dashboard/events/$eventId/staff': typeof DashboardEventsEventIdStaffRoute
-  '/dashboard/events/$eventId/venue': typeof DashboardEventsEventIdVenueRoute
-  '/dashboard/venues/$venueId/bookings': typeof DashboardVenuesVenueIdBookingsRoute
-  '/dashboard/venues/$venueId/overview': typeof DashboardVenuesVenueIdOverviewRoute
-  '/dashboard/venues/$venueId/settings': typeof DashboardVenuesVenueIdSettingsRoute
-  '/dashboard/events/$eventId/': typeof DashboardEventsEventIdIndexRoute
+  '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
+  '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
+  '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
+  '/dashboard/$workspaceSlug/events/': typeof DashboardWorkspaceSlugEventsIndexRoute
+  '/dashboard/$workspaceSlug/events/$eventId/customers': typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
+  '/dashboard/$workspaceSlug/events/$eventId/merchandise': typeof DashboardWorkspaceSlugEventsEventIdMerchandiseRoute
+  '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
+  '/dashboard/$workspaceSlug/events/$eventId/planning': typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
+  '/dashboard/$workspaceSlug/events/$eventId/staff': typeof DashboardWorkspaceSlugEventsEventIdStaffRoute
+  '/dashboard/$workspaceSlug/events/$eventId/venue': typeof DashboardWorkspaceSlugEventsEventIdVenueRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
+  '/dashboard/$workspaceSlug/events/$eventId/': typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -380,31 +385,32 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
-    | '/dashboard/venue-rent'
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
-    | '/dashboard/'
     | '/events/'
     | '/ticket-designer/'
-    | '/dashboard/venues/$venueId'
-    | '/dashboard/events/'
-    | '/dashboard/events/$eventId/customers'
-    | '/dashboard/events/$eventId/merchandise'
-    | '/dashboard/events/$eventId/parking'
-    | '/dashboard/events/$eventId/planning'
-    | '/dashboard/events/$eventId/staff'
-    | '/dashboard/events/$eventId/venue'
-    | '/dashboard/venues/$venueId/bookings'
-    | '/dashboard/venues/$venueId/overview'
-    | '/dashboard/venues/$venueId/settings'
-    | '/dashboard/events/$eventId/'
+    | '/dashboard/$workspaceSlug/venue-rent'
+    | '/dashboard/$workspaceSlug/'
+    | '/dashboard/$workspaceSlug/venues/$venueId'
+    | '/dashboard/$workspaceSlug/events/'
+    | '/dashboard/$workspaceSlug/events/$eventId/customers'
+    | '/dashboard/$workspaceSlug/events/$eventId/merchandise'
+    | '/dashboard/$workspaceSlug/events/$eventId/parking'
+    | '/dashboard/$workspaceSlug/events/$eventId/planning'
+    | '/dashboard/$workspaceSlug/events/$eventId/staff'
+    | '/dashboard/$workspaceSlug/events/$eventId/venue'
+    | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
+    | '/dashboard/$workspaceSlug/venues/$venueId/overview'
+    | '/dashboard/$workspaceSlug/venues/$venueId/settings'
+    | '/dashboard/$workspaceSlug/events/$eventId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/activity'
     | '/create-event'
+    | '/dashboard'
     | '/experiences'
     | '/explore'
     | '/feed'
@@ -418,26 +424,26 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
-    | '/dashboard/venue-rent'
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
-    | '/dashboard'
     | '/events'
     | '/ticket-designer'
-    | '/dashboard/venues/$venueId'
-    | '/dashboard/events'
-    | '/dashboard/events/$eventId/customers'
-    | '/dashboard/events/$eventId/merchandise'
-    | '/dashboard/events/$eventId/parking'
-    | '/dashboard/events/$eventId/planning'
-    | '/dashboard/events/$eventId/staff'
-    | '/dashboard/events/$eventId/venue'
-    | '/dashboard/venues/$venueId/bookings'
-    | '/dashboard/venues/$venueId/overview'
-    | '/dashboard/venues/$venueId/settings'
-    | '/dashboard/events/$eventId'
+    | '/dashboard/$workspaceSlug/venue-rent'
+    | '/dashboard/$workspaceSlug'
+    | '/dashboard/$workspaceSlug/venues/$venueId'
+    | '/dashboard/$workspaceSlug/events'
+    | '/dashboard/$workspaceSlug/events/$eventId/customers'
+    | '/dashboard/$workspaceSlug/events/$eventId/merchandise'
+    | '/dashboard/$workspaceSlug/events/$eventId/parking'
+    | '/dashboard/$workspaceSlug/events/$eventId/planning'
+    | '/dashboard/$workspaceSlug/events/$eventId/staff'
+    | '/dashboard/$workspaceSlug/events/$eventId/venue'
+    | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
+    | '/dashboard/$workspaceSlug/venues/$venueId/overview'
+    | '/dashboard/$workspaceSlug/venues/$venueId/settings'
+    | '/dashboard/$workspaceSlug/events/$eventId'
   id:
     | '__root__'
     | '/'
@@ -457,26 +463,26 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
-    | '/dashboard/venue-rent'
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
-    | '/dashboard/'
     | '/events/'
     | '/ticket-designer/'
-    | '/dashboard/venues/$venueId'
-    | '/dashboard/events/'
-    | '/dashboard/events/$eventId/customers'
-    | '/dashboard/events/$eventId/merchandise'
-    | '/dashboard/events/$eventId/parking'
-    | '/dashboard/events/$eventId/planning'
-    | '/dashboard/events/$eventId/staff'
-    | '/dashboard/events/$eventId/venue'
-    | '/dashboard/venues/$venueId/bookings'
-    | '/dashboard/venues/$venueId/overview'
-    | '/dashboard/venues/$venueId/settings'
-    | '/dashboard/events/$eventId/'
+    | '/dashboard/$workspaceSlug/venue-rent'
+    | '/dashboard/$workspaceSlug/'
+    | '/dashboard/$workspaceSlug/venues/$venueId'
+    | '/dashboard/$workspaceSlug/events/'
+    | '/dashboard/$workspaceSlug/events/$eventId/customers'
+    | '/dashboard/$workspaceSlug/events/$eventId/merchandise'
+    | '/dashboard/$workspaceSlug/events/$eventId/parking'
+    | '/dashboard/$workspaceSlug/events/$eventId/planning'
+    | '/dashboard/$workspaceSlug/events/$eventId/staff'
+    | '/dashboard/$workspaceSlug/events/$eventId/venue'
+    | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
+    | '/dashboard/$workspaceSlug/venues/$venueId/overview'
+    | '/dashboard/$workspaceSlug/venues/$venueId/settings'
+    | '/dashboard/$workspaceSlug/events/$eventId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -625,13 +631,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/': {
-      id: '/dashboard/'
-      path: '/'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/ticket/$ticketId': {
       id: '/ticket/$ticketId'
       path: '/ticket/$ticketId'
@@ -660,13 +659,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspacesRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/venue-rent': {
-      id: '/dashboard/venue-rent'
-      path: '/venue-rent'
-      fullPath: '/dashboard/venue-rent'
-      preLoaderRoute: typeof DashboardVenueRentRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/community/$postId': {
       id: '/community/$postId'
       path: '/community/$postId'
@@ -681,140 +673,165 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/events/': {
-      id: '/dashboard/events/'
-      path: '/events'
-      fullPath: '/dashboard/events/'
-      preLoaderRoute: typeof DashboardEventsIndexRouteImport
+    '/dashboard/$workspaceSlug/': {
+      id: '/dashboard/$workspaceSlug/'
+      path: '/$workspaceSlug'
+      fullPath: '/dashboard/$workspaceSlug/'
+      preLoaderRoute: typeof DashboardWorkspaceSlugIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/venues/$venueId': {
-      id: '/dashboard/venues/$venueId'
-      path: '/venues/$venueId'
-      fullPath: '/dashboard/venues/$venueId'
-      preLoaderRoute: typeof DashboardVenuesVenueIdRouteImport
+    '/dashboard/$workspaceSlug/venue-rent': {
+      id: '/dashboard/$workspaceSlug/venue-rent'
+      path: '/$workspaceSlug/venue-rent'
+      fullPath: '/dashboard/$workspaceSlug/venue-rent'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVenueRentRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/events/$eventId/': {
-      id: '/dashboard/events/$eventId/'
-      path: '/events/$eventId'
-      fullPath: '/dashboard/events/$eventId/'
-      preLoaderRoute: typeof DashboardEventsEventIdIndexRouteImport
+    '/dashboard/$workspaceSlug/events/': {
+      id: '/dashboard/$workspaceSlug/events/'
+      path: '/$workspaceSlug/events'
+      fullPath: '/dashboard/$workspaceSlug/events/'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/venues/$venueId/settings': {
-      id: '/dashboard/venues/$venueId/settings'
+    '/dashboard/$workspaceSlug/venues/$venueId': {
+      id: '/dashboard/$workspaceSlug/venues/$venueId'
+      path: '/$workspaceSlug/venues/$venueId'
+      fullPath: '/dashboard/$workspaceSlug/venues/$venueId'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/events/$eventId/': {
+      id: '/dashboard/$workspaceSlug/events/$eventId/'
+      path: '/$workspaceSlug/events/$eventId'
+      fullPath: '/dashboard/$workspaceSlug/events/$eventId/'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/venues/$venueId/settings': {
+      id: '/dashboard/$workspaceSlug/venues/$venueId/settings'
       path: '/settings'
-      fullPath: '/dashboard/venues/$venueId/settings'
-      preLoaderRoute: typeof DashboardVenuesVenueIdSettingsRouteImport
-      parentRoute: typeof DashboardVenuesVenueIdRoute
+      fullPath: '/dashboard/$workspaceSlug/venues/$venueId/settings'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRoute
     }
-    '/dashboard/venues/$venueId/overview': {
-      id: '/dashboard/venues/$venueId/overview'
+    '/dashboard/$workspaceSlug/venues/$venueId/overview': {
+      id: '/dashboard/$workspaceSlug/venues/$venueId/overview'
       path: '/overview'
-      fullPath: '/dashboard/venues/$venueId/overview'
-      preLoaderRoute: typeof DashboardVenuesVenueIdOverviewRouteImport
-      parentRoute: typeof DashboardVenuesVenueIdRoute
+      fullPath: '/dashboard/$workspaceSlug/venues/$venueId/overview'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRoute
     }
-    '/dashboard/venues/$venueId/bookings': {
-      id: '/dashboard/venues/$venueId/bookings'
+    '/dashboard/$workspaceSlug/venues/$venueId/bookings': {
+      id: '/dashboard/$workspaceSlug/venues/$venueId/bookings'
       path: '/bookings'
-      fullPath: '/dashboard/venues/$venueId/bookings'
-      preLoaderRoute: typeof DashboardVenuesVenueIdBookingsRouteImport
-      parentRoute: typeof DashboardVenuesVenueIdRoute
+      fullPath: '/dashboard/$workspaceSlug/venues/$venueId/bookings'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRoute
     }
-    '/dashboard/events/$eventId/venue': {
-      id: '/dashboard/events/$eventId/venue'
-      path: '/events/$eventId/venue'
-      fullPath: '/dashboard/events/$eventId/venue'
-      preLoaderRoute: typeof DashboardEventsEventIdVenueRouteImport
+    '/dashboard/$workspaceSlug/events/$eventId/venue': {
+      id: '/dashboard/$workspaceSlug/events/$eventId/venue'
+      path: '/$workspaceSlug/events/$eventId/venue'
+      fullPath: '/dashboard/$workspaceSlug/events/$eventId/venue'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdVenueRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/events/$eventId/staff': {
-      id: '/dashboard/events/$eventId/staff'
-      path: '/events/$eventId/staff'
-      fullPath: '/dashboard/events/$eventId/staff'
-      preLoaderRoute: typeof DashboardEventsEventIdStaffRouteImport
+    '/dashboard/$workspaceSlug/events/$eventId/staff': {
+      id: '/dashboard/$workspaceSlug/events/$eventId/staff'
+      path: '/$workspaceSlug/events/$eventId/staff'
+      fullPath: '/dashboard/$workspaceSlug/events/$eventId/staff'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdStaffRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/events/$eventId/planning': {
-      id: '/dashboard/events/$eventId/planning'
-      path: '/events/$eventId/planning'
-      fullPath: '/dashboard/events/$eventId/planning'
-      preLoaderRoute: typeof DashboardEventsEventIdPlanningRouteImport
+    '/dashboard/$workspaceSlug/events/$eventId/planning': {
+      id: '/dashboard/$workspaceSlug/events/$eventId/planning'
+      path: '/$workspaceSlug/events/$eventId/planning'
+      fullPath: '/dashboard/$workspaceSlug/events/$eventId/planning'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdPlanningRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/events/$eventId/parking': {
-      id: '/dashboard/events/$eventId/parking'
-      path: '/events/$eventId/parking'
-      fullPath: '/dashboard/events/$eventId/parking'
-      preLoaderRoute: typeof DashboardEventsEventIdParkingRouteImport
+    '/dashboard/$workspaceSlug/events/$eventId/parking': {
+      id: '/dashboard/$workspaceSlug/events/$eventId/parking'
+      path: '/$workspaceSlug/events/$eventId/parking'
+      fullPath: '/dashboard/$workspaceSlug/events/$eventId/parking'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdParkingRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/events/$eventId/merchandise': {
-      id: '/dashboard/events/$eventId/merchandise'
-      path: '/events/$eventId/merchandise'
-      fullPath: '/dashboard/events/$eventId/merchandise'
-      preLoaderRoute: typeof DashboardEventsEventIdMerchandiseRouteImport
+    '/dashboard/$workspaceSlug/events/$eventId/merchandise': {
+      id: '/dashboard/$workspaceSlug/events/$eventId/merchandise'
+      path: '/$workspaceSlug/events/$eventId/merchandise'
+      fullPath: '/dashboard/$workspaceSlug/events/$eventId/merchandise'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdMerchandiseRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/events/$eventId/customers': {
-      id: '/dashboard/events/$eventId/customers'
-      path: '/events/$eventId/customers'
-      fullPath: '/dashboard/events/$eventId/customers'
-      preLoaderRoute: typeof DashboardEventsEventIdCustomersRouteImport
+    '/dashboard/$workspaceSlug/events/$eventId/customers': {
+      id: '/dashboard/$workspaceSlug/events/$eventId/customers'
+      path: '/$workspaceSlug/events/$eventId/customers'
+      fullPath: '/dashboard/$workspaceSlug/events/$eventId/customers'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdCustomersRouteImport
       parentRoute: typeof DashboardRoute
     }
   }
 }
 
-interface DashboardVenuesVenueIdRouteChildren {
-  DashboardVenuesVenueIdBookingsRoute: typeof DashboardVenuesVenueIdBookingsRoute
-  DashboardVenuesVenueIdOverviewRoute: typeof DashboardVenuesVenueIdOverviewRoute
-  DashboardVenuesVenueIdSettingsRoute: typeof DashboardVenuesVenueIdSettingsRoute
+interface DashboardWorkspaceSlugVenuesVenueIdRouteChildren {
+  DashboardWorkspaceSlugVenuesVenueIdBookingsRoute: typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
+  DashboardWorkspaceSlugVenuesVenueIdOverviewRoute: typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
+  DashboardWorkspaceSlugVenuesVenueIdSettingsRoute: typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
 }
 
-const DashboardVenuesVenueIdRouteChildren: DashboardVenuesVenueIdRouteChildren =
+const DashboardWorkspaceSlugVenuesVenueIdRouteChildren: DashboardWorkspaceSlugVenuesVenueIdRouteChildren =
   {
-    DashboardVenuesVenueIdBookingsRoute: DashboardVenuesVenueIdBookingsRoute,
-    DashboardVenuesVenueIdOverviewRoute: DashboardVenuesVenueIdOverviewRoute,
-    DashboardVenuesVenueIdSettingsRoute: DashboardVenuesVenueIdSettingsRoute,
+    DashboardWorkspaceSlugVenuesVenueIdBookingsRoute:
+      DashboardWorkspaceSlugVenuesVenueIdBookingsRoute,
+    DashboardWorkspaceSlugVenuesVenueIdOverviewRoute:
+      DashboardWorkspaceSlugVenuesVenueIdOverviewRoute,
+    DashboardWorkspaceSlugVenuesVenueIdSettingsRoute:
+      DashboardWorkspaceSlugVenuesVenueIdSettingsRoute,
   }
 
-const DashboardVenuesVenueIdRouteWithChildren =
-  DashboardVenuesVenueIdRoute._addFileChildren(
-    DashboardVenuesVenueIdRouteChildren,
+const DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren =
+  DashboardWorkspaceSlugVenuesVenueIdRoute._addFileChildren(
+    DashboardWorkspaceSlugVenuesVenueIdRouteChildren,
   )
 
 interface DashboardRouteChildren {
-  DashboardVenueRentRoute: typeof DashboardVenueRentRoute
   DashboardWorkspacesRoute: typeof DashboardWorkspacesRoute
-  DashboardIndexRoute: typeof DashboardIndexRoute
-  DashboardVenuesVenueIdRoute: typeof DashboardVenuesVenueIdRouteWithChildren
-  DashboardEventsIndexRoute: typeof DashboardEventsIndexRoute
-  DashboardEventsEventIdCustomersRoute: typeof DashboardEventsEventIdCustomersRoute
-  DashboardEventsEventIdMerchandiseRoute: typeof DashboardEventsEventIdMerchandiseRoute
-  DashboardEventsEventIdParkingRoute: typeof DashboardEventsEventIdParkingRoute
-  DashboardEventsEventIdPlanningRoute: typeof DashboardEventsEventIdPlanningRoute
-  DashboardEventsEventIdStaffRoute: typeof DashboardEventsEventIdStaffRoute
-  DashboardEventsEventIdVenueRoute: typeof DashboardEventsEventIdVenueRoute
-  DashboardEventsEventIdIndexRoute: typeof DashboardEventsEventIdIndexRoute
+  DashboardWorkspaceSlugVenueRentRoute: typeof DashboardWorkspaceSlugVenueRentRoute
+  DashboardWorkspaceSlugIndexRoute: typeof DashboardWorkspaceSlugIndexRoute
+  DashboardWorkspaceSlugVenuesVenueIdRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
+  DashboardWorkspaceSlugEventsIndexRoute: typeof DashboardWorkspaceSlugEventsIndexRoute
+  DashboardWorkspaceSlugEventsEventIdCustomersRoute: typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
+  DashboardWorkspaceSlugEventsEventIdMerchandiseRoute: typeof DashboardWorkspaceSlugEventsEventIdMerchandiseRoute
+  DashboardWorkspaceSlugEventsEventIdParkingRoute: typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
+  DashboardWorkspaceSlugEventsEventIdPlanningRoute: typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
+  DashboardWorkspaceSlugEventsEventIdStaffRoute: typeof DashboardWorkspaceSlugEventsEventIdStaffRoute
+  DashboardWorkspaceSlugEventsEventIdVenueRoute: typeof DashboardWorkspaceSlugEventsEventIdVenueRoute
+  DashboardWorkspaceSlugEventsEventIdIndexRoute: typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardVenueRentRoute: DashboardVenueRentRoute,
   DashboardWorkspacesRoute: DashboardWorkspacesRoute,
-  DashboardIndexRoute: DashboardIndexRoute,
-  DashboardVenuesVenueIdRoute: DashboardVenuesVenueIdRouteWithChildren,
-  DashboardEventsIndexRoute: DashboardEventsIndexRoute,
-  DashboardEventsEventIdCustomersRoute: DashboardEventsEventIdCustomersRoute,
-  DashboardEventsEventIdMerchandiseRoute:
-    DashboardEventsEventIdMerchandiseRoute,
-  DashboardEventsEventIdParkingRoute: DashboardEventsEventIdParkingRoute,
-  DashboardEventsEventIdPlanningRoute: DashboardEventsEventIdPlanningRoute,
-  DashboardEventsEventIdStaffRoute: DashboardEventsEventIdStaffRoute,
-  DashboardEventsEventIdVenueRoute: DashboardEventsEventIdVenueRoute,
-  DashboardEventsEventIdIndexRoute: DashboardEventsEventIdIndexRoute,
+  DashboardWorkspaceSlugVenueRentRoute: DashboardWorkspaceSlugVenueRentRoute,
+  DashboardWorkspaceSlugIndexRoute: DashboardWorkspaceSlugIndexRoute,
+  DashboardWorkspaceSlugVenuesVenueIdRoute:
+    DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren,
+  DashboardWorkspaceSlugEventsIndexRoute:
+    DashboardWorkspaceSlugEventsIndexRoute,
+  DashboardWorkspaceSlugEventsEventIdCustomersRoute:
+    DashboardWorkspaceSlugEventsEventIdCustomersRoute,
+  DashboardWorkspaceSlugEventsEventIdMerchandiseRoute:
+    DashboardWorkspaceSlugEventsEventIdMerchandiseRoute,
+  DashboardWorkspaceSlugEventsEventIdParkingRoute:
+    DashboardWorkspaceSlugEventsEventIdParkingRoute,
+  DashboardWorkspaceSlugEventsEventIdPlanningRoute:
+    DashboardWorkspaceSlugEventsEventIdPlanningRoute,
+  DashboardWorkspaceSlugEventsEventIdStaffRoute:
+    DashboardWorkspaceSlugEventsEventIdStaffRoute,
+  DashboardWorkspaceSlugEventsEventIdVenueRoute:
+    DashboardWorkspaceSlugEventsEventIdVenueRoute,
+  DashboardWorkspaceSlugEventsEventIdIndexRoute:
+    DashboardWorkspaceSlugEventsEventIdIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
