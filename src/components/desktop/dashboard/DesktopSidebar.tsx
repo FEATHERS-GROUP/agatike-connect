@@ -13,6 +13,7 @@ import {
   Settings,
   Building2,
   Map,
+  Store,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -21,7 +22,8 @@ const nav = [
   { label: "Workspaces", href: "/workspaces", icon: Building2 },
   { label: "Events", href: "/dashboard/events", icon: CalendarDays },
   { label: "Tickets", href: "/ticket-designer", icon: Ticket },
-  { label: "Venues", href: "/venue-designer", icon: Map },
+  { label: "Venue Designer", href: "/venue-designer", icon: Map },
+  { label: "Venue Listings", href: "/dashboard/venue-rent", icon: Store },
   { label: "Analytics", icon: BarChart3 },
   { label: "Attendees", icon: Users },
   { label: "Scanning", href: "/scanner", icon: ScanLine },

@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { DesktopSidebar } from "@/components/desktop/dashboard/DesktopSidebar";
-
 import { EventSidebar } from "@/components/desktop/dashboard/EventSidebar";
+import { VenueSidebar } from "@/components/desktop/dashboard/VenueSidebar";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -19,6 +19,7 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardLayout() {
   const location = useRouterState({ select: (s) => s.location });
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/events\/[^/]+/);
+  const isVenueWorkspace = location.pathname.match(/^\/dashboard\/venues\/[^/]+/);
 
   return (
     <>
@@ -36,7 +37,7 @@ function DashboardLayout() {
       <div className="hidden md:block min-h-screen bg-secondary/30">
         <div className="flex">
           {/* Sidebar */}
-          {isEventWorkspace ? <EventSidebar /> : <DesktopSidebar />}
+          {isEventWorkspace ? <EventSidebar /> : isVenueWorkspace ? <VenueSidebar /> : <DesktopSidebar />}
           
           {/* Main Content Area */}
           <main className="flex-1 p-6 lg:p-10">

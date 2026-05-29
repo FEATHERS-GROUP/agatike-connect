@@ -31,10 +31,15 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
 import { Route as TicketDesignerProjectIdRouteImport } from './routes/ticket-designer.$projectId'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
+import { Route as DashboardVenueRentRouteImport } from './routes/dashboard.venue-rent'
 import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
 import { Route as DashboardEventsIndexRouteImport } from './routes/dashboard.events.index'
+import { Route as DashboardVenuesVenueIdRouteImport } from './routes/dashboard.venues.$venueId'
 import { Route as DashboardEventsEventIdIndexRouteImport } from './routes/dashboard.events.$eventId.index'
+import { Route as DashboardVenuesVenueIdSettingsRouteImport } from './routes/dashboard.venues.$venueId.settings'
+import { Route as DashboardVenuesVenueIdOverviewRouteImport } from './routes/dashboard.venues.$venueId.overview'
+import { Route as DashboardVenuesVenueIdBookingsRouteImport } from './routes/dashboard.venues.$venueId.bookings'
 import { Route as DashboardEventsEventIdVenueRouteImport } from './routes/dashboard.events.$eventId.venue'
 import { Route as DashboardEventsEventIdStaffRouteImport } from './routes/dashboard.events.$eventId.staff'
 import { Route as DashboardEventsEventIdPlanningRouteImport } from './routes/dashboard.events.$eventId.planning'
@@ -152,6 +157,11 @@ const EventsEventIdRoute = EventsEventIdRouteImport.update({
   path: '/events/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardVenueRentRoute = DashboardVenueRentRouteImport.update({
+  id: '/venue-rent',
+  path: '/venue-rent',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const CommunityPostIdRoute = CommunityPostIdRouteImport.update({
   id: '/community/$postId',
   path: '/community/$postId',
@@ -167,11 +177,34 @@ const DashboardEventsIndexRoute = DashboardEventsIndexRouteImport.update({
   path: '/events/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardVenuesVenueIdRoute = DashboardVenuesVenueIdRouteImport.update({
+  id: '/venues/$venueId',
+  path: '/venues/$venueId',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardEventsEventIdIndexRoute =
   DashboardEventsEventIdIndexRouteImport.update({
     id: '/events/$eventId/',
     path: '/events/$eventId/',
     getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardVenuesVenueIdSettingsRoute =
+  DashboardVenuesVenueIdSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => DashboardVenuesVenueIdRoute,
+  } as any)
+const DashboardVenuesVenueIdOverviewRoute =
+  DashboardVenuesVenueIdOverviewRouteImport.update({
+    id: '/overview',
+    path: '/overview',
+    getParentRoute: () => DashboardVenuesVenueIdRoute,
+  } as any)
+const DashboardVenuesVenueIdBookingsRoute =
+  DashboardVenuesVenueIdBookingsRouteImport.update({
+    id: '/bookings',
+    path: '/bookings',
+    getParentRoute: () => DashboardVenuesVenueIdRoute,
   } as any)
 const DashboardEventsEventIdVenueRoute =
   DashboardEventsEventIdVenueRouteImport.update({
@@ -229,12 +262,14 @@ export interface FileRoutesByFullPath {
   '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
+  '/dashboard/venue-rent': typeof DashboardVenueRentRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/events/': typeof EventsIndexRoute
   '/ticket-designer/': typeof TicketDesignerIndexRoute
+  '/dashboard/venues/$venueId': typeof DashboardVenuesVenueIdRouteWithChildren
   '/dashboard/events/': typeof DashboardEventsIndexRoute
   '/dashboard/events/$eventId/customers': typeof DashboardEventsEventIdCustomersRoute
   '/dashboard/events/$eventId/merchandise': typeof DashboardEventsEventIdMerchandiseRoute
@@ -242,6 +277,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/events/$eventId/planning': typeof DashboardEventsEventIdPlanningRoute
   '/dashboard/events/$eventId/staff': typeof DashboardEventsEventIdStaffRoute
   '/dashboard/events/$eventId/venue': typeof DashboardEventsEventIdVenueRoute
+  '/dashboard/venues/$venueId/bookings': typeof DashboardVenuesVenueIdBookingsRoute
+  '/dashboard/venues/$venueId/overview': typeof DashboardVenuesVenueIdOverviewRoute
+  '/dashboard/venues/$venueId/settings': typeof DashboardVenuesVenueIdSettingsRoute
   '/dashboard/events/$eventId/': typeof DashboardEventsEventIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -262,12 +300,14 @@ export interface FileRoutesByTo {
   '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
+  '/dashboard/venue-rent': typeof DashboardVenueRentRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/dashboard': typeof DashboardIndexRoute
   '/events': typeof EventsIndexRoute
   '/ticket-designer': typeof TicketDesignerIndexRoute
+  '/dashboard/venues/$venueId': typeof DashboardVenuesVenueIdRouteWithChildren
   '/dashboard/events': typeof DashboardEventsIndexRoute
   '/dashboard/events/$eventId/customers': typeof DashboardEventsEventIdCustomersRoute
   '/dashboard/events/$eventId/merchandise': typeof DashboardEventsEventIdMerchandiseRoute
@@ -275,6 +315,9 @@ export interface FileRoutesByTo {
   '/dashboard/events/$eventId/planning': typeof DashboardEventsEventIdPlanningRoute
   '/dashboard/events/$eventId/staff': typeof DashboardEventsEventIdStaffRoute
   '/dashboard/events/$eventId/venue': typeof DashboardEventsEventIdVenueRoute
+  '/dashboard/venues/$venueId/bookings': typeof DashboardVenuesVenueIdBookingsRoute
+  '/dashboard/venues/$venueId/overview': typeof DashboardVenuesVenueIdOverviewRoute
+  '/dashboard/venues/$venueId/settings': typeof DashboardVenuesVenueIdSettingsRoute
   '/dashboard/events/$eventId': typeof DashboardEventsEventIdIndexRoute
 }
 export interface FileRoutesById {
@@ -297,12 +340,14 @@ export interface FileRoutesById {
   '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
+  '/dashboard/venue-rent': typeof DashboardVenueRentRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/events/': typeof EventsIndexRoute
   '/ticket-designer/': typeof TicketDesignerIndexRoute
+  '/dashboard/venues/$venueId': typeof DashboardVenuesVenueIdRouteWithChildren
   '/dashboard/events/': typeof DashboardEventsIndexRoute
   '/dashboard/events/$eventId/customers': typeof DashboardEventsEventIdCustomersRoute
   '/dashboard/events/$eventId/merchandise': typeof DashboardEventsEventIdMerchandiseRoute
@@ -310,6 +355,9 @@ export interface FileRoutesById {
   '/dashboard/events/$eventId/planning': typeof DashboardEventsEventIdPlanningRoute
   '/dashboard/events/$eventId/staff': typeof DashboardEventsEventIdStaffRoute
   '/dashboard/events/$eventId/venue': typeof DashboardEventsEventIdVenueRoute
+  '/dashboard/venues/$venueId/bookings': typeof DashboardVenuesVenueIdBookingsRoute
+  '/dashboard/venues/$venueId/overview': typeof DashboardVenuesVenueIdOverviewRoute
+  '/dashboard/venues/$venueId/settings': typeof DashboardVenuesVenueIdSettingsRoute
   '/dashboard/events/$eventId/': typeof DashboardEventsEventIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -333,12 +381,14 @@ export interface FileRouteTypes {
     | '/workspaces'
     | '/book/$eventId'
     | '/community/$postId'
+    | '/dashboard/venue-rent'
     | '/events/$eventId'
     | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
     | '/dashboard/'
     | '/events/'
     | '/ticket-designer/'
+    | '/dashboard/venues/$venueId'
     | '/dashboard/events/'
     | '/dashboard/events/$eventId/customers'
     | '/dashboard/events/$eventId/merchandise'
@@ -346,6 +396,9 @@ export interface FileRouteTypes {
     | '/dashboard/events/$eventId/planning'
     | '/dashboard/events/$eventId/staff'
     | '/dashboard/events/$eventId/venue'
+    | '/dashboard/venues/$venueId/bookings'
+    | '/dashboard/venues/$venueId/overview'
+    | '/dashboard/venues/$venueId/settings'
     | '/dashboard/events/$eventId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -366,12 +419,14 @@ export interface FileRouteTypes {
     | '/workspaces'
     | '/book/$eventId'
     | '/community/$postId'
+    | '/dashboard/venue-rent'
     | '/events/$eventId'
     | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
     | '/dashboard'
     | '/events'
     | '/ticket-designer'
+    | '/dashboard/venues/$venueId'
     | '/dashboard/events'
     | '/dashboard/events/$eventId/customers'
     | '/dashboard/events/$eventId/merchandise'
@@ -379,6 +434,9 @@ export interface FileRouteTypes {
     | '/dashboard/events/$eventId/planning'
     | '/dashboard/events/$eventId/staff'
     | '/dashboard/events/$eventId/venue'
+    | '/dashboard/venues/$venueId/bookings'
+    | '/dashboard/venues/$venueId/overview'
+    | '/dashboard/venues/$venueId/settings'
     | '/dashboard/events/$eventId'
   id:
     | '__root__'
@@ -400,12 +458,14 @@ export interface FileRouteTypes {
     | '/workspaces'
     | '/book/$eventId'
     | '/community/$postId'
+    | '/dashboard/venue-rent'
     | '/events/$eventId'
     | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
     | '/dashboard/'
     | '/events/'
     | '/ticket-designer/'
+    | '/dashboard/venues/$venueId'
     | '/dashboard/events/'
     | '/dashboard/events/$eventId/customers'
     | '/dashboard/events/$eventId/merchandise'
@@ -413,6 +473,9 @@ export interface FileRouteTypes {
     | '/dashboard/events/$eventId/planning'
     | '/dashboard/events/$eventId/staff'
     | '/dashboard/events/$eventId/venue'
+    | '/dashboard/venues/$venueId/bookings'
+    | '/dashboard/venues/$venueId/overview'
+    | '/dashboard/venues/$venueId/settings'
     | '/dashboard/events/$eventId/'
   fileRoutesById: FileRoutesById
 }
@@ -598,6 +661,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/venue-rent': {
+      id: '/dashboard/venue-rent'
+      path: '/venue-rent'
+      fullPath: '/dashboard/venue-rent'
+      preLoaderRoute: typeof DashboardVenueRentRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/community/$postId': {
       id: '/community/$postId'
       path: '/community/$postId'
@@ -619,12 +689,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardEventsIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/venues/$venueId': {
+      id: '/dashboard/venues/$venueId'
+      path: '/venues/$venueId'
+      fullPath: '/dashboard/venues/$venueId'
+      preLoaderRoute: typeof DashboardVenuesVenueIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/events/$eventId/': {
       id: '/dashboard/events/$eventId/'
       path: '/events/$eventId'
       fullPath: '/dashboard/events/$eventId/'
       preLoaderRoute: typeof DashboardEventsEventIdIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/venues/$venueId/settings': {
+      id: '/dashboard/venues/$venueId/settings'
+      path: '/settings'
+      fullPath: '/dashboard/venues/$venueId/settings'
+      preLoaderRoute: typeof DashboardVenuesVenueIdSettingsRouteImport
+      parentRoute: typeof DashboardVenuesVenueIdRoute
+    }
+    '/dashboard/venues/$venueId/overview': {
+      id: '/dashboard/venues/$venueId/overview'
+      path: '/overview'
+      fullPath: '/dashboard/venues/$venueId/overview'
+      preLoaderRoute: typeof DashboardVenuesVenueIdOverviewRouteImport
+      parentRoute: typeof DashboardVenuesVenueIdRoute
+    }
+    '/dashboard/venues/$venueId/bookings': {
+      id: '/dashboard/venues/$venueId/bookings'
+      path: '/bookings'
+      fullPath: '/dashboard/venues/$venueId/bookings'
+      preLoaderRoute: typeof DashboardVenuesVenueIdBookingsRouteImport
+      parentRoute: typeof DashboardVenuesVenueIdRoute
     }
     '/dashboard/events/$eventId/venue': {
       id: '/dashboard/events/$eventId/venue'
@@ -671,8 +769,28 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface DashboardVenuesVenueIdRouteChildren {
+  DashboardVenuesVenueIdBookingsRoute: typeof DashboardVenuesVenueIdBookingsRoute
+  DashboardVenuesVenueIdOverviewRoute: typeof DashboardVenuesVenueIdOverviewRoute
+  DashboardVenuesVenueIdSettingsRoute: typeof DashboardVenuesVenueIdSettingsRoute
+}
+
+const DashboardVenuesVenueIdRouteChildren: DashboardVenuesVenueIdRouteChildren =
+  {
+    DashboardVenuesVenueIdBookingsRoute: DashboardVenuesVenueIdBookingsRoute,
+    DashboardVenuesVenueIdOverviewRoute: DashboardVenuesVenueIdOverviewRoute,
+    DashboardVenuesVenueIdSettingsRoute: DashboardVenuesVenueIdSettingsRoute,
+  }
+
+const DashboardVenuesVenueIdRouteWithChildren =
+  DashboardVenuesVenueIdRoute._addFileChildren(
+    DashboardVenuesVenueIdRouteChildren,
+  )
+
 interface DashboardRouteChildren {
+  DashboardVenueRentRoute: typeof DashboardVenueRentRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardVenuesVenueIdRoute: typeof DashboardVenuesVenueIdRouteWithChildren
   DashboardEventsIndexRoute: typeof DashboardEventsIndexRoute
   DashboardEventsEventIdCustomersRoute: typeof DashboardEventsEventIdCustomersRoute
   DashboardEventsEventIdMerchandiseRoute: typeof DashboardEventsEventIdMerchandiseRoute
@@ -684,7 +802,9 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardVenueRentRoute: DashboardVenueRentRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardVenuesVenueIdRoute: DashboardVenuesVenueIdRouteWithChildren,
   DashboardEventsIndexRoute: DashboardEventsIndexRoute,
   DashboardEventsEventIdCustomersRoute: DashboardEventsEventIdCustomersRoute,
   DashboardEventsEventIdMerchandiseRoute:

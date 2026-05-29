@@ -663,3 +663,184 @@ export const ticketProjects: TicketProject[] = [
     updatedAt: "2026-05-28T14:30:00Z"
   }
 ];
+
+export type RentableVenue = {
+  id: string;
+  name: string;
+  type: "Stadium" | "Arena" | "Conference Room" | "Wedding Garden" | "Theater" | "Club" | "Basketball Court" | "Football Pitch" | "Gaming Lounge";
+  city: string;
+  capacity: number;
+  pricePerDay: number;
+  currency: string;
+  cover: string;
+  rating: number;
+  amenities: string[];
+  status: "Active" | "Draft" | "Maintenance";
+  pendingRequests: number;
+  activeRentals: number;
+};
+
+export const rentableVenues: RentableVenue[] = [
+  {
+    id: "bk-arena",
+    name: "BK Arena",
+    type: "Arena",
+    city: "Kigali, RW",
+    capacity: 10000,
+    pricePerDay: 5000,
+    currency: "$",
+    cover: e6,
+    rating: 4.9,
+    amenities: ["VIP Lounges", "Jumbotron", "Locker Rooms", "Parking"],
+    status: "Active",
+    pendingRequests: 3,
+    activeRentals: 1,
+  },
+  {
+    id: "eko-hotel",
+    name: "Eko Convention Centre",
+    type: "Conference Room",
+    city: "Lagos, NG",
+    capacity: 6000,
+    pricePerDay: 8500,
+    currency: "$",
+    cover: e1,
+    rating: 4.8,
+    amenities: ["A/C", "Audio Setup", "Catering Kitchen", "Valet"],
+    status: "Active",
+    pendingRequests: 5,
+    activeRentals: 2,
+  },
+  {
+    id: "botanical-gardens",
+    name: "Aburi Botanical Gardens",
+    type: "Wedding Garden",
+    city: "Accra, GH",
+    capacity: 500,
+    pricePerDay: 1200,
+    currency: "$",
+    cover: expHiking,
+    rating: 4.7,
+    amenities: ["Gazebo", "Outdoor Lighting", "Restrooms", "Scenic Views"],
+    status: "Draft",
+    pendingRequests: 0,
+    activeRentals: 0,
+  },
+  {
+    id: "national-stadium",
+    name: "Godswill Akpabio Stadium",
+    type: "Stadium",
+    city: "Uyo, NG",
+    capacity: 30000,
+    pricePerDay: 12000,
+    currency: "$",
+    cover: e6,
+    rating: 4.8,
+    amenities: ["Floodlights", "Locker Rooms", "Media Center", "VIP Boxes"],
+    status: "Maintenance",
+    pendingRequests: 1,
+    activeRentals: 0,
+  },
+  {
+    id: "hoops-court",
+    name: "Downtown Hoops Center",
+    type: "Basketball Court",
+    city: "Nairobi, KE",
+    capacity: 200,
+    pricePerDay: 400,
+    currency: "$",
+    cover: expHiking, // placeholder
+    rating: 4.6,
+    amenities: ["Hardwood Floor", "Scoreboard", "Locker Rooms", "Bleachers"],
+    status: "Active",
+    pendingRequests: 2,
+    activeRentals: 1,
+  },
+  {
+    id: "city-pitch",
+    name: "City AstroTurf Pitch",
+    type: "Football Pitch",
+    city: "Johannesburg, ZA",
+    capacity: 50,
+    pricePerDay: 150,
+    currency: "$",
+    cover: e6, // placeholder
+    rating: 4.8,
+    amenities: ["Floodlights", "Goals", "Bibs provided", "Changing Rooms"],
+    status: "Active",
+    pendingRequests: 4,
+    activeRentals: 3,
+  },
+  {
+    id: "cyber-lounge",
+    name: "Nexus Gaming Lounge",
+    type: "Gaming Lounge",
+    city: "Cairo, EG",
+    capacity: 100,
+    pricePerDay: 800,
+    currency: "$",
+    cover: e1, // placeholder
+    rating: 4.9,
+    amenities: ["High-speed WiFi", "PC Setup", "Console Booths", "Energy Drinks Bar"],
+    status: "Draft",
+    pendingRequests: 0,
+    activeRentals: 0,
+  },
+];
+
+export type VenueBooking = {
+  id: string;
+  venueId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  date: string;
+  timeStart: string;
+  timeEnd: string;
+  status: "Confirmed" | "Pending" | "Cancelled";
+  amount: number;
+  paymentStatus: "Paid" | "Unpaid";
+};
+
+export const venueBookings: VenueBooking[] = [
+  {
+    id: "vb-1",
+    venueId: "bk-arena",
+    customerName: "Kigali Sports Dept",
+    customerEmail: "events@kigalisports.gov.rw",
+    customerPhone: "+250 788 123 456",
+    date: "2026-06-15",
+    timeStart: "08:00",
+    timeEnd: "18:00",
+    status: "Confirmed",
+    amount: 5000,
+    paymentStatus: "Paid",
+  },
+  {
+    id: "vb-2",
+    venueId: "bk-arena",
+    customerName: "Tech Africa Summit",
+    customerEmail: "hello@techafrica.org",
+    customerPhone: "+250 788 987 654",
+    date: "2026-07-10",
+    timeStart: "09:00",
+    timeEnd: "20:00",
+    status: "Pending",
+    amount: 10000,
+    paymentStatus: "Unpaid",
+  },
+  {
+    id: "vb-3",
+    venueId: "eko-hotel",
+    customerName: "Lagos Fashion Week",
+    customerEmail: "info@lagosfashion.ng",
+    customerPhone: "+234 803 111 2222",
+    date: "2026-08-05",
+    timeStart: "10:00",
+    timeEnd: "22:00",
+    status: "Confirmed",
+    amount: 8500,
+    paymentStatus: "Paid",
+  },
+];
+
