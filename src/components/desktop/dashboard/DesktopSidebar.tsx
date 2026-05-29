@@ -2,18 +2,44 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { platformModules } from "@/lib/mock-modules";
+import { usePlatformModules } from "@/hooks/usePlatformModules";
 
 export function DesktopSidebar() {
   const location = useRouterState({ select: (s) => s.location });
   const { activeWorkspace } = useWorkspace();
 
+  const { data: platformModules = [] } = usePlatformModules();
+
   // If no workspace or modules are loaded, we can't show much
   const userModuleIds = activeWorkspace?.modules || [];
   
   // Filter platform modules based on user's active workspace modules.
-  // We maintain the order defined in the mock database.
-  const nav = platformModules.filter(m => m.mandatory || userModuleIds.includes(m.id));
+  // We maintain the order defined in the database.
+  const nav = platformModules.filter(m => {
+    if (m.mandatory) return true;
+    if (userModuleIds.includes(m.id)) return true;
+    
+    // Fallback for legacy workspaces created before DB migration
+    const legacyIdMap: Record<string, string> = {
+      "Dashboard": "dashboard",
+      "Events": "events",
+      "Tickets": "tickets",
+      "Attendees": "attendees",
+      "Scanning": "scanner",
+      "Merchandise": "merchandise",
+      "VIP Access": "vip",
+      "Campaigns": "campaigns",
+      "Venue Listings": "venue_listings",
+      "Venue Designer": "venue_designer",
+      "Experiences": "experiences",
+      "Analytics": "analytics",
+      "Withdrawals": "withdrawals",
+      "Settings": "settings"
+    };
+    
+    const legacyId = legacyIdMap[m.label];
+    return legacyId && userModuleIds.includes(legacyId);
+  });
 
   const workspacePrefix = activeWorkspace ? `/dashboard/${activeWorkspace.slug}` : "/dashboard";
 
@@ -49,11 +75,11 @@ export function DesktopSidebar() {
           const cls = `flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${isActive ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:bg-secondary"}`;
           
           return fullHref ? (
-            <Link key={n.label} to={fullHref} className={cls}>
+            <Link key={n.id} to={fullHref} className={cls}>
               <n.icon className="h-4 w-4" /> {n.label}
             </Link>
           ) : (
-            <button key={n.label} className={cls}>
+            <button key={n.id} className={cls}>
               <n.icon className="h-4 w-4" /> {n.label}
             </button>
           );

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkspace, WorkspaceType } from "@/contexts/WorkspaceContext";
-import { platformModules } from "@/lib/mock-modules";
+import { usePlatformModules } from "@/hooks/usePlatformModules";
 
 export const Route = createFileRoute("/dashboard/workspaces")({
   head: () => ({
@@ -54,6 +54,7 @@ const EMOJI_OPTIONS = ["🏟️", "🎪", "🎭", "🎬", "⛰️", "🎉", "�
 function Workspaces() {
   const { workspaces, activeWorkspace, setActiveWorkspace, createWorkspace } = useWorkspace();
   const navigate = useNavigate();
+  const { data: platformModules = [], isLoading: isLoadingModules } = usePlatformModules();
 
   const [isWizardOpen, setIsWizardOpen] = useState(workspaces.length === 0);
   const [step, setStep] = useState(1);
@@ -73,14 +74,38 @@ function Workspaces() {
   const [modules, setModules] = useState<string[]>([]);
   const [created, setCreated] = useState(false);
 
-  // When type changes, pre-fill modules
+  // When type or platformModules changes, pre-fill modules
   useEffect(() => {
     const selectedType = types.find(t => t.id === type);
-    if (selectedType) {
+    if (selectedType && platformModules.length > 0) {
       const base = ["dashboard", "analytics", "settings", "campaigns", "withdrawals"];
-      setModules([...base, ...selectedType.defaultModules]);
+      const legacyIds = [...base, ...selectedType.defaultModules];
+      
+      const legacyIdToLabel: Record<string, string> = {
+        dashboard: "Dashboard",
+        events: "Events",
+        tickets: "Tickets",
+        attendees: "Attendees",
+        scanner: "Scanning",
+        merchandise: "Merchandise",
+        vip: "VIP Access",
+        campaigns: "Campaigns",
+        venue_listings: "Venue Listings",
+        venue_designer: "Venue Designer",
+        experiences: "Experiences",
+        analytics: "Analytics",
+        withdrawals: "Withdrawals",
+        settings: "Settings"
+      };
+
+      const uuids = legacyIds.map(legacyId => {
+        const label = legacyIdToLabel[legacyId];
+        return platformModules.find(m => m.label === label)?.id;
+      }).filter(Boolean) as string[];
+
+      setModules(uuids);
     }
-  }, [type]);
+  }, [type, platformModules]);
 
   const toggleModule = (id: string) => {
     if (modules.includes(id)) {
@@ -338,7 +363,11 @@ function Workspaces() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {platformModules.map(m => {
+                  {isLoadingModules ? (
+                    <div className="col-span-full py-8 text-center text-muted-foreground">
+                      Loading modules...
+                    </div>
+                  ) : platformModules.map(m => {
                     const isSelected = modules.includes(m.id);
                     return (
                       <button
