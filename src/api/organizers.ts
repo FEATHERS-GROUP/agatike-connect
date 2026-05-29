@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
+import bcrypt from "bcryptjs";
 
 export interface OrganizerInput {
   bio?: string;
@@ -19,6 +20,20 @@ export interface OrganizerInput {
   speciality?: any;
   user_id?: string | null;
 }
+
+export const checkOrganizerHandle = createServerFn({ method: "POST" })
+  .handler(async (ctx) => {
+    const { handle } = ctx.data as { handle: string };
+    const query = `
+      query CheckHandle($handle: String!) {
+        organizers(where: { handle: { _eq: $handle } }) {
+          id
+        }
+      }
+    `;
+    const result = await hasuraRequest<{ organizers: { id: string }[] }>(query, { handle });
+    return result.organizers.length === 0;
+  });
 
 export const createOrganizerAccount = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
@@ -71,6 +86,11 @@ export const createOrganizerAccount = createServerFn({ method: "POST" })
     const payload = { ...data };
     if (!payload.user_id) {
       payload.user_id = null;
+    }
+
+    if (payload.password) {
+      const salt = await bcrypt.genSalt(10);
+      payload.password = await bcrypt.hash(payload.password, salt);
     }
 
     // Handle JSONB defaults

@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { createOrganizerAccount } from "@/api/organizers";
+import { createOrganizerAccount, checkOrganizerHandle } from "@/api/organizers";
 import { getUserByHandle } from "@/api/users";
 import { 
   Building2, 
@@ -36,6 +36,12 @@ const AVAILABLE_FIELDS = [
   "Food & Beverage", "Comedy", "Workshops"
 ];
 
+const AVAILABLE_SPECIALITIES = [
+  "EDM & House", "Afrobeats", "Hip Hop", "Live Bands",
+  "VIP Experiences", "Conferences", "Gala Dinners", 
+  "Exhibitions", "Brand Activations"
+];
+
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
   handle: z.string().min(3, "Handle must be at least 3 characters").regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores allowed"),
@@ -43,7 +49,7 @@ const formSchema = z.object({
   gender: z.string().optional(),
   national_id: z.string().optional(),
   field: z.array(z.string()).min(1, "Please select at least one primary field"),
-  speciality: z.string().optional(),
+  speciality: z.array(z.string()).optional(),
   numberOfEvents: z.string().min(1, "Please select the estimated volume of events"),
   bio: z.string().optional(),
   business_cert: z.string().optional(),
@@ -64,6 +70,7 @@ function CreateOrganizerPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const totalSteps = 5;
+  const [isGeneratingHandle, setIsGeneratingHandle] = useState(false);
   
   const [syncHandle, setSyncHandle] = useState("");
   const [syncUserId, setSyncUserId] = useState<string | null>(null);
@@ -91,6 +98,7 @@ function CreateOrganizerPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       field: [],
+      speciality: [],
       gender: "",
       numberOfEvents: "",
       business: false,
@@ -105,21 +113,52 @@ function CreateOrganizerPage() {
   const isBusiness = watch("business");
   
   useEffect(() => {
-    if (nameValue) {
-      const generated = nameValue.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)+/g, '');
-      setValue("handle", generated, { shouldValidate: true });
-    } else {
-      setValue("handle", "", { shouldValidate: true });
-    }
+    const generateUnique = async () => {
+      if (!nameValue) {
+        setValue("handle", "", { shouldValidate: true });
+        return;
+      }
+      
+      setIsGeneratingHandle(true);
+      const baseHandle = nameValue.toLowerCase().replace(/[^a-z0-9]+/g, '');
+      
+      try {
+        let isAvailable = await checkOrganizerHandle({ data: { handle: baseHandle } });
+        if (isAvailable) {
+          setValue("handle", baseHandle, { shouldValidate: true });
+        } else {
+          let suffix = 1;
+          let newHandle = "";
+          while (!isAvailable && suffix < 100) {
+            newHandle = `${baseHandle}${suffix.toString().padStart(2, '0')}`;
+            isAvailable = await checkOrganizerHandle({ data: { handle: newHandle } });
+            suffix++;
+          }
+          setValue("handle", newHandle, { shouldValidate: true });
+        }
+      } catch (error) {
+        // Fallback if API fails
+        setValue("handle", baseHandle, { shouldValidate: true });
+      } finally {
+        setIsGeneratingHandle(false);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      generateUnique();
+    }, 600); // Debounce to prevent API spam while typing
+
+    return () => clearTimeout(timeoutId);
   }, [nameValue, setValue]);
 
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
+      const { terms, confirm_password, ...restValues } = values;
       const payload = {
-        ...values,
+        ...restValues,
         field: values.field.join(", "),
         user_id: syncUserId,
-        speciality: values.speciality ? { tags: values.speciality.split(',').map(s => s.trim()) } : {},
+        speciality: values.speciality && values.speciality.length > 0 ? { tags: values.speciality } : {},
         socials: {}, 
       };
       return await createOrganizerAccount({ data: payload });
@@ -308,7 +347,10 @@ function CreateOrganizerPage() {
                   <Label>Unique Handle *</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">@</span>
-                    <Input {...register("handle")} readOnly className="pl-8 h-11 rounded-xl bg-secondary/30 text-muted-foreground cursor-not-allowed" placeholder="kigali_events" />
+                    <Input {...register("handle")} readOnly className="pl-8 pr-10 h-11 rounded-xl bg-secondary/30 text-muted-foreground cursor-not-allowed" placeholder="kigali_events" />
+                    {isGeneratingHandle && (
+                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+                    )}
                   </div>
                   {errors.handle && <p className="text-xs text-red-500">{errors.handle.message}</p>}
                 </div>
@@ -419,12 +461,37 @@ function CreateOrganizerPage() {
                   {errors.field && <p className="text-xs text-red-500">{errors.field.message}</p>}
                 </div>
                 
-                <div className="space-y-2">
-                  <Label>Speciality Tags (Comma separated)</Label>
-                  <Input {...register("speciality")} className="h-11 rounded-xl bg-secondary/50" placeholder="e.g. EDM, Networking, VIP" />
+                <div className="space-y-3 md:col-span-2">
+                  <Label>Speciality Tags (Optional)</Label>
+                  <p className="text-xs text-muted-foreground mt-0">Select specific niches you excel in.</p>
+                  <div className="flex flex-wrap gap-2">
+                    {AVAILABLE_SPECIALITIES.map(s => {
+                      const currentSpecs = watch("speciality") || [];
+                      const isSelected = currentSpecs.includes(s);
+                      return (
+                        <div 
+                          key={s}
+                          onClick={() => {
+                            if (isSelected) {
+                              setValue("speciality", currentSpecs.filter(item => item !== s), { shouldValidate: true });
+                            } else {
+                              setValue("speciality", [...currentSpecs, s], { shouldValidate: true });
+                            }
+                          }}
+                          className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
+                            isSelected 
+                            ? "bg-primary text-primary-foreground border-primary shadow-sm" 
+                            : "bg-secondary/30 border-border/60 hover:bg-secondary/60 text-muted-foreground"
+                          }`}
+                        >
+                          {s}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label>Estimated Events Per Year *</Label>
                   <Select onValueChange={(v) => setValue("numberOfEvents", v, { shouldValidate: true })}>
                     <SelectTrigger className="h-11 rounded-xl bg-secondary/50">
