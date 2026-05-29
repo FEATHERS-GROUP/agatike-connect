@@ -1,8 +1,12 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useState } from "react";
 import { CalendarDays, Plus, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { rentableVenues, venueBookings } from "@/lib/mock-data";
-import { Calendar, dateFnsLocalizer } from "react-big-calendar";
+import { Calendar, dateFnsLocalizer, View } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -25,6 +29,9 @@ export const Route = createFileRoute("/dashboard/venues/$venueId/overview")({
 
 function VenueOverviewPage() {
   const { venueId } = useParams({ strict: false });
+  const [currentView, setCurrentView] = useState<View>("month");
+  const [currentDate, setCurrentDate] = useState(new Date());
+
   const venue = rentableVenues.find(v => v.id === venueId);
   const bookings = venueBookings.filter(b => b.venueId === venueId);
   
@@ -33,55 +40,194 @@ function VenueOverviewPage() {
     const [startHr, startMin] = b.timeStart.split(":");
     const [endHr, endMin] = b.timeEnd.split(":");
     return {
-      title: `${b.customerName} (${b.status})`,
+      title: b.customerName,
       start: new Date(Number(startY), Number(startM) - 1, Number(startD), Number(startHr), Number(startMin)),
       end: new Date(Number(startY), Number(startM) - 1, Number(startD), Number(endHr), Number(endMin)),
+      allDay: b.isAllDay,
+      data: b,
     };
   });
+
+  const CustomEvent = ({ event }: any) => {
+    const isPaid = event.data.paymentStatus === "Paid";
+    return (
+      <div className="flex flex-col gap-0.5 p-0.5">
+        <span className="font-semibold text-xs leading-tight truncate">{event.title}</span>
+        <div className="flex items-center gap-1 mt-0.5">
+          <span className="px-1.5 py-0.5 rounded-[4px] bg-white/20 text-[9px] uppercase tracking-wider font-bold">
+            {event.data.status}
+          </span>
+          <span className={`px-1.5 py-0.5 rounded-[4px] text-[9px] uppercase tracking-wider font-bold ${isPaid ? "bg-green-400/20 text-green-100" : "bg-red-400/20 text-red-100"}`}>
+            {event.data.paymentStatus}
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   if (!venue) return <div>Venue not found</div>;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-6 rounded-3xl border border-border/60">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-6 rounded-3xl border border-border/60 shadow-sm">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Overview</h2>
           <p className="text-muted-foreground mt-1 text-sm">Manage availability and upcoming reservations.</p>
         </div>
-        <Button className="rounded-full gap-2 shadow-md">
-          <Plus className="h-4 w-4" /> Add Manual Booking
-        </Button>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button className="rounded-full gap-2 shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+              <Plus className="h-4 w-4" /> Add Manual Booking
+            </Button>
+          </SheetTrigger>
+          <SheetContent className="overflow-y-auto sm:max-w-md bg-card border-border/60">
+            <SheetHeader className="mb-6">
+              <SheetTitle>Manual Booking</SheetTitle>
+              <p className="text-sm text-muted-foreground">Block out dates or manually add a customer's reservation.</p>
+            </SheetHeader>
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label>Customer / Organization Name</Label>
+                  <Input placeholder="e.g. John Doe or Tech Summit" className="h-10 rounded-xl bg-secondary/50" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>Email</Label>
+                    <Input type="email" placeholder="customer@example.com" className="h-10 rounded-xl bg-secondary/50" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Phone</Label>
+                    <Input placeholder="+1 234 567 8900" className="h-10 rounded-xl bg-secondary/50" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-border/60">
+                <div className="space-y-1.5">
+                  <Label>Booking Date</Label>
+                  <Input type="date" className="h-10 rounded-xl bg-secondary/50" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>Start Time</Label>
+                    <Input type="time" className="h-10 rounded-xl bg-secondary/50" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>End Time</Label>
+                    <Input type="time" className="h-10 rounded-xl bg-secondary/50" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-border/60">
+                <div className="space-y-1.5">
+                  <Label>Amount</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{venue.currency}</span>
+                    <Input type="number" placeholder="0.00" className="pl-8 h-10 rounded-xl bg-secondary/50" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>Booking Status</Label>
+                    <select className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Pending">Pending</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Payment Status</Label>
+                    <select className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                      <option value="Paid">Paid</option>
+                      <option value="Unpaid">Unpaid</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-8 flex gap-3">
+              <Button className="flex-1 rounded-xl" style={{ background: "var(--gradient-primary)" }}>Confirm Booking</Button>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
       <div className="space-y-6">
         {/* Top: Big Calendar */}
-        <div className="bg-card rounded-3xl border border-border/60 p-6 h-[700px] flex flex-col">
+        <div className="bg-card rounded-3xl border border-border/60 p-6 h-[700px] flex flex-col shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-semibold text-lg">Booking Calendar</h3>
           </div>
-          <div className="flex-1 bg-background rounded-xl p-4 overflow-hidden border border-border/60">
-            {/* Custom styles to make react-big-calendar match our theme */}
+          <div className="flex-1 bg-background/50 rounded-2xl p-4 overflow-hidden border border-border/60 shadow-inner">
+            {/* Custom styles to make react-big-calendar match our premium theme */}
             <style>{`
               .rbc-calendar { font-family: inherit; }
-              .rbc-btn-group button { color: inherit; border-color: hsl(var(--border)); }
-              .rbc-toolbar button:active, .rbc-toolbar button.rbc-active {
-                background-color: hsl(var(--secondary)); color: hsl(var(--foreground)); border-color: hsl(var(--border));
+              .rbc-btn-group button { 
+                color: hsl(var(--muted-foreground)); 
+                border-color: hsl(var(--border)/0.6); 
+                transition: all 0.2s;
               }
-              .rbc-toolbar button:hover { background-color: hsl(var(--secondary)/0.5); }
-              .rbc-header { padding: 8px; font-weight: 600; border-bottom: 1px solid hsl(var(--border)); border-left: 1px solid hsl(var(--border)); }
-              .rbc-month-view, .rbc-time-view, .rbc-agenda-view { border: 1px solid hsl(var(--border)); border-radius: 8px; overflow: hidden; }
-              .rbc-month-row, .rbc-day-bg, .rbc-time-header-content { border-color: hsl(var(--border)); }
-              .rbc-off-range-bg { background: hsl(var(--secondary)/0.2); }
-              .rbc-today { background: hsl(var(--secondary)/0.5); }
-              .rbc-event { background-color: hsl(var(--primary)); border-radius: 6px; padding: 4px 8px; }
+              .rbc-toolbar button:active, .rbc-toolbar button.rbc-active {
+                background-color: hsl(var(--primary)); 
+                color: hsl(var(--primary-foreground)); 
+                border-color: hsl(var(--primary));
+                box-shadow: 0 4px 12px hsl(var(--primary)/0.3);
+              }
+              .rbc-toolbar button:hover:not(.rbc-active) { 
+                background-color: hsl(var(--secondary)); 
+                color: hsl(var(--foreground));
+              }
+              .rbc-header { 
+                padding: 12px 8px; 
+                font-weight: 600; 
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: hsl(var(--muted-foreground));
+                border-bottom: 1px solid hsl(var(--border)/0.6); 
+                border-left: 1px solid hsl(var(--border)/0.6); 
+              }
+              .rbc-month-view, .rbc-time-view, .rbc-agenda-view { 
+                border: 1px solid hsl(var(--border)/0.6); 
+                border-radius: 12px; 
+                overflow: hidden; 
+                background: hsl(var(--card));
+              }
+              .rbc-month-row, .rbc-day-bg, .rbc-time-header-content { 
+                border-color: hsl(var(--border)/0.6); 
+              }
+              .rbc-off-range-bg { background: hsl(var(--secondary)/0.1); }
+              .rbc-today { background: hsl(var(--primary)/0.05); }
+              .rbc-event { 
+                background: var(--gradient-primary, linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary)))); 
+                border: none;
+                border-radius: 8px; 
+                padding: 4px; 
+                box-shadow: 0 2px 4px hsl(var(--primary)/0.2);
+              }
+              .rbc-event.rbc-selected {
+                background: var(--gradient-primary);
+                filter: brightness(1.1);
+              }
+              .rbc-date-cell { padding: 4px 8px; font-weight: 500; font-size: 0.9rem; }
+              .rbc-time-view .rbc-header { border-bottom: none; }
             `}</style>
             <Calendar
               localizer={localizer}
               events={myEvents}
               startAccessor="start"
               endAccessor="end"
-              defaultView="month"
+              view={currentView}
+              onView={(view) => setCurrentView(view)}
+              date={currentDate}
+              onNavigate={(date) => setCurrentDate(date)}
+              views={["month", "week", "day", "agenda"]}
               style={{ height: "100%" }}
+              components={{
+                event: CustomEvent
+              }}
             />
           </div>
         </div>

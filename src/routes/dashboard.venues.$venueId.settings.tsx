@@ -62,16 +62,31 @@ function VenueSettingsPage() {
           <div className="bg-card p-6 rounded-3xl border border-border/60 space-y-4">
             <h3 className="font-semibold text-lg">Pricing & Capacity</h3>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Maximum Capacity (Guests)</Label>
                 <Input type="number" defaultValue={venue.capacity} className="h-10 rounded-xl bg-secondary/50" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Rental Type Allowed</Label>
+                <select defaultValue={venue.rentalType || "Per Day"} className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                  <option value="Per Day">Per Day Only</option>
+                  <option value="Per Hour">Per Hour Only</option>
+                  <option value="Both">Both (Day & Hour)</option>
+                </select>
               </div>
               <div className="space-y-1.5">
                 <Label>Price per Day</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{venue.currency}</span>
                   <Input type="number" defaultValue={venue.pricePerDay} className="pl-8 h-10 rounded-xl bg-secondary/50" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Price per Hour</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{venue.currency}</span>
+                  <Input type="number" defaultValue={venue.pricePerHour || 0} className="pl-8 h-10 rounded-xl bg-secondary/50" />
                 </div>
               </div>
             </div>
