@@ -66,22 +66,23 @@ export function Navbar() {
           </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-2 md:ml-2">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2 md:ml-2">
           <Link to="/signin">
-            <Button variant="ghost" className="hidden sm:inline-flex">
+            <Button variant="ghost" className="hidden sm:inline-flex text-sm font-medium">
               Sign in
             </Button>
           </Link>
           <Link to="/create-event">
             <Button
-              className="rounded-full shadow-[var(--shadow-glow)]"
+              className="rounded-full shadow-[var(--shadow-glow)] px-3 sm:px-4"
               style={{ background: "var(--gradient-primary)" }}
             >
-              <Plus className="mr-1 h-4 w-4" /> Create event
+              <Plus className="h-4 w-4 sm:mr-1" /> 
+              <span className="hidden sm:inline-block text-sm font-medium">Create event</span>
             </Button>
           </Link>
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu />
+          <Button variant="ghost" size="icon" className="md:hidden ml-1 rounded-full text-foreground/80 hover:text-foreground hover:bg-secondary/80 active:scale-95 transition-all">
+            <Menu className="h-5 w-5" />
           </Button>
         </div>
       </div>
