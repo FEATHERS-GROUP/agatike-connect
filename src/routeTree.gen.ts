@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkspacesRouteImport } from './routes/workspaces'
 import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as TicketDesignerRouteImport } from './routes/ticket-designer'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ScannerRouteImport } from './routes/scanner'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -38,6 +39,11 @@ const WorkspacesRoute = WorkspacesRouteImport.update({
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
   path: '/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TicketDesignerRoute = TicketDesignerRouteImport.update({
+  id: '/ticket-designer',
+  path: '/ticket-designer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SigninRoute = SigninRouteImport.update({
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
+  '/ticket-designer': typeof TicketDesignerRoute
   '/wallet': typeof WalletRoute
   '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
+  '/ticket-designer': typeof TicketDesignerRoute
   '/wallet': typeof WalletRoute
   '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
+  '/ticket-designer': typeof TicketDesignerRoute
   '/wallet': typeof WalletRoute
   '/workspaces': typeof WorkspacesRoute
   '/book/$eventId': typeof BookEventIdRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/scanner'
     | '/signin'
+    | '/ticket-designer'
     | '/wallet'
     | '/workspaces'
     | '/book/$eventId'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/scanner'
     | '/signin'
+    | '/ticket-designer'
     | '/wallet'
     | '/workspaces'
     | '/book/$eventId'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/scanner'
     | '/signin'
+    | '/ticket-designer'
     | '/wallet'
     | '/workspaces'
     | '/book/$eventId'
@@ -281,6 +293,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ScannerRoute: typeof ScannerRoute
   SigninRoute: typeof SigninRoute
+  TicketDesignerRoute: typeof TicketDesignerRoute
   WalletRoute: typeof WalletRoute
   WorkspacesRoute: typeof WorkspacesRoute
   BookEventIdRoute: typeof BookEventIdRoute
@@ -304,6 +317,13 @@ declare module '@tanstack/react-router' {
       path: '/wallet'
       fullPath: '/wallet'
       preLoaderRoute: typeof WalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ticket-designer': {
+      id: '/ticket-designer'
+      path: '/ticket-designer'
+      fullPath: '/ticket-designer'
+      preLoaderRoute: typeof TicketDesignerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signin': {
@@ -449,6 +469,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ScannerRoute: ScannerRoute,
   SigninRoute: SigninRoute,
+  TicketDesignerRoute: TicketDesignerRoute,
   WalletRoute: WalletRoute,
   WorkspacesRoute: WorkspacesRoute,
   BookEventIdRoute: BookEventIdRoute,
