@@ -23,8 +23,9 @@ function DashboardLayout() {
   const navigate = useNavigate();
   const { workspaces, activeWorkspace, isLoaded } = useWorkspace();
   
-  const isEventWorkspace = location.pathname.match(/^\/dashboard\/events\/[^/]+/);
-  const isVenueWorkspace = location.pathname.match(/^\/dashboard\/venues\/[^/]+/);
+  const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
+  const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
+  const hideSidebar = location.pathname === "/dashboard/workspaces" || location.pathname.match(/^\/dashboard\/[^/]+\/(venue-designer|ticket-designer|create-event)/);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -72,7 +73,7 @@ function DashboardLayout() {
       <div className="hidden md:block min-h-screen bg-secondary/30">
         <div className="flex">
           {/* Sidebar */}
-          {location.pathname !== "/dashboard/workspaces" && (
+          {!hideSidebar && (
             isEventWorkspace ? <EventSidebar /> : isVenueWorkspace ? <VenueSidebar /> : <DesktopSidebar />
           )}
           

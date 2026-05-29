@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CreateEventMobile } from "@/components/mobile/CreateEventMobile";
 import { CreateEventDesktop } from "@/components/desktop/CreateEventDesktop";
 
-export const Route = createFileRoute("/create-event")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/create-event")({
   head: () => ({
     meta: [
       { title: "Create event — Agatike" },

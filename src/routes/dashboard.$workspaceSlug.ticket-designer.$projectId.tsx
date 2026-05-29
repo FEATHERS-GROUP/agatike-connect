@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ticketProjects, events } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/ticket-designer/$projectId")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/ticket-designer/$projectId")({
   head: () => ({
     meta: [
       { title: "Ticket Designer — Agatike" },
@@ -59,7 +59,7 @@ const fonts = [
 const tiers = ["General", "VIP", "Backstage", "Early bird"];
 
 function TicketDesignerPage() {
-  const { projectId } = useParams({ from: "/ticket-designer/$projectId" });
+  const { workspaceSlug, projectId } = useParams({ from: "/dashboard/$workspaceSlug/ticket-designer/$projectId" });
   
   // Find existing project or load defaults
   const existingProject = useMemo(() => ticketProjects.find(p => p.id === projectId), [projectId]);
@@ -107,7 +107,7 @@ function TicketDesignerPage() {
     <div className="min-h-screen bg-secondary/30">
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border/60 bg-background/80 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <Link to="/ticket-designer" className="rounded-full p-2 hover:bg-secondary transition-colors">
+          <Link to={`/dashboard/${workspaceSlug}/ticket-designer`} className="rounded-full p-2 hover:bg-secondary transition-colors">
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div className="flex flex-col">

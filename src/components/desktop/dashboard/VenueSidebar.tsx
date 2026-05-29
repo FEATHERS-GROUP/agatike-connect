@@ -11,18 +11,19 @@ export function VenueSidebar() {
   const location = useRouterState({ select: (s) => s.location });
   const params = useParams({ strict: false });
   const venueId = params.venueId as string;
+  const workspaceSlug = params.workspaceSlug as string;
   const venue = rentableVenues.find((v) => v.id === venueId);
 
   const nav = [
-    { label: "Overview", href: `/dashboard/venues/${venueId}/overview`, icon: CalendarDays },
-    { label: "Bookings", href: `/dashboard/venues/${venueId}/bookings`, icon: Users },
-    { label: "Settings", href: `/dashboard/venues/${venueId}/settings`, icon: Settings },
+    { label: "Overview", href: `/dashboard/${workspaceSlug}/venues/${venueId}/overview`, icon: CalendarDays },
+    { label: "Bookings", href: `/dashboard/${workspaceSlug}/venues/${venueId}/bookings`, icon: Users },
+    { label: "Settings", href: `/dashboard/${workspaceSlug}/venues/${venueId}/settings`, icon: Settings },
   ];
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:block">
       <div className="mb-6 px-2">
-        <Link to="/dashboard/venue-rent" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+        <Link to={`/dashboard/${workspaceSlug}/venue-rent`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
           <ArrowLeft className="h-4 w-4" /> Back to Listings
         </Link>
         <div className="flex items-center gap-3">

@@ -1,9 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Plus, Ticket, Film, Mountain, Briefcase, Calendar, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ticketProjects } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/ticket-designer/")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/ticket-designer/")({
   component: TicketDesignerIndex,
 });
 
@@ -16,6 +16,7 @@ const templates = [
 
 function TicketDesignerIndex() {
   const navigate = useNavigate();
+  const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/ticket-designer/" });
 
   const handleCreateNew = (templateId: string) => {
     // Generate a random ID for the new project
@@ -23,7 +24,7 @@ function TicketDesignerIndex() {
     // In a real app we'd dispatch an action or API call here.
     // For now we just route to the editor, passing the template as a search param or state,
     // but we can just pass it as a search param, or default it in the editor.
-    navigate({ to: `/ticket-designer/${newId}`, search: { template: templateId } });
+    navigate({ to: `/dashboard/${workspaceSlug}/ticket-designer/${newId}`, search: { template: templateId } });
   };
 
   return (
@@ -82,7 +83,7 @@ function TicketDesignerIndex() {
             {ticketProjects.map(proj => (
               <Link
                 key={proj.id}
-                to={`/ticket-designer/${proj.id}`}
+                to={`/dashboard/${workspaceSlug}/ticket-designer/${proj.id}`}
                 className="group block rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
               >
                 <div 

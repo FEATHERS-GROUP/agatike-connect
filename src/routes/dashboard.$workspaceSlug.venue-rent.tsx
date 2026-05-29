@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { Plus, MapPin, Users, CalendarDays, MoreHorizontal, Store, BarChart3, Clock, AlertCircle, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { rentableVenues, type RentableVenue } from "@/lib/mock-data";
@@ -14,6 +14,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/venue-rent")({
 });
 
 function VenueListingsPage() {
+  const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/venue-rent" });
   const totalVenues = rentableVenues.length;
   const activeRentals = rentableVenues.reduce((acc, v) => acc + v.activeRentals, 0);
   const pendingRequests = rentableVenues.reduce((acc, v) => acc + v.pendingRequests, 0);
@@ -73,7 +74,7 @@ function VenueListingsPage() {
           {rentableVenues.map(venue => (
             <Link 
               key={venue.id} 
-              to={`/dashboard/${activeWorkspace?.slug}/venues/${venue.id}/overview`}
+              to={`/dashboard/${workspaceSlug}/venues/${venue.id}/overview`}
               className="group flex flex-col sm:flex-row rounded-3xl bg-card border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
             >
               {/* Image side */}

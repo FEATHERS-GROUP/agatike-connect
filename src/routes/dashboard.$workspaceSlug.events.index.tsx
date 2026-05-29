@@ -4,6 +4,7 @@ import { Plus, Search, Filter, MoreHorizontal, Calendar, MapPin, Ticket, DollarS
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { events as rawEvents } from "@/lib/mock-data";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +21,7 @@ function DashboardEvents() {
   const [filter, setFilter] = useState<"All" | "Live" | "Drafts" | "Past">("All");
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const { activeWorkspace } = useWorkspace();
 
   // Mock statuses for the raw events
   const events = useMemo(() => {
@@ -46,7 +48,7 @@ function DashboardEvents() {
           <h1 className="text-2xl font-semibold">Events</h1>
           <p className="text-sm text-muted-foreground">Manage and track your events.</p>
         </div>
-        <Link to="/create-event">
+        <Link to={`/dashboard/${activeWorkspace?.slug}/create-event`}>
           <Button
             className="rounded-full shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
@@ -169,7 +171,7 @@ function DashboardEvents() {
                           <DropdownMenuItem onClick={() => navigate({ to: `/dashboard/events/${event.id}` })}>
                             <Eye className="mr-2 h-4 w-4" /> View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate({ to: `/create-event` })}>
+                          <DropdownMenuItem onClick={() => navigate({ to: `/dashboard/${activeWorkspace?.slug}/create-event` })}>
                             <Edit2 className="mr-2 h-4 w-4" /> Edit Event
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />

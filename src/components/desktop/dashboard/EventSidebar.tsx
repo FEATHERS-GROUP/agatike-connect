@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useParams } from "@tanstack/react-router";
 import {
   ArrowLeft,
   LayoutDashboard,
@@ -12,24 +12,26 @@ import {
 
 export function EventSidebar() {
   const location = useRouterState({ select: (s) => s.location });
+  const params = useParams({ strict: false });
+  const workspaceSlug = params.workspaceSlug as string;
   
-  // Extract eventId from the pathname: /dashboard/events/123/...
+  // Extract eventId from the pathname: /dashboard/kigali-arenas/events/123/...
   const pathParts = location.pathname.split('/');
-  const eventId = pathParts[3] || "";
+  const eventId = pathParts[4] || "";
 
   const nav = [
-    { label: "Overview", href: `/dashboard/events/${eventId}`, icon: LayoutDashboard },
-    { label: "Customers", href: `/dashboard/events/${eventId}/customers`, icon: Users },
-    { label: "Parking", href: `/dashboard/events/${eventId}/parking`, icon: Car },
-    { label: "Budget & Planning", href: `/dashboard/events/${eventId}/planning`, icon: Wallet },
-    { label: "Staff Members", href: `/dashboard/events/${eventId}/staff`, icon: UserCheck },
-    { label: "Venue Details", href: `/dashboard/events/${eventId}/venue`, icon: MapPin },
-    { label: "Merchandise", href: `/dashboard/events/${eventId}/merchandise`, icon: ShoppingBag },
+    { label: "Overview", href: `/dashboard/${workspaceSlug}/events/${eventId}`, icon: LayoutDashboard },
+    { label: "Customers", href: `/dashboard/${workspaceSlug}/events/${eventId}/customers`, icon: Users },
+    { label: "Parking", href: `/dashboard/${workspaceSlug}/events/${eventId}/parking`, icon: Car },
+    { label: "Budget & Planning", href: `/dashboard/${workspaceSlug}/events/${eventId}/planning`, icon: Wallet },
+    { label: "Staff Members", href: `/dashboard/${workspaceSlug}/events/${eventId}/staff`, icon: UserCheck },
+    { label: "Venue Details", href: `/dashboard/${workspaceSlug}/events/${eventId}/venue`, icon: MapPin },
+    { label: "Merchandise", href: `/dashboard/${workspaceSlug}/events/${eventId}/merchandise`, icon: ShoppingBag },
   ];
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:flex flex-col">
-      <Link to="/dashboard/events" className="mb-6 flex items-center gap-2 px-2 text-muted-foreground hover:text-foreground transition-colors group">
+      <Link to={`/dashboard/${workspaceSlug}/events`} className="mb-6 flex items-center gap-2 px-2 text-muted-foreground hover:text-foreground transition-colors group">
         <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
         <span className="text-sm font-medium">Back to Events</span>
       </Link>

@@ -10,9 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WalletRouteImport } from './routes/wallet'
-import { Route as VenueDesignerRouteImport } from './routes/venue-designer'
 import { Route as SigninRouteImport } from './routes/signin'
-import { Route as ScannerRouteImport } from './routes/scanner'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OrganizersRouteImport } from './routes/organizers'
 import { Route as MoviesRouteImport } from './routes/movies'
@@ -21,21 +19,23 @@ import { Route as FeedRouteImport } from './routes/feed'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as ExperiencesRouteImport } from './routes/experiences'
 import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as CreateEventRouteImport } from './routes/create-event'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TicketDesignerIndexRouteImport } from './routes/ticket-designer.index'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
-import { Route as TicketDesignerProjectIdRouteImport } from './routes/ticket-designer.$projectId'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 import { Route as DashboardWorkspacesRouteImport } from './routes/dashboard.workspaces'
 import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
 import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard.$workspaceSlug.index'
 import { Route as DashboardWorkspaceSlugVenueRentRouteImport } from './routes/dashboard.$workspaceSlug.venue-rent'
+import { Route as DashboardWorkspaceSlugVenueDesignerRouteImport } from './routes/dashboard.$workspaceSlug.venue-designer'
+import { Route as DashboardWorkspaceSlugScannerRouteImport } from './routes/dashboard.$workspaceSlug.scanner'
+import { Route as DashboardWorkspaceSlugCreateEventRouteImport } from './routes/dashboard.$workspaceSlug.create-event'
+import { Route as DashboardWorkspaceSlugTicketDesignerIndexRouteImport } from './routes/dashboard.$workspaceSlug.ticket-designer.index'
 import { Route as DashboardWorkspaceSlugEventsIndexRouteImport } from './routes/dashboard.$workspaceSlug.events.index'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdRouteImport } from './routes/dashboard.$workspaceSlug.venues.$venueId'
+import { Route as DashboardWorkspaceSlugTicketDesignerProjectIdRouteImport } from './routes/dashboard.$workspaceSlug.ticket-designer.$projectId'
 import { Route as DashboardWorkspaceSlugEventsEventIdIndexRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.index'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdSettingsRouteImport } from './routes/dashboard.$workspaceSlug.venues.$venueId.settings'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdOverviewRouteImport } from './routes/dashboard.$workspaceSlug.venues.$venueId.overview'
@@ -52,19 +52,9 @@ const WalletRoute = WalletRouteImport.update({
   path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VenueDesignerRoute = VenueDesignerRouteImport.update({
-  id: '/venue-designer',
-  path: '/venue-designer',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ScannerRoute = ScannerRouteImport.update({
-  id: '/scanner',
-  path: '/scanner',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -107,11 +97,6 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CreateEventRoute = CreateEventRouteImport.update({
-  id: '/create-event',
-  path: '/create-event',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ActivityRoute = ActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
@@ -122,11 +107,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TicketDesignerIndexRoute = TicketDesignerIndexRouteImport.update({
-  id: '/ticket-designer/',
-  path: '/ticket-designer/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const EventsIndexRoute = EventsIndexRouteImport.update({
   id: '/events/',
   path: '/events/',
@@ -135,11 +115,6 @@ const EventsIndexRoute = EventsIndexRouteImport.update({
 const TicketTicketIdRoute = TicketTicketIdRouteImport.update({
   id: '/ticket/$ticketId',
   path: '/ticket/$ticketId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TicketDesignerProjectIdRoute = TicketDesignerProjectIdRouteImport.update({
-  id: '/ticket-designer/$projectId',
-  path: '/ticket-designer/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsEventIdRoute = EventsEventIdRouteImport.update({
@@ -174,6 +149,30 @@ const DashboardWorkspaceSlugVenueRentRoute =
     path: '/$workspaceSlug/venue-rent',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugVenueDesignerRoute =
+  DashboardWorkspaceSlugVenueDesignerRouteImport.update({
+    id: '/$workspaceSlug/venue-designer',
+    path: '/$workspaceSlug/venue-designer',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugScannerRoute =
+  DashboardWorkspaceSlugScannerRouteImport.update({
+    id: '/$workspaceSlug/scanner',
+    path: '/$workspaceSlug/scanner',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugCreateEventRoute =
+  DashboardWorkspaceSlugCreateEventRouteImport.update({
+    id: '/$workspaceSlug/create-event',
+    path: '/$workspaceSlug/create-event',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugTicketDesignerIndexRoute =
+  DashboardWorkspaceSlugTicketDesignerIndexRouteImport.update({
+    id: '/$workspaceSlug/ticket-designer/',
+    path: '/$workspaceSlug/ticket-designer/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugEventsIndexRoute =
   DashboardWorkspaceSlugEventsIndexRouteImport.update({
     id: '/$workspaceSlug/events/',
@@ -184,6 +183,12 @@ const DashboardWorkspaceSlugVenuesVenueIdRoute =
   DashboardWorkspaceSlugVenuesVenueIdRouteImport.update({
     id: '/$workspaceSlug/venues/$venueId',
     path: '/$workspaceSlug/venues/$venueId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugTicketDesignerProjectIdRoute =
+  DashboardWorkspaceSlugTicketDesignerProjectIdRouteImport.update({
+    id: '/$workspaceSlug/ticket-designer/$projectId',
+    path: '/$workspaceSlug/ticket-designer/$projectId',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardWorkspaceSlugEventsEventIdIndexRoute =
@@ -250,7 +255,6 @@ const DashboardWorkspaceSlugEventsEventIdCustomersRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
-  '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
@@ -259,22 +263,23 @@ export interface FileRoutesByFullPath {
   '/movies': typeof MoviesRoute
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
-  '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
-  '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
-  '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/events/': typeof EventsIndexRoute
-  '/ticket-designer/': typeof TicketDesignerIndexRoute
+  '/dashboard/$workspaceSlug/create-event': typeof DashboardWorkspaceSlugCreateEventRoute
+  '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
+  '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
+  '/dashboard/$workspaceSlug/ticket-designer/$projectId': typeof DashboardWorkspaceSlugTicketDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   '/dashboard/$workspaceSlug/events/': typeof DashboardWorkspaceSlugEventsIndexRoute
+  '/dashboard/$workspaceSlug/ticket-designer/': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/events/$eventId/customers': typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
   '/dashboard/$workspaceSlug/events/$eventId/merchandise': typeof DashboardWorkspaceSlugEventsEventIdMerchandiseRoute
   '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
@@ -289,7 +294,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
-  '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
@@ -298,22 +302,23 @@ export interface FileRoutesByTo {
   '/movies': typeof MoviesRoute
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
-  '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
-  '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
-  '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/events': typeof EventsIndexRoute
-  '/ticket-designer': typeof TicketDesignerIndexRoute
+  '/dashboard/$workspaceSlug/create-event': typeof DashboardWorkspaceSlugCreateEventRoute
+  '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
+  '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug': typeof DashboardWorkspaceSlugIndexRoute
+  '/dashboard/$workspaceSlug/ticket-designer/$projectId': typeof DashboardWorkspaceSlugTicketDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   '/dashboard/$workspaceSlug/events': typeof DashboardWorkspaceSlugEventsIndexRoute
+  '/dashboard/$workspaceSlug/ticket-designer': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/events/$eventId/customers': typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
   '/dashboard/$workspaceSlug/events/$eventId/merchandise': typeof DashboardWorkspaceSlugEventsEventIdMerchandiseRoute
   '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
@@ -329,7 +334,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
-  '/create-event': typeof CreateEventRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
@@ -338,22 +342,23 @@ export interface FileRoutesById {
   '/movies': typeof MoviesRoute
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
-  '/scanner': typeof ScannerRoute
   '/signin': typeof SigninRoute
-  '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
-  '/ticket-designer/$projectId': typeof TicketDesignerProjectIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/events/': typeof EventsIndexRoute
-  '/ticket-designer/': typeof TicketDesignerIndexRoute
+  '/dashboard/$workspaceSlug/create-event': typeof DashboardWorkspaceSlugCreateEventRoute
+  '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
+  '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
+  '/dashboard/$workspaceSlug/ticket-designer/$projectId': typeof DashboardWorkspaceSlugTicketDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   '/dashboard/$workspaceSlug/events/': typeof DashboardWorkspaceSlugEventsIndexRoute
+  '/dashboard/$workspaceSlug/ticket-designer/': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/events/$eventId/customers': typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
   '/dashboard/$workspaceSlug/events/$eventId/merchandise': typeof DashboardWorkspaceSlugEventsEventIdMerchandiseRoute
   '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
@@ -370,7 +375,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/activity'
-    | '/create-event'
     | '/dashboard'
     | '/experiences'
     | '/explore'
@@ -379,22 +383,23 @@ export interface FileRouteTypes {
     | '/movies'
     | '/organizers'
     | '/profile'
-    | '/scanner'
     | '/signin'
-    | '/venue-designer'
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
     | '/dashboard/workspaces'
     | '/events/$eventId'
-    | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
     | '/events/'
-    | '/ticket-designer/'
+    | '/dashboard/$workspaceSlug/create-event'
+    | '/dashboard/$workspaceSlug/scanner'
+    | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/'
+    | '/dashboard/$workspaceSlug/ticket-designer/$projectId'
     | '/dashboard/$workspaceSlug/venues/$venueId'
     | '/dashboard/$workspaceSlug/events/'
+    | '/dashboard/$workspaceSlug/ticket-designer/'
     | '/dashboard/$workspaceSlug/events/$eventId/customers'
     | '/dashboard/$workspaceSlug/events/$eventId/merchandise'
     | '/dashboard/$workspaceSlug/events/$eventId/parking'
@@ -409,7 +414,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/activity'
-    | '/create-event'
     | '/dashboard'
     | '/experiences'
     | '/explore'
@@ -418,22 +422,23 @@ export interface FileRouteTypes {
     | '/movies'
     | '/organizers'
     | '/profile'
-    | '/scanner'
     | '/signin'
-    | '/venue-designer'
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
     | '/dashboard/workspaces'
     | '/events/$eventId'
-    | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
     | '/events'
-    | '/ticket-designer'
+    | '/dashboard/$workspaceSlug/create-event'
+    | '/dashboard/$workspaceSlug/scanner'
+    | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug'
+    | '/dashboard/$workspaceSlug/ticket-designer/$projectId'
     | '/dashboard/$workspaceSlug/venues/$venueId'
     | '/dashboard/$workspaceSlug/events'
+    | '/dashboard/$workspaceSlug/ticket-designer'
     | '/dashboard/$workspaceSlug/events/$eventId/customers'
     | '/dashboard/$workspaceSlug/events/$eventId/merchandise'
     | '/dashboard/$workspaceSlug/events/$eventId/parking'
@@ -448,7 +453,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/activity'
-    | '/create-event'
     | '/dashboard'
     | '/experiences'
     | '/explore'
@@ -457,22 +461,23 @@ export interface FileRouteTypes {
     | '/movies'
     | '/organizers'
     | '/profile'
-    | '/scanner'
     | '/signin'
-    | '/venue-designer'
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
     | '/dashboard/workspaces'
     | '/events/$eventId'
-    | '/ticket-designer/$projectId'
     | '/ticket/$ticketId'
     | '/events/'
-    | '/ticket-designer/'
+    | '/dashboard/$workspaceSlug/create-event'
+    | '/dashboard/$workspaceSlug/scanner'
+    | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/'
+    | '/dashboard/$workspaceSlug/ticket-designer/$projectId'
     | '/dashboard/$workspaceSlug/venues/$venueId'
     | '/dashboard/$workspaceSlug/events/'
+    | '/dashboard/$workspaceSlug/ticket-designer/'
     | '/dashboard/$workspaceSlug/events/$eventId/customers'
     | '/dashboard/$workspaceSlug/events/$eventId/merchandise'
     | '/dashboard/$workspaceSlug/events/$eventId/parking'
@@ -488,7 +493,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivityRoute: typeof ActivityRoute
-  CreateEventRoute: typeof CreateEventRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   ExperiencesRoute: typeof ExperiencesRoute
   ExploreRoute: typeof ExploreRoute
@@ -497,17 +501,13 @@ export interface RootRouteChildren {
   MoviesRoute: typeof MoviesRoute
   OrganizersRoute: typeof OrganizersRoute
   ProfileRoute: typeof ProfileRoute
-  ScannerRoute: typeof ScannerRoute
   SigninRoute: typeof SigninRoute
-  VenueDesignerRoute: typeof VenueDesignerRoute
   WalletRoute: typeof WalletRoute
   BookEventIdRoute: typeof BookEventIdRoute
   CommunityPostIdRoute: typeof CommunityPostIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
-  TicketDesignerProjectIdRoute: typeof TicketDesignerProjectIdRoute
   TicketTicketIdRoute: typeof TicketTicketIdRoute
   EventsIndexRoute: typeof EventsIndexRoute
-  TicketDesignerIndexRoute: typeof TicketDesignerIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -519,25 +519,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/venue-designer': {
-      id: '/venue-designer'
-      path: '/venue-designer'
-      fullPath: '/venue-designer'
-      preLoaderRoute: typeof VenueDesignerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/signin': {
       id: '/signin'
       path: '/signin'
       fullPath: '/signin'
       preLoaderRoute: typeof SigninRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/scanner': {
-      id: '/scanner'
-      path: '/scanner'
-      fullPath: '/scanner'
-      preLoaderRoute: typeof ScannerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -596,13 +582,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/create-event': {
-      id: '/create-event'
-      path: '/create-event'
-      fullPath: '/create-event'
-      preLoaderRoute: typeof CreateEventRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/activity': {
       id: '/activity'
       path: '/activity'
@@ -617,13 +596,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ticket-designer/': {
-      id: '/ticket-designer/'
-      path: '/ticket-designer'
-      fullPath: '/ticket-designer/'
-      preLoaderRoute: typeof TicketDesignerIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/events/': {
       id: '/events/'
       path: '/events'
@@ -636,13 +608,6 @@ declare module '@tanstack/react-router' {
       path: '/ticket/$ticketId'
       fullPath: '/ticket/$ticketId'
       preLoaderRoute: typeof TicketTicketIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ticket-designer/$projectId': {
-      id: '/ticket-designer/$projectId'
-      path: '/ticket-designer/$projectId'
-      fullPath: '/ticket-designer/$projectId'
-      preLoaderRoute: typeof TicketDesignerProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events/$eventId': {
@@ -687,6 +652,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugVenueRentRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/venue-designer': {
+      id: '/dashboard/$workspaceSlug/venue-designer'
+      path: '/$workspaceSlug/venue-designer'
+      fullPath: '/dashboard/$workspaceSlug/venue-designer'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVenueDesignerRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/scanner': {
+      id: '/dashboard/$workspaceSlug/scanner'
+      path: '/$workspaceSlug/scanner'
+      fullPath: '/dashboard/$workspaceSlug/scanner'
+      preLoaderRoute: typeof DashboardWorkspaceSlugScannerRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/create-event': {
+      id: '/dashboard/$workspaceSlug/create-event'
+      path: '/$workspaceSlug/create-event'
+      fullPath: '/dashboard/$workspaceSlug/create-event'
+      preLoaderRoute: typeof DashboardWorkspaceSlugCreateEventRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/ticket-designer/': {
+      id: '/dashboard/$workspaceSlug/ticket-designer/'
+      path: '/$workspaceSlug/ticket-designer'
+      fullPath: '/dashboard/$workspaceSlug/ticket-designer/'
+      preLoaderRoute: typeof DashboardWorkspaceSlugTicketDesignerIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/events/': {
       id: '/dashboard/$workspaceSlug/events/'
       path: '/$workspaceSlug/events'
@@ -699,6 +692,13 @@ declare module '@tanstack/react-router' {
       path: '/$workspaceSlug/venues/$venueId'
       fullPath: '/dashboard/$workspaceSlug/venues/$venueId'
       preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/ticket-designer/$projectId': {
+      id: '/dashboard/$workspaceSlug/ticket-designer/$projectId'
+      path: '/$workspaceSlug/ticket-designer/$projectId'
+      fullPath: '/dashboard/$workspaceSlug/ticket-designer/$projectId'
+      preLoaderRoute: typeof DashboardWorkspaceSlugTicketDesignerProjectIdRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/$workspaceSlug/events/$eventId/': {
@@ -797,10 +797,15 @@ const DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren =
 
 interface DashboardRouteChildren {
   DashboardWorkspacesRoute: typeof DashboardWorkspacesRoute
+  DashboardWorkspaceSlugCreateEventRoute: typeof DashboardWorkspaceSlugCreateEventRoute
+  DashboardWorkspaceSlugScannerRoute: typeof DashboardWorkspaceSlugScannerRoute
+  DashboardWorkspaceSlugVenueDesignerRoute: typeof DashboardWorkspaceSlugVenueDesignerRoute
   DashboardWorkspaceSlugVenueRentRoute: typeof DashboardWorkspaceSlugVenueRentRoute
   DashboardWorkspaceSlugIndexRoute: typeof DashboardWorkspaceSlugIndexRoute
+  DashboardWorkspaceSlugTicketDesignerProjectIdRoute: typeof DashboardWorkspaceSlugTicketDesignerProjectIdRoute
   DashboardWorkspaceSlugVenuesVenueIdRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   DashboardWorkspaceSlugEventsIndexRoute: typeof DashboardWorkspaceSlugEventsIndexRoute
+  DashboardWorkspaceSlugTicketDesignerIndexRoute: typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   DashboardWorkspaceSlugEventsEventIdCustomersRoute: typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
   DashboardWorkspaceSlugEventsEventIdMerchandiseRoute: typeof DashboardWorkspaceSlugEventsEventIdMerchandiseRoute
   DashboardWorkspaceSlugEventsEventIdParkingRoute: typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
@@ -812,12 +817,21 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardWorkspacesRoute: DashboardWorkspacesRoute,
+  DashboardWorkspaceSlugCreateEventRoute:
+    DashboardWorkspaceSlugCreateEventRoute,
+  DashboardWorkspaceSlugScannerRoute: DashboardWorkspaceSlugScannerRoute,
+  DashboardWorkspaceSlugVenueDesignerRoute:
+    DashboardWorkspaceSlugVenueDesignerRoute,
   DashboardWorkspaceSlugVenueRentRoute: DashboardWorkspaceSlugVenueRentRoute,
   DashboardWorkspaceSlugIndexRoute: DashboardWorkspaceSlugIndexRoute,
+  DashboardWorkspaceSlugTicketDesignerProjectIdRoute:
+    DashboardWorkspaceSlugTicketDesignerProjectIdRoute,
   DashboardWorkspaceSlugVenuesVenueIdRoute:
     DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren,
   DashboardWorkspaceSlugEventsIndexRoute:
     DashboardWorkspaceSlugEventsIndexRoute,
+  DashboardWorkspaceSlugTicketDesignerIndexRoute:
+    DashboardWorkspaceSlugTicketDesignerIndexRoute,
   DashboardWorkspaceSlugEventsEventIdCustomersRoute:
     DashboardWorkspaceSlugEventsEventIdCustomersRoute,
   DashboardWorkspaceSlugEventsEventIdMerchandiseRoute:
@@ -841,7 +855,6 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityRoute: ActivityRoute,
-  CreateEventRoute: CreateEventRoute,
   DashboardRoute: DashboardRouteWithChildren,
   ExperiencesRoute: ExperiencesRoute,
   ExploreRoute: ExploreRoute,
@@ -850,17 +863,13 @@ const rootRouteChildren: RootRouteChildren = {
   MoviesRoute: MoviesRoute,
   OrganizersRoute: OrganizersRoute,
   ProfileRoute: ProfileRoute,
-  ScannerRoute: ScannerRoute,
   SigninRoute: SigninRoute,
-  VenueDesignerRoute: VenueDesignerRoute,
   WalletRoute: WalletRoute,
   BookEventIdRoute: BookEventIdRoute,
   CommunityPostIdRoute: CommunityPostIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
-  TicketDesignerProjectIdRoute: TicketDesignerProjectIdRoute,
   TicketTicketIdRoute: TicketTicketIdRoute,
   EventsIndexRoute: EventsIndexRoute,
-  TicketDesignerIndexRoute: TicketDesignerIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

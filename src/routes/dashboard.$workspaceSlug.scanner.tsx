@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ScannerMobile } from "@/components/mobile/ScannerMobile";
 import { ScannerDesktop } from "@/components/desktop/ScannerDesktop";
 
-export const Route = createFileRoute("/scanner")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/scanner")({
   head: () => ({
     meta: [
       { title: "Scanner — Agatike" },

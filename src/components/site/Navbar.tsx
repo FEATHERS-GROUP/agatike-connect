@@ -72,7 +72,7 @@ export function Navbar() {
               Sign in
             </Button>
           </Link>
-          <Link to="/create-event">
+          <Link to="/dashboard">
             <Button
               className="rounded-full shadow-[var(--shadow-glow)] px-3 sm:px-4"
               style={{ background: "var(--gradient-primary)" }}

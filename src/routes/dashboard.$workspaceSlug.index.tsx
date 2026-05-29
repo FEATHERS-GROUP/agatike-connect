@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { DesktopHeader } from "@/components/desktop/dashboard/DesktopHeader";
 import { DesktopKPIs } from "@/components/desktop/dashboard/DesktopKPIs";
 import { DesktopSalesChart } from "@/components/desktop/dashboard/DesktopSalesChart";
@@ -11,6 +11,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/")({
 });
 
 function DashboardIndex() {
+  const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/" });
   return (
     <>
       <DesktopHeader />
@@ -20,12 +21,14 @@ function DashboardIndex() {
       <DesktopPricing />
       <DesktopWizardPreview />
 
-      <p className="mt-8 text-center text-xs text-muted-foreground">
-        Need to scan?{" "}
-        <Link to="/scanner" className="text-primary hover:underline">
-          Open the mobile scanner →
-        </Link>
-      </p>
+      <div className="rounded-2xl border border-border/60 bg-card p-6">
+        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+        <div className="flex gap-4">
+          <Link to={`/dashboard/${workspaceSlug}/scanner`} className="text-primary hover:underline">
+            Open the mobile scanner →
+          </Link>
+        </div>
+      </div>
     </>
   );
 }

@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export function DesktopHeader() {
+  const { activeWorkspace } = useWorkspace();
+  
   return (
     <header className="flex flex-wrap items-center justify-between gap-3">
       <div>
@@ -13,12 +16,12 @@ export function DesktopHeader() {
         <Button variant="outline" className="rounded-full">
           Export
         </Button>
-        <Link to="/workspaces">
+        <Link to="/dashboard/workspaces">
           <Button variant="outline" className="rounded-full">
             Workspaces
           </Button>
         </Link>
-        <Link to="/create-event">
+        <Link to={`/dashboard/${activeWorkspace?.slug}/create-event`}>
           <Button
             className="rounded-full shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}

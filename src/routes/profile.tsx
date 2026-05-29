@@ -339,8 +339,8 @@ function ProfilePage() {
         <div className="flex items-center justify-between px-4 py-3">
           <h1 className="font-bold text-lg tracking-tight">My Profile</h1>
           <div className="flex items-center gap-2">
-            <Link to="/scanner" className="p-2 rounded-full hover:bg-secondary transition-colors">
-              <QrCode className="h-5 w-5" />
+            <Link to="/dashboard" className="p-2 rounded-full hover:bg-secondary transition-colors">
+              <ScanLine className="h-5 w-5" />
             </Link>
             <button className="p-2 rounded-full hover:bg-secondary transition-colors">
               <Bell className="h-5 w-5" />
