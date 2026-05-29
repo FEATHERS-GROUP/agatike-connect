@@ -1,4 +1,5 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useState } from "react";
 import { Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/dashboard/venues/$venueId/settings")({
 function VenueSettingsPage() {
   const { venueId } = useParams({ strict: false });
   const venue = rentableVenues.find(v => v.id === venueId);
+  const [rentalType, setRentalType] = useState(venue?.rentalType || "Per Day");
 
   if (!venue) return <div>Venue not found</div>;
 
@@ -69,26 +71,34 @@ function VenueSettingsPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Rental Type Allowed</Label>
-                <select defaultValue={venue.rentalType || "Per Day"} className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                <select 
+                  value={rentalType} 
+                  onChange={(e) => setRentalType(e.target.value)}
+                  className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
                   <option value="Per Day">Per Day Only</option>
                   <option value="Per Hour">Per Hour Only</option>
                   <option value="Both">Both (Day & Hour)</option>
                 </select>
               </div>
-              <div className="space-y-1.5">
-                <Label>Price per Day</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{venue.currency}</span>
-                  <Input type="number" defaultValue={venue.pricePerDay} className="pl-8 h-10 rounded-xl bg-secondary/50" />
+              {(rentalType === "Per Day" || rentalType === "Both") && (
+                <div className="space-y-1.5">
+                  <Label>Price per Day</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{venue.currency}</span>
+                    <Input type="number" defaultValue={venue.pricePerDay} className="pl-8 h-10 rounded-xl bg-secondary/50" />
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Price per Hour</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{venue.currency}</span>
-                  <Input type="number" defaultValue={venue.pricePerHour || 0} className="pl-8 h-10 rounded-xl bg-secondary/50" />
+              )}
+              {(rentalType === "Per Hour" || rentalType === "Both") && (
+                <div className="space-y-1.5">
+                  <Label>Price per Hour</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{venue.currency}</span>
+                    <Input type="number" defaultValue={venue.pricePerHour || 0} className="pl-8 h-10 rounded-xl bg-secondary/50" />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

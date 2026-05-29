@@ -1,10 +1,11 @@
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, useParams, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { CalendarDays, Plus, Clock } from "lucide-react";
+import { CalendarDays, Plus, Clock, User, Mail, Phone, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { rentableVenues, venueBookings } from "@/lib/mock-data";
 import { Calendar, dateFnsLocalizer, View } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
@@ -31,6 +32,7 @@ function VenueOverviewPage() {
   const { venueId } = useParams({ strict: false });
   const [currentView, setCurrentView] = useState<View>("month");
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   const venue = rentableVenues.find(v => v.id === venueId);
   const bookings = venueBookings.filter(b => b.venueId === venueId);
@@ -212,7 +214,40 @@ function VenueOverviewPage() {
                 filter: brightness(1.1);
               }
               .rbc-date-cell { padding: 4px 8px; font-weight: 500; font-size: 0.9rem; }
+              
+              /* Day/Week Time View Enhancements */
               .rbc-time-view .rbc-header { border-bottom: none; }
+              .rbc-time-content { border-top: 1px solid hsl(var(--border)/0.6); }
+              .rbc-timeslot-group { border-bottom: 1px solid hsl(var(--border)/0.3); min-height: 60px; }
+              .rbc-time-gutter .rbc-timeslot-group { border-right: 1px solid hsl(var(--border)/0.6); background: hsl(var(--secondary)/0.1); }
+              .rbc-time-header-content { border-left: 1px solid hsl(var(--border)/0.6); }
+              .rbc-allday-cell { background: hsl(var(--secondary)/0.2); border-bottom: 1px solid hsl(var(--border)/0.6); }
+              .rbc-day-slot .rbc-events-container { margin-right: 8px; }
+              .rbc-day-slot .rbc-event { border: 1px solid hsl(var(--card)); }
+              
+              /* Agenda View Premium Styling */
+              .rbc-agenda-view table.rbc-agenda-table { 
+                border-collapse: separate; 
+                border-spacing: 0; 
+              }
+              .rbc-agenda-view table.rbc-agenda-table thead > tr > th { 
+                padding: 16px; 
+                text-align: left; 
+                background: hsl(var(--secondary)/0.3); 
+                border-bottom: 2px solid hsl(var(--border)/0.6);
+                font-size: 0.8rem;
+              }
+              .rbc-agenda-view table.rbc-agenda-table tbody > tr > td { 
+                padding: 16px; 
+                border-bottom: 1px solid hsl(var(--border)/0.3);
+                vertical-align: middle;
+              }
+              .rbc-agenda-view table.rbc-agenda-table tbody > tr:hover > td {
+                background: hsl(var(--secondary)/0.1);
+              }
+              .rbc-agenda-date-cell { font-weight: 600; color: hsl(var(--foreground)); width: 15%; }
+              .rbc-agenda-time-cell { font-weight: 500; color: hsl(var(--muted-foreground)); width: 20%; }
+              .rbc-agenda-event-cell { font-weight: 500; }
             `}</style>
             <Calendar
               localizer={localizer}
@@ -223,6 +258,7 @@ function VenueOverviewPage() {
               onView={(view) => setCurrentView(view)}
               date={currentDate}
               onNavigate={(date) => setCurrentDate(date)}
+              onSelectEvent={(event) => setSelectedEvent(event)}
               views={["month", "week", "day", "agenda"]}
               style={{ height: "100%" }}
               components={{
@@ -272,6 +308,86 @@ function VenueOverviewPage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
+        <DialogContent className="sm:max-w-md bg-card border-border/60">
+          <DialogHeader>
+            <DialogTitle>Booking Details</DialogTitle>
+          </DialogHeader>
+          
+          {selectedEvent && (
+            <div className="space-y-6 mt-4">
+              <div className="space-y-4 bg-secondary/20 p-4 rounded-2xl border border-border/60">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <User className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">{selectedEvent.data.customerName}</h4>
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest mt-0.5">Customer</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-2 pt-2 border-t border-border/30">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Mail className="h-4 w-4" /> {selectedEvent.data.customerEmail}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Phone className="h-4 w-4" /> {selectedEvent.data.customerPhone}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Date</span>
+                  <p className="font-medium text-sm flex items-center gap-1.5"><CalendarDays className="h-4 w-4" /> {selectedEvent.data.date}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Time</span>
+                  <p className="font-medium text-sm flex items-center gap-1.5">
+                    <Clock className="h-4 w-4" /> 
+                    {selectedEvent.data.isAllDay ? "All Day" : `${selectedEvent.data.timeStart} - ${selectedEvent.data.timeEnd}`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Booking Status</span>
+                  <div>
+                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${
+                      selectedEvent.data.status === "Confirmed" ? "bg-green-500/10 text-green-500" :
+                      selectedEvent.data.status === "Pending" ? "bg-orange-500/10 text-orange-500" :
+                      "bg-red-500/10 text-red-500"
+                    }`}>
+                      {selectedEvent.data.status}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Payment Status</span>
+                  <div>
+                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${
+                      selectedEvent.data.paymentStatus === "Paid" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                    }`}>
+                      {selectedEvent.data.paymentStatus}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border/60">
+                <Link to={`/dashboard/venues/${venue.id}/bookings`}>
+                  <Button className="w-full rounded-xl gap-2" variant="outline">
+                    View in Bookings List <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
