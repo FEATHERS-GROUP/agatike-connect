@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getOrganizerProfile, updateOrganizerProfile } from "@/api/organizers";
-import { ArrowLeft, Save, User, Link as LinkIcon, Instagram, Twitter, Youtube, Building2, LayoutList, Heart, MessageSquare, Send, Pencil, Share, Trash2, MapPin, Tag, AlertTriangle, Upload } from "lucide-react";
+import { getOrganizerProfile, updateOrganizerProfile, changeOrganizerPassword } from "@/api/organizers";
+import { ArrowLeft, Save, User, Link as LinkIcon, Instagram, Twitter, Youtube, Building2, LayoutList, Heart, MessageSquare, Send, Pencil, Share, Trash2, MapPin, Tag, AlertTriangle, Upload, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { updateDatabaseWorkspace, disableDatabaseWorkspace } from "@/api/workspaces";
 import { stories as defaultStories } from "@/lib/mock-data";
@@ -35,11 +35,22 @@ const formSchema = z.object({
   phone: z.string().optional(),
   bio: z.string().max(500, "Bio too long").optional(),
   instagram: z.string().optional(),
+  twitter: z.string().optional(),
   youtube: z.string().optional(),
-  password: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(6, "New password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 function OrganizerSettings() {
   const navigate = useNavigate();
@@ -112,7 +123,15 @@ function OrganizerSettings() {
       instagram: "",
       twitter: "",
       youtube: "",
-      password: "",
+    }
+  });
+
+  const passwordForm = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     }
   });
 
@@ -163,6 +182,24 @@ function OrganizerSettings() {
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update profile.");
+    }
+  });
+
+  const changePasswordMutation = useMutation({
+    mutationFn: async (values: PasswordFormValues) => {
+      return await changeOrganizerPassword({
+        data: {
+          currentPassword: values.currentPassword,
+          newPassword: values.newPassword,
+        }
+      });
+    },
+    onSuccess: () => {
+      toast.success("Password changed successfully!");
+      passwordForm.reset();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to change password. Please check your current password.");
     }
   });
 
@@ -494,10 +531,6 @@ function OrganizerSettings() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Change Password (Optional)</Label>
-                  <Input {...register("password")} type="password" placeholder="Leave blank to keep current password" className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
-                </div>
 
                 <div className="space-y-2">
                   <Label>Bio / Description</Label>
@@ -522,6 +555,41 @@ function OrganizerSettings() {
                 <div className="space-y-2">
                   <Label>YouTube URL</Label>
                   <Input {...register("youtube")} placeholder="https://youtube.com/..." className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-border/60 bg-card p-6 md:p-8 shadow-sm">
+              <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
+                <Lock className="h-5 w-5 text-primary" /> Security
+              </h2>
+              <div className="flex-1 w-full space-y-4 max-w-2xl">
+                <div className="space-y-2">
+                  <Label>Current Password</Label>
+                  <Input {...passwordForm.register("currentPassword")} type="password" placeholder="Verify your current password" className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
+                  {passwordForm.formState.errors.currentPassword && <p className="text-xs text-red-500">{passwordForm.formState.errors.currentPassword.message}</p>}
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>New Password</Label>
+                    <Input {...passwordForm.register("newPassword")} type="password" placeholder="New secure password" className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
+                    {passwordForm.formState.errors.newPassword && <p className="text-xs text-red-500">{passwordForm.formState.errors.newPassword.message}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Confirm New Password</Label>
+                    <Input {...passwordForm.register("confirmPassword")} type="password" placeholder="Confirm new password" className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
+                    {passwordForm.formState.errors.confirmPassword && <p className="text-xs text-red-500">{passwordForm.formState.errors.confirmPassword.message}</p>}
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <Button 
+                    onClick={passwordForm.handleSubmit((d) => changePasswordMutation.mutate(d))} 
+                    disabled={changePasswordMutation.isPending}
+                    variant="secondary"
+                    className="rounded-xl"
+                  >
+                    {changePasswordMutation.isPending ? "Updating..." : "Update Password"}
+                  </Button>
                 </div>
               </div>
             </div>

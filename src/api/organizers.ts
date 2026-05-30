@@ -157,15 +157,6 @@ export const updateOrganizerProfile = createServerFn({ method: "POST" })
       updated_on: "now()"
     `;
 
-    let passwordParamDef = "";
-
-    if (data.password && data.password.trim() !== "") {
-      const salt = await bcrypt.genSalt(10);
-      variables.password = await bcrypt.hash(data.password, salt);
-      passwordParamDef = "$password: String,";
-      setFields += `,\npassword: $password`;
-    }
-
     const mutation = `
       mutation UpdateOrganizerProfile(
         $id: uuid!,
@@ -175,7 +166,6 @@ export const updateOrganizerProfile = createServerFn({ method: "POST" })
         $phone: String,
         $bio: String,
         $image: String,
-        ${passwordParamDef}
         $socials: jsonb
       ) {
         update_organizers_by_pk(
@@ -192,4 +182,40 @@ export const updateOrganizerProfile = createServerFn({ method: "POST" })
     const result = await hasuraRequest<{ update_organizers_by_pk: { id: string } }>(mutation, variables);
     
     return result.update_organizers_by_pk;
+  });
+
+export const changeOrganizerPassword = createServerFn({ method: "POST" })
+  .handler(async (ctx) => {
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
+
+    const { currentPassword, newPassword } = ctx.data as any;
+
+    const query = `
+      query GetPassword($id: uuid!) {
+        organizers_by_pk(id: $id) {
+          password
+        }
+      }
+    `;
+    const data = await hasuraRequest<{ organizers_by_pk: { password: string } }>(query, { id: session.sub });
+    
+    if (!data.organizers_by_pk) throw new Error("Organizer not found");
+
+    const valid = await bcrypt.compare(currentPassword, data.organizers_by_pk.password);
+    if (!valid) throw new Error("Incorrect current password");
+
+    const salt = await bcrypt.genSalt(10);
+    const newHash = await bcrypt.hash(newPassword, salt);
+
+    const mutation = `
+      mutation UpdatePassword($id: uuid!, $password: String!) {
+        update_organizers_by_pk(pk_columns: { id: $id }, _set: { password: $password }) {
+          id
+        }
+      }
+    `;
+    await hasuraRequest(mutation, { id: session.sub, password: newHash });
+
+    return { success: true };
   });
