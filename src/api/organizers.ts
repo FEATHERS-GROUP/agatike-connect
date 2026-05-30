@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
+import { getSession } from "./auth";
 import bcrypt from "bcryptjs";
 
 export interface OrganizerInput {
@@ -99,4 +100,96 @@ export const createOrganizerAccount = createServerFn({ method: "POST" })
 
     const result = await hasuraRequest<{ insert_organizers: { affected_rows: number } }>(mutation, payload);
     return result.insert_organizers;
+  });
+
+export const getOrganizerProfile = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
+
+    const query = `
+      query GetOrganizerProfile($id: uuid!) {
+        organizers_by_pk(id: $id) {
+          id
+          name
+          handle
+          email
+          phone
+          bio
+          socials
+          followers
+          numberOfEvents
+          image
+        }
+      }
+    `;
+
+    const data = await hasuraRequest<{ organizers_by_pk: any }>(query, { id: session.sub });
+    return data.organizers_by_pk;
+  });
+
+export const updateOrganizerProfile = createServerFn({ method: "POST" })
+  .handler(async (ctx) => {
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
+
+    const data = ctx.data as unknown as { name?: string; handle?: string; email?: string; phone?: string; bio?: string; image?: string; password?: string; socials?: any };
+    
+    const variables: any = {
+      id: session.sub,
+      name: data.name,
+      handle: data.handle,
+      email: data.email,
+      phone: data.phone,
+      bio: data.bio,
+      image: data.image,
+      socials: data.socials,
+    };
+
+    let setFields = `
+      name: $name,
+      handle: $handle,
+      email: $email,
+      phone: $phone,
+      bio: $bio,
+      image: $image,
+      socials: $socials,
+      updated_on: "now()"
+    `;
+
+    let passwordParamDef = "";
+
+    if (data.password && data.password.trim() !== "") {
+      const salt = await bcrypt.genSalt(10);
+      variables.password = await bcrypt.hash(data.password, salt);
+      passwordParamDef = "$password: String,";
+      setFields += `,\npassword: $password`;
+    }
+
+    const mutation = `
+      mutation UpdateOrganizerProfile(
+        $id: uuid!,
+        $name: String,
+        $handle: String,
+        $email: String,
+        $phone: String,
+        $bio: String,
+        $image: String,
+        ${passwordParamDef}
+        $socials: jsonb
+      ) {
+        update_organizers_by_pk(
+          pk_columns: { id: $id },
+          _set: {
+            ${setFields}
+          }
+        ) {
+          id
+        }
+      }
+    `;
+
+    const result = await hasuraRequest<{ update_organizers_by_pk: { id: string } }>(mutation, variables);
+    
+    return result.update_organizers_by_pk;
   });

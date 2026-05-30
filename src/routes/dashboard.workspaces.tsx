@@ -246,7 +246,7 @@ function Workspaces() {
           <Button 
             variant="outline" 
             className="rounded-full gap-2"
-            onClick={() => navigate({ to: "/dashboard/create-organizer" })}
+            onClick={() => navigate({ to: "/dashboard/settings" })}
           >
             <User className="h-4 w-4" /> Organizer Profile
           </Button>
