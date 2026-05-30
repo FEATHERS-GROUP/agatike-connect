@@ -124,7 +124,7 @@ function TicketDesignerPage() {
   const [activeTourStopIdx, setActiveTourStopIdx] = useState<number>(-1);
   const [activeTierId, setActiveTierId] = useState<string>("");
   const [editScope, setEditScope] = useState<"base" | "stop" | "tier" | "combination">("base");
-  const [activeTab, setActiveTab] = useState<"setup" | "design" | "content">("setup");
+  const [activeTab, setActiveTab] = useState<"setup" | "design" | "media" | "content">("setup");
   const [previewMode, setPreviewMode] = useState<"Front" | "Back" | "Mobile">("Front");
 
   const [baseDesign, setBaseDesign] = useState<TicketDesign>({
@@ -263,19 +263,25 @@ function TicketDesignerPage() {
           <div className="flex gap-1 rounded-xl bg-secondary/50 p-1">
             <button
               onClick={() => setActiveTab("setup")}
-              className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${activeTab === "setup" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
+              className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all ${activeTab === "setup" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
             >
-              Setup & Preview
+              Setup
             </button>
             <button
               onClick={() => setActiveTab("design")}
-              className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${activeTab === "design" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
+              className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all ${activeTab === "design" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
             >
               Design
             </button>
             <button
+              onClick={() => setActiveTab("media")}
+              className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all ${activeTab === "media" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
+            >
+              Media
+            </button>
+            <button
               onClick={() => setActiveTab("content")}
-              className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${activeTab === "content" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
+              className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all ${activeTab === "content" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
             >
               Content
             </button>
@@ -404,48 +410,53 @@ function TicketDesignerPage() {
             </div>
           </Section>
 
-          <Section title="Cover image" icon={ImageIcon}>
-            <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground hover:bg-secondary">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => onUpload(e.target.files?.[0])}
-              />
-              {mergedDesign.cover ? "Replace cover" : "Drop image or click to upload"}
-            </label>
-          </Section>
-
-          <Section title="Logo image" icon={ImageIcon}>
-            <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground hover:bg-secondary">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  if (!e.target.files?.[0]) return;
-                  const reader = new FileReader();
-                  reader.onload = () => updateDesign("logoImage", String(reader.result));
-                  reader.readAsDataURL(e.target.files[0]);
-                }}
-              />
-              {mergedDesign.logoImage ? "Replace logo" : "Drop logo image or click to upload"}
-            </label>
-          </Section>
-
-          {mergedDesign.logoImage && (
-            <Section title="Logo size" icon={ImageIcon}>
-              <input
-                type="range"
-                min="16"
-                max="80"
-                value={mergedDesign.logoScale || 24}
-                onChange={(e) => updateDesign("logoScale", Number(e.target.value))}
-                className="w-full accent-primary"
-              />
-              <p className="mt-2 text-center text-xs text-muted-foreground">Or click the logo directly in the preview to cycle sizes.</p>
-            </Section>
+            </div>
           )}
+
+          {activeTab === "media" && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+              <Section title="Cover image" icon={ImageIcon}>
+                <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground hover:bg-secondary">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => onUpload(e.target.files?.[0])}
+                  />
+                  {mergedDesign.cover ? "Replace cover" : "Drop image or click to upload"}
+                </label>
+              </Section>
+
+              <Section title="Logo image" icon={ImageIcon}>
+                <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground hover:bg-secondary">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (!e.target.files?.[0]) return;
+                      const reader = new FileReader();
+                      reader.onload = () => updateDesign("logoImage", String(reader.result));
+                      reader.readAsDataURL(e.target.files[0]);
+                    }}
+                  />
+                  {mergedDesign.logoImage ? "Replace logo" : "Drop logo image or click to upload"}
+                </label>
+              </Section>
+
+              {mergedDesign.logoImage && (
+                <Section title="Logo size" icon={ImageIcon}>
+                  <input
+                    type="range"
+                    min="16"
+                    max="80"
+                    value={mergedDesign.logoScale || 24}
+                    onChange={(e) => updateDesign("logoScale", Number(e.target.value))}
+                    className="w-full accent-primary"
+                  />
+                  <p className="mt-2 text-center text-xs text-muted-foreground">Or click the logo directly in the preview to cycle sizes.</p>
+                </Section>
+              )}
             </div>
           )}
 
