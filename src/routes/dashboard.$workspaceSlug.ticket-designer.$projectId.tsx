@@ -538,7 +538,7 @@ function TicketDesignerPage() {
 
       <div className="flex-1 min-h-0 grid gap-6 p-6 lg:grid-cols-[360px_1fr]">
         {/* Controls */}
-        <aside className="space-y-6 overflow-y-auto pb-10 pr-2 -mr-2">
+        <aside className="min-h-0 space-y-6 overflow-y-auto pb-10 pr-2 -mr-2">
           <div className="grid grid-cols-3 gap-1 rounded-xl bg-secondary/50 p-1">
             {(["setup", "design", "media", "layout", "back", "content"] as const).map((tab) => (
               <button
