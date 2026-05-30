@@ -59,6 +59,7 @@ const GET_WORKSPACE_EVENTS = `
       tour_stops
       created_at
       event_tickets {
+        id
         type
         cost
         remaining

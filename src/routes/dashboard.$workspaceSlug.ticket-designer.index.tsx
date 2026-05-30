@@ -1,7 +1,14 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
+import { useState } from "react";
 import { ArrowLeft, Plus, Ticket, Film, Mountain, Briefcase, Calendar, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ticketProjects } from "@/lib/mock-data";
+import { useQuery } from "@tanstack/react-query";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { getWorkspaceEvents } from "@/api/events";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/ticket-designer/")({
   component: TicketDesignerIndex,
@@ -17,14 +24,46 @@ const templates = [
 function TicketDesignerIndex() {
   const navigate = useNavigate();
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/ticket-designer/" });
+  const { activeWorkspace } = useWorkspace();
 
-  const handleCreateNew = (templateId: string) => {
+  const { data: events = [] } = useQuery({
+    queryKey: ["workspace-events", activeWorkspace?.id],
+    queryFn: () => getWorkspaceEvents({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newProjectName, setNewProjectName] = useState("Untitled Project");
+  const [selectedEventId, setSelectedEventId] = useState("");
+
+  const handleCreateNew = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTemplate || !selectedEventId) return;
+    
     // Generate a random ID for the new project
     const newId = "proj-" + Math.random().toString(36).substring(2, 9);
-    // In a real app we'd dispatch an action or API call here.
-    // For now we just route to the editor, passing the template as a search param or state,
-    // but we can just pass it as a search param, or default it in the editor.
-    navigate({ to: `/dashboard/${workspaceSlug}/ticket-designer/${newId}`, search: { template: templateId } });
+    
+    const search: any = { template: selectedTemplate };
+    if (selectedEventId) search.eventId = selectedEventId;
+    if (newProjectName) search.name = newProjectName;
+
+    navigate({ 
+      to: "/dashboard/$workspaceSlug/ticket-designer/$projectId", 
+      params: {
+        workspaceSlug,
+        projectId: newId,
+      },
+      search 
+    });
+    setIsModalOpen(false);
+  };
+
+  const openSetupModal = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    setNewProjectName("Untitled Project");
+    setSelectedEventId("");
+    setIsModalOpen(true);
   };
 
   return (
@@ -52,7 +91,7 @@ function TicketDesignerIndex() {
             {templates.map(t => (
               <button
                 key={t.id}
-                onClick={() => handleCreateNew(t.id)}
+                onClick={() => openSetupModal(t.id)}
                 className="group relative flex flex-col items-start gap-4 rounded-3xl border border-border/60 bg-card p-6 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 <div className={`p-3 rounded-2xl ${t.bg}`}>
@@ -70,6 +109,54 @@ function TicketDesignerIndex() {
           </div>
         </section>
 
+        {/* Setup Modal */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Setup Ticket Project</DialogTitle>
+              <DialogDescription>
+                Link this design to an existing event. You can preview all ticket tiers inside the editor.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateNew} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="projectName">Project Name</Label>
+                <Input
+                  id="projectName"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  placeholder="e.g. Summer VIP Tickets"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="eventSelect">Select Event *</Label>
+                <select
+                  id="eventSelect"
+                  value={selectedEventId}
+                  onChange={(e) => setSelectedEventId(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  required
+                >
+                  <option value="">-- Select Event --</option>
+                  {events.map((ev: any) => (
+                    <option key={ev.id} value={ev.id}>
+                      {ev.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <DialogFooter className="pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Start Designing</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
         {/* Saved Projects Section */}
         <section>
           <div className="mb-6 flex items-center justify-between">
@@ -83,7 +170,11 @@ function TicketDesignerIndex() {
             {ticketProjects.map(proj => (
               <Link
                 key={proj.id}
-                to={`/dashboard/${workspaceSlug}/ticket-designer/${proj.id}`}
+                to="/dashboard/$workspaceSlug/ticket-designer/$projectId"
+                params={{
+                  workspaceSlug,
+                  projectId: proj.id,
+                }}
                 className="group block rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
               >
                 <div 
