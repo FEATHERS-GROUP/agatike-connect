@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,7 @@ type LoginValues = z.infer<typeof loginSchema>;
 function DashboardLoginPage() {
   const navigate = useNavigate();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginValues>({
@@ -39,6 +40,7 @@ function DashboardLoginPage() {
     onSuccess: () => {
       setIsRedirecting(true);
       toast.success("Welcome back!");
+      queryClient.clear();
       // Adding a tiny delay so the toast is visible before navigating
       setTimeout(async () => {
         await router.invalidate();

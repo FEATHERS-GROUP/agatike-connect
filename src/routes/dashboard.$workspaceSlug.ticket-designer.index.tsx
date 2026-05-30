@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ticketProjects } from "@/lib/mock-data";
-import { useQuery } from "@tanstack/react-query";
+import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects } from "@/api/events";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getWorkspaceEvents } from "@/api/events";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/ticket-designer/")({
   component: TicketDesignerIndex,
@@ -32,31 +33,52 @@ function TicketDesignerIndex() {
     enabled: !!activeWorkspace?.id,
   });
 
+  const { data: dbProjects = [], isLoading: isLoadingProjects } = useQuery({
+    queryKey: ["workspace-ticket-projects", activeWorkspace?.id],
+    queryFn: () => getWorkspaceTicketProjects({ data: { workspaceId: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("Untitled Project");
   const [selectedEventId, setSelectedEventId] = useState("");
 
+  const createMutation = useMutation({
+    mutationFn: async (variables: any) => saveTicketProject({ data: variables } as any),
+    onSuccess: (data: any) => {
+      const newId = data?.insert_ticket_projects?.returning?.[0]?.id;
+      if (newId) {
+        toast.success("Project created successfully!");
+        navigate({ 
+          to: "/dashboard/$workspaceSlug/ticket-designer/$projectId", 
+          params: { workspaceSlug, projectId: newId }
+        });
+        setIsModalOpen(false);
+      } else {
+        toast.error("Failed to create project (no ID returned from database).");
+      }
+    },
+    onError: (err) => {
+      console.error(err);
+      toast.error("Error creating project!");
+    }
+  });
+
   const handleCreateNew = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTemplate || !selectedEventId) return;
+    if (!selectedTemplate || !selectedEventId) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
     
-    // Generate a random ID for the new project
-    const newId = "proj-" + Math.random().toString(36).substring(2, 9);
-    
-    const search: any = { template: selectedTemplate };
-    if (selectedEventId) search.eventId = selectedEventId;
-    if (newProjectName) search.name = newProjectName;
-
-    navigate({ 
-      to: "/dashboard/$workspaceSlug/ticket-designer/$projectId", 
-      params: {
-        workspaceSlug,
-        projectId: newId,
-      },
-      search 
+    createMutation.mutate({
+      name: newProjectName,
+      eventId: selectedEventId || "",
+      template: selectedTemplate,
+      workspaceId: activeWorkspace?.id || "",
+      updated_on: new Date().toISOString()
     });
-    setIsModalOpen(false);
   };
 
   const openSetupModal = (templateId: string) => {
@@ -151,7 +173,9 @@ function TicketDesignerIndex() {
                 <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">Start Designing</Button>
+                <Button type="submit" disabled={createMutation.isPending}>
+                  {createMutation.isPending ? "Creating..." : "Start Designing"}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -167,40 +191,72 @@ function TicketDesignerIndex() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ticketProjects.map(proj => (
-              <Link
-                key={proj.id}
-                to="/dashboard/$workspaceSlug/ticket-designer/$projectId"
-                params={{
-                  workspaceSlug,
-                  projectId: proj.id,
-                }}
-                className="group block rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
-              >
-                <div 
-                  className="h-32 p-4 flex flex-col justify-between"
-                  style={{ background: `linear-gradient(135deg, ${proj.palette.from}, ${proj.palette.to})` }}
-                >
-                  <div className="flex justify-between items-start">
-                    <span className="bg-black/20 text-white backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
-                      {proj.template}
-                    </span>
-                  </div>
-                  <div className="text-white drop-shadow-md">
-                    <p className="text-sm opacity-80">{proj.subtitle}</p>
-                    <h3 className="text-xl font-bold leading-tight">{proj.title}</h3>
-                  </div>
-                </div>
-                <div className="p-5 bg-card">
-                  <h4 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">{proj.name}</h4>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" /> Updated {new Date(proj.updatedAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
+            {isLoadingProjects ? (
+              <div className="col-span-full flex flex-col items-center justify-center py-12">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <p className="text-sm text-muted-foreground mt-2">Loading ticket designs...</p>
+              </div>
+            ) : dbProjects.length === 0 ? (
+              <div className="col-span-full text-center py-12 bg-card rounded-[2rem] border border-dashed border-border/60 p-8">
+                <Ticket className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+                <h3 className="text-lg font-semibold">No Saved Projects</h3>
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                  Create your first ticket design by selecting a template above.
+                </p>
+              </div>
+            ) : (
+              dbProjects.map((proj: any) => {
+                const eventObj = proj.events || events.find((e: any) => e.id === proj.eventId);
+                const displayTitle = eventObj?.title || proj.name || "Untitled Design";
+                const displaySubtitle = eventObj?.category || "Ticket Design";
+                const palette = proj.palette || { from: "#f97316", to: "#db2777", name: "Sunset" };
+                const updatedAt = proj.updated_on || new Date().toISOString();
+                const coverUrl = proj.coverImage || eventObj?.cover;
+
+                return (
+                  <Link
+                    key={proj.id}
+                    to="/dashboard/$workspaceSlug/ticket-designer/$projectId"
+                    params={{
+                      workspaceSlug,
+                      projectId: proj.id,
+                    }}
+                    className="group block rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
+                  >
+                    <div 
+                      className="h-32 p-4 flex flex-col justify-between relative overflow-hidden"
+                      style={{ background: `linear-gradient(135deg, ${palette.from || "#f97316"}, ${palette.to || "#db2777"})` }}
+                    >
+                      {coverUrl && (
+                        <img 
+                          src={coverUrl} 
+                          alt="" 
+                          className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay pointer-events-none" 
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none" />
+                      <div className="relative z-10 flex justify-between items-start">
+                        <span className="bg-black/30 text-white backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
+                          {proj.template}
+                        </span>
+                      </div>
+                      <div className="relative z-10 text-white drop-shadow-md">
+                        <p className="text-sm opacity-80">{displaySubtitle}</p>
+                        <h3 className="text-xl font-bold leading-tight">{displayTitle}</h3>
+                      </div>
+                    </div>
+                    <div className="p-5 bg-card">
+                      <h4 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">{proj.name}</h4>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" /> Updated {new Date(updatedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })
+            )}
           </div>
         </section>
       </main>

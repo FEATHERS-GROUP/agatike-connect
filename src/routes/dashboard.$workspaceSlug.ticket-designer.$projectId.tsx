@@ -1,5 +1,7 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import QRCodeImport from "react-qr-code";
 const QRCode = (QRCodeImport as any).default || QRCodeImport;
 import {
@@ -25,9 +27,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ticketProjects } from "@/lib/mock-data";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getWorkspaceEvents } from "@/api/events";
+import { getWorkspaceEvents, saveTicketProject, getTicketProjectById, updateTicketProject } from "@/api/events";
+import { toast } from "sonner";
 
 function getCurrencySymbol(currency?: string) {
   if (!currency) return "$";
@@ -108,6 +111,12 @@ function TicketDesignerPage() {
     enabled: !!activeWorkspace?.id,
   });
 
+  const { data: dbProject, isLoading: isProjectLoading } = useQuery({
+    queryKey: ["ticket-project", projectId],
+    queryFn: () => getTicketProjectById({ data: { id: projectId } } as any),
+    enabled: !!projectId && projectId.includes("-"), // ensure it looks like a uuid
+  });
+
   // Find existing project or load defaults
   const existingProject = useMemo(() => ticketProjects.find(p => p.id === projectId), [projectId]);
 
@@ -129,6 +138,8 @@ function TicketDesignerPage() {
   const [editScope, setEditScope] = useState<"base" | "stop" | "tier" | "combination">("base");
   const [activeTab, setActiveTab] = useState<"setup" | "design" | "media" | "content">("setup");
   const [previewMode, setPreviewMode] = useState<"Front" | "Back" | "Mobile">("Front");
+  const [isDirty, setIsDirty] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [baseDesign, setBaseDesign] = useState<TicketDesign>({
     template: existingProject?.template || initialTemplate,
@@ -153,12 +164,68 @@ function TicketDesignerPage() {
     tourStops: {}, tiers: {}, combinations: {}
   });
 
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    if (dbProject && !isInitialized) {
+      setProjectName(dbProject.name || "Untitled Project");
+      setEventId(dbProject.eventId || "");
+      setBaseDesign({
+        template: dbProject.template || initialTemplate,
+        palette: dbProject.palette || palettes[0],
+        font: dbProject.font || fonts[0],
+        title: "",
+        subtitle: "",
+        date: "",
+        time: "",
+        seat: dbProject.seat || "",
+        price: "",
+        currency: "",
+        cover: dbProject.coverImage || "",
+        logoText: dbProject.logoText || "",
+        logoImage: dbProject.logoImage || "",
+        logoScale: Number(dbProject.logoScale) || 24,
+        logoOpacity: Number(dbProject.logoOpacity) || 1,
+        logoColorMode: dbProject.logoColorMode || "original",
+      });
+      setOverrides(dbProject.design_overrides || { tourStops: {}, tiers: {}, combinations: {} });
+      setIsInitialized(true);
+      setIsDirty(false);
+    }
+  }, [dbProject, isInitialized, initialTemplate]);
+
   useEffect(() => {
     if (activeTourStopIdx === -1 && (editScope === "stop" || editScope === "combination")) setEditScope("base");
     if (!activeTierId && (editScope === "tier" || editScope === "combination")) setEditScope("base");
   }, [activeTourStopIdx, activeTierId]);
 
+  const orderId = useMemo(
+    () => "AGT-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
+    [],
+  );
+
+  const saveMutation = useMutation({
+    mutationFn: async (variables: any) => updateTicketProject({ data: variables } as any),
+    onSuccess: () => {
+      setIsDirty(false);
+      toast.success("Project saved successfully!");
+    },
+    onError: (err) => {
+      console.error(err);
+      toast.error("Error saving project! Please check the console.");
+    }
+  });
+
+  if (isProjectLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   const updateDesign = (key: keyof TicketDesign, value: any) => {
+    setIsDirty(true);
     if (editScope === "base") {
       setBaseDesign(prev => ({ ...prev, [key]: value }));
     } else {
@@ -203,11 +270,6 @@ function TicketDesignerPage() {
     ...(activeTourStopIdx >= 0 && activeTierId ? overrides.combinations[`${activeTourStopIdx}_${activeTierId}`] : {})
   };
 
-  const orderId = useMemo(
-    () => "AGT-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
-    [],
-  );
-
   const onUpload = (file?: File) => {
     if (!file) return;
     const reader = new FileReader();
@@ -216,9 +278,54 @@ function TicketDesignerPage() {
   };
 
   const handleSave = () => {
-    // In a real app this would call an API to save
-    console.log("Saving project", { projectId, projectName, eventId, baseDesign, overrides });
-    alert("Project saved successfully!");
+    saveMutation.mutate({
+      id: projectId,
+      coverImage: mergedDesign.cover,
+      design_overrides: overrides,
+      eventId: eventId || "",
+      font: mergedDesign.font,
+      logoText: mergedDesign.logoText,
+      name: projectName,
+      palette: mergedDesign.palette,
+      seat: mergedDesign.seat,
+      template: mergedDesign.template,
+      tier: dynamicDefaults.tierName,
+      updated_on: new Date().toISOString(),
+      workspaceId: activeWorkspace?.id || "",
+      logoScale: String(mergedDesign.logoScale || 24),
+      logoImage: mergedDesign.logoImage || "",
+      logoColorMode: mergedDesign.logoColorMode || "original",
+      logoOpacity: String(mergedDesign.logoOpacity ?? 1)
+    });
+  };
+
+  const exportPDF = async () => {
+    if (isDirty) {
+      toast.error("Please save your project changes before exporting.");
+      return;
+    }
+    
+    const ticketElement = document.getElementById("ticket-preview-container");
+    if (!ticketElement) return;
+
+    setIsExporting(true);
+    try {
+      const canvas = await html2canvas(ticketElement, { scale: 2, useCORS: true, allowTaint: true });
+      const imgData = canvas.toDataURL("image/png");
+      
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "px",
+        format: [canvas.width / 2, canvas.height / 2]
+      });
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+      pdf.save(`${projectName.replace(/\s+/g, '-').toLowerCase()}-ticket.pdf`);
+    } catch (err) {
+      console.error("Failed to export PDF", err);
+      toast.error("An error occurred while generating the PDF.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleLogoClick = () => {
@@ -242,7 +349,7 @@ function TicketDesignerPage() {
             <p className="text-xs text-muted-foreground">Ticket Projects / Editor</p>
             <Input 
               value={projectName} 
-              onChange={(e) => setProjectName(e.target.value)} 
+              onChange={(e) => { setProjectName(e.target.value); setIsDirty(true); }} 
               className="h-7 px-1 py-0 border-transparent hover:border-border/60 focus:border-primary focus-visible:ring-0 shadow-none bg-transparent font-semibold text-lg sm:w-64 md:w-80"
               placeholder="Name this project..."
             />
@@ -254,10 +361,11 @@ function TicketDesignerPage() {
           </Button>
           <Button
             onClick={handleSave}
-            className="rounded-full shadow-[var(--shadow-glow)]"
-            style={{ background: "var(--gradient-primary)" }}
+            disabled={saveMutation.isPending}
+            className={`rounded-full shadow-[var(--shadow-glow)] transition-all ${isDirty ? "animate-pulse" : ""}`}
+            style={{ background: isDirty ? "var(--gradient-primary)" : "var(--border)" }}
           >
-            <Save className="mr-1 h-4 w-4" /> Save project
+            <Save className="mr-1 h-4 w-4" /> {saveMutation.isPending ? "Saving..." : isDirty ? "Save changes" : "Saved"}
           </Button>
         </div>
       </header>
@@ -299,8 +407,9 @@ function TicketDesignerPage() {
                   <Field label="Assign to Event">
                 <select 
                   value={eventId}
-                  onChange={e => setEventId(e.target.value)}
-                  className="w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                  onChange={e => { setEventId(e.target.value); setIsDirty(true); }}
+                  disabled={!!dbProject?.eventId}
+                  className="w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-secondary/20"
                 >
                   <option value="">-- No Event Assigned --</option>
                   {events.map((ev: any) => (
@@ -442,11 +551,11 @@ function TicketDesignerPage() {
                       const file = e.target.files?.[0];
                       if (!file) return;
                       if (file.type !== "image/png") {
-                        alert("Only PNG images are allowed for logos to preserve transparency.");
+                        toast.error("Only PNG images are allowed for logos to preserve transparency.");
                         return;
                       }
                       if (file.size > 2 * 1024 * 1024) {
-                        alert("Logo file size must be under 2MB.");
+                        toast.error("Logo file size must be under 2MB.");
                         return;
                       }
                       const reader = new FileReader();
@@ -614,8 +723,8 @@ function TicketDesignerPage() {
                   Generate a high-quality, print-ready PDF of your ticket design.
                 </p>
               </div>
-              <Button className="rounded-full shadow-sm shrink-0">
-                <Download className="mr-2 h-4 w-4" /> Export PDF
+              <Button onClick={exportPDF} disabled={isExporting} className="rounded-full shadow-sm shrink-0">
+                <Download className="mr-2 h-4 w-4" /> {isExporting ? "Generating PDF..." : "Export PDF"}
               </Button>
             </div>
           </div>
@@ -703,6 +812,7 @@ function TicketPreview(props: {
     const isBack = previewMode === "Back";
     return (
       <div
+        id="ticket-preview-container"
         className={`relative flex w-[720px] max-w-full overflow-hidden rounded-[28px] text-white shadow-2xl transition-all ${isBack ? "flex-row-reverse" : "flex-row"}`}
         style={{
           fontFamily: font.css,

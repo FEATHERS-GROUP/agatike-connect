@@ -142,5 +142,125 @@ export const updateEvent = createServerFn({ method: "POST" })
     return data.update_events_by_pk;
   });
 
+const SAVE_TICKET_PROJECT = `
+  mutation SaveTicketProject($coverImage: String = "", $design_overrides: jsonb = "", $eventId: uuid = "", $font: json = "", $logoText: String = "", $name: String = "", $palette: json = "", $seat: String = "", $template: String = "", $tier: String = "", $updated_on: timestamptz = "", $workspaceId: uuid = "", $logoScale: String = "", $logoImage: String = "", $logoColorMode: String = "", $logoOpacity: String = "") {
+    insert_ticket_projects(objects: {coverImage: $coverImage, deleted: false, design_overrides: $design_overrides, eventId: $eventId, font: $font, logoText: $logoText, name: $name, palette: $palette, seat: $seat, template: $template, tier: $tier, updated_on: $updated_on, workspaceId: $workspaceId, logoScale: $logoScale, logoImage: $logoImage, logoColorMode: $logoColorMode, logoOpacity: $logoOpacity}) {
+      returning {
+        id
+      }
+    }
+  }
+`;
+
+export const saveTicketProject = createServerFn({ method: "POST" })
+  .handler(async (ctx) => {
+    const variables = ctx.data as any;
+    return hasuraRequest(SAVE_TICKET_PROJECT, variables);
+  });
+
+const GET_TICKET_PROJECT_BY_ID = `
+  query GetTicketProjectById($id: uuid!) {
+    ticket_projects_by_pk(id: $id) {
+      id
+      name
+      eventId
+      template
+      coverImage
+      design_overrides
+      font
+      palette
+      seat
+      tier
+      logoText
+      logoScale
+      logoImage
+      logoColorMode
+      logoOpacity
+      workspaceId
+    }
+  }
+`;
+
+export const getTicketProjectById = createServerFn({ method: "POST" })
+  .handler(async (ctx) => {
+    const { id } = ctx.data as unknown as { id: string };
+    const data = await hasuraRequest<{ ticket_projects_by_pk: any }>(GET_TICKET_PROJECT_BY_ID, { id });
+    return data.ticket_projects_by_pk || null;
+  });
+
+const UPDATE_TICKET_PROJECT = `
+  mutation UpdateTicketProject($id: uuid!, $coverImage: String, $design_overrides: jsonb, $eventId: uuid, $font: json, $logoText: String, $name: String, $palette: json, $seat: String, $template: String, $tier: String, $updated_on: timestamptz, $logoScale: String, $logoImage: String, $logoColorMode: String, $logoOpacity: String) {
+    update_ticket_projects_by_pk(pk_columns: {id: $id}, _set: {coverImage: $coverImage, design_overrides: $design_overrides, eventId: $eventId, font: $font, logoText: $logoText, name: $name, palette: $palette, seat: $seat, template: $template, tier: $tier, updated_on: $updated_on, logoScale: $logoScale, logoImage: $logoImage, logoColorMode: $logoColorMode, logoOpacity: $logoOpacity}) {
+      id
+    }
+  }
+`;
+
+export const updateTicketProject = createServerFn({ method: "POST" })
+  .handler(async (ctx) => {
+    const variables = ctx.data as any;
+    return hasuraRequest(UPDATE_TICKET_PROJECT, variables);
+  });
+
+const GET_WORKSPACE_TICKET_PROJECTS = `
+  query GetWorkspaceTicketProjects($workspaceId: uuid!) {
+    ticket_projects(where: {workspaceId: {_eq: $workspaceId}, deleted: {_eq: false}}, order_by: {updated_on: desc}) {
+      id
+      name
+      eventId
+      template
+      coverImage
+      design_overrides
+      font
+      palette
+      seat
+      tier
+      logoText
+      logoScale
+      logoImage
+      logoColorMode
+      logoOpacity
+      workspaceId
+      updated_on
+      events {
+        category
+        cover
+        created_at
+        deleted
+        description
+        event_requency
+        id
+        title
+        tour_stops
+        updated_at
+        vipPerks
+        workspace_id
+        event_tickets {
+          cost
+          created_at
+          deleted
+          event_id
+          id
+          remaining
+          sale_ends_at
+          sold
+          type
+          updated_at
+        }
+      }
+      created_at
+      deleted
+    }
+  }
+`;
+
+export const getWorkspaceTicketProjects = createServerFn({ method: "POST" })
+  .handler(async (ctx) => {
+    const { workspaceId } = ctx.data as unknown as { workspaceId: string };
+    const data = await hasuraRequest<{ ticket_projects: any[] }>(GET_WORKSPACE_TICKET_PROJECTS, { workspaceId });
+    return data.ticket_projects || [];
+  });
+
+
 
 
