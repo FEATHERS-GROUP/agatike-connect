@@ -250,6 +250,15 @@ function TicketDesignerPage() {
     if (!activeTierId && (editScope === "tier" || editScope === "combination")) setEditScope("base");
   }, [activeTourStopIdx, activeTierId]);
 
+  useEffect(() => {
+    if (editScope === "tier" && activeTierId) {
+      const el = document.getElementById(`tier-preview-${activeTierId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [activeTierId, editScope]);
+
   const orderId = useMemo(
     () => "AGT-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
     [],
@@ -304,7 +313,7 @@ function TicketDesignerPage() {
 
   const dynamicDefaults = {
     title: eventMatch?.title || "Event Title",
-    subtitle: activeStop?.venue ? `${activeStop.venue}${activeStop.address ? `, ${activeStop.address}` : ""} · ${activeStop.city}` : (eventMatch?.category || "Event"),
+    subtitle: activeStop?.venue ? `${activeStop.venue} · ${activeStop.city}${activeStop.address ? `\n${activeStop.address}` : ""}` : (eventMatch?.category || "Event"),
     date: activeStop?.date || "TBD",
     time: activeStop?.time || "TBD",
     price: activeTier?.cost?.toString() || "0",
@@ -331,25 +340,25 @@ function TicketDesignerPage() {
   const handleSave = () => {
     saveMutation.mutate({
       id: projectId,
-      coverImage: mergedDesign.cover,
+      coverImage: baseDesign.cover,
       design_overrides: {
         overrides,
-        layout: mergedDesign.layout || defaultLayout,
-        back: mergedDesign.back || defaultBack,
+        layout: baseDesign.layout || defaultLayout,
+        back: baseDesign.back || defaultBack,
       },
       eventId: eventId || null,
-      font: mergedDesign.font,
-      logoText: mergedDesign.logoText,
+      font: baseDesign.font,
+      logoText: baseDesign.logoText,
       name: projectName,
-      palette: mergedDesign.palette,
-      seat: mergedDesign.seat,
-      template: mergedDesign.template,
+      palette: baseDesign.palette,
+      seat: baseDesign.seat,
+      template: baseDesign.template,
       tier: dynamicDefaults.tierName,
       updated_on: new Date().toISOString(),
-      logoScale: String(mergedDesign.logoScale || 24),
-      logoImage: mergedDesign.logoImage || "",
-      logoColorMode: mergedDesign.logoColorMode || "original",
-      logoOpacity: String(mergedDesign.logoOpacity ?? 1)
+      logoScale: String(baseDesign.logoScale || 24),
+      logoImage: baseDesign.logoImage || "",
+      logoOpacity: String(baseDesign.logoOpacity ?? 1),
+      logoColorMode: baseDesign.logoColorMode || "original",
     });
   };
 
@@ -390,6 +399,15 @@ function TicketDesignerPage() {
     else if (current === 48) next = 64;
     else next = 24;
     updateDesign("logoScale", next);
+  };
+
+  const getTierSpecificDesign = (tierId: string) => {
+    return {
+      ...baseDesign,
+      ...(activeTourStopIdx >= 0 ? overrides.tourStops[activeTourStopIdx] : {}),
+      ...(tierId ? overrides.tiers[tierId] : {}),
+      ...(activeTourStopIdx >= 0 && tierId ? overrides.combinations[`${activeTourStopIdx}_${tierId}`] : {})
+    };
   };
 
   return (
@@ -459,16 +477,19 @@ function TicketDesignerPage() {
             </div>
           </Section>
 
-          <Section title="Live Preview Context" icon={Eye}>
-            <div className="space-y-3">
+          <Section title="Design Specific Tiers & Locations" icon={Eye}>
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                You can design all tickets at once, or create unique designs for specific tiers and locations. First, select what you want to see in the live preview:
+              </p>
               {tourStops.length > 0 && (
-                <Field label="Preview Location / Date">
+                <Field label="1. Preview Location / Date">
                   <select 
                     value={activeTourStopIdx}
                     onChange={e => setActiveTourStopIdx(Number(e.target.value))}
                     className="w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary"
                   >
-                    <option value={-1}>Base Template (All Locations)</option>
+                    <option value={-1}>All Locations (Base Preview)</option>
                     {tourStops.map((stop: any, i: number) => (
                       <option key={i} value={i}>{stop.city || "TBD"} - {stop.date || "TBD"}</option>
                     ))}
@@ -476,13 +497,13 @@ function TicketDesignerPage() {
                 </Field>
               )}
               {ticketTiers.length > 0 && (
-                <Field label="Preview Ticket Tier">
+                <Field label="2. Preview Ticket Tier">
                   <select 
                     value={activeTierId}
                     onChange={e => setActiveTierId(e.target.value)}
                     className="w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary"
                   >
-                    <option value="">Base Template (All Tiers)</option>
+                    <option value="">All Tiers (Base Preview)</option>
                     {ticketTiers.map((t: any) => (
                       <option key={t.id} value={t.id}>{t.type} (${t.cost})</option>
                     ))}
@@ -491,16 +512,16 @@ function TicketDesignerPage() {
               )}
               
               <div className="pt-2 border-t border-border/40">
-                <Field label="Save My Edits To:">
+                <Field label="3. Where should your edits apply?">
                   <select 
                     value={editScope}
                     onChange={e => setEditScope(e.target.value as any)}
-                    className="w-full rounded-xl border border-border/60 bg-accent/30 text-accent-foreground px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full rounded-xl border border-primary/60 bg-primary/10 text-primary-foreground px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                   >
-                    <option value="base">Base Template (Default)</option>
-                    {activeTourStopIdx >= 0 && <option value="stop">This Location Only Override</option>}
-                    {activeTierId && <option value="tier">This Tier Only Override</option>}
-                    {activeTourStopIdx >= 0 && activeTierId && <option value="combination">This Location + Tier Override</option>}
+                    <option value="base">Apply to ALL Tiers & Locations (Base Design)</option>
+                    {activeTourStopIdx >= 0 && <option value="stop">Design ONLY for this Location</option>}
+                    {activeTierId && <option value="tier">Design ONLY for this Tier</option>}
+                    {activeTourStopIdx >= 0 && activeTierId && <option value="combination">Design ONLY for this Location + Tier</option>}
                   </select>
                 </Field>
               </div>
@@ -839,31 +860,76 @@ function TicketDesignerPage() {
               </div>
             </div>
 
-            <div className="flex-1 flex items-center justify-center overflow-auto">
-              <TicketPreview
-                template={mergedDesign.template}
-                palette={mergedDesign.palette}
-                font={mergedDesign.font}
-                tier={dynamicDefaults.tierName}
-                title={mergedDesign.title || dynamicDefaults.title || ""}
-                subtitle={mergedDesign.subtitle || dynamicDefaults.subtitle || ""}
-                date={mergedDesign.date || dynamicDefaults.date || ""}
-                time={mergedDesign.time || dynamicDefaults.time || ""}
-                seat={mergedDesign.seat || dynamicDefaults.seat}
-                price={mergedDesign.price || dynamicDefaults.price || ""}
-                currency={mergedDesign.currency || dynamicDefaults.currency}
-                cover={mergedDesign.cover || eventMatch?.cover || ""}
-                logoText={mergedDesign.logoText || dynamicDefaults.brand}
-                logoImage={mergedDesign.logoImage}
-                logoScale={mergedDesign.logoScale || 24}
-                logoOpacity={mergedDesign.logoOpacity ?? 1}
-                logoColorMode={mergedDesign.logoColorMode || "original"}
-                orderId={orderId}
-                previewMode={previewMode}
-                onLogoClick={handleLogoClick}
-                layout={mergedDesign.layout || defaultLayout}
-                back={mergedDesign.back || defaultBack}
-              />
+            <div className={`flex-1 flex ${editScope === "tier" && ticketTiers.length > 0 ? "flex-col py-8 justify-start" : "items-center justify-center"} overflow-auto gap-12`}>
+              {editScope === "tier" && ticketTiers.length > 0 ? (
+                ticketTiers.map((tier: any) => {
+                  const tDesign = getTierSpecificDesign(tier.id);
+                  const isSelected = activeTierId === tier.id;
+                  return (
+                    <div 
+                      key={tier.id} 
+                      id={`tier-preview-${tier.id}`}
+                      className={`relative cursor-pointer transition-all duration-300 mx-auto ${isSelected ? "ring-4 ring-primary ring-offset-8 ring-offset-card rounded-[28px] scale-100" : "opacity-40 hover:opacity-80 scale-95"}`}
+                      onClick={() => setActiveTierId(tier.id)}
+                    >
+                      <TicketPreview
+                        template={tDesign.template}
+                        palette={tDesign.palette}
+                        font={tDesign.font}
+                        tier={tier.type || "General"}
+                        title={tDesign.title || dynamicDefaults.title || ""}
+                        subtitle={tDesign.subtitle || dynamicDefaults.subtitle || ""}
+                        date={tDesign.date || dynamicDefaults.date || ""}
+                        time={tDesign.time || dynamicDefaults.time || ""}
+                        seat={tDesign.seat || dynamicDefaults.seat}
+                        price={tier.cost?.toString() || "0"}
+                        currency={tDesign.currency || dynamicDefaults.currency}
+                        cover={tDesign.cover || eventMatch?.cover || ""}
+                        logoText={tDesign.logoText || dynamicDefaults.brand}
+                        logoImage={tDesign.logoImage}
+                        logoScale={tDesign.logoScale || 24}
+                        logoOpacity={tDesign.logoOpacity ?? 1}
+                        logoColorMode={tDesign.logoColorMode || "original"}
+                        orderId={orderId}
+                        previewMode={previewMode}
+                        onLogoClick={handleLogoClick}
+                        layout={tDesign.layout || defaultLayout}
+                        back={tDesign.back || defaultBack}
+                      />
+                      {isSelected && (
+                        <div className="absolute -right-2 -top-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-lg z-50">
+                          Currently Editing
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <TicketPreview
+                  template={mergedDesign.template}
+                  palette={mergedDesign.palette}
+                  font={mergedDesign.font}
+                  tier={dynamicDefaults.tierName}
+                  title={mergedDesign.title || dynamicDefaults.title || ""}
+                  subtitle={mergedDesign.subtitle || dynamicDefaults.subtitle || ""}
+                  date={mergedDesign.date || dynamicDefaults.date || ""}
+                  time={mergedDesign.time || dynamicDefaults.time || ""}
+                  seat={mergedDesign.seat || dynamicDefaults.seat}
+                  price={mergedDesign.price || dynamicDefaults.price || ""}
+                  currency={mergedDesign.currency || dynamicDefaults.currency}
+                  cover={mergedDesign.cover || eventMatch?.cover || ""}
+                  logoText={mergedDesign.logoText || dynamicDefaults.brand}
+                  logoImage={mergedDesign.logoImage}
+                  logoScale={mergedDesign.logoScale || 24}
+                  logoOpacity={mergedDesign.logoOpacity ?? 1}
+                  logoColorMode={mergedDesign.logoColorMode || "original"}
+                  orderId={orderId}
+                  previewMode={previewMode}
+                  onLogoClick={handleLogoClick}
+                  layout={mergedDesign.layout || defaultLayout}
+                  back={mergedDesign.back || defaultBack}
+                />
+              )}
             </div>
           </div>
 
@@ -986,17 +1052,19 @@ function TicketPreview(props: {
       </div>
     );
 
-    // ── Shared stub ───────────────────────────────────────────────────────
+    // ── Shared stub (matches Concert front stub) ─────────────────────────
     const Stub = (
-      <div className="flex w-[180px] flex-col items-center justify-between bg-black/30 p-5 text-center backdrop-blur-md">
-        <div>
-          <p className="text-[9px] uppercase tracking-widest text-white/60">Admit One</p>
-          <p className="mt-1 text-[10px] font-mono break-all">{orderId}</p>
+      <div className="flex w-[160px] flex-col justify-between bg-black/20 p-5">
+        <div className="text-left">
+          <p className="text-[10px] uppercase tracking-widest opacity-80">Admit One</p>
+          <p className="mt-1 text-[10px] font-mono opacity-80 break-all">{orderId}</p>
         </div>
-        <div className="rounded-xl bg-white p-2">
-          <QRCode value={orderId} size={100} />
+        <div className="rounded-xl bg-white p-1.5 self-start">
+          <QRCode value={orderId} size={80} />
         </div>
-        <p className="text-[9px] text-white/60">Scan at entrance</p>
+        <div className="text-left">
+          <p className="text-[9px] opacity-80">Scan at entrance</p>
+        </div>
       </div>
     );
 
@@ -1033,7 +1101,7 @@ function TicketPreview(props: {
                 </div>
                 <div style={{ marginTop: `${layout.titleOffsetY}%`, textAlign: layout.titleAlign }}>
                   <h2 className="font-black leading-tight drop-shadow" style={{ fontSize: `${layout.titleSize}px` }}>{title}</h2>
-                  <p className="mt-1 text-white/80" style={{ fontSize: `${layout.subtitleSize}px` }}>{subtitle}</p>
+                  <p className="mt-1 text-white/80 whitespace-pre-line" style={{ fontSize: `${layout.subtitleSize}px` }}>{subtitle}</p>
                 </div>
                 <div className="grid grid-cols-4 gap-3" style={{ fontSize: `${layout.metaSize}px` }}>
                   <Cell label="Date" value={date} /><Cell label="Time" value={time} /><Cell label="Seat" value={seat} /><Cell label="Price" value={`${currency}${price}`} />
@@ -1111,7 +1179,7 @@ function TicketPreview(props: {
                 {/* Center: dramatic title */}
                 <div style={{ textAlign: layout.titleAlign as any, marginTop: `${layout.titleOffsetY * 0.5}%` }}>
                   <h2 className="font-black leading-none tracking-tight drop-shadow-2xl" style={{ fontSize: `${layout.titleSize + 6}px`, textShadow: "0 4px 24px rgba(0,0,0,0.8)" }}>{title}</h2>
-                  <p className="mt-2 text-white/70 tracking-widest uppercase" style={{ fontSize: `${layout.subtitleSize - 1}px`, letterSpacing: "0.2em" }}>{subtitle}</p>
+                  <p className="mt-2 text-white/70 tracking-widest uppercase whitespace-pre-line" style={{ fontSize: `${layout.subtitleSize - 1}px`, letterSpacing: "0.2em" }}>{subtitle}</p>
                 </div>
 
                 {/* Bottom: info row */}
@@ -1186,7 +1254,7 @@ function TicketPreview(props: {
                 <div style={{ textAlign: layout.titleAlign as any, marginTop: `${layout.titleOffsetY * 0.5}%` }}>
                   <p className="text-[9px] uppercase tracking-[0.3em] text-white/60 mb-1">Experience</p>
                   <h2 className="font-black leading-tight drop-shadow-xl" style={{ fontSize: `${layout.titleSize + 2}px` }}>{title}</h2>
-                  <p className="mt-1 text-white/70" style={{ fontSize: `${layout.subtitleSize}px` }}>{subtitle}</p>
+                  <p className="mt-1 text-white/70 whitespace-pre-line" style={{ fontSize: `${layout.subtitleSize}px` }}>{subtitle}</p>
                 </div>
               </div>
             )}
@@ -1228,7 +1296,7 @@ function TicketPreview(props: {
                   </div>
                   <div>
                     <p className="text-[9px] uppercase tracking-widest text-white/50">🏁 Activity Location</p>
-                    <p className="font-bold text-xs leading-tight mt-0.5">{subtitle || "TBA"}</p>
+                    <p className="font-bold text-xs leading-tight mt-0.5 whitespace-pre-line">{subtitle || "TBA"}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-2 border-t border-white/20 pt-2.5">
                     <div><p className="text-[9px] uppercase tracking-widest text-white/50">Date</p><p className="font-bold text-[11px]">{date}</p></div>
@@ -1301,7 +1369,7 @@ function TicketPreview(props: {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/80" />
                 <div className="absolute inset-x-0 bottom-0 p-4 text-center" style={{ textAlign: layout.titleAlign as any }}>
                   <h2 className="font-black leading-tight drop-shadow-lg" style={{ fontSize: `${layout.titleSize}px` }}>{title}</h2>
-                  <p className="text-white/80 mt-0.5" style={{ fontSize: `${layout.subtitleSize}px` }}>{subtitle}</p>
+                  <p className="text-white/80 mt-0.5 whitespace-pre-line" style={{ fontSize: `${layout.subtitleSize}px` }}>{subtitle}</p>
                 </div>
                 <div className="absolute top-3 left-4 right-4 flex items-center justify-between">
                   <span className="rounded-full bg-black/40 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest backdrop-blur-md">{tier}</span>
@@ -1400,7 +1468,7 @@ function TicketPreview(props: {
                 </div>
 
                 <div style={{ textAlign: layout.titleAlign as any, marginTop: `${layout.titleOffsetY * 0.5}%` }}>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-1">{subtitle}</p>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-1 whitespace-pre-line">{subtitle}</p>
                   <h2 className="font-black leading-tight text-slate-900" style={{ fontSize: `${layout.titleSize + 4}px` }}>{title}</h2>
                 </div>
 
