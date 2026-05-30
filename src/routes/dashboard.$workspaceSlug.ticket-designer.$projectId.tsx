@@ -187,7 +187,8 @@ function TicketDesignerPage() {
 
   const [activeTourStopIdx, setActiveTourStopIdx] = useState<number>(-1);
   const [activeTierId, setActiveTierId] = useState<string>("");
-  const [editScope, setEditScope] = useState<"base" | "stop" | "tier" | "combination">("base");
+  const [editScope, setEditScope] = useState<"base" | "tier">("base");
+  const [sameDesignForLocations, setSameDesignForLocations] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<"setup" | "design" | "media" | "content" | "layout" | "back">("setup");
   const [previewMode, setPreviewMode] = useState<"Front" | "Back" | "Mobile">("Front");
   const [isDirty, setIsDirty] = useState(false);
@@ -246,15 +247,22 @@ function TicketDesignerPage() {
         back: savedOverrides.back || defaultBack,
       });
       setOverrides(savedOverrides.overrides || { tourStops: {}, tiers: {}, combinations: {} });
+      if (savedOverrides.sameDesignForLocations !== undefined) setSameDesignForLocations(savedOverrides.sameDesignForLocations);
+      if (savedOverrides.lastEditScope === "tier" || savedOverrides.lastEditScope === "combination") setEditScope("tier");
+      else setEditScope("base");
+      if (savedOverrides.lastActiveTierId) setActiveTierId(savedOverrides.lastActiveTierId);
+      if (savedOverrides.lastActiveTourStopIdx !== undefined) setActiveTourStopIdx(savedOverrides.lastActiveTourStopIdx);
       setIsInitialized(true);
       setIsDirty(false);
     }
   }, [dbProject, isInitialized, initialTemplate]);
 
   useEffect(() => {
-    if (activeTourStopIdx === -1 && (editScope === "stop" || editScope === "combination")) setEditScope("base");
-    if (!activeTierId && (editScope === "tier" || editScope === "combination")) setEditScope("base");
-  }, [activeTourStopIdx, activeTierId]);
+    // Only reset if they actively toggle to something invalid
+    if (isInitialized) {
+      if (!activeTierId && editScope === "tier") setEditScope("base");
+    }
+  }, [activeTierId, isInitialized]);
 
   useEffect(() => {
     if (editScope === "tier" && activeTierId) {
@@ -292,26 +300,49 @@ function TicketDesignerPage() {
 
   const updateDesign = (key: keyof TicketDesign, value: any) => {
     setIsDirty(true);
-    if (editScope === "base") {
-      setBaseDesign(prev => ({ ...prev, [key]: value }));
-    } else {
-      setOverrides((prev: any) => {
-        const next = { ...prev };
-        let target: any;
-        if (editScope === "stop") target = { ...(next.tourStops[activeTourStopIdx] || {}) };
-        else if (editScope === "tier") target = { ...(next.tiers[activeTierId] || {}) };
-        else target = { ...(next.combinations[`${activeTourStopIdx}_${activeTierId}`] || {}) };
-        
-        if (value === "" || value === null || value === undefined) delete target[key];
-        else target[key] = value;
-
-        if (editScope === "stop") next.tourStops = { ...next.tourStops, [activeTourStopIdx]: target };
-        else if (editScope === "tier") next.tiers = { ...next.tiers, [activeTierId]: target };
-        else next.combinations = { ...next.combinations, [`${activeTourStopIdx}_${activeTierId}`]: target };
-
-        return next;
-      });
+    
+    // Check if we are designing a specific Tier
+    if (editScope === "tier" && activeTierId) {
+      if (activeTourStopIdx >= 0 && !sameDesignForLocations) {
+        // Combination: Specific Tier inside a Specific Location
+        setOverrides((prev: any) => ({
+          ...prev,
+          combinations: {
+            ...prev.combinations,
+            [`${activeTourStopIdx}_${activeTierId}`]: {
+              ...(prev.combinations[`${activeTourStopIdx}_${activeTierId}`] || {}),
+              [key]: value
+            }
+          }
+        }));
+      } else {
+        // Specific Tier (applies globally across all locations)
+        setOverrides((prev: any) => ({
+          ...prev,
+          tiers: {
+            ...prev.tiers,
+            [activeTierId]: { ...(prev.tiers[activeTierId] || {}), [key]: value }
+          }
+        }));
+      }
+      return;
     }
+
+    // We are in "base" mode (not designing a specific tier)
+    if (activeTourStopIdx >= 0 && !sameDesignForLocations) {
+      // Specific Location (applies to all tiers in this location)
+      setOverrides((prev: any) => ({
+        ...prev,
+        tourStops: {
+          ...prev.tourStops,
+          [activeTourStopIdx]: { ...(prev.tourStops[activeTourStopIdx] || {}), [key]: value }
+        }
+      }));
+      return;
+    }
+
+    // Truly global Base Template
+    setBaseDesign(prev => ({ ...prev, [key]: value }));
   };
 
   const activeStop = activeTourStopIdx >= 0 ? tourStops[activeTourStopIdx] : (tourStops[0] || null);
@@ -331,9 +362,9 @@ function TicketDesignerPage() {
 
   const mergedDesign = {
     ...baseDesign,
-    ...(activeTourStopIdx >= 0 ? overrides.tourStops[activeTourStopIdx] : {}),
+    ...(!sameDesignForLocations && activeTourStopIdx >= 0 ? overrides.tourStops[activeTourStopIdx] : {}),
     ...(activeTierId ? overrides.tiers[activeTierId] : {}),
-    ...(activeTourStopIdx >= 0 && activeTierId ? overrides.combinations[`${activeTourStopIdx}_${activeTierId}`] : {})
+    ...(!sameDesignForLocations && activeTourStopIdx >= 0 && activeTierId ? overrides.combinations[`${activeTourStopIdx}_${activeTierId}`] : {})
   };
 
   const onUpload = (file?: File) => {
@@ -351,6 +382,10 @@ function TicketDesignerPage() {
         overrides,
         layout: baseDesign.layout || defaultLayout,
         back: baseDesign.back || defaultBack,
+        lastEditScope: editScope,
+        lastActiveTierId: activeTierId,
+        lastActiveTourStopIdx: activeTourStopIdx,
+        sameDesignForLocations,
       },
       eventId: eventId || null,
       font: baseDesign.font,
@@ -410,9 +445,18 @@ function TicketDesignerPage() {
   const getTierSpecificDesign = (tierId: string) => {
     return {
       ...baseDesign,
-      ...(activeTourStopIdx >= 0 ? overrides.tourStops[activeTourStopIdx] : {}),
+      ...(!sameDesignForLocations && activeTourStopIdx >= 0 ? overrides.tourStops[activeTourStopIdx] : {}),
       ...(tierId ? overrides.tiers[tierId] : {}),
-      ...(activeTourStopIdx >= 0 && tierId ? overrides.combinations[`${activeTourStopIdx}_${tierId}`] : {})
+      ...(!sameDesignForLocations && activeTourStopIdx >= 0 && tierId ? overrides.combinations[`${activeTourStopIdx}_${tierId}`] : {})
+    };
+  };
+
+  const getTourStopSpecificDesign = (stopIdx: number) => {
+    return {
+      ...baseDesign,
+      ...(!sameDesignForLocations && stopIdx >= 0 ? overrides.tourStops[stopIdx] : {}),
+      ...(activeTierId ? overrides.tiers[activeTierId] : {}),
+      ...(!sameDesignForLocations && stopIdx >= 0 && activeTierId ? overrides.combinations[`${stopIdx}_${activeTierId}`] : {})
     };
   };
 
@@ -447,6 +491,42 @@ function TicketDesignerPage() {
           </Button>
         </div>
       </header>
+      
+      {tourStops.length > 1 && (
+        <div className="flex items-center gap-6 bg-background px-6 py-2.5 border-b border-border/60 overflow-x-auto hide-scrollbar z-10">
+           <label className="flex items-center gap-2 cursor-pointer shrink-0">
+              <input 
+                 type="checkbox" 
+                 checked={sameDesignForLocations}
+                 onChange={(e) => {
+                   const checked = e.target.checked;
+                   setSameDesignForLocations(checked);
+                   if (checked) {
+                     setActiveTourStopIdx(-1);
+                   } else {
+                     setActiveTourStopIdx(0);
+                   }
+                 }}
+                 className="w-4 h-4 rounded border-border/60 text-primary focus:ring-primary bg-secondary/50"
+              />
+              <span className="text-sm font-medium">Use same design for all locations</span>
+           </label>
+           
+           {!sameDesignForLocations && (
+              <div className="flex items-center gap-2 border-l border-border/60 pl-6">
+                 {tourStops.map((stop: any, idx: number) => (
+                     <button 
+                        key={idx}
+                        onClick={() => setActiveTourStopIdx(idx)}
+                        className={`whitespace-nowrap px-4 py-1.5 text-sm font-semibold rounded-full transition-all ${activeTourStopIdx === idx ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-secondary'}`}
+                     >
+                        {stop.city || `Location ${idx + 1}`}
+                     </button>
+                 ))}
+              </div>
+           )}
+        </div>
+      )}
 
       <div className="flex-1 min-h-0 grid gap-6 p-6 lg:grid-cols-[360px_1fr]">
         {/* Controls */}
@@ -483,12 +563,13 @@ function TicketDesignerPage() {
             </div>
           </Section>
 
-          <Section title="Design Specific Tiers & Locations" icon={Eye}>
+          <Section title="Design Mode" icon={Eye}>
             <div className="space-y-4">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                You can design all tickets at once, or create unique designs for specific tiers and locations. First, select what you want to see in the live preview:
+                Design all tickets at once, or switch modes to create unique designs for specific locations and tiers.
               </p>
-              {tourStops.length > 0 && (
+              
+              {tourStops.length > 0 && sameDesignForLocations && (
                 <Field label="1. Preview Location / Date">
                   <select 
                     value={activeTourStopIdx}
@@ -502,14 +583,32 @@ function TicketDesignerPage() {
                   </select>
                 </Field>
               )}
-              {ticketTiers.length > 0 && (
-                <Field label="2. Preview Ticket Tier">
+
+              <Field label={tourStops.length > 0 && sameDesignForLocations ? "2. What are you designing right now?" : "What are you designing right now?"}>
+                  <select 
+                    value={editScope}
+                    onChange={e => {
+                       const scope = e.target.value as any;
+                       setEditScope(scope);
+                       if (scope === "tier" && !activeTierId && ticketTiers.length > 0) setActiveTierId(ticketTiers[0].id);
+                       if (scope === "base") {
+                         setActiveTierId("");
+                       }
+                    }}
+                    className="w-full rounded-xl border border-primary/60 bg-primary/10 text-primary px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary transition-colors cursor-pointer"
+                  >
+                    <option value="base">Base Template (Applies to ALL tickets)</option>
+                    {ticketTiers.length > 1 && <option value="tier">Specific Tiers independently</option>}
+                  </select>
+              </Field>
+
+              {editScope === "tier" && ticketTiers.length > 0 && (
+                <Field label="Currently Editing Tier">
                   <select 
                     value={activeTierId}
                     onChange={e => setActiveTierId(e.target.value)}
                     className="w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary"
                   >
-                    <option value="">All Tiers (Base Preview)</option>
                     {ticketTiers.map((t: any) => (
                       <option key={t.id} value={t.id}>{t.type} (${t.cost})</option>
                     ))}
@@ -517,20 +616,11 @@ function TicketDesignerPage() {
                 </Field>
               )}
               
-              <div className="pt-2 border-t border-border/40">
-                <Field label="3. Where should your edits apply?">
-                  <select 
-                    value={editScope}
-                    onChange={e => setEditScope(e.target.value as any)}
-                    className="w-full rounded-xl border border-primary/60 bg-primary/10 text-primary-foreground px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
-                  >
-                    <option value="base">Apply to ALL Tiers & Locations (Base Design)</option>
-                    {activeTourStopIdx >= 0 && <option value="stop">Design ONLY for this Location</option>}
-                    {activeTierId && <option value="tier">Design ONLY for this Tier</option>}
-                    {activeTourStopIdx >= 0 && activeTierId && <option value="combination">Design ONLY for this Location + Tier</option>}
-                  </select>
-                </Field>
-              </div>
+              {editScope === "tier" && (
+                <div className="rounded-lg bg-primary/5 p-3 text-xs text-primary/80 border border-primary/20">
+                  <p><strong>Tip:</strong> You are seeing all your tiers in the live preview. Click on any ticket on the right to select it and edit its unique design!</p>
+                </div>
+              )}
             </div>
           </Section>
             </div>
@@ -871,6 +961,7 @@ function TicketDesignerPage() {
                 ticketTiers.map((tier: any) => {
                   const tDesign = getTierSpecificDesign(tier.id);
                   const isSelected = activeTierId === tier.id;
+                  const stopSubtitle = activeTourStopIdx >= 0 && tourStops[activeTourStopIdx]?.venue ? `${tourStops[activeTourStopIdx].venue} · ${tourStops[activeTourStopIdx].city}${tourStops[activeTourStopIdx].address ? `\n${tourStops[activeTourStopIdx].address}` : ""}` : "";
                   return (
                     <div 
                       key={tier.id} 
@@ -884,9 +975,9 @@ function TicketDesignerPage() {
                         font={tDesign.font}
                         tier={tier.type || "General"}
                         title={tDesign.title || dynamicDefaults.title || ""}
-                        subtitle={tDesign.subtitle || dynamicDefaults.subtitle || ""}
-                        date={tDesign.date || dynamicDefaults.date || ""}
-                        time={tDesign.time || dynamicDefaults.time || ""}
+                        subtitle={tDesign.subtitle || stopSubtitle || dynamicDefaults.subtitle || ""}
+                        date={tDesign.date || (activeTourStopIdx >= 0 ? tourStops[activeTourStopIdx].date : dynamicDefaults.date) || ""}
+                        time={tDesign.time || (activeTourStopIdx >= 0 ? tourStops[activeTourStopIdx].time : dynamicDefaults.time) || ""}
                         seat={tDesign.seat || dynamicDefaults.seat}
                         price={tier.cost?.toString() || "0"}
                         currency={tDesign.currency || dynamicDefaults.currency}
