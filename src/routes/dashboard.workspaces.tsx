@@ -70,11 +70,11 @@ const COUNTRIES = [
 ];
 
 function Workspaces() {
-  const { workspaces, activeWorkspace, setActiveWorkspace, createWorkspace } = useWorkspace();
+  const { workspaces, activeWorkspace, setActiveWorkspace, createWorkspace, isLoading } = useWorkspace();
   const navigate = useNavigate();
   const { data: platformModules = [], isLoading: isLoadingModules } = usePlatformModules();
 
-  const [isWizardOpen, setIsWizardOpen] = useState(workspaces.length === 0);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [step, setStep] = useState(1);
 
   // Form State
@@ -164,53 +164,72 @@ function Workspaces() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {workspaces.map((w) => {
-            const t = types.find((x) => x.id === w.type) || types[0];
-            const isActive = activeWorkspace?.id === w.id;
-            
-            return (
-              <div
-                key={w.id}
-                className={`flex flex-col rounded-3xl border bg-card p-6 shadow-sm transition-all ${
-                  isActive ? "border-primary ring-1 ring-primary" : "border-border/60"
-                }`}
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <div
-                    className={`grid h-12 w-12 place-items-center rounded-2xl text-xl shrink-0 overflow-hidden`}
-                    style={{ background: isActive ? "var(--gradient-primary)" : "var(--card-muted)", color: isActive ? "white" : "inherit" }}
-                  >
-                    {w.icon?.startsWith("data:image") || w.icon?.startsWith("http") ? (
-                      <img src={w.icon} alt="Workspace Logo" className="w-full h-full object-cover" />
-                    ) : (
-                      w.icon || <t.icon className="h-5 w-5" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold text-lg truncate">{w.name}</p>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {t.title} · {w.city}
-                    </p>
-                  </div>
-                </div>
-                
-                <Button 
-                  variant={isActive ? "default" : "outline"}
-                  className={`w-full rounded-xl gap-2 ${isActive && "shadow-[var(--shadow-glow)]"}`}
-                  style={isActive ? { background: "var(--gradient-primary)" } : undefined}
-                  onClick={() => {
-                    setActiveWorkspace(w);
-                    navigate({ to: `/dashboard/${w.slug}` });
-                  }}
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+        ) : workspaces.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center rounded-3xl border border-dashed border-border/60 bg-card/50">
+            <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+            <h2 className="text-xl font-bold mb-2">No Workspace Found</h2>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">You haven't created a workspace yet. Create one to start managing your events, venues, and experiences.</p>
+            <Button 
+              onClick={() => setIsWizardOpen(true)} 
+              className="rounded-full shadow-[var(--shadow-glow)] gap-2" 
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Plus className="h-4 w-4" /> Create Your First Workspace
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {workspaces.map((w) => {
+              const t = types.find((x) => x.id === w.type) || types[0];
+              const isActive = activeWorkspace?.id === w.id;
+              
+              return (
+                <div
+                  key={w.id}
+                  className={`flex flex-col rounded-3xl border bg-card p-6 shadow-sm transition-all ${
+                    isActive ? "border-primary ring-1 ring-primary" : "border-border/60"
+                  }`}
                 >
-                  {isActive ? "Currently Active" : "Switch to Workspace"} 
-                  {!isActive && <ArrowRight className="h-4 w-4" />}
-                </Button>
-              </div>
-            );
-          })}
-        </div>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div
+                      className={`grid h-12 w-12 place-items-center rounded-2xl text-xl shrink-0 overflow-hidden`}
+                      style={{ background: isActive ? "var(--gradient-primary)" : "var(--card-muted)", color: isActive ? "white" : "inherit" }}
+                    >
+                      {w.icon?.startsWith("data:image") || w.icon?.startsWith("http") ? (
+                        <img src={w.icon} alt="Workspace Logo" className="w-full h-full object-cover" />
+                      ) : (
+                        w.icon || <t.icon className="h-5 w-5" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-lg truncate">{w.name}</p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {t.title} · {w.city}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    variant={isActive ? "default" : "outline"}
+                    className={`w-full rounded-xl gap-2 ${isActive && "shadow-[var(--shadow-glow)]"}`}
+                    style={isActive ? { background: "var(--gradient-primary)" } : undefined}
+                    onClick={() => {
+                      setActiveWorkspace(w);
+                      navigate({ to: `/dashboard/${w.slug}` });
+                    }}
+                  >
+                    {isActive ? "Currently Active" : "Switch to Workspace"} 
+                    {!isActive && <ArrowRight className="h-4 w-4" />}
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md p-4 border-t border-border/60 z-10 flex items-center justify-between gap-4 md:px-8">
           <Button 
