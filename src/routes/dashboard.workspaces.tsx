@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Building2, Film, Trophy, Mountain, Check, Plus, ArrowRight, ArrowLeft, Image as ImageIcon, Dices, X } from "lucide-react";
+import { Building2, Film, Trophy, Mountain, Check, Plus, ArrowRight, ArrowLeft, Image as ImageIcon, Dices, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkspace, WorkspaceType } from "@/contexts/WorkspaceContext";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
+import { logout } from "@/api/auth";
 
 export const Route = createFileRoute("/dashboard/workspaces")({
   head: () => ({
@@ -146,7 +147,7 @@ function Workspaces() {
 
   if (!isWizardOpen) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-8 pb-24 px-4 md:px-8 max-w-7xl mx-auto pt-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Workspaces</h1>
@@ -180,7 +181,7 @@ function Workspaces() {
                     className={`grid h-12 w-12 place-items-center rounded-2xl text-xl shrink-0 overflow-hidden`}
                     style={{ background: isActive ? "var(--gradient-primary)" : "var(--card-muted)", color: isActive ? "white" : "inherit" }}
                   >
-                    {w.icon?.startsWith("data:image") ? (
+                    {w.icon?.startsWith("data:image") || w.icon?.startsWith("http") ? (
                       <img src={w.icon} alt="Workspace Logo" className="w-full h-full object-cover" />
                     ) : (
                       w.icon || <t.icon className="h-5 w-5" />
@@ -209,6 +210,27 @@ function Workspaces() {
               </div>
             );
           })}
+        </div>
+
+        <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md p-4 border-t border-border/60 z-10 flex items-center justify-between gap-4 md:px-8">
+          <Button 
+            variant="ghost" 
+            className="rounded-full gap-2 text-muted-foreground hover:text-foreground"
+            onClick={async () => {
+              await logout();
+              window.location.href = "/dashboard/login";
+            }}
+          >
+            <LogOut className="h-4 w-4" /> Sign out
+          </Button>
+
+          <Button 
+            variant="outline" 
+            className="rounded-full gap-2"
+            onClick={() => navigate({ to: "/dashboard/create-organizer" })}
+          >
+            <User className="h-4 w-4" /> Organizer Profile
+          </Button>
         </div>
       </div>
     );
@@ -404,10 +426,10 @@ function Workspaces() {
               <div className="animate-fade-in space-y-8">
                 <div className="text-center max-w-2xl mx-auto">
                   <div className="inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-secondary text-5xl mb-6 shadow-sm border border-border/60 overflow-hidden">
-                    {icon.startsWith("data:image") ? (
+                    {icon.startsWith("data:image") || icon.startsWith("http") ? (
                       <img src={icon} alt="Logo" className="w-full h-full object-cover" />
                     ) : (
-                      icon
+                      <ImageIcon className="h-10 w-10 text-muted-foreground" />
                     )}
                   </div>
                   <h1 className="text-4xl font-bold tracking-tight mb-2">{name}</h1>

@@ -31,7 +31,7 @@ export function WorkspaceSwitcher() {
         <DropdownMenuTrigger className="flex w-full items-center justify-between rounded-xl border border-border/60 bg-card px-3 py-2 text-left shadow-sm transition hover:bg-secondary/50 focus:outline-none">
           <div className="flex items-center gap-3">
             <div className="grid h-8 w-8 place-items-center rounded-lg text-primary-foreground overflow-hidden" style={{ background: "var(--gradient-primary)" }}>
-              {activeWorkspace.icon?.startsWith("data:image") ? (
+              {activeWorkspace.icon?.startsWith("data:image") || activeWorkspace.icon?.startsWith("http") ? (
                 <img src={activeWorkspace.icon} alt="Logo" className="w-full h-full object-cover" />
               ) : activeWorkspace.icon ? (
                 <span className="text-lg">{activeWorkspace.icon}</span>
@@ -64,7 +64,7 @@ export function WorkspaceSwitcher() {
               >
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center w-5 h-5">
-                    {workspace.icon?.startsWith("data:image") ? (
+                    {workspace.icon?.startsWith("data:image") || workspace.icon?.startsWith("http") ? (
                       <img src={workspace.icon} alt="Logo" className="w-full h-full object-cover rounded-sm" />
                     ) : workspace.icon ? (
                       <span className="text-sm leading-none">{workspace.icon}</span>
