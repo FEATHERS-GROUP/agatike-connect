@@ -42,7 +42,8 @@ function DashboardLayout() {
   
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
-  const hideSidebar = location.pathname === "/dashboard/login" || location.pathname === "/dashboard/workspaces" || location.pathname === "/dashboard/create-organizer" || location.pathname === "/dashboard/settings" || location.pathname.match(/^\/dashboard\/[^/]+\/(venue-designer|ticket-designer)/);
+  const hideSidebar = location.pathname === "/dashboard/login" || location.pathname === "/dashboard/workspaces" || location.pathname === "/dashboard/create-organizer" || location.pathname === "/dashboard/settings" || location.pathname.match(/^\/dashboard\/[^/]+\/venue-designer/) || location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/);
+  const isDesigner = location.pathname.match(/^\/dashboard\/[^/]+\/(venue-designer|ticket-designer\/[^/]+)/);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -95,7 +96,7 @@ function DashboardLayout() {
           )}
           
           {/* Main Content Area */}
-          <main className="flex-1 p-6 lg:p-10">
+          <main className={`flex-1 ${isDesigner ? "" : "p-6 lg:p-10"}`}>
             <Outlet />
           </main>
         </div>

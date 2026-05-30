@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Plus, Ticket, Film, Mountain, Briefcase, Calendar, ChevronRight } from "lucide-react";
+import { ArrowLeft, Plus, Ticket, Film, Mountain, Briefcase, Calendar, ChevronRight, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ const templates = [
   { id: "movie", label: "Movie / Cinema", icon: Film, desc: "Tear-off stub design for screenings and premieres.", bg: "bg-red-500/10 text-red-500" },
   { id: "experience", label: "Experience", icon: Mountain, desc: "Clean and visual for outdoor activities and tours.", bg: "bg-green-500/10 text-green-500" },
   { id: "conference", label: "Conference", icon: Briefcase, desc: "Badge-style with attendee details for corporate events.", bg: "bg-blue-500/10 text-blue-500" },
+  { id: "entrance", label: "General Entrance", icon: MapPin, desc: "Clean museum/park pass with a distinct admission stub.", bg: "bg-violet-500/10 text-violet-500" },
 ];
 
 function TicketDesignerIndex() {
@@ -109,7 +110,7 @@ function TicketDesignerIndex() {
             <h2 className="text-2xl font-semibold tracking-tight">Create New Project</h2>
             <p className="text-sm text-muted-foreground mt-1">Choose a starting template for your next event.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {templates.map(t => (
               <button
                 key={t.id}
