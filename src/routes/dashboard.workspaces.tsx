@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Building2, Film, Trophy, Mountain, Check, Plus, ArrowRight, ArrowLeft, Image as ImageIcon } from "lucide-react";
+import { Building2, Film, Trophy, Mountain, Check, Plus, ArrowRight, ArrowLeft, Image as ImageIcon, Dices, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,7 +49,20 @@ const types: { id: WorkspaceType; title: string; desc: string; icon: any; defaul
   },
 ];
 
-const EMOJI_OPTIONS = ["🏟️", "🎪", "🎭", "🎬", "⛰️", "🎉", "🎫", "🎸", "🎵", "🏆", "🌟", "🔥"];
+const AVATAR_OPTIONS = [
+  "https://api.dicebear.com/7.x/shapes/svg?seed=Alpha&backgroundColor=b6e3f4",
+  "https://api.dicebear.com/7.x/shapes/svg?seed=Beta&backgroundColor=c0aede",
+  "https://api.dicebear.com/7.x/shapes/svg?seed=Gamma&backgroundColor=ffdfbf",
+  "https://api.dicebear.com/7.x/shapes/svg?seed=Delta&backgroundColor=ffd5dc",
+  "https://api.dicebear.com/7.x/shapes/svg?seed=Epsilon&backgroundColor=d1d4f9",
+  "https://api.dicebear.com/7.x/shapes/svg?seed=Zeta&backgroundColor=b6e3f4",
+  "https://api.dicebear.com/7.x/identicon/svg?seed=One&backgroundColor=ffdfbf",
+  "https://api.dicebear.com/7.x/identicon/svg?seed=Two&backgroundColor=c0aede",
+  "https://api.dicebear.com/7.x/identicon/svg?seed=Three&backgroundColor=ffd5dc",
+  "https://api.dicebear.com/7.x/identicon/svg?seed=Four&backgroundColor=b6e3f4",
+  "https://api.dicebear.com/7.x/identicon/svg?seed=Five&backgroundColor=d1d4f9",
+  "https://api.dicebear.com/7.x/identicon/svg?seed=Six&backgroundColor=ffdfbf"
+];
 
 const COUNTRIES = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo (Congo-Brazzaville)", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czechia", "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
@@ -69,9 +82,36 @@ function Workspaces() {
   const [country, setCountry] = useState("Rwanda");
   const [address, setAddress] = useState("");
   const [desc, setDesc] = useState("");
-  const [icon, setIcon] = useState("🏟️");
+  const [icon, setIcon] = useState("");
   const [modules, setModules] = useState<string[]>([]);
   const [created, setCreated] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("bottts");
+  const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
+
+  const CATEGORIES = [
+    { id: "bottts", label: "Robots" },
+    { id: "shapes", label: "Shapes" },
+    { id: "identicon", label: "Patterns" },
+    { id: "adventurer", label: "Characters" },
+    { id: "fun-emoji", label: "Emojis" },
+    { id: "micah", label: "Stylized" },
+  ];
+
+  const generateAvatarsForCategory = (category: string) => {
+    const BACKGROUND_COLORS = ["b6e3f4", "c0aede", "ffdfbf", "ffd5dc", "d1d4f9", "c0aede", "b6e3f4", "ffdfbf"];
+    return Array.from({ length: 12 }).map(() => {
+      const bg = BACKGROUND_COLORS[Math.floor(Math.random() * BACKGROUND_COLORS.length)];
+      const seed = Math.random().toString(36).substring(7);
+      return `https://api.dicebear.com/7.x/${category}/svg?seed=${seed}&backgroundColor=${bg}`;
+    });
+  };
+
+  useEffect(() => {
+    if (isAvatarModalOpen) {
+      setAvatarOptions(generateAvatarsForCategory(activeCategory));
+    }
+  }, [activeCategory, isAvatarModalOpen]);
 
   // When type or platformModules changes, pre-fill modules
   useEffect(() => {
@@ -297,40 +337,40 @@ function Workspaces() {
 
                   <div className="pt-6 border-t border-border/60 space-y-4">
                     <Label className="text-base font-semibold">Workspace Icon or Logo</Label>
-                    <div className="flex flex-wrap gap-3">
-                      {EMOJI_OPTIONS.map(emoji => (
-                        <button
-                          key={emoji}
-                          onClick={() => setIcon(emoji)}
-                          className={`h-12 w-12 text-2xl rounded-xl border flex items-center justify-center transition-all ${
-                            icon === emoji ? "border-primary bg-primary/10 shadow-md scale-110" : "border-border/60 bg-secondary/30 hover:bg-secondary"
-                          }`}
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                      <label className={`h-12 w-12 rounded-xl border border-dashed flex items-center justify-center cursor-pointer transition-all ${
-                        icon.startsWith("data:image") ? "border-primary bg-primary/10 shadow-md scale-110" : "border-border text-muted-foreground bg-secondary/10 hover:bg-secondary"
-                      }`} title="Upload Custom Logo">
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onload = (e) => setIcon(e.target?.result as string);
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                        />
-                        {icon.startsWith("data:image") ? (
-                          <img src={icon} alt="Logo" className="h-8 w-8 object-contain" />
+                    <div className="flex items-center gap-4">
+                      <div className="h-20 w-20 shrink-0 rounded-2xl border-2 border-border/60 overflow-hidden bg-secondary/30 flex items-center justify-center">
+                        {icon.startsWith("data:image") || icon.startsWith("http") ? (
+                          <img src={icon} alt="Logo" className="h-full w-full object-cover" />
                         ) : (
-                          <ImageIcon className="h-5 w-5" />
+                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
                         )}
-                      </label>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-2">
+                          <label className="cursor-pointer">
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onload = (e) => setIcon(e.target?.result as string);
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                            <div className="inline-flex h-10 items-center justify-center rounded-xl bg-secondary px-4 py-2 text-sm font-medium hover:bg-secondary/80 transition-colors">
+                              Upload Logo
+                            </div>
+                          </label>
+                          <Button type="button" variant="outline" className="rounded-xl h-10" onClick={() => setIsAvatarModalOpen(true)}>
+                            Choose Avatar
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Upload a custom logo or pick a fun avatar.</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -449,6 +489,59 @@ function Workspaces() {
           </>
         )}
       </div>
+
+      {/* Avatar Modal Overlay */}
+      {isAvatarModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-card w-full max-w-md rounded-3xl shadow-xl border border-border flex flex-col overflow-hidden animate-in zoom-in-95">
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h3 className="font-bold text-lg">Choose an Avatar</h3>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsAvatarModalOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="p-4 border-b border-border/60 bg-secondary/10 overflow-x-auto whitespace-nowrap scrollbar-hide">
+              <div className="flex gap-2">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      activeCategory === cat.id ? "bg-primary text-primary-foreground" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="p-6 grid grid-cols-4 gap-4">
+              {avatarOptions.map(avatar => (
+                <button
+                  key={avatar}
+                  onClick={() => {
+                    setIcon(avatar);
+                    setIsAvatarModalOpen(false);
+                  }}
+                  className={`aspect-square w-full rounded-2xl border-2 flex items-center justify-center transition-all overflow-hidden ${
+                    icon === avatar ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-105" : "border-transparent bg-secondary/50 hover:bg-secondary hover:scale-105"
+                  }`}
+                >
+                  <img src={avatar} alt="avatar" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+
+            <div className="p-4 border-t border-border bg-secondary/20 flex justify-end">
+              <Button onClick={() => setAvatarOptions(generateAvatarsForCategory(activeCategory))} variant="outline" className="rounded-xl gap-2 w-full">
+                <Dices className="h-4 w-4" /> Randomize Options
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
