@@ -1,5 +1,6 @@
 import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import {
   ArrowLeft,
   ArrowRight,
@@ -12,12 +13,16 @@ import {
   Calendar,
   MapPin,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { categories } from "@/lib/mock-data";
+import { createEvent } from "@/api/events";
+import { getCoordinates } from "@/api/geocoding";
+import { toast } from "sonner";
 
 const steps = ["Details", "Tickets", "Venue", "Media", "Merchandise", "VIP", "Publish"] as const;
 type Step = (typeof steps)[number];
@@ -47,11 +52,9 @@ export function CreateEventDesktop() {
     title: "",
     category: categories[0],
     description: "",
-    date: "",
-    time: "",
-    venue: "",
-    city: "",
-    address: "",
+    locations: [
+      { id: crypto.randomUUID(), venue: "", city: "", address: "", date: "", time: "" }
+    ],
     coverPreview: "",
     vipPerks: "Priority entry, VIP lounge, complimentary welcome drink",
     published: false,
@@ -110,6 +113,74 @@ export function CreateEventDesktop() {
   const next = () => setStep(Math.min(steps.length - 1, step + 1));
   const prev = () => setStep(Math.max(0, step - 1));
 
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      // 1. Geocode all locations
+      const geocodedLocations = await Promise.all(
+        data.locations.map(async (loc) => {
+          const fullAddress = `${loc.address}, ${loc.city}`;
+          const coords = await getCoordinates({ data: fullAddress });
+          return {
+            ...loc,
+            latitude: coords?.lat || null,
+            longitude: coords?.lng || null,
+          };
+        })
+      );
+
+      // 2. Prepare payload
+      const payload = {
+        title: data.title,
+        category: data.category,
+        description: data.description,
+        date: geocodedLocations[0]?.date || "",
+        time: geocodedLocations[0]?.time || "",
+        venue: geocodedLocations[0]?.venue || "",
+        city: geocodedLocations[0]?.city || "",
+        address: geocodedLocations[0]?.address || "",
+        latitude: geocodedLocations[0]?.latitude || null,
+        longitude: geocodedLocations[0]?.longitude || null,
+        cover: data.coverPreview,
+        vipPerks: data.vipPerks,
+        workspace_id: workspaceSlug, // In a real scenario, map this to actual UUID
+        tour_stops: geocodedLocations,
+        event_requency: data.isRecurring ? { type: data.recurrenceType, count: data.recurrenceCount } : null,
+        event_tickets: {
+          data: tickets.map(t => ({
+            type: t.name,
+            cost: t.price.toString(),
+            remaining: t.quantity.toString(),
+            sold: "0",
+          }))
+        },
+        merchandises: {
+          data: merch.map(m => ({
+            name: m.name,
+            cost: m.price.toString(),
+            remaining: "100", // default if no quantity is provided in merch UI
+            sold: "0"
+          }))
+        }
+      };
+      
+      return await createEvent(payload);
+    },
+    onSuccess: () => {
+      toast.success("Event created successfully!");
+      setData({ ...data, published: true });
+      setTimeout(() => {
+        navigate({ to: dashboardUrl });
+      }, 1500);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to create event");
+    }
+  });
+
+  const handlePublish = () => {
+    publishMutation.mutate();
+  };
+
   return (
     <div className="mx-auto max-w-3xl w-full">
       <div className="rounded-[2rem] border border-border/60 bg-card p-6 sm:p-10 shadow-[var(--shadow-card)]">
@@ -142,26 +213,6 @@ export function CreateEventDesktop() {
                       <option key={c}>{c}</option>
                     ))}
                   </select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Date</Label>
-                    <Input
-                      type="date"
-                      value={data.date}
-                      onChange={(e) => updateField("date", e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label>Time</Label>
-                    <Input
-                      type="time"
-                      value={data.time}
-                      onChange={(e) => updateField("time", e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
                 </div>
               </div>
               <div className="rounded-2xl border border-border/60 bg-secondary/20 p-5 space-y-4">
@@ -233,40 +284,110 @@ export function CreateEventDesktop() {
           {steps[step] === "Tickets" && <TicketEditor tickets={tickets} setTickets={setTickets} />}
 
           {steps[step] === "Venue" && (
-            <div className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <Label>Venue name</Label>
-                  <Input
-                    value={data.venue}
-                    onChange={(e) => updateField("venue", e.target.value)}
-                    placeholder="Eko Convention Centre"
-                    className="mt-1"
-                  />
+                  <h3 className="text-lg font-semibold">Locations & Schedule</h3>
+                  <p className="text-sm text-muted-foreground">Add all the places and times this event will happen.</p>
                 </div>
-                <div>
-                  <Label>City</Label>
-                  <Input
-                    value={data.city}
-                    onChange={(e) => updateField("city", e.target.value)}
-                    placeholder="Lagos, NG"
-                    className="mt-1"
-                  />
-                </div>
+                <Button
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => updateField("locations", [...data.locations, { id: crypto.randomUUID(), venue: "", city: "", address: "", date: "", time: "" }])}
+                >
+                  <Plus className="mr-1 h-3.5 w-3.5" /> Add Location
+                </Button>
               </div>
-              <div>
-                <Label>Address</Label>
-                <Input
-                  value={data.address}
-                  onChange={(e) => updateField("address", e.target.value)}
-                  placeholder="Plot 1415 Adetokunbo Ademola Street, Victoria Island"
-                  className="mt-1"
-                />
-              </div>
-              <div className="aspect-[16/8] rounded-2xl border border-dashed border-border bg-secondary/40 grid place-items-center text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-2">
-                  <MapPin className="h-4 w-4" /> Map preview appears here
-                </span>
+
+              <div className="space-y-4">
+                {data.locations.map((loc: any, idx: number) => (
+                  <div key={loc.id} className="relative rounded-2xl border border-border/60 bg-secondary/10 p-5">
+                    {data.locations.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-3 top-3 h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => updateField("locations", data.locations.filter((_: any, i: number) => i !== idx))}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <div className="mb-4">
+                      <p className="text-sm font-semibold text-primary uppercase tracking-wider">Stop {idx + 1}</p>
+                    </div>
+                    <div className="space-y-5">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <Label>Date</Label>
+                          <Input
+                            type="date"
+                            value={loc.date}
+                            onChange={(e) => {
+                              const newLocs = [...data.locations];
+                              newLocs[idx].date = e.target.value;
+                              updateField("locations", newLocs);
+                            }}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label>Time</Label>
+                          <Input
+                            type="time"
+                            value={loc.time}
+                            onChange={(e) => {
+                              const newLocs = [...data.locations];
+                              newLocs[idx].time = e.target.value;
+                              updateField("locations", newLocs);
+                            }}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <Label>Venue name</Label>
+                          <Input
+                            value={loc.venue}
+                            onChange={(e) => {
+                              const newLocs = [...data.locations];
+                              newLocs[idx].venue = e.target.value;
+                              updateField("locations", newLocs);
+                            }}
+                            placeholder="Eko Convention Centre"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label>City</Label>
+                          <Input
+                            value={loc.city}
+                            onChange={(e) => {
+                              const newLocs = [...data.locations];
+                              newLocs[idx].city = e.target.value;
+                              updateField("locations", newLocs);
+                            }}
+                            placeholder="Lagos, NG"
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Address</Label>
+                        <Input
+                          value={loc.address}
+                          onChange={(e) => {
+                            const newLocs = [...data.locations];
+                            newLocs[idx].address = e.target.value;
+                            updateField("locations", newLocs);
+                          }}
+                          placeholder="Plot 1415 Adetokunbo Ademola Street, Victoria Island"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -323,7 +444,8 @@ export function CreateEventDesktop() {
               data={data}
               tickets={tickets}
               merch={merch}
-              onPublish={() => setData({ ...data, published: true })}
+              onPublish={handlePublish}
+              isPending={publishMutation.isPending}
             />
           )}
 
@@ -343,15 +465,7 @@ export function CreateEventDesktop() {
                 >
                   Continue <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
-              ) : (
-                <Button
-                  onClick={() => setData({ ...data, published: true })}
-                  className="rounded-full shadow-[var(--shadow-glow)]"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  Publish event
-                </Button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
@@ -502,11 +616,13 @@ function PublishReview({
   tickets,
   merch,
   onPublish,
+  isPending,
 }: {
   data: any;
   tickets: Ticket[];
   merch: Merch[];
   onPublish: () => void;
+  isPending?: boolean;
 }) {
   return (
     <div className="space-y-5">
@@ -520,17 +636,25 @@ function PublishReview({
           <p className="text-xs uppercase tracking-wider text-muted-foreground">{data.category}</p>
           <h3 className="mt-1 text-2xl font-semibold">{data.title || "Untitled event"}</h3>
           <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <Calendar className="h-4 w-4" /> {data.date || "TBD"} · {data.time || "TBD"}
-              {data.isRecurring && (
-                <span className="ml-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                  Repeats {data.recurrenceType} ({data.recurrenceCount} times)
+            {data.locations.length === 1 ? (
+              <>
+                <span className="inline-flex items-center gap-1">
+                  <Calendar className="h-4 w-4" /> {data.locations[0]?.date || "TBD"} · {data.locations[0]?.time || "TBD"}
+                  {data.isRecurring && (
+                    <span className="ml-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                      Repeats {data.recurrenceType} ({data.recurrenceCount} times)
+                    </span>
+                  )}
                 </span>
-              )}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <MapPin className="h-4 w-4" /> {data.venue || "TBD"}, {data.city || ""}
-            </span>
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="h-4 w-4" /> {data.locations[0]?.venue || "TBD"}, {data.locations[0]?.city || ""}
+                </span>
+              </>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-primary font-medium bg-primary/10 px-2.5 py-1 rounded-xl">
+                <MapPin className="h-4 w-4" /> {data.locations.length} Tour Stops / Locations
+              </span>
+            )}
           </div>
           <p className="mt-3 text-sm">{data.description || "No description yet."}</p>
         </div>
@@ -561,10 +685,15 @@ function PublishReview({
 
       <Button
         onClick={onPublish}
+        disabled={isPending}
         className="w-full h-12 rounded-2xl shadow-[var(--shadow-glow)]"
         style={{ background: "var(--gradient-primary)" }}
       >
-        Publish event
+        {isPending ? (
+          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Publishing...</>
+        ) : (
+          "Publish event"
+        )}
       </Button>
     </div>
   );

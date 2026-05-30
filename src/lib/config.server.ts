@@ -21,6 +21,7 @@ export function getServerConfig() {
     nodeEnv: process.env.NODE_ENV,
     hasuraAdminSecret: process.env.HASURA_ADMIN_SECRETE,
     hasuraAdminApi: process.env.HASURA_ADMIN_API,
+    googleApiKey: process.env.GOOGLE_SECRET,
     // Add server-only values here, e.g.:
     //   databaseUrl: process.env.DATABASE_URL,
     //   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
