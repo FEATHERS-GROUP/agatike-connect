@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { categories } from "@/lib/mock-data";
 import { createEvent } from "@/api/events";
-import { getCoordinates } from "@/api/geocoding";
+import { getCoordinates, getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
@@ -66,6 +66,75 @@ type Ticket = {
 };
 type Merch = { id: string; name: string; price: number };
 
+function AddressAutocomplete({
+  value,
+  onChange,
+  onSelectCoordinates
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  onSelectCoordinates: (lat: string, lng: string) => void;
+}) {
+  const [predictions, setPredictions] = useState<any[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  return (
+    <div className="relative">
+      <Input
+        value={value}
+        onChange={async (e) => {
+          const val = e.target.value;
+          onChange(val);
+          if (!val.trim()) {
+            setPredictions([]);
+            setIsOpen(false);
+            return;
+          }
+          setIsOpen(true);
+          setIsLoading(true);
+          try {
+            const results = await getPlacesAutocomplete({ data: val });
+            setPredictions(results);
+          } catch (err) {
+            console.error(err);
+          } finally {
+            setIsLoading(false);
+          }
+        }}
+        onFocus={() => value.trim() && setIsOpen(true)}
+        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+        placeholder="Plot 1415 Adetokunbo Ademola Street..."
+        className="mt-1"
+      />
+      {isOpen && (predictions.length > 0 || isLoading) && (
+        <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-xl border border-border bg-popover text-popover-foreground shadow-md outline-none">
+          {isLoading && predictions.length === 0 && <div className="p-4 text-sm text-muted-foreground text-center">Loading...</div>}
+          {!isLoading && predictions.map((p) => (
+            <div
+              key={p.place_id}
+              className="relative flex cursor-pointer select-none flex-col rounded-sm px-4 py-3 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+              onClick={async () => {
+                onChange(p.description);
+                setIsOpen(false);
+                const coords = await getPlaceDetails({ data: p.place_id });
+                if (coords && coords.lat && coords.lng) {
+                  onSelectCoordinates(coords.lat, coords.lng);
+                }
+              }}
+            >
+              <span className="font-medium text-foreground">{p.structured_formatting?.main_text || p.description}</span>
+              {p.structured_formatting?.secondary_text && (
+                <span className="text-xs text-muted-foreground">{p.structured_formatting.secondary_text}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function CreateEventDesktop() {
   const navigate = useNavigate();
   const { workspaceSlug } = useParams({ strict: false }) as { workspaceSlug?: string };
@@ -85,7 +154,7 @@ export function CreateEventDesktop() {
     category: categories[0],
     description: "",
     locations: [
-      { id: crypto.randomUUID(), venue: "", city: "", address: "", date: "", time: "" }
+      { id: crypto.randomUUID(), venue: "", city: "", address: "", date: "", time: "", latitude: null as string | null, longitude: null as string | null }
     ],
     coverPreview: "",
     vipPerks: "Priority entry, VIP lounge, complimentary welcome drink",
@@ -99,8 +168,6 @@ export function CreateEventDesktop() {
   ]);
   const [merch, setMerch] = useState<Merch[]>([{ id: "m1", name: "Event Tee", price: 20 }]);
 
-
-
   const updateField = <K extends keyof typeof data>(k: K, v: (typeof data)[K]) =>
     setData({ ...data, [k]: v });
 
@@ -111,6 +178,59 @@ export function CreateEventDesktop() {
     updateField("coverPreview", url);
   };
 
+  const next = () => setStep(Math.min(steps.length - 1, step + 1));
+  const prev = () => setStep(Math.max(0, step - 1));
+
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      // 1. Prepare payload
+      const payload = {
+        title: data.title,
+        category: data.category,
+        description: data.description,
+        cover: data.coverPreview,
+        vipPerks: data.vipPerks,
+        workspace_id: activeWorkspace?.id,
+        tour_stops: data.locations,
+        event_requency: data.isRecurring ? { type: data.recurrenceType, count: data.recurrenceCount } : {},
+        event_tickets: {
+          data: tickets.map(t => ({
+            type: t.name,
+            cost: t.price.toString(),
+            remaining: t.quantity.toString(),
+            sold: "0",
+            sale_ends_at: t.type === "early" ? t.sale_ends_at || null : null,
+          }))
+        },
+        merchandises: {
+          data: merch.map(m => ({
+            name: m.name,
+            cost: m.price.toString(),
+            remaining: "100",
+            sold: "0"
+          }))
+        }
+      };
+      
+      return await createEvent({ data: payload });
+    },
+    onSuccess: () => {
+      toast.success("Event created successfully!");
+      setData({ ...data, published: true });
+      setTimeout(() => {
+        navigate({ to: dashboardUrl });
+      }, 1500);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to create event");
+    }
+  });
+
+  const handlePublish = () => {
+    publishMutation.mutate();
+  };
+
+  // All hooks must be called before any conditional returns
   if (data.published) {
     return (
       <div className="mx-auto max-w-xl py-24 text-center">
@@ -141,78 +261,6 @@ export function CreateEventDesktop() {
         </div>
     );
   }
-
-  const next = () => setStep(Math.min(steps.length - 1, step + 1));
-  const prev = () => setStep(Math.max(0, step - 1));
-
-  const publishMutation = useMutation({
-    mutationFn: async () => {
-      // 1. Geocode all locations
-      const geocodedLocations = await Promise.all(
-        data.locations.map(async (loc) => {
-          const fullAddress = `${loc.address}, ${loc.city}`;
-          const coords = await getCoordinates({ data: fullAddress });
-          return {
-            ...loc,
-            latitude: coords?.lat || null,
-            longitude: coords?.lng || null,
-          };
-        })
-      );
-
-      // 2. Prepare payload
-      const payload = {
-        title: data.title,
-        category: data.category,
-        description: data.description,
-        date: geocodedLocations[0]?.date || "",
-        time: geocodedLocations[0]?.time || "",
-        venue: geocodedLocations[0]?.venue || "",
-        city: geocodedLocations[0]?.city || "",
-        address: geocodedLocations[0]?.address || "",
-        latitude: geocodedLocations[0]?.latitude || null,
-        longitude: geocodedLocations[0]?.longitude || null,
-        cover: data.coverPreview,
-        vipPerks: data.vipPerks,
-        workspace_id: workspaceSlug, // In a real scenario, map this to actual UUID
-        tour_stops: geocodedLocations,
-        event_requency: data.isRecurring ? { type: data.recurrenceType, count: data.recurrenceCount } : null,
-        event_tickets: {
-          data: tickets.map(t => ({
-            type: t.name,
-            cost: t.price.toString(),
-            remaining: t.quantity.toString(),
-            sold: "0",
-            sale_ends_at: t.type === "early" ? t.sale_ends_at || null : null,
-          }))
-        },
-        merchandises: {
-          data: merch.map(m => ({
-            name: m.name,
-            cost: m.price.toString(),
-            remaining: "100", // default if no quantity is provided in merch UI
-            sold: "0"
-          }))
-        }
-      };
-      
-      return await createEvent(payload);
-    },
-    onSuccess: () => {
-      toast.success("Event created successfully!");
-      setData({ ...data, published: true });
-      setTimeout(() => {
-        navigate({ to: dashboardUrl });
-      }, 1500);
-    },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to create event");
-    }
-  });
-
-  const handlePublish = () => {
-    publishMutation.mutate();
-  };
 
   return (
     <div className="mx-auto max-w-4xl w-full">
@@ -407,15 +455,20 @@ export function CreateEventDesktop() {
                       </div>
                       <div>
                         <Label>Address</Label>
-                        <Input
+                        <AddressAutocomplete 
                           value={loc.address}
-                          onChange={(e) => {
+                          onChange={(val) => {
                             const newLocs = [...data.locations];
-                            newLocs[idx].address = e.target.value;
+                            newLocs[idx].address = val;
                             updateField("locations", newLocs);
                           }}
-                          placeholder="Plot 1415 Adetokunbo Ademola Street, Victoria Island"
-                          className="mt-1"
+                          onSelectCoordinates={(lat, lng) => {
+                            const newLocs = [...data.locations];
+                            newLocs[idx].latitude = lat;
+                            newLocs[idx].longitude = lng;
+                            updateField("locations", newLocs);
+                            toast.success("Location coordinates captured!");
+                          }}
                         />
                       </div>
                     </div>
@@ -709,38 +762,51 @@ function PublishReview({
         <div className="p-5">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">{data.category}</p>
           <h3 className="mt-1 text-2xl font-semibold">{data.title || "Untitled event"}</h3>
-          <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
-            {data.locations.length === 1 ? (
-              <>
-                <span className="inline-flex items-center gap-1">
-                  <Calendar className="h-4 w-4" /> {data.locations[0]?.date || "TBD"} · {data.locations[0]?.time || "TBD"}
-                  {data.isRecurring && (
-                    <span className="ml-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                      Repeats {data.recurrenceType} ({data.recurrenceCount} times)
-                    </span>
-                  )}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="h-4 w-4" /> {data.locations[0]?.venue || "TBD"}, {data.locations[0]?.city || ""}
-                </span>
-              </>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-primary font-medium bg-primary/10 px-2.5 py-1 rounded-xl">
-                <MapPin className="h-4 w-4" /> {data.locations.length} Tour Stops / Locations
+          <div className="mt-3 flex flex-col gap-2">
+            {data.locations.map((loc: any, i: number) => (
+              <div key={loc.id} className="rounded-xl border border-border/40 bg-secondary/20 p-3 text-sm">
+                <div className="flex items-center gap-2 font-medium">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  {data.locations.length > 1 ? `Stop ${i + 1}: ` : ""}{loc.venue || "TBD"}
+                </div>
+                <div className="mt-1 flex items-center gap-2 text-muted-foreground">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {loc.date || "TBD"} at {loc.time || "TBD"}
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground pl-5.5">
+                  {loc.address}, {loc.city}
+                </div>
+              </div>
+            ))}
+            {data.isRecurring && (
+              <span className="inline-flex w-fit items-center gap-1 text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                Repeats {data.recurrenceType} ({data.recurrenceCount} times)
               </span>
             )}
           </div>
-          <p className="mt-3 text-sm">{data.description || "No description yet."}</p>
+          <p className="mt-4 text-sm whitespace-pre-wrap">{data.description || "No description yet."}</p>
         </div>
       </div>
+
+      {data.vipPerks && (
+        <div className="rounded-2xl border border-border/60 bg-accent/20 p-4">
+          <div className="flex items-center gap-2 font-semibold">
+            <Crown className="h-4 w-4 text-primary" /> VIP Perks
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">{data.vipPerks}</p>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-border/60 p-4">
           <p className="text-sm font-semibold">Tickets ({tickets.length})</p>
-          <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+          <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
             {tickets.map((t) => (
-              <li key={t.id}>
-                · {t.name} — {currencySymbol}{t.price} × {t.quantity}
+              <li key={t.id} className="flex flex-col">
+                <span>· <strong className="text-foreground font-medium">{t.name}</strong> — {currencySymbol}{t.price} × {t.quantity}</span>
+                {t.type === "early" && t.sale_ends_at && (
+                  <span className="text-xs text-primary pl-3">Sale ends: {new Date(t.sale_ends_at).toLocaleString()}</span>
+                )}
               </li>
             ))}
           </ul>

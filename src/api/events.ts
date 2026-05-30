@@ -1,3 +1,4 @@
+import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 
 const CREATE_EVENT = `
@@ -8,6 +9,8 @@ const CREATE_EVENT = `
   }
 `;
 
-export async function createEvent(eventData: any) {
-  return hasuraRequest(CREATE_EVENT, { object: eventData });
-}
+export const createEvent = createServerFn({ method: "POST" })
+  .handler(async (ctx) => {
+    const eventData = ctx.data as any;
+    return hasuraRequest(CREATE_EVENT, { object: eventData });
+  });
