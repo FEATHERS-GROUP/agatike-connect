@@ -77,6 +77,12 @@ const palettes = [
   { name: "Noir", from: "#111111", to: "#3f3f46" },
   { name: "Royal", from: "#7c3aed", to: "#ec4899" },
   { name: "Ocean", from: "#0c2340", to: "#2d8a9e" },
+  { name: "Neon", from: "#ff00cc", to: "#333399" },
+  { name: "Aurora", from: "#00c6ff", to: "#0072ff" },
+  { name: "Lava", from: "#ff416c", to: "#ff4b2b" },
+  { name: "Forest", from: "#134e5e", to: "#71b280" },
+  { name: "Gold", from: "#855e11", to: "#dfb054" },
+  { name: "Void", from: "#0f0c29", to: "#24243e" },
 ];
 
 const fonts = [
