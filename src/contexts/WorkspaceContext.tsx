@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getUserWorkspaces, createDatabaseWorkspace } from "@/api/workspaces";
 
-export type WorkspaceType = "VENUE" | "EVENT" | "CINEMA" | "EXPERIENCE";
+export type WorkspaceType = "VENUE" | "EVENT" | "CINEMA" | "EXPERIENCE" | string;
 
 export type Workspace = {
   id: string;
@@ -8,105 +10,121 @@ export type Workspace = {
   slug: string;
   type: WorkspaceType;
   city: string;
+  country?: string;
   address?: string;
-  email?: string;
-  phone?: string;
-  instagram?: string;
-  tiktok?: string;
-  youtube?: string;
+  logo?: string;
+  moduls: any;
+  orgnizer_id: string;
+  created_at: string;
+  updated_at: string;
   icon?: string;
-  modules: string[];
+  modules?: string[];
 };
 
 interface WorkspaceContextType {
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
   setActiveWorkspace: (workspace: Workspace) => void;
-  createWorkspace: (workspace: Omit<Workspace, "id" | "slug">) => void;
+  createWorkspace: (workspace: Partial<Workspace>) => Promise<Workspace>;
   isLoaded: boolean;
+  isLoading: boolean;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
 
-const STORAGE_KEY = "agatike_workspaces_v3";
 const ACTIVE_KEY = "agatike_active_workspace_v3";
 
-// Default modules everyone should probably have
-const BASE_MODULES = ["dashboard", "analytics", "settings", "campaigns", "withdrawals"];
-
-// Seed data
-const initialWorkspaces: Workspace[] = [
-  { 
-    id: "ws-1", 
-    name: "Agatike Events", 
-    slug: "agatike-events",
-    type: "EVENT", 
-    city: "Kigali, RW",
-    icon: "🎉",
-    modules: [...BASE_MODULES, "events", "tickets", "attendees", "scanner", "merchandise", "vip"]
-  },
-  { 
-    id: "ws-2", 
-    name: "Kigali Arenas", 
-    slug: "kigali-arenas",
-    type: "VENUE", 
-    city: "Kigali, RW",
-    icon: "🏟️",
-    modules: [...BASE_MODULES, "venue_listings", "venue_designer"]
-  },
-];
-
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [activeWorkspace, setActiveWorkspaceState] = useState<Workspace | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const queryClient = useQueryClient();
+  const [activeWorkspaceState, setActiveWorkspaceState] = useState<Workspace | null>(null);
+
+  const { data: workspacesData, isLoading, isSuccess } = useQuery({
+    queryKey: ["workspaces"],
+    queryFn: async () => {
+      const data = await getUserWorkspaces();
+      return data.map((w: any) => ({
+        ...w,
+        slug: w.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+        icon: w.logo || "🏢",
+        modules: w.moduls ? (Array.isArray(w.moduls) ? w.moduls : Object.keys(w.moduls)) : ["dashboard", "settings"],
+      })) as Workspace[];
+    },
+    retry: false, 
+  });
+
+  const workspaces = workspacesData || [];
 
   useEffect(() => {
-    // Load from local storage
-    const storedWorkspaces = localStorage.getItem(STORAGE_KEY);
-    const storedActive = localStorage.getItem(ACTIVE_KEY);
-
-    let loadedWorkspaces = storedWorkspaces ? JSON.parse(storedWorkspaces) : initialWorkspaces;
-    
-    if (!storedWorkspaces) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(loadedWorkspaces));
-    }
-
-    setWorkspaces(loadedWorkspaces);
-
-    if (storedActive) {
-      const parsed = JSON.parse(storedActive);
-      const found = loadedWorkspaces.find((w: Workspace) => w.id === parsed.id);
-      if (found) {
-        setActiveWorkspaceState(found);
-      } else if (loadedWorkspaces.length > 0) {
-        setActiveWorkspaceState(loadedWorkspaces[0]);
-        localStorage.setItem(ACTIVE_KEY, JSON.stringify(loadedWorkspaces[0]));
+    if (isSuccess && workspaces.length > 0) {
+      const storedActive = localStorage.getItem(ACTIVE_KEY);
+      if (storedActive) {
+        try {
+          const parsed = JSON.parse(storedActive);
+          const found = workspaces.find((w) => w.id === parsed.id);
+          if (found) {
+            setActiveWorkspaceState(found);
+          } else {
+            setActiveWorkspaceState(workspaces[0]);
+            localStorage.setItem(ACTIVE_KEY, JSON.stringify(workspaces[0]));
+          }
+        } catch {
+          setActiveWorkspaceState(workspaces[0]);
+        }
+      } else {
+        setActiveWorkspaceState(workspaces[0]);
+        localStorage.setItem(ACTIVE_KEY, JSON.stringify(workspaces[0]));
       }
-    } else if (loadedWorkspaces.length > 0) {
-      setActiveWorkspaceState(loadedWorkspaces[0]);
-      localStorage.setItem(ACTIVE_KEY, JSON.stringify(loadedWorkspaces[0]));
+    } else if (isSuccess && workspaces.length === 0) {
+      setActiveWorkspaceState(null);
     }
-
-    setIsLoaded(true);
-  }, []);
+  }, [isSuccess, workspaces]);
 
   const setActiveWorkspace = (workspace: Workspace) => {
     setActiveWorkspaceState(workspace);
     localStorage.setItem(ACTIVE_KEY, JSON.stringify(workspace));
   };
 
-  const createWorkspace = (workspaceData: Omit<Workspace, "id" | "slug">) => {
-    const slug = workspaceData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-    const newWorkspace = { ...workspaceData, id: crypto.randomUUID(), slug };
-    const updated = [...workspaces, newWorkspace];
-    setWorkspaces(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    setActiveWorkspace(newWorkspace);
+  const createMutation = useMutation({
+    mutationFn: async (workspaceData: Partial<Workspace>) => {
+      const payload = {
+        name: workspaceData.name,
+        type: workspaceData.type || "EVENT",
+        city: workspaceData.city || "",
+        country: workspaceData.country || "",
+        address: workspaceData.address || "",
+        logo: workspaceData.icon || "", // mapping UI icon to DB logo
+        moduls: workspaceData.modules || ["dashboard", "settings"],
+      };
+      
+      const newWorkspace = await createDatabaseWorkspace({ data: payload });
+      return {
+        ...newWorkspace,
+        slug: newWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+        icon: newWorkspace.logo || "🏢",
+        modules: newWorkspace.moduls ? (Array.isArray(newWorkspace.moduls) ? newWorkspace.moduls : Object.keys(newWorkspace.moduls)) : ["dashboard", "settings"],
+      } as Workspace;
+    },
+    onSuccess: (newWorkspace) => {
+      queryClient.setQueryData(["workspaces"], (old: Workspace[] | undefined) => {
+        return old ? [...old, newWorkspace] : [newWorkspace];
+      });
+      setActiveWorkspace(newWorkspace);
+    }
+  });
+
+  const createWorkspace = async (workspaceData: Partial<Workspace>) => {
+    return await createMutation.mutateAsync(workspaceData);
   };
 
   return (
-    <WorkspaceContext.Provider value={{ workspaces, activeWorkspace, setActiveWorkspace, createWorkspace, isLoaded }}>
+    <WorkspaceContext.Provider value={{ 
+      workspaces, 
+      activeWorkspace: activeWorkspaceState, 
+      setActiveWorkspace, 
+      createWorkspace, 
+      isLoaded: !isLoading && isSuccess,
+      isLoading 
+    }}>
       {children}
     </WorkspaceContext.Provider>
   );

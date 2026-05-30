@@ -9,8 +9,9 @@ export interface UserLookupResponse {
 }
 
 export const getUserByHandle = createServerFn({ method: "GET" })
+  .validator((data: { handle: string }) => data)
   .handler(async (ctx) => {
-    const data = ctx.data as { handle: string };
+    const data = ctx.data;
     if (!data.handle) return null;
 
     const query = `

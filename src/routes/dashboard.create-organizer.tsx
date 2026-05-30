@@ -59,6 +59,9 @@ const formSchema = z.object({
   email: z.string().email("Valid email is required"),
   business: z.boolean().default(false),
   terms: z.boolean().refine((val) => val === true, "You must accept the terms and conditions"),
+  instagram: z.string().optional(),
+  tiktok: z.string().optional(),
+  youtube: z.string().optional(),
 }).refine((data) => data.password === data.confirm_password, {
   message: "Passwords do not match",
   path: ["confirm_password"],
@@ -153,20 +156,19 @@ function CreateOrganizerPage() {
 
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
-      const { terms, confirm_password, ...restValues } = values;
+      const { terms, confirm_password, instagram, tiktok, youtube, ...restValues } = values;
       const payload = {
         ...restValues,
         field: values.field.join(", "),
         user_id: syncUserId,
         speciality: values.speciality && values.speciality.length > 0 ? { tags: values.speciality } : {},
-        socials: {}, 
+        socials: { instagram, tiktok, youtube }, 
       };
       return await createOrganizerAccount({ data: payload });
     },
     onSuccess: () => {
-      localStorage.setItem("agatike_organizer_id", "demo-organizer-id");
-      toast.success("Organizer profile created successfully!");
-      navigate({ to: "/dashboard/workspaces" });
+      toast.success("Profile created! Please log in with your new credentials.");
+      navigate({ to: "/dashboard/login" });
     },
     onError: (error) => {
       toast.error("Failed to create profile. Please try again.");
@@ -509,6 +511,24 @@ function CreateOrganizerPage() {
                 <div className="space-y-2 md:col-span-2 mt-4">
                   <Label>Organizer Bio</Label>
                   <Textarea {...register("bio")} className="min-h-[120px] rounded-xl bg-secondary/50 resize-none" placeholder="Tell attendees about your organization..." />
+                </div>
+                
+                <div className="space-y-4 md:col-span-2 mt-2">
+                  <Label>Social Media Links (Optional)</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Instagram</Label>
+                      <Input {...register("instagram")} placeholder="@handle" className="h-11 rounded-xl bg-secondary/50" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">TikTok</Label>
+                      <Input {...register("tiktok")} placeholder="@handle" className="h-11 rounded-xl bg-secondary/50" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">YouTube</Label>
+                      <Input {...register("youtube")} placeholder="Channel URL" className="h-11 rounded-xl bg-secondary/50" />
+                    </div>
+                  </div>
                 </div>
                 
                 {isBusiness && (

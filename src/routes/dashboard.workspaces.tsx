@@ -51,6 +51,10 @@ const types: { id: WorkspaceType; title: string; desc: string; icon: any; defaul
 
 const EMOJI_OPTIONS = ["🏟️", "🎪", "🎭", "🎬", "⛰️", "🎉", "🎫", "🎸", "🎵", "🏆", "🌟", "🔥"];
 
+const COUNTRIES = [
+  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo (Congo-Brazzaville)", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czechia", "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
+];
+
 function Workspaces() {
   const { workspaces, activeWorkspace, setActiveWorkspace, createWorkspace } = useWorkspace();
   const navigate = useNavigate();
@@ -61,14 +65,9 @@ function Workspaces() {
 
   // Form State
   const [type, setType] = useState<WorkspaceType>("EVENT");
-  const [name, setName] = useState("");
   const [city, setCity] = useState("");
+  const [country, setCountry] = useState("Rwanda");
   const [address, setAddress] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [instagram, setInstagram] = useState("");
-  const [tiktok, setTiktok] = useState("");
-  const [youtube, setYoutube] = useState("");
   const [desc, setDesc] = useState("");
   const [icon, setIcon] = useState("🏟️");
   const [modules, setModules] = useState<string[]>([]);
@@ -119,7 +118,7 @@ function Workspaces() {
     if (!name.trim()) return;
     const computedSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     createWorkspace({ 
-      name, type, city, address, email, phone, instagram, tiktok, youtube, icon, modules 
+      name, type, city, country, address, icon, modules 
     });
     setCreated(true);
     setTimeout(() => {
@@ -277,38 +276,22 @@ function Workspaces() {
                       <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Kigali Arena" className="h-12 text-lg rounded-xl bg-secondary/50" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-base font-semibold">Primary City</Label>
-                      <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Kigali, Rwanda" className="h-12 text-lg rounded-xl bg-secondary/50" />
+                      <Label className="text-base font-semibold">Country</Label>
+                      <select 
+                        value={country} 
+                        onChange={(e) => setCountry(e.target.value)} 
+                        className="flex h-12 w-full rounded-xl border border-input bg-secondary/50 px-3 py-2 text-lg ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
                     </div>
-                    <div className="space-y-2 md:col-span-2">
+                    <div className="space-y-2">
+                      <Label className="text-base font-semibold">Primary City</Label>
+                      <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Kigali" className="h-12 text-lg rounded-xl bg-secondary/50" />
+                    </div>
+                    <div className="space-y-2">
                       <Label className="text-base font-semibold">Full Address</Label>
                       <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="123 Event Street" className="h-12 text-lg rounded-xl bg-secondary/50" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border/60">
-                    <div className="space-y-2">
-                      <Label className="text-base font-semibold">Email Address</Label>
-                      <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="hello@example.com" className="h-12 text-lg rounded-xl bg-secondary/50" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-base font-semibold">Phone Number</Label>
-                      <Input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="+250 788 123 456" className="h-12 text-lg rounded-xl bg-secondary/50" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-border/60">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-semibold">Instagram</Label>
-                      <Input value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@handle" className="rounded-xl bg-secondary/50" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-semibold">TikTok</Label>
-                      <Input value={tiktok} onChange={(e) => setTiktok(e.target.value)} placeholder="@handle" className="rounded-xl bg-secondary/50" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-semibold">YouTube</Label>
-                      <Input value={youtube} onChange={(e) => setYoutube(e.target.value)} placeholder="Channel URL" className="rounded-xl bg-secondary/50" />
                     </div>
                   </div>
 

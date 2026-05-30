@@ -1,11 +1,28 @@
-import { createFileRoute, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useRouterState, useNavigate, redirect } from "@tanstack/react-router";
 import { DesktopSidebar } from "@/components/desktop/dashboard/DesktopSidebar";
 import { EventSidebar } from "@/components/desktop/dashboard/EventSidebar";
 import { VenueSidebar } from "@/components/desktop/dashboard/VenueSidebar";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useEffect } from "react";
+import { getSession } from "@/api/auth";
 
 export const Route = createFileRoute("/dashboard")({
+  beforeLoad: async ({ location }) => {
+    if (location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer") {
+      return;
+    }
+    
+    try {
+      const session = await getSession();
+      if (!session) {
+        throw new Error("unauthenticated");
+      }
+    } catch {
+      throw redirect({
+        to: "/dashboard/login",
+      });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Organizer Dashboard — Agatike" },
@@ -25,24 +42,13 @@ function DashboardLayout() {
   
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
-  const hideSidebar = location.pathname === "/dashboard/workspaces" || location.pathname === "/dashboard/create-organizer" || location.pathname.match(/^\/dashboard\/[^/]+\/(venue-designer|ticket-designer|create-event)/);
+  const hideSidebar = location.pathname === "/dashboard/login" || location.pathname === "/dashboard/workspaces" || location.pathname === "/dashboard/create-organizer" || location.pathname.match(/^\/dashboard\/[^/]+\/(venue-designer|ticket-designer|create-event)/);
 
   useEffect(() => {
     if (!isLoaded) return;
-
-    // Route Protection: Require Organizer Account
-    const hasOrganizerAccount = localStorage.getItem("agatike_organizer_id");
     
-    // Always allow access to create-organizer page
-    if (location.pathname === "/dashboard/create-organizer") return;
-
-    if (!hasOrganizerAccount) {
-      navigate({ to: "/dashboard/create-organizer" });
-      return;
-    }
-    
-    // Allow users to visit the workspaces page directly to create new ones
-    if (location.pathname === "/dashboard/workspaces") return;
+    // Exempt routes that don't require workspace selection
+    if (location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" || location.pathname === "/dashboard/workspaces") return;
 
     if (workspaces.length === 0) {
       navigate({ to: "/dashboard/workspaces" });

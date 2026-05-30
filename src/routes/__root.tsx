@@ -122,8 +122,8 @@ function RootComponent() {
 
   return (
     <AppProvider>
-      <WorkspaceProvider>
-        <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <WorkspaceProvider>
           {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
           <div className={`min-h-screen md:pb-0 ${hideNav ? "" : "pb-24"}`}>
             <Outlet />
@@ -135,8 +135,8 @@ function RootComponent() {
               <MobileNav />
             </div>
           )}
-        </QueryClientProvider>
-      </WorkspaceProvider>
+        </WorkspaceProvider>
+      </QueryClientProvider>
     </AppProvider>
   );
 }

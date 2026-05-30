@@ -23,7 +23,7 @@ export interface OrganizerInput {
 
 export const checkOrganizerHandle = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
-    const { handle } = ctx.data as { handle: string };
+    const { handle } = ctx.data as unknown as { handle: string };
     const query = `
       query CheckHandle($handle: String!) {
         organizers(where: { handle: { _eq: $handle } }) {
