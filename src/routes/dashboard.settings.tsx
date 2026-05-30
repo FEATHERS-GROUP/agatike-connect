@@ -563,6 +563,15 @@ function OrganizerSettings() {
               <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
                 <Lock className="h-5 w-5 text-primary" /> Security
               </h2>
+              
+              <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  <span className="font-medium text-foreground block mb-1">Optional Section</span>
+                  You do not need to fill this out unless you want to change your password. Leave these fields blank to keep your current password.
+                </p>
+              </div>
+
               <div className="flex-1 w-full space-y-4 max-w-2xl">
                 <div className="space-y-2">
                   <Label>Current Password</Label>
