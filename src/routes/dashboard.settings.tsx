@@ -64,6 +64,13 @@ function OrganizerSettings() {
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("bottts");
   const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const CATEGORIES = [
     { id: "bottts", label: "Robots" },
@@ -262,7 +269,16 @@ function OrganizerSettings() {
             }}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold">{isEditing ? "Edit Profile" : profile?.handle || "Profile"}</h1>
+            <div className="flex flex-col">
+              <h1 className={`text-xl font-bold transition-colors duration-300 ${!isEditing && scrolled ? "text-orange-500" : ""}`}>
+                {isEditing ? "Edit Profile" : profile?.handle || "Profile"}
+              </h1>
+              {!isEditing && scrolled && (
+                <span className="text-xs text-muted-foreground animate-in fade-in slide-in-from-top-1 duration-300">
+                  {profile?.followers || 0} followers
+                </span>
+              )}
+            </div>
           </div>
           {isEditing && (
             <Button 
@@ -303,7 +319,12 @@ function OrganizerSettings() {
 
             {/* Bio Section */}
             <div className="space-y-2">
-              <h2 className="font-bold text-base md:text-lg">{profile?.name}</h2>
+              <div className="flex flex-col gap-0.5">
+                <h2 className="font-bold text-base md:text-lg">{profile?.name}</h2>
+                {profile?.handle && (
+                  <p className="text-sm font-medium text-primary">@{profile.handle}</p>
+                )}
+              </div>
               <p className="text-sm whitespace-pre-wrap leading-relaxed max-w-lg">
                 {profile?.bio || "No bio added yet. Click Edit Profile to add one!"}
               </p>
@@ -319,6 +340,11 @@ function OrganizerSettings() {
                   {profile.socials.twitter && (
                     <a href={profile.socials.twitter} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium">
                       <Twitter className="h-4 w-4" /> Twitter
+                    </a>
+                  )}
+                  {profile.socials.youtube && (
+                    <a href={profile.socials.youtube} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium">
+                      <Youtube className="h-4 w-4" /> YouTube
                     </a>
                   )}
                 </div>
