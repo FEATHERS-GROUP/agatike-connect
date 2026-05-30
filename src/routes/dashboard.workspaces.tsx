@@ -78,6 +78,7 @@ function Workspaces() {
 
   // Form State
   const [type, setType] = useState<WorkspaceType>("EVENT");
+  const [name, setName] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("Rwanda");
   const [address, setAddress] = useState("");
@@ -113,38 +114,13 @@ function Workspaces() {
     }
   }, [activeCategory, isAvatarModalOpen]);
 
-  // When type or platformModules changes, pre-fill modules
+  // Pre-fill mandatory modules from the database
   useEffect(() => {
-    const selectedType = types.find(t => t.id === type);
-    if (selectedType && platformModules.length > 0) {
-      const base = ["dashboard", "analytics", "settings", "campaigns", "withdrawals"];
-      const legacyIds = [...base, ...selectedType.defaultModules];
-      
-      const legacyIdToLabel: Record<string, string> = {
-        dashboard: "Dashboard",
-        events: "Events",
-        tickets: "Tickets",
-        attendees: "Attendees",
-        scanner: "Scanning",
-        merchandise: "Merchandise",
-        vip: "VIP Access",
-        campaigns: "Campaigns",
-        venue_listings: "Venue Listings",
-        venue_designer: "Venue Designer",
-        experiences: "Experiences",
-        analytics: "Analytics",
-        withdrawals: "Withdrawals",
-        settings: "Settings"
-      };
-
-      const uuids = legacyIds.map(legacyId => {
-        const label = legacyIdToLabel[legacyId];
-        return platformModules.find(m => m.label === label)?.id;
-      }).filter(Boolean) as string[];
-
-      setModules(uuids);
+    if (platformModules.length > 0) {
+      const mandatoryIds = platformModules.filter(m => m.mandatory).map(m => m.id);
+      setModules(mandatoryIds);
     }
-  }, [type, platformModules]);
+  }, [platformModules]);
 
   const toggleModule = (id: string) => {
     if (modules.includes(id)) {
