@@ -13,7 +13,7 @@ const SUPABASE_URL = "https://mrcsteggkqkpeyrjnxcb.supabase.co";
  */
 export const uploadFile = createServerFn({ method: "POST" }).handler(
   async (ctx) => {
-    const { base64, contentType, folder, ext } = ctx.data as {
+    const { base64, contentType, folder, ext } = ctx.data as unknown as {
       base64: string;
       contentType: string;
       folder: string;
@@ -63,4 +63,4 @@ export const uploadFile = createServerFn({ method: "POST" }).handler(
     const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${filename}`;
     return { url: publicUrl };
   }
-);
+  );

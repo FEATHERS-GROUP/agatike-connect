@@ -23,7 +23,7 @@ export function VenueSidebar() {
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:block">
       <div className="mb-6 px-2">
-        <Link to={`/dashboard/${workspaceSlug}/venue-rent`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+        <Link to="/dashboard/$workspaceSlug/venue-rent" params={{ workspaceSlug: workspaceSlug || "" }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
           <ArrowLeft className="h-4 w-4" /> Back to Listings
         </Link>
         <div className="flex items-center gap-3">

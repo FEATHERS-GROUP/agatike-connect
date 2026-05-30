@@ -40,7 +40,7 @@ function DashboardEvents() {
 
   const { data: rawEvents = [], isLoading } = useQuery({
     queryKey: ["workspace-events", activeWorkspace?.id],
-    queryFn: () => getWorkspaceEvents({ data: { workspace_id: activeWorkspace?.id! } }),
+    queryFn: () => getWorkspaceEvents({ data: { workspace_id: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
 
@@ -74,7 +74,7 @@ function DashboardEvents() {
           <h1 className="text-2xl font-semibold">Events</h1>
           <p className="text-sm text-muted-foreground">Manage and track your events.</p>
         </div>
-        <Link to={`/dashboard/${activeWorkspace?.slug}/events/create-event`}>
+        <Link to="/dashboard/$workspaceSlug/events/create-event" params={{ workspaceSlug: activeWorkspace?.slug || "" }}>
           <Button
             className="rounded-full shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}

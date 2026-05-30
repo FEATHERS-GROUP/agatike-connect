@@ -3,7 +3,7 @@ import { getServerConfig } from "../lib/config.server";
 
 export const getCoordinates = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
-    const address = ctx.data as string;
+    const address = ctx.data as unknown as string;
     const config = getServerConfig();
     const apiKey = config.googleApiKey;
 
@@ -33,7 +33,7 @@ export const getCoordinates = createServerFn({ method: "POST" })
 
 export const getPlacesAutocomplete = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
-    const query = ctx.data as string;
+    const query = ctx.data as unknown as string;
     const config = getServerConfig();
     const apiKey = config.googleApiKey;
 
@@ -55,7 +55,7 @@ export const getPlacesAutocomplete = createServerFn({ method: "POST" })
 
 export const getPlaceDetails = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
-    const placeId = ctx.data as string;
+    const placeId = ctx.data as unknown as string;
     const config = getServerConfig();
     const apiKey = config.googleApiKey;
 

@@ -10,7 +10,7 @@ export interface UserLookupResponse {
 
 export const getUserByHandle = createServerFn({ method: "GET" })
   .handler(async (ctx) => {
-    const data = ctx.data as { handle: string };
+    const data = ctx.data as unknown as { handle: string };
     if (!data.handle) return null;
 
     const query = `

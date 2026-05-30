@@ -179,7 +179,7 @@ function OrganizerSettings() {
           ...core,
           image: avatar,
           socials: { instagram, twitter, youtube },
-        }
+        } as any
       });
     },
     onSuccess: () => {
@@ -198,7 +198,7 @@ function OrganizerSettings() {
         data: {
           currentPassword: values.currentPassword,
           newPassword: values.newPassword,
-        }
+        } as any
       });
     },
     onSuccess: () => {
@@ -221,7 +221,7 @@ function OrganizerSettings() {
   });
 
   const disableWorkspaceMutation = useMutation({
-    mutationFn: async (id: string) => await disableDatabaseWorkspace({ data: { id } }),
+    mutationFn: async (id: string) => await disableDatabaseWorkspace({ data: { id } } as any),
     onSuccess: () => {
       toast.success("Workspace disabled successfully!");
       setDisableConfirmWorkspace(null);

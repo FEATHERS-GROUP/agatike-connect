@@ -29,7 +29,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/
 });
 
 function VenueOverviewPage() {
-  const { venueId } = useParams({ strict: false });
+  const { venueId, workspaceSlug } = useParams({ strict: false }) as any;
   const [currentView, setCurrentView] = useState<View>("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -378,7 +378,7 @@ function VenueOverviewPage() {
               </div>
 
               <div className="pt-4 border-t border-border/60">
-                <Link to={`/dashboard/venues/${venue.id}/bookings`}>
+                <Link to="/dashboard/$workspaceSlug/venues/$venueId/bookings" params={{ workspaceSlug, venueId: venue.id || "" }}>
                   <Button className="w-full rounded-xl gap-2" variant="outline">
                     View in Bookings List <ExternalLink className="h-4 w-4" />
                   </Button>

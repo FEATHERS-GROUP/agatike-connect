@@ -57,7 +57,7 @@ const formSchema = z.object({
   confirm_password: z.string(),
   phone: z.string().min(8, "Valid phone number is required"),
   email: z.string().email("Valid email is required"),
-  business: z.boolean().default(false),
+  business: z.boolean(),
   terms: z.boolean().refine((val) => val === true, "You must accept the terms and conditions"),
   instagram: z.string().optional(),
   tiktok: z.string().optional(),
@@ -81,7 +81,7 @@ function CreateOrganizerPage() {
   // Existing User Lookup Query
   const { data: linkedUser, isFetching: isLookingUpUser, refetch: lookupUser } = useQuery({
     queryKey: ["userLookup", syncHandle],
-    queryFn: async () => await getUserByHandle({ data: { handle: syncHandle } }),
+    queryFn: async () => await getUserByHandle({ data: { handle: syncHandle } } as any),
     enabled: false,
   });
 
@@ -126,7 +126,7 @@ function CreateOrganizerPage() {
       const baseHandle = nameValue.toLowerCase().replace(/[^a-z0-9]+/g, '');
       
       try {
-        let isAvailable = await checkOrganizerHandle({ data: { handle: baseHandle } });
+        let isAvailable = await checkOrganizerHandle({ data: { handle: baseHandle } } as any);
         if (isAvailable) {
           setValue("handle", baseHandle, { shouldValidate: true });
         } else {
@@ -134,7 +134,7 @@ function CreateOrganizerPage() {
           let newHandle = "";
           while (!isAvailable && suffix < 100) {
             newHandle = `${baseHandle}${suffix.toString().padStart(2, '0')}`;
-            isAvailable = await checkOrganizerHandle({ data: { handle: newHandle } });
+            isAvailable = await checkOrganizerHandle({ data: { handle: newHandle } } as any);
             suffix++;
           }
           setValue("handle", newHandle, { shouldValidate: true });
@@ -164,7 +164,7 @@ function CreateOrganizerPage() {
         speciality: values.speciality && values.speciality.length > 0 ? { tags: values.speciality } : {},
         socials: { instagram, tiktok, youtube }, 
       };
-      return await createOrganizerAccount({ data: payload });
+      return await createOrganizerAccount({ data: payload } as any);
     },
     onSuccess: () => {
       toast.success("Profile created! Please log in with your new credentials.");

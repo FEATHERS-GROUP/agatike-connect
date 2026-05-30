@@ -40,7 +40,7 @@ export function EventSidebar() {
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:flex flex-col">
-      <Link to={`/dashboard/${workspaceSlug}/events`} className="mb-6 flex items-center gap-2 px-2 text-muted-foreground hover:text-foreground transition-colors group">
+      <Link to="/dashboard/$workspaceSlug/events" params={{ workspaceSlug: workspaceSlug || "" }} className="mb-6 flex items-center gap-2 px-2 text-muted-foreground hover:text-foreground transition-colors group">
         <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
         <span className="text-sm font-medium">Back to Events</span>
       </Link>

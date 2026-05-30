@@ -24,6 +24,6 @@ export async function uploadFileToStorage(
     reader.readAsDataURL(file);
   });
 
-  const { url } = await uploadFile({ data: { base64, contentType, folder, ext } });
+  const { url } = await uploadFile({ data: { base64, contentType, folder, ext } } as any);
   return url;
 }

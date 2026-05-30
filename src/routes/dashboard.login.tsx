@@ -34,7 +34,7 @@ function DashboardLoginPage() {
 
   const mutation = useMutation({
     mutationFn: async (values: LoginValues) => {
-      return await loginOrganizer({ data: values });
+      return await loginOrganizer({ data: values } as any);
     },
     onSuccess: () => {
       setIsRedirecting(true);

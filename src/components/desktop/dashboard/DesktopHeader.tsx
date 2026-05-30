@@ -21,7 +21,7 @@ export function DesktopHeader() {
             Workspaces
           </Button>
         </Link>
-        <Link to={`/dashboard/${activeWorkspace?.slug}/events/create-event`}>
+        <Link to="/dashboard/$workspaceSlug/events/create-event" params={{ workspaceSlug: activeWorkspace?.slug || "" }}>
           <Button
             className="rounded-full shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}

@@ -96,7 +96,7 @@ function AddressAutocomplete({
           setIsOpen(true);
           setIsLoading(true);
           try {
-            const results = await getPlacesAutocomplete({ data: val });
+            const results = await getPlacesAutocomplete({ data: val } as any);
             setPredictions(results);
           } catch (err) {
             console.error(err);
@@ -119,7 +119,7 @@ function AddressAutocomplete({
               onClick={async () => {
                 onChange(p.description);
                 setIsOpen(false);
-                const coords = await getPlaceDetails({ data: p.place_id });
+                const coords = await getPlaceDetails({ data: p.place_id } as any);
                 if (coords && coords.lat && coords.lng) {
                   onSelectCoordinates(coords.lat, coords.lng);
                 }
@@ -154,7 +154,7 @@ export function CreateEventDesktop() {
   const dashboardUrl = workspaceSlug ? `/dashboard/${workspaceSlug}` : "/dashboard";
   
   const setStep = (newStep: number) => {
-    navigate({ search: { step: newStep }, replace: true });
+    navigate({ search: { step: newStep } as any, replace: true });
   };
 
   const [data, setData] = useState({
@@ -254,7 +254,7 @@ export function CreateEventDesktop() {
         }
       };
       
-      return await createEvent({ data: payload });
+      return await createEvent({ data: payload } as any);
     },
     onSuccess: () => {
       toast.success("Event created successfully!");
@@ -418,7 +418,7 @@ export function CreateEventDesktop() {
                 <Button
                   size="sm"
                   className="rounded-full"
-                  onClick={() => updateField("locations", [...data.locations, { id: generateId(), venue: "", city: "", address: "", date: "", time: "" }])}
+                  onClick={() => updateField("locations", [...data.locations, { id: generateId(), venue: "", city: "", address: "", date: "", time: "", latitude: null, longitude: null }])}
                 >
                   <Plus className="mr-1 h-3.5 w-3.5" /> Add Location
                 </Button>

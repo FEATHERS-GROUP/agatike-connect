@@ -70,7 +70,7 @@ const GET_WORKSPACE_EVENTS = `
 
 export const getWorkspaceEvents = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
-    const { workspace_id } = ctx.data as { workspace_id: string };
+    const { workspace_id } = ctx.data as unknown as { workspace_id: string };
     const data = await hasuraRequest<{ events: any[] }>(GET_WORKSPACE_EVENTS, { workspace_id });
     return data.events || [];
   });
@@ -101,7 +101,7 @@ const GET_EVENT_BY_ID = `
 
 export const getEventById = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
-    const { id } = ctx.data as { id: string };
+    const { id } = ctx.data as unknown as { id: string };
     const data = await hasuraRequest<{ events_by_pk: any }>(GET_EVENT_BY_ID, { id });
     return data.events_by_pk || null;
   });

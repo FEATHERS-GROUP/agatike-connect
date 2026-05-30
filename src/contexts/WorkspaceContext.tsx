@@ -19,6 +19,7 @@ export type Workspace = {
   updated_at: string;
   icon?: string;
   modules?: string[];
+  currency?: string;
   wallet?: {
     currency: string;
     [key: string]: any;
@@ -100,7 +101,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         moduls: workspaceData.modules || ["dashboard", "settings"],
       };
       
-      const newWorkspace = await createDatabaseWorkspace({ data: payload });
+      const newWorkspace = await createDatabaseWorkspace({ data: payload } as any);
       return {
         ...newWorkspace,
         slug: newWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),

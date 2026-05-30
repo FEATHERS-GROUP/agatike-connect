@@ -249,7 +249,7 @@ function VenueDesignerPage() {
     <div className="min-h-screen bg-secondary/30">
       <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 bg-background/80 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <Link to={`/dashboard/${workspaceSlug}`} className="rounded-full p-2 hover:bg-secondary">
+          <Link to="/dashboard/$workspaceSlug" params={{ workspaceSlug: workspaceSlug || "" }} className="rounded-full p-2 hover:bg-secondary">
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>

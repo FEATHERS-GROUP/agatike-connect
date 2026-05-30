@@ -40,7 +40,7 @@ function DashboardEventDetails() {
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
-    queryFn: () => getEventById({ data: { id: eventId } }),
+    queryFn: () => getEventById({ data: { id: eventId } } as any),
     enabled: !!eventId,
   });
 

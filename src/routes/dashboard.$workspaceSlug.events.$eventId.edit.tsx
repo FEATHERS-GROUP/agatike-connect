@@ -50,7 +50,7 @@ function AddressInput({
           if (val.trim().length < 3) { setPredictions([]); setIsOpen(false); return; }
           setIsOpen(true); setIsLoading(true);
           try {
-            const results = await getPlacesAutocomplete({ data: val });
+            const results = await getPlacesAutocomplete({ data: val } as any);
             setPredictions(Array.isArray(results) ? results : []);
           } catch { setPredictions([]); }
           finally { setIsLoading(false); }
@@ -70,7 +70,7 @@ function AddressInput({
                 onChange(p.description);
                 setIsOpen(false);
                 try {
-                  const coords = await getPlaceDetails({ data: p.place_id });
+                  const coords = await getPlaceDetails({ data: p.place_id } as any);
                   if (coords?.lat && coords?.lng) onSelectCoords(coords.lat, coords.lng);
                 } catch {}
               }}
@@ -94,7 +94,7 @@ function EditEventPage() {
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
-    queryFn: () => getEventById({ data: { id: eventId } }),
+    queryFn: () => getEventById({ data: { id: eventId } } as any),
     enabled: !!eventId,
   });
 
@@ -142,7 +142,7 @@ function EditEventPage() {
           vipPerks: form.vipPerks,
           event_requency: event?.event_requency || {},
         },
-      });
+      } as any);
     },
     onSuccess: () => {
       toast.success("Event updated successfully!");
