@@ -1,14 +1,17 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal, ArrowLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Search, SlidersHorizontal, ArrowLeft, Loader2, Calendar, MapPin } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
-import { EventCard } from "@/components/site/EventCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { categories, events } from "@/lib/mock-data";
+import { categories } from "@/lib/mock-data";
+import { getPublicEvents } from "@/api/events";
 
-export const Route = createFileRoute("/events/")({
+export const Route = createFileRoute("/events/")(
+  {
   head: () => ({
     meta: [
       { title: "All events — Agatike" },
@@ -26,18 +29,95 @@ export const Route = createFileRoute("/events/")({
   component: EventsBrowse,
 });
 
+function getCurrencySymbol(currency?: string) {
+  const map: Record<string, string> = {
+    RWF: "RWF ", USD: "$", EUR: "€", GBP: "£", KES: "KES ", UGX: "UGX ", TZS: "TZS ",
+    NGN: "₦", GHS: "GH₵", XOF: "CFA ", ZAR: "R", MAD: "MAD ", ETB: "Br ",
+  };
+  return map[currency || ""] || "$";
+}
+
+function DbEventCard({ event }: { event: any }) {
+  const firstStop = Array.isArray(event.tour_stops) ? event.tour_stops[0] : null;
+  const lowestTicket = event.event_tickets?.[0];
+  const currency = getCurrencySymbol(event.workspace?.wallet?.currency);
+  const price = lowestTicket ? parseFloat(lowestTicket.cost) : 0;
+
+  return (
+    <Link
+      to="/events/$eventId"
+      params={{ eventId: event.id }}
+      className="group relative block overflow-hidden rounded-3xl bg-card shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-glow)]"
+    >
+      <div className="relative aspect-[4/5] overflow-hidden">
+        {event.cover ? (
+          <img
+            src={event.cover}
+            alt={event.title}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+        ) : (
+          <div className="h-full w-full bg-gradient-to-br from-primary/20 to-secondary" />
+        )}
+        <div className="absolute inset-0" style={{ background: "var(--gradient-dark)" }} />
+        <div className="absolute top-3 left-3 flex gap-2">
+          <span className="rounded-full bg-background/90 px-3 py-1 text-xs font-medium text-foreground backdrop-blur">
+            {event.category}
+          </span>
+        </div>
+        {event.tour_stops?.length > 1 && (
+          <div className="absolute top-3 right-3 rounded-full bg-primary/90 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
+            {event.tour_stops.length} stops
+          </div>
+        )}
+        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+          {firstStop && (
+            <p className="text-xs uppercase tracking-wider opacity-80 flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              {firstStop.date || "TBD"} · {firstStop.time || ""}
+            </p>
+          )}
+          <h3 className="mt-1 text-lg font-semibold leading-tight line-clamp-2">{event.title}</h3>
+          {firstStop && (
+            <div className="mt-2 flex items-center gap-1 text-xs opacity-90">
+              <MapPin className="h-3 w-3" />
+              {firstStop.venue ? `${firstStop.venue}, ` : ""}{firstStop.city || ""}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="text-xs text-muted-foreground">
+          by <span className="text-foreground font-medium">{event.workspace?.name || "Organizer"}</span>
+        </div>
+        <div className="text-sm font-semibold">
+          {price === 0 ? "Free" : `from ${currency}${price.toLocaleString()}`}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 function EventsBrowse() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string | null>(null);
 
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ["public-events"],
+    queryFn: () => getPublicEvents(),
+  });
+
   const filtered = useMemo(() => {
-    return events.filter((e) => {
+    return events.filter((e: any) => {
+      const firstStop = Array.isArray(e.tour_stops) ? e.tour_stops[0] : null;
+      const city = firstStop?.city || "";
       const matchesQ =
-        !q || `${e.title} ${e.organizer} ${e.city}`.toLowerCase().includes(q.toLowerCase());
+        !q || `${e.title} ${e.workspace?.name || ""} ${city}`.toLowerCase().includes(q.toLowerCase());
       const matchesCat = !cat || e.category === cat;
       return matchesQ && matchesCat;
     });
-  }, [q, cat]);
+  }, [q, cat, events]);
 
   const router = useRouter();
 
@@ -63,7 +143,7 @@ function EventsBrowse() {
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">All events</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {filtered.length} events across Africa
+              {isLoading ? "Loading..." : `${filtered.length} events across Africa`}
             </p>
           </div>
           <div className="flex w-full max-w-md gap-2 md:w-auto">
@@ -82,7 +162,7 @@ function EventsBrowse() {
           </div>
         </header>
 
-        {/* Mobile Search - Only shows on mobile since desktop search is in navbar or header */}
+        {/* Mobile Search */}
         <div className="md:hidden flex w-full gap-2 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -116,15 +196,19 @@ function EventsBrowse() {
           ))}
         </div>
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="mt-24 flex justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="mt-16 rounded-3xl border border-dashed border-border p-16 text-center">
             <p className="text-lg font-semibold">No events match your search</p>
             <p className="mt-1 text-sm text-muted-foreground">Try a different city or category.</p>
           </div>
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filtered.map((e) => (
-              <EventCard key={e.id} event={e} />
+            {filtered.map((e: any) => (
+              <DbEventCard key={e.id} event={e} />
             ))}
           </div>
         )}

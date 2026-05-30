@@ -21,6 +21,13 @@ import { categories } from "@/lib/mock-data";
 
 const steps = ["Basics", "Media", "Tickets", "Venue", "Publish"] as const;
 
+function generateId() {
+  if (typeof window !== "undefined" && window.crypto && window.crypto.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15);
+}
+
 type Ticket = {
   id: string;
   name: string;
@@ -263,7 +270,7 @@ export function CreateEventMobile() {
                     setTickets([
                       ...tickets,
                       {
-                        id: crypto.randomUUID(),
+                        id: generateId(),
                         name: "General Admission",
                         price: 25,
                         quantity: 100,
@@ -281,7 +288,7 @@ export function CreateEventMobile() {
                     setTickets([
                       ...tickets,
                       {
-                        id: crypto.randomUUID(),
+                        id: generateId(),
                         name: "VIP Pass",
                         price: 100,
                         quantity: 20,

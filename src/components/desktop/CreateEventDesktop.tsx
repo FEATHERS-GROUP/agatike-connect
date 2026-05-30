@@ -24,6 +24,8 @@ import { createEvent } from "@/api/events";
 import { getCoordinates, getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { uploadFileToStorage } from "@/lib/firebase-storage";
+
 
 function getCurrencySymbol(currencyStr?: string) {
   if (!currencyStr) return "$";
@@ -134,6 +136,12 @@ function AddressAutocomplete({
     </div>
   );
 }
+function generateId() {
+  if (typeof window !== "undefined" && window.crypto && window.crypto.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15);
+}
 
 export function CreateEventDesktop() {
   const navigate = useNavigate();
@@ -154,7 +162,7 @@ export function CreateEventDesktop() {
     category: categories[0],
     description: "",
     locations: [
-      { id: crypto.randomUUID(), venue: "", city: "", address: "", date: "", time: "", latitude: null as string | null, longitude: null as string | null }
+      { id: generateId(), venue: "", city: "", address: "", date: "", time: "", latitude: null as string | null, longitude: null as string | null }
     ],
     coverPreview: "",
     vipPerks: "Priority entry, VIP lounge, complimentary welcome drink",
@@ -168,12 +176,15 @@ export function CreateEventDesktop() {
   ]);
   const [merch, setMerch] = useState<Merch[]>([{ id: "m1", name: "Event Tee", price: 20 }]);
 
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+
   const updateField = <K extends keyof typeof data>(k: K, v: (typeof data)[K]) =>
     setData({ ...data, [k]: v });
 
   const onCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
+    setCoverFile(f);
     const url = URL.createObjectURL(f);
     updateField("coverPreview", url);
   };
@@ -183,12 +194,41 @@ export function CreateEventDesktop() {
 
   const publishMutation = useMutation({
     mutationFn: async () => {
+      // Upload cover image to Firebase Storage if a file was selected
+      let coverUrl = data.coverPreview || "";
+      if (coverFile) {
+        try {
+          coverUrl = await uploadFileToStorage(coverFile, "events/covers");
+        } catch (err) {
+          console.error("Cover upload failed:", err);
+          toast.error("Cover image upload failed. Please try again.");
+          throw err;
+        }
+      }
+
+      // Upload any merch images that are still blob URLs
+      const uploadedMerch = await Promise.all(
+        merch.map(async (m) => {
+          if (m.image && m.image.startsWith("blob:")) {
+            try {
+              const resp = await fetch(m.image);
+              const blob = await resp.blob();
+              const file = new File([blob], "merch.jpg", { type: blob.type });
+              const url = await uploadFileToStorage(file, "events/merch");
+              return { ...m, image: url };
+            } catch {
+              return { ...m, image: "" };
+            }
+          }
+          return m;
+        })
+      );
       // 1. Prepare payload
       const payload = {
         title: data.title,
         category: data.category,
         description: data.description,
-        cover: data.coverPreview,
+        cover: coverUrl,
         vipPerks: data.vipPerks,
         workspace_id: activeWorkspace?.id,
         tour_stops: data.locations,
@@ -203,7 +243,7 @@ export function CreateEventDesktop() {
           }))
         },
         merchandises: {
-          data: merch.map(m => ({
+          data: uploadedMerch.map(m => ({
             name: m.name,
             cost: m.price.toString(),
             image: m.image || "",
@@ -219,7 +259,10 @@ export function CreateEventDesktop() {
     onSuccess: () => {
       toast.success("Event created successfully!");
       setTimeout(() => {
-        navigate({ to: `/dashboard/${workspaceSlug}/events` });
+        navigate({
+          to: "/dashboard/$workspaceSlug/events",
+          params: { workspaceSlug: workspaceSlug || "" }
+        });
       }, 1500);
     },
     onError: (error: any) => {
@@ -375,7 +418,7 @@ export function CreateEventDesktop() {
                 <Button
                   size="sm"
                   className="rounded-full"
-                  onClick={() => updateField("locations", [...data.locations, { id: crypto.randomUUID(), venue: "", city: "", address: "", date: "", time: "" }])}
+                  onClick={() => updateField("locations", [...data.locations, { id: generateId(), venue: "", city: "", address: "", date: "", time: "" }])}
                 >
                   <Plus className="mr-1 h-3.5 w-3.5" /> Add Location
                 </Button>
@@ -574,7 +617,7 @@ function TicketEditor({
     setTickets([
       ...tickets,
       {
-        id: crypto.randomUUID(),
+        id: generateId(),
         name:
           type === "free"
             ? "Free RSVP"
@@ -688,7 +731,7 @@ function MerchEditor({
           variant="outline"
           size="sm"
           className="rounded-full"
-          onClick={() => setMerch([...merch, { id: crypto.randomUUID(), name: "", price: 0 }])}
+          onClick={() => setMerch([...merch, { id: generateId(), name: "", price: 0 }])}
         >
           <Plus className="mr-1 h-3.5 w-3.5" /> Add item
         </Button>

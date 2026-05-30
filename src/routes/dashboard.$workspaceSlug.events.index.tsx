@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Plus, Search, Filter, MoreHorizontal, Calendar, MapPin, Ticket, DollarSign, Eye, Edit2, Ban } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Plus, Search, Filter, MoreHorizontal, Calendar, MapPin, Ticket, DollarSign, Eye, Edit2, Ban, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { events as rawEvents } from "@/lib/mock-data";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { getWorkspaceEvents } from "@/api/events";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,24 +18,49 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/events/")({
   component: DashboardEvents,
 });
 
+function getEventStatus(createdAt: string): "Live" | "Past" {
+  // Events default to "Live" — extend later with explicit status column
+  return "Live";
+}
+
+function computeStats(tickets: any[]) {
+  const totalSold = tickets.reduce((acc, t) => acc + Number(t.sold || 0), 0);
+  const totalRemaining = tickets.reduce((acc, t) => acc + Number(t.remaining || 0), 0);
+  const totalCapacity = totalSold + totalRemaining;
+  const salesPct = totalCapacity > 0 ? Math.round((totalSold / totalCapacity) * 100) : 0;
+  const revenue = tickets.reduce((acc, t) => acc + Number(t.sold || 0) * Number(t.cost || 0), 0);
+  return { totalSold, salesPct, revenue };
+}
+
 function DashboardEvents() {
   const [filter, setFilter] = useState<"All" | "Live" | "Drafts" | "Past">("All");
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
 
-  // Mock statuses for the raw events
+  const { data: rawEvents = [], isLoading } = useQuery({
+    queryKey: ["workspace-events", activeWorkspace?.id],
+    queryFn: () => getWorkspaceEvents({ data: { workspace_id: activeWorkspace?.id! } }),
+    enabled: !!activeWorkspace?.id,
+  });
+
   const events = useMemo(() => {
-    return rawEvents.map((e, i) => ({
-      ...e,
-      status: i === 0 || i === 4 ? "Drafts" : i === 2 || i === 7 ? "Past" : "Live",
-      salesPct: Math.floor(Math.random() * 100),
-      revenue: e.price * (Math.floor(Math.random() * 100) + 10)
-    }));
-  }, []);
+    return rawEvents.map((e: any) => {
+      const firstStop = Array.isArray(e.tour_stops) ? e.tour_stops[0] : null;
+      const { salesPct, revenue } = computeStats(e.event_tickets || []);
+      return {
+        ...e,
+        date: firstStop?.date || "TBD",
+        city: firstStop ? `${firstStop.venue ? firstStop.venue + ", " : ""}${firstStop.city || ""}` : "TBD",
+        status: getEventStatus(e.created_at),
+        salesPct,
+        revenue,
+      };
+    });
+  }, [rawEvents]);
 
   const filteredEvents = useMemo(() => {
-    return events.filter(e => {
+    return events.filter((e: any) => {
       const matchesSearch = !search || e.title.toLowerCase().includes(search.toLowerCase());
       const matchesFilter = filter === "All" || e.status === filter;
       return matchesSearch && matchesFilter;
@@ -94,33 +120,49 @@ function DashboardEvents() {
 
       {/* Events List */}
       <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)]">
-        {filteredEvents.length === 0 ? (
-           <div className="p-12 text-center">
-             <p className="text-lg font-medium">No events found.</p>
-             <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or search.</p>
-           </div>
+        {isLoading ? (
+          <div className="p-16 flex justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filteredEvents.length === 0 ? (
+          <div className="p-12 text-center">
+            <p className="text-lg font-medium">No events found.</p>
+            <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or search.</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-secondary/30 text-muted-foreground text-xs uppercase tracking-wider">
                 <tr>
                   <th className="px-6 py-4 font-medium">Event</th>
-                  <th className="px-6 py-4 font-medium">Date & Location</th>
+                  <th className="px-6 py-4 font-medium">Date &amp; Location</th>
                   <th className="px-6 py-4 font-medium">Sales</th>
                   <th className="px-6 py-4 font-medium">Status</th>
                   <th className="px-6 py-4 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {filteredEvents.map((event) => (
+                {filteredEvents.map((event: any) => (
                   <tr 
                     key={event.id} 
                     className="hover:bg-secondary/20 transition-colors group cursor-pointer"
-                    onClick={() => navigate({ to: `/dashboard/${activeWorkspace?.slug}/events/${event.id}` })}
+                    onClick={() => navigate({
+                      to: "/dashboard/$workspaceSlug/events/$eventId",
+                      params: {
+                        workspaceSlug: activeWorkspace?.slug || "",
+                        eventId: event.id
+                      }
+                    })}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <img src={event.cover} className="h-12 w-12 rounded-xl object-cover" alt="" />
+                        {event.cover ? (
+                          <img src={event.cover} className="h-12 w-12 rounded-xl object-cover" alt="" />
+                        ) : (
+                          <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground">
+                            <Ticket className="h-5 w-5" />
+                          </div>
+                        )}
                         <div>
                           <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{event.title}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">{event.category}</p>
@@ -128,26 +170,40 @@ function DashboardEvents() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center text-muted-foreground">
-                          <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                          <span>{event.date}</span>
-                        </div>
-                        <div className="flex items-center text-muted-foreground">
-                          <MapPin className="h-3.5 w-3.5 mr-1.5" />
-                          <span>{event.city}</span>
-                        </div>
+                      <div className="space-y-1.5">
+                        {Array.isArray((event as any).tour_stops) && (event as any).tour_stops.length > 0 ? (
+                          (event as any).tour_stops.map((stop: any, i: number) => (
+                            <div key={i} className="text-xs">
+                              <div className="flex items-center text-muted-foreground">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {stop.date || "TBD"} {stop.time ? `· ${stop.time}` : ""}
+                              </div>
+                              <div className="flex items-center text-muted-foreground mt-0.5">
+                                <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                                <span className="truncate max-w-[180px]">{stop.venue ? `${stop.venue}, ` : ""}{stop.city || ""}</span>
+                              </div>
+                              {(event as any).tour_stops.length > 1 && i < (event as any).tour_stops.length - 1 && (
+                                <div className="border-b border-border/40 mt-1.5" />
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="flex items-center text-muted-foreground text-xs">
+                            <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                            <span>{(event as any).date || "TBD"}</span>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="space-y-1">
                         <div className="flex items-center font-medium">
                           <Ticket className="h-3.5 w-3.5 mr-1.5 text-primary" />
-                          <span>{event.salesPct}%</span>
+                          <span>{event.salesPct}% sold</span>
                         </div>
                         <div className="flex items-center font-medium text-green-500">
                           <DollarSign className="h-3.5 w-3.5 mr-1.5" />
-                          <span>${event.revenue}</span>
+                          <span>{event.revenue.toLocaleString()}</span>
                         </div>
                       </div>
                     </td>
@@ -168,10 +224,22 @@ function DashboardEvents() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48 rounded-xl">
-                          <DropdownMenuItem onClick={() => navigate({ to: `/dashboard/events/${event.id}` })}>
+                          <DropdownMenuItem onClick={() => navigate({
+                            to: "/dashboard/$workspaceSlug/events/$eventId",
+                            params: {
+                              workspaceSlug: activeWorkspace?.slug || "",
+                              eventId: event.id
+                            }
+                          })}>
                             <Eye className="mr-2 h-4 w-4" /> View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate({ to: `/dashboard/${activeWorkspace?.slug}/events/create-event` })}>
+                          <DropdownMenuItem onClick={() => navigate({
+                            to: "/dashboard/$workspaceSlug/events/$eventId/edit",
+                            params: {
+                              workspaceSlug: activeWorkspace?.slug || "",
+                              eventId: event.id
+                            }
+                          })}>
                             <Edit2 className="mr-2 h-4 w-4" /> Edit Event
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
