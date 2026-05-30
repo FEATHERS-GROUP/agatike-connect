@@ -34,9 +34,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ticketProjects } from "@/lib/mock-data";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceEvents, saveTicketProject, getTicketProjectById, updateTicketProject } from "@/api/events";
+import { uploadFile } from "@/api/storage";
 import { toast } from "sonner";
 
 function getCurrencySymbol(currency?: string) {
@@ -156,6 +157,7 @@ const defaultBack: TicketBack = {
 function TicketDesignerPage() {
   const { workspaceSlug, projectId } = useParams({ from: "/dashboard/$workspaceSlug/ticket-designer/$projectId" });
   const { activeWorkspace } = useWorkspace();
+  const queryClient = useQueryClient();
 
   const { data: events = [] } = useQuery({
     queryKey: ["workspace-events", activeWorkspace?.id],
@@ -182,10 +184,15 @@ function TicketDesignerPage() {
   const [eventId, setEventId] = useState(existingProject?.eventId || initialEventId);
   
   const eventMatch = events.find((e: any) => e.id === eventId);
-  const ticketTiers = eventMatch?.event_tickets || [];
+  const allTicketTiers = eventMatch?.event_tickets || [];
   const tourStops = Array.isArray(eventMatch?.tour_stops) ? eventMatch.tour_stops : [];
 
   const [activeTourStopIdx, setActiveTourStopIdx] = useState<number>(-1);
+
+  const ticketTiers = useMemo(() => {
+    if (activeTourStopIdx === -1) return allTicketTiers;
+    return allTicketTiers.filter((t: any) => t.tour_stop_idx == null || t.tour_stop_idx === activeTourStopIdx);
+  }, [allTicketTiers, activeTourStopIdx]);
   const [activeTierId, setActiveTierId] = useState<string>("");
   const [editScope, setEditScope] = useState<"base" | "tier">("base");
   const [sameDesignForLocations, setSameDesignForLocations] = useState<boolean>(true);
@@ -195,7 +202,7 @@ function TicketDesignerPage() {
   const [isExporting, setIsExporting] = useState(false);
 
   const [baseDesign, setBaseDesign] = useState<TicketDesign>({
-    template: existingProject?.template || initialTemplate,
+    template: (existingProject?.template as Template) || initialTemplate,
     palette: existingProject?.palette || palettes[0],
     font: existingProject?.font || fonts[0],
     title: existingProject?.title || "",
@@ -208,9 +215,9 @@ function TicketDesignerPage() {
     cover: existingProject?.cover || eventMatch?.cover || "",
     logoText: existingProject?.logoText || "",
     logoImage: existingProject?.logoImage || "",
-    logoScale: existingProject?.logoScale || 24,
-    logoOpacity: existingProject?.logoOpacity ?? 1,
-    logoColorMode: existingProject?.logoColorMode || "original",
+    logoScale: Number(existingProject?.logoScale) || 24,
+    logoOpacity: existingProject?.logoOpacity !== undefined ? Number(existingProject.logoOpacity) : 1,
+    logoColorMode: (existingProject?.logoColorMode as "original" | "white" | "black") || "original",
     layout: defaultLayout,
     back: defaultBack,
   });
@@ -227,7 +234,7 @@ function TicketDesignerPage() {
       setEventId(dbProject.eventId || "");
       const savedOverrides = dbProject.design_overrides || {};
       setBaseDesign({
-        template: dbProject.template || initialTemplate,
+        template: (dbProject.template as Template) || initialTemplate,
         palette: dbProject.palette || palettes[0],
         font: dbProject.font || fonts[0],
         title: "",
@@ -242,7 +249,7 @@ function TicketDesignerPage() {
         logoImage: dbProject.logoImage || "",
         logoScale: Number(dbProject.logoScale) || 24,
         logoOpacity: Number(dbProject.logoOpacity) || 1,
-        logoColorMode: dbProject.logoColorMode || "original",
+        logoColorMode: (dbProject.logoColorMode as "original" | "white" | "black") || "original",
         layout: savedOverrides.layout || defaultLayout,
         back: savedOverrides.back || defaultBack,
       });
@@ -282,6 +289,7 @@ function TicketDesignerPage() {
     mutationFn: async (variables: any) => updateTicketProject({ data: variables } as any),
     onSuccess: () => {
       setIsDirty(false);
+      queryClient.invalidateQueries({ queryKey: ["ticket-project", projectId] });
       toast.success("Project saved successfully!");
     },
     onError: (err) => {
@@ -698,7 +706,18 @@ function TicketDesignerPage() {
                         return;
                       }
                       const reader = new FileReader();
-                      reader.onload = () => updateDesign("logoImage", String(reader.result));
+                      reader.onload = async () => {
+                        const dataUrl = String(reader.result);
+                        updateDesign("logoImage", dataUrl); // Immediate preview
+                        
+                        try {
+                          const base64 = dataUrl.split(",")[1];
+                          const res = await uploadFile({ data: { base64, contentType: file.type, folder: "tickets/logos", ext: "png" } } as any);
+                          updateDesign("logoImage", res.url);
+                        } catch (err) {
+                          toast.error("Failed to upload logo permanently. It might not save correctly.");
+                        }
+                      };
                       reader.readAsDataURL(file);
                     }}
                   />

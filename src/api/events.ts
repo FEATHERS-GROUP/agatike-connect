@@ -37,6 +37,7 @@ const GET_PUBLIC_EVENTS = `
         type
         cost
         remaining
+        tour_stop_idx
       }
     }
   }
@@ -64,6 +65,7 @@ const GET_WORKSPACE_EVENTS = `
         cost
         remaining
         sold
+        tour_stop_idx
       }
     }
   }
@@ -95,6 +97,7 @@ const GET_EVENT_BY_ID = `
         remaining
         sold
         sale_ends_at
+        tour_stop_idx
       }
     }
   }
@@ -246,6 +249,7 @@ const GET_WORKSPACE_TICKET_PROJECTS = `
           sold
           type
           updated_at
+          tour_stop_idx
         }
       }
       created_at

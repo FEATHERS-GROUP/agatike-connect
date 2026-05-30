@@ -24,10 +24,20 @@ import { createEvent } from "@/api/events";
 import { getCoordinates, getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { uploadFile } from "@/api/storage";
 
-
-function getCurrencySymbol(currencyStr?: string) {
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.split(",")[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};function getCurrencySymbol(currencyStr?: string) {
   if (!currencyStr) return "$";
   const c = currencyStr.toLowerCase().trim();
   switch (c) {
@@ -55,7 +65,7 @@ function getCurrencySymbol(currencyStr?: string) {
   }
 }
 
-const steps = ["Details", "Tickets", "Venue", "Media", "Merchandise", "VIP", "Publish"] as const;
+const steps = ["Details", "Venue", "Tickets", "Media", "Merchandise", "VIP", "Publish"] as const;
 type Step = (typeof steps)[number];
 
 type Ticket = {
@@ -65,6 +75,7 @@ type Ticket = {
   quantity: number;
   type: "free" | "paid" | "vip" | "early";
   sale_ends_at?: string;
+  tour_stop_idx?: number | null;
 };
 type Merch = { id: string; name: string; price: number; image?: string };
 
@@ -171,8 +182,11 @@ export function CreateEventDesktop() {
     recurrenceType: "weekly",
     recurrenceCount: 4,
   });
+  const [sameTicketsForAllLocations, setSameTicketsForAllLocations] = useState(true);
+  const [activeTourStopIdx, setActiveTourStopIdx] = useState(0);
+
   const [tickets, setTickets] = useState<Ticket[]>([
-    { id: "1", name: "General Admission", price: 25, quantity: 200, type: "paid" },
+    { id: "1", name: "General Admission", price: 25, quantity: 200, type: "paid", tour_stop_idx: null },
   ]);
   const [merch, setMerch] = useState<Merch[]>([{ id: "m1", name: "Event Tee", price: 20 }]);
 
@@ -194,11 +208,14 @@ export function CreateEventDesktop() {
 
   const publishMutation = useMutation({
     mutationFn: async () => {
-      // Upload cover image to Firebase Storage if a file was selected
+      // Upload cover image to Supabase if a file was selected
       let coverUrl = data.coverPreview || "";
       if (coverFile) {
         try {
-          coverUrl = await uploadFileToStorage(coverFile, "events/covers");
+          const base64 = await fileToBase64(coverFile);
+          const ext = coverFile.name.split('.').pop() || 'jpg';
+          const res = await uploadFile({ data: { base64, contentType: coverFile.type, folder: "events/covers", ext } } as any);
+          coverUrl = res.url;
         } catch (err) {
           console.error("Cover upload failed:", err);
           toast.error("Cover image upload failed. Please try again.");
@@ -214,8 +231,9 @@ export function CreateEventDesktop() {
               const resp = await fetch(m.image);
               const blob = await resp.blob();
               const file = new File([blob], "merch.jpg", { type: blob.type });
-              const url = await uploadFileToStorage(file, "events/merch");
-              return { ...m, image: url };
+              const base64 = await fileToBase64(file);
+              const res = await uploadFile({ data: { base64, contentType: file.type, folder: "events/merch", ext: "jpg" } } as any);
+              return { ...m, image: res.url };
             } catch {
               return { ...m, image: "" };
             }
@@ -240,6 +258,7 @@ export function CreateEventDesktop() {
             remaining: t.quantity.toString(),
             sold: "0",
             sale_ends_at: t.type === "early" ? t.sale_ends_at || null : null,
+            tour_stop_idx: sameTicketsForAllLocations ? null : t.tour_stop_idx
           }))
         },
         merchandises: {
@@ -406,7 +425,18 @@ export function CreateEventDesktop() {
             </div>
           )}
 
-          {steps[step] === "Tickets" && <TicketEditor tickets={tickets} setTickets={setTickets} currencySymbol={currencySymbol} />}
+          {steps[step] === "Tickets" && (
+            <TicketEditor 
+              tickets={tickets} 
+              setTickets={setTickets} 
+              currencySymbol={currencySymbol} 
+              locations={data.locations}
+              sameTicketsForAllLocations={sameTicketsForAllLocations}
+              setSameTicketsForAllLocations={setSameTicketsForAllLocations}
+              activeTourStopIdx={activeTourStopIdx}
+              setActiveTourStopIdx={setActiveTourStopIdx}
+            />
+          )}
 
           {steps[step] === "Venue" && (
             <div className="space-y-6">
@@ -608,11 +638,23 @@ function TicketEditor({
   tickets,
   setTickets,
   currencySymbol,
+  locations,
+  sameTicketsForAllLocations,
+  setSameTicketsForAllLocations,
+  activeTourStopIdx,
+  setActiveTourStopIdx
 }: {
   tickets: Ticket[];
   setTickets: (t: Ticket[]) => void;
   currencySymbol: string;
+  locations: any[];
+  sameTicketsForAllLocations: boolean;
+  setSameTicketsForAllLocations: (val: boolean) => void;
+  activeTourStopIdx: number;
+  setActiveTourStopIdx: (val: number) => void;
 }) {
+  const displayedTickets = tickets.filter(t => sameTicketsForAllLocations ? true : t.tour_stop_idx === activeTourStopIdx);
+
   const add = (type: Ticket["type"]) =>
     setTickets([
       ...tickets,
@@ -629,6 +671,7 @@ function TicketEditor({
         price: type === "free" ? 0 : type === "vip" ? 95 : 25,
         quantity: 100,
         type,
+        tour_stop_idx: sameTicketsForAllLocations ? null : activeTourStopIdx
       },
     ]);
 
@@ -636,7 +679,53 @@ function TicketEditor({
     setTickets(tickets.map((t) => (t.id === id ? { ...t, ...patch } : t)));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {locations.length > 1 && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-border/60 bg-secondary/20 p-5">
+           <div>
+             <Label className="text-base font-semibold">Location-Specific Tickets</Label>
+             <p className="text-sm text-muted-foreground">Do you want different ticket tiers or prices per location?</p>
+           </div>
+           <div className="flex bg-secondary p-1 rounded-xl shrink-0">
+             <button
+               type="button"
+               onClick={() => {
+                 setSameTicketsForAllLocations(true);
+                 setTickets(tickets.map(t => ({ ...t, tour_stop_idx: null })));
+               }}
+               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${sameTicketsForAllLocations ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+             >
+               Same for all
+             </button>
+             <button
+               type="button"
+               onClick={() => {
+                 setSameTicketsForAllLocations(false);
+                 setTickets(tickets.map(t => ({ ...t, tour_stop_idx: activeTourStopIdx })));
+               }}
+               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${!sameTicketsForAllLocations ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+             >
+               Set up per location
+             </button>
+           </div>
+        </div>
+      )}
+
+      {locations.length > 1 && !sameTicketsForAllLocations && (
+        <div className="flex items-center gap-2 border-b border-border/60 pb-4 overflow-x-auto">
+           {locations.map((loc: any, idx: number) => (
+             <button
+                key={idx}
+                type="button"
+                onClick={() => setActiveTourStopIdx(idx)}
+                className={`whitespace-nowrap px-4 py-1.5 text-sm font-semibold rounded-full transition-all ${activeTourStopIdx === idx ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-secondary'}`}
+             >
+                {loc.city || `Location ${idx + 1}`}
+             </button>
+           ))}
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-2">
         {(["paid", "free", "early", "vip"] as const).map((t) => (
           <Button
@@ -652,7 +741,7 @@ function TicketEditor({
         ))}
       </div>
       <div className="space-y-3">
-        {tickets.map((t) => (
+        {displayedTickets.map((t) => (
           <div
             key={t.id}
             className="grid gap-4 rounded-2xl border border-border/60 bg-background p-4 md:grid-cols-[1fr_120px_120px_auto] items-end"
@@ -704,7 +793,7 @@ function TicketEditor({
             </Button>
           </div>
         ))}
-        {tickets.length === 0 && (
+        {displayedTickets.length === 0 && (
           <p className="text-sm text-muted-foreground">No tickets yet — add one above.</p>
         )}
       </div>

@@ -70,6 +70,7 @@ function DashboardEventDetails() {
     ];
 
     const breakdown = tickets.map((t: any, idx: number) => ({
+      id: t.id,
       name: t.type,
       value: Number(t.sold || 0),
       color: colors[idx % colors.length]
@@ -77,6 +78,7 @@ function DashboardEventDetails() {
 
     // Fallback if no tickets sold yet to avoid empty chart visual
     const displayBreakdown = breakdown.length > 0 ? breakdown : tickets.map((t: any, idx: number) => ({
+      id: t.id,
       name: t.type,
       value: Number(t.remaining || 0),
       color: colors[idx % colors.length]
@@ -221,6 +223,7 @@ function DashboardEventDetails() {
               <thead className="bg-secondary/30 text-muted-foreground text-xs uppercase tracking-wider">
                 <tr>
                   <th className="px-6 py-4 font-medium">Ticket Type</th>
+                  <th className="px-6 py-4 font-medium">Location</th>
                   <th className="px-6 py-4 font-medium">Price</th>
                   <th className="px-6 py-4 font-medium">Sold / Total</th>
                   <th className="px-6 py-4 font-medium">Status</th>
@@ -230,9 +233,14 @@ function DashboardEventDetails() {
                 {chartData.map((tier: any) => {
                   const capacity = Number(tier.sold || 0) + Number(tier.remaining || 0);
                   const isSoldOut = Number(tier.remaining || 0) === 0;
+                  const locationName = tier.tour_stop_idx != null && event.tour_stops?.[tier.tour_stop_idx]
+                    ? (event.tour_stops[tier.tour_stop_idx].city || event.tour_stops[tier.tour_stop_idx].venue || `Stop ${tier.tour_stop_idx + 1}`)
+                    : "All Locations";
+
                   return (
                     <tr key={tier.id} className="hover:bg-secondary/20 transition-colors">
                       <td className="px-6 py-4 font-medium">{tier.type}</td>
+                      <td className="px-6 py-4 text-muted-foreground">{locationName}</td>
                       <td className="px-6 py-4 text-green-500 font-medium">{currencySymbol}{parseFloat(tier.cost).toLocaleString()}</td>
                       <td className="px-6 py-4">
                         {tier.sold} / {capacity}
@@ -320,8 +328,8 @@ function DashboardEventDetails() {
               </div>
               {/* Custom Legend */}
               <div className="mt-4 space-y-2">
-                {ticketBreakdown.map((entry: any) => (
-                  <div key={entry.name} className="flex items-center justify-between text-sm">
+                {ticketBreakdown.map((entry: any, index: number) => (
+                  <div key={entry.id || index} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
                       <span className="text-muted-foreground">{entry.name}</span>
