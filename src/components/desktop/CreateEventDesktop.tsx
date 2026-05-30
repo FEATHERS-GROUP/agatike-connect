@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -13,7 +13,6 @@ import {
   MapPin,
   Sparkles,
 } from "lucide-react";
-import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +33,16 @@ type Merch = { id: string; name: string; price: number };
 
 export function CreateEventDesktop() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
+  const { workspaceSlug } = useParams({ strict: false }) as { workspaceSlug?: string };
+  const { step: urlStep } = useSearch({ strict: false }) as { step?: number };
+  const step = urlStep || 0;
+  
+  const dashboardUrl = workspaceSlug ? `/dashboard/${workspaceSlug}` : "/dashboard";
+  
+  const setStep = (newStep: number) => {
+    navigate({ search: { step: newStep }, replace: true });
+  };
+
   const [data, setData] = useState({
     title: "",
     category: categories[0],
@@ -47,25 +55,16 @@ export function CreateEventDesktop() {
     coverPreview: "",
     vipPerks: "Priority entry, VIP lounge, complimentary welcome drink",
     published: false,
+    isRecurring: false,
+    recurrenceType: "weekly",
+    recurrenceCount: 4,
   });
   const [tickets, setTickets] = useState<Ticket[]>([
     { id: "1", name: "General Admission", price: 25, quantity: 200, type: "paid" },
   ]);
   const [merch, setMerch] = useState<Merch[]>([{ id: "m1", name: "Event Tee", price: 20 }]);
 
-  const StepIndicator = (
-    <ol className="grid grid-cols-7 gap-2">
-      {steps.map((s, i) => (
-        <li
-          key={s}
-          className={`rounded-2xl border p-3 text-xs ${i < step ? "border-primary bg-accent/40" : i === step ? "border-primary bg-background shadow-[var(--shadow-glow)]" : "border-border/60 bg-background"}`}
-        >
-          <p className="text-muted-foreground">Step {i + 1}</p>
-          <p className="mt-0.5 font-medium text-foreground">{s}</p>
-        </li>
-      ))}
-    </ol>
-  );
+
 
   const updateField = <K extends keyof typeof data>(k: K, v: (typeof data)[K]) =>
     setData({ ...data, [k]: v });
@@ -79,9 +78,7 @@ export function CreateEventDesktop() {
 
   if (data.published) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="mx-auto max-w-xl px-6 py-24 text-center">
+      <div className="mx-auto max-w-xl py-24 text-center">
           <div
             className="mx-auto grid h-16 w-16 place-items-center rounded-full text-primary-foreground animate-scale-in"
             style={{ background: "var(--gradient-primary)" }}
@@ -95,7 +92,7 @@ export function CreateEventDesktop() {
             Share the link with your community and start selling tickets.
           </p>
           <div className="mt-6 flex justify-center gap-2">
-            <Link to="/dashboard">
+            <Link to={dashboardUrl}>
               <Button variant="outline" className="rounded-full">
                 Back to dashboard
               </Button>
@@ -107,7 +104,6 @@ export function CreateEventDesktop() {
             </Link>
           </div>
         </div>
-      </div>
     );
   }
 
@@ -115,30 +111,14 @@ export function CreateEventDesktop() {
   const prev = () => setStep(Math.max(0, step - 1));
 
   return (
-    <div className="min-h-screen bg-secondary/30">
-      <Navbar />
-      <div className="mx-auto max-w-5xl px-6 py-10">
-        <Link
-          to="/dashboard"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to dashboard
-        </Link>
-        <div className="mt-4 flex items-end justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Create a new event</h1>
-            <p className="text-sm text-muted-foreground">
-              Step {step + 1} of {steps.length} · {steps[step]}
-            </p>
-          </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs text-accent-foreground">
-            <Sparkles className="h-3 w-3" /> Draft auto-saved
-          </span>
+    <div className="mx-auto max-w-3xl w-full">
+      <div className="rounded-[2rem] border border-border/60 bg-card p-6 sm:p-10 shadow-[var(--shadow-card)]">
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold">{steps[step]}</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Step {step + 1} of {steps.length}
+          </p>
         </div>
-
-        <div className="mt-6">{StepIndicator}</div>
-
-        <div className="mt-6 rounded-3xl border border-border/60 bg-card p-6 md:p-8 shadow-[var(--shadow-card)]">
           {steps[step] === "Details" && (
             <div className="space-y-5">
               <div>
@@ -156,7 +136,7 @@ export function CreateEventDesktop() {
                   <select
                     value={data.category}
                     onChange={(e) => updateField("category", e.target.value)}
-                    className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    className="mt-1 flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 hover:border-border/80 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                   >
                     {categories.map((c) => (
                       <option key={c}>{c}</option>
@@ -183,6 +163,59 @@ export function CreateEventDesktop() {
                     />
                   </div>
                 </div>
+              </div>
+              <div className="rounded-2xl border border-border/60 bg-secondary/20 p-5 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <Label className="text-base font-semibold">Event Frequency</Label>
+                    <p className="text-sm text-muted-foreground">Will this event happen more than once?</p>
+                  </div>
+                  <div className="flex bg-secondary p-1 rounded-xl shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => updateField("isRecurring", false)}
+                      className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${!data.isRecurring ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      One-time
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateField("isRecurring", true)}
+                      className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${data.isRecurring ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Recurring
+                    </button>
+                  </div>
+                </div>
+
+                {data.isRecurring && (
+                  <div className="grid gap-4 md:grid-cols-2 pt-4 border-t border-border/60 animate-in fade-in slide-in-from-top-2">
+                    <div>
+                      <Label>Repeats</Label>
+                      <select
+                        value={data.recurrenceType}
+                        onChange={(e) => updateField("recurrenceType", e.target.value)}
+                        className="mt-1 flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 hover:border-border/80 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                      >
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label>How many times?</Label>
+                      <Input
+                        type="number"
+                        min="2"
+                        max="365"
+                        value={data.recurrenceCount}
+                        onChange={(e) => updateField("recurrenceCount", Number(e.target.value))}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <Label>Description</Label>
@@ -299,7 +332,7 @@ export function CreateEventDesktop() {
               <ArrowLeft className="mr-1 h-4 w-4" /> Back
             </Button>
             <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => navigate({ to: "/dashboard" })}>
+              <Button variant="ghost" onClick={() => navigate({ to: dashboardUrl })} className="rounded-full">
                 Save & exit
               </Button>
               {step < steps.length - 1 ? (
@@ -322,7 +355,6 @@ export function CreateEventDesktop() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }
@@ -490,6 +522,11 @@ function PublishReview({
           <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <Calendar className="h-4 w-4" /> {data.date || "TBD"} · {data.time || "TBD"}
+              {data.isRecurring && (
+                <span className="ml-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                  Repeats {data.recurrenceType} ({data.recurrenceCount} times)
+                </span>
+              )}
             </span>
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-4 w-4" /> {data.venue || "TBD"}, {data.city || ""}

@@ -42,7 +42,7 @@ function DashboardLayout() {
   
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
-  const hideSidebar = location.pathname === "/dashboard/login" || location.pathname === "/dashboard/workspaces" || location.pathname === "/dashboard/create-organizer" || location.pathname === "/dashboard/settings" || location.pathname.match(/^\/dashboard\/[^/]+\/(venue-designer|ticket-designer|create-event)/);
+  const hideSidebar = location.pathname === "/dashboard/login" || location.pathname === "/dashboard/workspaces" || location.pathname === "/dashboard/create-organizer" || location.pathname === "/dashboard/settings" || location.pathname.match(/^\/dashboard\/[^/]+\/(venue-designer|ticket-designer)/);
 
   useEffect(() => {
     if (!isLoaded) return;

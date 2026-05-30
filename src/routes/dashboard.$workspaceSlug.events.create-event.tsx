@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CreateEventMobile } from "@/components/mobile/CreateEventMobile";
 import { CreateEventDesktop } from "@/components/desktop/CreateEventDesktop";
+import { z } from "zod";
 
-export const Route = createFileRoute("/dashboard/$workspaceSlug/create-event")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/events/create-event")({
+  validateSearch: z.object({
+    step: z.number().catch(0),
+  }),
   head: () => ({
     meta: [
       { title: "Create event — Agatike" },
@@ -16,14 +19,5 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/create-event")({
 });
 
 function CreateEventRoute() {
-  return (
-    <>
-      <div className="md:hidden">
-        <CreateEventMobile />
-      </div>
-      <div className="hidden md:block">
-        <CreateEventDesktop />
-      </div>
-    </>
-  );
+  return <CreateEventDesktop />;
 }
