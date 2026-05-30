@@ -19,6 +19,7 @@ import {
   Eye,
   Edit2,
   MapPin,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,6 +94,8 @@ type TicketDesign = {
   logoText: string;
   logoImage?: string;
   logoScale?: number;
+  logoOpacity?: number;
+  logoColorMode?: "original" | "white" | "black";
 };
 
 function TicketDesignerPage() {
@@ -142,6 +145,8 @@ function TicketDesignerPage() {
     logoText: existingProject?.logoText || "",
     logoImage: existingProject?.logoImage || "",
     logoScale: existingProject?.logoScale || 24,
+    logoOpacity: existingProject?.logoOpacity ?? 1,
+    logoColorMode: existingProject?.logoColorMode || "original",
   });
 
   const [overrides, setOverrides] = useState<any>(existingProject?.design_overrides || {
@@ -245,7 +250,7 @@ function TicketDesignerPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" className="rounded-full">
-            <Download className="mr-1 h-4 w-4" /> Export PDF
+            <UserPlus className="mr-2 h-4 w-4" /> Invite Contributor
           </Button>
           <Button
             onClick={handleSave}
@@ -431,30 +436,75 @@ function TicketDesignerPage() {
                 <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground hover:bg-secondary">
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/png"
                     className="hidden"
                     onChange={(e) => {
-                      if (!e.target.files?.[0]) return;
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.type !== "image/png") {
+                        alert("Only PNG images are allowed for logos to preserve transparency.");
+                        return;
+                      }
+                      if (file.size > 2 * 1024 * 1024) {
+                        alert("Logo file size must be under 2MB.");
+                        return;
+                      }
                       const reader = new FileReader();
                       reader.onload = () => updateDesign("logoImage", String(reader.result));
-                      reader.readAsDataURL(e.target.files[0]);
+                      reader.readAsDataURL(file);
                     }}
                   />
-                  {mergedDesign.logoImage ? "Replace logo" : "Drop logo image or click to upload"}
+                  {mergedDesign.logoImage ? "Replace logo (PNG < 2MB)" : "Drop PNG logo (< 2MB)"}
                 </label>
               </Section>
 
               {mergedDesign.logoImage && (
-                <Section title="Logo size" icon={ImageIcon}>
-                  <input
-                    type="range"
-                    min="16"
-                    max="80"
-                    value={mergedDesign.logoScale || 24}
-                    onChange={(e) => updateDesign("logoScale", Number(e.target.value))}
-                    className="w-full accent-primary"
-                  />
-                  <p className="mt-2 text-center text-xs text-muted-foreground">Or click the logo directly in the preview to cycle sizes.</p>
+                <Section title="Logo settings" icon={ImageIcon}>
+                  <div className="space-y-4">
+                    <Field label="Size">
+                      <input
+                        type="range"
+                        min="16"
+                        max="80"
+                        value={mergedDesign.logoScale || 24}
+                        onChange={(e) => updateDesign("logoScale", Number(e.target.value))}
+                        className="w-full accent-primary"
+                      />
+                    </Field>
+                    <Field label="Opacity">
+                      <input
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.05"
+                        value={mergedDesign.logoOpacity ?? 1}
+                        onChange={(e) => updateDesign("logoOpacity", Number(e.target.value))}
+                        className="w-full accent-primary"
+                      />
+                    </Field>
+                    <Field label="Color Theme">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => updateDesign("logoColorMode", "original")}
+                          className={`flex-1 rounded-lg border px-2 py-1.5 text-xs transition ${mergedDesign.logoColorMode === "original" || !mergedDesign.logoColorMode ? "border-primary bg-primary/20 text-primary" : "border-border/60 hover:bg-secondary"}`}
+                        >
+                          Original
+                        </button>
+                        <button
+                          onClick={() => updateDesign("logoColorMode", "white")}
+                          className={`flex-1 rounded-lg border px-2 py-1.5 text-xs transition ${mergedDesign.logoColorMode === "white" ? "border-primary bg-primary/20 text-primary" : "border-border/60 hover:bg-secondary"}`}
+                        >
+                          White
+                        </button>
+                        <button
+                          onClick={() => updateDesign("logoColorMode", "black")}
+                          className={`flex-1 rounded-lg border px-2 py-1.5 text-xs transition ${mergedDesign.logoColorMode === "black" ? "border-primary bg-primary/20 text-primary" : "border-border/60 hover:bg-secondary"}`}
+                        >
+                          Black
+                        </button>
+                      </div>
+                    </Field>
+                  </div>
                 </Section>
               )}
             </div>
@@ -482,21 +532,24 @@ function TicketDesignerPage() {
                     <Input value={mergedDesign.seat || ""} onChange={(e) => updateDesign("seat", e.target.value)} placeholder={dynamicDefaults.seat} />
                   </Field>
                   <div className="grid grid-cols-3 gap-3">
-                    <Field label="Currency">
-                      <Input value={mergedDesign.currency || ""} onChange={(e) => updateDesign("currency", e.target.value)} placeholder={dynamicDefaults.currency} />
-                    </Field>
-                    <Field label="Price">
-                      <Input
-                        value={mergedDesign.price || ""}
-                        onChange={(e) => updateDesign("price", e.target.value)}
-                        className="col-span-2"
-                        placeholder={dynamicDefaults.price}
-                      />
-                    </Field>
-                    <Field label="Brand">
-                      <Input value={mergedDesign.logoText || ""} onChange={(e) => updateDesign("logoText", e.target.value)} placeholder={dynamicDefaults.brand} />
-                    </Field>
+                    <div className="col-span-1">
+                      <Field label="Currency">
+                        <Input value={mergedDesign.currency || ""} onChange={(e) => updateDesign("currency", e.target.value)} placeholder={dynamicDefaults.currency} />
+                      </Field>
+                    </div>
+                    <div className="col-span-2">
+                      <Field label="Price">
+                        <Input
+                          value={mergedDesign.price || ""}
+                          onChange={(e) => updateDesign("price", e.target.value)}
+                          placeholder={dynamicDefaults.price}
+                        />
+                      </Field>
+                    </div>
                   </div>
+                  <Field label="Brand / Workspace Name">
+                    <Input value={mergedDesign.logoText || ""} onChange={(e) => updateDesign("logoText", e.target.value)} placeholder={dynamicDefaults.brand} />
+                  </Field>
                 </div>
               </Section>
             </div>
@@ -543,6 +596,8 @@ function TicketDesignerPage() {
                 logoText={mergedDesign.logoText || dynamicDefaults.brand}
                 logoImage={mergedDesign.logoImage}
                 logoScale={mergedDesign.logoScale || 24}
+                logoOpacity={mergedDesign.logoOpacity ?? 1}
+                logoColorMode={mergedDesign.logoColorMode || "original"}
                 orderId={orderId}
                 previewMode={previewMode}
                 onLogoClick={handleLogoClick}
@@ -550,22 +605,19 @@ function TicketDesignerPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {["Email", "Mobile wallet", "Print PDF"].map((c) => (
-              <div
-                key={c}
-                className="rounded-2xl border border-border/60 bg-card p-5 text-sm"
-              >
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">Channel</p>
-                <p className="mt-1 font-semibold">{c}</p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Auto-formatted for the perfect render in {c.toLowerCase()}.
+          <div className="grid gap-4">
+            <div className="rounded-2xl border border-border/60 bg-card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">Export</p>
+                <h4 className="mt-1 font-semibold text-base">Print-Ready PDF</h4>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Generate a high-quality, print-ready PDF of your ticket design.
                 </p>
-                <Button variant="outline" className="mt-4 w-full rounded-full">
-                  Preview
-                </Button>
               </div>
-            ))}
+              <Button className="rounded-full shadow-sm shrink-0">
+                <Download className="mr-2 h-4 w-4" /> Export PDF
+              </Button>
+            </div>
           </div>
         </section>
       </div>
@@ -618,6 +670,8 @@ function TicketPreview(props: {
   logoText: string;
   logoImage?: string;
   logoScale: number;
+  logoOpacity: number;
+  logoColorMode: string;
   orderId: string;
   previewMode: "Front" | "Back" | "Mobile";
   onLogoClick?: () => void;
@@ -637,6 +691,8 @@ function TicketPreview(props: {
     logoText,
     logoImage,
     logoScale,
+    logoOpacity,
+    logoColorMode,
     orderId,
     template,
     previewMode,
@@ -674,7 +730,11 @@ function TicketPreview(props: {
                 {logoImage && (
                   <img
                     src={logoImage}
-                    style={{ height: `${logoScale}px` }}
+                    style={{ 
+                      height: `${logoScale}px`, 
+                      opacity: logoOpacity,
+                      filter: logoColorMode === "white" ? "brightness(0) invert(1)" : logoColorMode === "black" ? "brightness(0)" : "none"
+                    }}
                     className="mt-1 max-w-[150px] object-contain cursor-pointer hover:opacity-80 transition-opacity"
                     alt="Logo"
                     onClick={onLogoClick}
