@@ -64,7 +64,7 @@ type Ticket = {
   type: "free" | "paid" | "vip" | "early";
   sale_ends_at?: string;
 };
-type Merch = { id: string; name: string; price: number };
+type Merch = { id: string; name: string; price: number; image?: string };
 
 function AddressAutocomplete({
   value,
@@ -206,6 +206,8 @@ export function CreateEventDesktop() {
           data: merch.map(m => ({
             name: m.name,
             cost: m.price.toString(),
+            image: m.image || "",
+            organizer_id: activeWorkspace?.orgnizer_id,
             remaining: "100",
             sold: "0"
           }))
@@ -216,9 +218,8 @@ export function CreateEventDesktop() {
     },
     onSuccess: () => {
       toast.success("Event created successfully!");
-      setData({ ...data, published: true });
       setTimeout(() => {
-        navigate({ to: dashboardUrl });
+        navigate({ to: `/dashboard/${workspaceSlug}/events` });
       }, 1500);
     },
     onError: (error: any) => {
@@ -696,8 +697,32 @@ function MerchEditor({
         {merch.map((m) => (
           <div
             key={m.id}
-            className="grid gap-4 rounded-2xl border border-border/60 bg-background p-4 md:grid-cols-[1fr_140px_auto] items-end"
+            className="grid gap-4 rounded-2xl border border-border/60 bg-background p-4 md:grid-cols-[auto_1fr_140px_auto] items-end"
           >
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1 block">Item Image</Label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              {m.image ? (
+                <img src={m.image} alt="merch" className="h-10 w-10 rounded-lg object-cover border border-border/60" />
+              ) : (
+                <div className="h-10 w-10 rounded-lg border-2 border-dashed border-border/60 grid place-items-center text-muted-foreground hover:border-primary transition">
+                  <Upload className="h-4 w-4" />
+                </div>
+              )}
+              <span className="text-xs text-muted-foreground">{m.image ? "Change" : "Upload"}</span>
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const url = URL.createObjectURL(file);
+                  setMerch(merch.map((x) => (x.id === m.id ? { ...x, image: url } : x)));
+                }}
+              />
+            </label>
+          </div>
             <div>
               <Label className="text-xs text-muted-foreground mb-1 block">Item Name</Label>
               <Input
