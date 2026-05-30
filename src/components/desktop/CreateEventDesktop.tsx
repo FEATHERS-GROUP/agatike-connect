@@ -23,6 +23,35 @@ import { categories } from "@/lib/mock-data";
 import { createEvent } from "@/api/events";
 import { getCoordinates } from "@/api/geocoding";
 import { toast } from "sonner";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+
+function getCurrencySymbol(currencyStr?: string) {
+  if (!currencyStr) return "$";
+  const c = currencyStr.toLowerCase().trim();
+  switch (c) {
+    // East Africa
+    case "rwf": case "rwandan francs": case "frw": return "RWF ";
+    case "kes": case "kenyan shillings": case "kenyan shilling": return "KES ";
+    case "ugx": case "ugandan shillings": case "ugandan shilling": return "UGX ";
+    case "tzs": case "tanzanian shillings": case "tanzanian shilling": return "TZS ";
+    case "bif": case "burundian francs": case "burundian franc": return "BIF ";
+    
+    // West/South/Other Africa
+    case "ngn": case "naira": case "nigerian naira": return "₦";
+    case "zar": case "rand": case "south african rand": return "R ";
+    case "ghs": case "cedi": case "ghanaian cedi": return "GH₵";
+    case "xof": case "xaf": case "cfa": case "cfa franc": return "CFA ";
+
+    // Global
+    case "euros": case "euro": case "eur": return "€";
+    case "pounds": case "pound": case "gbp": return "£";
+    case "inr": case "rupee": return "₹";
+    case "aed": case "dirham": return "AED ";
+    case "cad": return "CAD ";
+    case "aud": return "AUD ";
+    case "dollars": case "usd": case "dollar": default: return "$";
+  }
+}
 
 const steps = ["Details", "Tickets", "Venue", "Media", "Merchandise", "VIP", "Publish"] as const;
 type Step = (typeof steps)[number];
@@ -33,6 +62,7 @@ type Ticket = {
   price: number;
   quantity: number;
   type: "free" | "paid" | "vip" | "early";
+  sale_ends_at?: string;
 };
 type Merch = { id: string; name: string; price: number };
 
@@ -41,6 +71,8 @@ export function CreateEventDesktop() {
   const { workspaceSlug } = useParams({ strict: false }) as { workspaceSlug?: string };
   const { step: urlStep } = useSearch({ strict: false }) as { step?: number };
   const step = urlStep || 0;
+  const { activeWorkspace } = useWorkspace();
+  const currencySymbol = getCurrencySymbol(activeWorkspace?.wallet?.currency);
   
   const dashboardUrl = workspaceSlug ? `/dashboard/${workspaceSlug}` : "/dashboard";
   
@@ -151,6 +183,7 @@ export function CreateEventDesktop() {
             cost: t.price.toString(),
             remaining: t.quantity.toString(),
             sold: "0",
+            sale_ends_at: t.type === "early" ? t.sale_ends_at || null : null,
           }))
         },
         merchandises: {
@@ -182,7 +215,7 @@ export function CreateEventDesktop() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl w-full">
+    <div className="mx-auto max-w-4xl w-full">
       <div className="rounded-[2rem] border border-border/60 bg-card p-6 sm:p-10 shadow-[var(--shadow-card)]">
         <div className="mb-8">
           <h2 className="text-2xl font-semibold">{steps[step]}</h2>
@@ -281,7 +314,7 @@ export function CreateEventDesktop() {
             </div>
           )}
 
-          {steps[step] === "Tickets" && <TicketEditor tickets={tickets} setTickets={setTickets} />}
+          {steps[step] === "Tickets" && <TicketEditor tickets={tickets} setTickets={setTickets} currencySymbol={currencySymbol} />}
 
           {steps[step] === "Venue" && (
             <div className="space-y-6">
@@ -414,7 +447,7 @@ export function CreateEventDesktop() {
             </div>
           )}
 
-          {steps[step] === "Merchandise" && <MerchEditor merch={merch} setMerch={setMerch} />}
+          {steps[step] === "Merchandise" && <MerchEditor merch={merch} setMerch={setMerch} currencySymbol={currencySymbol} />}
 
           {steps[step] === "VIP" && (
             <div className="space-y-5">
@@ -446,6 +479,7 @@ export function CreateEventDesktop() {
               merch={merch}
               onPublish={handlePublish}
               isPending={publishMutation.isPending}
+              currencySymbol={currencySymbol}
             />
           )}
 
@@ -476,9 +510,11 @@ export function CreateEventDesktop() {
 function TicketEditor({
   tickets,
   setTickets,
+  currencySymbol,
 }: {
   tickets: Ticket[];
   setTickets: (t: Ticket[]) => void;
+  currencySymbol: string;
 }) {
   const add = (type: Ticket["type"]) =>
     setTickets([
@@ -522,28 +558,49 @@ function TicketEditor({
         {tickets.map((t) => (
           <div
             key={t.id}
-            className="grid gap-3 rounded-2xl border border-border/60 bg-background p-4 md:grid-cols-[1fr_120px_120px_auto]"
+            className="grid gap-4 rounded-2xl border border-border/60 bg-background p-4 md:grid-cols-[1fr_120px_120px_auto] items-end"
           >
-            <Input
-              value={t.name}
-              onChange={(e) => update(t.id, { name: e.target.value })}
-              placeholder="Ticket name"
-            />
-            <Input
-              type="number"
-              value={t.price}
-              onChange={(e) => update(t.id, { price: Number(e.target.value) })}
-              placeholder="Price"
-            />
-            <Input
-              type="number"
-              value={t.quantity}
-              onChange={(e) => update(t.id, { quantity: Number(e.target.value) })}
-              placeholder="Quantity"
-            />
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Ticket Name</Label>
+              <Input
+                value={t.name}
+                onChange={(e) => update(t.id, { name: e.target.value })}
+                placeholder="Ticket name"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Price ({currencySymbol.trim()})</Label>
+              <Input
+                type="number"
+                value={t.price}
+                onChange={(e) => update(t.id, { price: Number(e.target.value) })}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Quantity</Label>
+              <Input
+                type="number"
+                value={t.quantity}
+                onChange={(e) => update(t.id, { quantity: Number(e.target.value) })}
+                placeholder="100"
+              />
+            </div>
+            {t.type === "early" && (
+              <div className="md:col-span-full">
+                <Label className="text-xs text-muted-foreground mb-1 block">Early Bird Ends At</Label>
+                <Input
+                  type="datetime-local"
+                  value={t.sale_ends_at || ""}
+                  onChange={(e) => update(t.id, { sale_ends_at: e.target.value })}
+                  className="w-full sm:w-auto"
+                />
+              </div>
+            )}
             <Button
               variant="ghost"
               size="icon"
+              className="mb-1"
               onClick={() => setTickets(tickets.filter((x) => x.id !== t.id))}
             >
               <Trash2 className="h-4 w-4 text-muted-foreground" />
@@ -558,7 +615,15 @@ function TicketEditor({
   );
 }
 
-function MerchEditor({ merch, setMerch }: { merch: Merch[]; setMerch: (m: Merch[]) => void }) {
+function MerchEditor({
+  merch,
+  setMerch,
+  currencySymbol,
+}: {
+  merch: Merch[];
+  setMerch: (m: Merch[]) => void;
+  currencySymbol: string;
+}) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -578,28 +643,35 @@ function MerchEditor({ merch, setMerch }: { merch: Merch[]; setMerch: (m: Merch[
         {merch.map((m) => (
           <div
             key={m.id}
-            className="grid gap-3 rounded-2xl border border-border/60 bg-background p-4 md:grid-cols-[1fr_140px_auto]"
+            className="grid gap-4 rounded-2xl border border-border/60 bg-background p-4 md:grid-cols-[1fr_140px_auto] items-end"
           >
-            <Input
-              value={m.name}
-              onChange={(e) =>
-                setMerch(merch.map((x) => (x.id === m.id ? { ...x, name: e.target.value } : x)))
-              }
-              placeholder="Tour Tee, Parking Pass…"
-            />
-            <Input
-              type="number"
-              value={m.price}
-              onChange={(e) =>
-                setMerch(
-                  merch.map((x) => (x.id === m.id ? { ...x, price: Number(e.target.value) } : x)),
-                )
-              }
-              placeholder="Price"
-            />
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Item Name</Label>
+              <Input
+                value={m.name}
+                onChange={(e) =>
+                  setMerch(merch.map((x) => (x.id === m.id ? { ...x, name: e.target.value } : x)))
+                }
+                placeholder="Tour Tee, Parking Pass…"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Price ({currencySymbol.trim()})</Label>
+              <Input
+                type="number"
+                value={m.price}
+                onChange={(e) =>
+                  setMerch(
+                    merch.map((x) => (x.id === m.id ? { ...x, price: Number(e.target.value) } : x)),
+                  )
+                }
+                placeholder="0"
+              />
+            </div>
             <Button
               variant="ghost"
               size="icon"
+              className="mb-1"
               onClick={() => setMerch(merch.filter((x) => x.id !== m.id))}
             >
               <Trash2 className="h-4 w-4 text-muted-foreground" />
@@ -617,12 +689,14 @@ function PublishReview({
   merch,
   onPublish,
   isPending,
+  currencySymbol,
 }: {
   data: any;
   tickets: Ticket[];
   merch: Merch[];
   onPublish: () => void;
   isPending?: boolean;
+  currencySymbol: string;
 }) {
   return (
     <div className="space-y-5">
@@ -666,7 +740,7 @@ function PublishReview({
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
             {tickets.map((t) => (
               <li key={t.id}>
-                · {t.name} — ${t.price} × {t.quantity}
+                · {t.name} — {currencySymbol}{t.price} × {t.quantity}
               </li>
             ))}
           </ul>
@@ -676,7 +750,7 @@ function PublishReview({
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
             {merch.map((m) => (
               <li key={m.id}>
-                · {m.name || "(unnamed)"} — ${m.price}
+                · {m.name || "(unnamed)"} — {currencySymbol}{m.price}
               </li>
             ))}
           </ul>

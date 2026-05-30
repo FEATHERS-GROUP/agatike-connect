@@ -83,6 +83,7 @@ function Workspaces() {
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("Rwanda");
   const [address, setAddress] = useState("");
+  const [currency, setCurrency] = useState("rwf");
   const [desc, setDesc] = useState("");
   const [icon, setIcon] = useState("");
   const [modules, setModules] = useState<string[]>([]);
@@ -135,7 +136,7 @@ function Workspaces() {
     if (!name.trim()) return;
     const computedSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     createWorkspace({ 
-      name, type, city, country, address, icon, modules 
+      name, type, city, country, address, icon, modules, currency 
     });
     setCreated(true);
     setTimeout(() => {
@@ -347,6 +348,42 @@ function Workspaces() {
                       <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Kigali" className="h-12 text-lg rounded-xl bg-secondary/50" />
                     </div>
                     <div className="space-y-2">
+                      <Label className="text-base font-semibold">Wallet Currency</Label>
+                      <select 
+                        value={currency} 
+                        onChange={(e) => setCurrency(e.target.value)} 
+                        className="flex h-12 w-full rounded-xl border border-input bg-secondary/50 px-3 py-2 text-lg ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <optgroup label="Global">
+                          <option value="dollars">US Dollars ($)</option>
+                          <option value="euros">Euros (€)</option>
+                          <option value="pounds">British Pounds (£)</option>
+                        </optgroup>
+                        
+                        <optgroup label="East Africa">
+                          <option value="rwf">Rwandan Francs (RWF)</option>
+                          <option value="kes">Kenyan Shillings (KES)</option>
+                          <option value="ugx">Ugandan Shillings (UGX)</option>
+                          <option value="tzs">Tanzanian Shillings (TZS)</option>
+                          <option value="bif">Burundian Francs (BIF)</option>
+                        </optgroup>
+                        
+                        <optgroup label="West & South Africa">
+                          <option value="ngn">Nigerian Naira (₦)</option>
+                          <option value="ghs">Ghanaian Cedi (GH₵)</option>
+                          <option value="zar">South African Rand (R)</option>
+                          <option value="cfa">CFA Franc (CFA)</option>
+                        </optgroup>
+                        
+                        <optgroup label="Other">
+                          <option value="cad">Canadian Dollars (CAD)</option>
+                          <option value="aud">Australian Dollars (AUD)</option>
+                          <option value="inr">Indian Rupee (₹)</option>
+                          <option value="aed">UAE Dirham (AED)</option>
+                        </optgroup>
+                      </select>
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
                       <Label className="text-base font-semibold">Full Address</Label>
                       <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="123 Event Street" className="h-12 text-lg rounded-xl bg-secondary/50" />
                     </div>

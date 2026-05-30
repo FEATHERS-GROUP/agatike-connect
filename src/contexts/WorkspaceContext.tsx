@@ -19,6 +19,10 @@ export type Workspace = {
   updated_at: string;
   icon?: string;
   modules?: string[];
+  wallet?: {
+    currency: string;
+    [key: string]: any;
+  };
 };
 
 interface WorkspaceContextType {

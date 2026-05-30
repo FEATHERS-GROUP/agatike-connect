@@ -78,13 +78,44 @@ export const createDatabaseWorkspace = createServerFn({ method: "POST" })
     `;
 
     const variables = {
-      ...input,
+      address: input.address || "",
+      city: input.city || "",
+      country: input.country || "",
+      logo: input.logo || "",
+      moduls: input.moduls || "",
+      name: input.name || "",
+      type: input.type || "",
       orgnizer_id: session.sub,
       updated_at: new Date().toISOString()
     };
 
     const data = await hasuraRequest<{ insert_workspaces: { returning: any[] } }>(mutation, variables);
-    return data.insert_workspaces.returning[0];
+    const workspace = data.insert_workspaces.returning[0];
+
+    if (workspace && workspace.id) {
+      // Create Wallet
+      const walletNumber = Math.random().toString(36).substring(2, 11).toUpperCase().padEnd(9, '0');
+      const walletMutation = `
+        mutation CreateWallet($amount: numeric = "0", $currency: String = "", $updated_at: timestamptz = "", $walletNumber: String = "", $workspace_id: uuid = "") {
+          insert_wallets(objects: {amount: $amount, currency: $currency, deleted: false, updated_at: $updated_at, walletNumber: $walletNumber, workspace_id: $workspace_id}) {
+            affected_rows
+          }
+        }
+      `;
+      try {
+        await hasuraRequest(walletMutation, {
+          amount: 0,
+          currency: input.currency || "dollars",
+          updated_at: new Date().toISOString(),
+          walletNumber,
+          workspace_id: workspace.id
+        });
+      } catch (err) {
+        console.error("Failed to create wallet for workspace", err);
+      }
+    }
+
+    return workspace;
   });
 
 export const updateDatabaseWorkspace = createServerFn({ method: "POST" })
