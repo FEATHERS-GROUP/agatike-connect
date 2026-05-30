@@ -4,6 +4,8 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import QRCodeImport from "react-qr-code";
 const QRCode = (QRCodeImport as any).default || QRCodeImport;
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import {
   ArrowLeft,
   Ticket as TicketIcon,
@@ -22,6 +24,11 @@ import {
   Edit2,
   MapPin,
   UserPlus,
+  Layout,
+  Move,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,6 +89,22 @@ const fonts = [
   { name: "Tech", css: "'Roboto Mono', monospace" },
 ];
 
+type TicketLayout = {
+  titleSize: number;       // px
+  subtitleSize: number;    // px
+  metaSize: number;        // px
+  titleAlign: "left" | "center" | "right";
+  titleOffsetY: number;    // % from default position
+  subtitleOffsetY: number;
+  metaOffsetY: number;
+};
+
+type TicketBack = {
+  backText: string;
+  backImage: string;
+  backImageOpacity: number;
+};
+
 type TicketDesign = {
   template: Template;
   palette: any;
@@ -99,6 +122,26 @@ type TicketDesign = {
   logoScale?: number;
   logoOpacity?: number;
   logoColorMode?: "original" | "white" | "black";
+  layout?: TicketLayout;
+  back?: TicketBack;
+};
+
+const defaultLayout: TicketLayout = {
+  titleSize: 30,
+  subtitleSize: 14,
+  metaSize: 11,
+  titleAlign: "left",
+  titleOffsetY: 0,
+  subtitleOffsetY: 0,
+  metaOffsetY: 0,
+};
+
+const DEFAULT_TERMS_HTML = `<p><strong>Terms &amp; Conditions</strong></p><p>• Ticket is non-refundable and non-transferable.</p><p>• Organizer reserves the right to refuse entry.</p><p>• Retain this ticket for the duration of the event.</p>`;
+
+const defaultBack: TicketBack = {
+  backText: DEFAULT_TERMS_HTML,
+  backImage: "",
+  backImageOpacity: 0.35,
 };
 
 function TicketDesignerPage() {
@@ -136,7 +179,7 @@ function TicketDesignerPage() {
   const [activeTourStopIdx, setActiveTourStopIdx] = useState<number>(-1);
   const [activeTierId, setActiveTierId] = useState<string>("");
   const [editScope, setEditScope] = useState<"base" | "stop" | "tier" | "combination">("base");
-  const [activeTab, setActiveTab] = useState<"setup" | "design" | "media" | "content">("setup");
+  const [activeTab, setActiveTab] = useState<"setup" | "design" | "media" | "content" | "layout" | "back">("setup");
   const [previewMode, setPreviewMode] = useState<"Front" | "Back" | "Mobile">("Front");
   const [isDirty, setIsDirty] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -158,6 +201,8 @@ function TicketDesignerPage() {
     logoScale: existingProject?.logoScale || 24,
     logoOpacity: existingProject?.logoOpacity ?? 1,
     logoColorMode: existingProject?.logoColorMode || "original",
+    layout: defaultLayout,
+    back: defaultBack,
   });
 
   const [overrides, setOverrides] = useState<any>(existingProject?.design_overrides || {
@@ -170,6 +215,7 @@ function TicketDesignerPage() {
     if (dbProject && !isInitialized) {
       setProjectName(dbProject.name || "Untitled Project");
       setEventId(dbProject.eventId || "");
+      const savedOverrides = dbProject.design_overrides || {};
       setBaseDesign({
         template: dbProject.template || initialTemplate,
         palette: dbProject.palette || palettes[0],
@@ -187,8 +233,10 @@ function TicketDesignerPage() {
         logoScale: Number(dbProject.logoScale) || 24,
         logoOpacity: Number(dbProject.logoOpacity) || 1,
         logoColorMode: dbProject.logoColorMode || "original",
+        layout: savedOverrides.layout || defaultLayout,
+        back: savedOverrides.back || defaultBack,
       });
-      setOverrides(dbProject.design_overrides || { tourStops: {}, tiers: {}, combinations: {} });
+      setOverrides(savedOverrides.overrides || { tourStops: {}, tiers: {}, combinations: {} });
       setIsInitialized(true);
       setIsDirty(false);
     }
@@ -281,8 +329,12 @@ function TicketDesignerPage() {
     saveMutation.mutate({
       id: projectId,
       coverImage: mergedDesign.cover,
-      design_overrides: overrides,
-      eventId: eventId || "",
+      design_overrides: {
+        overrides,
+        layout: mergedDesign.layout || defaultLayout,
+        back: mergedDesign.back || defaultBack,
+      },
+      eventId: eventId || null,
       font: mergedDesign.font,
       logoText: mergedDesign.logoText,
       name: projectName,
@@ -291,7 +343,6 @@ function TicketDesignerPage() {
       template: mergedDesign.template,
       tier: dynamicDefaults.tierName,
       updated_on: new Date().toISOString(),
-      workspaceId: activeWorkspace?.id || "",
       logoScale: String(mergedDesign.logoScale || 24),
       logoImage: mergedDesign.logoImage || "",
       logoColorMode: mergedDesign.logoColorMode || "original",
@@ -373,31 +424,16 @@ function TicketDesignerPage() {
       <div className="grid gap-6 p-6 lg:grid-cols-[360px_1fr]">
         {/* Controls */}
         <aside className="space-y-6">
-          <div className="flex gap-1 rounded-xl bg-secondary/50 p-1">
-            <button
-              onClick={() => setActiveTab("setup")}
-              className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all ${activeTab === "setup" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
-            >
-              Setup
-            </button>
-            <button
-              onClick={() => setActiveTab("design")}
-              className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all ${activeTab === "design" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
-            >
-              Design
-            </button>
-            <button
-              onClick={() => setActiveTab("media")}
-              className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all ${activeTab === "media" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
-            >
-              Media
-            </button>
-            <button
-              onClick={() => setActiveTab("content")}
-              className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all ${activeTab === "content" ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
-            >
-              Content
-            </button>
+          <div className="grid grid-cols-3 gap-1 rounded-xl bg-secondary/50 p-1">
+            {(["setup", "design", "media", "layout", "back", "content"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`rounded-lg px-2 py-1.5 text-xs font-medium transition-all capitalize ${activeTab === tab ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
+              >
+                {tab === "back" ? "Back Side" : tab}
+              </button>
+            ))}
           </div>
 
           {activeTab === "setup" && (
@@ -537,7 +573,7 @@ function TicketDesignerPage() {
                     className="hidden"
                     onChange={(e) => onUpload(e.target.files?.[0])}
                   />
-                  {mergedDesign.cover ? "Replace cover" : "Drop image or click to upload"}
+                  {(mergedDesign.cover || eventMatch?.cover) ? "Replace cover" : "Drop image or click to upload"}
                 </label>
               </Section>
 
@@ -622,43 +658,172 @@ function TicketDesignerPage() {
           {activeTab === "content" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
               <Section title="Content" icon={TicketIcon}>
+                <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 mb-3">
+                  <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">Event details (title, venue, dates) are pulled automatically from the linked event. Only brand information can be edited here.</p>
+                </div>
                 <div className="space-y-3">
-                  <Field label="Title">
-                    <Input value={mergedDesign.title || dynamicDefaults.title || ""} onChange={(e) => updateDesign("title", e.target.value)} placeholder={dynamicDefaults.title} />
-                  </Field>
-                  <Field label="Subtitle / Venue">
-                    <Input value={mergedDesign.subtitle || dynamicDefaults.subtitle || ""} onChange={(e) => updateDesign("subtitle", e.target.value)} placeholder={dynamicDefaults.subtitle} />
-                  </Field>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Date">
-                      <Input value={mergedDesign.date || dynamicDefaults.date || ""} onChange={(e) => updateDesign("date", e.target.value)} placeholder={dynamicDefaults.date} />
-                    </Field>
-                    <Field label="Time">
-                      <Input value={mergedDesign.time || dynamicDefaults.time || ""} onChange={(e) => updateDesign("time", e.target.value)} placeholder={dynamicDefaults.time} />
-                    </Field>
-                  </div>
-                  <Field label="Seat / Section">
-                    <Input value={mergedDesign.seat || ""} onChange={(e) => updateDesign("seat", e.target.value)} placeholder={dynamicDefaults.seat} />
-                  </Field>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-1">
-                      <Field label="Currency">
-                        <Input value={mergedDesign.currency || ""} onChange={(e) => updateDesign("currency", e.target.value)} placeholder={dynamicDefaults.currency} />
-                      </Field>
-                    </div>
-                    <div className="col-span-2">
-                      <Field label="Price">
-                        <Input
-                          value={mergedDesign.price || ""}
-                          onChange={(e) => updateDesign("price", e.target.value)}
-                          placeholder={dynamicDefaults.price}
-                        />
-                      </Field>
-                    </div>
-                  </div>
                   <Field label="Brand / Workspace Name">
                     <Input value={mergedDesign.logoText || ""} onChange={(e) => updateDesign("logoText", e.target.value)} placeholder={dynamicDefaults.brand} />
                   </Field>
+                  <Field label="Seat / Section">
+                    <Input value={mergedDesign.seat || ""} onChange={(e) => updateDesign("seat", e.target.value)} placeholder={dynamicDefaults.seat} />
+                  </Field>
+                </div>
+              </Section>
+            </div>
+          )}
+
+          {activeTab === "layout" && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+              <Section title="Text Sizes" icon={Type}>
+                <div className="space-y-4">
+                  <Field label={`Title size: ${mergedDesign.layout?.titleSize ?? defaultLayout.titleSize}px`}>
+                    <input
+                      type="range" min="18" max="52" step="1"
+                      value={mergedDesign.layout?.titleSize ?? defaultLayout.titleSize}
+                      onChange={(e) => updateDesign("layout", { ...(mergedDesign.layout || defaultLayout), titleSize: Number(e.target.value) })}
+                      className="w-full accent-primary"
+                    />
+                  </Field>
+                  <Field label={`Subtitle size: ${mergedDesign.layout?.subtitleSize ?? defaultLayout.subtitleSize}px`}>
+                    <input
+                      type="range" min="10" max="24" step="1"
+                      value={mergedDesign.layout?.subtitleSize ?? defaultLayout.subtitleSize}
+                      onChange={(e) => updateDesign("layout", { ...(mergedDesign.layout || defaultLayout), subtitleSize: Number(e.target.value) })}
+                      className="w-full accent-primary"
+                    />
+                  </Field>
+                  <Field label={`Info row size: ${mergedDesign.layout?.metaSize ?? defaultLayout.metaSize}px`}>
+                    <input
+                      type="range" min="8" max="18" step="1"
+                      value={mergedDesign.layout?.metaSize ?? defaultLayout.metaSize}
+                      onChange={(e) => updateDesign("layout", { ...(mergedDesign.layout || defaultLayout), metaSize: Number(e.target.value) })}
+                      className="w-full accent-primary"
+                    />
+                  </Field>
+                </div>
+              </Section>
+
+              <Section title="Text Alignment" icon={AlignLeft}>
+                <Field label="Title alignment">
+                  <div className="flex gap-2">
+                    {(["left", "center", "right"] as const).map((align) => {
+                      const Icon = align === "left" ? AlignLeft : align === "center" ? AlignCenter : AlignRight;
+                      return (
+                        <button
+                          key={align}
+                          onClick={() => updateDesign("layout", { ...(mergedDesign.layout || defaultLayout), titleAlign: align })}
+                          className={`flex-1 flex items-center justify-center gap-1 rounded-lg border py-2 text-xs transition ${
+                            (mergedDesign.layout?.titleAlign ?? "left") === align
+                              ? "border-primary bg-primary/20 text-primary"
+                              : "border-border/60 hover:bg-secondary"
+                          }`}
+                        >
+                          <Icon className="h-3 w-3" />
+                          {align.charAt(0).toUpperCase() + align.slice(1)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Field>
+              </Section>
+
+              <Section title="Vertical Position" icon={Move}>
+                <div className="space-y-4">
+                  <Field label={`Title Y offset: ${mergedDesign.layout?.titleOffsetY ?? 0}%`}>
+                    <input
+                      type="range" min="-30" max="30" step="1"
+                      value={mergedDesign.layout?.titleOffsetY ?? 0}
+                      onChange={(e) => updateDesign("layout", { ...(mergedDesign.layout || defaultLayout), titleOffsetY: Number(e.target.value) })}
+                      className="w-full accent-primary"
+                    />
+                  </Field>
+                  <Field label={`Subtitle Y offset: ${mergedDesign.layout?.subtitleOffsetY ?? 0}%`}>
+                    <input
+                      type="range" min="-30" max="30" step="1"
+                      value={mergedDesign.layout?.subtitleOffsetY ?? 0}
+                      onChange={(e) => updateDesign("layout", { ...(mergedDesign.layout || defaultLayout), subtitleOffsetY: Number(e.target.value) })}
+                      className="w-full accent-primary"
+                    />
+                  </Field>
+                  <Field label={`Info row Y offset: ${mergedDesign.layout?.metaOffsetY ?? 0}%`}>
+                    <input
+                      type="range" min="-30" max="30" step="1"
+                      value={mergedDesign.layout?.metaOffsetY ?? 0}
+                      onChange={(e) => updateDesign("layout", { ...(mergedDesign.layout || defaultLayout), metaOffsetY: Number(e.target.value) })}
+                      className="w-full accent-primary"
+                    />
+                  </Field>
+                  <button
+                    onClick={() => updateDesign("layout", defaultLayout)}
+                    className="w-full rounded-xl border border-border/60 py-2 text-xs text-muted-foreground hover:bg-secondary transition"
+                  >
+                    Reset to defaults
+                  </button>
+                </div>
+              </Section>
+            </div>
+          )}
+
+          {activeTab === "back" && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+              <Section title="Back Side Text" icon={Type}>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Custom message / terms</Label>
+                  <div className="quill-ticket-editor rounded-xl overflow-hidden border border-border/60">
+                    <ReactQuill
+                      theme="snow"
+                      value={mergedDesign.back?.backText ?? DEFAULT_TERMS_HTML}
+                      onChange={(val) => updateDesign("back", { ...(mergedDesign.back || defaultBack), backText: val })}
+                      modules={{
+                        toolbar: [
+                          [{ header: [false, 2, 3] }],
+                          ["bold", "italic", "underline"],
+                          [{ list: "ordered" }, { list: "bullet" }],
+                          ["clean"],
+                        ],
+                      }}
+                      formats={["header", "bold", "italic", "underline", "list", "bullet"]}
+                    />
+                  </div>
+                </div>
+              </Section>
+
+              <Section title="Back Side Image" icon={ImageIcon}>
+                <div className="space-y-3">
+                  <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground hover:bg-secondary">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = () => updateDesign("back", { ...(mergedDesign.back || defaultBack), backImage: String(reader.result) });
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                    {mergedDesign.back?.backImage ? "Replace back image" : "Upload background image for back"}
+                  </label>
+                  {mergedDesign.back?.backImage && (
+                    <>
+                      <Field label={`Image opacity: ${Math.round((mergedDesign.back?.backImageOpacity ?? 0.35) * 100)}%`}>
+                        <input
+                          type="range" min="0.05" max="1" step="0.05"
+                          value={mergedDesign.back?.backImageOpacity ?? 0.35}
+                          onChange={(e) => updateDesign("back", { ...(mergedDesign.back || defaultBack), backImageOpacity: Number(e.target.value) })}
+                          className="w-full accent-primary"
+                        />
+                      </Field>
+                      <button
+                        onClick={() => updateDesign("back", { ...(mergedDesign.back || defaultBack), backImage: "" })}
+                        className="w-full rounded-xl border border-destructive/40 py-2 text-xs text-destructive hover:bg-destructive/10 transition"
+                      >
+                        Remove image
+                      </button>
+                    </>
+                  )}
                 </div>
               </Section>
             </div>
@@ -688,7 +853,7 @@ function TicketDesignerPage() {
               </div>
             </div>
 
-            <div className="flex justify-center">
+            <div className="flex justify-center overflow-x-auto">
               <TicketPreview
                 template={mergedDesign.template}
                 palette={mergedDesign.palette}
@@ -701,7 +866,7 @@ function TicketDesignerPage() {
                 seat={mergedDesign.seat || dynamicDefaults.seat}
                 price={mergedDesign.price || dynamicDefaults.price || ""}
                 currency={mergedDesign.currency || dynamicDefaults.currency}
-                cover={mergedDesign.cover}
+                cover={mergedDesign.cover || eventMatch?.cover || ""}
                 logoText={mergedDesign.logoText || dynamicDefaults.brand}
                 logoImage={mergedDesign.logoImage}
                 logoScale={mergedDesign.logoScale || 24}
@@ -710,6 +875,8 @@ function TicketDesignerPage() {
                 orderId={orderId}
                 previewMode={previewMode}
                 onLogoClick={handleLogoClick}
+                layout={mergedDesign.layout || defaultLayout}
+                back={mergedDesign.back || defaultBack}
               />
             </div>
           </div>
@@ -784,6 +951,8 @@ function TicketPreview(props: {
   orderId: string;
   previewMode: "Front" | "Back" | "Mobile";
   onLogoClick?: () => void;
+  layout: TicketLayout;
+  back: TicketBack;
 }) {
   const {
     palette,
@@ -806,6 +975,8 @@ function TicketPreview(props: {
     template,
     previewMode,
     onLogoClick,
+    layout,
+    back,
   } = props;
 
   if (previewMode === "Front" || previewMode === "Back") {
@@ -854,20 +1025,41 @@ function TicketPreview(props: {
             </div>
 
             {isBack ? (
-              <div className="mt-4 flex-1 space-y-1 text-[10px] text-white/80 flex flex-col justify-end">
-                <p className="font-bold uppercase tracking-widest text-white mb-1">Terms & Conditions</p>
-                <p>• Ticket is non-refundable and non-transferable.</p>
-                <p>• Organizer reserves the right to refuse entry.</p>
-                <p>• Retain this ticket for the duration of the event.</p>
+              <div className="mt-4 flex-1 flex flex-col justify-end relative">
+                {back.backImage && (
+                  <img
+                    src={back.backImage}
+                    className="absolute inset-0 h-full w-full object-cover rounded-xl"
+                    style={{ opacity: back.backImageOpacity }}
+                    alt=""
+                  />
+                )}
+                <div
+                  className="relative z-10 ticket-back-content text-[10px] text-white/80 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: back.backText || DEFAULT_TERMS_HTML }}
+                />
               </div>
             ) : (
               <>
-                <div>
-                  <h2 className="text-3xl font-black leading-tight drop-shadow">{title}</h2>
-                  <p className="mt-1 text-sm text-white/80">{subtitle}</p>
+                <div style={{ marginTop: `${layout.titleOffsetY}%`, textAlign: layout.titleAlign }}>
+                  <h2
+                    className="font-black leading-tight drop-shadow"
+                    style={{ fontSize: `${layout.titleSize}px` }}
+                  >
+                    {title}
+                  </h2>
+                  <p
+                    className="mt-1 text-white/80"
+                    style={{ fontSize: `${layout.subtitleSize}px`, marginTop: `${layout.subtitleOffsetY * 0.3}%` }}
+                  >
+                    {subtitle}
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-4 gap-3 text-[11px]">
+                <div
+                  className="grid grid-cols-4 gap-3"
+                  style={{ fontSize: `${layout.metaSize}px`, marginTop: `${layout.metaOffsetY * 0.3}%` }}
+                >
                   <Cell label="Date" value={date} />
                   <Cell label="Time" value={time} />
                   <Cell label="Seat" value={seat} />
@@ -903,9 +1095,9 @@ function TicketPreview(props: {
 
 function Cell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-white/10 p-2 backdrop-blur-md border border-white/10">
-      <p className="text-[9px] uppercase tracking-widest text-white/70">{label}</p>
-      <p className="mt-0.5 text-xs font-bold">{value}</p>
+    <div className="flex flex-col gap-0.5 border-t border-white/20 pt-2">
+      <p className="text-[9px] uppercase tracking-widest text-white/50">{label}</p>
+      <p className="text-xs font-bold">{value}</p>
     </div>
   );
 }

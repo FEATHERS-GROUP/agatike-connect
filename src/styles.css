@@ -165,3 +165,81 @@
   border-top-color: var(--color-primary) !important;
   border-left-color: var(--color-primary) !important;
 }
+
+/* ─── Quill WYSIWYG editor – ticket back side ─────────────────────────── */
+.quill-ticket-editor .ql-toolbar {
+  border: none !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  background: var(--color-secondary);
+  padding: 6px 8px;
+  font-family: inherit;
+}
+
+.quill-ticket-editor .ql-container {
+  border: none !important;
+  font-family: inherit;
+  font-size: 0.875rem;
+  min-height: 140px;
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+.quill-ticket-editor .ql-editor {
+  min-height: 120px;
+  padding: 10px 12px;
+  color: var(--color-foreground);
+}
+
+.quill-ticket-editor .ql-editor.ql-blank::before {
+  color: var(--color-muted-foreground);
+  font-style: normal;
+}
+
+.quill-ticket-editor .ql-toolbar button,
+.quill-ticket-editor .ql-toolbar .ql-picker-label {
+  color: var(--color-foreground) !important;
+}
+
+.quill-ticket-editor .ql-toolbar button:hover,
+.quill-ticket-editor .ql-toolbar button.ql-active {
+  color: var(--color-primary) !important;
+}
+
+.quill-ticket-editor .ql-toolbar .ql-stroke {
+  stroke: currentColor !important;
+}
+
+.quill-ticket-editor .ql-toolbar .ql-fill {
+  fill: currentColor !important;
+}
+
+.quill-ticket-editor .ql-snow .ql-picker-options {
+  background: var(--color-card);
+  border-color: var(--color-border);
+  color: var(--color-foreground);
+}
+
+/* ─── Ticket back – rendered HTML content ─────────────────────────────── */
+.ticket-back-content p {
+  margin: 0 0 2px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.ticket-back-content strong {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #fff;
+}
+
+.ticket-back-content ul,
+.ticket-back-content ol {
+  padding-left: 14px;
+  margin: 2px 0;
+}
+
+.ticket-back-content li {
+  font-size: 10px;
+  line-height: 1.4;
+}
