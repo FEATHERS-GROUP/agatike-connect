@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as VenueDesignerRouteImport } from './routes/venue-designer'
+import { Route as TicketDesignerRouteImport } from './routes/ticket-designer'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OrganizersRouteImport } from './routes/organizers'
@@ -54,6 +56,16 @@ import { Route as DashboardWorkspaceSlugEventsEventIdCustomersRouteImport } from
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
   path: '/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VenueDesignerRoute = VenueDesignerRouteImport.update({
+  id: '/venue-designer',
+  path: '/venue-designer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TicketDesignerRoute = TicketDesignerRouteImport.update({
+  id: '/ticket-designer',
+  path: '/ticket-designer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SigninRoute = SigninRouteImport.update({
@@ -290,6 +302,8 @@ export interface FileRoutesByFullPath {
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
+  '/ticket-designer': typeof TicketDesignerRoute
+  '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
@@ -333,6 +347,8 @@ export interface FileRoutesByTo {
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
+  '/ticket-designer': typeof TicketDesignerRoute
+  '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
@@ -377,6 +393,8 @@ export interface FileRoutesById {
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
+  '/ticket-designer': typeof TicketDesignerRoute
+  '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
@@ -422,6 +440,8 @@ export interface FileRouteTypes {
     | '/organizers'
     | '/profile'
     | '/signin'
+    | '/ticket-designer'
+    | '/venue-designer'
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
@@ -465,6 +485,8 @@ export interface FileRouteTypes {
     | '/organizers'
     | '/profile'
     | '/signin'
+    | '/ticket-designer'
+    | '/venue-designer'
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
@@ -508,6 +530,8 @@ export interface FileRouteTypes {
     | '/organizers'
     | '/profile'
     | '/signin'
+    | '/ticket-designer'
+    | '/venue-designer'
     | '/wallet'
     | '/book/$eventId'
     | '/community/$postId'
@@ -552,6 +576,8 @@ export interface RootRouteChildren {
   OrganizersRoute: typeof OrganizersRoute
   ProfileRoute: typeof ProfileRoute
   SigninRoute: typeof SigninRoute
+  TicketDesignerRoute: typeof TicketDesignerRoute
+  VenueDesignerRoute: typeof VenueDesignerRoute
   WalletRoute: typeof WalletRoute
   BookEventIdRoute: typeof BookEventIdRoute
   CommunityPostIdRoute: typeof CommunityPostIdRoute
@@ -567,6 +593,20 @@ declare module '@tanstack/react-router' {
       path: '/wallet'
       fullPath: '/wallet'
       preLoaderRoute: typeof WalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/venue-designer': {
+      id: '/venue-designer'
+      path: '/venue-designer'
+      fullPath: '/venue-designer'
+      preLoaderRoute: typeof VenueDesignerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ticket-designer': {
+      id: '/ticket-designer'
+      path: '/ticket-designer'
+      fullPath: '/ticket-designer'
+      preLoaderRoute: typeof TicketDesignerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signin': {
@@ -951,6 +991,8 @@ const rootRouteChildren: RootRouteChildren = {
   OrganizersRoute: OrganizersRoute,
   ProfileRoute: ProfileRoute,
   SigninRoute: SigninRoute,
+  TicketDesignerRoute: TicketDesignerRoute,
+  VenueDesignerRoute: VenueDesignerRoute,
   WalletRoute: WalletRoute,
   BookEventIdRoute: BookEventIdRoute,
   CommunityPostIdRoute: CommunityPostIdRoute,
