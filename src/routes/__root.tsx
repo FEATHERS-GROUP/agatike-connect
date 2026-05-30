@@ -112,6 +112,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 import { MobileNav } from "@/components/mobile/MobileNav";
 import { AppProvider } from "@/lib/AppContext";
 import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
+import { LoaderProvider } from "@/contexts/LoaderContext";
 import { Toaster } from "@/components/ui/sonner";
 
 function RootComponent() {
@@ -125,19 +126,21 @@ function RootComponent() {
     <AppProvider>
       <QueryClientProvider client={queryClient}>
         <WorkspaceProvider>
-          {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
-          <div className={`min-h-screen md:pb-0 ${hideNav ? "" : "pb-24"}`}>
-            <Outlet />
-          </div>
-
-          {/* Floating Mobile Navigation - Hidden on Desktop */}
-          {!hideNav && (
-            <div className="md:hidden">
-              <MobileNav />
+          <LoaderProvider>
+            {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
+            <div className={`min-h-screen md:pb-0 ${hideNav ? "" : "pb-24"}`}>
+              <Outlet />
             </div>
-          )}
-          
-          <Toaster position="top-center" />
+
+            {/* Floating Mobile Navigation - Hidden on Desktop */}
+            {!hideNav && (
+              <div className="md:hidden">
+                <MobileNav />
+              </div>
+            )}
+            
+            <Toaster position="top-center" />
+          </LoaderProvider>
         </WorkspaceProvider>
       </QueryClientProvider>
     </AppProvider>
