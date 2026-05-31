@@ -4,7 +4,7 @@ config();
 async function run() {
   const query = `
     query IntrospectionQuery {
-      __type(name: "event_tickets") {
+      __type(name: "event_staff") {
         name
         fields {
           name

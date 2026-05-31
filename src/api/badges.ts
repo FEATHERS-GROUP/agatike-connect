@@ -44,6 +44,31 @@ export const getBadgeProjectById = createServerFn({ method: "POST" }).handler(as
   return data.badge_projects_by_pk || null;
 });
 
+const GET_BADGE_PROJECT_BY_EVENT_ID = `
+  query GetBadgeProjectByEventId($event_id: uuid!) {
+    badge_projects(where: { event_id: { _eq: $event_id } }, limit: 1) {
+      id
+      accent_color
+      back_design
+      bg_image_url
+      event_id
+      font_family
+      front_design
+      gradient_class
+      logo_text
+      show_user_image
+      sponsors_json
+      theme
+    }
+  }
+`;
+
+export const getBadgeProjectByEventId = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { event_id } = ctx.data as unknown as { event_id: string };
+  const data = await hasuraRequest<{ badge_projects: any[] }>(GET_BADGE_PROJECT_BY_EVENT_ID, { event_id });
+  return data.badge_projects?.[0] || null;
+});
+
 const INSERT_BADGE_PROJECT_MUTATION = `
   mutation InsertBadgeProject($id: uuid, $accent_color: String = "", $back_design: jsonb = "", $bg_image_url: String = "", $event_id: uuid = "", $font_family: String = "", $front_design: jsonb = "", $gradient_class: String = "", $logo_text: String = "", $sponsors_json: jsonb = "[]", $theme: String = "", $show_user_image: Boolean = false) {
     insert_badge_projects_one(object: {id: $id, accent_color: $accent_color, back_design: $back_design, bg_image_url: $bg_image_url, event_id: $event_id, font_family: $font_family, front_design: $front_design, gradient_class: $gradient_class, logo_text: $logo_text, show_user_image: $show_user_image, sponsors_json: $sponsors_json, theme: $theme}, on_conflict: {constraint: badge_projects_pkey, update_columns: [accent_color, back_design, bg_image_url, event_id, font_family, front_design, gradient_class, logo_text, show_user_image, sponsors_json, theme]}) {

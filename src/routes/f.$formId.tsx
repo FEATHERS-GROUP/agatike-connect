@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, UploadCloud, FileIcon } from "lucide-react";
+import { uploadFileToStorage } from "@/lib/firebase-storage";
 import {
   Select,
   SelectContent,
@@ -77,6 +78,21 @@ function PublicFormPage() {
 
   const updateField = (id: string, value: any) => {
     setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleFileUpload = async (fieldId: string, file: File) => {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      return toast.error("File is too large (max 5MB)");
+    }
+    const loadingToast = toast.loading("Uploading file...");
+    try {
+      const url = await uploadFileToStorage(file, `form_uploads/${formId}`);
+      updateField(fieldId, url);
+      toast.success("File uploaded successfully", { id: loadingToast });
+    } catch (error) {
+      toast.error("Failed to upload file", { id: loadingToast });
+    }
   };
 
   if (isLoading) {
@@ -197,6 +213,53 @@ function PublicFormPage() {
                     <textarea
                       required={field.is_required}
                       className="flex min-h-[120px] w-full rounded-xl border border-input bg-secondary/50 px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={formData[field.id] || ""}
+                      onChange={(e) => updateField(field.id, e.target.value)}
+                    />
+                  )}
+
+                  {field.field_type === "file" && (
+                    <div className="flex flex-col gap-3">
+                      <Label
+                        htmlFor={`file-${field.id}`}
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl border-border/60 bg-secondary/20 hover:bg-secondary/40 transition-colors cursor-pointer"
+                      >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          {formData[field.id] ? (
+                            <>
+                              <FileIcon className="w-8 h-8 mb-3 text-primary" />
+                              <p className="mb-2 text-sm text-foreground font-semibold">File Uploaded</p>
+                              <a href={formData[field.id]} target="_blank" rel="noreferrer" className="text-xs text-primary underline truncate max-w-[200px]" onClick={(e) => e.stopPropagation()}>View File</a>
+                            </>
+                          ) : (
+                            <>
+                              <UploadCloud className="w-8 h-8 mb-3 text-muted-foreground" />
+                              <p className="mb-2 text-sm text-muted-foreground">
+                                <span className="font-semibold text-foreground">Click to upload</span>
+                              </p>
+                              <p className="text-xs text-muted-foreground">Max file size: 5MB</p>
+                            </>
+                          )}
+                        </div>
+                        <input
+                          id={`file-${field.id}`}
+                          type="file"
+                          className="hidden"
+                          required={field.is_required && !formData[field.id]}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(field.id, file);
+                          }}
+                        />
+                      </Label>
+                    </div>
+                  )}
+
+                  {field.field_type === "date" && (
+                    <Input
+                      type="date"
+                      required={field.is_required}
+                      className="h-12 bg-secondary/50 rounded-xl"
                       value={formData[field.id] || ""}
                       onChange={(e) => updateField(field.id, e.target.value)}
                     />

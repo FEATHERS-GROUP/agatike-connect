@@ -34,6 +34,7 @@ import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard
 import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
 import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard.$workspaceSlug.index'
+import { Route as PublicBadgeBadgeIdRouteImport } from './routes/public.badge.$badgeId'
 import { Route as DashboardWorkspaceSlugWithdrawalsRouteImport } from './routes/dashboard.$workspaceSlug.withdrawals'
 import { Route as DashboardWorkspaceSlugVenueRentRouteImport } from './routes/dashboard.$workspaceSlug.venue-rent'
 import { Route as DashboardWorkspaceSlugVenueDesignerRouteImport } from './routes/dashboard.$workspaceSlug.venue-designer'
@@ -188,6 +189,11 @@ const DashboardWorkspaceSlugIndexRoute =
     path: '/$workspaceSlug/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const PublicBadgeBadgeIdRoute = PublicBadgeBadgeIdRouteImport.update({
+  id: '/public/badge/$badgeId',
+  path: '/public/badge/$badgeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardWorkspaceSlugWithdrawalsRoute =
   DashboardWorkspaceSlugWithdrawalsRouteImport.update({
     id: '/$workspaceSlug/withdrawals',
@@ -375,6 +381,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
+  '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
@@ -428,6 +435,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
+  '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/dashboard/$workspaceSlug': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
@@ -482,6 +490,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
+  '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
@@ -537,6 +546,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/withdrawals'
+    | '/public/badge/$badgeId'
     | '/dashboard/$workspaceSlug/'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/events/create-event'
@@ -590,6 +600,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/withdrawals'
+    | '/public/badge/$badgeId'
     | '/dashboard/$workspaceSlug'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/events/create-event'
@@ -643,6 +654,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/withdrawals'
+    | '/public/badge/$badgeId'
     | '/dashboard/$workspaceSlug/'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/events/create-event'
@@ -688,6 +700,7 @@ export interface RootRouteChildren {
   FFormIdRoute: typeof FFormIdRoute
   TicketTicketIdRoute: typeof TicketTicketIdRoute
   EventsIndexRoute: typeof EventsIndexRoute
+  PublicBadgeBadgeIdRoute: typeof PublicBadgeBadgeIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -866,6 +879,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/$workspaceSlug/'
       preLoaderRoute: typeof DashboardWorkspaceSlugIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/public/badge/$badgeId': {
+      id: '/public/badge/$badgeId'
+      path: '/public/badge/$badgeId'
+      fullPath: '/public/badge/$badgeId'
+      preLoaderRoute: typeof PublicBadgeBadgeIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/dashboard/$workspaceSlug/withdrawals': {
       id: '/dashboard/$workspaceSlug/withdrawals'
@@ -1180,6 +1200,7 @@ const rootRouteChildren: RootRouteChildren = {
   FFormIdRoute: FFormIdRoute,
   TicketTicketIdRoute: TicketTicketIdRoute,
   EventsIndexRoute: EventsIndexRoute,
+  PublicBadgeBadgeIdRoute: PublicBadgeBadgeIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

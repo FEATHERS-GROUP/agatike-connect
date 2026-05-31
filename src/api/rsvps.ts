@@ -114,3 +114,18 @@ export const createRSVP = createServerFn({ method: "POST" }).handler(async (ctx)
   const data = await hasuraRequest<{ insert_rsvps_one: any }>(CREATE_RSVP, { object });
   return data.insert_rsvps_one;
 });
+
+const UPDATE_RSVP_STATUS = `
+  mutation UpdateRsvpStatus($id: uuid!, $status: String!) {
+    update_rsvps_by_pk(pk_columns: { id: $id }, _set: { status: $status }) {
+      id
+      status
+    }
+  }
+`;
+
+export const updateRsvpStatus = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, status } = ctx.data as unknown as { id: string; status: string };
+  const data = await hasuraRequest<{ update_rsvps_by_pk: any }>(UPDATE_RSVP_STATUS, { id, status });
+  return data.update_rsvps_by_pk;
+});

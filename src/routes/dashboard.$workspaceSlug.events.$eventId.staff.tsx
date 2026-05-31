@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Plus, UserCheck, MapPin, ShieldAlert, Loader2, QrCode, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,6 +29,9 @@ import {
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventSections, getEventStaff, createEventSection, addEventStaff } from "@/api/staff";
+import { getEventById } from "@/api/events";
+import { createCustomForm } from "@/api/rsvps";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/staff")({
@@ -109,24 +112,168 @@ function AddSectionModal({ eventId }: { eventId: string }) {
   );
 }
 
+function GenerateVendorFormModal({ eventId, activeWorkspace }: { eventId: string, activeWorkspace: any }) {
+  const [open, setOpen] = useState(false);
+  const [vendorName, setVendorName] = useState("");
+  const [collectPhone, setCollectPhone] = useState(true);
+  const [collectProfileImage, setCollectProfileImage] = useState(true);
+  const [collectGender, setCollectGender] = useState(false);
+  const [collectDob, setCollectDob] = useState(false);
+  const navigate = useNavigate();
+
+  const { data: eventData } = useQuery({
+    queryKey: ["event", eventId],
+    queryFn: () => getEventById({ data: { id: eventId } } as any),
+    enabled: !!eventId,
+  });
+
+  const generateVendorForm = useMutation({
+    mutationFn: async () => {
+      const fields = [
+        {
+          label: "Staff Member Role / Title",
+          field_type: "text",
+          is_required: true,
+          order: 1
+        }
+      ];
+
+      let order = 2;
+      if (collectPhone) {
+        fields.push({ label: "Staff Member Phone Number", field_type: "text", is_required: true, order: order++ });
+      }
+      if (collectProfileImage) {
+        fields.push({ label: "Profile Image", field_type: "file", is_required: false, order: order++ });
+      }
+      if (collectGender) {
+        fields.push({ label: "Gender", field_type: "select", is_required: false, order: order++, options: ["Male", "Female", "Other", "Prefer not to say"] });
+      }
+      if (collectDob) {
+        fields.push({ label: "Date of Birth", field_type: "date", is_required: false, order: order++ });
+      }
+
+      const formPayload = {
+        title: `${vendorName} - Staff Registration`,
+        description: "Please fill out this form for each staff member you are bringing to the event.",
+        workspace_id: activeWorkspace?.id,
+        event_id: eventId,
+        cover_image_url: eventData?.cover || null,
+        is_active: true,
+        form_fields: {
+          data: fields
+        }
+      };
+      return await createCustomForm({ data: formPayload } as any);
+    },
+    onSuccess: (data: any) => {
+      if (data && data.id) {
+        toast.success("Vendor Form Created");
+        setOpen(false);
+        navigate({ 
+          to: "/dashboard/$workspaceSlug/rsvps/$formId",
+          params: { workspaceSlug: activeWorkspace?.slug || "workspace", formId: data.id }
+        });
+      }
+    },
+    onError: (err: any) => toast.error(err.message || "Failed to generate form")
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button style={{ background: "var(--gradient-primary)", color: "white" }}>
+          <Plus className="mr-2 h-4 w-4" /> Generate Vendor Form
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Setup Vendor Form</DialogTitle>
+          <DialogDescription>
+            Create a custom registration link tailored for a specific vendor or contractor.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-5 py-4">
+          <div className="space-y-2">
+            <Label>Vendor / Company Name</Label>
+            <Input
+              placeholder="e.g. Gorilla Security"
+              value={vendorName}
+              onChange={(e) => setVendorName(e.target.value)}
+            />
+            <p className="text-[10px] text-muted-foreground">This will be used as the form's title.</p>
+          </div>
+          
+          <div className="space-y-3 pt-2 border-t border-border/50">
+            <Label className="text-sm font-semibold">Information to Collect</Label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked disabled className="rounded border-gray-300" />
+                First Name, Last Name, Email <span className="text-xs text-muted-foreground">(Required)</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={collectPhone} onChange={e => setCollectPhone(e.target.checked)} className="rounded border-gray-300" />
+                Phone Number <span className="text-xs text-muted-foreground">(Required)</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={collectProfileImage} onChange={e => setCollectProfileImage(e.target.checked)} className="rounded border-gray-300" />
+                Profile Image <span className="text-xs text-muted-foreground">(Recommended)</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={collectGender} onChange={e => setCollectGender(e.target.checked)} className="rounded border-gray-300" />
+                Gender
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={collectDob} onChange={e => setCollectDob(e.target.checked)} className="rounded border-gray-300" />
+                Date of Birth
+              </label>
+            </div>
+          </div>
+          
+          <Button
+            className="w-full mt-4"
+            style={{ background: "var(--gradient-primary)", color: "white" }}
+            onClick={() => {
+              if (!vendorName) return toast.error("Vendor Name is required");
+              generateVendorForm.mutate();
+            }}
+            disabled={generateVendorForm.isPending}
+          >
+            {generateVendorForm.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Generate Form Link
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[] }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const [registrationType, setRegistrationType] = useState("account"); // "account" or "no-account"
   const [formData, setFormData] = useState({
-    user_id: "", // In a real app this would be an email invite or user search
-    role: "Bartender",
+    user_id: "", 
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    role: "Volunteer",
     section_id: "none",
   });
 
   const mutation = useMutation({
     mutationFn: async () => {
-      // Mock user_id for demonstration if none provided, since we don't have a user search built in yet
-      const finalUserId = formData.user_id || "00000000-0000-0000-0000-000000000000";
+      // Mock user_id for demonstration if none provided
+      const finalUserId = registrationType === "account" ? (formData.user_id || "00000000-0000-0000-0000-000000000000") : null;
       const randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
       return await addEventStaff({
         data: {
           event_id: eventId,
           user_id: finalUserId,
+          first_name: registrationType === "no-account" ? formData.first_name : null,
+          last_name: registrationType === "no-account" ? formData.last_name : null,
+          email: registrationType === "no-account" ? formData.email : null,
+          phone: registrationType === "no-account" ? formData.phone : null,
           role: formData.role,
           section_id: formData.section_id === "none" ? null : formData.section_id,
           badge_qr_string: `STAFF-${randomId}`,
@@ -138,6 +285,15 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
       toast.success("Staff added and badge generated!");
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
+      setFormData({
+        user_id: "", 
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone: "",
+        role: "Volunteer",
+        section_id: "none",
+      });
     },
     onError: (err: any) => toast.error(err.message || "Failed to add staff"),
   });
@@ -152,7 +308,7 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
           <Plus className="mr-1 h-4 w-4" /> Add Staff Member
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Staff Member</DialogTitle>
           <DialogDescription>
@@ -160,14 +316,63 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>User ID / Email</Label>
-            <Input
-              placeholder="Enter User ID (Mocking for now)"
-              value={formData.user_id}
-              onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
-            />
-          </div>
+          <Tabs value={registrationType} onValueChange={setRegistrationType} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="account">Agatike Account</TabsTrigger>
+              <TabsTrigger value="no-account">No Account (Link)</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="account" className="space-y-4 mt-0">
+              <div className="space-y-2">
+                <Label>User ID / Email Search</Label>
+                <Input
+                  placeholder="Enter User ID (Mocking for now)"
+                  value={formData.user_id}
+                  onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
+                />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="no-account" className="space-y-4 mt-0">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>First Name</Label>
+                  <Input
+                    placeholder="John"
+                    value={formData.first_name}
+                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Last Name</Label>
+                  <Input
+                    placeholder="Doe"
+                    value={formData.last_name}
+                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  placeholder="john@example.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Phone</Label>
+                <Input
+                  type="tel"
+                  placeholder="+1 (555) 000-0000"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+
           <div className="space-y-2">
             <Label>Role</Label>
             <Select
@@ -178,10 +383,23 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Security">Security</SelectItem>
-                <SelectItem value="Bartender">Bartender</SelectItem>
-                <SelectItem value="Box Office">Box Office</SelectItem>
+                <SelectItem value="Organizer">Organizer</SelectItem>
+                <SelectItem value="Event Coordinator">Event Coordinator</SelectItem>
                 <SelectItem value="Manager">Manager</SelectItem>
+                <SelectItem value="Security Lead">Security Lead</SelectItem>
+                <SelectItem value="Security">Security</SelectItem>
+                <SelectItem value="Gate Staff">Gate Staff / Check-in</SelectItem>
+                <SelectItem value="Box Office">Box Office / Ticketing</SelectItem>
+                <SelectItem value="Bartender">Bartender</SelectItem>
+                <SelectItem value="Bar Staff">Bar Staff</SelectItem>
+                <SelectItem value="Catering Staff">Catering Staff</SelectItem>
+                <SelectItem value="VIP Host">VIP Host / Concierge</SelectItem>
+                <SelectItem value="Stage Manager">Stage Manager</SelectItem>
+                <SelectItem value="Stage Hand">Stage Hand</SelectItem>
+                <SelectItem value="AV Technician">AV Tech</SelectItem>
+                <SelectItem value="Photographer">Photographer</SelectItem>
+                <SelectItem value="Medical Staff">Medical / First Aid</SelectItem>
+                <SelectItem value="Volunteer">Volunteer</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -206,7 +424,7 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
           </div>
           <Button
             className="w-full mt-4"
-            style={{ background: "var(--gradient-primary)" }}
+            style={{ background: "var(--gradient-primary)", color: "white" }}
             onClick={() => mutation.mutate()}
             disabled={mutation.isPending}
           >
@@ -222,6 +440,9 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
 function StaffView() {
   const { eventId, workspaceSlug } = Route.useParams();
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
+  const navigate = useNavigate();
+  const { activeWorkspace } = useWorkspace();
+  const queryClient = useQueryClient();
 
   // We are using fallback mock data if the DB tables aren't perfectly seeded yet
   const { data: sections = [] } = useQuery({
@@ -278,11 +499,6 @@ function StaffView() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Link to={`/dashboard/${workspaceSlug}/events/${eventId}/badge-designer`}>
-            <Button variant="outline" className="shadow-sm">
-              <Palette className="mr-2 h-4 w-4" /> Design Badge
-            </Button>
-          </Link>
           <AddSectionModal eventId={eventId} />
           <AddStaffModal eventId={eventId} sections={sections} />
         </div>
@@ -322,6 +538,7 @@ function StaffView() {
         <TabsList className="mb-4">
           <TabsTrigger value="staff">Staff Directory</TabsTrigger>
           <TabsTrigger value="sections">Event Sections</TabsTrigger>
+          <TabsTrigger value="vendors">Vendor Forms</TabsTrigger>
         </TabsList>
 
         <TabsContent value="staff">
@@ -339,6 +556,14 @@ function StaffView() {
               <tbody className="divide-y divide-border/60">
                 {staff.map((s: any) => {
                   const assignedSection = sections.find((sec: any) => sec.id === s.section_id);
+                  const isUnregistered = !s.user_id && (s.first_name || s.last_name);
+                  const displayName = isUnregistered 
+                    ? `${s.first_name || ""} ${s.last_name || ""}`.trim() 
+                    : `User ${s.user_id?.substring(0, 6) || "Unknown"}`;
+                  const displayInitials = isUnregistered
+                    ? `${s.first_name?.[0] || ""}${s.last_name?.[0] || ""}`.toUpperCase()
+                    : <UserCheck className="h-4 w-4" />;
+                    
                   return (
                     <tr
                       key={s.id}
@@ -347,12 +572,17 @@ function StaffView() {
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
-                            <UserCheck className="h-4 w-4" />
+                          <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors font-bold text-xs">
+                            {displayInitials}
                           </div>
-                          <p className="font-semibold text-foreground">
-                            User {s.user_id.substring(0, 6)}
-                          </p>
+                          <div>
+                            <p className="font-semibold text-foreground">
+                              {displayName}
+                            </p>
+                            {isUnregistered && s.email && (
+                              <p className="text-xs text-muted-foreground">{s.email}</p>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 font-medium">{s.role}</td>
@@ -405,7 +635,7 @@ function StaffView() {
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
-                    <MapPin className="h-5 w-5" />
+                     <MapPin className="h-5 w-5" />
                   </div>
                 </div>
                 <h3 className="font-semibold text-lg">{s.name}</h3>
@@ -422,6 +652,23 @@ function StaffView() {
                 No sections defined. Create a section to restrict staff access.
               </div>
             )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="vendors">
+          <div className="rounded-2xl border border-border/60 bg-card p-8 text-center shadow-[var(--shadow-card)]">
+            <h3 className="text-lg font-semibold mb-2">Vendor & Contractor Forms</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              Share a dedicated form with external companies (e.g., Security, Caterers) to let them list their staff. Once submitted, you can import their roster directly into your staff directory.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link to="/dashboard/$workspaceSlug/rsvps" params={{ workspaceSlug }}>
+                <Button variant="outline">
+                  View All Custom Forms
+                </Button>
+              </Link>
+              <GenerateVendorFormModal eventId={eventId} activeWorkspace={activeWorkspace} />
+            </div>
           </div>
         </TabsContent>
       </Tabs>
@@ -450,7 +697,9 @@ function StaffView() {
                     </div>
 
                     <h2 className="text-white text-2xl font-bold tracking-tight">
-                      User {selectedStaff.user_id.substring(0, 6)}
+                      {(!selectedStaff.user_id && (selectedStaff.first_name || selectedStaff.last_name))
+                        ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim()
+                        : `User ${selectedStaff.user_id?.substring(0, 6) || "Unknown"}`}
                     </h2>
                     <p className="text-primary font-semibold tracking-widest uppercase mt-2 text-sm">
                       {selectedStaff.role}

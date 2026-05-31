@@ -40,6 +40,10 @@ const GET_EVENT_STAFF = `
     event_staff(where: { event_id: { _eq: $event_id } }, order_by: { created_at: desc }) {
       id
       user_id
+      first_name
+      last_name
+      email
+      phone
       role
       status
       badge_qr_string
@@ -54,12 +58,41 @@ export const getEventStaff = createServerFn({ method: "POST" }).handler(async (c
   return data.event_staff || [];
 });
 
+const GET_STAFF_BY_BADGE = `
+  query GetStaffByBadge($badge_qr_string: String!) {
+    event_staff(where: { badge_qr_string: { _eq: $badge_qr_string } }, limit: 1) {
+      id
+      user_id
+      first_name
+      last_name
+      email
+      phone
+      role
+      status
+      badge_qr_string
+      section_id
+      event_id
+    }
+  }
+`;
+
+export const getStaffByBadgeId = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { badge_qr_string } = ctx.data as unknown as { badge_qr_string: string };
+  const data = await hasuraRequest<{ event_staff: any[] }>(GET_STAFF_BY_BADGE, { badge_qr_string });
+  return data.event_staff?.[0] || null;
+});
+
 const ADD_EVENT_STAFF = `
   mutation AddEventStaff($object: event_staff_insert_input!) {
     insert_event_staff_one(object: $object) {
       id
       role
       badge_qr_string
+      first_name
+      last_name
+      email
+      phone
+      profile_image
     }
   }
 `;
