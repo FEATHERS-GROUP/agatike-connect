@@ -92,7 +92,7 @@ function DashboardLoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Password</Label>
-                <Link to="#" className="text-sm font-medium text-primary hover:underline">Forgot password?</Link>
+                <a href="#" className="text-sm font-medium text-primary hover:underline">Forgot password?</a>
               </div>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
