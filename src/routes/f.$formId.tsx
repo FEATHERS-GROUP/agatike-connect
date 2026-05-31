@@ -86,11 +86,18 @@ function PublicFormPage() {
   }
 
   if (!form || !form.is_active) {
+    const coverImage = form?.cover_image_url || "/default-form-cover.png";
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-secondary/30 p-4">
-        <div className="bg-card p-8 rounded-2xl shadow-sm border border-border/60 max-w-md w-full text-center">
-          <h1 className="text-2xl font-bold text-foreground">Form Unavailable</h1>
-          <p className="text-muted-foreground mt-2">This form is no longer accepting responses or does not exist.</p>
+      <div className="min-h-screen w-full relative flex items-center justify-center p-4">
+        <div className="absolute inset-0 z-0">
+          <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-md" />
+        </div>
+
+        <div className="relative z-10 bg-card p-10 rounded-3xl shadow-2xl border border-border/50 max-w-md w-full text-center animate-in zoom-in-95 duration-500">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none rounded-3xl" />
+          <h1 className="text-3xl font-bold text-foreground relative z-10">{form ? form.title : "Form Unavailable"}</h1>
+          <p className="text-muted-foreground mt-3 relative z-10 text-base">This form is no longer accepting responses.</p>
         </div>
       </div>
     );
@@ -112,14 +119,12 @@ function PublicFormPage() {
 
   return (
     <div className="min-h-screen bg-secondary/20 pb-20">
-      {form.cover_image_url && (
-        <div className="w-full h-48 md:h-64 lg:h-80 relative">
-          <img src={form.cover_image_url} alt="Cover" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-        </div>
-      )}
+      <div className="w-full h-48 md:h-64 lg:h-80 relative">
+        <img src={form.cover_image_url || "/default-form-cover.png"} alt="Cover" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+      </div>
 
-      <div className={`max-w-2xl mx-auto px-4 ${form.cover_image_url ? '-mt-16 md:-mt-24 relative z-10' : 'pt-12'}`}>
+      <div className="max-w-2xl mx-auto px-4 -mt-16 md:-mt-24 relative z-10">
         <div className="bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border/60 overflow-hidden">
           <div className="p-8 border-b border-border/60 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />

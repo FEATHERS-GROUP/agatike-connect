@@ -4,7 +4,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash2, GripVertical, Settings, Save, LayoutTemplate, Type, AlignLeft, CheckSquare, List, Calendar, HelpCircle, Loader2, Upload } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, GripVertical, Settings, Save, LayoutTemplate, Type, AlignLeft, CheckSquare, List, Calendar, HelpCircle, Loader2, Upload, MessageSquare, Phone, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,86 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const TEMPLATES = [
+  {
+    id: "event",
+    title: "Event RSVP",
+    description: "Collect attendee information, dietary restrictions, and attendance confirmation.",
+    icon: Calendar,
+    bgClass: "bg-blue-500/10",
+    textClass: "text-blue-500",
+    glowClass: "group-hover:bg-blue-500/20",
+    formValues: {
+      title: "Event RSVP",
+      description: "Please fill out this form to confirm your attendance.",
+      fields: [
+        { id: "1", label: "First Name", field_type: "text", is_required: true },
+        { id: "2", label: "Last Name", field_type: "text", is_required: true },
+        { id: "3", label: "Email Address", field_type: "email", is_required: true },
+        { id: "4", label: "Will you attend?", field_type: "radio", is_required: true, options: "Yes, I will be there, No, I cannot make it" },
+        { id: "5", label: "Dietary Restrictions", field_type: "textarea", is_required: false },
+      ]
+    }
+  },
+  {
+    id: "feedback",
+    title: "Feedback & Survey",
+    description: "Gather feedback and ratings to improve your services.",
+    icon: MessageSquare,
+    bgClass: "bg-purple-500/10",
+    textClass: "text-purple-500",
+    glowClass: "group-hover:bg-purple-500/20",
+    formValues: {
+      title: "Customer Feedback",
+      description: "We value your feedback. Please let us know how we did.",
+      fields: [
+        { id: "1", label: "First Name", field_type: "text", is_required: true },
+        { id: "2", label: "Email Address", field_type: "email", is_required: true },
+        { id: "3", label: "How would you rate your experience?", field_type: "select", is_required: true, options: "Excellent, Good, Average, Poor" },
+        { id: "4", label: "Any additional feedback?", field_type: "textarea", is_required: false },
+      ]
+    }
+  },
+  {
+    id: "contact",
+    title: "Contact Information",
+    description: "A simple form to collect contact details from your audience.",
+    icon: Phone,
+    bgClass: "bg-green-500/10",
+    textClass: "text-green-500",
+    glowClass: "group-hover:bg-green-500/20",
+    formValues: {
+      title: "Contact Information",
+      description: "Leave your details and we will get back to you.",
+      fields: [
+        { id: "1", label: "First Name", field_type: "text", is_required: true },
+        { id: "2", label: "Last Name", field_type: "text", is_required: true },
+        { id: "3", label: "Email Address", field_type: "email", is_required: true },
+        { id: "4", label: "Phone Number", field_type: "text", is_required: false },
+        { id: "5", label: "Company", field_type: "text", is_required: false },
+      ]
+    }
+  },
+  {
+    id: "blank",
+    title: "Start from Scratch",
+    description: "Start with a blank canvas and build exactly what you need.",
+    icon: FileText,
+    bgClass: "bg-orange-500/10",
+    textClass: "text-orange-500",
+    glowClass: "group-hover:bg-orange-500/20",
+    formValues: {
+      title: "",
+      description: "",
+      fields: [
+        { id: "1", label: "First Name", field_type: "text", is_required: true },
+        { id: "2", label: "Last Name", field_type: "text", is_required: true },
+        { id: "3", label: "Email Address", field_type: "email", is_required: true },
+      ]
+    }
+  }
+];
+
 export const Route = createFileRoute("/dashboard/$workspaceSlug/rsvps/create")({
   component: CreateFormPage,
 });
@@ -60,6 +140,7 @@ function CreateFormPage() {
   const queryClient = useQueryClient();
   const { workspaceSlug } = Route.useParams();
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
   const onCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -73,18 +154,15 @@ function CreateFormPage() {
     setValue("cover_image_url", url);
   };
 
-  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormValues>({
+  const { register, control, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      fields: [
-        { id: "1", label: "First Name", field_type: "text", is_required: true },
-        { id: "2", label: "Last Name", field_type: "text", is_required: true },
-        { id: "3", label: "Email Address", field_type: "email", is_required: true },
-      ],
-    },
+    defaultValues: TEMPLATES[3].formValues as any,
   });
+
+  const handleSelectTemplate = (template: typeof TEMPLATES[0]) => {
+    reset(template.formValues as any);
+    setSelectedTemplate(template.id);
+  };
 
   const { fields, append, remove, move } = useFieldArray({
     control,
@@ -153,6 +231,50 @@ function CreateFormPage() {
     });
   };
 
+  if (!selectedTemplate) {
+    return (
+      <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+        <header className="flex items-center gap-4 mb-8">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full bg-secondary/50 hover:bg-secondary"
+            onClick={() => navigate({ to: "/dashboard/$workspaceSlug/rsvps", params: { workspaceSlug } })}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Choose a Template</h1>
+            <p className="text-muted-foreground mt-1 text-base">Select a starting point for your new form.</p>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {TEMPLATES.map((t) => {
+            const Icon = t.icon;
+            return (
+              <div 
+                key={t.id} 
+                className="group relative bg-card border border-border/60 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col items-start"
+                onClick={() => handleSelectTemplate(t)}
+              >
+                <div className={`absolute top-0 right-0 w-32 h-32 ${t.bgClass} rounded-full blur-3xl -mr-10 -mt-10 ${t.glowClass} transition-colors`} />
+                <div className={`h-12 w-12 rounded-full ${t.bgClass} ${t.textClass} flex items-center justify-center mb-4 relative z-10`}>
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-xl font-bold mb-2 relative z-10">{t.title}</h3>
+                <p className="text-muted-foreground text-sm relative z-10 flex-1">{t.description}</p>
+                <div className="mt-6 font-semibold text-sm text-primary flex items-center group-hover:translate-x-1 transition-transform relative z-10">
+                  Use Template <ArrowLeft className="h-4 w-4 ml-1 rotate-180" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       <header className="flex items-center justify-between gap-4 sticky top-0 z-10 bg-background/80 backdrop-blur-md py-4 border-b border-border/60">
@@ -161,7 +283,7 @@ function CreateFormPage() {
             variant="ghost" 
             size="icon" 
             className="rounded-full"
-            onClick={() => navigate({ to: "/dashboard/$workspaceSlug/rsvps", params: { workspaceSlug } })}
+            onClick={() => setSelectedTemplate(null)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

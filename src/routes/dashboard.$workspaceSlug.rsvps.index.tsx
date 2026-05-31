@@ -135,13 +135,7 @@ function RsvpsPage() {
               })}
             >
               <div className="h-32 w-full bg-secondary relative overflow-hidden">
-                {form.cover_image_url ? (
-                  <img src={form.cover_image_url} alt={form.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center text-primary/40">
-                    <LayoutTemplate className="h-12 w-12" />
-                  </div>
-                )}
+                <img src={form.cover_image_url || "/default-form-cover.png"} alt={form.title} className="w-full h-full object-cover" />
                 <div className="absolute top-3 right-3">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                     form.is_active ? 'bg-green-500/90 text-white backdrop-blur-sm shadow-sm' : 'bg-secondary/90 text-muted-foreground backdrop-blur-sm'
