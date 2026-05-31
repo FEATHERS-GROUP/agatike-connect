@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
+import * as LucideIcons from "lucide-react";
 
 export function DesktopSidebar() {
   const location = useRouterState({ select: (s) => s.location });
@@ -27,6 +28,7 @@ export function DesktopSidebar() {
       "RSVPs": "rsvps",
       "Attendees": "rsvps",
       "Scanning": "scanner",
+      "Products & Add-ons": "products&add-ons",
       "Merchandise": "merchandise",
       "VIP Access": "vip",
       "Campaigns": "campaigns",
@@ -41,6 +43,18 @@ export function DesktopSidebar() {
     const legacyId = legacyIdMap[m.label];
     return legacyId && userModuleIds.includes(legacyId);
   });
+
+  // Inject Badge Designer for all workspaces
+  if (!nav.some(n => n.id === 'badge-designer')) {
+    nav.push({
+      id: 'badge-designer',
+      label: 'Badge Designer',
+      desc: 'Design digital staff badges',
+      href: 'badge-designer',
+      icon: LucideIcons.Sparkles,
+      category: 'Tools'
+    });
+  }
 
   const workspacePrefix = activeWorkspace ? `/dashboard/${activeWorkspace.slug}` : "/dashboard";
 

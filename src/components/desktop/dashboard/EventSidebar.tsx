@@ -12,7 +12,7 @@ import {
   Check,
 } from "lucide-react";
 
-const steps = ["Details", "Tickets", "Venue", "Media", "Merchandise", "VIP", "Publish"] as const;
+const steps = ["Details", "Tickets", "Venue", "Media", "Products", "VIP", "Publish"] as const;
 
 export function EventSidebar() {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ export function EventSidebar() {
     { label: "Budget & Planning", href: `/dashboard/${workspaceSlug}/events/${eventId}/planning`, icon: Wallet },
     { label: "Staff Members", href: `/dashboard/${workspaceSlug}/events/${eventId}/staff`, icon: UserCheck },
     { label: "Venue Details", href: `/dashboard/${workspaceSlug}/events/${eventId}/venue`, icon: MapPin },
-    { label: "Merchandise", href: `/dashboard/${workspaceSlug}/events/${eventId}/merchandise`, icon: ShoppingBag },
+    { label: "Products & Add-ons", href: `/dashboard/${workspaceSlug}/events/${eventId}/products&add-ons`, icon: ShoppingBag },
   ];
 
   return (

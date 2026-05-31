@@ -65,7 +65,7 @@ const fileToBase64 = (file: File): Promise<string> => {
   }
 }
 
-const steps = ["Details", "Venue", "Tickets", "Media", "Merchandise", "VIP", "Publish"] as const;
+const steps = ["Details", "Venue", "Tickets", "Media", "Products", "VIP", "Publish"] as const;
 type Step = (typeof steps)[number];
 
 type Ticket = {
@@ -574,7 +574,7 @@ export function CreateEventDesktop() {
             </div>
           )}
 
-          {steps[step] === "Merchandise" && <MerchEditor merch={merch} setMerch={setMerch} currencySymbol={currencySymbol} />}
+          {steps[step] === "Products" && <MerchEditor merch={merch} setMerch={setMerch} currencySymbol={currencySymbol} />}
 
           {steps[step] === "VIP" && (
             <div className="space-y-5">
@@ -814,7 +814,7 @@ function MerchEditor({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-          <ShoppingBag className="h-4 w-4" /> Sell merch alongside tickets
+          <ShoppingBag className="h-4 w-4" /> Sell products, vouchers, and add-ons
         </div>
         <Button
           variant="outline"
@@ -969,7 +969,7 @@ function PublishReview({
           </ul>
         </div>
         <div className="rounded-2xl border border-border/60 p-4">
-          <p className="text-sm font-semibold">Merchandise ({merch.length})</p>
+          <p className="text-sm font-semibold">Products & Add-ons ({merch.length})</p>
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
             {merch.map((m) => (
               <li key={m.id}>
