@@ -13,46 +13,46 @@ export function DesktopSidebar() {
 
   // If no workspace or modules are loaded, we can't show much
   const userModuleIds = activeWorkspace?.modules || [];
-  
+
   // Filter platform modules based on user's active workspace modules.
   // We maintain the order defined in the database.
-  const nav = platformModules.filter(m => {
+  const nav = platformModules.filter((m) => {
     if (m.mandatory) return true;
     if (userModuleIds.includes(m.id)) return true;
-    
+
     // Fallback for legacy workspaces created before DB migration
     const legacyIdMap: Record<string, string> = {
-      "Dashboard": "dashboard",
-      "Events": "events",
-      "Tickets": "tickets",
-      "RSVPs": "rsvps",
-      "Attendees": "rsvps",
-      "Scanning": "scanner",
+      Dashboard: "dashboard",
+      Events: "events",
+      Tickets: "tickets",
+      RSVPs: "rsvps",
+      Attendees: "rsvps",
+      Scanning: "scanner",
       "Products & Add-ons": "products&add-ons",
-      "Merchandise": "merchandise",
+      Merchandise: "merchandise",
       "VIP Access": "vip",
-      "Campaigns": "campaigns",
+      Campaigns: "campaigns",
       "Venue Listings": "venue_listings",
       "Venue Designer": "venue_designer",
-      "Experiences": "experiences",
-      "Analytics": "analytics",
-      "Withdrawals": "withdrawals",
-      "Settings": "settings"
+      Experiences: "experiences",
+      Analytics: "analytics",
+      Withdrawals: "withdrawals",
+      Settings: "settings",
     };
-    
+
     const legacyId = legacyIdMap[m.label];
     return legacyId && userModuleIds.includes(legacyId);
   });
 
   // Inject Badge Designer for all workspaces
-  if (!nav.some(n => n.id === 'badge-designer')) {
+  if (!nav.some((n) => n.id === "badge-designer")) {
     nav.push({
-      id: 'badge-designer',
-      label: 'Badge Designer',
-      desc: 'Design digital staff badges',
-      href: 'badge-designer',
+      id: "badge-designer",
+      label: "Badge Designer",
+      desc: "Design digital staff badges",
+      href: "badge-designer",
       icon: LucideIcons.Sparkles,
-      category: 'Tools'
+      category: "Tools",
     });
   }
 
@@ -69,14 +69,19 @@ export function DesktopSidebar() {
         </div>
         <span className="text-lg font-semibold">Agatike</span>
       </Link>
-      
+
       <WorkspaceSwitcher />
 
       <nav className="space-y-1 text-sm flex-1">
         {nav.map((n) => {
           // Construct the full href: e.g. /dashboard/kigali-arenas/events
-          const fullHref = n.href !== undefined ? (n.href === "" ? workspacePrefix : `${workspacePrefix}/${n.href}`) : null;
-          
+          const fullHref =
+            n.href !== undefined
+              ? n.href === ""
+                ? workspacePrefix
+                : `${workspacePrefix}/${n.href}`
+              : null;
+
           let isActive = false;
           if (fullHref) {
             // Dashboard root is active exactly at the prefix
@@ -86,9 +91,9 @@ export function DesktopSidebar() {
               isActive = location.pathname.startsWith(fullHref);
             }
           }
-          
+
           const cls = `flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${isActive ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:bg-secondary"}`;
-          
+
           return fullHref ? (
             <Link key={n.id} to={fullHref} className={cls}>
               <n.icon className="h-4 w-4" /> {n.label}
@@ -100,7 +105,7 @@ export function DesktopSidebar() {
           );
         })}
       </nav>
-      
+
       <div className="mt-8 rounded-2xl border border-border/60 p-4 shrink-0">
         <p className="text-sm font-semibold">Upgrade to Pro</p>
         <p className="mt-1 text-xs text-muted-foreground">

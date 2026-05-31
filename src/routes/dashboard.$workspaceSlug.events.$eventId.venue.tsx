@@ -14,7 +14,10 @@ function VenueView() {
           <h1 className="text-2xl font-semibold tracking-tight">Venue Details</h1>
           <p className="text-sm text-muted-foreground">Information about the event location.</p>
         </div>
-        <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+        <Button
+          className="rounded-full shadow-[var(--shadow-glow)]"
+          style={{ background: "var(--gradient-primary)" }}
+        >
           Save Changes
         </Button>
       </header>
@@ -27,20 +30,32 @@ function VenueView() {
             </h3>
             <div className="space-y-4 text-sm">
               <div>
-                <label className="text-muted-foreground text-xs font-medium uppercase mb-1 block">Venue Name</label>
-                <div className="p-3 bg-secondary/50 rounded-xl border border-border">Eko Convention Center</div>
+                <label className="text-muted-foreground text-xs font-medium uppercase mb-1 block">
+                  Venue Name
+                </label>
+                <div className="p-3 bg-secondary/50 rounded-xl border border-border">
+                  Eko Convention Center
+                </div>
               </div>
               <div>
-                <label className="text-muted-foreground text-xs font-medium uppercase mb-1 block">Address</label>
-                <div className="p-3 bg-secondary/50 rounded-xl border border-border">Plot 1415 Adetokunbo Ademola Street, Victoria Island, Lagos</div>
+                <label className="text-muted-foreground text-xs font-medium uppercase mb-1 block">
+                  Address
+                </label>
+                <div className="p-3 bg-secondary/50 rounded-xl border border-border">
+                  Plot 1415 Adetokunbo Ademola Street, Victoria Island, Lagos
+                </div>
               </div>
               <div>
-                <label className="text-muted-foreground text-xs font-medium uppercase mb-1 block">Capacity</label>
-                <div className="p-3 bg-secondary/50 rounded-xl border border-border">6,000 Attendees</div>
+                <label className="text-muted-foreground text-xs font-medium uppercase mb-1 block">
+                  Capacity
+                </label>
+                <div className="p-3 bg-secondary/50 rounded-xl border border-border">
+                  6,000 Attendees
+                </div>
               </div>
             </div>
           </div>
-          
+
           <div className="rounded-3xl border border-border/60 bg-card p-6">
             <h3 className="font-semibold flex items-center gap-2 mb-4">
               <Check className="h-5 w-5 text-primary" /> Amenities
@@ -62,7 +77,9 @@ function VenueView() {
             <div className="aspect-video bg-secondary rounded-2xl border border-border border-dashed flex flex-col items-center justify-center text-muted-foreground">
               <ImageIcon className="h-8 w-8 mb-2 opacity-50" />
               <p className="text-sm">Upload Floor Plan Map</p>
-              <Button variant="outline" size="sm" className="mt-4 rounded-full">Browse Files</Button>
+              <Button variant="outline" size="sm" className="mt-4 rounded-full">
+                Browse Files
+              </Button>
             </div>
           </div>
         </div>

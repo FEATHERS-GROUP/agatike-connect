@@ -5,10 +5,7 @@ import { uploadFile } from "@/api/storage";
  * @param file   - The File object selected by the user
  * @param folder - Destination folder, e.g. "events/covers" or "events/merch"
  */
-export async function uploadFileToStorage(
-  file: File,
-  folder: string
-): Promise<string> {
+export async function uploadFileToStorage(file: File, folder: string): Promise<string> {
   const ext = file.name.split(".").pop() || "jpg";
   const contentType = file.type || "image/jpeg";
 

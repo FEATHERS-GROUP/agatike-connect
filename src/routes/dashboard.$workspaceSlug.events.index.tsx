@@ -1,7 +1,20 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, Filter, MoreHorizontal, Calendar, MapPin, Ticket, DollarSign, Eye, Edit2, Ban, Loader2 } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Calendar,
+  MapPin,
+  Ticket,
+  DollarSign,
+  Eye,
+  Edit2,
+  Ban,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -51,7 +64,9 @@ function DashboardEvents() {
       return {
         ...e,
         date: firstStop?.date || "TBD",
-        city: firstStop ? `${firstStop.venue ? firstStop.venue + ", " : ""}${firstStop.city || ""}` : "TBD",
+        city: firstStop
+          ? `${firstStop.venue ? firstStop.venue + ", " : ""}${firstStop.city || ""}`
+          : "TBD",
         status: getEventStatus(e.created_at),
         salesPct,
         revenue,
@@ -74,7 +89,10 @@ function DashboardEvents() {
           <h1 className="text-2xl font-semibold">Events</h1>
           <p className="text-sm text-muted-foreground">Manage and track your events.</p>
         </div>
-        <Link to="/dashboard/$workspaceSlug/events/create-event" params={{ workspaceSlug: activeWorkspace?.slug || "" }}>
+        <Link
+          to="/dashboard/$workspaceSlug/events/create-event"
+          params={{ workspaceSlug: activeWorkspace?.slug || "" }}
+        >
           <Button
             className="rounded-full shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
@@ -100,7 +118,7 @@ function DashboardEvents() {
             <Filter className="mr-2 h-4 w-4" /> Filter
           </Button>
         </div>
-        
+
         <div className="flex bg-secondary/50 p-1 rounded-full w-full md:w-auto">
           {["All", "Live", "Drafts", "Past"].map((f) => (
             <button
@@ -127,7 +145,9 @@ function DashboardEvents() {
         ) : filteredEvents.length === 0 ? (
           <div className="p-12 text-center">
             <p className="text-lg font-medium">No events found.</p>
-            <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or search.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Try adjusting your filters or search.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -143,35 +163,44 @@ function DashboardEvents() {
               </thead>
               <tbody className="divide-y divide-border/60">
                 {filteredEvents.map((event: any) => (
-                  <tr 
-                    key={event.id} 
+                  <tr
+                    key={event.id}
                     className="hover:bg-secondary/20 transition-colors group cursor-pointer"
-                    onClick={() => navigate({
-                      to: "/dashboard/$workspaceSlug/events/$eventId",
-                      params: {
-                        workspaceSlug: activeWorkspace?.slug || "",
-                        eventId: event.id
-                      }
-                    })}
+                    onClick={() =>
+                      navigate({
+                        to: "/dashboard/$workspaceSlug/events/$eventId",
+                        params: {
+                          workspaceSlug: activeWorkspace?.slug || "",
+                          eventId: event.id,
+                        },
+                      })
+                    }
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {event.cover ? (
-                          <img src={event.cover} className="h-12 w-12 rounded-xl object-cover" alt="" />
+                          <img
+                            src={event.cover}
+                            className="h-12 w-12 rounded-xl object-cover"
+                            alt=""
+                          />
                         ) : (
                           <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground">
                             <Ticket className="h-5 w-5" />
                           </div>
                         )}
                         <div>
-                          <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{event.title}</p>
+                          <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                            {event.title}
+                          </p>
                           <p className="text-xs text-muted-foreground mt-0.5">{event.category}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="space-y-1.5">
-                        {Array.isArray((event as any).tour_stops) && (event as any).tour_stops.length > 0 ? (
+                        {Array.isArray((event as any).tour_stops) &&
+                        (event as any).tour_stops.length > 0 ? (
                           (event as any).tour_stops.map((stop: any, i: number) => (
                             <div key={i} className="text-xs">
                               <div className="flex items-center text-muted-foreground">
@@ -180,11 +209,15 @@ function DashboardEvents() {
                               </div>
                               <div className="flex items-center text-muted-foreground mt-0.5">
                                 <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
-                                <span className="truncate max-w-[180px]">{stop.venue ? `${stop.venue}, ` : ""}{stop.city || ""}</span>
+                                <span className="truncate max-w-[180px]">
+                                  {stop.venue ? `${stop.venue}, ` : ""}
+                                  {stop.city || ""}
+                                </span>
                               </div>
-                              {(event as any).tour_stops.length > 1 && i < (event as any).tour_stops.length - 1 && (
-                                <div className="border-b border-border/40 mt-1.5" />
-                              )}
+                              {(event as any).tour_stops.length > 1 &&
+                                i < (event as any).tour_stops.length - 1 && (
+                                  <div className="border-b border-border/40 mt-1.5" />
+                                )}
                             </div>
                           ))
                         ) : (
@@ -208,11 +241,15 @@ function DashboardEvents() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        event.status === 'Live' ? 'bg-green-500/10 text-green-500' :
-                        event.status === 'Drafts' ? 'bg-yellow-500/10 text-yellow-500' :
-                        'bg-secondary text-muted-foreground'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          event.status === "Live"
+                            ? "bg-green-500/10 text-green-500"
+                            : event.status === "Drafts"
+                              ? "bg-yellow-500/10 text-yellow-500"
+                              : "bg-secondary text-muted-foreground"
+                        }`}
+                      >
                         {event.status}
                       </span>
                     </td>
@@ -224,22 +261,30 @@ function DashboardEvents() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48 rounded-xl">
-                          <DropdownMenuItem onClick={() => navigate({
-                            to: "/dashboard/$workspaceSlug/events/$eventId",
-                            params: {
-                              workspaceSlug: activeWorkspace?.slug || "",
-                              eventId: event.id
+                          <DropdownMenuItem
+                            onClick={() =>
+                              navigate({
+                                to: "/dashboard/$workspaceSlug/events/$eventId",
+                                params: {
+                                  workspaceSlug: activeWorkspace?.slug || "",
+                                  eventId: event.id,
+                                },
+                              })
                             }
-                          })}>
+                          >
                             <Eye className="mr-2 h-4 w-4" /> View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate({
-                            to: "/dashboard/$workspaceSlug/events/$eventId/edit",
-                            params: {
-                              workspaceSlug: activeWorkspace?.slug || "",
-                              eventId: event.id
+                          <DropdownMenuItem
+                            onClick={() =>
+                              navigate({
+                                to: "/dashboard/$workspaceSlug/events/$eventId/edit",
+                                params: {
+                                  workspaceSlug: activeWorkspace?.slug || "",
+                                  eventId: event.id,
+                                },
+                              })
                             }
-                          })}>
+                          >
                             <Edit2 className="mr-2 h-4 w-4" /> Edit Event
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />

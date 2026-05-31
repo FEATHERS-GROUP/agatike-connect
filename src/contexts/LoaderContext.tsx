@@ -24,7 +24,7 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
   // Automatically show loader when router is pending (e.g. on page refresh or navigation)
   const isRouterPending = useRouterState({ select: (s) => s.status === "pending" });
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  
+
   // Also show loader when workspaces are being initially fetched for the dashboard
   const { isLoading: isWorkspaceLoading } = useWorkspace();
 
@@ -40,13 +40,10 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
   }, [isLoading, showPageLoader, isRouterPending]);
 
   return (
-    <LoaderContext.Provider
-      value={{ isLoading, setIsLoading, isPageLoading, setIsPageLoading }}
-    >
+    <LoaderContext.Provider value={{ isLoading, setIsLoading, isPageLoading, setIsPageLoading }}>
       {/* If showPageLoader is true, we display a dashboard skeleton with a centered logo */}
       {showPageLoader ? (
         <div className="fixed inset-0 z-[9999] flex bg-background">
-          
           {/* Centered Logo Overlay */}
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/40 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-4 animate-pulse">
@@ -64,7 +61,7 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
           <aside className="hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background/50 p-4 md:flex md:flex-col opacity-60">
             {/* Logo placeholder space */}
             <div className="mb-6 h-9 w-32 animate-pulse rounded-lg bg-muted" />
-            
+
             <div className="mb-8 h-10 w-full animate-pulse rounded-xl bg-muted" />
 
             <div className="space-y-3 flex-1">
@@ -84,13 +81,13 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
                 </div>
                 <div className="hidden sm:block h-9 w-32 animate-pulse rounded-full bg-muted" />
               </div>
-              
+
               <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="h-28 w-full animate-pulse rounded-2xl bg-muted" />
                 ))}
               </div>
-              
+
               <div className="h-96 w-full animate-pulse rounded-2xl bg-muted" />
             </div>
           </main>

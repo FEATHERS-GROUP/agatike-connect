@@ -28,49 +28,128 @@ import "../_libs/tanstack__query-core.mjs";
 import "../_libs/tanstack__react-query.mjs";
 import "../_libs/tailwind-merge.mjs";
 function Feed() {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-h-screen bg-background text-foreground", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(Navbar, {}),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[1fr_320px]", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("main", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Stories, {}),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-8 space-y-8", children: feedPosts.map((p, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(FeedCard, { post: p }, `${p.id}-${i}`)) })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", { className: "hidden lg:block space-y-6", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-2xl border border-border/60 bg-card p-5", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-semibold", children: "Upcoming for you" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-4 space-y-3", children: events.slice(0, 3).map((e) => /* @__PURE__ */ jsxRuntimeExports.jsxs(Link, { to: "/events/$eventId", params: {
-            eventId: e.id
-          }, className: "flex items-center gap-3 rounded-xl p-2 hover:bg-secondary transition", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: e.cover, className: "h-12 w-12 rounded-lg object-cover", alt: e.title }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "truncate text-sm font-medium", children: e.title }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-muted-foreground", children: [
-                e.date,
-                " · ",
-                e.city
-              ] })
-            ] })
-          ] }, e.id)) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-2xl border border-border/60 bg-card p-5", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-semibold", children: "Suggested organizers" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-4 space-y-3", children: events.slice(2, 5).map((e) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: e.cover, className: "h-10 w-10 rounded-full object-cover", alt: e.organizer }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "truncate text-sm font-medium", children: e.organizer }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-muted-foreground", children: [
-                "@",
-                e.organizerHandle
-              ] })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { size: "sm", variant: "outline", className: "ml-auto rounded-full", children: "Follow" })
-          ] }, e.id)) })
-        ] })
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(Footer, {})
-  ] });
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+    className: "min-h-screen bg-background text-foreground",
+    children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Navbar, {}),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+        className: "mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[1fr_320px]",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("main", {
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Stories, {}),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", {
+                className: "mt-8 space-y-8",
+                children: feedPosts.map((p, i) =>
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(FeedCard, { post: p }, `${p.id}-${i}`),
+                ),
+              }),
+            ],
+          }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", {
+            className: "hidden lg:block space-y-6",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+                className: "rounded-2xl border border-border/60 bg-card p-5",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
+                    className: "text-sm font-semibold",
+                    children: "Upcoming for you",
+                  }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", {
+                    className: "mt-4 space-y-3",
+                    children: events.slice(0, 3).map((e) =>
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        Link,
+                        {
+                          to: "/events/$eventId",
+                          params: {
+                            eventId: e.id,
+                          },
+                          className:
+                            "flex items-center gap-3 rounded-xl p-2 hover:bg-secondary transition",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx("img", {
+                              src: e.cover,
+                              className: "h-12 w-12 rounded-lg object-cover",
+                              alt: e.title,
+                            }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+                              className: "min-w-0",
+                              children: [
+                                /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
+                                  className: "truncate text-sm font-medium",
+                                  children: e.title,
+                                }),
+                                /* @__PURE__ */ jsxRuntimeExports.jsxs("p", {
+                                  className: "text-xs text-muted-foreground",
+                                  children: [e.date, " · ", e.city],
+                                }),
+                              ],
+                            }),
+                          ],
+                        },
+                        e.id,
+                      ),
+                    ),
+                  }),
+                ],
+              }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+                className: "rounded-2xl border border-border/60 bg-card p-5",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
+                    className: "text-sm font-semibold",
+                    children: "Suggested organizers",
+                  }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", {
+                    className: "mt-4 space-y-3",
+                    children: events
+                      .slice(2, 5)
+                      .map((e) =>
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                          "div",
+                          {
+                            className: "flex items-center gap-3",
+                            children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx("img", {
+                                src: e.cover,
+                                className: "h-10 w-10 rounded-full object-cover",
+                                alt: e.organizer,
+                              }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+                                className: "min-w-0",
+                                children: [
+                                  /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
+                                    className: "truncate text-sm font-medium",
+                                    children: e.organizer,
+                                  }),
+                                  /* @__PURE__ */ jsxRuntimeExports.jsxs("p", {
+                                    className: "text-xs text-muted-foreground",
+                                    children: ["@", e.organizerHandle],
+                                  }),
+                                ],
+                              }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(Button, {
+                                size: "sm",
+                                variant: "outline",
+                                className: "ml-auto rounded-full",
+                                children: "Follow",
+                              }),
+                            ],
+                          },
+                          e.id,
+                        ),
+                      ),
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Footer, {}),
+    ],
+  });
 }
-export {
-  Feed as component
-};
+export { Feed as component };

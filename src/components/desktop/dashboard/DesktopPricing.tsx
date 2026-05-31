@@ -6,9 +6,7 @@ export function DesktopPricing() {
       <div className="flex items-end justify-between">
         <div>
           <h2 className="text-xl font-semibold">Pricing</h2>
-          <p className="text-sm text-muted-foreground">
-            Transparent fees. Pay only when you sell.
-          </p>
+          <p className="text-sm text-muted-foreground">Transparent fees. Pay only when you sell.</p>
         </div>
       </div>
       <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -72,11 +70,7 @@ export function DesktopPricing() {
               className={`mt-6 w-full rounded-full ${p.featured ? "" : "bg-foreground text-background hover:bg-foreground/90"}`}
               style={p.featured ? { background: "var(--gradient-primary)" } : undefined}
             >
-              {p.featured
-                ? "Start Pro"
-                : p.name === "Enterprise"
-                  ? "Contact sales"
-                  : "Get started"}
+              {p.featured ? "Start Pro" : p.name === "Enterprise" ? "Contact sales" : "Get started"}
             </Button>
           </div>
         ))}

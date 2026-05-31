@@ -13,12 +13,11 @@ const GET_EVENT_SECTIONS = `
   }
 `;
 
-export const getEventSections = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { event_id } = ctx.data as unknown as { event_id: string };
-    const data = await hasuraRequest<{ event_sections: any[] }>(GET_EVENT_SECTIONS, { event_id });
-    return data.event_sections || [];
-  });
+export const getEventSections = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { event_id } = ctx.data as unknown as { event_id: string };
+  const data = await hasuraRequest<{ event_sections: any[] }>(GET_EVENT_SECTIONS, { event_id });
+  return data.event_sections || [];
+});
 
 const CREATE_EVENT_SECTION = `
   mutation CreateEventSection($object: event_sections_insert_input!) {
@@ -29,11 +28,10 @@ const CREATE_EVENT_SECTION = `
   }
 `;
 
-export const createEventSection = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const sectionData = ctx.data as any;
-    return hasuraRequest(CREATE_EVENT_SECTION, { object: sectionData });
-  });
+export const createEventSection = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const sectionData = ctx.data as any;
+  return hasuraRequest(CREATE_EVENT_SECTION, { object: sectionData });
+});
 
 // STAFF
 
@@ -50,12 +48,11 @@ const GET_EVENT_STAFF = `
   }
 `;
 
-export const getEventStaff = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { event_id } = ctx.data as unknown as { event_id: string };
-    const data = await hasuraRequest<{ event_staff: any[] }>(GET_EVENT_STAFF, { event_id });
-    return data.event_staff || [];
-  });
+export const getEventStaff = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { event_id } = ctx.data as unknown as { event_id: string };
+  const data = await hasuraRequest<{ event_staff: any[] }>(GET_EVENT_STAFF, { event_id });
+  return data.event_staff || [];
+});
 
 const ADD_EVENT_STAFF = `
   mutation AddEventStaff($object: event_staff_insert_input!) {
@@ -67,8 +64,7 @@ const ADD_EVENT_STAFF = `
   }
 `;
 
-export const addEventStaff = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const staffData = ctx.data as any;
-    return hasuraRequest(ADD_EVENT_STAFF, { object: staffData });
-  });
+export const addEventStaff = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const staffData = ctx.data as any;
+  return hasuraRequest(ADD_EVENT_STAFF, { object: staffData });
+});

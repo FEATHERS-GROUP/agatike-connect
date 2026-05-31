@@ -4,7 +4,26 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Trash2, GripVertical, Settings, Save, LayoutTemplate, Type, AlignLeft, CheckSquare, List, Calendar, HelpCircle, Loader2, Upload, MessageSquare, Phone, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  GripVertical,
+  Settings,
+  Save,
+  LayoutTemplate,
+  Type,
+  AlignLeft,
+  CheckSquare,
+  List,
+  Calendar,
+  HelpCircle,
+  Loader2,
+  Upload,
+  MessageSquare,
+  Phone,
+  FileText,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,10 +68,16 @@ const TEMPLATES = [
         { id: "1", label: "First Name", field_type: "text", is_required: true },
         { id: "2", label: "Last Name", field_type: "text", is_required: true },
         { id: "3", label: "Email Address", field_type: "email", is_required: true },
-        { id: "4", label: "Will you attend?", field_type: "radio", is_required: true, options: "Yes, I will be there, No, I cannot make it" },
+        {
+          id: "4",
+          label: "Will you attend?",
+          field_type: "radio",
+          is_required: true,
+          options: "Yes, I will be there, No, I cannot make it",
+        },
         { id: "5", label: "Dietary Restrictions", field_type: "textarea", is_required: false },
-      ]
-    }
+      ],
+    },
   },
   {
     id: "feedback",
@@ -68,10 +93,16 @@ const TEMPLATES = [
       fields: [
         { id: "1", label: "First Name", field_type: "text", is_required: true },
         { id: "2", label: "Email Address", field_type: "email", is_required: true },
-        { id: "3", label: "How would you rate your experience?", field_type: "select", is_required: true, options: "Excellent, Good, Average, Poor" },
+        {
+          id: "3",
+          label: "How would you rate your experience?",
+          field_type: "select",
+          is_required: true,
+          options: "Excellent, Good, Average, Poor",
+        },
         { id: "4", label: "Any additional feedback?", field_type: "textarea", is_required: false },
-      ]
-    }
+      ],
+    },
   },
   {
     id: "contact",
@@ -90,8 +121,8 @@ const TEMPLATES = [
         { id: "3", label: "Email Address", field_type: "email", is_required: true },
         { id: "4", label: "Phone Number", field_type: "text", is_required: false },
         { id: "5", label: "Company", field_type: "text", is_required: false },
-      ]
-    }
+      ],
+    },
   },
   {
     id: "blank",
@@ -108,9 +139,9 @@ const TEMPLATES = [
         { id: "1", label: "First Name", field_type: "text", is_required: true },
         { id: "2", label: "Last Name", field_type: "text", is_required: true },
         { id: "3", label: "Email Address", field_type: "email", is_required: true },
-      ]
-    }
-  }
+      ],
+    },
+  },
 ];
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/rsvps/create")({
@@ -154,12 +185,20 @@ function CreateFormPage() {
     setValue("cover_image_url", url);
   };
 
-  const { register, control, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<FormValues>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: TEMPLATES[3].formValues as any,
   });
 
-  const handleSelectTemplate = (template: typeof TEMPLATES[0]) => {
+  const handleSelectTemplate = (template: (typeof TEMPLATES)[0]) => {
     reset(template.formValues as any);
     setSelectedTemplate(template.id);
   };
@@ -175,8 +214,10 @@ function CreateFormPage() {
       if (coverFile) {
         try {
           const base64 = await fileToBase64(coverFile);
-          const ext = coverFile.name.split('.').pop() || 'jpg';
-          const res = await uploadFile({ data: { base64, contentType: coverFile.type, folder: "forms/covers", ext } } as any);
+          const ext = coverFile.name.split(".").pop() || "jpg";
+          const res = await uploadFile({
+            data: { base64, contentType: coverFile.type, folder: "forms/covers", ext },
+          } as any);
           finalCoverUrl = res.url;
         } catch (err) {
           console.error("Cover upload failed:", err);
@@ -190,7 +231,7 @@ function CreateFormPage() {
         field_type: f.field_type,
         is_required: f.is_required,
         order: index,
-        options: f.options ? f.options.split(',').map(s => s.trim()) : []
+        options: f.options ? f.options.split(",").map((s) => s.trim()) : [],
       }));
 
       return createCustomForm({
@@ -202,9 +243,9 @@ function CreateFormPage() {
           cover_image_url: finalCoverUrl,
           is_active: true,
           form_fields: {
-            data: formattedFields
-          }
-        }
+            data: formattedFields,
+          },
+        },
       } as any);
     },
     onSuccess: () => {
@@ -214,7 +255,7 @@ function CreateFormPage() {
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to create form");
-    }
+    },
   });
 
   const onSubmit = (data: FormValues) => {
@@ -235,17 +276,21 @@ function CreateFormPage() {
     return (
       <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
         <header className="flex items-center gap-4 mb-8">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="rounded-full bg-secondary/50 hover:bg-secondary"
-            onClick={() => navigate({ to: "/dashboard/$workspaceSlug/rsvps", params: { workspaceSlug } })}
+            onClick={() =>
+              navigate({ to: "/dashboard/$workspaceSlug/rsvps", params: { workspaceSlug } })
+            }
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Choose a Template</h1>
-            <p className="text-muted-foreground mt-1 text-base">Select a starting point for your new form.</p>
+            <p className="text-muted-foreground mt-1 text-base">
+              Select a starting point for your new form.
+            </p>
           </div>
         </header>
 
@@ -253,17 +298,23 @@ function CreateFormPage() {
           {TEMPLATES.map((t) => {
             const Icon = t.icon;
             return (
-              <div 
-                key={t.id} 
+              <div
+                key={t.id}
                 className="group relative bg-card border border-border/60 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col items-start"
                 onClick={() => handleSelectTemplate(t)}
               >
-                <div className={`absolute top-0 right-0 w-32 h-32 ${t.bgClass} rounded-full blur-3xl -mr-10 -mt-10 ${t.glowClass} transition-colors`} />
-                <div className={`h-12 w-12 rounded-full ${t.bgClass} ${t.textClass} flex items-center justify-center mb-4 relative z-10`}>
+                <div
+                  className={`absolute top-0 right-0 w-32 h-32 ${t.bgClass} rounded-full blur-3xl -mr-10 -mt-10 ${t.glowClass} transition-colors`}
+                />
+                <div
+                  className={`h-12 w-12 rounded-full ${t.bgClass} ${t.textClass} flex items-center justify-center mb-4 relative z-10`}
+                >
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="text-xl font-bold mb-2 relative z-10">{t.title}</h3>
-                <p className="text-muted-foreground text-sm relative z-10 flex-1">{t.description}</p>
+                <p className="text-muted-foreground text-sm relative z-10 flex-1">
+                  {t.description}
+                </p>
                 <div className="mt-6 font-semibold text-sm text-primary flex items-center group-hover:translate-x-1 transition-transform relative z-10">
                   Use Template <ArrowLeft className="h-4 w-4 ml-1 rotate-180" />
                 </div>
@@ -279,9 +330,9 @@ function CreateFormPage() {
     <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       <header className="flex items-center justify-between gap-4 sticky top-0 z-10 bg-background/80 backdrop-blur-md py-4 border-b border-border/60">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="rounded-full"
             onClick={() => setSelectedTemplate(null)}
           >
@@ -292,20 +343,26 @@ function CreateFormPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="rounded-full"
-            onClick={() => navigate({ to: "/dashboard/$workspaceSlug/rsvps", params: { workspaceSlug } })}
+            onClick={() =>
+              navigate({ to: "/dashboard/$workspaceSlug/rsvps", params: { workspaceSlug } })
+            }
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             className="rounded-full shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
             onClick={handleSubmit(onSubmit)}
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            {mutation.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
             Save & Publish
           </Button>
         </div>
@@ -327,20 +384,20 @@ function CreateFormPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Form Title</Label>
-                <Input 
-                  {...register("title")} 
-                  className="h-12 text-lg font-medium rounded-xl bg-secondary/50" 
-                  placeholder="e.g., Tech Innovators RSVP" 
+                <Input
+                  {...register("title")}
+                  className="h-12 text-lg font-medium rounded-xl bg-secondary/50"
+                  placeholder="e.g., Tech Innovators RSVP"
                 />
                 {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label>Description</Label>
-                <textarea 
-                  {...register("description")} 
+                <textarea
+                  {...register("description")}
                   className="flex min-h-[100px] w-full rounded-xl border border-input bg-secondary/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Provide instructions or details about the event..." 
+                  placeholder="Provide instructions or details about the event..."
                 />
               </div>
             </div>
@@ -360,29 +417,42 @@ function CreateFormPage() {
             <div className="p-6 space-y-4">
               {fields.map((field, index) => {
                 const fType = watch(`fields.${index}.field_type`);
-                const needsOptions = fType === 'select' || fType === 'radio';
+                const needsOptions = fType === "select" || fType === "radio";
 
                 return (
-                  <div key={field.id} className="group relative rounded-xl border border-border bg-background p-4 shadow-sm transition-all hover:border-primary/30 hover:shadow-md flex gap-4">
+                  <div
+                    key={field.id}
+                    className="group relative rounded-xl border border-border bg-background p-4 shadow-sm transition-all hover:border-primary/30 hover:shadow-md flex gap-4"
+                  >
                     <div className="flex-none pt-2 cursor-grab text-muted-foreground hover:text-foreground">
                       <GripVertical className="h-5 w-5" />
                     </div>
-                    
+
                     <div className="flex-1 space-y-4">
                       <div className="flex gap-4">
                         <div className="flex-1 space-y-1.5">
-                          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Question Label</Label>
-                          <Input 
-                            {...register(`fields.${index}.label`)} 
-                            className="font-medium bg-transparent border-t-0 border-l-0 border-r-0 rounded-none border-b-2 border-muted focus-visible:ring-0 focus-visible:border-primary px-0 pb-1 h-auto" 
+                          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Question Label
+                          </Label>
+                          <Input
+                            {...register(`fields.${index}.label`)}
+                            className="font-medium bg-transparent border-t-0 border-l-0 border-r-0 rounded-none border-b-2 border-muted focus-visible:ring-0 focus-visible:border-primary px-0 pb-1 h-auto"
                           />
-                          {errors.fields?.[index]?.label && <p className="text-xs text-red-500">{errors.fields[index]?.label?.message}</p>}
+                          {errors.fields?.[index]?.label && (
+                            <p className="text-xs text-red-500">
+                              {errors.fields[index]?.label?.message}
+                            </p>
+                          )}
                         </div>
                         <div className="w-48 space-y-1.5">
-                          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Type</Label>
-                          <Select 
-                            value={fType} 
-                            onValueChange={(val) => setValue(`fields.${index}.field_type`, val as any)}
+                          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Type
+                          </Label>
+                          <Select
+                            value={fType}
+                            onValueChange={(val) =>
+                              setValue(`fields.${index}.field_type`, val as any)
+                            }
                           >
                             <SelectTrigger className="h-9 rounded-lg bg-secondary/50">
                               <SelectValue />
@@ -401,29 +471,31 @@ function CreateFormPage() {
 
                       {needsOptions && (
                         <div className="space-y-1.5 pt-2 border-t border-border/40">
-                          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Options (Comma separated)</Label>
-                          <Input 
-                            {...register(`fields.${index}.options`)} 
-                            className="bg-secondary/30 h-9" 
-                            placeholder="Option 1, Option 2, Option 3" 
+                          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Options (Comma separated)
+                          </Label>
+                          <Input
+                            {...register(`fields.${index}.options`)}
+                            className="bg-secondary/30 h-9"
+                            placeholder="Option 1, Option 2, Option 3"
                           />
                         </div>
                       )}
 
                       <div className="flex items-center justify-between pt-2">
                         <label className="flex items-center gap-2 text-sm cursor-pointer">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             {...register(`fields.${index}.is_required`)}
                             className="rounded border-muted text-primary focus:ring-primary"
                           />
                           Required Field
                         </label>
-                        
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
                           className="h-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
                           onClick={() => remove(index)}
                         >
@@ -445,34 +517,62 @@ function CreateFormPage() {
         {/* Sidebar Controls */}
         <div className="space-y-6">
           <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm sticky top-24">
-            <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">Add Field</h3>
+            <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">
+              Add Field
+            </h3>
             <div className="grid grid-cols-2 gap-3">
-              <Button type="button" variant="outline" className="h-auto py-3 flex flex-col items-center gap-2" onClick={() => addField('text')}>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-auto py-3 flex flex-col items-center gap-2"
+                onClick={() => addField("text")}
+              >
                 <Type className="h-5 w-5 text-primary" />
                 <span className="text-xs">Short Text</span>
               </Button>
-              <Button type="button" variant="outline" className="h-auto py-3 flex flex-col items-center gap-2" onClick={() => addField('textarea')}>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-auto py-3 flex flex-col items-center gap-2"
+                onClick={() => addField("textarea")}
+              >
                 <AlignLeft className="h-5 w-5 text-blue-500" />
                 <span className="text-xs">Long Text</span>
               </Button>
-              <Button type="button" variant="outline" className="h-auto py-3 flex flex-col items-center gap-2" onClick={() => addField('select')}>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-auto py-3 flex flex-col items-center gap-2"
+                onClick={() => addField("select")}
+              >
                 <List className="h-5 w-5 text-purple-500" />
                 <span className="text-xs">Dropdown</span>
               </Button>
-              <Button type="button" variant="outline" className="h-auto py-3 flex flex-col items-center gap-2" onClick={() => addField('radio')}>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-auto py-3 flex flex-col items-center gap-2"
+                onClick={() => addField("radio")}
+              >
                 <CheckSquare className="h-5 w-5 text-green-500" />
                 <span className="text-xs">Choice</span>
               </Button>
             </div>
 
             <div className="mt-8 border-t border-border/60 pt-6">
-              <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">Appearance</h3>
+              <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">
+                Appearance
+              </h3>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Cover Image</Label>
                   <label className="block aspect-[16/9] cursor-pointer overflow-hidden rounded-2xl border border-dashed border-border bg-secondary/40 transition hover:border-primary relative group">
                     {watch("cover_image_url") ? (
-                      <img src={watch("cover_image_url")} alt="cover" className="h-full w-full object-cover" />
+                      <img
+                        src={watch("cover_image_url")}
+                        alt="cover"
+                        className="h-full w-full object-cover"
+                      />
                     ) : (
                       <div className="grid h-full place-items-center text-sm text-muted-foreground">
                         <div className="text-center">
@@ -491,16 +591,18 @@ function CreateFormPage() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Or paste image URL</Label>
-                  <Input 
-                    {...register("cover_image_url")} 
-                    className="bg-secondary/50 h-9 text-sm" 
-                    placeholder="https://..." 
+                  <Input
+                    {...register("cover_image_url")}
+                    className="bg-secondary/50 h-9 text-sm"
+                    placeholder="https://..."
                     onChange={(e) => {
                       setValue("cover_image_url", e.target.value);
                       setCoverFile(null);
                     }}
                   />
-                  <p className="text-[10px] text-muted-foreground">Optional banner image for the form.</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Optional banner image for the form.
+                  </p>
                 </div>
               </div>
             </div>

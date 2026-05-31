@@ -1,1 +1,189 @@
-import{w as a,n as t,C as n,q as e,L as d}from"./index-BbCjida8.js";import{N as c}from"./Navbar-8zxmLK7V.js";import{F as m}from"./Footer-CxcHC3QW.js";import{B as x}from"./button-BtHMdeJ3.js";import{A as p}from"./arrow-left-CHuZXlQs.js";import{M as u}from"./mountain-xecMQ11A.js";import{S as h}from"./star-CtaeFg5C.js";import{M as b}from"./map-pin-C2ftX2X_.js";import{C as g}from"./clock-BqqZJLGx.js";import{U as f}from"./users-Cp-Hr28i.js";import"./input-Bn2qJlr0.js";import"./plus-DEJHAl15.js";const j=["All","Hiking","Running","Surf","Wellness","Food","Carft"];function S(){const[r,o]=a.useState("All"),l=a.useMemo(()=>r==="All"?t:t.filter(s=>s.category===r),[r]),i=n();return e.jsxs("div",{className:"min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none",children:[e.jsx("div",{className:"hidden md:block",children:e.jsx(c,{})}),e.jsxs("div",{className:"md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center gap-3",children:[e.jsx("button",{onClick:()=>i.history.back(),className:"p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground",children:e.jsx(p,{className:"h-6 w-6"})}),e.jsx("h1",{className:"font-bold text-lg tracking-tight",children:"Experiences"})]}),e.jsxs("section",{className:"relative overflow-hidden hidden md:block",children:[e.jsx("div",{className:"absolute inset-0",style:{background:"var(--gradient-warm)"}}),e.jsxs("div",{className:"relative mx-auto max-w-7xl px-6 py-16 text-primary-foreground md:py-24",children:[e.jsxs("span",{className:"inline-flex items-center gap-2 rounded-full bg-background/15 px-3 py-1 text-xs backdrop-blur",children:[e.jsx(u,{className:"h-3.5 w-3.5"})," Outdoor & active"]}),e.jsx("h1",{className:"mt-4 max-w-3xl text-4xl font-semibold md:text-5xl",children:"Hike, run, surf — book it like a ticket."}),e.jsx("p",{className:"mt-3 max-w-xl opacity-90",children:"Local hosts running curated outdoor experiences and recurring clubs across the continent."})]})]}),e.jsxs("div",{className:"mx-auto max-w-7xl px-4 md:px-6 py-4 md:py-10",children:[e.jsx("div",{className:"flex overflow-x-auto hide-scrollbar gap-2 pb-2",children:j.map(s=>e.jsx("button",{onClick:()=>o(s),className:`rounded-full border px-4 py-1.5 text-sm shrink-0 transition ${r===s?"border-primary bg-accent text-accent-foreground":"border-border bg-background text-muted-foreground hover:bg-secondary"}`,children:s},s))}),e.jsx("div",{className:"mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3",children:l.map(s=>e.jsxs("article",{className:"group overflow-hidden rounded-3xl border border-border/60 bg-card shadow-[var(--shadow-card)] transition hover:-translate-y-1",children:[e.jsxs("div",{className:"relative aspect-[4/3] overflow-hidden",children:[e.jsx("img",{src:s.cover,alt:s.title,className:"h-full w-full object-cover transition-transform duration-500 group-hover:scale-110",loading:"lazy"}),e.jsx("span",{className:"absolute top-3 left-3 rounded-full bg-background/90 px-3 py-1 text-xs backdrop-blur",children:s.category}),e.jsxs("span",{className:"absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1 text-xs font-semibold backdrop-blur",children:[e.jsx(h,{className:"h-3 w-3 fill-primary text-primary"})," ",s.rating]})]}),e.jsxs("div",{className:"p-5",children:[e.jsx("h3",{className:"font-semibold leading-tight",children:s.title}),e.jsxs("p",{className:"mt-1 text-xs text-muted-foreground",children:["Hosted by ",s.host]}),e.jsxs("div",{className:"mt-3 grid grid-cols-3 gap-2 text-xs text-muted-foreground",children:[e.jsxs("span",{className:"inline-flex items-center gap-1",children:[e.jsx(b,{className:"h-3 w-3"})," ",s.city]}),e.jsxs("span",{className:"inline-flex items-center gap-1",children:[e.jsx(g,{className:"h-3 w-3"})," ",s.duration]}),e.jsxs("span",{className:"inline-flex items-center gap-1",children:[e.jsx(f,{className:"h-3 w-3"})," ",s.spots," spots"]})]}),e.jsx("p",{className:"mt-3 line-clamp-2 text-sm text-muted-foreground",children:s.description}),e.jsxs("div",{className:"mt-4 flex items-center justify-between",children:[e.jsx("p",{className:"text-sm font-semibold",children:s.price===0?"Free · Join club":`From ${s.currency||"$"}${s.price}`}),e.jsx(x,{asChild:!0,className:"rounded-full",style:{background:"var(--gradient-primary)"},children:e.jsx(d,{to:"/events/$eventId",params:{eventId:s.id},children:s.price===0?"Join":"Book"})})]})]})]},s.id))})]}),e.jsx("div",{className:"hidden md:block",children:e.jsx(m,{})})]})}export{S as component};
+import { w as a, n as t, C as n, q as e, L as d } from "./index-BbCjida8.js";
+import { N as c } from "./Navbar-8zxmLK7V.js";
+import { F as m } from "./Footer-CxcHC3QW.js";
+import { B as x } from "./button-BtHMdeJ3.js";
+import { A as p } from "./arrow-left-CHuZXlQs.js";
+import { M as u } from "./mountain-xecMQ11A.js";
+import { S as h } from "./star-CtaeFg5C.js";
+import { M as b } from "./map-pin-C2ftX2X_.js";
+import { C as g } from "./clock-BqqZJLGx.js";
+import { U as f } from "./users-Cp-Hr28i.js";
+import "./input-Bn2qJlr0.js";
+import "./plus-DEJHAl15.js";
+const j = ["All", "Hiking", "Running", "Surf", "Wellness", "Food", "Carft"];
+function S() {
+  const [r, o] = a.useState("All"),
+    l = a.useMemo(() => (r === "All" ? t : t.filter((s) => s.category === r)), [r]),
+    i = n();
+  return e.jsxs("div", {
+    className:
+      "min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none",
+    children: [
+      e.jsx("div", { className: "hidden md:block", children: e.jsx(c, {}) }),
+      e.jsxs("div", {
+        className:
+          "md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center gap-3",
+        children: [
+          e.jsx("button", {
+            onClick: () => i.history.back(),
+            className:
+              "p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground",
+            children: e.jsx(p, { className: "h-6 w-6" }),
+          }),
+          e.jsx("h1", { className: "font-bold text-lg tracking-tight", children: "Experiences" }),
+        ],
+      }),
+      e.jsxs("section", {
+        className: "relative overflow-hidden hidden md:block",
+        children: [
+          e.jsx("div", {
+            className: "absolute inset-0",
+            style: { background: "var(--gradient-warm)" },
+          }),
+          e.jsxs("div", {
+            className: "relative mx-auto max-w-7xl px-6 py-16 text-primary-foreground md:py-24",
+            children: [
+              e.jsxs("span", {
+                className:
+                  "inline-flex items-center gap-2 rounded-full bg-background/15 px-3 py-1 text-xs backdrop-blur",
+                children: [e.jsx(u, { className: "h-3.5 w-3.5" }), " Outdoor & active"],
+              }),
+              e.jsx("h1", {
+                className: "mt-4 max-w-3xl text-4xl font-semibold md:text-5xl",
+                children: "Hike, run, surf — book it like a ticket.",
+              }),
+              e.jsx("p", {
+                className: "mt-3 max-w-xl opacity-90",
+                children:
+                  "Local hosts running curated outdoor experiences and recurring clubs across the continent.",
+              }),
+            ],
+          }),
+        ],
+      }),
+      e.jsxs("div", {
+        className: "mx-auto max-w-7xl px-4 md:px-6 py-4 md:py-10",
+        children: [
+          e.jsx("div", {
+            className: "flex overflow-x-auto hide-scrollbar gap-2 pb-2",
+            children: j.map((s) =>
+              e.jsx(
+                "button",
+                {
+                  onClick: () => o(s),
+                  className: `rounded-full border px-4 py-1.5 text-sm shrink-0 transition ${r === s ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground hover:bg-secondary"}`,
+                  children: s,
+                },
+                s,
+              ),
+            ),
+          }),
+          e.jsx("div", {
+            className: "mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3",
+            children: l.map((s) =>
+              e.jsxs(
+                "article",
+                {
+                  className:
+                    "group overflow-hidden rounded-3xl border border-border/60 bg-card shadow-[var(--shadow-card)] transition hover:-translate-y-1",
+                  children: [
+                    e.jsxs("div", {
+                      className: "relative aspect-[4/3] overflow-hidden",
+                      children: [
+                        e.jsx("img", {
+                          src: s.cover,
+                          alt: s.title,
+                          className:
+                            "h-full w-full object-cover transition-transform duration-500 group-hover:scale-110",
+                          loading: "lazy",
+                        }),
+                        e.jsx("span", {
+                          className:
+                            "absolute top-3 left-3 rounded-full bg-background/90 px-3 py-1 text-xs backdrop-blur",
+                          children: s.category,
+                        }),
+                        e.jsxs("span", {
+                          className:
+                            "absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1 text-xs font-semibold backdrop-blur",
+                          children: [
+                            e.jsx(h, { className: "h-3 w-3 fill-primary text-primary" }),
+                            " ",
+                            s.rating,
+                          ],
+                        }),
+                      ],
+                    }),
+                    e.jsxs("div", {
+                      className: "p-5",
+                      children: [
+                        e.jsx("h3", {
+                          className: "font-semibold leading-tight",
+                          children: s.title,
+                        }),
+                        e.jsxs("p", {
+                          className: "mt-1 text-xs text-muted-foreground",
+                          children: ["Hosted by ", s.host],
+                        }),
+                        e.jsxs("div", {
+                          className: "mt-3 grid grid-cols-3 gap-2 text-xs text-muted-foreground",
+                          children: [
+                            e.jsxs("span", {
+                              className: "inline-flex items-center gap-1",
+                              children: [e.jsx(b, { className: "h-3 w-3" }), " ", s.city],
+                            }),
+                            e.jsxs("span", {
+                              className: "inline-flex items-center gap-1",
+                              children: [e.jsx(g, { className: "h-3 w-3" }), " ", s.duration],
+                            }),
+                            e.jsxs("span", {
+                              className: "inline-flex items-center gap-1",
+                              children: [
+                                e.jsx(f, { className: "h-3 w-3" }),
+                                " ",
+                                s.spots,
+                                " spots",
+                              ],
+                            }),
+                          ],
+                        }),
+                        e.jsx("p", {
+                          className: "mt-3 line-clamp-2 text-sm text-muted-foreground",
+                          children: s.description,
+                        }),
+                        e.jsxs("div", {
+                          className: "mt-4 flex items-center justify-between",
+                          children: [
+                            e.jsx("p", {
+                              className: "text-sm font-semibold",
+                              children:
+                                s.price === 0
+                                  ? "Free · Join club"
+                                  : `From ${s.currency || "$"}${s.price}`,
+                            }),
+                            e.jsx(x, {
+                              asChild: !0,
+                              className: "rounded-full",
+                              style: { background: "var(--gradient-primary)" },
+                              children: e.jsx(d, {
+                                to: "/events/$eventId",
+                                params: { eventId: s.id },
+                                children: s.price === 0 ? "Join" : "Book",
+                              }),
+                            }),
+                          ],
+                        }),
+                      ],
+                    }),
+                  ],
+                },
+                s.id,
+              ),
+            ),
+          }),
+        ],
+      }),
+      e.jsx("div", { className: "hidden md:block", children: e.jsx(m, {}) }),
+    ],
+  });
+}
+export { S as component };

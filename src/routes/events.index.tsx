@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button";
 import { categories } from "@/lib/mock-data";
 import { getPublicEvents } from "@/api/events";
 
-export const Route = createFileRoute("/events/")(
-  {
+export const Route = createFileRoute("/events/")({
   head: () => ({
     meta: [
       { title: "All events — Agatike" },
@@ -31,8 +30,19 @@ export const Route = createFileRoute("/events/")(
 
 function getCurrencySymbol(currency?: string) {
   const map: Record<string, string> = {
-    RWF: "RWF ", USD: "$", EUR: "€", GBP: "£", KES: "KES ", UGX: "UGX ", TZS: "TZS ",
-    NGN: "₦", GHS: "GH₵", XOF: "CFA ", ZAR: "R", MAD: "MAD ", ETB: "Br ",
+    RWF: "RWF ",
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    KES: "KES ",
+    UGX: "UGX ",
+    TZS: "TZS ",
+    NGN: "₦",
+    GHS: "GH₵",
+    XOF: "CFA ",
+    ZAR: "R",
+    MAD: "MAD ",
+    ETB: "Br ",
   };
   return map[currency || ""] || "$";
 }
@@ -82,14 +92,18 @@ function DbEventCard({ event }: { event: any }) {
           {firstStop && (
             <div className="mt-2 flex items-center gap-1 text-xs opacity-90">
               <MapPin className="h-3 w-3" />
-              {firstStop.venue ? `${firstStop.venue}, ` : ""}{firstStop.city || ""}
+              {firstStop.venue ? `${firstStop.venue}, ` : ""}
+              {firstStop.city || ""}
             </div>
           )}
         </div>
       </div>
       <div className="flex items-center justify-between px-4 py-3">
         <div className="text-xs text-muted-foreground">
-          by <span className="text-foreground font-medium">{event.workspace?.name || "Organizer"}</span>
+          by{" "}
+          <span className="text-foreground font-medium">
+            {event.workspace?.name || "Organizer"}
+          </span>
         </div>
         <div className="text-sm font-semibold">
           {price === 0 ? "Free" : `from ${currency}${price.toLocaleString()}`}
@@ -113,7 +127,8 @@ function EventsBrowse() {
       const firstStop = Array.isArray(e.tour_stops) ? e.tour_stops[0] : null;
       const city = firstStop?.city || "";
       const matchesQ =
-        !q || `${e.title} ${e.workspace?.name || ""} ${city}`.toLowerCase().includes(q.toLowerCase());
+        !q ||
+        `${e.title} ${e.workspace?.name || ""} ${city}`.toLowerCase().includes(q.toLowerCase());
       const matchesCat = !cat || e.category === cat;
       return matchesQ && matchesCat;
     });

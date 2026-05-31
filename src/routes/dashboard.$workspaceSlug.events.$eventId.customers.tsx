@@ -9,10 +9,42 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/
 
 function CustomersView() {
   const customers = [
-    { id: 1, name: "Alice Johnson", email: "alice@example.com", ticket: "VIP Pass", qty: 2, amount: "$240", date: "May 12, 2026" },
-    { id: 2, name: "Bob Smith", email: "bob@example.com", ticket: "General Admission", qty: 1, amount: "$45", date: "May 14, 2026" },
-    { id: 3, name: "Charlie Davis", email: "charlie@example.com", ticket: "Early Bird", qty: 4, amount: "$120", date: "May 15, 2026" },
-    { id: 4, name: "Diana Prince", email: "diana@example.com", ticket: "VIP Pass", qty: 1, amount: "$120", date: "May 18, 2026" },
+    {
+      id: 1,
+      name: "Alice Johnson",
+      email: "alice@example.com",
+      ticket: "VIP Pass",
+      qty: 2,
+      amount: "$240",
+      date: "May 12, 2026",
+    },
+    {
+      id: 2,
+      name: "Bob Smith",
+      email: "bob@example.com",
+      ticket: "General Admission",
+      qty: 1,
+      amount: "$45",
+      date: "May 14, 2026",
+    },
+    {
+      id: 3,
+      name: "Charlie Davis",
+      email: "charlie@example.com",
+      ticket: "Early Bird",
+      qty: 4,
+      amount: "$120",
+      date: "May 15, 2026",
+    },
+    {
+      id: 4,
+      name: "Diana Prince",
+      email: "diana@example.com",
+      ticket: "VIP Pass",
+      qty: 1,
+      amount: "$120",
+      date: "May 18, 2026",
+    },
   ];
 
   return (

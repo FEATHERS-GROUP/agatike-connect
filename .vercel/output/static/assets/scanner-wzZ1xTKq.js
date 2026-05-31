@@ -1,7 +1,422 @@
-import{l as i,w as r,q as e,L as n}from"./index-BbCjida8.js";import{A as o}from"./arrow-left-CHuZXlQs.js";import{S as x}from"./scan-line-CkHDv9zx.js";import{C as f}from"./circle-check-DTgEIP1Q.js";import{U as j}from"./users-Cp-Hr28i.js";import{C as m}from"./crown-BCGC55Ge.js";import{B as c}from"./button-BtHMdeJ3.js";import{C as g}from"./check-GbEytpJN.js";import{X as N}from"./x-B77yeb99.js";const w=[["circle",{cx:"12",cy:"12",r:"10",key:"1mglay"}],["path",{d:"m15 9-6 6",key:"1uzhvr"}],["path",{d:"m9 9 6 6",key:"z0biqf"}]],v=i("circle-x",w);const k=[["path",{d:"M12 13v1",key:"176q98"}],["path",{d:"M17 2a1 1 0 0 1 1 1v4a3 3 0 0 1-.6 1.8l-.6.8A4 4 0 0 0 16 12v8a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-8a4 4 0 0 0-.8-2.4l-.6-.8A3 3 0 0 1 6 7V3a1 1 0 0 1 1-1z",key:"17vh7j"}],["path",{d:"M6 6h12",key:"n6hhss"}]],y=i("flashlight",k);const _=[["path",{d:"M12 20h.01",key:"zekei9"}],["path",{d:"M8.5 16.429a5 5 0 0 1 7 0",key:"1bycff"}],["path",{d:"M5 12.859a10 10 0 0 1 5.17-2.69",key:"1dl1wf"}],["path",{d:"M19 12.859a10 10 0 0 0-2.007-1.523",key:"4k23kn"}],["path",{d:"M2 8.82a15 15 0 0 1 4.177-2.643",key:"1grhjp"}],["path",{d:"M22 8.82a15 15 0 0 0-11.288-3.764",key:"z3jwby"}],["path",{d:"m2 2 20 20",key:"1ooewy"}]],h=i("wifi-off",_);const C=[["path",{d:"M12 20h.01",key:"zekei9"}],["path",{d:"M2 8.82a15 15 0 0 1 20 0",key:"dnpr2z"}],["path",{d:"M5 12.859a10 10 0 0 1 14 0",key:"1x1e6c"}],["path",{d:"M8.5 16.429a5 5 0 0 1 7 0",key:"1bycff"}]],b=i("wifi",C);function A(){const[s,t]=r.useState("idle"),[a,d]=r.useState(!0),[l,p]=r.useState(!1);return r.useEffect(()=>{if(s!=="idle"){const u=setTimeout(()=>t("idle"),2500);return()=>clearTimeout(u)}},[s]),e.jsxs("div",{className:"h-[100dvh] w-full bg-black text-white flex flex-col overflow-hidden",children:[e.jsxs("header",{className:"flex items-center justify-between px-4 pt-safe-top pb-4 bg-black/80 backdrop-blur-md z-30 border-b border-white/10",children:[e.jsx(n,{to:"/dashboard",className:"p-2 -ml-2 text-white",children:e.jsx(o,{className:"h-6 w-6"})}),e.jsxs("div",{className:"text-center",children:[e.jsx("h1",{className:"font-bold text-sm tracking-tight",children:"Afrobeats Night"}),e.jsx("p",{className:"text-[10px] text-white/50",children:"Door 2 • General Entry"})]}),e.jsxs("div",{className:"flex gap-2 items-center",children:[e.jsx("button",{onClick:()=>p(!l),className:`p-2 rounded-full ${l?"bg-white text-black":"text-white"}`,children:e.jsx(y,{className:"h-5 w-5"})}),e.jsx("button",{onClick:()=>d(!a),className:`p-1.5 rounded-full ${a?"bg-emerald-500/20 text-emerald-400":"bg-red-500/20 text-red-400"}`,children:a?e.jsx(b,{className:"h-4 w-4"}):e.jsx(h,{className:"h-4 w-4"})})]})]}),e.jsxs("div",{className:"flex-1 relative flex flex-col items-center justify-center p-4",children:[e.jsx("div",{className:"absolute inset-0 bg-[#0a0a0a]",children:e.jsx("div",{className:"absolute inset-0 opacity-20",style:{backgroundImage:"radial-gradient(circle at center, #333 1px, transparent 1px)",backgroundSize:"20px 20px"}})}),e.jsxs("div",{className:`relative w-full max-w-sm aspect-square rounded-[2.5rem] border-4 transition-colors duration-300 ${s==="idle"?"border-primary/50":s==="success"||s==="vip"?"border-emerald-500":"border-red-500"}`,children:[s==="idle"&&e.jsxs(e.Fragment,{children:[e.jsx("div",{className:"absolute inset-0 bg-primary/10 animate-pulse rounded-[2rem]"}),e.jsx("div",{className:"absolute left-0 right-0 top-1/2 h-0.5 bg-primary shadow-[0_0_15px_var(--color-primary)] animate-[scan_2s_ease-in-out_infinite]"}),e.jsxs("div",{className:"absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-white/70",children:[e.jsx(x,{className:"h-12 w-12 mb-2 opacity-50"}),e.jsx("p",{className:"text-sm font-bold tracking-widest uppercase",children:"Align QR Code"})]})]}),s!=="idle"&&e.jsx("div",{className:`absolute inset-0 flex flex-col items-center justify-center rounded-[2rem] backdrop-blur-sm ${s==="success"||s==="vip"?"bg-emerald-500/20":"bg-red-500/20"}`,children:s==="success"||s==="vip"?e.jsx(f,{className:"h-24 w-24 text-emerald-400 mb-2 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]"}):e.jsx(v,{className:"h-24 w-24 text-red-500 mb-2 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]"})})]}),e.jsxs("div",{className:"absolute bottom-32 bg-black/80 backdrop-blur-xl border border-white/10 rounded-full px-6 py-2 flex items-center gap-4 text-sm font-bold shadow-2xl",children:[e.jsxs("div",{className:"flex items-center gap-2",children:[e.jsx(j,{className:"h-4 w-4 text-primary"})," 842 In"]}),e.jsx("div",{className:"h-4 w-px bg-white/20"}),e.jsx("div",{className:"text-white/60",children:"358 Left"})]})]}),e.jsx("div",{className:`absolute bottom-0 left-0 right-0 bg-[#111] rounded-t-3xl border-t border-white/10 p-6 pb-safe transition-transform duration-300 ${s!=="idle"?"translate-y-0":"translate-y-[120%]"}`,children:s!=="idle"&&e.jsxs("div",{className:"animate-in slide-in-from-bottom-4 duration-200",children:[e.jsxs("div",{className:"flex items-center gap-4 mb-4",children:[e.jsx("div",{className:"h-14 w-14 rounded-full bg-gradient-to-tr from-primary to-accent p-0.5",children:e.jsx("img",{src:"https://i.pravatar.cc/150?img=12",className:"h-full w-full rounded-full border-2 border-black object-cover"})}),e.jsxs("div",{className:"flex-1",children:[e.jsx("h3",{className:"text-xl font-bold",children:"Amaka Okafor"}),e.jsx("p",{className:"text-white/50 text-sm",children:"#AG-48211"})]}),s==="vip"&&e.jsxs("div",{className:"bg-[#FFD700]/20 text-[#FFD700] border border-[#FFD700]/50 px-3 py-1 rounded-full flex items-center gap-1 font-bold text-xs uppercase",children:[e.jsx(m,{className:"h-3 w-3"})," VIP"]})]}),e.jsx("div",{className:`w-full p-4 rounded-2xl text-center font-bold text-lg tracking-wide ${s==="fail"?"bg-red-500/20 text-red-400 border border-red-500/30":"bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"}`,children:s==="fail"?"TICKET ALREADY SCANNED":"ENTRY APPROVED"})]})}),e.jsx("div",{className:"absolute bottom-4 left-4 right-4 z-50 flex gap-2",children:s==="idle"&&e.jsxs(e.Fragment,{children:[e.jsx("button",{onClick:()=>t("success"),className:"flex-1 bg-white/10 text-white p-3 rounded-full text-xs font-bold",children:"Mock Success"}),e.jsx("button",{onClick:()=>t("vip"),className:"flex-1 bg-[#FFD700]/20 text-[#FFD700] p-3 rounded-full text-xs font-bold",children:"Mock VIP"}),e.jsx("button",{onClick:()=>t("fail"),className:"flex-1 bg-red-500/20 text-red-400 p-3 rounded-full text-xs font-bold",children:"Mock Fail"})]})}),e.jsx("style",{children:`
+import { l as i, w as r, q as e, L as n } from "./index-BbCjida8.js";
+import { A as o } from "./arrow-left-CHuZXlQs.js";
+import { S as x } from "./scan-line-CkHDv9zx.js";
+import { C as f } from "./circle-check-DTgEIP1Q.js";
+import { U as j } from "./users-Cp-Hr28i.js";
+import { C as m } from "./crown-BCGC55Ge.js";
+import { B as c } from "./button-BtHMdeJ3.js";
+import { C as g } from "./check-GbEytpJN.js";
+import { X as N } from "./x-B77yeb99.js";
+const w = [
+    ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+    ["path", { d: "m15 9-6 6", key: "1uzhvr" }],
+    ["path", { d: "m9 9 6 6", key: "z0biqf" }],
+  ],
+  v = i("circle-x", w);
+const k = [
+    ["path", { d: "M12 13v1", key: "176q98" }],
+    [
+      "path",
+      {
+        d: "M17 2a1 1 0 0 1 1 1v4a3 3 0 0 1-.6 1.8l-.6.8A4 4 0 0 0 16 12v8a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-8a4 4 0 0 0-.8-2.4l-.6-.8A3 3 0 0 1 6 7V3a1 1 0 0 1 1-1z",
+        key: "17vh7j",
+      },
+    ],
+    ["path", { d: "M6 6h12", key: "n6hhss" }],
+  ],
+  y = i("flashlight", k);
+const _ = [
+    ["path", { d: "M12 20h.01", key: "zekei9" }],
+    ["path", { d: "M8.5 16.429a5 5 0 0 1 7 0", key: "1bycff" }],
+    ["path", { d: "M5 12.859a10 10 0 0 1 5.17-2.69", key: "1dl1wf" }],
+    ["path", { d: "M19 12.859a10 10 0 0 0-2.007-1.523", key: "4k23kn" }],
+    ["path", { d: "M2 8.82a15 15 0 0 1 4.177-2.643", key: "1grhjp" }],
+    ["path", { d: "M22 8.82a15 15 0 0 0-11.288-3.764", key: "z3jwby" }],
+    ["path", { d: "m2 2 20 20", key: "1ooewy" }],
+  ],
+  h = i("wifi-off", _);
+const C = [
+    ["path", { d: "M12 20h.01", key: "zekei9" }],
+    ["path", { d: "M2 8.82a15 15 0 0 1 20 0", key: "dnpr2z" }],
+    ["path", { d: "M5 12.859a10 10 0 0 1 14 0", key: "1x1e6c" }],
+    ["path", { d: "M8.5 16.429a5 5 0 0 1 7 0", key: "1bycff" }],
+  ],
+  b = i("wifi", C);
+function A() {
+  const [s, t] = r.useState("idle"),
+    [a, d] = r.useState(!0),
+    [l, p] = r.useState(!1);
+  return (
+    r.useEffect(() => {
+      if (s !== "idle") {
+        const u = setTimeout(() => t("idle"), 2500);
+        return () => clearTimeout(u);
+      }
+    }, [s]),
+    e.jsxs("div", {
+      className: "h-[100dvh] w-full bg-black text-white flex flex-col overflow-hidden",
+      children: [
+        e.jsxs("header", {
+          className:
+            "flex items-center justify-between px-4 pt-safe-top pb-4 bg-black/80 backdrop-blur-md z-30 border-b border-white/10",
+          children: [
+            e.jsx(n, {
+              to: "/dashboard",
+              className: "p-2 -ml-2 text-white",
+              children: e.jsx(o, { className: "h-6 w-6" }),
+            }),
+            e.jsxs("div", {
+              className: "text-center",
+              children: [
+                e.jsx("h1", {
+                  className: "font-bold text-sm tracking-tight",
+                  children: "Afrobeats Night",
+                }),
+                e.jsx("p", {
+                  className: "text-[10px] text-white/50",
+                  children: "Door 2 • General Entry",
+                }),
+              ],
+            }),
+            e.jsxs("div", {
+              className: "flex gap-2 items-center",
+              children: [
+                e.jsx("button", {
+                  onClick: () => p(!l),
+                  className: `p-2 rounded-full ${l ? "bg-white text-black" : "text-white"}`,
+                  children: e.jsx(y, { className: "h-5 w-5" }),
+                }),
+                e.jsx("button", {
+                  onClick: () => d(!a),
+                  className: `p-1.5 rounded-full ${a ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`,
+                  children: a
+                    ? e.jsx(b, { className: "h-4 w-4" })
+                    : e.jsx(h, { className: "h-4 w-4" }),
+                }),
+              ],
+            }),
+          ],
+        }),
+        e.jsxs("div", {
+          className: "flex-1 relative flex flex-col items-center justify-center p-4",
+          children: [
+            e.jsx("div", {
+              className: "absolute inset-0 bg-[#0a0a0a]",
+              children: e.jsx("div", {
+                className: "absolute inset-0 opacity-20",
+                style: {
+                  backgroundImage: "radial-gradient(circle at center, #333 1px, transparent 1px)",
+                  backgroundSize: "20px 20px",
+                },
+              }),
+            }),
+            e.jsxs("div", {
+              className: `relative w-full max-w-sm aspect-square rounded-[2.5rem] border-4 transition-colors duration-300 ${s === "idle" ? "border-primary/50" : s === "success" || s === "vip" ? "border-emerald-500" : "border-red-500"}`,
+              children: [
+                s === "idle" &&
+                  e.jsxs(e.Fragment, {
+                    children: [
+                      e.jsx("div", {
+                        className: "absolute inset-0 bg-primary/10 animate-pulse rounded-[2rem]",
+                      }),
+                      e.jsx("div", {
+                        className:
+                          "absolute left-0 right-0 top-1/2 h-0.5 bg-primary shadow-[0_0_15px_var(--color-primary)] animate-[scan_2s_ease-in-out_infinite]",
+                      }),
+                      e.jsxs("div", {
+                        className:
+                          "absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-white/70",
+                        children: [
+                          e.jsx(x, { className: "h-12 w-12 mb-2 opacity-50" }),
+                          e.jsx("p", {
+                            className: "text-sm font-bold tracking-widest uppercase",
+                            children: "Align QR Code",
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                s !== "idle" &&
+                  e.jsx("div", {
+                    className: `absolute inset-0 flex flex-col items-center justify-center rounded-[2rem] backdrop-blur-sm ${s === "success" || s === "vip" ? "bg-emerald-500/20" : "bg-red-500/20"}`,
+                    children:
+                      s === "success" || s === "vip"
+                        ? e.jsx(f, {
+                            className:
+                              "h-24 w-24 text-emerald-400 mb-2 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]",
+                          })
+                        : e.jsx(v, {
+                            className:
+                              "h-24 w-24 text-red-500 mb-2 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]",
+                          }),
+                  }),
+              ],
+            }),
+            e.jsxs("div", {
+              className:
+                "absolute bottom-32 bg-black/80 backdrop-blur-xl border border-white/10 rounded-full px-6 py-2 flex items-center gap-4 text-sm font-bold shadow-2xl",
+              children: [
+                e.jsxs("div", {
+                  className: "flex items-center gap-2",
+                  children: [e.jsx(j, { className: "h-4 w-4 text-primary" }), " 842 In"],
+                }),
+                e.jsx("div", { className: "h-4 w-px bg-white/20" }),
+                e.jsx("div", { className: "text-white/60", children: "358 Left" }),
+              ],
+            }),
+          ],
+        }),
+        e.jsx("div", {
+          className: `absolute bottom-0 left-0 right-0 bg-[#111] rounded-t-3xl border-t border-white/10 p-6 pb-safe transition-transform duration-300 ${s !== "idle" ? "translate-y-0" : "translate-y-[120%]"}`,
+          children:
+            s !== "idle" &&
+            e.jsxs("div", {
+              className: "animate-in slide-in-from-bottom-4 duration-200",
+              children: [
+                e.jsxs("div", {
+                  className: "flex items-center gap-4 mb-4",
+                  children: [
+                    e.jsx("div", {
+                      className:
+                        "h-14 w-14 rounded-full bg-gradient-to-tr from-primary to-accent p-0.5",
+                      children: e.jsx("img", {
+                        src: "https://i.pravatar.cc/150?img=12",
+                        className: "h-full w-full rounded-full border-2 border-black object-cover",
+                      }),
+                    }),
+                    e.jsxs("div", {
+                      className: "flex-1",
+                      children: [
+                        e.jsx("h3", { className: "text-xl font-bold", children: "Amaka Okafor" }),
+                        e.jsx("p", { className: "text-white/50 text-sm", children: "#AG-48211" }),
+                      ],
+                    }),
+                    s === "vip" &&
+                      e.jsxs("div", {
+                        className:
+                          "bg-[#FFD700]/20 text-[#FFD700] border border-[#FFD700]/50 px-3 py-1 rounded-full flex items-center gap-1 font-bold text-xs uppercase",
+                        children: [e.jsx(m, { className: "h-3 w-3" }), " VIP"],
+                      }),
+                  ],
+                }),
+                e.jsx("div", {
+                  className: `w-full p-4 rounded-2xl text-center font-bold text-lg tracking-wide ${s === "fail" ? "bg-red-500/20 text-red-400 border border-red-500/30" : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"}`,
+                  children: s === "fail" ? "TICKET ALREADY SCANNED" : "ENTRY APPROVED",
+                }),
+              ],
+            }),
+        }),
+        e.jsx("div", {
+          className: "absolute bottom-4 left-4 right-4 z-50 flex gap-2",
+          children:
+            s === "idle" &&
+            e.jsxs(e.Fragment, {
+              children: [
+                e.jsx("button", {
+                  onClick: () => t("success"),
+                  className: "flex-1 bg-white/10 text-white p-3 rounded-full text-xs font-bold",
+                  children: "Mock Success",
+                }),
+                e.jsx("button", {
+                  onClick: () => t("vip"),
+                  className:
+                    "flex-1 bg-[#FFD700]/20 text-[#FFD700] p-3 rounded-full text-xs font-bold",
+                  children: "Mock VIP",
+                }),
+                e.jsx("button", {
+                  onClick: () => t("fail"),
+                  className: "flex-1 bg-red-500/20 text-red-400 p-3 rounded-full text-xs font-bold",
+                  children: "Mock Fail",
+                }),
+              ],
+            }),
+        }),
+        e.jsx("style", {
+          children: `
         @keyframes scan {
           0% { transform: translateY(-100px); }
           50% { transform: translateY(100px); }
           100% { transform: translateY(-100px); }
         }
-      `})]})}function M(){const[s,t]=r.useState("idle"),[a,d]=r.useState(!0);return e.jsx("div",{className:"min-h-screen bg-[oklch(0.1_0.01_50)] text-white",children:e.jsxs("div",{className:"mx-auto flex min-h-screen max-w-md flex-col px-5 pt-6 pb-10",children:[e.jsxs("header",{className:"flex items-center justify-between",children:[e.jsxs(n,{to:"/dashboard",className:"inline-flex items-center gap-2 text-sm text-white/70 hover:text-white",children:[e.jsx(o,{className:"h-4 w-4"})," Dashboard"]}),e.jsxs("button",{onClick:()=>d(!a),className:`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs ${a?"bg-emerald-500/15 text-emerald-300":"bg-amber-500/15 text-amber-300"}`,children:[a?e.jsx(b,{className:"h-3 w-3"}):e.jsx(h,{className:"h-3 w-3"}),a?"Online":"Offline mode"]})]}),e.jsxs("div",{className:"mt-6",children:[e.jsx("p",{className:"text-xs uppercase tracking-widest text-white/50",children:"Now scanning"}),e.jsx("h1",{className:"text-xl font-semibold",children:"Afrobeats Night Live"}),e.jsx("p",{className:"text-xs text-white/60",children:"Eko Convention Centre · Door 2"})]}),e.jsxs("div",{className:"relative mt-6 aspect-square w-full overflow-hidden rounded-3xl border border-white/10 bg-black",children:[e.jsx("div",{className:"absolute inset-0 bg-[radial-gradient(circle_at_center,oklch(0.3_0.06_50)_0%,oklch(0.08_0.01_50)_70%)]"}),["top-4 left-4 border-l-2 border-t-2","top-4 right-4 border-r-2 border-t-2","bottom-4 left-4 border-l-2 border-b-2","bottom-4 right-4 border-r-2 border-b-2"].map(l=>e.jsx("div",{className:`absolute h-12 w-12 rounded-md ${l}`,style:{borderColor:"oklch(0.78 0.18 55)"}},l)),s==="idle"&&e.jsx("div",{className:"absolute left-4 right-4 top-1/2 h-px",style:{background:"linear-gradient(90deg, transparent, oklch(0.78 0.18 55), transparent)",boxShadow:"0 0 30px oklch(0.78 0.18 55)"}}),s!=="idle"&&e.jsx("div",{className:"absolute inset-0 grid place-items-center",children:e.jsx("div",{className:`grid h-24 w-24 place-items-center rounded-full ${s==="success"||s==="vip"?"bg-emerald-500":"bg-red-500"} text-white animate-scale-in`,children:s==="success"||s==="vip"?e.jsx(g,{className:"h-12 w-12"}):e.jsx(N,{className:"h-12 w-12"})})}),e.jsxs("div",{className:"absolute bottom-3 left-0 right-0 text-center text-xs text-white/60",children:[e.jsx(x,{className:"mx-auto mb-1 h-4 w-4"})," Align QR inside the frame"]})]}),s!=="idle"&&e.jsxs("div",{className:"mt-5 animate-fade-in rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur",children:[e.jsxs("div",{className:"flex items-center gap-3",children:[e.jsx("div",{className:"h-12 w-12 rounded-full",style:{background:"var(--gradient-primary)"}}),e.jsxs("div",{className:"min-w-0",children:[e.jsx("p",{className:"font-semibold",children:"Amaka Okafor"}),e.jsxs("p",{className:"text-xs text-white/60",children:["Order #AG-48211 · ",s==="vip"?"VIP Lounge":"General Admission"," x1"]})]}),s==="vip"&&e.jsxs("span",{className:"ml-auto inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-1 text-xs text-amber-300",children:[e.jsx(m,{className:"h-3 w-3"})," VIP"]})]}),e.jsx("p",{className:`mt-4 rounded-2xl px-3 py-2 text-sm ${s==="fail"?"bg-red-500/10 text-red-200":"bg-emerald-500/10 text-emerald-200"}`,children:s==="fail"?"Ticket already used at 21:14":"Welcome — entry confirmed"})]}),e.jsxs("div",{className:"mt-auto grid grid-cols-3 gap-2 pt-6",children:[e.jsx(c,{onClick:()=>t("success"),className:"h-14 rounded-2xl",style:{background:"var(--gradient-primary)"},children:"Valid"}),e.jsx(c,{onClick:()=>t("vip"),variant:"outline",className:"h-14 rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10",children:"VIP"}),e.jsx(c,{onClick:()=>t("fail"),variant:"outline",className:"h-14 rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10",children:"Reject"})]}),e.jsx("button",{onClick:()=>t("idle"),className:"mt-3 text-center text-xs text-white/50 hover:text-white",children:"Reset scanner"})]})})}function O(){return e.jsxs(e.Fragment,{children:[e.jsx("div",{className:"md:hidden",children:e.jsx(A,{})}),e.jsx("div",{className:"hidden md:block",children:e.jsx(M,{})})]})}export{O as component};
+      `,
+        }),
+      ],
+    })
+  );
+}
+function M() {
+  const [s, t] = r.useState("idle"),
+    [a, d] = r.useState(!0);
+  return e.jsx("div", {
+    className: "min-h-screen bg-[oklch(0.1_0.01_50)] text-white",
+    children: e.jsxs("div", {
+      className: "mx-auto flex min-h-screen max-w-md flex-col px-5 pt-6 pb-10",
+      children: [
+        e.jsxs("header", {
+          className: "flex items-center justify-between",
+          children: [
+            e.jsxs(n, {
+              to: "/dashboard",
+              className: "inline-flex items-center gap-2 text-sm text-white/70 hover:text-white",
+              children: [e.jsx(o, { className: "h-4 w-4" }), " Dashboard"],
+            }),
+            e.jsxs("button", {
+              onClick: () => d(!a),
+              className: `inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs ${a ? "bg-emerald-500/15 text-emerald-300" : "bg-amber-500/15 text-amber-300"}`,
+              children: [
+                a ? e.jsx(b, { className: "h-3 w-3" }) : e.jsx(h, { className: "h-3 w-3" }),
+                a ? "Online" : "Offline mode",
+              ],
+            }),
+          ],
+        }),
+        e.jsxs("div", {
+          className: "mt-6",
+          children: [
+            e.jsx("p", {
+              className: "text-xs uppercase tracking-widest text-white/50",
+              children: "Now scanning",
+            }),
+            e.jsx("h1", { className: "text-xl font-semibold", children: "Afrobeats Night Live" }),
+            e.jsx("p", {
+              className: "text-xs text-white/60",
+              children: "Eko Convention Centre · Door 2",
+            }),
+          ],
+        }),
+        e.jsxs("div", {
+          className:
+            "relative mt-6 aspect-square w-full overflow-hidden rounded-3xl border border-white/10 bg-black",
+          children: [
+            e.jsx("div", {
+              className:
+                "absolute inset-0 bg-[radial-gradient(circle_at_center,oklch(0.3_0.06_50)_0%,oklch(0.08_0.01_50)_70%)]",
+            }),
+            [
+              "top-4 left-4 border-l-2 border-t-2",
+              "top-4 right-4 border-r-2 border-t-2",
+              "bottom-4 left-4 border-l-2 border-b-2",
+              "bottom-4 right-4 border-r-2 border-b-2",
+            ].map((l) =>
+              e.jsx(
+                "div",
+                {
+                  className: `absolute h-12 w-12 rounded-md ${l}`,
+                  style: { borderColor: "oklch(0.78 0.18 55)" },
+                },
+                l,
+              ),
+            ),
+            s === "idle" &&
+              e.jsx("div", {
+                className: "absolute left-4 right-4 top-1/2 h-px",
+                style: {
+                  background:
+                    "linear-gradient(90deg, transparent, oklch(0.78 0.18 55), transparent)",
+                  boxShadow: "0 0 30px oklch(0.78 0.18 55)",
+                },
+              }),
+            s !== "idle" &&
+              e.jsx("div", {
+                className: "absolute inset-0 grid place-items-center",
+                children: e.jsx("div", {
+                  className: `grid h-24 w-24 place-items-center rounded-full ${s === "success" || s === "vip" ? "bg-emerald-500" : "bg-red-500"} text-white animate-scale-in`,
+                  children:
+                    s === "success" || s === "vip"
+                      ? e.jsx(g, { className: "h-12 w-12" })
+                      : e.jsx(N, { className: "h-12 w-12" }),
+                }),
+              }),
+            e.jsxs("div", {
+              className: "absolute bottom-3 left-0 right-0 text-center text-xs text-white/60",
+              children: [
+                e.jsx(x, { className: "mx-auto mb-1 h-4 w-4" }),
+                " Align QR inside the frame",
+              ],
+            }),
+          ],
+        }),
+        s !== "idle" &&
+          e.jsxs("div", {
+            className:
+              "mt-5 animate-fade-in rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur",
+            children: [
+              e.jsxs("div", {
+                className: "flex items-center gap-3",
+                children: [
+                  e.jsx("div", {
+                    className: "h-12 w-12 rounded-full",
+                    style: { background: "var(--gradient-primary)" },
+                  }),
+                  e.jsxs("div", {
+                    className: "min-w-0",
+                    children: [
+                      e.jsx("p", { className: "font-semibold", children: "Amaka Okafor" }),
+                      e.jsxs("p", {
+                        className: "text-xs text-white/60",
+                        children: [
+                          "Order #AG-48211 · ",
+                          s === "vip" ? "VIP Lounge" : "General Admission",
+                          " x1",
+                        ],
+                      }),
+                    ],
+                  }),
+                  s === "vip" &&
+                    e.jsxs("span", {
+                      className:
+                        "ml-auto inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-1 text-xs text-amber-300",
+                      children: [e.jsx(m, { className: "h-3 w-3" }), " VIP"],
+                    }),
+                ],
+              }),
+              e.jsx("p", {
+                className: `mt-4 rounded-2xl px-3 py-2 text-sm ${s === "fail" ? "bg-red-500/10 text-red-200" : "bg-emerald-500/10 text-emerald-200"}`,
+                children:
+                  s === "fail" ? "Ticket already used at 21:14" : "Welcome — entry confirmed",
+              }),
+            ],
+          }),
+        e.jsxs("div", {
+          className: "mt-auto grid grid-cols-3 gap-2 pt-6",
+          children: [
+            e.jsx(c, {
+              onClick: () => t("success"),
+              className: "h-14 rounded-2xl",
+              style: { background: "var(--gradient-primary)" },
+              children: "Valid",
+            }),
+            e.jsx(c, {
+              onClick: () => t("vip"),
+              variant: "outline",
+              className:
+                "h-14 rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10",
+              children: "VIP",
+            }),
+            e.jsx(c, {
+              onClick: () => t("fail"),
+              variant: "outline",
+              className:
+                "h-14 rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10",
+              children: "Reject",
+            }),
+          ],
+        }),
+        e.jsx("button", {
+          onClick: () => t("idle"),
+          className: "mt-3 text-center text-xs text-white/50 hover:text-white",
+          children: "Reset scanner",
+        }),
+      ],
+    }),
+  });
+}
+function O() {
+  return e.jsxs(e.Fragment, {
+    children: [
+      e.jsx("div", { className: "md:hidden", children: e.jsx(A, {}) }),
+      e.jsx("div", { className: "hidden md:block", children: e.jsx(M, {}) }),
+    ],
+  });
+}
+export { O as component };

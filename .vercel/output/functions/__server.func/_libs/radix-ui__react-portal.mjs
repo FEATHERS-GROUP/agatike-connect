@@ -7,10 +7,13 @@ var Portal = reactExports.forwardRef((props, forwardedRef) => {
   const { container: containerProp, ...portalProps } = props;
   const [mounted, setMounted] = reactExports.useState(false);
   useLayoutEffect2(() => setMounted(true), []);
-  const container = containerProp || mounted && globalThis?.document?.body;
-  return container ? ReactDOM.createPortal(/* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, { ...portalProps, ref: forwardedRef }), container) : null;
+  const container = containerProp || (mounted && globalThis?.document?.body);
+  return container
+    ? ReactDOM.createPortal(
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, { ...portalProps, ref: forwardedRef }),
+        container,
+      )
+    : null;
 });
 Portal.displayName = PORTAL_NAME;
-export {
-  Portal as P
-};
+export { Portal as P };

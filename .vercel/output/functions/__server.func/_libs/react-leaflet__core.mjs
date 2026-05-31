@@ -3,39 +3,41 @@ import "./leaflet.mjs";
 import "./react-dom.mjs";
 function useAttribution(map, attribution) {
   const attributionRef = reactExports.useRef(attribution);
-  reactExports.useEffect(function updateAttribution() {
-    if (attribution !== attributionRef.current && map.attributionControl != null) {
-      if (attributionRef.current != null) {
-        map.attributionControl.removeAttribution(attributionRef.current);
+  reactExports.useEffect(
+    function updateAttribution() {
+      if (attribution !== attributionRef.current && map.attributionControl != null) {
+        if (attributionRef.current != null) {
+          map.attributionControl.removeAttribution(attributionRef.current);
+        }
+        if (attribution != null) {
+          map.attributionControl.addAttribution(attribution);
+        }
       }
-      if (attribution != null) {
-        map.attributionControl.addAttribution(attribution);
-      }
-    }
-    attributionRef.current = attribution;
-  }, [
-    map,
-    attribution
-  ]);
+      attributionRef.current = attribution;
+    },
+    [map, attribution],
+  );
 }
 const CONTEXT_VERSION = 1;
 function createLeafletContext(map) {
   return Object.freeze({
     __version: CONTEXT_VERSION,
-    map
+    map,
   });
 }
 function extendContext(source, extra) {
   return Object.freeze({
     ...source,
-    ...extra
+    ...extra,
   });
 }
 const LeafletContext = reactExports.createContext(null);
 function useLeafletContext() {
   const context = reactExports.use(LeafletContext);
   if (context == null) {
-    throw new Error("No context provided: useLeafletContext() can only be used in a descendant of <MapContainer>");
+    throw new Error(
+      "No context provided: useLeafletContext() can only be used in a descendant of <MapContainer>",
+    );
   }
   return context;
 }
@@ -44,9 +46,15 @@ function createContainerComponent(useElement) {
     const { instance, context } = useElement(props).current;
     reactExports.useImperativeHandle(forwardedRef, () => instance);
     const { children } = props;
-    return children == null ? null : /* @__PURE__ */ React.createElement(LeafletContext, {
-      value: context
-    }, children);
+    return children == null
+      ? null
+      : /* @__PURE__ */ React.createElement(
+          LeafletContext,
+          {
+            value: context,
+          },
+          children,
+        );
   }
   return /* @__PURE__ */ reactExports.forwardRef(ContainerComponent);
 }
@@ -60,34 +68,36 @@ function createLeafComponent(useElement) {
 }
 function useEventHandlers(element, eventHandlers) {
   const eventHandlersRef = reactExports.useRef(void 0);
-  reactExports.useEffect(function addEventHandlers() {
-    if (eventHandlers != null) {
-      element.instance.on(eventHandlers);
-    }
-    eventHandlersRef.current = eventHandlers;
-    return function removeEventHandlers() {
-      if (eventHandlersRef.current != null) {
-        element.instance.off(eventHandlersRef.current);
+  reactExports.useEffect(
+    function addEventHandlers() {
+      if (eventHandlers != null) {
+        element.instance.on(eventHandlers);
       }
-      eventHandlersRef.current = null;
-    };
-  }, [
-    element,
-    eventHandlers
-  ]);
+      eventHandlersRef.current = eventHandlers;
+      return function removeEventHandlers() {
+        if (eventHandlersRef.current != null) {
+          element.instance.off(eventHandlersRef.current);
+        }
+        eventHandlersRef.current = null;
+      };
+    },
+    [element, eventHandlers],
+  );
 }
 function withPane(props, context) {
   const pane = props.pane ?? context.pane;
-  return pane ? {
-    ...props,
-    pane
-  } : props;
+  return pane
+    ? {
+        ...props,
+        pane,
+      }
+    : props;
 }
 function createElementObject(instance, context, container) {
   return Object.freeze({
     instance,
     context,
-    container
+    container,
   });
 }
 function createElementHook(createElement, updateElement) {
@@ -103,31 +113,30 @@ function createElementHook(createElement, updateElement) {
     if (!elementRef.current) elementRef.current = createElement(props, context);
     const propsRef = reactExports.useRef(props);
     const { instance } = elementRef.current;
-    reactExports.useEffect(function updateElementProps() {
-      if (propsRef.current !== props) {
-        updateElement(instance, props, propsRef.current);
-        propsRef.current = props;
-      }
-    }, [
-      instance,
-      props,
-      updateElement
-    ]);
+    reactExports.useEffect(
+      function updateElementProps() {
+        if (propsRef.current !== props) {
+          updateElement(instance, props, propsRef.current);
+          propsRef.current = props;
+        }
+      },
+      [instance, props, updateElement],
+    );
     return elementRef;
   };
 }
 function useLayerLifecycle(element, context) {
-  reactExports.useEffect(function addLayer() {
-    const container = context.layerContainer ?? context.map;
-    container.addLayer(element.instance);
-    return function removeLayer() {
-      context.layerContainer?.removeLayer(element.instance);
-      context.map.removeLayer(element.instance);
-    };
-  }, [
-    context,
-    element
-  ]);
+  reactExports.useEffect(
+    function addLayer() {
+      const container = context.layerContainer ?? context.map;
+      container.addLayer(element.instance);
+      return function removeLayer() {
+        context.layerContainer?.removeLayer(element.instance);
+        context.map.removeLayer(element.instance);
+      };
+    },
+    [context, element],
+  );
 }
 function createLayerHook(useElement) {
   return function useLayer(props) {
@@ -167,5 +176,5 @@ export {
   extendContext as e,
   useLeafletContext as f,
   updateGridLayer as u,
-  withPane as w
+  withPane as w,
 };

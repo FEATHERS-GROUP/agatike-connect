@@ -75,10 +75,46 @@ const templates: {
     icon: Trophy,
     stageLabel: "COURT",
     sections: [
-      { id: "n", name: "North Stand", color: "#f97316", rows: 6, cols: 18, curve: 0.6, price: 60, tier: "General" },
-      { id: "s", name: "South Stand", color: "#0ea5e9", rows: 6, cols: 18, curve: 0.6, price: 60, tier: "General" },
-      { id: "e", name: "Courtside East", color: "#dc2626", rows: 3, cols: 14, curve: 0.2, price: 250, tier: "VIP" },
-      { id: "w", name: "Courtside West", color: "#7c3aed", rows: 3, cols: 14, curve: 0.2, price: 250, tier: "VIP" },
+      {
+        id: "n",
+        name: "North Stand",
+        color: "#f97316",
+        rows: 6,
+        cols: 18,
+        curve: 0.6,
+        price: 60,
+        tier: "General",
+      },
+      {
+        id: "s",
+        name: "South Stand",
+        color: "#0ea5e9",
+        rows: 6,
+        cols: 18,
+        curve: 0.6,
+        price: 60,
+        tier: "General",
+      },
+      {
+        id: "e",
+        name: "Courtside East",
+        color: "#dc2626",
+        rows: 3,
+        cols: 14,
+        curve: 0.2,
+        price: 250,
+        tier: "VIP",
+      },
+      {
+        id: "w",
+        name: "Courtside West",
+        color: "#7c3aed",
+        rows: 3,
+        cols: 14,
+        curve: 0.2,
+        price: 250,
+        tier: "VIP",
+      },
     ],
   },
   {
@@ -88,10 +124,46 @@ const templates: {
     icon: Trophy,
     stageLabel: "PITCH",
     sections: [
-      { id: "n", name: "North Tribune", color: "#16a34a", rows: 10, cols: 24, curve: 0.9, price: 35, tier: "General" },
-      { id: "s", name: "South Tribune", color: "#16a34a", rows: 10, cols: 24, curve: 0.9, price: 35, tier: "General" },
-      { id: "e", name: "East Stand", color: "#f59e0b", rows: 8, cols: 20, curve: 0.5, price: 80, tier: "Premium" },
-      { id: "w", name: "West VIP", color: "#dc2626", rows: 8, cols: 20, curve: 0.5, price: 180, tier: "VIP" },
+      {
+        id: "n",
+        name: "North Tribune",
+        color: "#16a34a",
+        rows: 10,
+        cols: 24,
+        curve: 0.9,
+        price: 35,
+        tier: "General",
+      },
+      {
+        id: "s",
+        name: "South Tribune",
+        color: "#16a34a",
+        rows: 10,
+        cols: 24,
+        curve: 0.9,
+        price: 35,
+        tier: "General",
+      },
+      {
+        id: "e",
+        name: "East Stand",
+        color: "#f59e0b",
+        rows: 8,
+        cols: 20,
+        curve: 0.5,
+        price: 80,
+        tier: "Premium",
+      },
+      {
+        id: "w",
+        name: "West VIP",
+        color: "#dc2626",
+        rows: 8,
+        cols: 20,
+        curve: 0.5,
+        price: 180,
+        tier: "VIP",
+      },
     ],
   },
   {
@@ -101,10 +173,46 @@ const templates: {
     icon: Music2,
     stageLabel: "STAGE",
     sections: [
-      { id: "floor", name: "Floor / Standing", color: "#f97316", rows: 8, cols: 22, curve: 0.3, price: 50, tier: "Floor" },
-      { id: "left", name: "Left Balcony", color: "#7c3aed", rows: 5, cols: 10, curve: 0.4, price: 90, tier: "Premium" },
-      { id: "right", name: "Right Balcony", color: "#7c3aed", rows: 5, cols: 10, curve: 0.4, price: 90, tier: "Premium" },
-      { id: "vip", name: "VIP Lounge", color: "#dc2626", rows: 3, cols: 12, curve: 0.2, price: 220, tier: "VIP" },
+      {
+        id: "floor",
+        name: "Floor / Standing",
+        color: "#f97316",
+        rows: 8,
+        cols: 22,
+        curve: 0.3,
+        price: 50,
+        tier: "Floor",
+      },
+      {
+        id: "left",
+        name: "Left Balcony",
+        color: "#7c3aed",
+        rows: 5,
+        cols: 10,
+        curve: 0.4,
+        price: 90,
+        tier: "Premium",
+      },
+      {
+        id: "right",
+        name: "Right Balcony",
+        color: "#7c3aed",
+        rows: 5,
+        cols: 10,
+        curve: 0.4,
+        price: 90,
+        tier: "Premium",
+      },
+      {
+        id: "vip",
+        name: "VIP Lounge",
+        color: "#dc2626",
+        rows: 3,
+        cols: 12,
+        curve: 0.2,
+        price: 220,
+        tier: "VIP",
+      },
     ],
   },
   {
@@ -114,8 +222,26 @@ const templates: {
     icon: Presentation,
     stageLabel: "PODIUM",
     sections: [
-      { id: "main", name: "Main Hall", color: "#0ea5e9", rows: 12, cols: 20, curve: 0.1, price: 25, tier: "General" },
-      { id: "front", name: "Front Row VIP", color: "#dc2626", rows: 2, cols: 20, curve: 0.1, price: 120, tier: "VIP" },
+      {
+        id: "main",
+        name: "Main Hall",
+        color: "#0ea5e9",
+        rows: 12,
+        cols: 20,
+        curve: 0.1,
+        price: 25,
+        tier: "General",
+      },
+      {
+        id: "front",
+        name: "Front Row VIP",
+        color: "#dc2626",
+        rows: 2,
+        cols: 20,
+        curve: 0.1,
+        price: 120,
+        tier: "VIP",
+      },
     ],
   },
   {
@@ -165,10 +291,7 @@ function buildSeats(sections: Section[]): Seat[] {
 function VenueDesignerPage() {
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/venue-designer" });
   const [templateId, setTemplateId] = useState<TemplateId>("arena");
-  const template = useMemo(
-    () => templates.find((t) => t.id === templateId)!,
-    [templateId],
-  );
+  const template = useMemo(() => templates.find((t) => t.id === templateId)!, [templateId]);
   const [sections, setSections] = useState<Section[]>(template.sections);
   const [seats, setSeats] = useState<Seat[]>(buildSeats(template.sections));
   const [tool, setTool] = useState<SeatStatus>("vip");
@@ -187,9 +310,7 @@ function VenueDesignerPage() {
   };
 
   const paintSeat = (id: string) => {
-    setSeats((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: tool } : s)),
-    );
+    setSeats((prev) => prev.map((s) => (s.id === id ? { ...s, status: tool } : s)));
   };
 
   const addSection = () => {
@@ -216,17 +337,12 @@ function VenueDesignerPage() {
   };
 
   const updateSection = (id: string, patch: Partial<Section>) => {
-    setSections((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, ...patch } : s)),
-    );
+    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
     if (patch.rows !== undefined || patch.cols !== undefined) {
       const sec = sections.find((s) => s.id === id);
       if (sec) {
         const next = { ...sec, ...patch };
-        setSeats((prev) => [
-          ...prev.filter((s) => s.section !== id),
-          ...buildSeats([next]),
-        ]);
+        setSeats((prev) => [...prev.filter((s) => s.section !== id), ...buildSeats([next])]);
       }
     }
   };
@@ -238,10 +354,7 @@ function VenueDesignerPage() {
     const blocked = seats.filter((s) => s.status === "blocked").length;
     const revenue = seats
       .filter((s) => s.status !== "blocked")
-      .reduce(
-        (sum, s) => sum + (s.status === "vip" ? s.price * 2 : s.price),
-        0,
-      );
+      .reduce((sum, s) => sum + (s.status === "vip" ? s.price * 2 : s.price), 0);
     return { total, vip, acc, blocked, revenue };
   }, [seats]);
 
@@ -249,7 +362,11 @@ function VenueDesignerPage() {
     <div className="min-h-screen bg-secondary/30">
       <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 bg-background/80 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <Link to="/dashboard/$workspaceSlug" params={{ workspaceSlug: workspaceSlug || "" }} className="rounded-full p-2 hover:bg-secondary">
+          <Link
+            to="/dashboard/$workspaceSlug"
+            params={{ workspaceSlug: workspaceSlug || "" }}
+            className="rounded-full p-2 hover:bg-secondary"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
@@ -339,10 +456,7 @@ function VenueDesignerPage() {
                       : "border-border/60 hover:bg-secondary"
                   }`}
                 >
-                  <span
-                    className="h-5 w-5 rounded-md"
-                    style={{ background: s.color }}
-                  />
+                  <span className="h-5 w-5 rounded-md" style={{ background: s.color }} />
                   <span className="flex-1 font-medium">{s.name}</span>
                   <span className="text-muted-foreground">
                     {s.rows}×{s.cols}
@@ -384,10 +498,7 @@ function VenueDesignerPage() {
                 .filter((k) => k !== "stage")
                 .map((k) => (
                   <span key={k} className="flex items-center gap-1.5">
-                    <span
-                      className="h-3 w-3 rounded-sm"
-                      style={{ background: statusColors[k] }}
-                    />
+                    <span className="h-3 w-3 rounded-sm" style={{ background: statusColors[k] }} />
                     {k}
                   </span>
                 ))}
@@ -435,9 +546,7 @@ function VenueDesignerPage() {
                         // simulate curve: offset rows slightly
                         const offset =
                           sec.curve > 0
-                            ? Math.sin(((s.col + 0.5) / sec.cols) * Math.PI) *
-                              sec.curve *
-                              10
+                            ? Math.sin(((s.col + 0.5) / sec.cols) * Math.PI) * sec.curve * 10
                             : 0;
                         return (
                           <button
@@ -479,12 +588,8 @@ function VenueDesignerPage() {
               className="mt-3 rounded-xl p-3 text-primary-foreground"
               style={{ background: "var(--gradient-primary)" }}
             >
-              <p className="text-[10px] uppercase tracking-widest opacity-80">
-                Projected revenue
-              </p>
-              <p className="text-xl font-bold">
-                ${stats.revenue.toLocaleString()}
-              </p>
+              <p className="text-[10px] uppercase tracking-widest opacity-80">Projected revenue</p>
+              <p className="text-xl font-bold">${stats.revenue.toLocaleString()}</p>
             </div>
           </Panel>
 
@@ -498,9 +603,7 @@ function VenueDesignerPage() {
                     <Field label="Name">
                       <Input
                         value={sec.name}
-                        onChange={(e) =>
-                          updateSection(sec.id, { name: e.target.value })
-                        }
+                        onChange={(e) => updateSection(sec.id, { name: e.target.value })}
                       />
                     </Field>
                     <div className="grid grid-cols-2 gap-3">
@@ -534,9 +637,7 @@ function VenueDesignerPage() {
                         max={1}
                         step={0.05}
                         value={sec.curve}
-                        onChange={(e) =>
-                          updateSection(sec.id, { curve: +e.target.value })
-                        }
+                        onChange={(e) => updateSection(sec.id, { curve: +e.target.value })}
                         className="w-full accent-primary"
                       />
                     </Field>
@@ -544,9 +645,7 @@ function VenueDesignerPage() {
                       <Input
                         type="number"
                         value={sec.price}
-                        onChange={(e) =>
-                          updateSection(sec.id, { price: +e.target.value || 0 })
-                        }
+                        onChange={(e) => updateSection(sec.id, { price: +e.target.value || 0 })}
                       />
                     </Field>
                     <Field label="Tier">
@@ -570,9 +669,7 @@ function VenueDesignerPage() {
                       <input
                         type="color"
                         value={sec.color}
-                        onChange={(e) =>
-                          updateSection(sec.id, { color: e.target.value })
-                        }
+                        onChange={(e) => updateSection(sec.id, { color: e.target.value })}
                         className="h-9 w-full cursor-pointer rounded-lg border border-border/60"
                       />
                     </Field>
@@ -584,9 +681,8 @@ function VenueDesignerPage() {
 
           <Panel title="Tip" icon={Crown}>
             <p className="text-xs text-muted-foreground">
-              Click any seat on the canvas to apply the current tool (Seat, VIP,
-              Accessible, or Blocked). Use the curve slider to bend rows around
-              a stage or pitch.
+              Click any seat on the canvas to apply the current tool (Seat, VIP, Accessible, or
+              Blocked). Use the curve slider to bend rows around a stage or pitch.
             </p>
           </Panel>
         </aside>
@@ -632,9 +728,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-xl border border-border/60 p-3">
-      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-        {label}
-      </p>
+      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</p>
       <p className="mt-0.5 text-lg font-bold">{value}</p>
     </div>
   );

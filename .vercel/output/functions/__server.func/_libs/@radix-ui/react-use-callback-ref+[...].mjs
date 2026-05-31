@@ -4,8 +4,11 @@ function useCallbackRef(callback) {
   reactExports.useEffect(() => {
     callbackRef.current = callback;
   });
-  return reactExports.useMemo(() => (...args) => callbackRef.current?.(...args), []);
+  return reactExports.useMemo(
+    () =>
+      (...args) =>
+        callbackRef.current?.(...args),
+    [],
+  );
 }
-export {
-  useCallbackRef as u
-};
+export { useCallbackRef as u };

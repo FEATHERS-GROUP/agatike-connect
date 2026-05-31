@@ -5,7 +5,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export function DesktopHeader() {
   const { activeWorkspace } = useWorkspace();
-  
+
   return (
     <header className="flex flex-wrap items-center justify-between gap-3">
       <div>
@@ -21,7 +21,10 @@ export function DesktopHeader() {
             Workspaces
           </Button>
         </Link>
-        <Link to="/dashboard/$workspaceSlug/events/create-event" params={{ workspaceSlug: activeWorkspace?.slug || "" }}>
+        <Link
+          to="/dashboard/$workspaceSlug/events/create-event"
+          params={{ workspaceSlug: activeWorkspace?.slug || "" }}
+        >
           <Button
             className="rounded-full shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}

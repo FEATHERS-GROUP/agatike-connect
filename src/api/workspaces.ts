@@ -2,12 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
 
-export const getUserWorkspaces = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const session = await getSession();
-    if (!session || !session.sub) throw new Error("unauthenticated");
+export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async () => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
 
-    const query = `
+  const query = `
       query GetWorkspaces($orgnizer_id: uuid!) {
         workspaces(where: { orgnizer_id: { _eq: $orgnizer_id }, deleted: { _eq: false } }) {
           address
@@ -25,18 +24,17 @@ export const getUserWorkspaces = createServerFn({ method: "GET" })
       }
     `;
 
-    const data = await hasuraRequest<{ workspaces: any[] }>(query, { orgnizer_id: session.sub });
-    return data.workspaces;
-  });
+  const data = await hasuraRequest<{ workspaces: any[] }>(query, { orgnizer_id: session.sub });
+  return data.workspaces;
+});
 
-export const createDatabaseWorkspace = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const session = await getSession();
-    if (!session || !session.sub) throw new Error("unauthenticated");
+export const createDatabaseWorkspace = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
 
-    const input = ctx.data as any;
-    
-    const mutation = `
+  const input = ctx.data as any;
+
+  const mutation = `
       mutation CreateWorkspace(
         $address: String = "", 
         $city: String = "", 
@@ -77,58 +75,60 @@ export const createDatabaseWorkspace = createServerFn({ method: "POST" })
       }
     `;
 
-    const variables = {
-      address: input.address || "",
-      city: input.city || "",
-      country: input.country || "",
-      logo: input.logo || "",
-      moduls: input.moduls || "",
-      name: input.name || "",
-      type: input.type || "",
-      orgnizer_id: session.sub,
-      updated_at: new Date().toISOString()
-    };
+  const variables = {
+    address: input.address || "",
+    city: input.city || "",
+    country: input.country || "",
+    logo: input.logo || "",
+    moduls: input.moduls || "",
+    name: input.name || "",
+    type: input.type || "",
+    orgnizer_id: session.sub,
+    updated_at: new Date().toISOString(),
+  };
 
-    const data = await hasuraRequest<{ insert_workspaces: { returning: any[] } }>(mutation, variables);
-    const workspace = data.insert_workspaces.returning[0];
+  const data = await hasuraRequest<{ insert_workspaces: { returning: any[] } }>(
+    mutation,
+    variables,
+  );
+  const workspace = data.insert_workspaces.returning[0];
 
-    if (workspace && workspace.id) {
-      // Create Wallet
-      const walletNumber = Math.random().toString(36).substring(2, 11).toUpperCase().padEnd(9, '0');
-      const walletMutation = `
+  if (workspace && workspace.id) {
+    // Create Wallet
+    const walletNumber = Math.random().toString(36).substring(2, 11).toUpperCase().padEnd(9, "0");
+    const walletMutation = `
         mutation CreateWallet($amount: numeric = "0", $currency: String = "", $updated_at: timestamptz = "", $walletNumber: String = "", $workspace_id: uuid = "") {
           insert_wallets(objects: {amount: $amount, currency: $currency, deleted: false, updated_at: $updated_at, walletNumber: $walletNumber, workspace_id: $workspace_id}) {
             affected_rows
           }
         }
       `;
-      try {
-        await hasuraRequest(walletMutation, {
-          amount: 0,
-          currency: input.currency || "dollars",
-          updated_at: new Date().toISOString(),
-          walletNumber,
-          workspace_id: workspace.id
-        });
-      } catch (err) {
-        console.error("Failed to create wallet for workspace", err);
-      }
+    try {
+      await hasuraRequest(walletMutation, {
+        amount: 0,
+        currency: input.currency || "dollars",
+        updated_at: new Date().toISOString(),
+        walletNumber,
+        workspace_id: workspace.id,
+      });
+    } catch (err) {
+      console.error("Failed to create wallet for workspace", err);
     }
+  }
 
-    return workspace;
-  });
+  return workspace;
+});
 
-export const updateDatabaseWorkspace = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const session = await getSession();
-    if (!session || !session.sub) throw new Error("unauthenticated");
+export const updateDatabaseWorkspace = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
 
-    const input = ctx.data as any;
-    const { id, ...updateFields } = input;
-    
-    if (!id) throw new Error("Workspace ID is required");
+  const input = ctx.data as any;
+  const { id, ...updateFields } = input;
 
-    const mutation = `
+  if (!id) throw new Error("Workspace ID is required");
+
+  const mutation = `
       mutation UpdateWorkspace(
         $id: uuid!,
         $address: String, 
@@ -156,25 +156,27 @@ export const updateDatabaseWorkspace = createServerFn({ method: "POST" })
       }
     `;
 
-    const variables = {
-      id,
-      ...updateFields,
-      updated_at: new Date().toISOString()
-    };
+  const variables = {
+    id,
+    ...updateFields,
+    updated_at: new Date().toISOString(),
+  };
 
-    const data = await hasuraRequest<{ update_workspaces_by_pk: { id: string } }>(mutation, variables);
-    return data.update_workspaces_by_pk;
-  });
+  const data = await hasuraRequest<{ update_workspaces_by_pk: { id: string } }>(
+    mutation,
+    variables,
+  );
+  return data.update_workspaces_by_pk;
+});
 
-export const disableDatabaseWorkspace = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const session = await getSession();
-    if (!session || !session.sub) throw new Error("unauthenticated");
+export const disableDatabaseWorkspace = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
 
-    const { id } = ctx.data as any;
-    if (!id) throw new Error("Workspace ID is required");
+  const { id } = ctx.data as any;
+  if (!id) throw new Error("Workspace ID is required");
 
-    const mutation = `
+  const mutation = `
       mutation DisableWorkspace($id: uuid!, $updated_at: String!) {
         update_workspaces_by_pk(
           pk_columns: { id: $id },
@@ -188,10 +190,9 @@ export const disableDatabaseWorkspace = createServerFn({ method: "POST" })
       }
     `;
 
-    const data = await hasuraRequest<{ update_workspaces_by_pk: { id: string } }>(mutation, {
-      id,
-      updated_at: new Date().toISOString()
-    });
-    return data.update_workspaces_by_pk;
+  const data = await hasuraRequest<{ update_workspaces_by_pk: { id: string } }>(mutation, {
+    id,
+    updated_at: new Date().toISOString(),
   });
-
+  return data.update_workspaces_by_pk;
+});

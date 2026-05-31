@@ -6,9 +6,7 @@ export function DesktopWizardPreview() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold">Create event</h2>
-          <p className="text-sm text-muted-foreground">
-            A 7-step wizard, designed for speed.
-          </p>
+          <p className="text-sm text-muted-foreground">A 7-step wizard, designed for speed.</p>
         </div>
         <Button className="rounded-full" style={{ background: "var(--gradient-primary)" }}>
           Resume draft

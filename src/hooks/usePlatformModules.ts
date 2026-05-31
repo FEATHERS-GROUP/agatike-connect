@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { getPlatformModules } from '@/api/platform-modules';
-import * as LucideIcons from 'lucide-react';
+import { useQuery } from "@tanstack/react-query";
+import { getPlatformModules } from "@/api/platform-modules";
+import * as LucideIcons from "lucide-react";
 
 export type WorkspaceModule = {
   id: string;
@@ -14,7 +14,7 @@ export type WorkspaceModule = {
 
 export function usePlatformModules() {
   return useQuery({
-    queryKey: ['platformModules'],
+    queryKey: ["platformModules"],
     queryFn: async () => {
       const data = await getPlatformModules();
       return data.map((mod) => ({

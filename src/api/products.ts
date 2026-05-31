@@ -11,11 +11,10 @@ const CREATE_PRODUCT = `
   }
 `;
 
-export const createProduct = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const productData = ctx.data as any;
-    return hasuraRequest(CREATE_PRODUCT, { object: productData });
-  });
+export const createProduct = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const productData = ctx.data as any;
+  return hasuraRequest(CREATE_PRODUCT, { object: productData });
+});
 
 const GET_WORKSPACE_PRODUCTS = `
   query GetWorkspaceProducts($workspace_id: uuid!) {
@@ -36,12 +35,11 @@ const GET_WORKSPACE_PRODUCTS = `
   }
 `;
 
-export const getWorkspaceProducts = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { workspace_id } = ctx.data as unknown as { workspace_id: string };
-    const data = await hasuraRequest<{ products: any[] }>(GET_WORKSPACE_PRODUCTS, { workspace_id });
-    return data.products || [];
-  });
+export const getWorkspaceProducts = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+  const data = await hasuraRequest<{ products: any[] }>(GET_WORKSPACE_PRODUCTS, { workspace_id });
+  return data.products || [];
+});
 
 const GET_EVENT_PRODUCTS = `
   query GetEventProducts($event_id: uuid!) {
@@ -62,9 +60,8 @@ const GET_EVENT_PRODUCTS = `
   }
 `;
 
-export const getEventProducts = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { event_id } = ctx.data as unknown as { event_id: string };
-    const data = await hasuraRequest<{ products: any[] }>(GET_EVENT_PRODUCTS, { event_id });
-    return data.products || [];
-  });
+export const getEventProducts = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { event_id } = ctx.data as unknown as { event_id: string };
+  const data = await hasuraRequest<{ products: any[] }>(GET_EVENT_PRODUCTS, { event_id });
+  return data.products || [];
+});

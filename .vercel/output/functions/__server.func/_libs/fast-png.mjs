@@ -6,7 +6,7 @@ for (let n = 0; n < 256; n++) {
   let c = n;
   for (let k = 0; k < 8; k++) {
     if (c & 1) {
-      c = 3988292384 ^ c >>> 1;
+      c = 3988292384 ^ (c >>> 1);
     } else {
       c = c >>> 1;
     }
@@ -17,7 +17,7 @@ const initialCrc = 4294967295;
 function updateCrc(currentCrc, data, length) {
   let c = currentCrc;
   for (let n = 0; n < length; n++) {
-    c = crcTable[(c ^ data[n]) & 255] ^ c >>> 8;
+    c = crcTable[(c ^ data[n]) & 255] ^ (c >>> 8);
   }
   return c;
 }
@@ -26,13 +26,20 @@ function crc(data, length) {
 }
 function checkCrc(buffer, crcLength, chunkName) {
   const expectedCrc = buffer.readUint32();
-  const actualCrc = crc(new Uint8Array(buffer.buffer, buffer.byteOffset + buffer.offset - crcLength - 4, crcLength), crcLength);
+  const actualCrc = crc(
+    new Uint8Array(buffer.buffer, buffer.byteOffset + buffer.offset - crcLength - 4, crcLength),
+    crcLength,
+  );
   if (actualCrc !== expectedCrc) {
-    throw new Error(`CRC mismatch for chunk ${chunkName}. Expected ${expectedCrc}, found ${actualCrc}`);
+    throw new Error(
+      `CRC mismatch for chunk ${chunkName}. Expected ${expectedCrc}, found ${actualCrc}`,
+    );
   }
 }
 function writeCrc(buffer, length) {
-  buffer.writeUint32(crc(new Uint8Array(buffer.buffer, buffer.byteOffset + buffer.offset - length, length), length));
+  buffer.writeUint32(
+    crc(new Uint8Array(buffer.buffer, buffer.byteOffset + buffer.offset - length, length), length),
+  );
 }
 function unfilterNone(currentLine, newLine, bytesPerLine) {
   for (let i = 0; i < bytesPerLine; i++) {
@@ -45,7 +52,7 @@ function unfilterSub(currentLine, newLine, bytesPerLine, bytesPerPixel) {
     newLine[i] = currentLine[i];
   }
   for (; i < bytesPerLine; i++) {
-    newLine[i] = currentLine[i] + newLine[i - bytesPerPixel] & 255;
+    newLine[i] = (currentLine[i] + newLine[i - bytesPerPixel]) & 255;
   }
 }
 function unfilterUp(currentLine, newLine, prevLine, bytesPerLine) {
@@ -56,7 +63,7 @@ function unfilterUp(currentLine, newLine, prevLine, bytesPerLine) {
     }
   } else {
     for (; i < bytesPerLine; i++) {
-      newLine[i] = currentLine[i] + prevLine[i] & 255;
+      newLine[i] = (currentLine[i] + prevLine[i]) & 255;
     }
   }
 }
@@ -67,14 +74,14 @@ function unfilterAverage(currentLine, newLine, prevLine, bytesPerLine, bytesPerP
       newLine[i] = currentLine[i];
     }
     for (; i < bytesPerLine; i++) {
-      newLine[i] = currentLine[i] + (newLine[i - bytesPerPixel] >> 1) & 255;
+      newLine[i] = (currentLine[i] + (newLine[i - bytesPerPixel] >> 1)) & 255;
     }
   } else {
     for (; i < bytesPerPixel; i++) {
-      newLine[i] = currentLine[i] + (prevLine[i] >> 1) & 255;
+      newLine[i] = (currentLine[i] + (prevLine[i] >> 1)) & 255;
     }
     for (; i < bytesPerLine; i++) {
-      newLine[i] = currentLine[i] + (newLine[i - bytesPerPixel] + prevLine[i] >> 1) & 255;
+      newLine[i] = (currentLine[i] + ((newLine[i - bytesPerPixel] + prevLine[i]) >> 1)) & 255;
     }
   }
 }
@@ -85,14 +92,17 @@ function unfilterPaeth(currentLine, newLine, prevLine, bytesPerLine, bytesPerPix
       newLine[i] = currentLine[i];
     }
     for (; i < bytesPerLine; i++) {
-      newLine[i] = currentLine[i] + newLine[i - bytesPerPixel] & 255;
+      newLine[i] = (currentLine[i] + newLine[i - bytesPerPixel]) & 255;
     }
   } else {
     for (; i < bytesPerPixel; i++) {
-      newLine[i] = currentLine[i] + prevLine[i] & 255;
+      newLine[i] = (currentLine[i] + prevLine[i]) & 255;
     }
     for (; i < bytesPerLine; i++) {
-      newLine[i] = currentLine[i] + paethPredictor(newLine[i - bytesPerPixel], prevLine[i], prevLine[i - bytesPerPixel]) & 255;
+      newLine[i] =
+        (currentLine[i] +
+          paethPredictor(newLine[i - bytesPerPixel], prevLine[i], prevLine[i - bytesPerPixel])) &
+        255;
     }
   }
 }
@@ -101,12 +111,9 @@ function paethPredictor(a, b, c) {
   const pa = Math.abs(p - a);
   const pb = Math.abs(p - b);
   const pc = Math.abs(p - c);
-  if (pa <= pb && pa <= pc)
-    return a;
-  else if (pb <= pc)
-    return b;
-  else
-    return c;
+  if (pa <= pb && pa <= pc) return a;
+  else if (pb <= pc) return b;
+  else return c;
 }
 function applyUnfilter(filterType, currentLine, newLine, prevLine, passLineBytes, bytesPerPixel) {
   switch (filterType) {
@@ -147,7 +154,7 @@ function decodeInterlaceAdam7(params) {
     // Pass 5
     { x: 1, y: 0, xStep: 2, yStep: 2 },
     // Pass 6
-    { x: 0, y: 1, xStep: 1, yStep: 2 }
+    { x: 0, y: 1, xStep: 1, yStep: 2 },
     // Pass 7
   ];
   const bytesPerPixel = Math.ceil(depth / 8) * channels;
@@ -157,8 +164,7 @@ function decodeInterlaceAdam7(params) {
     const pass = passes[passIndex];
     const passWidth = Math.ceil((width - pass.x) / pass.xStep);
     const passHeight = Math.ceil((height - pass.y) / pass.yStep);
-    if (passWidth <= 0 || passHeight <= 0)
-      continue;
+    if (passWidth <= 0 || passHeight <= 0) continue;
     const passLineBytes = passWidth * bytesPerPixel;
     const prevLine = new Uint8Array(passLineBytes);
     for (let y = 0; y < passHeight; y++) {
@@ -171,10 +177,10 @@ function decodeInterlaceAdam7(params) {
       for (let x = 0; x < passWidth; x++) {
         const outputX = pass.x + x * pass.xStep;
         const outputY = pass.y + y * pass.yStep;
-        if (outputX >= width || outputY >= height)
-          continue;
+        if (outputX >= width || outputY >= height) continue;
         for (let i = 0; i < bytesPerPixel; i++) {
-          resultData[(outputY * width + outputX) * bytesPerPixel + i] = newLine[x * bytesPerPixel + i];
+          resultData[(outputY * width + outputX) * bytesPerPixel + i] =
+            newLine[x * bytesPerPixel + i];
         }
       }
     }
@@ -192,7 +198,7 @@ function decodeInterlaceAdam7(params) {
   }
 }
 function swap16$1(val) {
-  return (val & 255) << 8 | val >> 8 & 255;
+  return ((val & 255) << 8) | ((val >> 8) & 255);
 }
 const uint16 = new Uint16Array([255]);
 const uint8 = new Uint8Array(uint16.buffer);
@@ -201,7 +207,7 @@ const empty = new Uint8Array(0);
 function decodeInterlaceNull(params) {
   const { data, width, height, channels, depth } = params;
   const bytesPerPixel = Math.ceil(depth / 8) * channels;
-  const bytesPerLine = Math.ceil(depth / 8 * channels * width);
+  const bytesPerLine = Math.ceil((depth / 8) * channels * width);
   const newData = new Uint8Array(height * bytesPerLine);
   let prevLine = empty;
   let offset = 0;
@@ -245,7 +251,7 @@ function decodeInterlaceNull(params) {
   }
 }
 function swap16(val) {
-  return (val & 255) << 8 | val >> 8 & 255;
+  return ((val & 255) << 8) | ((val >> 8) & 255);
 }
 const pngSignature = Uint8Array.of(137, 80, 78, 71, 13, 10, 26, 10);
 function writeSignature(buffer) {
@@ -299,8 +305,7 @@ function encodetEXt(buffer, keyword, text) {
 }
 function readKeyword(buffer) {
   buffer.mark();
-  while (buffer.readByte() !== NULL) {
-  }
+  while (buffer.readByte() !== NULL) {}
   const end = buffer.offset;
   buffer.reset();
   const keyword = latin1Decoder.decode(buffer.readBytes(end - buffer.offset - 1));
@@ -317,29 +322,29 @@ const ColorType = {
   TRUECOLOUR: 2,
   INDEXED_COLOUR: 3,
   GREYSCALE_ALPHA: 4,
-  TRUECOLOUR_ALPHA: 6
+  TRUECOLOUR_ALPHA: 6,
 };
 const CompressionMethod = {
   UNKNOWN: -1,
-  DEFLATE: 0
+  DEFLATE: 0,
 };
 const FilterMethod = {
   UNKNOWN: -1,
-  ADAPTIVE: 0
+  ADAPTIVE: 0,
 };
 const InterlaceMethod = {
   UNKNOWN: -1,
   NO_INTERLACE: 0,
-  ADAM7: 1
+  ADAM7: 1,
 };
 const DisposeOpType = {
   NONE: 0,
   BACKGROUND: 1,
-  PREVIOUS: 2
+  PREVIOUS: 2,
 };
 const BlendOpType = {
   SOURCE: 0,
-  OVER: 1
+  OVER: 1,
 };
 class PngDecoder extends IOBuffer {
   _checkCrc;
@@ -371,7 +376,7 @@ class PngDecoder extends IOBuffer {
       channels: -1,
       data: new Uint8Array(0),
       depth: 1,
-      text: {}
+      text: {},
     };
     this._apng = {
       width: -1,
@@ -381,7 +386,7 @@ class PngDecoder extends IOBuffer {
       numberOfFrames: 1,
       numberOfPlays: 0,
       text: {},
-      frames: []
+      frames: [],
     };
     this._end = false;
     this._hasPalette = false;
@@ -546,7 +551,7 @@ class PngDecoder extends IOBuffer {
       delayDenominator: this.readUint16(),
       disposeOp: this.readUint8(),
       blendOp: this.readUint8(),
-      data: new Uint8Array(0)
+      data: new Uint8Array(0),
     };
     this._frames.push(image);
   }
@@ -595,7 +600,9 @@ class PngDecoder extends IOBuffer {
           throw new RangeError(`tRNS chunk length must be a multiple of 2. Got ${length}`);
         }
         if (length / 2 > this._png.width * this._png.height) {
-          throw new Error(`tRNS chunk contains more alpha values than there are pixels (${length / 2} vs ${this._png.width * this._png.height})`);
+          throw new Error(
+            `tRNS chunk contains more alpha values than there are pixels (${length / 2} vs ${this._png.width * this._png.height})`,
+          );
         }
         this._hasTransparency = true;
         this._transparency = new Uint16Array(length / 2);
@@ -606,7 +613,9 @@ class PngDecoder extends IOBuffer {
       }
       case ColorType.INDEXED_COLOUR: {
         if (length > this._palette.length) {
-          throw new Error(`tRNS chunk contains more alpha values than there are palette colors (${length} vs ${this._palette.length})`);
+          throw new Error(
+            `tRNS chunk contains more alpha values than there are palette colors (${length} vs ${this._palette.length})`,
+          );
         }
         let i = 0;
         for (; i < length; i++) {
@@ -638,7 +647,7 @@ class PngDecoder extends IOBuffer {
     const compressedProfile = this.readBytes(length - name.length - 2);
     this._png.iccEmbeddedProfile = {
       name,
-      profile: inflate_1(compressedProfile)
+      profile: inflate_1(compressedProfile),
     };
   }
   // https://www.w3.org/TR/PNG/#11pHYs
@@ -662,7 +671,10 @@ class PngDecoder extends IOBuffer {
         sequenceNumber: this._frames[i].sequenceNumber,
         delayNumber: this._frames[i].delayNumber,
         delayDenominator: this._frames[i].delayDenominator,
-        data: this._apng.depth === 8 ? new Uint8Array(this._apng.width * this._apng.height * this._apng.channels) : new Uint16Array(this._apng.width * this._apng.height * this._apng.channels)
+        data:
+          this._apng.depth === 8
+            ? new Uint8Array(this._apng.width * this._apng.height * this._apng.channels)
+            : new Uint16Array(this._apng.width * this._apng.height * this._apng.channels),
       };
       const frame = this._frames.at(i);
       if (frame) {
@@ -671,7 +683,7 @@ class PngDecoder extends IOBuffer {
           width: frame.width,
           height: frame.height,
           channels: this._apng.channels,
-          depth: this._apng.depth
+          depth: this._apng.depth,
         });
         if (this._hasPalette) {
           this._apng.palette = this._palette;
@@ -679,7 +691,13 @@ class PngDecoder extends IOBuffer {
         if (this._hasTransparency) {
           this._apng.transparency = this._transparency;
         }
-        if (i === 0 || frame.xOffset === 0 && frame.yOffset === 0 && frame.width === this._png.width && frame.height === this._png.height) {
+        if (
+          i === 0 ||
+          (frame.xOffset === 0 &&
+            frame.yOffset === 0 &&
+            frame.width === this._png.width &&
+            frame.height === this._png.height)
+        ) {
           newFrame.data = frame.data;
         } else {
           const prevFrame = this._apng.frames.at(i - 1);
@@ -715,7 +733,8 @@ class PngDecoder extends IOBuffer {
   addFrameDataToCanvas(imageFrame, frame) {
     const maxValue = 1 << this._png.depth;
     const calculatePixelIndices = (row, col) => {
-      const index = ((row + frame.yOffset) * this._png.width + frame.xOffset + col) * this._png.channels;
+      const index =
+        ((row + frame.yOffset) * this._png.width + frame.xOffset + col) * this._png.channels;
       const frameIndex = (row * frame.width + col) * this._png.channels;
       return { index, frameIndex };
     };
@@ -737,8 +756,12 @@ class PngDecoder extends IOBuffer {
             const { index, frameIndex } = calculatePixelIndices(row, col);
             for (let channel = 0; channel < this._png.channels; channel++) {
               const sourceAlpha = frame.data[frameIndex + this._png.channels - 1] / maxValue;
-              const foregroundValue = channel % (this._png.channels - 1) === 0 ? 1 : frame.data[frameIndex + channel];
-              const value = Math.floor(sourceAlpha * foregroundValue + (1 - sourceAlpha) * imageFrame.data[index + channel]);
+              const foregroundValue =
+                channel % (this._png.channels - 1) === 0 ? 1 : frame.data[frameIndex + channel];
+              const value = Math.floor(
+                sourceAlpha * foregroundValue +
+                  (1 - sourceAlpha) * imageFrame.data[index + channel],
+              );
               imageFrame.data[index + channel] += value;
             }
           }
@@ -762,7 +785,7 @@ class PngDecoder extends IOBuffer {
         width: this._png.width,
         height: this._png.height,
         channels: this._png.channels,
-        depth: this._png.depth
+        depth: this._png.depth,
       });
     } else if (this._interlaceMethod === InterlaceMethod.ADAM7) {
       this._png.data = decodeInterlaceAdam7({
@@ -770,7 +793,7 @@ class PngDecoder extends IOBuffer {
         width: this._png.width,
         height: this._png.height,
         channels: this._png.channels,
-        depth: this._png.depth
+        depth: this._png.depth,
       });
     } else {
       throw new Error(`Interlace method ${this._interlaceMethod} not supported`);
@@ -798,7 +821,7 @@ class PngDecoder extends IOBuffer {
         delayDenominator: 0,
         disposeOp: DisposeOpType.NONE,
         blendOp: BlendOpType.SOURCE,
-        data: result
+        data: result,
       });
     }
     this._inflator = new Inflate_1();
@@ -812,7 +835,7 @@ function checkBitDepth(value) {
   return value;
 }
 const defaultZlibOptions = {
-  level: 3
+  level: 3,
 };
 class PngEncoder extends IOBuffer {
   _png;
@@ -824,7 +847,9 @@ class PngEncoder extends IOBuffer {
     this._colorType = ColorType.UNKNOWN;
     this._zlibOptions = { ...defaultZlibOptions, ...options.zlib };
     this._png = this._checkData(data);
-    this._interlaceMethod = (options.interlace === "Adam7" ? InterlaceMethod.ADAM7 : InterlaceMethod.NO_INTERLACE) ?? InterlaceMethod.NO_INTERLACE;
+    this._interlaceMethod =
+      (options.interlace === "Adam7" ? InterlaceMethod.ADAM7 : InterlaceMethod.NO_INTERLACE) ??
+      InterlaceMethod.NO_INTERLACE;
     this.setBigEndian();
   }
   encode() {
@@ -895,7 +920,10 @@ class PngEncoder extends IOBuffer {
   }
   encodeData() {
     const { width, height, channels, depth, data } = this._png;
-    const slotsPerLine = depth <= 8 ? Math.ceil(width * depth / 8) * channels : Math.ceil(width * depth / 8 * channels / 2);
+    const slotsPerLine =
+      depth <= 8
+        ? Math.ceil((width * depth) / 8) * channels
+        : Math.ceil((((width * depth) / 8) * channels) / 2);
     const newData = new IOBuffer().setBigEndian();
     let offset = 0;
     if (this._interlaceMethod === InterlaceMethod.NO_INTERLACE) {
@@ -923,10 +951,13 @@ class PngEncoder extends IOBuffer {
       data: data.data,
       depth,
       text: data.text,
-      palette: data.palette
+      palette: data.palette,
     };
     this._colorType = colorType;
-    const expectedSize = depth < 8 ? Math.ceil(png.width * depth / 8) * png.height * channels : png.width * png.height * channels;
+    const expectedSize =
+      depth < 8
+        ? Math.ceil((png.width * depth) / 8) * png.height * channels
+        : png.width * png.height * channels;
     if (png.data.length !== expectedSize) {
       throw new RangeError(`wrong data size. Found ${png.data.length}, expected ${expectedSize}`);
     }
@@ -947,7 +978,7 @@ function getColorType(data, palette) {
   const returnValue = {
     channels,
     depth,
-    colorType: ColorType.UNKNOWN
+    colorType: ColorType.UNKNOWN,
   };
   switch (channels) {
     case 4:
@@ -985,25 +1016,25 @@ function writeDataInterlaced(imageData, data, newData, offset) {
     { x: 2, y: 0, xStep: 4, yStep: 4 },
     { x: 0, y: 2, xStep: 2, yStep: 4 },
     { x: 1, y: 0, xStep: 2, yStep: 2 },
-    { x: 0, y: 1, xStep: 1, yStep: 2 }
+    { x: 0, y: 1, xStep: 1, yStep: 2 },
   ];
   const { width, height, channels, depth } = imageData;
   let pixelSize = 0;
   if (depth === 16) {
-    pixelSize = channels * depth / 8 / 2;
+    pixelSize = (channels * depth) / 8 / 2;
   } else {
-    pixelSize = channels * depth / 8;
+    pixelSize = (channels * depth) / 8;
   }
   for (let passIndex = 0; passIndex < 7; passIndex++) {
     const pass = passes[passIndex];
     const passWidth = Math.floor((width - pass.x + pass.xStep - 1) / pass.xStep);
     const passHeight = Math.floor((height - pass.y + pass.yStep - 1) / pass.yStep);
-    if (passWidth <= 0 || passHeight <= 0)
-      continue;
+    if (passWidth <= 0 || passHeight <= 0) continue;
     const passLineBytes = passWidth * pixelSize;
     for (let y = 0; y < passHeight; y++) {
       const imageY = pass.y + y * pass.yStep;
-      const rawScanline = depth <= 8 ? new Uint8Array(passLineBytes) : new Uint16Array(passLineBytes);
+      const rawScanline =
+        depth <= 8 ? new Uint8Array(passLineBytes) : new Uint16Array(passLineBytes);
       let rawOffset = 0;
       for (let x = 0; x < passWidth; x++) {
         const imageX = pass.x + x * pass.xStep;
@@ -1019,7 +1050,7 @@ function writeDataInterlaced(imageData, data, newData, offset) {
         newData.writeBytes(rawScanline);
       } else if (depth === 16) {
         for (const value of rawScanline) {
-          newData.writeByte(value >> 8 & 255);
+          newData.writeByte((value >> 8) & 255);
           newData.writeByte(value & 255);
         }
       }
@@ -1034,9 +1065,9 @@ function writeDataUint16(data, newData, slotsPerLine, offset) {
   return offset;
 }
 var ResolutionUnitSpecifier;
-(function(ResolutionUnitSpecifier2) {
-  ResolutionUnitSpecifier2[ResolutionUnitSpecifier2["UNKNOWN"] = 0] = "UNKNOWN";
-  ResolutionUnitSpecifier2[ResolutionUnitSpecifier2["METRE"] = 1] = "METRE";
+(function (ResolutionUnitSpecifier2) {
+  ResolutionUnitSpecifier2[(ResolutionUnitSpecifier2["UNKNOWN"] = 0)] = "UNKNOWN";
+  ResolutionUnitSpecifier2[(ResolutionUnitSpecifier2["METRE"] = 1)] = "METRE";
 })(ResolutionUnitSpecifier || (ResolutionUnitSpecifier = {}));
 function convertIndexedToRgb(decodedImage) {
   const palette = decodedImage.palette;
@@ -1093,7 +1124,10 @@ function convertIndexedToRgb(decodedImage) {
   return res;
 }
 function checkDataSize(image) {
-  const expectedSize = image.depth < 8 ? Math.ceil(image.width * image.depth / 8) * image.height * image.channels : image.width * image.height * image.channels;
+  const expectedSize =
+    image.depth < 8
+      ? Math.ceil((image.width * image.depth) / 8) * image.height * image.channels
+      : image.width * image.height * image.channels;
   if (image.data.length !== expectedSize) {
     throw new RangeError(`wrong data size. Found ${image.data.length}, expected ${expectedSize}`);
   }
@@ -1119,9 +1153,7 @@ const libEsm = /* @__PURE__ */ Object.freeze({
   decode: decodePng,
   decodeApng,
   encode: encodePng,
-  hasPngSignature
+  hasPngSignature,
 });
 const require$$1 = /* @__PURE__ */ getAugmentedNamespace(libEsm);
-export {
-  require$$1 as r
-};
+export { require$$1 as r };

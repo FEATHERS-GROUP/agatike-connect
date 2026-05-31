@@ -10,25 +10,27 @@ function innerCreateMedium(defaults, middleware) {
   var buffer = [];
   var assigned = false;
   var medium = {
-    read: function() {
+    read: function () {
       if (assigned) {
-        throw new Error("Sidecar: could not `read` from an `assigned` medium. `read` could be used only with `useMedium`.");
+        throw new Error(
+          "Sidecar: could not `read` from an `assigned` medium. `read` could be used only with `useMedium`.",
+        );
       }
       if (buffer.length) {
         return buffer[buffer.length - 1];
       }
       return defaults;
     },
-    useMedium: function(data) {
+    useMedium: function (data) {
       var item = middleware(data, assigned);
       buffer.push(item);
-      return function() {
-        buffer = buffer.filter(function(x) {
+      return function () {
+        buffer = buffer.filter(function (x) {
           return x !== item;
         });
       };
     },
-    assignSyncMedium: function(cb) {
+    assignSyncMedium: function (cb) {
       assigned = true;
       while (buffer.length) {
         var cbs = buffer;
@@ -36,15 +38,15 @@ function innerCreateMedium(defaults, middleware) {
         cbs.forEach(cb);
       }
       buffer = {
-        push: function(x) {
+        push: function (x) {
           return cb(x);
         },
-        filter: function() {
+        filter: function () {
           return buffer;
-        }
+        },
       };
     },
-    assignMedium: function(cb) {
+    assignMedium: function (cb) {
       assigned = true;
       var pendingQueue = [];
       if (buffer.length) {
@@ -53,26 +55,26 @@ function innerCreateMedium(defaults, middleware) {
         cbs.forEach(cb);
         pendingQueue = buffer;
       }
-      var executeQueue = function() {
+      var executeQueue = function () {
         var cbs2 = pendingQueue;
         pendingQueue = [];
         cbs2.forEach(cb);
       };
-      var cycle = function() {
+      var cycle = function () {
         return Promise.resolve().then(executeQueue);
       };
       cycle();
       buffer = {
-        push: function(x) {
+        push: function (x) {
           pendingQueue.push(x);
           cycle();
         },
-        filter: function(filter) {
+        filter: function (filter) {
           pendingQueue = pendingQueue.filter(filter);
           return buffer;
-        }
+        },
       };
-    }
+    },
   };
   return medium;
 }
@@ -84,8 +86,9 @@ function createSidecarMedium(options) {
   medium.options = __assign({ async: true, ssr: false }, options);
   return medium;
 }
-var SideCar = function(_a) {
-  var sideCar = _a.sideCar, rest = __rest(_a, ["sideCar"]);
+var SideCar = function (_a) {
+  var sideCar = _a.sideCar,
+    rest = __rest(_a, ["sideCar"]);
   if (!sideCar) {
     throw new Error("Sidecar: please provide `sideCar` property to import the right car");
   }
@@ -100,7 +103,4 @@ function exportSidecar(medium, exported) {
   medium.useMedium(exported);
   return SideCar;
 }
-export {
-  createSidecarMedium as c,
-  exportSidecar as e
-};
+export { createSidecarMedium as c, exportSidecar as e };

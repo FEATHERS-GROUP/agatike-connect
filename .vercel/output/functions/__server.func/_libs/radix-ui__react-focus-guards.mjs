@@ -24,6 +24,4 @@ function createFocusGuard() {
   element.style.pointerEvents = "none";
   return element;
 }
-export {
-  useFocusGuards as u
-};
+export { useFocusGuards as u };

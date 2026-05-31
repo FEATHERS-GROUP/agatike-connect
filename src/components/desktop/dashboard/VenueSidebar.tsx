@@ -1,10 +1,5 @@
 import { Link, useRouterState, useParams } from "@tanstack/react-router";
-import {
-  CalendarDays,
-  Users,
-  Settings,
-  ArrowLeft,
-} from "lucide-react";
+import { CalendarDays, Users, Settings, ArrowLeft } from "lucide-react";
 import { rentableVenues } from "@/lib/mock-data";
 
 export function VenueSidebar() {
@@ -15,20 +10,38 @@ export function VenueSidebar() {
   const venue = rentableVenues.find((v) => v.id === venueId);
 
   const nav = [
-    { label: "Overview", href: `/dashboard/${workspaceSlug}/venues/${venueId}/overview`, icon: CalendarDays },
-    { label: "Bookings", href: `/dashboard/${workspaceSlug}/venues/${venueId}/bookings`, icon: Users },
-    { label: "Settings", href: `/dashboard/${workspaceSlug}/venues/${venueId}/settings`, icon: Settings },
+    {
+      label: "Overview",
+      href: `/dashboard/${workspaceSlug}/venues/${venueId}/overview`,
+      icon: CalendarDays,
+    },
+    {
+      label: "Bookings",
+      href: `/dashboard/${workspaceSlug}/venues/${venueId}/bookings`,
+      icon: Users,
+    },
+    {
+      label: "Settings",
+      href: `/dashboard/${workspaceSlug}/venues/${venueId}/settings`,
+      icon: Settings,
+    },
   ];
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:block">
       <div className="mb-6 px-2">
-        <Link to="/dashboard/$workspaceSlug/venue-rent" params={{ workspaceSlug: workspaceSlug || "" }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+        <Link
+          to="/dashboard/$workspaceSlug/venue-rent"
+          params={{ workspaceSlug: workspaceSlug || "" }}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to Listings
         </Link>
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 overflow-hidden rounded-xl bg-secondary">
-            {venue?.cover && <img src={venue.cover} alt={venue.name} className="h-full w-full object-cover" />}
+            {venue?.cover && (
+              <img src={venue.cover} alt={venue.name} className="h-full w-full object-cover" />
+            )}
           </div>
           <div>
             <p className="font-semibold leading-tight line-clamp-1">{venue?.name}</p>
@@ -36,7 +49,7 @@ export function VenueSidebar() {
           </div>
         </div>
       </div>
-      
+
       <nav className="space-y-1 text-sm">
         {nav.map((n) => {
           const isActive = location.pathname.includes(n.href);

@@ -14,18 +14,16 @@ function requireFactoryWithThrowingShims() {
   if (hasRequiredFactoryWithThrowingShims) return factoryWithThrowingShims;
   hasRequiredFactoryWithThrowingShims = 1;
   var ReactPropTypesSecret = /* @__PURE__ */ requireReactPropTypesSecret();
-  function emptyFunction() {
-  }
-  function emptyFunctionWithReset() {
-  }
+  function emptyFunction() {}
+  function emptyFunctionWithReset() {}
   emptyFunctionWithReset.resetWarningCache = emptyFunction;
-  factoryWithThrowingShims = function() {
+  factoryWithThrowingShims = function () {
     function shim(props, propName, componentName, location, propFullName, secret) {
       if (secret === ReactPropTypesSecret) {
         return;
       }
       var err = new Error(
-        "Calling PropTypes validators directly is not supported by the `prop-types` package. Use PropTypes.checkPropTypes() to call them. Read more at http://fb.me/use-check-prop-types"
+        "Calling PropTypes validators directly is not supported by the `prop-types` package. Use PropTypes.checkPropTypes() to call them. Read more at http://fb.me/use-check-prop-types",
       );
       err.name = "Invariant Violation";
       throw err;
@@ -55,7 +53,7 @@ function requireFactoryWithThrowingShims() {
       shape: getShim,
       exact: getShim,
       checkPropTypes: emptyFunctionWithReset,
-      resetWarningCache: emptyFunction
+      resetWarningCache: emptyFunction,
     };
     ReactPropTypes.PropTypes = ReactPropTypes;
     return ReactPropTypes;
@@ -71,6 +69,4 @@ function requirePropTypes() {
   }
   return propTypes.exports;
 }
-export {
-  requirePropTypes as r
-};
+export { requirePropTypes as r };

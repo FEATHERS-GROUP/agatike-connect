@@ -1,4 +1,11 @@
-import { T as Title, D as Description, R as Root$1, P as Portal$1, a as Content$1, O as Overlay$1 } from "./radix-ui__react-dialog.mjs";
+import {
+  T as Title,
+  D as Description,
+  R as Root$1,
+  P as Portal$1,
+  a as Content$1,
+  O as Overlay$1,
+} from "./radix-ui__react-dialog.mjs";
 import { R as React, r as reactExports } from "./react.mjs";
 function __insertCSS(code) {
   if (typeof document == "undefined") return;
@@ -6,33 +13,29 @@ function __insertCSS(code) {
   let style = document.createElement("style");
   style.type = "text/css";
   head.appendChild(style);
-  style.styleSheet ? style.styleSheet.cssText = code : style.appendChild(document.createTextNode(code));
+  style.styleSheet
+    ? (style.styleSheet.cssText = code)
+    : style.appendChild(document.createTextNode(code));
 }
 const DrawerContext = React.createContext({
   drawerRef: {
-    current: null
+    current: null,
   },
   overlayRef: {
-    current: null
+    current: null,
   },
-  onPress: () => {
-  },
-  onRelease: () => {
-  },
-  onDrag: () => {
-  },
-  onNestedDrag: () => {
-  },
-  onNestedOpenChange: () => {
-  },
-  onNestedRelease: () => {
-  },
+  onPress: () => {},
+  onRelease: () => {},
+  onDrag: () => {},
+  onNestedDrag: () => {},
+  onNestedOpenChange: () => {},
+  onNestedRelease: () => {},
   openProp: void 0,
   dismissible: false,
   isOpen: false,
   isDragging: false,
   keyboardIsOpen: {
-    current: false
+    current: false,
   },
   snapPointsOffset: null,
   snapPoints: null,
@@ -40,21 +43,18 @@ const DrawerContext = React.createContext({
   modal: false,
   shouldFade: false,
   activeSnapPoint: null,
-  onOpenChange: () => {
-  },
-  setActiveSnapPoint: () => {
-  },
-  closeDrawer: () => {
-  },
+  onOpenChange: () => {},
+  setActiveSnapPoint: () => {},
+  closeDrawer: () => {},
   direction: "bottom",
   shouldAnimate: {
-    current: true
+    current: true,
   },
   shouldScaleBackground: false,
   setBackgroundColorOnScale: true,
   noBodyStyles: false,
   container: null,
-  autoFocus: false
+  autoFocus: false,
 });
 const useDrawerContext = () => {
   const context = React.useContext(DrawerContext);
@@ -63,11 +63,16 @@ const useDrawerContext = () => {
   }
   return context;
 };
-__insertCSS("[data-vaul-drawer]{touch-action:none;will-change:transform;transition:transform .5s cubic-bezier(.32, .72, 0, 1);animation-duration:.5s;animation-timing-function:cubic-bezier(0.32,0.72,0,1)}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=bottom][data-state=open]{animation-name:slideFromBottom}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=bottom][data-state=closed]{animation-name:slideToBottom}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=top][data-state=open]{animation-name:slideFromTop}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=top][data-state=closed]{animation-name:slideToTop}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=left][data-state=open]{animation-name:slideFromLeft}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=left][data-state=closed]{animation-name:slideToLeft}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=right][data-state=open]{animation-name:slideFromRight}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=right][data-state=closed]{animation-name:slideToRight}[data-vaul-drawer][data-vaul-snap-points=true][data-vaul-drawer-direction=bottom]{transform:translate3d(0,var(--initial-transform,100%),0)}[data-vaul-drawer][data-vaul-snap-points=true][data-vaul-drawer-direction=top]{transform:translate3d(0,calc(var(--initial-transform,100%) * -1),0)}[data-vaul-drawer][data-vaul-snap-points=true][data-vaul-drawer-direction=left]{transform:translate3d(calc(var(--initial-transform,100%) * -1),0,0)}[data-vaul-drawer][data-vaul-snap-points=true][data-vaul-drawer-direction=right]{transform:translate3d(var(--initial-transform,100%),0,0)}[data-vaul-drawer][data-vaul-delayed-snap-points=true][data-vaul-drawer-direction=top]{transform:translate3d(0,var(--snap-point-height,0),0)}[data-vaul-drawer][data-vaul-delayed-snap-points=true][data-vaul-drawer-direction=bottom]{transform:translate3d(0,var(--snap-point-height,0),0)}[data-vaul-drawer][data-vaul-delayed-snap-points=true][data-vaul-drawer-direction=left]{transform:translate3d(var(--snap-point-height,0),0,0)}[data-vaul-drawer][data-vaul-delayed-snap-points=true][data-vaul-drawer-direction=right]{transform:translate3d(var(--snap-point-height,0),0,0)}[data-vaul-overlay][data-vaul-snap-points=false]{animation-duration:.5s;animation-timing-function:cubic-bezier(0.32,0.72,0,1)}[data-vaul-overlay][data-vaul-snap-points=false][data-state=open]{animation-name:fadeIn}[data-vaul-overlay][data-state=closed]{animation-name:fadeOut}[data-vaul-animate=false]{animation:none!important}[data-vaul-overlay][data-vaul-snap-points=true]{opacity:0;transition:opacity .5s cubic-bezier(.32, .72, 0, 1)}[data-vaul-overlay][data-vaul-snap-points=true]{opacity:1}[data-vaul-drawer]:not([data-vaul-custom-container=true])::after{content:'';position:absolute;background:inherit;background-color:inherit}[data-vaul-drawer][data-vaul-drawer-direction=top]::after{top:initial;bottom:100%;left:0;right:0;height:200%}[data-vaul-drawer][data-vaul-drawer-direction=bottom]::after{top:100%;bottom:initial;left:0;right:0;height:200%}[data-vaul-drawer][data-vaul-drawer-direction=left]::after{left:initial;right:100%;top:0;bottom:0;width:200%}[data-vaul-drawer][data-vaul-drawer-direction=right]::after{left:100%;right:initial;top:0;bottom:0;width:200%}[data-vaul-overlay][data-vaul-snap-points=true]:not([data-vaul-snap-points-overlay=true]):not(\n[data-state=closed]\n){opacity:0}[data-vaul-overlay][data-vaul-snap-points-overlay=true]{opacity:1}[data-vaul-handle]{display:block;position:relative;opacity:.7;background:#e2e2e4;margin-left:auto;margin-right:auto;height:5px;width:32px;border-radius:1rem;touch-action:pan-y}[data-vaul-handle]:active,[data-vaul-handle]:hover{opacity:1}[data-vaul-handle-hitarea]{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:max(100%,2.75rem);height:max(100%,2.75rem);touch-action:inherit}@media (hover:hover) and (pointer:fine){[data-vaul-drawer]{user-select:none}}@media (pointer:fine){[data-vaul-handle-hitarea]:{width:100%;height:100%}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes fadeOut{to{opacity:0}}@keyframes slideFromBottom{from{transform:translate3d(0,var(--initial-transform,100%),0)}to{transform:translate3d(0,0,0)}}@keyframes slideToBottom{to{transform:translate3d(0,var(--initial-transform,100%),0)}}@keyframes slideFromTop{from{transform:translate3d(0,calc(var(--initial-transform,100%) * -1),0)}to{transform:translate3d(0,0,0)}}@keyframes slideToTop{to{transform:translate3d(0,calc(var(--initial-transform,100%) * -1),0)}}@keyframes slideFromLeft{from{transform:translate3d(calc(var(--initial-transform,100%) * -1),0,0)}to{transform:translate3d(0,0,0)}}@keyframes slideToLeft{to{transform:translate3d(calc(var(--initial-transform,100%) * -1),0,0)}}@keyframes slideFromRight{from{transform:translate3d(var(--initial-transform,100%),0,0)}to{transform:translate3d(0,0,0)}}@keyframes slideToRight{to{transform:translate3d(var(--initial-transform,100%),0,0)}}");
+__insertCSS(
+  "[data-vaul-drawer]{touch-action:none;will-change:transform;transition:transform .5s cubic-bezier(.32, .72, 0, 1);animation-duration:.5s;animation-timing-function:cubic-bezier(0.32,0.72,0,1)}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=bottom][data-state=open]{animation-name:slideFromBottom}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=bottom][data-state=closed]{animation-name:slideToBottom}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=top][data-state=open]{animation-name:slideFromTop}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=top][data-state=closed]{animation-name:slideToTop}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=left][data-state=open]{animation-name:slideFromLeft}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=left][data-state=closed]{animation-name:slideToLeft}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=right][data-state=open]{animation-name:slideFromRight}[data-vaul-drawer][data-vaul-snap-points=false][data-vaul-drawer-direction=right][data-state=closed]{animation-name:slideToRight}[data-vaul-drawer][data-vaul-snap-points=true][data-vaul-drawer-direction=bottom]{transform:translate3d(0,var(--initial-transform,100%),0)}[data-vaul-drawer][data-vaul-snap-points=true][data-vaul-drawer-direction=top]{transform:translate3d(0,calc(var(--initial-transform,100%) * -1),0)}[data-vaul-drawer][data-vaul-snap-points=true][data-vaul-drawer-direction=left]{transform:translate3d(calc(var(--initial-transform,100%) * -1),0,0)}[data-vaul-drawer][data-vaul-snap-points=true][data-vaul-drawer-direction=right]{transform:translate3d(var(--initial-transform,100%),0,0)}[data-vaul-drawer][data-vaul-delayed-snap-points=true][data-vaul-drawer-direction=top]{transform:translate3d(0,var(--snap-point-height,0),0)}[data-vaul-drawer][data-vaul-delayed-snap-points=true][data-vaul-drawer-direction=bottom]{transform:translate3d(0,var(--snap-point-height,0),0)}[data-vaul-drawer][data-vaul-delayed-snap-points=true][data-vaul-drawer-direction=left]{transform:translate3d(var(--snap-point-height,0),0,0)}[data-vaul-drawer][data-vaul-delayed-snap-points=true][data-vaul-drawer-direction=right]{transform:translate3d(var(--snap-point-height,0),0,0)}[data-vaul-overlay][data-vaul-snap-points=false]{animation-duration:.5s;animation-timing-function:cubic-bezier(0.32,0.72,0,1)}[data-vaul-overlay][data-vaul-snap-points=false][data-state=open]{animation-name:fadeIn}[data-vaul-overlay][data-state=closed]{animation-name:fadeOut}[data-vaul-animate=false]{animation:none!important}[data-vaul-overlay][data-vaul-snap-points=true]{opacity:0;transition:opacity .5s cubic-bezier(.32, .72, 0, 1)}[data-vaul-overlay][data-vaul-snap-points=true]{opacity:1}[data-vaul-drawer]:not([data-vaul-custom-container=true])::after{content:'';position:absolute;background:inherit;background-color:inherit}[data-vaul-drawer][data-vaul-drawer-direction=top]::after{top:initial;bottom:100%;left:0;right:0;height:200%}[data-vaul-drawer][data-vaul-drawer-direction=bottom]::after{top:100%;bottom:initial;left:0;right:0;height:200%}[data-vaul-drawer][data-vaul-drawer-direction=left]::after{left:initial;right:100%;top:0;bottom:0;width:200%}[data-vaul-drawer][data-vaul-drawer-direction=right]::after{left:100%;right:initial;top:0;bottom:0;width:200%}[data-vaul-overlay][data-vaul-snap-points=true]:not([data-vaul-snap-points-overlay=true]):not(\n[data-state=closed]\n){opacity:0}[data-vaul-overlay][data-vaul-snap-points-overlay=true]{opacity:1}[data-vaul-handle]{display:block;position:relative;opacity:.7;background:#e2e2e4;margin-left:auto;margin-right:auto;height:5px;width:32px;border-radius:1rem;touch-action:pan-y}[data-vaul-handle]:active,[data-vaul-handle]:hover{opacity:1}[data-vaul-handle-hitarea]{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:max(100%,2.75rem);height:max(100%,2.75rem);touch-action:inherit}@media (hover:hover) and (pointer:fine){[data-vaul-drawer]{user-select:none}}@media (pointer:fine){[data-vaul-handle-hitarea]:{width:100%;height:100%}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes fadeOut{to{opacity:0}}@keyframes slideFromBottom{from{transform:translate3d(0,var(--initial-transform,100%),0)}to{transform:translate3d(0,0,0)}}@keyframes slideToBottom{to{transform:translate3d(0,var(--initial-transform,100%),0)}}@keyframes slideFromTop{from{transform:translate3d(0,calc(var(--initial-transform,100%) * -1),0)}to{transform:translate3d(0,0,0)}}@keyframes slideToTop{to{transform:translate3d(0,calc(var(--initial-transform,100%) * -1),0)}}@keyframes slideFromLeft{from{transform:translate3d(calc(var(--initial-transform,100%) * -1),0,0)}to{transform:translate3d(0,0,0)}}@keyframes slideToLeft{to{transform:translate3d(calc(var(--initial-transform,100%) * -1),0,0)}}@keyframes slideFromRight{from{transform:translate3d(var(--initial-transform,100%),0,0)}to{transform:translate3d(0,0,0)}}@keyframes slideToRight{to{transform:translate3d(var(--initial-transform,100%),0,0)}}",
+);
 function isMobileFirefox() {
   const userAgent = navigator.userAgent;
-  return typeof window !== "undefined" && (/Firefox/.test(userAgent) && /Mobile/.test(userAgent) || // Android Firefox
-  /FxiOS/.test(userAgent));
+  return (
+    typeof window !== "undefined" &&
+    ((/Firefox/.test(userAgent) && /Mobile/.test(userAgent)) || // Android Firefox
+      /FxiOS/.test(userAgent))
+  );
 }
 function isMac() {
   return testPlatform(/^Mac/);
@@ -79,17 +84,22 @@ function isSafari() {
   return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 }
 function isIPad() {
-  return testPlatform(/^iPad/) || // iPadOS 13 lies and says it's a Mac, but we can distinguish by detecting touch support.
-  isMac() && navigator.maxTouchPoints > 1;
+  return (
+    testPlatform(/^iPad/) || // iPadOS 13 lies and says it's a Mac, but we can distinguish by detecting touch support.
+    (isMac() && navigator.maxTouchPoints > 1)
+  );
 }
 function isIOS() {
   return isIPhone() || isIPad();
 }
 function testPlatform(re) {
-  return typeof window !== "undefined" && window.navigator != null ? re.test(window.navigator.platform) : void 0;
+  return typeof window !== "undefined" && window.navigator != null
+    ? re.test(window.navigator.platform)
+    : void 0;
 }
 const KEYBOARD_BUFFER = 24;
-const useIsomorphicLayoutEffect = typeof window !== "undefined" ? reactExports.useLayoutEffect : reactExports.useEffect;
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? reactExports.useLayoutEffect : reactExports.useEffect;
 function chain$1(...callbacks) {
   return (...args) => {
     for (let callback of callbacks) {
@@ -122,7 +132,7 @@ const nonTextInputTypes = /* @__PURE__ */ new Set([
   "image",
   "button",
   "submit",
-  "reset"
+  "reset",
 ]);
 let preventScrollCount = 0;
 let restore;
@@ -144,9 +154,7 @@ function usePreventScroll(options = {}) {
         restore == null ? void 0 : restore();
       }
     };
-  }, [
-    isDisabled
-  ]);
+  }, [isDisabled]);
 }
 function preventScrollMobileSafari() {
   let scrollable;
@@ -169,7 +177,7 @@ function preventScrollMobileSafari() {
     if (bottom === 0) {
       return;
     }
-    if (scrollTop <= 0 && y > lastY || scrollTop >= bottom && y < lastY) {
+    if ((scrollTop <= 0 && y > lastY) || (scrollTop >= bottom && y < lastY)) {
       e.preventDefault();
     }
     lastY = y;
@@ -198,7 +206,7 @@ function preventScrollMobileSafari() {
             });
           } else {
             visualViewport.addEventListener("resize", () => scrollIntoView(target), {
-              once: true
+              once: true,
             });
           }
         }
@@ -210,18 +218,30 @@ function preventScrollMobileSafari() {
   };
   let scrollX = window.pageXOffset;
   let scrollY = window.pageYOffset;
-  let restoreStyles = chain$1(setStyle(document.documentElement, "paddingRight", `${window.innerWidth - document.documentElement.clientWidth}px`));
+  let restoreStyles = chain$1(
+    setStyle(
+      document.documentElement,
+      "paddingRight",
+      `${window.innerWidth - document.documentElement.clientWidth}px`,
+    ),
+  );
   window.scrollTo(0, 0);
-  let removeEvents = chain$1(addEvent(document, "touchstart", onTouchStart, {
-    passive: false,
-    capture: true
-  }), addEvent(document, "touchmove", onTouchMove, {
-    passive: false,
-    capture: true
-  }), addEvent(document, "touchend", onTouchEnd, {
-    passive: false,
-    capture: true
-  }), addEvent(document, "focus", onFocus, true), addEvent(window, "scroll", onWindowScroll));
+  let removeEvents = chain$1(
+    addEvent(document, "touchstart", onTouchStart, {
+      passive: false,
+      capture: true,
+    }),
+    addEvent(document, "touchmove", onTouchMove, {
+      passive: false,
+      capture: true,
+    }),
+    addEvent(document, "touchend", onTouchEnd, {
+      passive: false,
+      capture: true,
+    }),
+    addEvent(document, "focus", onFocus, true),
+    addEvent(window, "scroll", onWindowScroll),
+  );
   return () => {
     restoreStyles();
     removeEvents();
@@ -245,7 +265,11 @@ function scrollIntoView(target) {
   let root = document.scrollingElement || document.documentElement;
   while (target && target !== root) {
     let scrollable = getScrollParent(target);
-    if (scrollable !== document.documentElement && scrollable !== document.body && scrollable !== target) {
+    if (
+      scrollable !== document.documentElement &&
+      scrollable !== document.body &&
+      scrollable !== target
+    ) {
       let scrollableTop = scrollable.getBoundingClientRect().top;
       let targetTop = target.getBoundingClientRect().top;
       let targetBottom = target.getBoundingClientRect().bottom;
@@ -258,7 +282,11 @@ function scrollIntoView(target) {
   }
 }
 function isInput(target) {
-  return target instanceof HTMLInputElement && !nonTextInputTypes.has(target.type) || target instanceof HTMLTextAreaElement || target instanceof HTMLElement && target.isContentEditable;
+  return (
+    (target instanceof HTMLInputElement && !nonTextInputTypes.has(target.type)) ||
+    target instanceof HTMLTextAreaElement ||
+    (target instanceof HTMLElement && target.isContentEditable)
+  );
 }
 function setRef(ref, value) {
   if (typeof ref === "function") {
@@ -315,10 +343,9 @@ function getTranslate(element, direction) {
     return null;
   }
   const style = window.getComputedStyle(element);
-  const transform = (
+  const transform =
     // @ts-ignore
-    style.transform || style.webkitTransform || style.mozTransform
-  );
+    style.transform || style.webkitTransform || style.mozTransform;
   let mat = transform.match(/^matrix3d\((.+)\)$/);
   if (mat) {
     return parseFloat(mat[1].split(", ")[isVertical(direction) ? 13 : 12]);
@@ -330,8 +357,7 @@ function dampenValue(v) {
   return 8 * (Math.log(v + 1) - 2);
 }
 function assignStyle(element, style) {
-  if (!element) return () => {
-  };
+  if (!element) return () => {};
   const prevStyle = element.style.cssText;
   Object.assign(element.style, style);
   return () => {
@@ -349,12 +375,7 @@ function chain(...fns) {
 }
 const TRANSITIONS = {
   DURATION: 0.5,
-  EASE: [
-    0.32,
-    0.72,
-    0,
-    1
-  ]
+  EASE: [0.32, 0.72, 0, 1],
 };
 const VELOCITY_THRESHOLD = 0.4;
 const CLOSE_THRESHOLD = 0.25;
@@ -368,7 +389,12 @@ function useCallbackRef(callback) {
   React.useEffect(() => {
     callbackRef.current = callback;
   });
-  return React.useMemo(() => (...args) => callbackRef.current == null ? void 0 : callbackRef.current.call(callbackRef, ...args), []);
+  return React.useMemo(
+    () =>
+      (...args) =>
+        callbackRef.current == null ? void 0 : callbackRef.current.call(callbackRef, ...args),
+    [],
+  );
 }
 function useUncontrolledState({ defaultProp, onChange }) {
   const uncontrolledState = React.useState(defaultProp);
@@ -380,165 +406,223 @@ function useUncontrolledState({ defaultProp, onChange }) {
       handleChange(value);
       prevValueRef.current = value;
     }
-  }, [
-    value,
-    prevValueRef,
-    handleChange
-  ]);
+  }, [value, prevValueRef, handleChange]);
   return uncontrolledState;
 }
-function useControllableState({ prop, defaultProp, onChange = () => {
-} }) {
+function useControllableState({ prop, defaultProp, onChange = () => {} }) {
   const [uncontrolledProp, setUncontrolledProp] = useUncontrolledState({
     defaultProp,
-    onChange
+    onChange,
   });
   const isControlled = prop !== void 0;
   const value = isControlled ? prop : uncontrolledProp;
   const handleChange = useCallbackRef(onChange);
-  const setValue = React.useCallback((nextValue) => {
-    if (isControlled) {
-      const setter = nextValue;
-      const value2 = typeof nextValue === "function" ? setter(prop) : nextValue;
-      if (value2 !== prop) handleChange(value2);
-    } else {
-      setUncontrolledProp(nextValue);
-    }
-  }, [
-    isControlled,
-    prop,
-    setUncontrolledProp,
-    handleChange
-  ]);
-  return [
-    value,
-    setValue
-  ];
+  const setValue = React.useCallback(
+    (nextValue) => {
+      if (isControlled) {
+        const setter = nextValue;
+        const value2 = typeof nextValue === "function" ? setter(prop) : nextValue;
+        if (value2 !== prop) handleChange(value2);
+      } else {
+        setUncontrolledProp(nextValue);
+      }
+    },
+    [isControlled, prop, setUncontrolledProp, handleChange],
+  );
+  return [value, setValue];
 }
-function useSnapPoints({ activeSnapPointProp, setActiveSnapPointProp, snapPoints, drawerRef, overlayRef, fadeFromIndex, onSnapPointChange, direction = "bottom", container, snapToSequentialPoint }) {
+function useSnapPoints({
+  activeSnapPointProp,
+  setActiveSnapPointProp,
+  snapPoints,
+  drawerRef,
+  overlayRef,
+  fadeFromIndex,
+  onSnapPointChange,
+  direction = "bottom",
+  container,
+  snapToSequentialPoint,
+}) {
   const [activeSnapPoint, setActiveSnapPoint] = useControllableState({
     prop: activeSnapPointProp,
     defaultProp: snapPoints == null ? void 0 : snapPoints[0],
-    onChange: setActiveSnapPointProp
+    onChange: setActiveSnapPointProp,
   });
-  const [windowDimensions, setWindowDimensions] = React.useState(typeof window !== "undefined" ? {
-    innerWidth: window.innerWidth,
-    innerHeight: window.innerHeight
-  } : void 0);
+  const [windowDimensions, setWindowDimensions] = React.useState(
+    typeof window !== "undefined"
+      ? {
+          innerWidth: window.innerWidth,
+          innerHeight: window.innerHeight,
+        }
+      : void 0,
+  );
   React.useEffect(() => {
     function onResize() {
       setWindowDimensions({
         innerWidth: window.innerWidth,
-        innerHeight: window.innerHeight
+        innerHeight: window.innerHeight,
       });
     }
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
-  const isLastSnapPoint = React.useMemo(() => activeSnapPoint === (snapPoints == null ? void 0 : snapPoints[snapPoints.length - 1]) || null, [
-    snapPoints,
-    activeSnapPoint
-  ]);
+  const isLastSnapPoint = React.useMemo(
+    () =>
+      activeSnapPoint === (snapPoints == null ? void 0 : snapPoints[snapPoints.length - 1]) || null,
+    [snapPoints, activeSnapPoint],
+  );
   const activeSnapPointIndex = React.useMemo(() => {
     var _snapPoints_findIndex;
-    return (_snapPoints_findIndex = snapPoints == null ? void 0 : snapPoints.findIndex((snapPoint) => snapPoint === activeSnapPoint)) != null ? _snapPoints_findIndex : null;
-  }, [
-    snapPoints,
-    activeSnapPoint
-  ]);
-  const shouldFade = snapPoints && snapPoints.length > 0 && (fadeFromIndex || fadeFromIndex === 0) && !Number.isNaN(fadeFromIndex) && snapPoints[fadeFromIndex] === activeSnapPoint || !snapPoints;
+    return (_snapPoints_findIndex =
+      snapPoints == null
+        ? void 0
+        : snapPoints.findIndex((snapPoint) => snapPoint === activeSnapPoint)) != null
+      ? _snapPoints_findIndex
+      : null;
+  }, [snapPoints, activeSnapPoint]);
+  const shouldFade =
+    (snapPoints &&
+      snapPoints.length > 0 &&
+      (fadeFromIndex || fadeFromIndex === 0) &&
+      !Number.isNaN(fadeFromIndex) &&
+      snapPoints[fadeFromIndex] === activeSnapPoint) ||
+    !snapPoints;
   const snapPointsOffset = React.useMemo(() => {
-    const containerSize = container ? {
-      width: container.getBoundingClientRect().width,
-      height: container.getBoundingClientRect().height
-    } : typeof window !== "undefined" ? {
-      width: window.innerWidth,
-      height: window.innerHeight
-    } : {
-      width: 0,
-      height: 0
-    };
-    var _snapPoints_map;
-    return (_snapPoints_map = snapPoints == null ? void 0 : snapPoints.map((snapPoint) => {
-      const isPx = typeof snapPoint === "string";
-      let snapPointAsNumber = 0;
-      if (isPx) {
-        snapPointAsNumber = parseInt(snapPoint, 10);
-      }
-      if (isVertical(direction)) {
-        const height = isPx ? snapPointAsNumber : windowDimensions ? snapPoint * containerSize.height : 0;
-        if (windowDimensions) {
-          return direction === "bottom" ? containerSize.height - height : -containerSize.height + height;
+    const containerSize = container
+      ? {
+          width: container.getBoundingClientRect().width,
+          height: container.getBoundingClientRect().height,
         }
-        return height;
-      }
-      const width = isPx ? snapPointAsNumber : windowDimensions ? snapPoint * containerSize.width : 0;
-      if (windowDimensions) {
-        return direction === "right" ? containerSize.width - width : -containerSize.width + width;
-      }
-      return width;
-    })) != null ? _snapPoints_map : [];
-  }, [
-    snapPoints,
-    windowDimensions,
-    container
-  ]);
-  const activeSnapPointOffset = React.useMemo(() => activeSnapPointIndex !== null ? snapPointsOffset == null ? void 0 : snapPointsOffset[activeSnapPointIndex] : null, [
-    snapPointsOffset,
-    activeSnapPointIndex
-  ]);
-  const snapToPoint = React.useCallback((dimension) => {
-    var _snapPointsOffset_findIndex;
-    const newSnapPointIndex = (_snapPointsOffset_findIndex = snapPointsOffset == null ? void 0 : snapPointsOffset.findIndex((snapPointDim) => snapPointDim === dimension)) != null ? _snapPointsOffset_findIndex : null;
-    onSnapPointChange(newSnapPointIndex);
-    set(drawerRef.current, {
-      transition: `transform ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
-      transform: isVertical(direction) ? `translate3d(0, ${dimension}px, 0)` : `translate3d(${dimension}px, 0, 0)`
-    });
-    if (snapPointsOffset && newSnapPointIndex !== snapPointsOffset.length - 1 && fadeFromIndex !== void 0 && newSnapPointIndex !== fadeFromIndex && newSnapPointIndex < fadeFromIndex) {
-      set(overlayRef.current, {
-        transition: `opacity ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
-        opacity: "0"
+      : typeof window !== "undefined"
+        ? {
+            width: window.innerWidth,
+            height: window.innerHeight,
+          }
+        : {
+            width: 0,
+            height: 0,
+          };
+    var _snapPoints_map;
+    return (_snapPoints_map =
+      snapPoints == null
+        ? void 0
+        : snapPoints.map((snapPoint) => {
+            const isPx = typeof snapPoint === "string";
+            let snapPointAsNumber = 0;
+            if (isPx) {
+              snapPointAsNumber = parseInt(snapPoint, 10);
+            }
+            if (isVertical(direction)) {
+              const height = isPx
+                ? snapPointAsNumber
+                : windowDimensions
+                  ? snapPoint * containerSize.height
+                  : 0;
+              if (windowDimensions) {
+                return direction === "bottom"
+                  ? containerSize.height - height
+                  : -containerSize.height + height;
+              }
+              return height;
+            }
+            const width = isPx
+              ? snapPointAsNumber
+              : windowDimensions
+                ? snapPoint * containerSize.width
+                : 0;
+            if (windowDimensions) {
+              return direction === "right"
+                ? containerSize.width - width
+                : -containerSize.width + width;
+            }
+            return width;
+          })) != null
+      ? _snapPoints_map
+      : [];
+  }, [snapPoints, windowDimensions, container]);
+  const activeSnapPointOffset = React.useMemo(
+    () =>
+      activeSnapPointIndex !== null
+        ? snapPointsOffset == null
+          ? void 0
+          : snapPointsOffset[activeSnapPointIndex]
+        : null,
+    [snapPointsOffset, activeSnapPointIndex],
+  );
+  const snapToPoint = React.useCallback(
+    (dimension) => {
+      var _snapPointsOffset_findIndex;
+      const newSnapPointIndex =
+        (_snapPointsOffset_findIndex =
+          snapPointsOffset == null
+            ? void 0
+            : snapPointsOffset.findIndex((snapPointDim) => snapPointDim === dimension)) != null
+          ? _snapPointsOffset_findIndex
+          : null;
+      onSnapPointChange(newSnapPointIndex);
+      set(drawerRef.current, {
+        transition: `transform ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
+        transform: isVertical(direction)
+          ? `translate3d(0, ${dimension}px, 0)`
+          : `translate3d(${dimension}px, 0, 0)`,
       });
-    } else {
-      set(overlayRef.current, {
-        transition: `opacity ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
-        opacity: "1"
-      });
-    }
-    setActiveSnapPoint(snapPoints == null ? void 0 : snapPoints[Math.max(newSnapPointIndex, 0)]);
-  }, [
-    drawerRef.current,
-    snapPoints,
-    snapPointsOffset,
-    fadeFromIndex,
-    overlayRef,
-    setActiveSnapPoint
-  ]);
+      if (
+        snapPointsOffset &&
+        newSnapPointIndex !== snapPointsOffset.length - 1 &&
+        fadeFromIndex !== void 0 &&
+        newSnapPointIndex !== fadeFromIndex &&
+        newSnapPointIndex < fadeFromIndex
+      ) {
+        set(overlayRef.current, {
+          transition: `opacity ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
+          opacity: "0",
+        });
+      } else {
+        set(overlayRef.current, {
+          transition: `opacity ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
+          opacity: "1",
+        });
+      }
+      setActiveSnapPoint(snapPoints == null ? void 0 : snapPoints[Math.max(newSnapPointIndex, 0)]);
+    },
+    [
+      drawerRef.current,
+      snapPoints,
+      snapPointsOffset,
+      fadeFromIndex,
+      overlayRef,
+      setActiveSnapPoint,
+    ],
+  );
   React.useEffect(() => {
     if (activeSnapPoint || activeSnapPointProp) {
       var _snapPoints_findIndex;
-      const newIndex = (_snapPoints_findIndex = snapPoints == null ? void 0 : snapPoints.findIndex((snapPoint) => snapPoint === activeSnapPointProp || snapPoint === activeSnapPoint)) != null ? _snapPoints_findIndex : -1;
+      const newIndex =
+        (_snapPoints_findIndex =
+          snapPoints == null
+            ? void 0
+            : snapPoints.findIndex(
+                (snapPoint) => snapPoint === activeSnapPointProp || snapPoint === activeSnapPoint,
+              )) != null
+          ? _snapPoints_findIndex
+          : -1;
       if (snapPointsOffset && newIndex !== -1 && typeof snapPointsOffset[newIndex] === "number") {
         snapToPoint(snapPointsOffset[newIndex]);
       }
     }
-  }, [
-    activeSnapPoint,
-    activeSnapPointProp,
-    snapPoints,
-    snapPointsOffset,
-    snapToPoint
-  ]);
+  }, [activeSnapPoint, activeSnapPointProp, snapPoints, snapPointsOffset, snapToPoint]);
   function onRelease({ draggedDistance, closeDrawer, velocity, dismissible }) {
     if (fadeFromIndex === void 0) return;
-    const currentPosition = direction === "bottom" || direction === "right" ? (activeSnapPointOffset != null ? activeSnapPointOffset : 0) - draggedDistance : (activeSnapPointOffset != null ? activeSnapPointOffset : 0) + draggedDistance;
+    const currentPosition =
+      direction === "bottom" || direction === "right"
+        ? (activeSnapPointOffset != null ? activeSnapPointOffset : 0) - draggedDistance
+        : (activeSnapPointOffset != null ? activeSnapPointOffset : 0) + draggedDistance;
     const isOverlaySnapPoint = activeSnapPointIndex === fadeFromIndex - 1;
     const isFirst = activeSnapPointIndex === 0;
     const hasDraggedUp = draggedDistance > 0;
     if (isOverlaySnapPoint) {
       set(overlayRef.current, {
-        transition: `opacity ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`
+        transition: `opacity ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
       });
     }
     if (!snapToSequentialPoint && velocity > 2 && !hasDraggedUp) {
@@ -550,10 +634,15 @@ function useSnapPoints({ activeSnapPointProp, setActiveSnapPointProp, snapPoints
       snapToPoint(snapPointsOffset[snapPoints.length - 1]);
       return;
     }
-    const closestSnapPoint = snapPointsOffset == null ? void 0 : snapPointsOffset.reduce((prev, curr) => {
-      if (typeof prev !== "number" || typeof curr !== "number") return prev;
-      return Math.abs(curr - currentPosition) < Math.abs(prev - currentPosition) ? curr : prev;
-    });
+    const closestSnapPoint =
+      snapPointsOffset == null
+        ? void 0
+        : snapPointsOffset.reduce((prev, curr) => {
+            if (typeof prev !== "number" || typeof curr !== "number") return prev;
+            return Math.abs(curr - currentPosition) < Math.abs(prev - currentPosition)
+              ? curr
+              : prev;
+          });
     const dim = isVertical(direction) ? window.innerHeight : window.innerWidth;
     if (velocity > VELOCITY_THRESHOLD && Math.abs(draggedDistance) < dim * 0.4) {
       const dragDirection = hasDraggedUp ? 1 : -1;
@@ -572,19 +661,36 @@ function useSnapPoints({ activeSnapPointProp, setActiveSnapPointProp, snapPoints
   }
   function onDrag({ draggedDistance }) {
     if (activeSnapPointOffset === null) return;
-    const newValue = direction === "bottom" || direction === "right" ? activeSnapPointOffset - draggedDistance : activeSnapPointOffset + draggedDistance;
-    if ((direction === "bottom" || direction === "right") && newValue < snapPointsOffset[snapPointsOffset.length - 1]) {
+    const newValue =
+      direction === "bottom" || direction === "right"
+        ? activeSnapPointOffset - draggedDistance
+        : activeSnapPointOffset + draggedDistance;
+    if (
+      (direction === "bottom" || direction === "right") &&
+      newValue < snapPointsOffset[snapPointsOffset.length - 1]
+    ) {
       return;
     }
-    if ((direction === "top" || direction === "left") && newValue > snapPointsOffset[snapPointsOffset.length - 1]) {
+    if (
+      (direction === "top" || direction === "left") &&
+      newValue > snapPointsOffset[snapPointsOffset.length - 1]
+    ) {
       return;
     }
     set(drawerRef.current, {
-      transform: isVertical(direction) ? `translate3d(0, ${newValue}px, 0)` : `translate3d(${newValue}px, 0, 0)`
+      transform: isVertical(direction)
+        ? `translate3d(0, ${newValue}px, 0)`
+        : `translate3d(${newValue}px, 0, 0)`,
     });
   }
   function getPercentageDragged(absDraggedDistance, isDraggingDown) {
-    if (!snapPoints || typeof activeSnapPointIndex !== "number" || !snapPointsOffset || fadeFromIndex === void 0) return null;
+    if (
+      !snapPoints ||
+      typeof activeSnapPointIndex !== "number" ||
+      !snapPointsOffset ||
+      fadeFromIndex === void 0
+    )
+      return null;
     const isOverlaySnapPoint = activeSnapPointIndex === fadeFromIndex - 1;
     const isOverlaySnapPointOrHigher = activeSnapPointIndex >= fadeFromIndex;
     if (isOverlaySnapPointOrHigher && isDraggingDown) {
@@ -592,8 +698,12 @@ function useSnapPoints({ activeSnapPointProp, setActiveSnapPointProp, snapPoints
     }
     if (isOverlaySnapPoint && !isDraggingDown) return 1;
     if (!shouldFade && !isOverlaySnapPoint) return null;
-    const targetSnapPointIndex = isOverlaySnapPoint ? activeSnapPointIndex + 1 : activeSnapPointIndex - 1;
-    const snapPointDistance = isOverlaySnapPoint ? snapPointsOffset[targetSnapPointIndex] - snapPointsOffset[targetSnapPointIndex - 1] : snapPointsOffset[targetSnapPointIndex + 1] - snapPointsOffset[targetSnapPointIndex];
+    const targetSnapPointIndex = isOverlaySnapPoint
+      ? activeSnapPointIndex + 1
+      : activeSnapPointIndex - 1;
+    const snapPointDistance = isOverlaySnapPoint
+      ? snapPointsOffset[targetSnapPointIndex] - snapPointsOffset[targetSnapPointIndex - 1]
+      : snapPointsOffset[targetSnapPointIndex + 1] - snapPointsOffset[targetSnapPointIndex];
     const percentageDragged = absDraggedDistance / Math.abs(snapPointDistance);
     if (isOverlaySnapPoint) {
       return 1 - percentageDragged;
@@ -610,39 +720,51 @@ function useSnapPoints({ activeSnapPointProp, setActiveSnapPointProp, snapPoints
     activeSnapPointIndex,
     onRelease,
     onDrag,
-    snapPointsOffset
+    snapPointsOffset,
   };
 }
-const noop = () => () => {
-};
+const noop = () => () => {};
 function useScaleBackground() {
-  const { direction, isOpen, shouldScaleBackground, setBackgroundColorOnScale, noBodyStyles } = useDrawerContext();
+  const { direction, isOpen, shouldScaleBackground, setBackgroundColorOnScale, noBodyStyles } =
+    useDrawerContext();
   const timeoutIdRef = React.useRef(null);
-  const initialBackgroundColor = reactExports.useMemo(() => document.body.style.backgroundColor, []);
+  const initialBackgroundColor = reactExports.useMemo(
+    () => document.body.style.backgroundColor,
+    [],
+  );
   function getScale() {
     return (window.innerWidth - WINDOW_TOP_OFFSET) / window.innerWidth;
   }
   React.useEffect(() => {
     if (isOpen && shouldScaleBackground) {
       if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
-      const wrapper = document.querySelector("[data-vaul-drawer-wrapper]") || document.querySelector("[vaul-drawer-wrapper]");
+      const wrapper =
+        document.querySelector("[data-vaul-drawer-wrapper]") ||
+        document.querySelector("[vaul-drawer-wrapper]");
       if (!wrapper) return;
-      chain(setBackgroundColorOnScale && !noBodyStyles ? assignStyle(document.body, {
-        background: "black"
-      }) : noop, assignStyle(wrapper, {
-        transformOrigin: isVertical(direction) ? "top" : "left",
-        transitionProperty: "transform, border-radius",
-        transitionDuration: `${TRANSITIONS.DURATION}s`,
-        transitionTimingFunction: `cubic-bezier(${TRANSITIONS.EASE.join(",")})`
-      }));
+      chain(
+        setBackgroundColorOnScale && !noBodyStyles
+          ? assignStyle(document.body, {
+              background: "black",
+            })
+          : noop,
+        assignStyle(wrapper, {
+          transformOrigin: isVertical(direction) ? "top" : "left",
+          transitionProperty: "transform, border-radius",
+          transitionDuration: `${TRANSITIONS.DURATION}s`,
+          transitionTimingFunction: `cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
+        }),
+      );
       const wrapperStylesCleanup = assignStyle(wrapper, {
         borderRadius: `${BORDER_RADIUS}px`,
         overflow: "hidden",
-        ...isVertical(direction) ? {
-          transform: `scale(${getScale()}) translate3d(0, calc(env(safe-area-inset-top) + 14px), 0)`
-        } : {
-          transform: `scale(${getScale()}) translate3d(calc(env(safe-area-inset-top) + 14px), 0, 0)`
-        }
+        ...(isVertical(direction)
+          ? {
+              transform: `scale(${getScale()}) translate3d(0, calc(env(safe-area-inset-top) + 14px), 0)`,
+            }
+          : {
+              transform: `scale(${getScale()}) translate3d(calc(env(safe-area-inset-top) + 14px), 0, 0)`,
+            }),
       });
       return () => {
         wrapperStylesCleanup();
@@ -655,15 +777,20 @@ function useScaleBackground() {
         }, TRANSITIONS.DURATION * 1e3);
       };
     }
-  }, [
-    isOpen,
-    shouldScaleBackground,
-    initialBackgroundColor
-  ]);
+  }, [isOpen, shouldScaleBackground, initialBackgroundColor]);
 }
 let previousBodyPosition = null;
-function usePositionFixed({ isOpen, modal, nested, hasBeenOpened, preventScrollRestoration, noBodyStyles }) {
-  const [activeUrl, setActiveUrl] = React.useState(() => typeof window !== "undefined" ? window.location.href : "");
+function usePositionFixed({
+  isOpen,
+  modal,
+  nested,
+  hasBeenOpened,
+  preventScrollRestoration,
+  noBodyStyles,
+}) {
+  const [activeUrl, setActiveUrl] = React.useState(() =>
+    typeof window !== "undefined" ? window.location.href : "",
+  );
   const scrollPos = React.useRef(0);
   const setPositionFixed = React.useCallback(() => {
     if (!isSafari()) return;
@@ -673,7 +800,7 @@ function usePositionFixed({ isOpen, modal, nested, hasBeenOpened, preventScrollR
         top: document.body.style.top,
         left: document.body.style.left,
         height: document.body.style.height,
-        right: "unset"
+        right: "unset",
       };
       const { scrollX, innerHeight } = window;
       document.body.style.setProperty("position", "fixed", "important");
@@ -681,18 +808,20 @@ function usePositionFixed({ isOpen, modal, nested, hasBeenOpened, preventScrollR
         top: `${-scrollPos.current}px`,
         left: `${-scrollX}px`,
         right: "0px",
-        height: "auto"
+        height: "auto",
       });
-      window.setTimeout(() => window.requestAnimationFrame(() => {
-        const bottomBarHeight = innerHeight - window.innerHeight;
-        if (bottomBarHeight && scrollPos.current >= innerHeight) {
-          document.body.style.top = `${-(scrollPos.current + bottomBarHeight)}px`;
-        }
-      }), 300);
+      window.setTimeout(
+        () =>
+          window.requestAnimationFrame(() => {
+            const bottomBarHeight = innerHeight - window.innerHeight;
+            if (bottomBarHeight && scrollPos.current >= innerHeight) {
+              document.body.style.top = `${-(scrollPos.current + bottomBarHeight)}px`;
+            }
+          }),
+        300,
+      );
     }
-  }, [
-    isOpen
-  ]);
+  }, [isOpen]);
   const restorePositionSetting = React.useCallback(() => {
     if (!isSafari()) return;
     if (previousBodyPosition !== null && !noBodyStyles) {
@@ -708,9 +837,7 @@ function usePositionFixed({ isOpen, modal, nested, hasBeenOpened, preventScrollR
       });
       previousBodyPosition = null;
     }
-  }, [
-    activeUrl
-  ]);
+  }, [activeUrl]);
   React.useEffect(() => {
     function onScroll() {
       scrollPos.current = window.scrollY;
@@ -729,10 +856,7 @@ function usePositionFixed({ isOpen, modal, nested, hasBeenOpened, preventScrollR
       if (hasDrawerOpened) return;
       restorePositionSetting();
     };
-  }, [
-    modal,
-    restorePositionSetting
-  ]);
+  }, [modal, restorePositionSetting]);
   React.useEffect(() => {
     if (nested || !hasBeenOpened) return;
     if (isOpen) {
@@ -746,20 +870,42 @@ function usePositionFixed({ isOpen, modal, nested, hasBeenOpened, preventScrollR
     } else {
       restorePositionSetting();
     }
-  }, [
-    isOpen,
-    hasBeenOpened,
-    activeUrl,
-    modal,
-    nested,
-    setPositionFixed,
-    restorePositionSetting
-  ]);
+  }, [isOpen, hasBeenOpened, activeUrl, modal, nested, setPositionFixed, restorePositionSetting]);
   return {
-    restorePositionSetting
+    restorePositionSetting,
   };
 }
-function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRelease: onReleaseProp, snapPoints, shouldScaleBackground = false, setBackgroundColorOnScale = true, closeThreshold = CLOSE_THRESHOLD, scrollLockTimeout = SCROLL_LOCK_TIMEOUT, dismissible = true, handleOnly = false, fadeFromIndex = snapPoints && snapPoints.length - 1, activeSnapPoint: activeSnapPointProp, setActiveSnapPoint: setActiveSnapPointProp, fixed, modal = true, onClose, nested, noBodyStyles = false, direction = "bottom", defaultOpen = false, disablePreventScroll = true, snapToSequentialPoint = false, preventScrollRestoration = false, repositionInputs = true, onAnimationEnd, container, autoFocus = false }) {
+function Root({
+  open: openProp,
+  onOpenChange,
+  children,
+  onDrag: onDragProp,
+  onRelease: onReleaseProp,
+  snapPoints,
+  shouldScaleBackground = false,
+  setBackgroundColorOnScale = true,
+  closeThreshold = CLOSE_THRESHOLD,
+  scrollLockTimeout = SCROLL_LOCK_TIMEOUT,
+  dismissible = true,
+  handleOnly = false,
+  fadeFromIndex = snapPoints && snapPoints.length - 1,
+  activeSnapPoint: activeSnapPointProp,
+  setActiveSnapPoint: setActiveSnapPointProp,
+  fixed,
+  modal = true,
+  onClose,
+  nested,
+  noBodyStyles = false,
+  direction = "bottom",
+  defaultOpen = false,
+  disablePreventScroll = true,
+  snapToSequentialPoint = false,
+  preventScrollRestoration = false,
+  repositionInputs = true,
+  onAnimationEnd,
+  container,
+  autoFocus = false,
+}) {
   var _drawerRef_current, _drawerRef_current1;
   const [isOpen = false, setIsOpen] = useControllableState({
     defaultProp: defaultOpen,
@@ -782,7 +928,7 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
       if (!o) {
         document.body.style.pointerEvents = "auto";
       }
-    }
+    },
   });
   const [hasBeenOpened, setHasBeenOpened] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -799,13 +945,31 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
   const shouldAnimate = React.useRef(!defaultOpen);
   const previousDiffFromInitial = React.useRef(0);
   const drawerRef = React.useRef(null);
-  const drawerHeightRef = React.useRef(((_drawerRef_current = drawerRef.current) == null ? void 0 : _drawerRef_current.getBoundingClientRect().height) || 0);
-  const drawerWidthRef = React.useRef(((_drawerRef_current1 = drawerRef.current) == null ? void 0 : _drawerRef_current1.getBoundingClientRect().width) || 0);
+  const drawerHeightRef = React.useRef(
+    ((_drawerRef_current = drawerRef.current) == null
+      ? void 0
+      : _drawerRef_current.getBoundingClientRect().height) || 0,
+  );
+  const drawerWidthRef = React.useRef(
+    ((_drawerRef_current1 = drawerRef.current) == null
+      ? void 0
+      : _drawerRef_current1.getBoundingClientRect().width) || 0,
+  );
   const initialDrawerHeight = React.useRef(0);
   const onSnapPointChange = React.useCallback((activeSnapPointIndex2) => {
-    if (snapPoints && activeSnapPointIndex2 === snapPointsOffset.length - 1) openTime.current = /* @__PURE__ */ new Date();
+    if (snapPoints && activeSnapPointIndex2 === snapPointsOffset.length - 1)
+      openTime.current = /* @__PURE__ */ new Date();
   }, []);
-  const { activeSnapPoint, activeSnapPointIndex, setActiveSnapPoint, onRelease: onReleaseSnapPoints, snapPointsOffset, onDrag: onDragSnapPoints, shouldFade, getPercentageDragged: getSnapPointsPercentageDragged } = useSnapPoints({
+  const {
+    activeSnapPoint,
+    activeSnapPointIndex,
+    setActiveSnapPoint,
+    onRelease: onReleaseSnapPoints,
+    snapPointsOffset,
+    onDrag: onDragSnapPoints,
+    shouldFade,
+    getPercentageDragged: getSnapPointsPercentageDragged,
+  } = useSnapPoints({
     snapPoints,
     activeSnapPointProp,
     setActiveSnapPointProp,
@@ -815,10 +979,17 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
     onSnapPointChange,
     direction,
     container,
-    snapToSequentialPoint
+    snapToSequentialPoint,
   });
   usePreventScroll({
-    isDisabled: !isOpen || isDragging || !modal || justReleased || !hasBeenOpened || !repositionInputs || !disablePreventScroll
+    isDisabled:
+      !isOpen ||
+      isDragging ||
+      !modal ||
+      justReleased ||
+      !hasBeenOpened ||
+      !repositionInputs ||
+      !disablePreventScroll,
   });
   const { restorePositionSetting } = usePositionFixed({
     isOpen,
@@ -826,7 +997,7 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
     nested: nested != null ? nested : false,
     hasBeenOpened,
     preventScrollRestoration,
-    noBodyStyles
+    noBodyStyles,
   });
   function getScale() {
     return (window.innerWidth - WINDOW_TOP_OFFSET) / window.innerWidth;
@@ -835,13 +1006,19 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
     var _drawerRef_current2, _drawerRef_current12;
     if (!dismissible && !snapPoints) return;
     if (drawerRef.current && !drawerRef.current.contains(event.target)) return;
-    drawerHeightRef.current = ((_drawerRef_current2 = drawerRef.current) == null ? void 0 : _drawerRef_current2.getBoundingClientRect().height) || 0;
-    drawerWidthRef.current = ((_drawerRef_current12 = drawerRef.current) == null ? void 0 : _drawerRef_current12.getBoundingClientRect().width) || 0;
+    drawerHeightRef.current =
+      ((_drawerRef_current2 = drawerRef.current) == null
+        ? void 0
+        : _drawerRef_current2.getBoundingClientRect().height) || 0;
+    drawerWidthRef.current =
+      ((_drawerRef_current12 = drawerRef.current) == null
+        ? void 0
+        : _drawerRef_current12.getBoundingClientRect().width) || 0;
     setIsDragging(true);
     dragStartTime.current = /* @__PURE__ */ new Date();
     if (isIOS()) {
-      window.addEventListener("touchend", () => isAllowedToDrag.current = false, {
-        once: true
+      window.addEventListener("touchend", () => (isAllowedToDrag.current = false), {
+        once: true,
       });
     }
     event.target.setPointerCapture(event.pointerId);
@@ -850,7 +1027,10 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
   function shouldDrag(el, isDraggingInDirection) {
     var _window_getSelection;
     let element = el;
-    const highlightedText = (_window_getSelection = window.getSelection()) == null ? void 0 : _window_getSelection.toString();
+    const highlightedText =
+      (_window_getSelection = window.getSelection()) == null
+        ? void 0
+        : _window_getSelection.toString();
     const swipeAmount = drawerRef.current ? getTranslate(drawerRef.current, direction) : null;
     const date = /* @__PURE__ */ new Date();
     if (element.tagName === "SELECT") {
@@ -873,7 +1053,11 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
     if (highlightedText && highlightedText.length > 0) {
       return false;
     }
-    if (lastTimeDragPrevented.current && date.getTime() - lastTimeDragPrevented.current.getTime() < scrollLockTimeout && swipeAmount === 0) {
+    if (
+      lastTimeDragPrevented.current &&
+      date.getTime() - lastTimeDragPrevented.current.getTime() < scrollLockTimeout &&
+      swipeAmount === 0
+    ) {
       lastTimeDragPrevented.current = date;
       return false;
     }
@@ -901,15 +1085,23 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
     }
     if (isDragging) {
       const directionMultiplier = direction === "bottom" || direction === "right" ? 1 : -1;
-      const draggedDistance = (pointerStart.current - (isVertical(direction) ? event.pageY : event.pageX)) * directionMultiplier;
+      const draggedDistance =
+        (pointerStart.current - (isVertical(direction) ? event.pageY : event.pageX)) *
+        directionMultiplier;
       const isDraggingInDirection = draggedDistance > 0;
       const noCloseSnapPointsPreCondition = snapPoints && !dismissible && !isDraggingInDirection;
       if (noCloseSnapPointsPreCondition && activeSnapPointIndex === 0) return;
       const absDraggedDistance = Math.abs(draggedDistance);
       const wrapper = document.querySelector("[data-vaul-drawer-wrapper]");
-      const drawerDimension = direction === "bottom" || direction === "top" ? drawerHeightRef.current : drawerWidthRef.current;
+      const drawerDimension =
+        direction === "bottom" || direction === "top"
+          ? drawerHeightRef.current
+          : drawerWidthRef.current;
       let percentageDragged = absDraggedDistance / drawerDimension;
-      const snapPointPercentageDragged = getSnapPointsPercentageDragged(absDraggedDistance, isDraggingInDirection);
+      const snapPointPercentageDragged = getSnapPointsPercentageDragged(
+        absDraggedDistance,
+        isDraggingInDirection,
+      );
       if (snapPointPercentageDragged !== null) {
         percentageDragged = snapPointPercentageDragged;
       }
@@ -920,46 +1112,60 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
       drawerRef.current.classList.add(DRAG_CLASS);
       isAllowedToDrag.current = true;
       set(drawerRef.current, {
-        transition: "none"
+        transition: "none",
       });
       set(overlayRef.current, {
-        transition: "none"
+        transition: "none",
       });
       if (snapPoints) {
         onDragSnapPoints({
-          draggedDistance
+          draggedDistance,
         });
       }
       if (isDraggingInDirection && !snapPoints) {
         const dampenedDraggedDistance = dampenValue(draggedDistance);
         const translateValue = Math.min(dampenedDraggedDistance * -1, 0) * directionMultiplier;
         set(drawerRef.current, {
-          transform: isVertical(direction) ? `translate3d(0, ${translateValue}px, 0)` : `translate3d(${translateValue}px, 0, 0)`
+          transform: isVertical(direction)
+            ? `translate3d(0, ${translateValue}px, 0)`
+            : `translate3d(${translateValue}px, 0, 0)`,
         });
         return;
       }
       const opacityValue = 1 - percentageDragged;
-      if (shouldFade || fadeFromIndex && activeSnapPointIndex === fadeFromIndex - 1) {
+      if (shouldFade || (fadeFromIndex && activeSnapPointIndex === fadeFromIndex - 1)) {
         onDragProp == null ? void 0 : onDragProp(event, percentageDragged);
-        set(overlayRef.current, {
-          opacity: `${opacityValue}`,
-          transition: "none"
-        }, true);
+        set(
+          overlayRef.current,
+          {
+            opacity: `${opacityValue}`,
+            transition: "none",
+          },
+          true,
+        );
       }
       if (wrapper && overlayRef.current && shouldScaleBackground) {
         const scaleValue = Math.min(getScale() + percentageDragged * (1 - getScale()), 1);
         const borderRadiusValue = 8 - percentageDragged * 8;
         const translateValue = Math.max(0, 14 - percentageDragged * 14);
-        set(wrapper, {
-          borderRadius: `${borderRadiusValue}px`,
-          transform: isVertical(direction) ? `scale(${scaleValue}) translate3d(0, ${translateValue}px, 0)` : `scale(${scaleValue}) translate3d(${translateValue}px, 0, 0)`,
-          transition: "none"
-        }, true);
+        set(
+          wrapper,
+          {
+            borderRadius: `${borderRadiusValue}px`,
+            transform: isVertical(direction)
+              ? `scale(${scaleValue}) translate3d(0, ${translateValue}px, 0)`
+              : `scale(${scaleValue}) translate3d(${translateValue}px, 0, 0)`,
+            transition: "none",
+          },
+          true,
+        );
       }
       if (!snapPoints) {
         const translateValue = absDraggedDistance * directionMultiplier;
         set(drawerRef.current, {
-          transform: isVertical(direction) ? `translate3d(0, ${translateValue}px, 0)` : `translate3d(${translateValue}px, 0, 0)`
+          transform: isVertical(direction)
+            ? `translate3d(0, ${translateValue}px, 0)`
+            : `translate3d(${translateValue}px, 0, 0)`,
         });
       }
     }
@@ -976,7 +1182,10 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
       const focusedElement = document.activeElement;
       if (isInput(focusedElement) || keyboardIsOpen.current) {
         var _window_visualViewport2;
-        const visualViewportHeight = ((_window_visualViewport2 = window.visualViewport) == null ? void 0 : _window_visualViewport2.height) || 0;
+        const visualViewportHeight =
+          ((_window_visualViewport2 = window.visualViewport) == null
+            ? void 0
+            : _window_visualViewport2.height) || 0;
         const totalHeight = window.innerHeight;
         let diffFromInitial = totalHeight - visualViewportHeight;
         const drawerHeight = drawerRef.current.getBoundingClientRect().height || 0;
@@ -997,7 +1206,8 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
           const height = drawerRef.current.getBoundingClientRect().height;
           let newDrawerHeight = height;
           if (height > visualViewportHeight) {
-            newDrawerHeight = visualViewportHeight - (isTallEnough ? offsetFromTop : WINDOW_TOP_OFFSET);
+            newDrawerHeight =
+              visualViewportHeight - (isTallEnough ? offsetFromTop : WINDOW_TOP_OFFSET);
           }
           if (fixed) {
             drawerRef.current.style.height = `${height - Math.max(diffFromInitial, 0)}px`;
@@ -1014,16 +1224,16 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
         }
       }
     }
-    (_window_visualViewport = window.visualViewport) == null ? void 0 : _window_visualViewport.addEventListener("resize", onVisualViewportChange);
+    (_window_visualViewport = window.visualViewport) == null
+      ? void 0
+      : _window_visualViewport.addEventListener("resize", onVisualViewportChange);
     return () => {
       var _window_visualViewport2;
-      return (_window_visualViewport2 = window.visualViewport) == null ? void 0 : _window_visualViewport2.removeEventListener("resize", onVisualViewportChange);
+      return (_window_visualViewport2 = window.visualViewport) == null
+        ? void 0
+        : _window_visualViewport2.removeEventListener("resize", onVisualViewportChange);
     };
-  }, [
-    activeSnapPointIndex,
-    snapPoints,
-    snapPointsOffset
-  ]);
+  }, [activeSnapPointIndex, snapPoints, snapPointsOffset]);
   function closeDrawer(fromWithin) {
     cancelDrag();
     onClose == null ? void 0 : onClose();
@@ -1042,27 +1252,33 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
     const currentSwipeAmount = getTranslate(drawerRef.current, direction);
     set(drawerRef.current, {
       transform: "translate3d(0, 0, 0)",
-      transition: `transform ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`
+      transition: `transform ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
     });
     set(overlayRef.current, {
       transition: `opacity ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
-      opacity: "1"
+      opacity: "1",
     });
     if (shouldScaleBackground && currentSwipeAmount && currentSwipeAmount > 0 && isOpen) {
-      set(wrapper, {
-        borderRadius: `${BORDER_RADIUS}px`,
-        overflow: "hidden",
-        ...isVertical(direction) ? {
-          transform: `scale(${getScale()}) translate3d(0, calc(env(safe-area-inset-top) + 14px), 0)`,
-          transformOrigin: "top"
-        } : {
-          transform: `scale(${getScale()}) translate3d(calc(env(safe-area-inset-top) + 14px), 0, 0)`,
-          transformOrigin: "left"
+      set(
+        wrapper,
+        {
+          borderRadius: `${BORDER_RADIUS}px`,
+          overflow: "hidden",
+          ...(isVertical(direction)
+            ? {
+                transform: `scale(${getScale()}) translate3d(0, calc(env(safe-area-inset-top) + 14px), 0)`,
+                transformOrigin: "top",
+              }
+            : {
+                transform: `scale(${getScale()}) translate3d(calc(env(safe-area-inset-top) + 14px), 0, 0)`,
+                transformOrigin: "left",
+              }),
+          transitionProperty: "transform, border-radius",
+          transitionDuration: `${TRANSITIONS.DURATION}s`,
+          transitionTimingFunction: `cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
         },
-        transitionProperty: "transform, border-radius",
-        transitionDuration: `${TRANSITIONS.DURATION}s`,
-        transitionTimingFunction: `cubic-bezier(${TRANSITIONS.EASE.join(",")})`
-      }, true);
+        true,
+      );
     }
   }
   function cancelDrag() {
@@ -1079,7 +1295,8 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
     setIsDragging(false);
     dragEndTime.current = /* @__PURE__ */ new Date();
     const swipeAmount = getTranslate(drawerRef.current, direction);
-    if (!event || !shouldDrag(event.target, false) || !swipeAmount || Number.isNaN(swipeAmount)) return;
+    if (!event || !shouldDrag(event.target, false) || !swipeAmount || Number.isNaN(swipeAmount))
+      return;
     if (dragStartTime.current === null) return;
     const timeTaken = dragEndTime.current.getTime() - dragStartTime.current.getTime();
     const distMoved = pointerStart.current - (isVertical(direction) ? event.pageY : event.pageX);
@@ -1096,7 +1313,7 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
         draggedDistance: distMoved * directionMultiplier,
         closeDrawer,
         velocity,
-        dismissible
+        dismissible,
       });
       onReleaseProp == null ? void 0 : onReleaseProp(event, true);
       return;
@@ -1112,11 +1329,26 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
       return;
     }
     var _drawerRef_current_getBoundingClientRect_height;
-    const visibleDrawerHeight = Math.min((_drawerRef_current_getBoundingClientRect_height = drawerRef.current.getBoundingClientRect().height) != null ? _drawerRef_current_getBoundingClientRect_height : 0, window.innerHeight);
+    const visibleDrawerHeight = Math.min(
+      (_drawerRef_current_getBoundingClientRect_height =
+        drawerRef.current.getBoundingClientRect().height) != null
+        ? _drawerRef_current_getBoundingClientRect_height
+        : 0,
+      window.innerHeight,
+    );
     var _drawerRef_current_getBoundingClientRect_width;
-    const visibleDrawerWidth = Math.min((_drawerRef_current_getBoundingClientRect_width = drawerRef.current.getBoundingClientRect().width) != null ? _drawerRef_current_getBoundingClientRect_width : 0, window.innerWidth);
+    const visibleDrawerWidth = Math.min(
+      (_drawerRef_current_getBoundingClientRect_width =
+        drawerRef.current.getBoundingClientRect().width) != null
+        ? _drawerRef_current_getBoundingClientRect_width
+        : 0,
+      window.innerWidth,
+    );
     const isHorizontalSwipe = direction === "left" || direction === "right";
-    if (Math.abs(swipeAmount) >= (isHorizontalSwipe ? visibleDrawerWidth : visibleDrawerHeight) * closeThreshold) {
+    if (
+      Math.abs(swipeAmount) >=
+      (isHorizontalSwipe ? visibleDrawerWidth : visibleDrawerHeight) * closeThreshold
+    ) {
       closeDrawer();
       onReleaseProp == null ? void 0 : onReleaseProp(event, false);
       return;
@@ -1127,16 +1359,14 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
   React.useEffect(() => {
     if (isOpen) {
       set(document.documentElement, {
-        scrollBehavior: "auto"
+        scrollBehavior: "auto",
       });
       openTime.current = /* @__PURE__ */ new Date();
     }
     return () => {
       reset(document.documentElement, "scrollBehavior");
     };
-  }, [
-    isOpen
-  ]);
+  }, [isOpen]);
   function onNestedOpenChange(o) {
     const scale = o ? (window.innerWidth - NESTED_DISPLACEMENT) / window.innerWidth : 1;
     const initialTranslate = o ? -NESTED_DISPLACEMENT : 0;
@@ -1145,14 +1375,18 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
     }
     set(drawerRef.current, {
       transition: `transform ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
-      transform: isVertical(direction) ? `scale(${scale}) translate3d(0, ${initialTranslate}px, 0)` : `scale(${scale}) translate3d(${initialTranslate}px, 0, 0)`
+      transform: isVertical(direction)
+        ? `scale(${scale}) translate3d(0, ${initialTranslate}px, 0)`
+        : `scale(${scale}) translate3d(${initialTranslate}px, 0, 0)`,
     });
     if (!o && drawerRef.current) {
       nestedOpenChangeTimer.current = setTimeout(() => {
         const translateValue = getTranslate(drawerRef.current, direction);
         set(drawerRef.current, {
           transition: "none",
-          transform: isVertical(direction) ? `translate3d(0, ${translateValue}px, 0)` : `translate3d(${translateValue}px, 0, 0)`
+          transform: isVertical(direction)
+            ? `translate3d(0, ${translateValue}px, 0)`
+            : `translate3d(${translateValue}px, 0, 0)`,
         });
       }, 500);
     }
@@ -1163,8 +1397,10 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
     const newScale = initialScale + percentageDragged * (1 - initialScale);
     const newTranslate = -NESTED_DISPLACEMENT + percentageDragged * NESTED_DISPLACEMENT;
     set(drawerRef.current, {
-      transform: isVertical(direction) ? `scale(${newScale}) translate3d(0, ${newTranslate}px, 0)` : `scale(${newScale}) translate3d(${newTranslate}px, 0, 0)`,
-      transition: "none"
+      transform: isVertical(direction)
+        ? `scale(${newScale}) translate3d(0, ${newTranslate}px, 0)`
+        : `scale(${newScale}) translate3d(${newTranslate}px, 0, 0)`,
+      transition: "none",
     });
   }
   function onNestedRelease(_event, o) {
@@ -1174,7 +1410,9 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
     if (o) {
       set(drawerRef.current, {
         transition: `transform ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(",")})`,
-        transform: isVertical(direction) ? `scale(${scale}) translate3d(0, ${translate}px, 0)` : `scale(${scale}) translate3d(${translate}px, 0, 0)`
+        transform: isVertical(direction)
+          ? `scale(${scale}) translate3d(0, ${translate}px, 0)`
+          : `scale(${scale}) translate3d(${translate}px, 0, 0)`,
       });
     }
   }
@@ -1184,78 +1422,104 @@ function Root({ open: openProp, onOpenChange, children, onDrag: onDragProp, onRe
         document.body.style.pointerEvents = "auto";
       });
     }
-  }, [
-    modal
-  ]);
-  return /* @__PURE__ */ React.createElement(Root$1, {
-    defaultOpen,
-    onOpenChange: (open) => {
-      if (!dismissible && !open) return;
-      if (open) {
-        setHasBeenOpened(true);
-      } else {
-        closeDrawer(true);
-      }
-      setIsOpen(open);
+  }, [modal]);
+  return /* @__PURE__ */ React.createElement(
+    Root$1,
+    {
+      defaultOpen,
+      onOpenChange: (open) => {
+        if (!dismissible && !open) return;
+        if (open) {
+          setHasBeenOpened(true);
+        } else {
+          closeDrawer(true);
+        }
+        setIsOpen(open);
+      },
+      open: isOpen,
     },
-    open: isOpen
-  }, /* @__PURE__ */ React.createElement(DrawerContext.Provider, {
-    value: {
-      activeSnapPoint,
-      snapPoints,
-      setActiveSnapPoint,
-      drawerRef,
-      overlayRef,
-      onOpenChange,
-      onPress,
-      onRelease,
-      onDrag,
-      dismissible,
-      shouldAnimate,
-      handleOnly,
-      isOpen,
-      isDragging,
-      shouldFade,
-      closeDrawer,
-      onNestedDrag,
-      onNestedOpenChange,
-      onNestedRelease,
-      keyboardIsOpen,
-      modal,
-      snapPointsOffset,
-      activeSnapPointIndex,
-      direction,
-      shouldScaleBackground,
-      setBackgroundColorOnScale,
-      noBodyStyles,
-      container,
-      autoFocus
-    }
-  }, children));
+    /* @__PURE__ */ React.createElement(
+      DrawerContext.Provider,
+      {
+        value: {
+          activeSnapPoint,
+          snapPoints,
+          setActiveSnapPoint,
+          drawerRef,
+          overlayRef,
+          onOpenChange,
+          onPress,
+          onRelease,
+          onDrag,
+          dismissible,
+          shouldAnimate,
+          handleOnly,
+          isOpen,
+          isDragging,
+          shouldFade,
+          closeDrawer,
+          onNestedDrag,
+          onNestedOpenChange,
+          onNestedRelease,
+          keyboardIsOpen,
+          modal,
+          snapPointsOffset,
+          activeSnapPointIndex,
+          direction,
+          shouldScaleBackground,
+          setBackgroundColorOnScale,
+          noBodyStyles,
+          container,
+          autoFocus,
+        },
+      },
+      children,
+    ),
+  );
 }
-const Overlay = /* @__PURE__ */ React.forwardRef(function({ ...rest }, ref) {
-  const { overlayRef, snapPoints, onRelease, shouldFade, isOpen, modal, shouldAnimate } = useDrawerContext();
+const Overlay = /* @__PURE__ */ React.forwardRef(function ({ ...rest }, ref) {
+  const { overlayRef, snapPoints, onRelease, shouldFade, isOpen, modal, shouldAnimate } =
+    useDrawerContext();
   const composedRef = useComposedRefs(ref, overlayRef);
   const hasSnapPoints = snapPoints && snapPoints.length > 0;
   if (!modal) {
     return null;
   }
-  const onMouseUp = React.useCallback((event) => onRelease(event), [
-    onRelease
-  ]);
+  const onMouseUp = React.useCallback((event) => onRelease(event), [onRelease]);
   return /* @__PURE__ */ React.createElement(Overlay$1, {
     onMouseUp,
     ref: composedRef,
     "data-vaul-overlay": "",
     "data-vaul-snap-points": isOpen && hasSnapPoints ? "true" : "false",
     "data-vaul-snap-points-overlay": isOpen && shouldFade ? "true" : "false",
-    "data-vaul-animate": (shouldAnimate == null ? void 0 : shouldAnimate.current) ? "true" : "false",
-    ...rest
+    "data-vaul-animate": (shouldAnimate == null ? void 0 : shouldAnimate.current)
+      ? "true"
+      : "false",
+    ...rest,
   });
 });
 Overlay.displayName = "Drawer.Overlay";
-const Content = /* @__PURE__ */ React.forwardRef(function({ onPointerDownOutside, style, onOpenAutoFocus, ...rest }, ref) {
-  const { drawerRef, onPress, onRelease, onDrag, keyboardIsOpen, snapPointsOffset, activeSnapPointIndex, modal, isOpen, direction, snapPoints, container, handleOnly, shouldAnimate, autoFocus } = useDrawerContext();
+const Content = /* @__PURE__ */ React.forwardRef(function (
+  { onPointerDownOutside, style, onOpenAutoFocus, ...rest },
+  ref,
+) {
+  const {
+    drawerRef,
+    onPress,
+    onRelease,
+    onDrag,
+    keyboardIsOpen,
+    snapPointsOffset,
+    activeSnapPointIndex,
+    modal,
+    isOpen,
+    direction,
+    snapPoints,
+    container,
+    handleOnly,
+    shouldAnimate,
+    autoFocus,
+  } = useDrawerContext();
   const [delayedSnapPoints, setDelayedSnapPoints] = React.useState(false);
   const composedRef = useComposedRefs(ref, drawerRef);
   const pointerStartRef = React.useRef(null);
@@ -1268,10 +1532,7 @@ const Content = /* @__PURE__ */ React.forwardRef(function({ onPointerDownOutside
     const deltaY = Math.abs(delta.y);
     const deltaX = Math.abs(delta.x);
     const isDeltaX = deltaX > deltaY;
-    const dFactor = [
-      "bottom",
-      "right"
-    ].includes(direction2) ? 1 : -1;
+    const dFactor = ["bottom", "right"].includes(direction2) ? 1 : -1;
     if (direction2 === "left" || direction2 === "right") {
       const isReverseDirection = delta.x * dFactor < 0;
       if (!isReverseDirection && deltaX >= 0 && deltaX <= threshold) {
@@ -1304,19 +1565,24 @@ const Content = /* @__PURE__ */ React.forwardRef(function({ onPointerDownOutside
     "data-vaul-delayed-snap-points": delayedSnapPoints ? "true" : "false",
     "data-vaul-snap-points": isOpen && hasSnapPoints ? "true" : "false",
     "data-vaul-custom-container": container ? "true" : "false",
-    "data-vaul-animate": (shouldAnimate == null ? void 0 : shouldAnimate.current) ? "true" : "false",
+    "data-vaul-animate": (shouldAnimate == null ? void 0 : shouldAnimate.current)
+      ? "true"
+      : "false",
     ...rest,
     ref: composedRef,
-    style: snapPointsOffset && snapPointsOffset.length > 0 ? {
-      "--snap-point-height": `${snapPointsOffset[activeSnapPointIndex != null ? activeSnapPointIndex : 0]}px`,
-      ...style
-    } : style,
+    style:
+      snapPointsOffset && snapPointsOffset.length > 0
+        ? {
+            "--snap-point-height": `${snapPointsOffset[activeSnapPointIndex != null ? activeSnapPointIndex : 0]}px`,
+            ...style,
+          }
+        : style,
     onPointerDown: (event) => {
       if (handleOnly) return;
       rest.onPointerDown == null ? void 0 : rest.onPointerDown.call(rest, event);
       pointerStartRef.current = {
         x: event.pageX,
-        y: event.pageY
+        y: event.pageY,
       };
       onPress(event);
     },
@@ -1352,11 +1618,14 @@ const Content = /* @__PURE__ */ React.forwardRef(function({ onPointerDownOutside
       const swipeStartThreshold = event.pointerType === "touch" ? 10 : 2;
       const delta = {
         x: xPosition,
-        y: yPosition
+        y: yPosition,
       };
       const isAllowedToSwipe = isDeltaInDirection(delta, direction, swipeStartThreshold);
       if (isAllowedToSwipe) onDrag(event);
-      else if (Math.abs(xPosition) > swipeStartThreshold || Math.abs(yPosition) > swipeStartThreshold) {
+      else if (
+        Math.abs(xPosition) > swipeStartThreshold ||
+        Math.abs(yPosition) > swipeStartThreshold
+      ) {
         pointerStartRef.current = null;
       }
     },
@@ -1375,14 +1644,28 @@ const Content = /* @__PURE__ */ React.forwardRef(function({ onPointerDownOutside
       if (lastKnownPointerEventRef.current) {
         handleOnPointerUp(lastKnownPointerEventRef.current);
       }
-    }
+    },
   });
 });
 Content.displayName = "Drawer.Content";
 const LONG_HANDLE_PRESS_TIMEOUT = 250;
 const DOUBLE_TAP_TIMEOUT = 120;
-const Handle = /* @__PURE__ */ React.forwardRef(function({ preventCycle = false, children, ...rest }, ref) {
-  const { closeDrawer, isDragging, snapPoints, activeSnapPoint, setActiveSnapPoint, dismissible, handleOnly, isOpen, onPress, onDrag } = useDrawerContext();
+const Handle = /* @__PURE__ */ React.forwardRef(function (
+  { preventCycle = false, children, ...rest },
+  ref,
+) {
+  const {
+    closeDrawer,
+    isDragging,
+    snapPoints,
+    activeSnapPoint,
+    setActiveSnapPoint,
+    dismissible,
+    handleOnly,
+    isOpen,
+    onPress,
+    onDrag,
+  } = useDrawerContext();
   const closeTimeoutIdRef = React.useRef(null);
   const shouldCancelInteractionRef = React.useRef(false);
   function handleStartCycle() {
@@ -1427,26 +1710,34 @@ const Handle = /* @__PURE__ */ React.forwardRef(function({ preventCycle = false,
     }
     shouldCancelInteractionRef.current = false;
   }
-  return /* @__PURE__ */ React.createElement("div", {
-    onClick: handleStartCycle,
-    onPointerCancel: handleCancelInteraction,
-    onPointerDown: (e) => {
-      if (handleOnly) onPress(e);
-      handleStartInteraction();
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      onClick: handleStartCycle,
+      onPointerCancel: handleCancelInteraction,
+      onPointerDown: (e) => {
+        if (handleOnly) onPress(e);
+        handleStartInteraction();
+      },
+      onPointerMove: (e) => {
+        if (handleOnly) onDrag(e);
+      },
+      // onPointerUp is already handled by the content component
+      ref,
+      "data-vaul-drawer-visible": isOpen ? "true" : "false",
+      "data-vaul-handle": "",
+      "aria-hidden": "true",
+      ...rest,
     },
-    onPointerMove: (e) => {
-      if (handleOnly) onDrag(e);
-    },
-    // onPointerUp is already handled by the content component
-    ref,
-    "data-vaul-drawer-visible": isOpen ? "true" : "false",
-    "data-vaul-handle": "",
-    "aria-hidden": "true",
-    ...rest
-  }, /* @__PURE__ */ React.createElement("span", {
-    "data-vaul-handle-hitarea": "",
-    "aria-hidden": "true"
-  }, children));
+    /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        "data-vaul-handle-hitarea": "",
+        "aria-hidden": "true",
+      },
+      children,
+    ),
+  );
 });
 Handle.displayName = "Drawer.Handle";
 function Portal(props) {
@@ -1454,7 +1745,7 @@ function Portal(props) {
   const { container = context.container, ...portalProps } = props;
   return /* @__PURE__ */ React.createElement(Portal$1, {
     container,
-    ...portalProps
+    ...portalProps,
   });
 }
 const Drawer = {
@@ -1463,8 +1754,6 @@ const Drawer = {
   Overlay,
   Portal,
   Title,
-  Description
+  Description,
 };
-export {
-  Drawer as D
-};
+export { Drawer as D };

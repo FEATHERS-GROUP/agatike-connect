@@ -165,7 +165,8 @@ export const events: Event[] = [
     cover: e6,
     attendees: 10000,
     rating: 4.9,
-    description: "Team World takes on Team Africa in the highly anticipated annual NBA exhibition game.",
+    description:
+      "Team World takes on Team Africa in the highly anticipated annual NBA exhibition game.",
     lat: -1.954,
     lng: 30.114,
     hasStory: true,
@@ -226,7 +227,7 @@ export const events: Event[] = [
     lat: -3.242,
     lng: 36.758,
     hasStory: false,
-  }
+  },
 ];
 
 export const categories = [
@@ -666,14 +667,23 @@ export const ticketProjects: TicketProject[] = [
     currency: "₦",
     cover: e1,
     logoText: "AGATIKE",
-    updatedAt: "2026-05-28T14:30:00Z"
-  }
+    updatedAt: "2026-05-28T14:30:00Z",
+  },
 ];
 
 export type RentableVenue = {
   id: string;
   name: string;
-  type: "Stadium" | "Arena" | "Conference Room" | "Wedding Garden" | "Theater" | "Club" | "Basketball Court" | "Football Pitch" | "Gaming Lounge";
+  type:
+    | "Stadium"
+    | "Arena"
+    | "Conference Room"
+    | "Wedding Garden"
+    | "Theater"
+    | "Club"
+    | "Basketball Court"
+    | "Football Pitch"
+    | "Gaming Lounge";
   city: string;
   capacity: number;
   pricePerDay: number;
@@ -982,4 +992,3 @@ export const venueBookings: VenueBooking[] = [
     isAllDay: false,
   },
 ];
-

@@ -8,12 +8,11 @@ export interface UserLookupResponse {
   email: string;
 }
 
-export const getUserByHandle = createServerFn({ method: "GET" })
-  .handler(async (ctx) => {
-    const data = ctx.data as unknown as { handle: string };
-    if (!data.handle) return null;
+export const getUserByHandle = createServerFn({ method: "GET" }).handler(async (ctx) => {
+  const data = ctx.data as unknown as { handle: string };
+  if (!data.handle) return null;
 
-    const query = `
+  const query = `
       query GetUserByHandle($handle: String!) {
         users(where: {handle: {_eq: $handle}}) {
           id
@@ -24,6 +23,8 @@ export const getUserByHandle = createServerFn({ method: "GET" })
       }
     `;
 
-    const result = await hasuraRequest<{ users: UserLookupResponse[] }>(query, { handle: data.handle });
-    return result.users[0] || null;
+  const result = await hasuraRequest<{ users: UserLookupResponse[] }>(query, {
+    handle: data.handle,
   });
+  return result.users[0] || null;
+});

@@ -1,1 +1,242 @@
-import{w as i,t,C as m,q as e,L as n,h as c}from"./index-BbCjida8.js";import{N as x}from"./Navbar-8zxmLK7V.js";import{F as p}from"./Footer-CxcHC3QW.js";import{B as d}from"./button-BtHMdeJ3.js";import{A as u}from"./arrow-left-CHuZXlQs.js";import{F as h}from"./film-BcUt-rrO.js";import{M as b}from"./map-pin-C2ftX2X_.js";import{C as g}from"./clock-BqqZJLGx.js";import{T as f}from"./ticket-BfFChqFx.js";import"./input-Bn2qJlr0.js";import"./plus-DEJHAl15.js";function T(){const[a,l]=i.useState(t[0].id),r=t.find(s=>s.id===a),o=m();return e.jsxs("div",{className:"min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none",children:[e.jsx("div",{className:"hidden md:block",children:e.jsx(x,{})}),e.jsxs("div",{className:"md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center gap-3",children:[e.jsx("button",{onClick:()=>o.history.back(),className:"p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground",children:e.jsx(u,{className:"h-6 w-6"})}),e.jsx("h1",{className:"font-bold text-lg tracking-tight",children:"Movies & Cinemas"})]}),e.jsxs("section",{className:"relative overflow-hidden border-b border-border/60",children:[e.jsx("img",{src:r.cover,alt:"",className:"absolute inset-0 h-full w-full object-cover opacity-30 blur-sm"}),e.jsx("div",{className:"absolute inset-0 bg-gradient-to-b from-background/80 via-background/95 to-background"}),e.jsxs("div",{className:"relative mx-auto grid max-w-7xl gap-6 px-4 md:px-6 py-6 md:gap-8 md:py-16 md:grid-cols-[260px_1fr]",children:[e.jsx("img",{src:r.cover,alt:r.title,className:"aspect-[2/3] w-[180px] md:w-full rounded-2xl object-cover shadow-[var(--shadow-card)] mx-auto md:mx-0"}),e.jsxs("div",{className:"text-center md:text-left",children:[e.jsxs("span",{className:"inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs backdrop-blur",children:[e.jsx(h,{className:"h-3.5 w-3.5 text-primary"})," Now playing"]}),e.jsx("h1",{className:"mt-4 text-3xl font-semibold md:text-5xl",children:r.title}),e.jsxs("p",{className:"mt-2 text-sm text-muted-foreground",children:[r.genre," · ",r.duration," · ",r.rating]}),e.jsx("p",{className:"mt-4 max-w-xl text-sm text-muted-foreground mx-auto md:mx-0",children:r.synopsis}),e.jsxs("div",{className:"mt-6 flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm",children:[e.jsxs("span",{className:"inline-flex items-center gap-1 text-muted-foreground",children:[e.jsx(b,{className:"h-4 w-4"})," ",r.cinema,", ",r.city]}),e.jsxs("span",{className:"inline-flex items-center gap-1 text-muted-foreground",children:[e.jsx(g,{className:"h-4 w-4"})," Today"]})]}),e.jsx("div",{className:"mt-5 flex overflow-x-auto hide-scrollbar gap-2 pb-2 justify-center md:justify-start",children:r.showtimes.map(s=>e.jsx("button",{className:"rounded-2xl border border-border bg-background px-5 py-3 text-sm font-medium hover:border-primary hover:bg-accent transition shrink-0",children:s},s))}),e.jsxs("div",{className:"mt-6 flex flex-wrap justify-center md:justify-start gap-2",children:[e.jsx(d,{asChild:!0,className:"rounded-full shadow-[var(--shadow-glow)] w-full md:w-auto",style:{background:"var(--gradient-primary)"},children:e.jsxs(n,{to:"/book/$eventId",params:{eventId:r.id},children:[e.jsx(f,{className:"mr-2 h-4 w-4"})," Reserve seat — ",r.currency||"$",r.price]})}),e.jsx(d,{variant:"outline",className:"rounded-full w-full md:w-auto mt-2 md:mt-0",children:"Watch trailer"})]})]})]})]}),e.jsxs("section",{className:"mx-auto max-w-7xl px-4 md:px-6 py-8 md:py-12",children:[e.jsx("h2",{className:"text-lg md:text-xl font-semibold",children:"All movies showing this week"}),e.jsx("div",{className:"mt-4 md:mt-6 grid grid-cols-2 gap-4 md:gap-5 md:grid-cols-4",children:t.map(s=>e.jsxs("button",{onClick:()=>l(s.id),className:`text-left ${a===s.id?"opacity-100":"opacity-90 hover:opacity-100"}`,children:[e.jsxs("div",{className:`relative aspect-[2/3] overflow-hidden rounded-2xl border ${a===s.id?"border-primary ring-2 ring-primary/30":"border-transparent"}`,children:[e.jsx("img",{src:s.cover,alt:s.title,className:"h-full w-full object-cover",loading:"lazy"}),e.jsx("span",{className:"absolute top-3 left-3 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-medium backdrop-blur",children:s.rating})]}),e.jsx("p",{className:"mt-3 truncate font-semibold",children:s.title}),e.jsx("p",{className:"text-xs text-muted-foreground",children:s.cinema})]},s.id))})]}),e.jsxs("section",{className:"mx-auto max-w-7xl px-4 md:px-6 pb-20",children:[e.jsxs("div",{className:"flex flex-col md:flex-row items-start md:items-end justify-between gap-4",children:[e.jsxs("div",{children:[e.jsx("h2",{className:"text-lg md:text-xl font-semibold",children:"Cinemas on Agatike"}),e.jsx("p",{className:"text-sm text-muted-foreground",children:"Theater partners selling seats through our platform."})]}),e.jsx(d,{variant:"outline",className:"rounded-full w-full md:w-auto",children:"List your cinema"})]}),e.jsx("div",{className:"mt-4 md:mt-6 grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-4",children:c.map(s=>e.jsxs("div",{className:"overflow-hidden rounded-2xl border border-border/60 bg-card",children:[e.jsx("img",{src:s.image,alt:s.name,className:"aspect-video w-full object-cover",loading:"lazy"}),e.jsxs("div",{className:"p-4",children:[e.jsx("p",{className:"font-semibold",children:s.name}),e.jsxs("p",{className:"text-xs text-muted-foreground",children:[s.city," · ",s.screens," screens"]})]})]},s.id))})]}),e.jsx("div",{className:"hidden md:block",children:e.jsx(p,{})})]})}export{T as component};
+import { w as i, t, C as m, q as e, L as n, h as c } from "./index-BbCjida8.js";
+import { N as x } from "./Navbar-8zxmLK7V.js";
+import { F as p } from "./Footer-CxcHC3QW.js";
+import { B as d } from "./button-BtHMdeJ3.js";
+import { A as u } from "./arrow-left-CHuZXlQs.js";
+import { F as h } from "./film-BcUt-rrO.js";
+import { M as b } from "./map-pin-C2ftX2X_.js";
+import { C as g } from "./clock-BqqZJLGx.js";
+import { T as f } from "./ticket-BfFChqFx.js";
+import "./input-Bn2qJlr0.js";
+import "./plus-DEJHAl15.js";
+function T() {
+  const [a, l] = i.useState(t[0].id),
+    r = t.find((s) => s.id === a),
+    o = m();
+  return e.jsxs("div", {
+    className:
+      "min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none",
+    children: [
+      e.jsx("div", { className: "hidden md:block", children: e.jsx(x, {}) }),
+      e.jsxs("div", {
+        className:
+          "md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center gap-3",
+        children: [
+          e.jsx("button", {
+            onClick: () => o.history.back(),
+            className:
+              "p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground",
+            children: e.jsx(u, { className: "h-6 w-6" }),
+          }),
+          e.jsx("h1", {
+            className: "font-bold text-lg tracking-tight",
+            children: "Movies & Cinemas",
+          }),
+        ],
+      }),
+      e.jsxs("section", {
+        className: "relative overflow-hidden border-b border-border/60",
+        children: [
+          e.jsx("img", {
+            src: r.cover,
+            alt: "",
+            className: "absolute inset-0 h-full w-full object-cover opacity-30 blur-sm",
+          }),
+          e.jsx("div", {
+            className:
+              "absolute inset-0 bg-gradient-to-b from-background/80 via-background/95 to-background",
+          }),
+          e.jsxs("div", {
+            className:
+              "relative mx-auto grid max-w-7xl gap-6 px-4 md:px-6 py-6 md:gap-8 md:py-16 md:grid-cols-[260px_1fr]",
+            children: [
+              e.jsx("img", {
+                src: r.cover,
+                alt: r.title,
+                className:
+                  "aspect-[2/3] w-[180px] md:w-full rounded-2xl object-cover shadow-[var(--shadow-card)] mx-auto md:mx-0",
+              }),
+              e.jsxs("div", {
+                className: "text-center md:text-left",
+                children: [
+                  e.jsxs("span", {
+                    className:
+                      "inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs backdrop-blur",
+                    children: [e.jsx(h, { className: "h-3.5 w-3.5 text-primary" }), " Now playing"],
+                  }),
+                  e.jsx("h1", {
+                    className: "mt-4 text-3xl font-semibold md:text-5xl",
+                    children: r.title,
+                  }),
+                  e.jsxs("p", {
+                    className: "mt-2 text-sm text-muted-foreground",
+                    children: [r.genre, " · ", r.duration, " · ", r.rating],
+                  }),
+                  e.jsx("p", {
+                    className: "mt-4 max-w-xl text-sm text-muted-foreground mx-auto md:mx-0",
+                    children: r.synopsis,
+                  }),
+                  e.jsxs("div", {
+                    className:
+                      "mt-6 flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm",
+                    children: [
+                      e.jsxs("span", {
+                        className: "inline-flex items-center gap-1 text-muted-foreground",
+                        children: [e.jsx(b, { className: "h-4 w-4" }), " ", r.cinema, ", ", r.city],
+                      }),
+                      e.jsxs("span", {
+                        className: "inline-flex items-center gap-1 text-muted-foreground",
+                        children: [e.jsx(g, { className: "h-4 w-4" }), " Today"],
+                      }),
+                    ],
+                  }),
+                  e.jsx("div", {
+                    className:
+                      "mt-5 flex overflow-x-auto hide-scrollbar gap-2 pb-2 justify-center md:justify-start",
+                    children: r.showtimes.map((s) =>
+                      e.jsx(
+                        "button",
+                        {
+                          className:
+                            "rounded-2xl border border-border bg-background px-5 py-3 text-sm font-medium hover:border-primary hover:bg-accent transition shrink-0",
+                          children: s,
+                        },
+                        s,
+                      ),
+                    ),
+                  }),
+                  e.jsxs("div", {
+                    className: "mt-6 flex flex-wrap justify-center md:justify-start gap-2",
+                    children: [
+                      e.jsx(d, {
+                        asChild: !0,
+                        className: "rounded-full shadow-[var(--shadow-glow)] w-full md:w-auto",
+                        style: { background: "var(--gradient-primary)" },
+                        children: e.jsxs(n, {
+                          to: "/book/$eventId",
+                          params: { eventId: r.id },
+                          children: [
+                            e.jsx(f, { className: "mr-2 h-4 w-4" }),
+                            " Reserve seat — ",
+                            r.currency || "$",
+                            r.price,
+                          ],
+                        }),
+                      }),
+                      e.jsx(d, {
+                        variant: "outline",
+                        className: "rounded-full w-full md:w-auto mt-2 md:mt-0",
+                        children: "Watch trailer",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+      e.jsxs("section", {
+        className: "mx-auto max-w-7xl px-4 md:px-6 py-8 md:py-12",
+        children: [
+          e.jsx("h2", {
+            className: "text-lg md:text-xl font-semibold",
+            children: "All movies showing this week",
+          }),
+          e.jsx("div", {
+            className: "mt-4 md:mt-6 grid grid-cols-2 gap-4 md:gap-5 md:grid-cols-4",
+            children: t.map((s) =>
+              e.jsxs(
+                "button",
+                {
+                  onClick: () => l(s.id),
+                  className: `text-left ${a === s.id ? "opacity-100" : "opacity-90 hover:opacity-100"}`,
+                  children: [
+                    e.jsxs("div", {
+                      className: `relative aspect-[2/3] overflow-hidden rounded-2xl border ${a === s.id ? "border-primary ring-2 ring-primary/30" : "border-transparent"}`,
+                      children: [
+                        e.jsx("img", {
+                          src: s.cover,
+                          alt: s.title,
+                          className: "h-full w-full object-cover",
+                          loading: "lazy",
+                        }),
+                        e.jsx("span", {
+                          className:
+                            "absolute top-3 left-3 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-medium backdrop-blur",
+                          children: s.rating,
+                        }),
+                      ],
+                    }),
+                    e.jsx("p", { className: "mt-3 truncate font-semibold", children: s.title }),
+                    e.jsx("p", { className: "text-xs text-muted-foreground", children: s.cinema }),
+                  ],
+                },
+                s.id,
+              ),
+            ),
+          }),
+        ],
+      }),
+      e.jsxs("section", {
+        className: "mx-auto max-w-7xl px-4 md:px-6 pb-20",
+        children: [
+          e.jsxs("div", {
+            className: "flex flex-col md:flex-row items-start md:items-end justify-between gap-4",
+            children: [
+              e.jsxs("div", {
+                children: [
+                  e.jsx("h2", {
+                    className: "text-lg md:text-xl font-semibold",
+                    children: "Cinemas on Agatike",
+                  }),
+                  e.jsx("p", {
+                    className: "text-sm text-muted-foreground",
+                    children: "Theater partners selling seats through our platform.",
+                  }),
+                ],
+              }),
+              e.jsx(d, {
+                variant: "outline",
+                className: "rounded-full w-full md:w-auto",
+                children: "List your cinema",
+              }),
+            ],
+          }),
+          e.jsx("div", {
+            className: "mt-4 md:mt-6 grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-4",
+            children: c.map((s) =>
+              e.jsxs(
+                "div",
+                {
+                  className: "overflow-hidden rounded-2xl border border-border/60 bg-card",
+                  children: [
+                    e.jsx("img", {
+                      src: s.image,
+                      alt: s.name,
+                      className: "aspect-video w-full object-cover",
+                      loading: "lazy",
+                    }),
+                    e.jsxs("div", {
+                      className: "p-4",
+                      children: [
+                        e.jsx("p", { className: "font-semibold", children: s.name }),
+                        e.jsxs("p", {
+                          className: "text-xs text-muted-foreground",
+                          children: [s.city, " · ", s.screens, " screens"],
+                        }),
+                      ],
+                    }),
+                  ],
+                },
+                s.id,
+              ),
+            ),
+          }),
+        ],
+      }),
+      e.jsx("div", { className: "hidden md:block", children: e.jsx(p, {}) }),
+    ],
+  });
+}
+export { T as component };

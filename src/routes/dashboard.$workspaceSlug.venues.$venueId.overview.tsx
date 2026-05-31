@@ -34,17 +34,29 @@ function VenueOverviewPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
-  const venue = rentableVenues.find(v => v.id === venueId);
-  const bookings = venueBookings.filter(b => b.venueId === venueId);
-  
-  const myEvents = bookings.map(b => {
+  const venue = rentableVenues.find((v) => v.id === venueId);
+  const bookings = venueBookings.filter((b) => b.venueId === venueId);
+
+  const myEvents = bookings.map((b) => {
     const [startY, startM, startD] = b.date.split("-");
     const [startHr, startMin] = b.timeStart.split(":");
     const [endHr, endMin] = b.timeEnd.split(":");
     return {
       title: b.customerName,
-      start: new Date(Number(startY), Number(startM) - 1, Number(startD), Number(startHr), Number(startMin)),
-      end: new Date(Number(startY), Number(startM) - 1, Number(startD), Number(endHr), Number(endMin)),
+      start: new Date(
+        Number(startY),
+        Number(startM) - 1,
+        Number(startD),
+        Number(startHr),
+        Number(startMin),
+      ),
+      end: new Date(
+        Number(startY),
+        Number(startM) - 1,
+        Number(startD),
+        Number(endHr),
+        Number(endMin),
+      ),
       allDay: b.isAllDay,
       data: b,
     };
@@ -59,7 +71,9 @@ function VenueOverviewPage() {
           <span className="px-1.5 py-0.5 rounded-[4px] bg-white/20 text-[9px] uppercase tracking-wider font-bold">
             {event.data.status}
           </span>
-          <span className={`px-1.5 py-0.5 rounded-[4px] text-[9px] uppercase tracking-wider font-bold ${isPaid ? "bg-green-400/20 text-green-100" : "bg-red-400/20 text-red-100"}`}>
+          <span
+            className={`px-1.5 py-0.5 rounded-[4px] text-[9px] uppercase tracking-wider font-bold ${isPaid ? "bg-green-400/20 text-green-100" : "bg-red-400/20 text-red-100"}`}
+          >
             {event.data.paymentStatus}
           </span>
         </div>
@@ -74,33 +88,50 @@ function VenueOverviewPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-6 rounded-3xl border border-border/60 shadow-sm">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Overview</h2>
-          <p className="text-muted-foreground mt-1 text-sm">Manage availability and upcoming reservations.</p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Manage availability and upcoming reservations.
+          </p>
         </div>
         <Sheet>
           <SheetTrigger asChild>
-            <Button className="rounded-full gap-2 shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+            <Button
+              className="rounded-full gap-2 shadow-[var(--shadow-glow)]"
+              style={{ background: "var(--gradient-primary)" }}
+            >
               <Plus className="h-4 w-4" /> Add Manual Booking
             </Button>
           </SheetTrigger>
           <SheetContent className="overflow-y-auto sm:max-w-md bg-card border-border/60">
             <SheetHeader className="mb-6">
               <SheetTitle>Manual Booking</SheetTitle>
-              <p className="text-sm text-muted-foreground">Block out dates or manually add a customer's reservation.</p>
+              <p className="text-sm text-muted-foreground">
+                Block out dates or manually add a customer's reservation.
+              </p>
             </SheetHeader>
             <div className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label>Customer / Organization Name</Label>
-                  <Input placeholder="e.g. John Doe or Tech Summit" className="h-10 rounded-xl bg-secondary/50" />
+                  <Input
+                    placeholder="e.g. John Doe or Tech Summit"
+                    className="h-10 rounded-xl bg-secondary/50"
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label>Email</Label>
-                    <Input type="email" placeholder="customer@example.com" className="h-10 rounded-xl bg-secondary/50" />
+                    <Input
+                      type="email"
+                      placeholder="customer@example.com"
+                      className="h-10 rounded-xl bg-secondary/50"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Phone</Label>
-                    <Input placeholder="+1 234 567 8900" className="h-10 rounded-xl bg-secondary/50" />
+                    <Input
+                      placeholder="+1 234 567 8900"
+                      className="h-10 rounded-xl bg-secondary/50"
+                    />
                   </div>
                 </div>
               </div>
@@ -126,8 +157,14 @@ function VenueOverviewPage() {
                 <div className="space-y-1.5">
                   <Label>Amount</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{venue.currency}</span>
-                    <Input type="number" placeholder="0.00" className="pl-8 h-10 rounded-xl bg-secondary/50" />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      {venue.currency}
+                    </span>
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      className="pl-8 h-10 rounded-xl bg-secondary/50"
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -148,9 +185,14 @@ function VenueOverviewPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-8 flex gap-3">
-              <Button className="flex-1 rounded-xl" style={{ background: "var(--gradient-primary)" }}>Confirm Booking</Button>
+              <Button
+                className="flex-1 rounded-xl"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                Confirm Booking
+              </Button>
             </div>
           </SheetContent>
         </Sheet>
@@ -262,7 +304,7 @@ function VenueOverviewPage() {
               views={["month", "week", "day", "agenda"]}
               style={{ height: "100%" }}
               components={{
-                event: CustomEvent
+                event: CustomEvent,
               }}
             />
           </div>
@@ -283,7 +325,10 @@ function VenueOverviewPage() {
               </div>
               <div className="flex justify-between items-center p-3 rounded-2xl bg-secondary/50">
                 <span className="text-sm text-muted-foreground">Est. Revenue</span>
-                <span className="font-bold text-green-500">{venue.currency}{(bookings.length * venue.pricePerDay).toLocaleString()}</span>
+                <span className="font-bold text-green-500">
+                  {venue.currency}
+                  {(bookings.length * venue.pricePerDay).toLocaleString()}
+                </span>
               </div>
             </div>
           </div>
@@ -292,18 +337,24 @@ function VenueOverviewPage() {
             <h3 className="font-semibold mb-4">Upcoming This Week</h3>
             {bookings.length > 0 ? (
               <div className="space-y-3">
-                {bookings.slice(0, 3).map(b => (
+                {bookings.slice(0, 3).map((b) => (
                   <div key={b.id} className="p-3 rounded-2xl border border-border/60">
                     <p className="font-medium text-sm truncate">{b.customerName}</p>
                     <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {b.date}</span>
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {b.timeStart}</span>
+                      <span className="flex items-center gap-1">
+                        <CalendarDays className="h-3 w-3" /> {b.date}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> {b.timeStart}
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">No upcoming bookings.</p>
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No upcoming bookings.
+              </p>
             )}
           </div>
         </div>
@@ -314,7 +365,7 @@ function VenueOverviewPage() {
           <DialogHeader>
             <DialogTitle>Booking Details</DialogTitle>
           </DialogHeader>
-          
+
           {selectedEvent && (
             <div className="space-y-6 mt-4">
               <div className="space-y-4 bg-secondary/20 p-4 rounded-2xl border border-border/60">
@@ -324,10 +375,12 @@ function VenueOverviewPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold">{selectedEvent.data.customerName}</h4>
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest mt-0.5">Customer</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest mt-0.5">
+                      Customer
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-2 pt-2 border-t border-border/30">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Mail className="h-4 w-4" /> {selectedEvent.data.customerEmail}
@@ -340,37 +393,57 @@ function VenueOverviewPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Date</span>
-                  <p className="font-medium text-sm flex items-center gap-1.5"><CalendarDays className="h-4 w-4" /> {selectedEvent.data.date}</p>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Date
+                  </span>
+                  <p className="font-medium text-sm flex items-center gap-1.5">
+                    <CalendarDays className="h-4 w-4" /> {selectedEvent.data.date}
+                  </p>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Time</span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Time
+                  </span>
                   <p className="font-medium text-sm flex items-center gap-1.5">
-                    <Clock className="h-4 w-4" /> 
-                    {selectedEvent.data.isAllDay ? "All Day" : `${selectedEvent.data.timeStart} - ${selectedEvent.data.timeEnd}`}
+                    <Clock className="h-4 w-4" />
+                    {selectedEvent.data.isAllDay
+                      ? "All Day"
+                      : `${selectedEvent.data.timeStart} - ${selectedEvent.data.timeEnd}`}
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Booking Status</span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Booking Status
+                  </span>
                   <div>
-                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${
-                      selectedEvent.data.status === "Confirmed" ? "bg-green-500/10 text-green-500" :
-                      selectedEvent.data.status === "Pending" ? "bg-orange-500/10 text-orange-500" :
-                      "bg-red-500/10 text-red-500"
-                    }`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${
+                        selectedEvent.data.status === "Confirmed"
+                          ? "bg-green-500/10 text-green-500"
+                          : selectedEvent.data.status === "Pending"
+                            ? "bg-orange-500/10 text-orange-500"
+                            : "bg-red-500/10 text-red-500"
+                      }`}
+                    >
                       {selectedEvent.data.status}
                     </span>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Payment Status</span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Payment Status
+                  </span>
                   <div>
-                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${
-                      selectedEvent.data.paymentStatus === "Paid" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                    }`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${
+                        selectedEvent.data.paymentStatus === "Paid"
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
                       {selectedEvent.data.paymentStatus}
                     </span>
                   </div>
@@ -378,7 +451,10 @@ function VenueOverviewPage() {
               </div>
 
               <div className="pt-4 border-t border-border/60">
-                <Link to="/dashboard/$workspaceSlug/venues/$venueId/bookings" params={{ workspaceSlug, venueId: venue.id || "" }}>
+                <Link
+                  to="/dashboard/$workspaceSlug/venues/$venueId/bookings"
+                  params={{ workspaceSlug, venueId: venue.id || "" }}
+                >
                   <Button className="w-full rounded-xl gap-2" variant="outline">
                     View in Bookings List <ExternalLink className="h-4 w-4" />
                   </Button>

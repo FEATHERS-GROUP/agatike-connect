@@ -2,10 +2,10 @@ import { getServerConfig } from "../lib/config.server";
 
 export async function hasuraRequest<T = any>(
   query: string,
-  variables: Record<string, any> = {}
+  variables: Record<string, any> = {},
 ): Promise<T> {
   const config = getServerConfig();
-  
+
   if (!config.hasuraAdminApi || !config.hasuraAdminSecret) {
     throw new Error("Hasura environment variables are not set");
   }

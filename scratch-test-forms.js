@@ -10,7 +10,7 @@ async function check() {
       }
     `);
     console.log("Success:", res);
-  } catch(e) {
+  } catch (e) {
     console.error("Error:", e.message);
   }
 }

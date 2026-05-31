@@ -16,9 +16,7 @@ export function DesktopKPIs() {
           className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]"
         >
           <div className="flex items-center justify-between">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              {k.label}
-            </p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">{k.label}</p>
             <k.icon className="h-4 w-4 text-primary" />
           </div>
           <p className="mt-2 text-2xl font-semibold">{k.value}</p>

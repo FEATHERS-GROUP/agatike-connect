@@ -26,32 +26,34 @@ var FocusScope = reactExports.forwardRef((props, forwardedRef) => {
     },
     resume() {
       this.paused = false;
-    }
+    },
   }).current;
   reactExports.useEffect(() => {
     if (trapped) {
-      let handleFocusIn2 = function(event) {
-        if (focusScope.paused || !container) return;
-        const target = event.target;
-        if (container.contains(target)) {
-          lastFocusedElementRef.current = target;
-        } else {
-          focus(lastFocusedElementRef.current, { select: true });
-        }
-      }, handleFocusOut2 = function(event) {
-        if (focusScope.paused || !container) return;
-        const relatedTarget = event.relatedTarget;
-        if (relatedTarget === null) return;
-        if (!container.contains(relatedTarget)) {
-          focus(lastFocusedElementRef.current, { select: true });
-        }
-      }, handleMutations2 = function(mutations) {
-        const focusedElement = document.activeElement;
-        if (focusedElement !== document.body) return;
-        for (const mutation of mutations) {
-          if (mutation.removedNodes.length > 0) focus(container);
-        }
-      };
+      let handleFocusIn2 = function (event) {
+          if (focusScope.paused || !container) return;
+          const target = event.target;
+          if (container.contains(target)) {
+            lastFocusedElementRef.current = target;
+          } else {
+            focus(lastFocusedElementRef.current, { select: true });
+          }
+        },
+        handleFocusOut2 = function (event) {
+          if (focusScope.paused || !container) return;
+          const relatedTarget = event.relatedTarget;
+          if (relatedTarget === null) return;
+          if (!container.contains(relatedTarget)) {
+            focus(lastFocusedElementRef.current, { select: true });
+          }
+        },
+        handleMutations2 = function (mutations) {
+          const focusedElement = document.activeElement;
+          if (focusedElement !== document.body) return;
+          for (const mutation of mutations) {
+            if (mutation.removedNodes.length > 0) focus(container);
+          }
+        };
       document.addEventListener("focusin", handleFocusIn2);
       document.addEventListener("focusout", handleFocusOut2);
       const mutationObserver = new MutationObserver(handleMutations2);
@@ -117,9 +119,14 @@ var FocusScope = reactExports.forwardRef((props, forwardedRef) => {
         }
       }
     },
-    [loop, trapped, focusScope.paused]
+    [loop, trapped, focusScope.paused],
   );
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, { tabIndex: -1, ...scopeProps, ref: composedRefs, onKeyDown: handleKeyDown });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, {
+    tabIndex: -1,
+    ...scopeProps,
+    ref: composedRefs,
+    onKeyDown: handleKeyDown,
+  });
 });
 FocusScope.displayName = FOCUS_SCOPE_NAME;
 function focusFirst(candidates, { select = false } = {}) {
@@ -142,7 +149,7 @@ function getTabbableCandidates(container) {
       const isHiddenInput = node.tagName === "INPUT" && node.type === "hidden";
       if (node.disabled || node.hidden || isHiddenInput) return NodeFilter.FILTER_SKIP;
       return node.tabIndex >= 0 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
-    }
+    },
   });
   while (walker.nextNode()) nodes.push(walker.currentNode);
   return nodes;
@@ -187,7 +194,7 @@ function createFocusScopesStack() {
     remove(focusScope) {
       stack = arrayRemove(stack, focusScope);
       stack[0]?.resume();
-    }
+    },
   };
 }
 function arrayRemove(array, item) {
@@ -201,6 +208,4 @@ function arrayRemove(array, item) {
 function removeLinks(items) {
   return items.filter((item) => item.tagName !== "A");
 }
-export {
-  FocusScope as F
-};
+export { FocusScope as F };

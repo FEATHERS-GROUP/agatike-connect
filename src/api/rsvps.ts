@@ -19,12 +19,11 @@ const GET_WORKSPACE_FORMS = `
   }
 `;
 
-export const getWorkspaceForms = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { workspace_id } = ctx.data as unknown as { workspace_id: string };
-    const data = await hasuraRequest<{ custom_forms: any[] }>(GET_WORKSPACE_FORMS, { workspace_id });
-    return data.custom_forms || [];
-  });
+export const getWorkspaceForms = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+  const data = await hasuraRequest<{ custom_forms: any[] }>(GET_WORKSPACE_FORMS, { workspace_id });
+  return data.custom_forms || [];
+});
 
 const GET_FORM_DETAILS = `
   query GetFormDetails($id: uuid!) {
@@ -62,12 +61,11 @@ const GET_FORM_DETAILS = `
   }
 `;
 
-export const getFormDetails = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { id } = ctx.data as unknown as { id: string };
-    const data = await hasuraRequest<{ custom_forms_by_pk: any }>(GET_FORM_DETAILS, { id });
-    return data.custom_forms_by_pk || null;
-  });
+export const getFormDetails = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as unknown as { id: string };
+  const data = await hasuraRequest<{ custom_forms_by_pk: any }>(GET_FORM_DETAILS, { id });
+  return data.custom_forms_by_pk || null;
+});
 
 const CREATE_CUSTOM_FORM = `
   mutation CreateCustomForm($object: custom_forms_insert_input!) {
@@ -78,12 +76,13 @@ const CREATE_CUSTOM_FORM = `
   }
 `;
 
-export const createCustomForm = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const object = ctx.data as any;
-    const data = await hasuraRequest<{ insert_custom_forms_one: any }>(CREATE_CUSTOM_FORM, { object });
-    return data.insert_custom_forms_one;
+export const createCustomForm = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const object = ctx.data as any;
+  const data = await hasuraRequest<{ insert_custom_forms_one: any }>(CREATE_CUSTOM_FORM, {
+    object,
   });
+  return data.insert_custom_forms_one;
+});
 
 const UPDATE_CUSTOM_FORM = `
   mutation UpdateCustomForm($id: uuid!, $title: String, $description: String, $cover_image_url: String, $is_active: Boolean) {
@@ -93,12 +92,14 @@ const UPDATE_CUSTOM_FORM = `
   }
 `;
 
-export const updateCustomForm = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const variables = ctx.data as any;
-    const data = await hasuraRequest<{ update_custom_forms_by_pk: any }>(UPDATE_CUSTOM_FORM, variables);
-    return data.update_custom_forms_by_pk;
-  });
+export const updateCustomForm = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const variables = ctx.data as any;
+  const data = await hasuraRequest<{ update_custom_forms_by_pk: any }>(
+    UPDATE_CUSTOM_FORM,
+    variables,
+  );
+  return data.update_custom_forms_by_pk;
+});
 
 const CREATE_RSVP = `
   mutation CreateRSVP($object: rsvps_insert_input!) {
@@ -108,9 +109,8 @@ const CREATE_RSVP = `
   }
 `;
 
-export const createRSVP = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const object = ctx.data as any;
-    const data = await hasuraRequest<{ insert_rsvps_one: any }>(CREATE_RSVP, { object });
-    return data.insert_rsvps_one;
-  });
+export const createRSVP = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const object = ctx.data as any;
+  const data = await hasuraRequest<{ insert_rsvps_one: any }>(CREATE_RSVP, { object });
+  return data.insert_rsvps_one;
+});

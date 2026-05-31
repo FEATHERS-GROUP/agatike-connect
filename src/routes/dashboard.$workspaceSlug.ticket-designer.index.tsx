@@ -1,10 +1,28 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Plus, Ticket, Film, Mountain, Briefcase, Calendar, ChevronRight, MapPin } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Ticket,
+  Film,
+  Mountain,
+  Briefcase,
+  Calendar,
+  ChevronRight,
+  MapPin,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { ticketProjects } from "@/lib/mock-data";
 import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects } from "@/api/events";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -16,11 +34,41 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/ticket-designer/
 });
 
 const templates = [
-  { id: "concert", label: "Concert / Event", icon: Ticket, desc: "Classic stub for live shows and general admission events.", bg: "bg-orange-500/10 text-orange-500" },
-  { id: "movie", label: "Movie / Cinema", icon: Film, desc: "Tear-off stub design for screenings and premieres.", bg: "bg-red-500/10 text-red-500" },
-  { id: "experience", label: "Experience", icon: Mountain, desc: "Clean and visual for outdoor activities and tours.", bg: "bg-green-500/10 text-green-500" },
-  { id: "conference", label: "Conference", icon: Briefcase, desc: "Badge-style with attendee details for corporate events.", bg: "bg-blue-500/10 text-blue-500" },
-  { id: "entrance", label: "General Entrance", icon: MapPin, desc: "Clean museum/park pass with a distinct admission stub.", bg: "bg-violet-500/10 text-violet-500" },
+  {
+    id: "concert",
+    label: "Concert / Event",
+    icon: Ticket,
+    desc: "Classic stub for live shows and general admission events.",
+    bg: "bg-orange-500/10 text-orange-500",
+  },
+  {
+    id: "movie",
+    label: "Movie / Cinema",
+    icon: Film,
+    desc: "Tear-off stub design for screenings and premieres.",
+    bg: "bg-red-500/10 text-red-500",
+  },
+  {
+    id: "experience",
+    label: "Experience",
+    icon: Mountain,
+    desc: "Clean and visual for outdoor activities and tours.",
+    bg: "bg-green-500/10 text-green-500",
+  },
+  {
+    id: "conference",
+    label: "Conference",
+    icon: Briefcase,
+    desc: "Badge-style with attendee details for corporate events.",
+    bg: "bg-blue-500/10 text-blue-500",
+  },
+  {
+    id: "entrance",
+    label: "General Entrance",
+    icon: MapPin,
+    desc: "Clean museum/park pass with a distinct admission stub.",
+    bg: "bg-violet-500/10 text-violet-500",
+  },
 ];
 
 function TicketDesignerIndex() {
@@ -36,7 +84,8 @@ function TicketDesignerIndex() {
 
   const { data: dbProjects = [], isLoading: isLoadingProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", activeWorkspace?.id],
-    queryFn: () => getWorkspaceTicketProjects({ data: { workspaceId: activeWorkspace?.id! } } as any),
+    queryFn: () =>
+      getWorkspaceTicketProjects({ data: { workspaceId: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
 
@@ -51,9 +100,9 @@ function TicketDesignerIndex() {
       const newId = data?.insert_ticket_projects?.returning?.[0]?.id;
       if (newId) {
         toast.success("Project created successfully!");
-        navigate({ 
-          to: "/dashboard/$workspaceSlug/ticket-designer/$projectId", 
-          params: { workspaceSlug, projectId: newId }
+        navigate({
+          to: "/dashboard/$workspaceSlug/ticket-designer/$projectId",
+          params: { workspaceSlug, projectId: newId },
         });
         setIsModalOpen(false);
       } else {
@@ -63,7 +112,7 @@ function TicketDesignerIndex() {
     onError: (err) => {
       console.error(err);
       toast.error("Error creating project!");
-    }
+    },
   });
 
   const handleCreateNew = (e: React.FormEvent) => {
@@ -72,13 +121,13 @@ function TicketDesignerIndex() {
       toast.error("Please fill in all required fields.");
       return;
     }
-    
+
     createMutation.mutate({
       name: newProjectName,
       eventId: selectedEventId || "",
       template: selectedTemplate,
       workspaceId: activeWorkspace?.id || "",
-      updated_on: new Date().toISOString()
+      updated_on: new Date().toISOString(),
     });
   };
 
@@ -108,10 +157,12 @@ function TicketDesignerIndex() {
         <section>
           <div className="mb-6">
             <h2 className="text-2xl font-semibold tracking-tight">Create New Project</h2>
-            <p className="text-sm text-muted-foreground mt-1">Choose a starting template for your next event.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Choose a starting template for your next event.
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {templates.map(t => (
+            {templates.map((t) => (
               <button
                 key={t.id}
                 onClick={() => openSetupModal(t.id)}
@@ -138,7 +189,8 @@ function TicketDesignerIndex() {
             <DialogHeader>
               <DialogTitle>Setup Ticket Project</DialogTitle>
               <DialogDescription>
-                Link this design to an existing event. You can preview all ticket tiers inside the editor.
+                Link this design to an existing event. You can preview all ticket tiers inside the
+                editor.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateNew} className="space-y-4 py-4">
@@ -151,7 +203,7 @@ function TicketDesignerIndex() {
                   placeholder="e.g. Summer VIP Tickets"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="eventSelect">Select Event *</Label>
                 <select
@@ -187,10 +239,12 @@ function TicketDesignerIndex() {
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">Saved Projects</h2>
-              <p className="text-sm text-muted-foreground mt-1">Manage and edit your existing ticket designs.</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Manage and edit your existing ticket designs.
+              </p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoadingProjects ? (
               <div className="col-span-full flex flex-col items-center justify-center py-12">
@@ -224,15 +278,17 @@ function TicketDesignerIndex() {
                     }}
                     className="group block rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
                   >
-                    <div 
+                    <div
                       className="h-32 p-4 flex flex-col justify-between relative overflow-hidden"
-                      style={{ background: `linear-gradient(135deg, ${palette.from || "#f97316"}, ${palette.to || "#db2777"})` }}
+                      style={{
+                        background: `linear-gradient(135deg, ${palette.from || "#f97316"}, ${palette.to || "#db2777"})`,
+                      }}
                     >
                       {coverUrl && (
-                        <img 
-                          src={coverUrl} 
-                          alt="" 
-                          className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay pointer-events-none" 
+                        <img
+                          src={coverUrl}
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay pointer-events-none"
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none" />
@@ -247,10 +303,13 @@ function TicketDesignerIndex() {
                       </div>
                     </div>
                     <div className="p-5 bg-card">
-                      <h4 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">{proj.name}</h4>
+                      <h4 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">
+                        {proj.name}
+                      </h4>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5" /> Updated {new Date(updatedAt).toLocaleDateString()}
+                          <Calendar className="w-3.5 h-3.5" /> Updated{" "}
+                          {new Date(updatedAt).toLocaleDateString()}
                         </span>
                       </div>
                     </div>

@@ -1,32 +1,80 @@
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Plus, Sparkles, ShieldAlert, Star, Briefcase, ChevronRight, UserCheck, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Sparkles,
+  ShieldAlert,
+  Star,
+  Briefcase,
+  ChevronRight,
+  UserCheck,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { getWorkspaceEvents } from "@/api/events";
 import { getAllBadgeProjects, saveBadgeProject } from "@/api/badges";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/dashboard/$workspaceSlug/badge-designer/")(  {
+export const Route = createFileRoute("/dashboard/$workspaceSlug/badge-designer/")({
   component: BadgeDesignerIndex,
 });
 
-const TEMPLATE_DEFAULTS: Record<string, { theme: string; gradientClass: string; accentColor: string }> = {
-  glass:      { theme: "glass",   gradientClass: "from-slate-900 to-black",    accentColor: "#f59e0b" },
-  security:   { theme: "solid",   gradientClass: "from-red-800 to-rose-950",   accentColor: "#ef4444" },
-  vip:        { theme: "glass",   gradientClass: "from-amber-700 to-amber-950",accentColor: "#f59e0b" },
-  minimalist: { theme: "minimal", gradientClass: "from-slate-900 to-black",    accentColor: "#6366f1" },
+const TEMPLATE_DEFAULTS: Record<
+  string,
+  { theme: string; gradientClass: string; accentColor: string }
+> = {
+  glass: { theme: "glass", gradientClass: "from-slate-900 to-black", accentColor: "#f59e0b" },
+  security: { theme: "solid", gradientClass: "from-red-800 to-rose-950", accentColor: "#ef4444" },
+  vip: { theme: "glass", gradientClass: "from-amber-700 to-amber-950", accentColor: "#f59e0b" },
+  minimalist: {
+    theme: "minimal",
+    gradientClass: "from-slate-900 to-black",
+    accentColor: "#6366f1",
+  },
 };
 
 const templates = [
-  { id: "glass",      label: "Glassmorphism",  icon: Sparkles,    desc: "Premium translucent badges for high-end events.",     bg: "bg-slate-500/10 text-slate-500" },
-  { id: "security",   label: "Security / Staff",icon: ShieldAlert, desc: "High-contrast, highly legible matte design.",        bg: "bg-red-500/10 text-red-500" },
-  { id: "vip",        label: "VIP Access",      icon: Star,        desc: "Gold/Amber accented for exclusive guests.",           bg: "bg-amber-500/10 text-amber-500" },
-  { id: "minimalist", label: "Minimalist",      icon: UserCheck,   desc: "Clean and simple with max white space.",              bg: "bg-blue-500/10 text-blue-500" },
+  {
+    id: "glass",
+    label: "Glassmorphism",
+    icon: Sparkles,
+    desc: "Premium translucent badges for high-end events.",
+    bg: "bg-slate-500/10 text-slate-500",
+  },
+  {
+    id: "security",
+    label: "Security / Staff",
+    icon: ShieldAlert,
+    desc: "High-contrast, highly legible matte design.",
+    bg: "bg-red-500/10 text-red-500",
+  },
+  {
+    id: "vip",
+    label: "VIP Access",
+    icon: Star,
+    desc: "Gold/Amber accented for exclusive guests.",
+    bg: "bg-amber-500/10 text-amber-500",
+  },
+  {
+    id: "minimalist",
+    label: "Minimalist",
+    icon: UserCheck,
+    desc: "Clean and simple with max white space.",
+    bg: "bg-blue-500/10 text-blue-500",
+  },
 ];
 
 function BadgeDesignerIndex() {
@@ -40,7 +88,11 @@ function BadgeDesignerIndex() {
     enabled: !!activeWorkspace?.id,
   });
 
-  const { data: dbProjects = [], isLoading: isLoadingProjects, refetch } = useQuery({
+  const {
+    data: dbProjects = [],
+    isLoading: isLoadingProjects,
+    refetch,
+  } = useQuery({
     queryKey: ["badge-projects"],
     queryFn: () => getAllBadgeProjects({ data: {} } as any),
   });
@@ -65,13 +117,18 @@ function BadgeDesignerIndex() {
           bg_image_url: "",
           event_id: selectedEventId,
           font_family: "font-sans",
-          front_design: { qrPlacement: "front", sectionPlacement: "front", sponsorsPlacement: "back", textSize: "text-3xl" },
+          front_design: {
+            qrPlacement: "front",
+            sectionPlacement: "front",
+            sponsorsPlacement: "back",
+            textSize: "text-3xl",
+          },
           gradient_class: defaults.gradientClass,
           logo_text: selectedEvent?.title || newProjectName,
           show_user_image: true,
           sponsors_json: [],
           theme: defaults.theme,
-        }
+        },
       } as any);
 
       return newId; // return the generated ID for navigation
@@ -88,7 +145,7 @@ function BadgeDesignerIndex() {
     onError: (err: any) => {
       console.error(err);
       toast.error("Failed to create badge project. Please try again.");
-    }
+    },
   });
 
   const handleCreateNew = (e: React.FormEvent) => {
@@ -126,10 +183,12 @@ function BadgeDesignerIndex() {
         <section>
           <div className="mb-6">
             <h2 className="text-2xl font-semibold tracking-tight">Create New Badge Design</h2>
-            <p className="text-sm text-muted-foreground mt-1">Select a starting template for your staff digital credentials.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Select a starting template for your staff digital credentials.
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {templates.map(t => (
+            {templates.map((t) => (
               <button
                 key={t.id}
                 onClick={() => openSetupModal(t.id)}
@@ -156,7 +215,8 @@ function BadgeDesignerIndex() {
             <DialogHeader>
               <DialogTitle>Setup Badge Project</DialogTitle>
               <DialogDescription>
-                Link this badge design to an existing event. The event name will be pre-filled on the badge.
+                Link this badge design to an existing event. The event name will be pre-filled on
+                the badge.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateNew} className="space-y-4 py-4">
@@ -169,7 +229,7 @@ function BadgeDesignerIndex() {
                   placeholder="e.g. VIP Security Badges"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="eventSelect">Select Event *</Label>
                 <select
@@ -193,7 +253,13 @@ function BadgeDesignerIndex() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</> : "Start Designing"}
+                  {createMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...
+                    </>
+                  ) : (
+                    "Start Designing"
+                  )}
                 </Button>
               </DialogFooter>
             </form>
@@ -205,10 +271,12 @@ function BadgeDesignerIndex() {
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">Saved Badge Designs</h2>
-              <p className="text-sm text-muted-foreground mt-1">Manage and edit your existing badge templates.</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Manage and edit your existing badge templates.
+              </p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoadingProjects ? (
               <div className="col-span-full flex flex-col items-center justify-center py-12">
@@ -236,10 +304,15 @@ function BadgeDesignerIndex() {
                     params={{ workspaceSlug, projectId: proj.id }}
                     className="group block rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
                   >
-                    <div className={`h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br ${gradient}`}>
+                    <div
+                      className={`h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br ${gradient}`}
+                    >
                       <div className="absolute inset-0 bg-white/5 backdrop-blur-md pointer-events-none" />
                       <div className="relative z-10 flex justify-between items-start">
-                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider" style={{ background: `${accent}33`, color: accent }}>
+                        <span
+                          className="px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider"
+                          style={{ background: `${accent}33`, color: accent }}
+                        >
                           {proj.theme || "glass"}
                         </span>
                       </div>

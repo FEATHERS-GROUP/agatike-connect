@@ -43,18 +43,29 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [activeWorkspaceState, setActiveWorkspaceState] = useState<Workspace | null>(null);
 
-  const { data: workspacesData, isLoading, isSuccess } = useQuery({
+  const {
+    data: workspacesData,
+    isLoading,
+    isSuccess,
+  } = useQuery({
     queryKey: ["workspaces"],
     queryFn: async () => {
       const data = await getUserWorkspaces();
       return data.map((w: any) => ({
         ...w,
-        slug: w.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+        slug: w.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)+/g, ""),
         icon: w.logo || "🏢",
-        modules: w.moduls ? (Array.isArray(w.moduls) ? w.moduls : Object.keys(w.moduls)) : ["dashboard", "settings"],
+        modules: w.moduls
+          ? Array.isArray(w.moduls)
+            ? w.moduls
+            : Object.keys(w.moduls)
+          : ["dashboard", "settings"],
       })) as Workspace[];
     },
-    retry: false, 
+    retry: false,
   });
 
   const workspaces = workspacesData || [];
@@ -100,13 +111,20 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         logo: workspaceData.icon || "", // mapping UI icon to DB logo
         moduls: workspaceData.modules || ["dashboard", "settings"],
       };
-      
+
       const newWorkspace = await createDatabaseWorkspace({ data: payload } as any);
       return {
         ...newWorkspace,
-        slug: newWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+        slug: newWorkspace.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)+/g, ""),
         icon: newWorkspace.logo || "🏢",
-        modules: newWorkspace.moduls ? (Array.isArray(newWorkspace.moduls) ? newWorkspace.moduls : Object.keys(newWorkspace.moduls)) : ["dashboard", "settings"],
+        modules: newWorkspace.moduls
+          ? Array.isArray(newWorkspace.moduls)
+            ? newWorkspace.moduls
+            : Object.keys(newWorkspace.moduls)
+          : ["dashboard", "settings"],
       } as Workspace;
     },
     onSuccess: (newWorkspace) => {
@@ -114,7 +132,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         return old ? [...old, newWorkspace] : [newWorkspace];
       });
       setActiveWorkspace(newWorkspace);
-    }
+    },
   });
 
   const createWorkspace = async (workspaceData: Partial<Workspace>) => {
@@ -122,14 +140,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <WorkspaceContext.Provider value={{ 
-      workspaces, 
-      activeWorkspace: activeWorkspaceState, 
-      setActiveWorkspace, 
-      createWorkspace, 
-      isLoaded: !isLoading && isSuccess,
-      isLoading 
-    }}>
+    <WorkspaceContext.Provider
+      value={{
+        workspaces,
+        activeWorkspace: activeWorkspaceState,
+        setActiveWorkspace,
+        createWorkspace,
+        isLoaded: !isLoading && isSuccess,
+        isLoading,
+      }}
+    >
       {children}
     </WorkspaceContext.Provider>
   );

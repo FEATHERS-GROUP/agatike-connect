@@ -3,7 +3,7 @@ var hasRequiredRgbcolor;
 function requireRgbcolor() {
   if (hasRequiredRgbcolor) return rgbcolor;
   hasRequiredRgbcolor = 1;
-  rgbcolor = function(color_string) {
+  rgbcolor = function (color_string) {
     this.ok = false;
     this.alpha = 1;
     if (color_string.charAt(0) == "#") {
@@ -155,55 +155,42 @@ function requireRgbcolor() {
       white: "ffffff",
       whitesmoke: "f5f5f5",
       yellow: "ffff00",
-      yellowgreen: "9acd32"
+      yellowgreen: "9acd32",
     };
     color_string = simple_colors[color_string] || color_string;
     var color_defs = [
       {
         re: /^rgba\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3}),\s*((?:\d?\.)?\d)\)$/,
         example: ["rgba(123, 234, 45, 0.8)", "rgba(255,234,245,1.0)"],
-        process: function(bits2) {
-          return [
-            parseInt(bits2[1]),
-            parseInt(bits2[2]),
-            parseInt(bits2[3]),
-            parseFloat(bits2[4])
-          ];
-        }
+        process: function (bits2) {
+          return [parseInt(bits2[1]), parseInt(bits2[2]), parseInt(bits2[3]), parseFloat(bits2[4])];
+        },
       },
       {
         re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
         example: ["rgb(123, 234, 45)", "rgb(255,234,245)"],
-        process: function(bits2) {
-          return [
-            parseInt(bits2[1]),
-            parseInt(bits2[2]),
-            parseInt(bits2[3])
-          ];
-        }
+        process: function (bits2) {
+          return [parseInt(bits2[1]), parseInt(bits2[2]), parseInt(bits2[3])];
+        },
       },
       {
         re: /^([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/,
         example: ["#00ff00", "336699"],
-        process: function(bits2) {
-          return [
-            parseInt(bits2[1], 16),
-            parseInt(bits2[2], 16),
-            parseInt(bits2[3], 16)
-          ];
-        }
+        process: function (bits2) {
+          return [parseInt(bits2[1], 16), parseInt(bits2[2], 16), parseInt(bits2[3], 16)];
+        },
       },
       {
         re: /^([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/,
         example: ["#fb0", "f0f"],
-        process: function(bits2) {
+        process: function (bits2) {
           return [
             parseInt(bits2[1] + bits2[1], 16),
             parseInt(bits2[2] + bits2[2], 16),
-            parseInt(bits2[3] + bits2[3], 16)
+            parseInt(bits2[3] + bits2[3], 16),
           ];
-        }
-      }
+        },
+      },
     ];
     for (var i = 0; i < color_defs.length; i++) {
       var re = color_defs[i].re;
@@ -224,13 +211,13 @@ function requireRgbcolor() {
     this.g = this.g < 0 || isNaN(this.g) ? 0 : this.g > 255 ? 255 : this.g;
     this.b = this.b < 0 || isNaN(this.b) ? 0 : this.b > 255 ? 255 : this.b;
     this.alpha = this.alpha < 0 ? 0 : this.alpha > 1 || isNaN(this.alpha) ? 1 : this.alpha;
-    this.toRGB = function() {
+    this.toRGB = function () {
       return "rgb(" + this.r + ", " + this.g + ", " + this.b + ")";
     };
-    this.toRGBA = function() {
+    this.toRGBA = function () {
       return "rgba(" + this.r + ", " + this.g + ", " + this.b + ", " + this.alpha + ")";
     };
-    this.toHex = function() {
+    this.toHex = function () {
       var r = this.r.toString(16);
       var g = this.g.toString(16);
       var b = this.b.toString(16);
@@ -239,7 +226,7 @@ function requireRgbcolor() {
       if (b.length == 1) b = "0" + b;
       return "#" + r + g + b;
     };
-    this.getHelpXML = function() {
+    this.getHelpXML = function () {
       var examples = new Array();
       for (var i2 = 0; i2 < color_defs.length; i2++) {
         var example = color_defs[i2].example;
@@ -257,22 +244,23 @@ function requireRgbcolor() {
           var list_item = document.createElement("li");
           var list_color = new RGBColor(examples[i2]);
           var example_div = document.createElement("div");
-          example_div.style.cssText = "margin: 3px; border: 1px solid black; background:" + list_color.toHex() + "; color:" + list_color.toHex();
+          example_div.style.cssText =
+            "margin: 3px; border: 1px solid black; background:" +
+            list_color.toHex() +
+            "; color:" +
+            list_color.toHex();
           example_div.appendChild(document.createTextNode("test"));
           var list_item_value = document.createTextNode(
-            " " + examples[i2] + " -> " + list_color.toRGB() + " -> " + list_color.toHex()
+            " " + examples[i2] + " -> " + list_color.toRGB() + " -> " + list_color.toHex(),
           );
           list_item.appendChild(example_div);
           list_item.appendChild(list_item_value);
           xml.appendChild(list_item);
-        } catch (e) {
-        }
+        } catch (e) {}
       }
       return xml;
     };
   };
   return rgbcolor;
 }
-export {
-  requireRgbcolor as r
-};
+export { requireRgbcolor as r };

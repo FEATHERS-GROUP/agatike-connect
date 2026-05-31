@@ -28,7 +28,11 @@ function DashboardLoginPage() {
   const queryClient = useQueryClient();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginValues>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
@@ -49,7 +53,7 @@ function DashboardLoginPage() {
     },
     onError: (error: any) => {
       toast.error(error?.message || "Invalid credentials. Please try again.");
-    }
+    },
   });
 
   const onSubmit = (values: LoginValues) => {
@@ -79,11 +83,11 @@ function DashboardLoginPage() {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   <Mail className="h-5 w-5" />
                 </span>
-                <Input 
-                  {...register("email")} 
-                  type="email" 
-                  className="pl-11 h-12 rounded-xl bg-secondary/50" 
-                  placeholder="hello@example.com" 
+                <Input
+                  {...register("email")}
+                  type="email"
+                  className="pl-11 h-12 rounded-xl bg-secondary/50"
+                  placeholder="hello@example.com"
                 />
               </div>
               {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
@@ -92,28 +96,34 @@ function DashboardLoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Password</Label>
-                <a href="#" className="text-sm font-medium text-primary hover:underline">Forgot password?</a>
+                <a href="#" className="text-sm font-medium text-primary hover:underline">
+                  Forgot password?
+                </a>
               </div>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   <Lock className="h-5 w-5" />
                 </span>
-                <Input 
-                  {...register("password")} 
-                  type="password" 
-                  className="pl-11 h-12 rounded-xl bg-secondary/50" 
-                  placeholder="••••••••" 
+                <Input
+                  {...register("password")}
+                  type="password"
+                  className="pl-11 h-12 rounded-xl bg-secondary/50"
+                  placeholder="••••••••"
                 />
               </div>
               {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full h-12 rounded-xl text-base font-bold" 
+            <Button
+              type="submit"
+              className="w-full h-12 rounded-xl text-base font-bold"
               disabled={mutation.isPending || isRedirecting}
             >
-              {(mutation.isPending || isRedirecting) ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sign In to Dashboard"}
+              {mutation.isPending || isRedirecting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                "Sign In to Dashboard"
+              )}
             </Button>
           </form>
 
@@ -127,10 +137,18 @@ function DashboardLoginPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" className="h-11 rounded-xl" onClick={() => toast.info("Coming soon!")}>
+            <Button
+              variant="outline"
+              className="h-11 rounded-xl"
+              onClick={() => toast.info("Coming soon!")}
+            >
               Google
             </Button>
-            <Button variant="outline" className="h-11 rounded-xl" onClick={() => toast.info("Coming soon!")}>
+            <Button
+              variant="outline"
+              className="h-11 rounded-xl"
+              onClick={() => toast.info("Coming soon!")}
+            >
               Apple
             </Button>
           </div>
@@ -138,7 +156,10 @@ function DashboardLoginPage() {
 
         <p className="text-center text-sm text-muted-foreground mt-8 animate-in fade-in duration-1000 delay-300">
           Don't have an organizer account?{" "}
-          <Link to="/dashboard/create-organizer" className="text-primary font-medium hover:underline">
+          <Link
+            to="/dashboard/create-organizer"
+            className="text-primary font-medium hover:underline"
+          >
             Create Profile
           </Link>
         </p>

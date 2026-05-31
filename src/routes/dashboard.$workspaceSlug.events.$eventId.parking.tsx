@@ -16,7 +16,9 @@ function ParkingView() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Parking Logistics</h1>
-        <p className="text-sm text-muted-foreground">Track customers who purchased parking add-ons.</p>
+        <p className="text-sm text-muted-foreground">
+          Track customers who purchased parking add-ons.
+        </p>
       </header>
 
       <div className="flex gap-4 items-center bg-card p-4 rounded-2xl border border-border/60 shadow-sm">
@@ -50,9 +52,13 @@ function ParkingView() {
                 </td>
                 <td className="px-6 py-4 font-semibold">{p.spot}</td>
                 <td className="px-6 py-4">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    p.status === 'Checked In' ? 'bg-green-500/10 text-green-500' : 'bg-primary/10 text-primary'
-                  }`}>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      p.status === "Checked In"
+                        ? "bg-green-500/10 text-green-500"
+                        : "bg-primary/10 text-primary"
+                    }`}
+                  >
                     {p.status}
                   </span>
                 </td>

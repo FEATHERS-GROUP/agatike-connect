@@ -13,4 +13,11 @@ export const FONTS = [
   { id: "font-serif", name: "Playfair (Elegant Serif)" },
 ];
 
-export type Sponsor = { id: string; text: string; logoUrl: string; scale?: number; x?: number; y?: number };
+export type Sponsor = {
+  id: string;
+  text: string;
+  logoUrl: string;
+  scale?: number;
+  x?: number;
+  y?: number;
+};

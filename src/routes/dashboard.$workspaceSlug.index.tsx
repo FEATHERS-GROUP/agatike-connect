@@ -24,7 +24,11 @@ function DashboardIndex() {
       <div className="rounded-2xl border border-border/60 bg-card p-6">
         <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
         <div className="flex gap-4">
-          <Link to="/dashboard/$workspaceSlug/scanner" params={{ workspaceSlug: workspaceSlug || "" }} className="text-primary hover:underline">
+          <Link
+            to="/dashboard/$workspaceSlug/scanner"
+            params={{ workspaceSlug: workspaceSlug || "" }}
+            className="text-primary hover:underline"
+          >
             Open the mobile scanner →
           </Link>
         </div>

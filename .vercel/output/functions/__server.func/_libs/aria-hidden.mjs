@@ -1,4 +1,4 @@
-var getDefaultParent = function(originalTarget) {
+var getDefaultParent = function (originalTarget) {
   if (typeof document === "undefined") {
     return null;
   }
@@ -9,26 +9,31 @@ var counterMap = /* @__PURE__ */ new WeakMap();
 var uncontrolledNodes = /* @__PURE__ */ new WeakMap();
 var markerMap = {};
 var lockCount = 0;
-var unwrapHost = function(node) {
+var unwrapHost = function (node) {
   return node && (node.host || unwrapHost(node.parentNode));
 };
-var correctTargets = function(parent, targets) {
-  return targets.map(function(target) {
-    if (parent.contains(target)) {
-      return target;
-    }
-    var correctedTarget = unwrapHost(target);
-    if (correctedTarget && parent.contains(correctedTarget)) {
-      return correctedTarget;
-    }
-    console.error("aria-hidden", target, "in not contained inside", parent, ". Doing nothing");
-    return null;
-  }).filter(function(x) {
-    return Boolean(x);
-  });
+var correctTargets = function (parent, targets) {
+  return targets
+    .map(function (target) {
+      if (parent.contains(target)) {
+        return target;
+      }
+      var correctedTarget = unwrapHost(target);
+      if (correctedTarget && parent.contains(correctedTarget)) {
+        return correctedTarget;
+      }
+      console.error("aria-hidden", target, "in not contained inside", parent, ". Doing nothing");
+      return null;
+    })
+    .filter(function (x) {
+      return Boolean(x);
+    });
 };
-var applyAttributeToOthers = function(originalTarget, parentNode, markerName, controlAttribute) {
-  var targets = correctTargets(parentNode, Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
+var applyAttributeToOthers = function (originalTarget, parentNode, markerName, controlAttribute) {
+  var targets = correctTargets(
+    parentNode,
+    Array.isArray(originalTarget) ? originalTarget : [originalTarget],
+  );
   if (!markerMap[markerName]) {
     markerMap[markerName] = /* @__PURE__ */ new WeakMap();
   }
@@ -36,7 +41,7 @@ var applyAttributeToOthers = function(originalTarget, parentNode, markerName, co
   var hiddenNodes = [];
   var elementsToKeep = /* @__PURE__ */ new Set();
   var elementsToStop = new Set(targets);
-  var keep = function(el) {
+  var keep = function (el) {
     if (!el || elementsToKeep.has(el)) {
       return;
     }
@@ -44,11 +49,11 @@ var applyAttributeToOthers = function(originalTarget, parentNode, markerName, co
     keep(el.parentNode);
   };
   targets.forEach(keep);
-  var deep = function(parent) {
+  var deep = function (parent) {
     if (!parent || elementsToStop.has(parent)) {
       return;
     }
-    Array.prototype.forEach.call(parent.children, function(node) {
+    Array.prototype.forEach.call(parent.children, function (node) {
       if (elementsToKeep.has(node)) {
         deep(node);
       } else {
@@ -78,8 +83,8 @@ var applyAttributeToOthers = function(originalTarget, parentNode, markerName, co
   deep(parentNode);
   elementsToKeep.clear();
   lockCount++;
-  return function() {
-    hiddenNodes.forEach(function(node) {
+  return function () {
+    hiddenNodes.forEach(function (node) {
       var counterValue = counterMap.get(node) - 1;
       var markerValue = markerCounter.get(node) - 1;
       counterMap.set(node, counterValue);
@@ -103,20 +108,18 @@ var applyAttributeToOthers = function(originalTarget, parentNode, markerName, co
     }
   };
 };
-var hideOthers = function(originalTarget, parentNode, markerName) {
+var hideOthers = function (originalTarget, parentNode, markerName) {
   if (markerName === void 0) {
     markerName = "data-aria-hidden";
   }
   var targets = Array.from(Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
   var activeParentNode = getDefaultParent(originalTarget);
   if (!activeParentNode) {
-    return function() {
+    return function () {
       return null;
     };
   }
   targets.push.apply(targets, Array.from(activeParentNode.querySelectorAll("[aria-live], script")));
   return applyAttributeToOthers(targets, activeParentNode, markerName, "aria-hidden");
 };
-export {
-  hideOthers as h
-};
+export { hideOthers as h };

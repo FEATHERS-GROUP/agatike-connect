@@ -22,24 +22,22 @@ export interface OrganizerInput {
   user_id?: string | null;
 }
 
-export const checkOrganizerHandle = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { handle } = ctx.data as unknown as { handle: string };
-    const query = `
+export const checkOrganizerHandle = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { handle } = ctx.data as unknown as { handle: string };
+  const query = `
       query CheckHandle($handle: String!) {
         organizers(where: { handle: { _eq: $handle } }) {
           id
         }
       }
     `;
-    const result = await hasuraRequest<{ organizers: { id: string }[] }>(query, { handle });
-    return result.organizers.length === 0;
-  });
+  const result = await hasuraRequest<{ organizers: { id: string }[] }>(query, { handle });
+  return result.organizers.length === 0;
+});
 
-export const createOrganizerAccount = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const data = ctx.data as unknown as OrganizerInput;
-    const mutation = `
+export const createOrganizerAccount = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const data = ctx.data as unknown as OrganizerInput;
+  const mutation = `
       mutation MyMutation(
         $bio: String = "", 
         $business: Boolean = false,
@@ -84,30 +82,32 @@ export const createOrganizerAccount = createServerFn({ method: "POST" })
       }
     `;
 
-    const payload = { ...data };
-    if (!payload.user_id) {
-      payload.user_id = null;
-    }
+  const payload = { ...data };
+  if (!payload.user_id) {
+    payload.user_id = null;
+  }
 
-    if (payload.password) {
-      const salt = await bcrypt.genSalt(10);
-      payload.password = await bcrypt.hash(payload.password, salt);
-    }
+  if (payload.password) {
+    const salt = await bcrypt.genSalt(10);
+    payload.password = await bcrypt.hash(payload.password, salt);
+  }
 
-    // Handle JSONB defaults
-    if (!payload.socials) payload.socials = {};
-    if (!payload.speciality) payload.speciality = {};
+  // Handle JSONB defaults
+  if (!payload.socials) payload.socials = {};
+  if (!payload.speciality) payload.speciality = {};
 
-    const result = await hasuraRequest<{ insert_organizers: { affected_rows: number } }>(mutation, payload);
-    return result.insert_organizers;
-  });
+  const result = await hasuraRequest<{ insert_organizers: { affected_rows: number } }>(
+    mutation,
+    payload,
+  );
+  return result.insert_organizers;
+});
 
-export const getOrganizerProfile = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const session = await getSession();
-    if (!session || !session.sub) throw new Error("unauthenticated");
+export const getOrganizerProfile = createServerFn({ method: "GET" }).handler(async () => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
 
-    const query = `
+  const query = `
       query GetOrganizerProfile($id: uuid!) {
         organizers_by_pk(id: $id) {
           id
@@ -124,29 +124,37 @@ export const getOrganizerProfile = createServerFn({ method: "GET" })
       }
     `;
 
-    const data = await hasuraRequest<{ organizers_by_pk: any }>(query, { id: session.sub });
-    return data.organizers_by_pk;
-  });
+  const data = await hasuraRequest<{ organizers_by_pk: any }>(query, { id: session.sub });
+  return data.organizers_by_pk;
+});
 
-export const updateOrganizerProfile = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const session = await getSession();
-    if (!session || !session.sub) throw new Error("unauthenticated");
+export const updateOrganizerProfile = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
 
-    const data = ctx.data as unknown as { name?: string; handle?: string; email?: string; phone?: string; bio?: string; image?: string; password?: string; socials?: any };
-    
-    const variables: any = {
-      id: session.sub,
-      name: data.name,
-      handle: data.handle,
-      email: data.email,
-      phone: data.phone,
-      bio: data.bio,
-      image: data.image,
-      socials: data.socials,
-    };
+  const data = ctx.data as unknown as {
+    name?: string;
+    handle?: string;
+    email?: string;
+    phone?: string;
+    bio?: string;
+    image?: string;
+    password?: string;
+    socials?: any;
+  };
 
-    let setFields = `
+  const variables: any = {
+    id: session.sub,
+    name: data.name,
+    handle: data.handle,
+    email: data.email,
+    phone: data.phone,
+    bio: data.bio,
+    image: data.image,
+    socials: data.socials,
+  };
+
+  let setFields = `
       name: $name,
       handle: $handle,
       email: $email,
@@ -157,7 +165,7 @@ export const updateOrganizerProfile = createServerFn({ method: "POST" })
       updated_on: "now()"
     `;
 
-    const mutation = `
+  const mutation = `
       mutation UpdateOrganizerProfile(
         $id: uuid!,
         $name: String,
@@ -179,43 +187,47 @@ export const updateOrganizerProfile = createServerFn({ method: "POST" })
       }
     `;
 
-    const result = await hasuraRequest<{ update_organizers_by_pk: { id: string } }>(mutation, variables);
-    
-    return result.update_organizers_by_pk;
-  });
+  const result = await hasuraRequest<{ update_organizers_by_pk: { id: string } }>(
+    mutation,
+    variables,
+  );
 
-export const changeOrganizerPassword = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const session = await getSession();
-    if (!session || !session.sub) throw new Error("unauthenticated");
+  return result.update_organizers_by_pk;
+});
 
-    const { currentPassword, newPassword } = ctx.data as any;
+export const changeOrganizerPassword = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
 
-    const query = `
+  const { currentPassword, newPassword } = ctx.data as any;
+
+  const query = `
       query GetPassword($id: uuid!) {
         organizers_by_pk(id: $id) {
           password
         }
       }
     `;
-    const data = await hasuraRequest<{ organizers_by_pk: { password: string } }>(query, { id: session.sub });
-    
-    if (!data.organizers_by_pk) throw new Error("Organizer not found");
+  const data = await hasuraRequest<{ organizers_by_pk: { password: string } }>(query, {
+    id: session.sub,
+  });
 
-    const valid = await bcrypt.compare(currentPassword, data.organizers_by_pk.password);
-    if (!valid) throw new Error("Incorrect current password");
+  if (!data.organizers_by_pk) throw new Error("Organizer not found");
 
-    const salt = await bcrypt.genSalt(10);
-    const newHash = await bcrypt.hash(newPassword, salt);
+  const valid = await bcrypt.compare(currentPassword, data.organizers_by_pk.password);
+  if (!valid) throw new Error("Incorrect current password");
 
-    const mutation = `
+  const salt = await bcrypt.genSalt(10);
+  const newHash = await bcrypt.hash(newPassword, salt);
+
+  const mutation = `
       mutation UpdatePassword($id: uuid!, $password: String!) {
         update_organizers_by_pk(pk_columns: { id: $id }, _set: { password: $password }) {
           id
         }
       }
     `;
-    await hasuraRequest(mutation, { id: session.sub, password: newHash });
+  await hasuraRequest(mutation, { id: session.sub, password: newHash });
 
-    return { success: true };
-  });
+  return { success: true };
+});

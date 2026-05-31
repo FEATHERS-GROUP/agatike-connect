@@ -14,7 +14,10 @@ function PlanningView() {
           <h1 className="text-2xl font-semibold tracking-tight">Budget & Planning</h1>
           <p className="text-sm text-muted-foreground">Draft your financial plan for this event.</p>
         </div>
-        <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+        <Button
+          className="rounded-full shadow-[var(--shadow-glow)]"
+          style={{ background: "var(--gradient-primary)" }}
+        >
           Add Expense
         </Button>
       </header>
@@ -29,14 +32,18 @@ function PlanningView() {
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Expenses Logged</p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              Expenses Logged
+            </p>
             <PieChart className="h-4 w-4 text-orange-500" />
           </div>
           <p className="text-2xl font-semibold">$8,450</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Projected Profit</p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              Projected Profit
+            </p>
             <TrendingUp className="h-4 w-4 text-green-500" />
           </div>
           <p className="text-2xl font-semibold text-green-500">+$6,550</p>

@@ -37,31 +37,76 @@ const fileToBase64 = (file: File): Promise<string> => {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
-};function getCurrencySymbol(currencyStr?: string) {
+};
+function getCurrencySymbol(currencyStr?: string) {
   if (!currencyStr) return "$";
   const c = currencyStr.toLowerCase().trim();
   switch (c) {
     // East Africa
-    case "rwf": case "rwandan francs": case "frw": return "RWF ";
-    case "kes": case "kenyan shillings": case "kenyan shilling": return "KES ";
-    case "ugx": case "ugandan shillings": case "ugandan shilling": return "UGX ";
-    case "tzs": case "tanzanian shillings": case "tanzanian shilling": return "TZS ";
-    case "bif": case "burundian francs": case "burundian franc": return "BIF ";
-    
+    case "rwf":
+    case "rwandan francs":
+    case "frw":
+      return "RWF ";
+    case "kes":
+    case "kenyan shillings":
+    case "kenyan shilling":
+      return "KES ";
+    case "ugx":
+    case "ugandan shillings":
+    case "ugandan shilling":
+      return "UGX ";
+    case "tzs":
+    case "tanzanian shillings":
+    case "tanzanian shilling":
+      return "TZS ";
+    case "bif":
+    case "burundian francs":
+    case "burundian franc":
+      return "BIF ";
+
     // West/South/Other Africa
-    case "ngn": case "naira": case "nigerian naira": return "₦";
-    case "zar": case "rand": case "south african rand": return "R ";
-    case "ghs": case "cedi": case "ghanaian cedi": return "GH₵";
-    case "xof": case "xaf": case "cfa": case "cfa franc": return "CFA ";
+    case "ngn":
+    case "naira":
+    case "nigerian naira":
+      return "₦";
+    case "zar":
+    case "rand":
+    case "south african rand":
+      return "R ";
+    case "ghs":
+    case "cedi":
+    case "ghanaian cedi":
+      return "GH₵";
+    case "xof":
+    case "xaf":
+    case "cfa":
+    case "cfa franc":
+      return "CFA ";
 
     // Global
-    case "euros": case "euro": case "eur": return "€";
-    case "pounds": case "pound": case "gbp": return "£";
-    case "inr": case "rupee": return "₹";
-    case "aed": case "dirham": return "AED ";
-    case "cad": return "CAD ";
-    case "aud": return "AUD ";
-    case "dollars": case "usd": case "dollar": default: return "$";
+    case "euros":
+    case "euro":
+    case "eur":
+      return "€";
+    case "pounds":
+    case "pound":
+    case "gbp":
+      return "£";
+    case "inr":
+    case "rupee":
+      return "₹";
+    case "aed":
+    case "dirham":
+      return "AED ";
+    case "cad":
+      return "CAD ";
+    case "aud":
+      return "AUD ";
+    case "dollars":
+    case "usd":
+    case "dollar":
+    default:
+      return "$";
   }
 }
 
@@ -82,7 +127,7 @@ type Merch = { id: string; name: string; price: number; image?: string };
 function AddressAutocomplete({
   value,
   onChange,
-  onSelectCoordinates
+  onSelectCoordinates,
 }: {
   value: string;
   onChange: (val: string) => void;
@@ -122,26 +167,33 @@ function AddressAutocomplete({
       />
       {isOpen && (predictions.length > 0 || isLoading) && (
         <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-xl border border-border bg-popover text-popover-foreground shadow-md outline-none">
-          {isLoading && predictions.length === 0 && <div className="p-4 text-sm text-muted-foreground text-center">Loading...</div>}
-          {!isLoading && predictions.map((p) => (
-            <div
-              key={p.place_id}
-              className="relative flex cursor-pointer select-none flex-col rounded-sm px-4 py-3 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
-              onClick={async () => {
-                onChange(p.description);
-                setIsOpen(false);
-                const coords = await getPlaceDetails({ data: p.place_id } as any);
-                if (coords && coords.lat && coords.lng) {
-                  onSelectCoordinates(coords.lat, coords.lng);
-                }
-              }}
-            >
-              <span className="font-medium text-foreground">{p.structured_formatting?.main_text || p.description}</span>
-              {p.structured_formatting?.secondary_text && (
-                <span className="text-xs text-muted-foreground">{p.structured_formatting.secondary_text}</span>
-              )}
-            </div>
-          ))}
+          {isLoading && predictions.length === 0 && (
+            <div className="p-4 text-sm text-muted-foreground text-center">Loading...</div>
+          )}
+          {!isLoading &&
+            predictions.map((p) => (
+              <div
+                key={p.place_id}
+                className="relative flex cursor-pointer select-none flex-col rounded-sm px-4 py-3 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                onClick={async () => {
+                  onChange(p.description);
+                  setIsOpen(false);
+                  const coords = await getPlaceDetails({ data: p.place_id } as any);
+                  if (coords && coords.lat && coords.lng) {
+                    onSelectCoordinates(coords.lat, coords.lng);
+                  }
+                }}
+              >
+                <span className="font-medium text-foreground">
+                  {p.structured_formatting?.main_text || p.description}
+                </span>
+                {p.structured_formatting?.secondary_text && (
+                  <span className="text-xs text-muted-foreground">
+                    {p.structured_formatting.secondary_text}
+                  </span>
+                )}
+              </div>
+            ))}
         </div>
       )}
     </div>
@@ -161,9 +213,9 @@ export function CreateEventDesktop() {
   const step = urlStep || 0;
   const { activeWorkspace } = useWorkspace();
   const currencySymbol = getCurrencySymbol(activeWorkspace?.wallet?.currency);
-  
+
   const dashboardUrl = workspaceSlug ? `/dashboard/${workspaceSlug}` : "/dashboard";
-  
+
   const setStep = (newStep: number) => {
     navigate({ search: { step: newStep } as any, replace: true });
   };
@@ -173,7 +225,16 @@ export function CreateEventDesktop() {
     category: categories[0],
     description: "",
     locations: [
-      { id: generateId(), venue: "", city: "", address: "", date: "", time: "", latitude: null as string | null, longitude: null as string | null }
+      {
+        id: generateId(),
+        venue: "",
+        city: "",
+        address: "",
+        date: "",
+        time: "",
+        latitude: null as string | null,
+        longitude: null as string | null,
+      },
     ],
     coverPreview: "",
     vipPerks: "Priority entry, VIP lounge, complimentary welcome drink",
@@ -186,7 +247,14 @@ export function CreateEventDesktop() {
   const [activeTourStopIdx, setActiveTourStopIdx] = useState(0);
 
   const [tickets, setTickets] = useState<Ticket[]>([
-    { id: "1", name: "General Admission", price: 25, quantity: 200, type: "paid", tour_stop_idx: null },
+    {
+      id: "1",
+      name: "General Admission",
+      price: 25,
+      quantity: 200,
+      type: "paid",
+      tour_stop_idx: null,
+    },
   ]);
   const [merch, setMerch] = useState<Merch[]>([{ id: "m1", name: "Event Tee", price: 20 }]);
 
@@ -213,8 +281,10 @@ export function CreateEventDesktop() {
       if (coverFile) {
         try {
           const base64 = await fileToBase64(coverFile);
-          const ext = coverFile.name.split('.').pop() || 'jpg';
-          const res = await uploadFile({ data: { base64, contentType: coverFile.type, folder: "events/covers", ext } } as any);
+          const ext = coverFile.name.split(".").pop() || "jpg";
+          const res = await uploadFile({
+            data: { base64, contentType: coverFile.type, folder: "events/covers", ext },
+          } as any);
           coverUrl = res.url;
         } catch (err) {
           console.error("Cover upload failed:", err);
@@ -232,14 +302,16 @@ export function CreateEventDesktop() {
               const blob = await resp.blob();
               const file = new File([blob], "merch.jpg", { type: blob.type });
               const base64 = await fileToBase64(file);
-              const res = await uploadFile({ data: { base64, contentType: file.type, folder: "events/merch", ext: "jpg" } } as any);
+              const res = await uploadFile({
+                data: { base64, contentType: file.type, folder: "events/merch", ext: "jpg" },
+              } as any);
               return { ...m, image: res.url };
             } catch {
               return { ...m, image: "" };
             }
           }
           return m;
-        })
+        }),
       );
       // 1. Prepare payload
       const payload = {
@@ -250,29 +322,31 @@ export function CreateEventDesktop() {
         vipPerks: data.vipPerks,
         workspace_id: activeWorkspace?.id,
         tour_stops: data.locations,
-        event_requency: data.isRecurring ? { type: data.recurrenceType, count: data.recurrenceCount } : {},
+        event_requency: data.isRecurring
+          ? { type: data.recurrenceType, count: data.recurrenceCount }
+          : {},
         event_tickets: {
-          data: tickets.map(t => ({
+          data: tickets.map((t) => ({
             type: t.name,
             cost: t.price.toString(),
             remaining: t.quantity.toString(),
             sold: "0",
             sale_ends_at: t.type === "early" ? t.sale_ends_at || null : null,
-            tour_stop_idx: sameTicketsForAllLocations ? null : t.tour_stop_idx
-          }))
+            tour_stop_idx: sameTicketsForAllLocations ? null : t.tour_stop_idx,
+          })),
         },
         merchandises: {
-          data: uploadedMerch.map(m => ({
+          data: uploadedMerch.map((m) => ({
             name: m.name,
             cost: m.price.toString(),
             image: m.image || "",
             organizer_id: activeWorkspace?.orgnizer_id,
             remaining: "100",
-            sold: "0"
-          }))
-        }
+            sold: "0",
+          })),
+        },
       };
-      
+
       return await createEvent({ data: payload } as any);
     },
     onSuccess: () => {
@@ -280,13 +354,13 @@ export function CreateEventDesktop() {
       setTimeout(() => {
         navigate({
           to: "/dashboard/$workspaceSlug/events",
-          params: { workspaceSlug: workspaceSlug || "" }
+          params: { workspaceSlug: workspaceSlug || "" },
         });
       }, 1500);
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to create event");
-    }
+    },
   });
 
   const handlePublish = () => {
@@ -297,31 +371,31 @@ export function CreateEventDesktop() {
   if (data.published) {
     return (
       <div className="mx-auto max-w-xl py-24 text-center">
-          <div
-            className="mx-auto grid h-16 w-16 place-items-center rounded-full text-primary-foreground animate-scale-in"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            <Check className="h-8 w-8" />
-          </div>
-          <h1 className="mt-6 text-3xl font-semibold tracking-tight">
-            {data.title || "Your event"} is live
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            Share the link with your community and start selling tickets.
-          </p>
-          <div className="mt-6 flex justify-center gap-2">
-            <Link to={dashboardUrl}>
-              <Button variant="outline" className="rounded-full">
-                Back to dashboard
-              </Button>
-            </Link>
-            <Link to="/events">
-              <Button className="rounded-full" style={{ background: "var(--gradient-primary)" }}>
-                View on Agatike
-              </Button>
-            </Link>
-          </div>
+        <div
+          className="mx-auto grid h-16 w-16 place-items-center rounded-full text-primary-foreground animate-scale-in"
+          style={{ background: "var(--gradient-primary)" }}
+        >
+          <Check className="h-8 w-8" />
         </div>
+        <h1 className="mt-6 text-3xl font-semibold tracking-tight">
+          {data.title || "Your event"} is live
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          Share the link with your community and start selling tickets.
+        </p>
+        <div className="mt-6 flex justify-center gap-2">
+          <Link to={dashboardUrl}>
+            <Button variant="outline" className="rounded-full">
+              Back to dashboard
+            </Button>
+          </Link>
+          <Link to="/events">
+            <Button className="rounded-full" style={{ background: "var(--gradient-primary)" }}>
+              View on Agatike
+            </Button>
+          </Link>
+        </div>
+      </div>
     );
   }
 
@@ -334,302 +408,336 @@ export function CreateEventDesktop() {
             Step {step + 1} of {steps.length}
           </p>
         </div>
-          {steps[step] === "Details" && (
-            <div className="space-y-5">
+        {steps[step] === "Details" && (
+          <div className="space-y-5">
+            <div>
+              <Label>Event title</Label>
+              <Input
+                value={data.title}
+                onChange={(e) => updateField("title", e.target.value)}
+                placeholder="Afrobeats Night Live"
+                className="mt-1"
+              />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <Label>Event title</Label>
-                <Input
-                  value={data.title}
-                  onChange={(e) => updateField("title", e.target.value)}
-                  placeholder="Afrobeats Night Live"
-                  className="mt-1"
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label>Category</Label>
-                  <select
-                    value={data.category}
-                    onChange={(e) => updateField("category", e.target.value)}
-                    className="mt-1 flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 hover:border-border/80 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                  >
-                    {categories.map((c) => (
-                      <option key={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="rounded-2xl border border-border/60 bg-secondary/20 p-5 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <Label className="text-base font-semibold">Event Frequency</Label>
-                    <p className="text-sm text-muted-foreground">Will this event happen more than once?</p>
-                  </div>
-                  <div className="flex bg-secondary p-1 rounded-xl shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => updateField("isRecurring", false)}
-                      className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${!data.isRecurring ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                    >
-                      One-time
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateField("isRecurring", true)}
-                      className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${data.isRecurring ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                    >
-                      Recurring
-                    </button>
-                  </div>
-                </div>
-
-                {data.isRecurring && (
-                  <div className="grid gap-4 md:grid-cols-2 pt-4 border-t border-border/60 animate-in fade-in slide-in-from-top-2">
-                    <div>
-                      <Label>Repeats</Label>
-                      <select
-                        value={data.recurrenceType}
-                        onChange={(e) => updateField("recurrenceType", e.target.value)}
-                        className="mt-1 flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 hover:border-border/80 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                      >
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="yearly">Yearly</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label>How many times?</Label>
-                      <Input
-                        type="number"
-                        min="2"
-                        max="365"
-                        value={data.recurrenceCount}
-                        onChange={(e) => updateField("recurrenceCount", Number(e.target.value))}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div>
-                <Label>Description</Label>
-                <Textarea
-                  rows={5}
-                  value={data.description}
-                  onChange={(e) => updateField("description", e.target.value)}
-                  placeholder="Tell people what makes this night special…"
-                  className="mt-1"
-                />
+                <Label>Category</Label>
+                <select
+                  value={data.category}
+                  onChange={(e) => updateField("category", e.target.value)}
+                  className="mt-1 flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 hover:border-border/80 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                >
+                  {categories.map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
+                </select>
               </div>
             </div>
-          )}
-
-          {steps[step] === "Tickets" && (
-            <TicketEditor 
-              tickets={tickets} 
-              setTickets={setTickets} 
-              currencySymbol={currencySymbol} 
-              locations={data.locations}
-              sameTicketsForAllLocations={sameTicketsForAllLocations}
-              setSameTicketsForAllLocations={setSameTicketsForAllLocations}
-              activeTourStopIdx={activeTourStopIdx}
-              setActiveTourStopIdx={setActiveTourStopIdx}
-            />
-          )}
-
-          {steps[step] === "Venue" && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
+            <div className="rounded-2xl border border-border/60 bg-secondary/20 p-5 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-lg font-semibold">Locations & Schedule</h3>
-                  <p className="text-sm text-muted-foreground">Add all the places and times this event will happen.</p>
+                  <Label className="text-base font-semibold">Event Frequency</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Will this event happen more than once?
+                  </p>
                 </div>
-                <Button
-                  size="sm"
-                  className="rounded-full"
-                  onClick={() => updateField("locations", [...data.locations, { id: generateId(), venue: "", city: "", address: "", date: "", time: "", latitude: null, longitude: null }])}
-                >
-                  <Plus className="mr-1 h-3.5 w-3.5" /> Add Location
-                </Button>
+                <div className="flex bg-secondary p-1 rounded-xl shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => updateField("isRecurring", false)}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${!data.isRecurring ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    One-time
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateField("isRecurring", true)}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${data.isRecurring ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Recurring
+                  </button>
+                </div>
               </div>
 
-              <div className="space-y-4">
-                {data.locations.map((loc: any, idx: number) => (
-                  <div key={loc.id} className="relative rounded-2xl border border-border/60 bg-secondary/10 p-5">
-                    {data.locations.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-3 top-3 h-8 w-8 text-muted-foreground hover:text-destructive"
-                        onClick={() => updateField("locations", data.locations.filter((_: any, i: number) => i !== idx))}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <div className="mb-4">
-                      <p className="text-sm font-semibold text-primary uppercase tracking-wider">Stop {idx + 1}</p>
-                    </div>
-                    <div className="space-y-5">
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                          <Label>Date</Label>
-                          <Input
-                            type="date"
-                            value={loc.date}
-                            onChange={(e) => {
-                              const newLocs = [...data.locations];
-                              newLocs[idx].date = e.target.value;
-                              updateField("locations", newLocs);
-                            }}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label>Time</Label>
-                          <Input
-                            type="time"
-                            value={loc.time}
-                            onChange={(e) => {
-                              const newLocs = [...data.locations];
-                              newLocs[idx].time = e.target.value;
-                              updateField("locations", newLocs);
-                            }}
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                          <Label>Venue name</Label>
-                          <Input
-                            value={loc.venue}
-                            onChange={(e) => {
-                              const newLocs = [...data.locations];
-                              newLocs[idx].venue = e.target.value;
-                              updateField("locations", newLocs);
-                            }}
-                            placeholder="Eko Convention Centre"
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label>City</Label>
-                          <Input
-                            value={loc.city}
-                            onChange={(e) => {
-                              const newLocs = [...data.locations];
-                              newLocs[idx].city = e.target.value;
-                              updateField("locations", newLocs);
-                            }}
-                            placeholder="Lagos, NG"
-                            className="mt-1"
-                          />
-                        </div>
+              {data.isRecurring && (
+                <div className="grid gap-4 md:grid-cols-2 pt-4 border-t border-border/60 animate-in fade-in slide-in-from-top-2">
+                  <div>
+                    <Label>Repeats</Label>
+                    <select
+                      value={data.recurrenceType}
+                      onChange={(e) => updateField("recurrenceType", e.target.value)}
+                      className="mt-1 flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 hover:border-border/80 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                      <option value="yearly">Yearly</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label>How many times?</Label>
+                    <Input
+                      type="number"
+                      min="2"
+                      max="365"
+                      value={data.recurrenceCount}
+                      onChange={(e) => updateField("recurrenceCount", Number(e.target.value))}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                rows={5}
+                value={data.description}
+                onChange={(e) => updateField("description", e.target.value)}
+                placeholder="Tell people what makes this night special…"
+                className="mt-1"
+              />
+            </div>
+          </div>
+        )}
+
+        {steps[step] === "Tickets" && (
+          <TicketEditor
+            tickets={tickets}
+            setTickets={setTickets}
+            currencySymbol={currencySymbol}
+            locations={data.locations}
+            sameTicketsForAllLocations={sameTicketsForAllLocations}
+            setSameTicketsForAllLocations={setSameTicketsForAllLocations}
+            activeTourStopIdx={activeTourStopIdx}
+            setActiveTourStopIdx={setActiveTourStopIdx}
+          />
+        )}
+
+        {steps[step] === "Venue" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Locations & Schedule</h3>
+                <p className="text-sm text-muted-foreground">
+                  Add all the places and times this event will happen.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                className="rounded-full"
+                onClick={() =>
+                  updateField("locations", [
+                    ...data.locations,
+                    {
+                      id: generateId(),
+                      venue: "",
+                      city: "",
+                      address: "",
+                      date: "",
+                      time: "",
+                      latitude: null,
+                      longitude: null,
+                    },
+                  ])
+                }
+              >
+                <Plus className="mr-1 h-3.5 w-3.5" /> Add Location
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {data.locations.map((loc: any, idx: number) => (
+                <div
+                  key={loc.id}
+                  className="relative rounded-2xl border border-border/60 bg-secondary/10 p-5"
+                >
+                  {data.locations.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-3 top-3 h-8 w-8 text-muted-foreground hover:text-destructive"
+                      onClick={() =>
+                        updateField(
+                          "locations",
+                          data.locations.filter((_: any, i: number) => i !== idx),
+                        )
+                      }
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <div className="mb-4">
+                    <p className="text-sm font-semibold text-primary uppercase tracking-wider">
+                      Stop {idx + 1}
+                    </p>
+                  </div>
+                  <div className="space-y-5">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <Label>Date</Label>
+                        <Input
+                          type="date"
+                          value={loc.date}
+                          onChange={(e) => {
+                            const newLocs = [...data.locations];
+                            newLocs[idx].date = e.target.value;
+                            updateField("locations", newLocs);
+                          }}
+                          className="mt-1"
+                        />
                       </div>
                       <div>
-                        <Label>Address</Label>
-                        <AddressAutocomplete 
-                          value={loc.address}
-                          onChange={(val) => {
+                        <Label>Time</Label>
+                        <Input
+                          type="time"
+                          value={loc.time}
+                          onChange={(e) => {
                             const newLocs = [...data.locations];
-                            newLocs[idx].address = val;
+                            newLocs[idx].time = e.target.value;
                             updateField("locations", newLocs);
                           }}
-                          onSelectCoordinates={(lat, lng) => {
-                            const newLocs = [...data.locations];
-                            newLocs[idx].latitude = lat;
-                            newLocs[idx].longitude = lng;
-                            updateField("locations", newLocs);
-                            toast.success("Location coordinates captured!");
-                          }}
+                          className="mt-1"
                         />
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {steps[step] === "Media" && (
-            <div className="space-y-5">
-              <Label>Cover image</Label>
-              <label className="block aspect-[16/9] cursor-pointer overflow-hidden rounded-2xl border border-dashed border-border bg-secondary/40 transition hover:border-primary">
-                {data.coverPreview ? (
-                  <img src={data.coverPreview} alt="cover" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="grid h-full place-items-center text-sm text-muted-foreground">
-                    <div className="text-center">
-                      <Upload className="mx-auto h-6 w-6" />
-                      <p className="mt-2">Click to upload (any image)</p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <Label>Venue name</Label>
+                        <Input
+                          value={loc.venue}
+                          onChange={(e) => {
+                            const newLocs = [...data.locations];
+                            newLocs[idx].venue = e.target.value;
+                            updateField("locations", newLocs);
+                          }}
+                          placeholder="Eko Convention Centre"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>City</Label>
+                        <Input
+                          value={loc.city}
+                          onChange={(e) => {
+                            const newLocs = [...data.locations];
+                            newLocs[idx].city = e.target.value;
+                            updateField("locations", newLocs);
+                          }}
+                          placeholder="Lagos, NG"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Address</Label>
+                      <AddressAutocomplete
+                        value={loc.address}
+                        onChange={(val) => {
+                          const newLocs = [...data.locations];
+                          newLocs[idx].address = val;
+                          updateField("locations", newLocs);
+                        }}
+                        onSelectCoordinates={(lat, lng) => {
+                          const newLocs = [...data.locations];
+                          newLocs[idx].latitude = lat;
+                          newLocs[idx].longitude = lng;
+                          updateField("locations", newLocs);
+                          toast.success("Location coordinates captured!");
+                        }}
+                      />
                     </div>
                   </div>
-                )}
-                <input type="file" accept="image/*" hidden onChange={onCoverUpload} />
-              </label>
-              <p className="text-xs text-muted-foreground">
-                Recommended 1920×1080. We auto-generate social cards.
-              </p>
-            </div>
-          )}
-
-          {steps[step] === "Products" && <MerchEditor merch={merch} setMerch={setMerch} currencySymbol={currencySymbol} />}
-
-          {steps[step] === "VIP" && (
-            <div className="space-y-5">
-              <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-accent/30 p-4">
-                <Crown className="h-5 w-5 text-primary" />
-                <div className="text-sm">
-                  <p className="font-medium">VIP access</p>
-                  <p className="text-muted-foreground">
-                    Define the experience for premium ticket holders.
-                  </p>
                 </div>
-              </div>
-              <div>
-                <Label>VIP perks</Label>
-                <Textarea
-                  rows={5}
-                  value={data.vipPerks}
-                  onChange={(e) => updateField("vipPerks", e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-            </div>
-          )}
-
-          {steps[step] === "Publish" && (
-            <PublishReview
-              data={data}
-              tickets={tickets}
-              merch={merch}
-              onPublish={handlePublish}
-              isPending={publishMutation.isPending}
-              currencySymbol={currencySymbol}
-            />
-          )}
-
-          <div className="mt-8 flex items-center justify-between border-t border-border/60 pt-6">
-            <Button variant="outline" onClick={prev} disabled={step === 0} className="rounded-full">
-              <ArrowLeft className="mr-1 h-4 w-4" /> Back
-            </Button>
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => navigate({ to: dashboardUrl })} className="rounded-full">
-                Save & exit
-              </Button>
-              {step < steps.length - 1 ? (
-                <Button
-                  onClick={next}
-                  className="rounded-full"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  Continue <ArrowRight className="ml-1 h-4 w-4" />
-                </Button>
-              ) : null}
+              ))}
             </div>
           </div>
+        )}
+
+        {steps[step] === "Media" && (
+          <div className="space-y-5">
+            <Label>Cover image</Label>
+            <label className="block aspect-[16/9] cursor-pointer overflow-hidden rounded-2xl border border-dashed border-border bg-secondary/40 transition hover:border-primary">
+              {data.coverPreview ? (
+                <img src={data.coverPreview} alt="cover" className="h-full w-full object-cover" />
+              ) : (
+                <div className="grid h-full place-items-center text-sm text-muted-foreground">
+                  <div className="text-center">
+                    <Upload className="mx-auto h-6 w-6" />
+                    <p className="mt-2">Click to upload (any image)</p>
+                  </div>
+                </div>
+              )}
+              <input type="file" accept="image/*" hidden onChange={onCoverUpload} />
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Recommended 1920×1080. We auto-generate social cards.
+            </p>
+          </div>
+        )}
+
+        {steps[step] === "Products" && (
+          <MerchEditor merch={merch} setMerch={setMerch} currencySymbol={currencySymbol} />
+        )}
+
+        {steps[step] === "VIP" && (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-accent/30 p-4">
+              <Crown className="h-5 w-5 text-primary" />
+              <div className="text-sm">
+                <p className="font-medium">VIP access</p>
+                <p className="text-muted-foreground">
+                  Define the experience for premium ticket holders.
+                </p>
+              </div>
+            </div>
+            <div>
+              <Label>VIP perks</Label>
+              <Textarea
+                rows={5}
+                value={data.vipPerks}
+                onChange={(e) => updateField("vipPerks", e.target.value)}
+                className="mt-1"
+              />
+            </div>
+          </div>
+        )}
+
+        {steps[step] === "Publish" && (
+          <PublishReview
+            data={data}
+            tickets={tickets}
+            merch={merch}
+            onPublish={handlePublish}
+            isPending={publishMutation.isPending}
+            currencySymbol={currencySymbol}
+          />
+        )}
+
+        <div className="mt-8 flex items-center justify-between border-t border-border/60 pt-6">
+          <Button variant="outline" onClick={prev} disabled={step === 0} className="rounded-full">
+            <ArrowLeft className="mr-1 h-4 w-4" /> Back
+          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => navigate({ to: dashboardUrl })}
+              className="rounded-full"
+            >
+              Save & exit
+            </Button>
+            {step < steps.length - 1 ? (
+              <Button
+                onClick={next}
+                className="rounded-full"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                Continue <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            ) : null}
+          </div>
         </div>
+      </div>
     </div>
   );
 }
@@ -642,7 +750,7 @@ function TicketEditor({
   sameTicketsForAllLocations,
   setSameTicketsForAllLocations,
   activeTourStopIdx,
-  setActiveTourStopIdx
+  setActiveTourStopIdx,
 }: {
   tickets: Ticket[];
   setTickets: (t: Ticket[]) => void;
@@ -653,7 +761,9 @@ function TicketEditor({
   activeTourStopIdx: number;
   setActiveTourStopIdx: (val: number) => void;
 }) {
-  const displayedTickets = tickets.filter(t => sameTicketsForAllLocations ? true : t.tour_stop_idx === activeTourStopIdx);
+  const displayedTickets = tickets.filter((t) =>
+    sameTicketsForAllLocations ? true : t.tour_stop_idx === activeTourStopIdx,
+  );
 
   const add = (type: Ticket["type"]) =>
     setTickets([
@@ -671,7 +781,7 @@ function TicketEditor({
         price: type === "free" ? 0 : type === "vip" ? 95 : 25,
         quantity: 100,
         type,
-        tour_stop_idx: sameTicketsForAllLocations ? null : activeTourStopIdx
+        tour_stop_idx: sameTicketsForAllLocations ? null : activeTourStopIdx,
       },
     ]);
 
@@ -682,47 +792,49 @@ function TicketEditor({
     <div className="space-y-6">
       {locations.length > 1 && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-border/60 bg-secondary/20 p-5">
-           <div>
-             <Label className="text-base font-semibold">Location-Specific Tickets</Label>
-             <p className="text-sm text-muted-foreground">Do you want different ticket tiers or prices per location?</p>
-           </div>
-           <div className="flex bg-secondary p-1 rounded-xl shrink-0">
-             <button
-               type="button"
-               onClick={() => {
-                 setSameTicketsForAllLocations(true);
-                 setTickets(tickets.map(t => ({ ...t, tour_stop_idx: null })));
-               }}
-               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${sameTicketsForAllLocations ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-             >
-               Same for all
-             </button>
-             <button
-               type="button"
-               onClick={() => {
-                 setSameTicketsForAllLocations(false);
-                 setTickets(tickets.map(t => ({ ...t, tour_stop_idx: activeTourStopIdx })));
-               }}
-               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${!sameTicketsForAllLocations ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-             >
-               Set up per location
-             </button>
-           </div>
+          <div>
+            <Label className="text-base font-semibold">Location-Specific Tickets</Label>
+            <p className="text-sm text-muted-foreground">
+              Do you want different ticket tiers or prices per location?
+            </p>
+          </div>
+          <div className="flex bg-secondary p-1 rounded-xl shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setSameTicketsForAllLocations(true);
+                setTickets(tickets.map((t) => ({ ...t, tour_stop_idx: null })));
+              }}
+              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${sameTicketsForAllLocations ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Same for all
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSameTicketsForAllLocations(false);
+                setTickets(tickets.map((t) => ({ ...t, tour_stop_idx: activeTourStopIdx })));
+              }}
+              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${!sameTicketsForAllLocations ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Set up per location
+            </button>
+          </div>
         </div>
       )}
 
       {locations.length > 1 && !sameTicketsForAllLocations && (
         <div className="flex items-center gap-2 border-b border-border/60 pb-4 overflow-x-auto">
-           {locations.map((loc: any, idx: number) => (
-             <button
-                key={idx}
-                type="button"
-                onClick={() => setActiveTourStopIdx(idx)}
-                className={`whitespace-nowrap px-4 py-1.5 text-sm font-semibold rounded-full transition-all ${activeTourStopIdx === idx ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-secondary'}`}
-             >
-                {loc.city || `Location ${idx + 1}`}
-             </button>
-           ))}
+          {locations.map((loc: any, idx: number) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setActiveTourStopIdx(idx)}
+              className={`whitespace-nowrap px-4 py-1.5 text-sm font-semibold rounded-full transition-all ${activeTourStopIdx === idx ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-secondary"}`}
+            >
+              {loc.city || `Location ${idx + 1}`}
+            </button>
+          ))}
         </div>
       )}
 
@@ -755,7 +867,9 @@ function TicketEditor({
               />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground mb-1 block">Price ({currencySymbol.trim()})</Label>
+              <Label className="text-xs text-muted-foreground mb-1 block">
+                Price ({currencySymbol.trim()})
+              </Label>
               <Input
                 type="number"
                 value={t.price}
@@ -774,7 +888,9 @@ function TicketEditor({
             </div>
             {t.type === "early" && (
               <div className="md:col-span-full">
-                <Label className="text-xs text-muted-foreground mb-1 block">Early Bird Ends At</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">
+                  Early Bird Ends At
+                </Label>
                 <Input
                   type="datetime-local"
                   value={t.sale_ends_at || ""}
@@ -831,30 +947,36 @@ function MerchEditor({
             key={m.id}
             className="grid gap-4 rounded-2xl border border-border/60 bg-background p-4 md:grid-cols-[auto_1fr_140px_auto] items-end"
           >
-          <div>
-            <Label className="text-xs text-muted-foreground mb-1 block">Item Image</Label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              {m.image ? (
-                <img src={m.image} alt="merch" className="h-10 w-10 rounded-lg object-cover border border-border/60" />
-              ) : (
-                <div className="h-10 w-10 rounded-lg border-2 border-dashed border-border/60 grid place-items-center text-muted-foreground hover:border-primary transition">
-                  <Upload className="h-4 w-4" />
-                </div>
-              )}
-              <span className="text-xs text-muted-foreground">{m.image ? "Change" : "Upload"}</span>
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const url = URL.createObjectURL(file);
-                  setMerch(merch.map((x) => (x.id === m.id ? { ...x, image: url } : x)));
-                }}
-              />
-            </label>
-          </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Item Image</Label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                {m.image ? (
+                  <img
+                    src={m.image}
+                    alt="merch"
+                    className="h-10 w-10 rounded-lg object-cover border border-border/60"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-lg border-2 border-dashed border-border/60 grid place-items-center text-muted-foreground hover:border-primary transition">
+                    <Upload className="h-4 w-4" />
+                  </div>
+                )}
+                <span className="text-xs text-muted-foreground">
+                  {m.image ? "Change" : "Upload"}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const url = URL.createObjectURL(file);
+                    setMerch(merch.map((x) => (x.id === m.id ? { ...x, image: url } : x)));
+                  }}
+                />
+              </label>
+            </div>
             <div>
               <Label className="text-xs text-muted-foreground mb-1 block">Item Name</Label>
               <Input
@@ -866,7 +988,9 @@ function MerchEditor({
               />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground mb-1 block">Price ({currencySymbol.trim()})</Label>
+              <Label className="text-xs text-muted-foreground mb-1 block">
+                Price ({currencySymbol.trim()})
+              </Label>
               <Input
                 type="number"
                 value={m.price}
@@ -921,10 +1045,14 @@ function PublishReview({
           <h3 className="mt-1 text-2xl font-semibold">{data.title || "Untitled event"}</h3>
           <div className="mt-3 flex flex-col gap-2">
             {data.locations.map((loc: any, i: number) => (
-              <div key={loc.id} className="rounded-xl border border-border/40 bg-secondary/20 p-3 text-sm">
+              <div
+                key={loc.id}
+                className="rounded-xl border border-border/40 bg-secondary/20 p-3 text-sm"
+              >
                 <div className="flex items-center gap-2 font-medium">
                   <MapPin className="h-4 w-4 text-primary" />
-                  {data.locations.length > 1 ? `Stop ${i + 1}: ` : ""}{loc.venue || "TBD"}
+                  {data.locations.length > 1 ? `Stop ${i + 1}: ` : ""}
+                  {loc.venue || "TBD"}
                 </div>
                 <div className="mt-1 flex items-center gap-2 text-muted-foreground">
                   <Calendar className="h-3.5 w-3.5" />
@@ -941,7 +1069,9 @@ function PublishReview({
               </span>
             )}
           </div>
-          <p className="mt-4 text-sm whitespace-pre-wrap">{data.description || "No description yet."}</p>
+          <p className="mt-4 text-sm whitespace-pre-wrap">
+            {data.description || "No description yet."}
+          </p>
         </div>
       </div>
 
@@ -960,9 +1090,15 @@ function PublishReview({
           <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
             {tickets.map((t) => (
               <li key={t.id} className="flex flex-col">
-                <span>· <strong className="text-foreground font-medium">{t.name}</strong> — {currencySymbol}{t.price} × {t.quantity}</span>
+                <span>
+                  · <strong className="text-foreground font-medium">{t.name}</strong> —{" "}
+                  {currencySymbol}
+                  {t.price} × {t.quantity}
+                </span>
                 {t.type === "early" && t.sale_ends_at && (
-                  <span className="text-xs text-primary pl-3">Sale ends: {new Date(t.sale_ends_at).toLocaleString()}</span>
+                  <span className="text-xs text-primary pl-3">
+                    Sale ends: {new Date(t.sale_ends_at).toLocaleString()}
+                  </span>
                 )}
               </li>
             ))}
@@ -973,7 +1109,8 @@ function PublishReview({
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
             {merch.map((m) => (
               <li key={m.id}>
-                · {m.name || "(unnamed)"} — {currencySymbol}{m.price}
+                · {m.name || "(unnamed)"} — {currencySymbol}
+                {m.price}
               </li>
             ))}
           </ul>
@@ -987,7 +1124,9 @@ function PublishReview({
         style={{ background: "var(--gradient-primary)" }}
       >
         {isPending ? (
-          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Publishing...</>
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Publishing...
+          </>
         ) : (
           "Publish event"
         )}

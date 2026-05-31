@@ -77,11 +77,15 @@ export function Navbar() {
               className="rounded-full shadow-[var(--shadow-glow)] px-3 sm:px-4"
               style={{ background: "var(--gradient-primary)" }}
             >
-              <Plus className="h-4 w-4 sm:mr-1" /> 
+              <Plus className="h-4 w-4 sm:mr-1" />
               <span className="hidden sm:inline-block text-sm font-medium">Create event</span>
             </Button>
           </Link>
-          <Button variant="ghost" size="icon" className="md:hidden ml-1 rounded-full text-foreground/80 hover:text-foreground hover:bg-secondary/80 active:scale-95 transition-all">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden ml-1 rounded-full text-foreground/80 hover:text-foreground hover:bg-secondary/80 active:scale-95 transition-all"
+          >
             <Menu className="h-5 w-5" />
           </Button>
         </div>

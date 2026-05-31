@@ -14,7 +14,7 @@ import {
   MapPin,
   CreditCard,
   Minus,
-  Plus
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,7 +41,11 @@ export function ScannerMobile() {
     setProcessingTx(true);
     setTimeout(() => {
       setProcessingTx(false);
-      toast.success(result === "voucher" ? `$${transactionAmount} deducted from wallet` : `${transactionAmount} punches used`);
+      toast.success(
+        result === "voucher"
+          ? `$${transactionAmount} deducted from wallet`
+          : `${transactionAmount} punches used`,
+      );
       setResult("idle");
       setTransactionAmount(1);
     }, 800);
@@ -94,8 +98,8 @@ export function ScannerMobile() {
               ? "border-primary/50"
               : result === "success" || result === "vip" || result === "staff"
                 ? "border-emerald-500"
-                : result === "voucher" || result === "punch" 
-                  ? "border-blue-500" 
+                : result === "voucher" || result === "punch"
+                  ? "border-blue-500"
                   : "border-red-500"
           }`}
         >
@@ -126,7 +130,7 @@ export function ScannerMobile() {
               )}
             </div>
           )}
-          
+
           {/* We hide the checkmark for complex transactions (staff/merch) because the UI is in the bottom sheet */}
         </div>
       </div>
@@ -172,26 +176,34 @@ export function ScannerMobile() {
         {result === "staff" && (
           <div className="animate-in slide-in-from-bottom-4 duration-200">
             <div className="flex items-center justify-between mb-4">
-               <h2 className="text-sm font-bold text-primary tracking-widest uppercase">Staff Verification</h2>
-               <button onClick={() => setResult("idle")} className="text-white/50 p-2"><XCircle className="h-5 w-5"/></button>
+              <h2 className="text-sm font-bold text-primary tracking-widest uppercase">
+                Staff Verification
+              </h2>
+              <button onClick={() => setResult("idle")} className="text-white/50 p-2">
+                <XCircle className="h-5 w-5" />
+              </button>
             </div>
-            
+
             <div className="bg-gradient-to-br from-slate-900 to-black border border-white/10 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
-               <div className="absolute inset-0 bg-white/5 backdrop-blur-md"></div>
-               <div className="relative z-10 flex gap-4 items-center">
-                  <div className="h-16 w-16 rounded-full bg-slate-800 flex items-center justify-center border-2 border-primary">
-                    <ShieldAlert className="h-8 w-8 text-white/80" />
-                  </div>
-                  <div>
-                     <h3 className="text-2xl font-bold text-white">David Kim</h3>
-                     <p className="text-primary font-bold uppercase text-xs tracking-wider">Security Lead</p>
-                     <p className="text-white/40 font-mono text-[10px] mt-1">STAFF-DK8492X</p>
-                  </div>
-               </div>
-               <div className="relative z-10 mt-5 pt-4 border-t border-white/10 flex items-center gap-2">
-                 <MapPin className="h-4 w-4 text-emerald-400" />
-                 <span className="text-emerald-400 font-bold text-sm uppercase">Access: VIP Lounge</span>
-               </div>
+              <div className="absolute inset-0 bg-white/5 backdrop-blur-md"></div>
+              <div className="relative z-10 flex gap-4 items-center">
+                <div className="h-16 w-16 rounded-full bg-slate-800 flex items-center justify-center border-2 border-primary">
+                  <ShieldAlert className="h-8 w-8 text-white/80" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">David Kim</h3>
+                  <p className="text-primary font-bold uppercase text-xs tracking-wider">
+                    Security Lead
+                  </p>
+                  <p className="text-white/40 font-mono text-[10px] mt-1">STAFF-DK8492X</p>
+                </div>
+              </div>
+              <div className="relative z-10 mt-5 pt-4 border-t border-white/10 flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-emerald-400" />
+                <span className="text-emerald-400 font-bold text-sm uppercase">
+                  Access: VIP Lounge
+                </span>
+              </div>
             </div>
           </div>
         )}
@@ -200,48 +212,60 @@ export function ScannerMobile() {
         {(result === "voucher" || result === "punch") && (
           <div className="animate-in slide-in-from-bottom-4 duration-200">
             <div className="flex items-center justify-between mb-4">
-               <h2 className="text-sm font-bold text-blue-400 tracking-widest uppercase">
-                 {result === "voucher" ? "Wallet Transaction" : "Punch Card Use"}
-               </h2>
-               <button onClick={() => setResult("idle")} className="text-white/50 p-2"><XCircle className="h-5 w-5"/></button>
+              <h2 className="text-sm font-bold text-blue-400 tracking-widest uppercase">
+                {result === "voucher" ? "Wallet Transaction" : "Punch Card Use"}
+              </h2>
+              <button onClick={() => setResult("idle")} className="text-white/50 p-2">
+                <XCircle className="h-5 w-5" />
+              </button>
             </div>
-            
+
             <div className="bg-slate-900 border border-blue-500/30 rounded-2xl p-5">
-               <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h3 className="text-xl font-bold">Amaka Okafor</h3>
-                    <p className="text-white/50 text-sm">Remaining: {result === "voucher" ? "$50.00" : "8 Punches"}</p>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <CreditCard className="h-6 w-6 text-blue-400" />
-                  </div>
-               </div>
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold">Amaka Okafor</h3>
+                  <p className="text-white/50 text-sm">
+                    Remaining: {result === "voucher" ? "$50.00" : "8 Punches"}
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <CreditCard className="h-6 w-6 text-blue-400" />
+                </div>
+              </div>
 
-               <div className="flex items-center justify-center gap-6 mb-6">
-                 <button 
-                   onClick={() => setTransactionAmount(Math.max(1, transactionAmount - (result === "voucher" ? 5 : 1)))}
-                   className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center active:bg-white/20"
-                 >
-                   <Minus className="h-6 w-6" />
-                 </button>
-                 <div className="text-4xl font-black w-24 text-center">
-                   {result === "voucher" ? `$${transactionAmount}` : transactionAmount}
-                 </div>
-                 <button 
-                   onClick={() => setTransactionAmount(transactionAmount + (result === "voucher" ? 5 : 1))}
-                   className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center active:bg-white/20"
-                 >
-                   <Plus className="h-6 w-6" />
-                 </button>
-               </div>
+              <div className="flex items-center justify-center gap-6 mb-6">
+                <button
+                  onClick={() =>
+                    setTransactionAmount(
+                      Math.max(1, transactionAmount - (result === "voucher" ? 5 : 1)),
+                    )
+                  }
+                  className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center active:bg-white/20"
+                >
+                  <Minus className="h-6 w-6" />
+                </button>
+                <div className="text-4xl font-black w-24 text-center">
+                  {result === "voucher" ? `$${transactionAmount}` : transactionAmount}
+                </div>
+                <button
+                  onClick={() =>
+                    setTransactionAmount(transactionAmount + (result === "voucher" ? 5 : 1))
+                  }
+                  className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center active:bg-white/20"
+                >
+                  <Plus className="h-6 w-6" />
+                </button>
+              </div>
 
-               <button 
-                 onClick={handleProcessTransaction}
-                 disabled={processingTx}
-                 className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl flex items-center justify-center transition-colors"
-               >
-                 {processingTx ? "Processing..." : `Deduct ${result === "voucher" ? `$${transactionAmount}` : `${transactionAmount} Punches`}`}
-               </button>
+              <button
+                onClick={handleProcessTransaction}
+                disabled={processingTx}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl flex items-center justify-center transition-colors"
+              >
+                {processingTx
+                  ? "Processing..."
+                  : `Deduct ${result === "voucher" ? `$${transactionAmount}` : `${transactionAmount} Punches`}`}
+              </button>
             </div>
           </div>
         )}

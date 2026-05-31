@@ -74,10 +74,7 @@ function TicketDesignerPage() {
   const [cover, setCover] = useState<string>("");
   const [logoText, setLogoText] = useState("AGATIKE");
 
-  const orderId = useMemo(
-    () => "AGT-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
-    [],
-  );
+  const orderId = useMemo(() => "AGT-" + Math.random().toString(36).slice(2, 8).toUpperCase(), []);
 
   const onUpload = (file?: File) => {
     if (!file) return;
@@ -242,7 +239,9 @@ function TicketDesignerPage() {
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">
                   Live preview
                 </p>
-                <h3 className="text-lg font-semibold">{tier} · {template}</h3>
+                <h3 className="text-lg font-semibold">
+                  {tier} · {template}
+                </h3>
               </div>
               <div className="flex gap-2 text-xs">
                 {["Front", "Back", "Mobile"].map((v, i) => (
@@ -278,10 +277,7 @@ function TicketDesignerPage() {
 
           <div className="grid gap-4 md:grid-cols-3">
             {["Email", "Mobile wallet", "Print PDF"].map((c) => (
-              <div
-                key={c}
-                className="rounded-2xl border border-border/60 bg-card p-5 text-sm"
-              >
+              <div key={c} className="rounded-2xl border border-border/60 bg-card p-5 text-sm">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">Channel</p>
                 <p className="mt-1 font-semibold">{c}</p>
                 <p className="mt-2 text-xs text-muted-foreground">

@@ -13,7 +13,12 @@ function requireReactBarcode() {
       };
     } else {
       _typeof = function _typeof2(obj2) {
-        return obj2 && typeof Symbol === "function" && obj2.constructor === Symbol && obj2 !== Symbol.prototype ? "symbol" : typeof obj2;
+        return obj2 &&
+          typeof Symbol === "function" &&
+          obj2.constructor === Symbol &&
+          obj2 !== Symbol.prototype
+          ? "symbol"
+          : typeof obj2;
       };
     }
     return _typeof(obj);
@@ -22,7 +27,7 @@ function requireReactBarcode() {
   var _jsbarcode = _interopRequireDefault(requireJsBarcode());
   var _propTypes = _interopRequireDefault(/* @__PURE__ */ requirePropTypes());
   function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : { "default": obj };
+    return obj && obj.__esModule ? obj : { default: obj };
   }
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -49,9 +54,11 @@ function requireReactBarcode() {
     return _assertThisInitialized(self);
   }
   function _getPrototypeOf(o) {
-    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf2(o2) {
-      return o2.__proto__ || Object.getPrototypeOf(o2);
-    };
+    _getPrototypeOf = Object.setPrototypeOf
+      ? Object.getPrototypeOf
+      : function _getPrototypeOf2(o2) {
+          return o2.__proto__ || Object.getPrototypeOf(o2);
+        };
     return _getPrototypeOf(o);
   }
   function _assertThisInitialized(self) {
@@ -64,14 +71,18 @@ function requireReactBarcode() {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
-    subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } });
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: { value: subClass, writable: true, configurable: true },
+    });
     if (superClass) _setPrototypeOf(subClass, superClass);
   }
   function _setPrototypeOf(o, p) {
-    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf2(o2, p2) {
-      o2.__proto__ = p2;
-      return o2;
-    };
+    _setPrototypeOf =
+      Object.setPrototypeOf ||
+      function _setPrototypeOf2(o2, p2) {
+        o2.__proto__ = p2;
+        return o2;
+      };
     return _setPrototypeOf(o, p);
   }
   var getDOMNode;
@@ -85,7 +96,7 @@ function requireReactBarcode() {
       return ref;
     };
   }
-  var Barcode2 = /* @__PURE__ */ (function(_React$Component) {
+  var Barcode2 = /* @__PURE__ */ (function (_React$Component) {
     _inherits(Barcode3, _React$Component);
     function Barcode3(props) {
       var _this;
@@ -95,61 +106,76 @@ function requireReactBarcode() {
       _this.update = _this.update.bind(_assertThisInitialized(_this));
       return _this;
     }
-    _createClass(Barcode3, [{
-      key: "shouldComponentUpdate",
-      value: function shouldComponentUpdate(nextProps) {
-        var _this2 = this;
-        return Object.keys(Barcode3.propTypes).some(function(k) {
-          return _this2.props[k] !== nextProps[k];
-        });
-      }
-    }, {
-      key: "componentDidMount",
-      value: function componentDidMount() {
-        this.update();
-      }
-    }, {
-      key: "componentDidUpdate",
-      value: function componentDidUpdate() {
-        this.update();
-      }
-    }, {
-      key: "update",
-      value: function update() {
-        var renderElement = getDOMNode(this.renderElementRef.current);
-        try {
-          new _jsbarcode["default"](renderElement, this.props.value, Object.assign({
-            text: this.props.text || this.props.value
-          }, this.props));
-        } catch (e) {
-          window.console.error(e);
-        }
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        var _this$props = this.props, id = _this$props.id, className = _this$props.className;
-        if (this.props.renderer === "svg") {
-          return _react["default"].createElement("svg", {
-            ref: this.renderElementRef,
-            id,
-            className
+    _createClass(Barcode3, [
+      {
+        key: "shouldComponentUpdate",
+        value: function shouldComponentUpdate(nextProps) {
+          var _this2 = this;
+          return Object.keys(Barcode3.propTypes).some(function (k) {
+            return _this2.props[k] !== nextProps[k];
           });
-        } else if (this.props.renderer === "canvas") {
-          return _react["default"].createElement("canvas", {
-            ref: this.renderElementRef,
-            id,
-            className
-          });
-        } else if (this.props.renderer === "img") {
-          return _react["default"].createElement("img", {
-            ref: this.renderElementRef,
-            id,
-            className
-          });
-        }
-      }
-    }]);
+        },
+      },
+      {
+        key: "componentDidMount",
+        value: function componentDidMount() {
+          this.update();
+        },
+      },
+      {
+        key: "componentDidUpdate",
+        value: function componentDidUpdate() {
+          this.update();
+        },
+      },
+      {
+        key: "update",
+        value: function update() {
+          var renderElement = getDOMNode(this.renderElementRef.current);
+          try {
+            new _jsbarcode["default"](
+              renderElement,
+              this.props.value,
+              Object.assign(
+                {
+                  text: this.props.text || this.props.value,
+                },
+                this.props,
+              ),
+            );
+          } catch (e) {
+            window.console.error(e);
+          }
+        },
+      },
+      {
+        key: "render",
+        value: function render() {
+          var _this$props = this.props,
+            id = _this$props.id,
+            className = _this$props.className;
+          if (this.props.renderer === "svg") {
+            return _react["default"].createElement("svg", {
+              ref: this.renderElementRef,
+              id,
+              className,
+            });
+          } else if (this.props.renderer === "canvas") {
+            return _react["default"].createElement("canvas", {
+              ref: this.renderElementRef,
+              id,
+              className,
+            });
+          } else if (this.props.renderer === "img") {
+            return _react["default"].createElement("img", {
+              ref: this.renderElementRef,
+              id,
+              className,
+            });
+          }
+        },
+      },
+    ]);
     return Barcode3;
   })(_react["default"].Component);
   Barcode2.propTypes = {
@@ -175,7 +201,7 @@ function requireReactBarcode() {
     marginRight: _propTypes["default"].number,
     id: _propTypes["default"].string,
     className: _propTypes["default"].string,
-    ean128: _propTypes["default"].bool
+    ean128: _propTypes["default"].bool,
   };
   Barcode2.defaultProps = {
     format: "CODE128",
@@ -193,13 +219,11 @@ function requireReactBarcode() {
     lineColor: "#000000",
     margin: 10,
     className: "",
-    ean128: false
+    ean128: false,
   };
   reactBarcode = Barcode2;
   return reactBarcode;
 }
 var reactBarcodeExports = requireReactBarcode();
 const Barcode = /* @__PURE__ */ getDefaultExportFromCjs(reactBarcodeExports);
-export {
-  Barcode as B
-};
+export { Barcode as B };

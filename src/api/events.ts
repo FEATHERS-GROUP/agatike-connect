@@ -9,11 +9,10 @@ const CREATE_EVENT = `
   }
 `;
 
-export const createEvent = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const eventData = ctx.data as any;
-    return hasuraRequest(CREATE_EVENT, { object: eventData });
-  });
+export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const eventData = ctx.data as any;
+  return hasuraRequest(CREATE_EVENT, { object: eventData });
+});
 
 const GET_PUBLIC_EVENTS = `
   query GetPublicEvents {
@@ -43,11 +42,10 @@ const GET_PUBLIC_EVENTS = `
   }
 `;
 
-export const getPublicEvents = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const data = await hasuraRequest<{ events: any[] }>(GET_PUBLIC_EVENTS, {});
-    return data.events || [];
-  });
+export const getPublicEvents = createServerFn({ method: "GET" }).handler(async () => {
+  const data = await hasuraRequest<{ events: any[] }>(GET_PUBLIC_EVENTS, {});
+  return data.events || [];
+});
 
 const GET_WORKSPACE_EVENTS = `
   query GetWorkspaceEvents($workspace_id: uuid!) {
@@ -71,12 +69,11 @@ const GET_WORKSPACE_EVENTS = `
   }
 `;
 
-export const getWorkspaceEvents = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { workspace_id } = ctx.data as unknown as { workspace_id: string };
-    const data = await hasuraRequest<{ events: any[] }>(GET_WORKSPACE_EVENTS, { workspace_id });
-    return data.events || [];
-  });
+export const getWorkspaceEvents = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+  const data = await hasuraRequest<{ events: any[] }>(GET_WORKSPACE_EVENTS, { workspace_id });
+  return data.events || [];
+});
 
 const GET_EVENT_BY_ID = `
   query GetEventById($id: uuid!) {
@@ -103,12 +100,11 @@ const GET_EVENT_BY_ID = `
   }
 `;
 
-export const getEventById = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { id } = ctx.data as unknown as { id: string };
-    const data = await hasuraRequest<{ events_by_pk: any }>(GET_EVENT_BY_ID, { id });
-    return data.events_by_pk || null;
-  });
+export const getEventById = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as unknown as { id: string };
+  const data = await hasuraRequest<{ events_by_pk: any }>(GET_EVENT_BY_ID, { id });
+  return data.events_by_pk || null;
+});
 
 const UPDATE_EVENT = `
   mutation UpdateEvent(
@@ -138,12 +134,14 @@ const UPDATE_EVENT = `
   }
 `;
 
-export const updateEvent = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const variables = ctx.data as any;
-    const data = await hasuraRequest<{ update_events_by_pk: { id: string } }>(UPDATE_EVENT, variables);
-    return data.update_events_by_pk;
-  });
+export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const variables = ctx.data as any;
+  const data = await hasuraRequest<{ update_events_by_pk: { id: string } }>(
+    UPDATE_EVENT,
+    variables,
+  );
+  return data.update_events_by_pk;
+});
 
 const SAVE_TICKET_PROJECT = `
   mutation SaveTicketProject($coverImage: String = "", $design_overrides: jsonb = "", $eventId: uuid = "", $font: json = "", $logoText: String = "", $name: String = "", $palette: json = "", $seat: String = "", $template: String = "", $tier: String = "", $updated_on: timestamptz = "", $workspaceId: uuid = "", $logoScale: String = "", $logoImage: String = "", $logoColorMode: String = "", $logoOpacity: String = "") {
@@ -155,11 +153,10 @@ const SAVE_TICKET_PROJECT = `
   }
 `;
 
-export const saveTicketProject = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const variables = ctx.data as any;
-    return hasuraRequest(SAVE_TICKET_PROJECT, variables);
-  });
+export const saveTicketProject = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const variables = ctx.data as any;
+  return hasuraRequest(SAVE_TICKET_PROJECT, variables);
+});
 
 const GET_TICKET_PROJECT_BY_ID = `
   query GetTicketProjectById($id: uuid!) {
@@ -184,12 +181,13 @@ const GET_TICKET_PROJECT_BY_ID = `
   }
 `;
 
-export const getTicketProjectById = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { id } = ctx.data as unknown as { id: string };
-    const data = await hasuraRequest<{ ticket_projects_by_pk: any }>(GET_TICKET_PROJECT_BY_ID, { id });
-    return data.ticket_projects_by_pk || null;
+export const getTicketProjectById = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as unknown as { id: string };
+  const data = await hasuraRequest<{ ticket_projects_by_pk: any }>(GET_TICKET_PROJECT_BY_ID, {
+    id,
   });
+  return data.ticket_projects_by_pk || null;
+});
 
 const UPDATE_TICKET_PROJECT = `
   mutation UpdateTicketProject($id: uuid!, $coverImage: String, $design_overrides: jsonb, $eventId: uuid, $font: json, $logoText: String, $name: String, $palette: json, $seat: String, $template: String, $tier: String, $updated_on: timestamptz, $logoScale: String, $logoImage: String, $logoColorMode: String, $logoOpacity: String) {
@@ -199,11 +197,10 @@ const UPDATE_TICKET_PROJECT = `
   }
 `;
 
-export const updateTicketProject = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const variables = ctx.data as any;
-    return hasuraRequest(UPDATE_TICKET_PROJECT, variables);
-  });
+export const updateTicketProject = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const variables = ctx.data as any;
+  return hasuraRequest(UPDATE_TICKET_PROJECT, variables);
+});
 
 const GET_WORKSPACE_TICKET_PROJECTS = `
   query GetWorkspaceTicketProjects($workspaceId: uuid!) {
@@ -258,13 +255,12 @@ const GET_WORKSPACE_TICKET_PROJECTS = `
   }
 `;
 
-export const getWorkspaceTicketProjects = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
+export const getWorkspaceTicketProjects = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
     const { workspaceId } = ctx.data as unknown as { workspaceId: string };
-    const data = await hasuraRequest<{ ticket_projects: any[] }>(GET_WORKSPACE_TICKET_PROJECTS, { workspaceId });
+    const data = await hasuraRequest<{ ticket_projects: any[] }>(GET_WORKSPACE_TICKET_PROJECTS, {
+      workspaceId,
+    });
     return data.ticket_projects || [];
-  });
-
-
-
-
+  },
+);

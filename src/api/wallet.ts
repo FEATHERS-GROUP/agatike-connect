@@ -16,22 +16,21 @@ const GET_WORKSPACE_WALLET = `
   }
 `;
 
-export const getWorkspaceWallet = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { workspace_id } = ctx.data as unknown as { workspace_id: string };
-    const data = await hasuraRequest<{ wallets: any[] }>(GET_WORKSPACE_WALLET, { workspace_id });
-    
-    // Return the first wallet found or a default empty wallet
-    if (data.wallets && data.wallets.length > 0) {
-      return data.wallets[0];
-    }
-    
-    return {
-      amount: 0,
-      currency: "RWF",
-      walletNumber: "Not setup"
-    };
-  });
+export const getWorkspaceWallet = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+  const data = await hasuraRequest<{ wallets: any[] }>(GET_WORKSPACE_WALLET, { workspace_id });
+
+  // Return the first wallet found or a default empty wallet
+  if (data.wallets && data.wallets.length > 0) {
+    return data.wallets[0];
+  }
+
+  return {
+    amount: 0,
+    currency: "RWF",
+    walletNumber: "Not setup",
+  };
+});
 
 const GET_WALLET_TRANSACTIONS = `
   query GetWalletTransactions($wallet_id: uuid!) {
@@ -56,10 +55,11 @@ const GET_WALLET_TRANSACTIONS = `
   }
 `;
 
-export const getWalletTransactions = createServerFn({ method: "POST" })
-  .handler(async (ctx) => {
-    const { wallet_id } = ctx.data as unknown as { wallet_id: string };
-    const data = await hasuraRequest<{ wallet_transactions: any[] }>(GET_WALLET_TRANSACTIONS, { wallet_id });
-    
-    return data.wallet_transactions || [];
+export const getWalletTransactions = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { wallet_id } = ctx.data as unknown as { wallet_id: string };
+  const data = await hasuraRequest<{ wallet_transactions: any[] }>(GET_WALLET_TRANSACTIONS, {
+    wallet_id,
   });
+
+  return data.wallet_transactions || [];
+});

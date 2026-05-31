@@ -21,10 +21,9 @@ function resolveUrl(url, baseUrl) {
 }
 const uuid = /* @__PURE__ */ (() => {
   let counter = 0;
-  const random = () => (
+  const random = () =>
     // eslint-disable-next-line no-bitwise
-    `0000${(Math.random() * 36 ** 4 << 0).toString(36)}`.slice(-4)
-  );
+    `0000${((Math.random() * 36 ** 4) << 0).toString(36)}`.slice(-4);
   return () => {
     counter += 1;
     return `u${random()}${counter}`;
@@ -74,8 +73,7 @@ function getPixelRatio() {
   let FINAL_PROCESS;
   try {
     FINAL_PROCESS = process;
-  } catch (e) {
-  }
+  } catch (e) {}
   const val = FINAL_PROCESS && FINAL_PROCESS.env ? FINAL_PROCESS.env.devicePixelRatio : null;
   if (val) {
     ratio = parseInt(val, 10);
@@ -120,7 +118,10 @@ function createImage(url) {
   });
 }
 async function svgToDataURL(svg) {
-  return Promise.resolve().then(() => new XMLSerializer().serializeToString(svg)).then(encodeURIComponent).then((html) => `data:image/svg+xml;charset=utf-8,${html}`);
+  return Promise.resolve()
+    .then(() => new XMLSerializer().serializeToString(svg))
+    .then(encodeURIComponent)
+    .then((html) => `data:image/svg+xml;charset=utf-8,${html}`);
 }
 async function nodeToDataURL(node, width, height) {
   const xmlns = "http://www.w3.org/2000/svg";
@@ -139,23 +140,25 @@ async function nodeToDataURL(node, width, height) {
   return svgToDataURL(svg);
 }
 const isInstanceOfElement = (node, instance) => {
-  if (node instanceof instance)
-    return true;
+  if (node instanceof instance) return true;
   const nodePrototype = Object.getPrototypeOf(node);
-  if (nodePrototype === null)
-    return false;
-  return nodePrototype.constructor.name === instance.name || isInstanceOfElement(nodePrototype, instance);
+  if (nodePrototype === null) return false;
+  return (
+    nodePrototype.constructor.name === instance.name || isInstanceOfElement(nodePrototype, instance)
+  );
 };
 function formatCSSText(style) {
   const content = style.getPropertyValue("content");
   return `${style.cssText} content: '${content.replace(/'|"/g, "")}';`;
 }
 function formatCSSProperties(style, options) {
-  return getStyleProperties(options).map((name) => {
-    const value = style.getPropertyValue(name);
-    const priority = style.getPropertyPriority(name);
-    return `${name}: ${value}${priority ? " !important" : ""};`;
-  }).join(" ");
+  return getStyleProperties(options)
+    .map((name) => {
+      const value = style.getPropertyValue(name);
+      const priority = style.getPropertyPriority(name);
+      return `${name}: ${value}${priority ? " !important" : ""};`;
+    })
+    .join(" ");
 }
 function getPseudoElementStyle(className, pseudo, style, options) {
   const selector = `.${className}:${pseudo}`;
@@ -195,7 +198,7 @@ const mimes = {
   gif: "image/gif",
   tiff: "image/tiff",
   svg: "image/svg+xml",
-  webp: "image/webp"
+  webp: "image/webp",
 };
 function getExtension(url) {
   const match = /\.([^./]*?)$/g.exec(url);
@@ -250,16 +253,20 @@ async function resourceToDataURL(resourceUrl, contentType, options) {
     return cache[cacheKey];
   }
   if (options.cacheBust) {
-    resourceUrl += (/\?/.test(resourceUrl) ? "&" : "?") + (/* @__PURE__ */ new Date()).getTime();
+    resourceUrl += (/\?/.test(resourceUrl) ? "&" : "?") + /* @__PURE__ */ new Date().getTime();
   }
   let dataURL;
   try {
-    const content = await fetchAsDataURL(resourceUrl, options.fetchRequestInit, ({ res, result }) => {
-      if (!contentType) {
-        contentType = res.headers.get("Content-Type") || "";
-      }
-      return getContentFromDataUrl(result);
-    });
+    const content = await fetchAsDataURL(
+      resourceUrl,
+      options.fetchRequestInit,
+      ({ res, result }) => {
+        if (!contentType) {
+          contentType = res.headers.get("Content-Type") || "";
+        }
+        return getContentFromDataUrl(result);
+      },
+    );
     dataURL = makeDataUrl(content, contentType);
   } catch (error) {
     dataURL = options.imagePlaceholder || "";
@@ -287,7 +294,9 @@ async function cloneVideoElement(video, options) {
     const ctx = canvas.getContext("2d");
     canvas.width = video.clientWidth;
     canvas.height = video.clientHeight;
-    ctx === null || ctx === void 0 ? void 0 : ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx === null || ctx === void 0
+      ? void 0
+      : ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataURL2 = canvas.toDataURL();
     return createImage(dataURL2);
   }
@@ -299,11 +308,15 @@ async function cloneVideoElement(video, options) {
 async function cloneIFrameElement(iframe, options) {
   var _a;
   try {
-    if ((_a = iframe === null || iframe === void 0 ? void 0 : iframe.contentDocument) === null || _a === void 0 ? void 0 : _a.body) {
+    if (
+      (_a = iframe === null || iframe === void 0 ? void 0 : iframe.contentDocument) === null ||
+      _a === void 0
+        ? void 0
+        : _a.body
+    ) {
       return await cloneNode(iframe.contentDocument.body, options, true);
     }
-  } catch (_b) {
-  }
+  } catch (_b) {}
   return iframe.cloneNode(false);
 }
 async function cloneSingleNode(node, options) {
@@ -328,19 +341,30 @@ async function cloneChildren(nativeNode, clonedNode, options) {
   let children = [];
   if (isSlotElement(nativeNode) && nativeNode.assignedNodes) {
     children = toArray(nativeNode.assignedNodes());
-  } else if (isInstanceOfElement(nativeNode, HTMLIFrameElement) && ((_a = nativeNode.contentDocument) === null || _a === void 0 ? void 0 : _a.body)) {
+  } else if (
+    isInstanceOfElement(nativeNode, HTMLIFrameElement) &&
+    ((_a = nativeNode.contentDocument) === null || _a === void 0 ? void 0 : _a.body)
+  ) {
     children = toArray(nativeNode.contentDocument.body.childNodes);
   } else {
-    children = toArray(((_b = nativeNode.shadowRoot) !== null && _b !== void 0 ? _b : nativeNode).childNodes);
+    children = toArray(
+      ((_b = nativeNode.shadowRoot) !== null && _b !== void 0 ? _b : nativeNode).childNodes,
+    );
   }
   if (children.length === 0 || isInstanceOfElement(nativeNode, HTMLVideoElement)) {
     return clonedNode;
   }
-  await children.reduce((deferred, child) => deferred.then(() => cloneNode(child, options)).then((clonedChild) => {
-    if (clonedChild) {
-      clonedNode.appendChild(clonedChild);
-    }
-  }), Promise.resolve());
+  await children.reduce(
+    (deferred, child) =>
+      deferred
+        .then(() => cloneNode(child, options))
+        .then((clonedChild) => {
+          if (clonedChild) {
+            clonedNode.appendChild(clonedChild);
+          }
+        }),
+    Promise.resolve(),
+  );
   return clonedNode;
 }
 function cloneCSSStyle(nativeNode, clonedNode, options) {
@@ -359,7 +383,11 @@ function cloneCSSStyle(nativeNode, clonedNode, options) {
         const reducedFont = Math.floor(parseFloat(value.substring(0, value.length - 2))) - 0.1;
         value = `${reducedFont}px`;
       }
-      if (isInstanceOfElement(nativeNode, HTMLIFrameElement) && name === "display" && value === "inline") {
+      if (
+        isInstanceOfElement(nativeNode, HTMLIFrameElement) &&
+        name === "display" &&
+        value === "inline"
+      ) {
         value = "block";
       }
       if (name === "d" && clonedNode.getAttribute("d")) {
@@ -380,7 +408,9 @@ function cloneInputValue(nativeNode, clonedNode) {
 function cloneSelectValue(nativeNode, clonedNode) {
   if (isInstanceOfElement(nativeNode, HTMLSelectElement)) {
     const clonedSelect = clonedNode;
-    const selectedOption = Array.from(clonedSelect.children).find((child) => nativeNode.value === child.getAttribute("value"));
+    const selectedOption = Array.from(clonedSelect.children).find(
+      (child) => nativeNode.value === child.getAttribute("value"),
+    );
     if (selectedOption) {
       selectedOption.setAttribute("selected", "");
     }
@@ -435,7 +465,11 @@ async function cloneNode(node, options, isRoot) {
   if (!isRoot && options.filter && !options.filter(node)) {
     return null;
   }
-  return Promise.resolve(node).then((clonedNode) => cloneSingleNode(clonedNode, options)).then((clonedNode) => cloneChildren(node, clonedNode, options)).then((clonedNode) => decorate(node, clonedNode, options)).then((clonedNode) => ensureSVGSymbols(clonedNode, options));
+  return Promise.resolve(node)
+    .then((clonedNode) => cloneSingleNode(clonedNode, options))
+    .then((clonedNode) => cloneChildren(node, clonedNode, options))
+    .then((clonedNode) => decorate(node, clonedNode, options))
+    .then((clonedNode) => ensureSVGSymbols(clonedNode, options));
 }
 const URL_REGEX = /url\((['"]?)([^'"]+?)\1\)/g;
 const URL_WITH_FORMAT_REGEX = /url\([^)]+\)\s*format\((["']?)([^"']+)\1\)/g;
@@ -457,27 +491,28 @@ async function embed(cssText, resourceURL, baseURL, options, getContentFromUrl) 
     const resolvedURL = baseURL ? resolveUrl(resourceURL, baseURL) : resourceURL;
     const contentType = getMimeType(resourceURL);
     let dataURL;
-    if (getContentFromUrl) ;
+    if (getContentFromUrl);
     else {
       dataURL = await resourceToDataURL(resolvedURL, contentType, options);
     }
     return cssText.replace(toRegex(resourceURL), `$1${dataURL}$3`);
-  } catch (error) {
-  }
+  } catch (error) {}
   return cssText;
 }
 function filterPreferredFontFormat(str, { preferredFontFormat }) {
-  return !preferredFontFormat ? str : str.replace(FONT_SRC_REGEX, (match) => {
-    while (true) {
-      const [src, , format] = URL_WITH_FORMAT_REGEX.exec(match) || [];
-      if (!format) {
-        return "";
-      }
-      if (format === preferredFontFormat) {
-        return `src: ${src};`;
-      }
-    }
-  });
+  return !preferredFontFormat
+    ? str
+    : str.replace(FONT_SRC_REGEX, (match) => {
+        while (true) {
+          const [src, , format] = URL_WITH_FORMAT_REGEX.exec(match) || [];
+          if (!format) {
+            return "";
+          }
+          if (format === preferredFontFormat) {
+            return `src: ${src};`;
+          }
+        }
+      });
 }
 function shouldEmbed(url) {
   return url.search(URL_REGEX) !== -1;
@@ -488,11 +523,15 @@ async function embedResources(cssText, baseUrl, options) {
   }
   const filteredCSSText = filterPreferredFontFormat(cssText, options);
   const urls = parseURLs(filteredCSSText);
-  return urls.reduce((deferred, url) => deferred.then((css) => embed(css, url, baseUrl, options)), Promise.resolve(filteredCSSText));
+  return urls.reduce(
+    (deferred, url) => deferred.then((css) => embed(css, url, baseUrl, options)),
+    Promise.resolve(filteredCSSText),
+  );
 }
 async function embedProp(propName, node, options) {
   var _a;
-  const propValue = (_a = node.style) === null || _a === void 0 ? void 0 : _a.getPropertyValue(propName);
+  const propValue =
+    (_a = node.style) === null || _a === void 0 ? void 0 : _a.getPropertyValue(propName);
   if (propValue) {
     const cssString = await embedResources(propValue, null, options);
     node.style.setProperty(propName, cssString, node.style.getPropertyPriority(propName));
@@ -501,25 +540,34 @@ async function embedProp(propName, node, options) {
   return false;
 }
 async function embedBackground(clonedNode, options) {
-  await embedProp("background", clonedNode, options) || await embedProp("background-image", clonedNode, options);
-  await embedProp("mask", clonedNode, options) || await embedProp("-webkit-mask", clonedNode, options) || await embedProp("mask-image", clonedNode, options) || await embedProp("-webkit-mask-image", clonedNode, options);
+  (await embedProp("background", clonedNode, options)) ||
+    (await embedProp("background-image", clonedNode, options));
+  (await embedProp("mask", clonedNode, options)) ||
+    (await embedProp("-webkit-mask", clonedNode, options)) ||
+    (await embedProp("mask-image", clonedNode, options)) ||
+    (await embedProp("-webkit-mask-image", clonedNode, options));
 }
 async function embedImageNode(clonedNode, options) {
   const isImageElement = isInstanceOfElement(clonedNode, HTMLImageElement);
-  if (!(isImageElement && !isDataUrl(clonedNode.src)) && !(isInstanceOfElement(clonedNode, SVGImageElement) && !isDataUrl(clonedNode.href.baseVal))) {
+  if (
+    !(isImageElement && !isDataUrl(clonedNode.src)) &&
+    !(isInstanceOfElement(clonedNode, SVGImageElement) && !isDataUrl(clonedNode.href.baseVal))
+  ) {
     return;
   }
   const url = isImageElement ? clonedNode.src : clonedNode.href.baseVal;
   const dataURL = await resourceToDataURL(url, getMimeType(url), options);
   await new Promise((resolve, reject) => {
     clonedNode.onload = resolve;
-    clonedNode.onerror = options.onImageErrorHandler ? (...attributes) => {
-      try {
-        resolve(options.onImageErrorHandler(...attributes));
-      } catch (error) {
-        reject(error);
-      }
-    } : reject;
+    clonedNode.onerror = options.onImageErrorHandler
+      ? (...attributes) => {
+          try {
+            resolve(options.onImageErrorHandler(...attributes));
+          } catch (error) {
+            reject(error);
+          }
+        }
+      : reject;
     const image = clonedNode;
     if (image.decode) {
       image.decode = resolve;
@@ -611,7 +659,8 @@ function parseCSS(source) {
   }
   cssText = cssText.replace(keyframesRegex, "");
   const importRegex = /@import[\s\S]*?url\([^)]*\)[\s\S]*?;/gi;
-  const combinedCSSRegex = "((\\s*?(?:\\/\\*[\\s\\S]*?\\*\\/)?\\s*?@media[\\s\\S]*?){([\\s\\S]*?)}\\s*?})|(([\\s\\S]*?){([\\s\\S]*?)})";
+  const combinedCSSRegex =
+    "((\\s*?(?:\\/\\*[\\s\\S]*?\\*\\/)?\\s*?@media[\\s\\S]*?){([\\s\\S]*?)}\\s*?})|(([\\s\\S]*?){([\\s\\S]*?)})";
   const unifiedRegex = new RegExp(combinedCSSRegex, "gi");
   while (true) {
     let matches = importRegex.exec(cssText);
@@ -639,29 +688,44 @@ async function getCSSRules(styleSheets, options) {
           if (item.type === CSSRule.IMPORT_RULE) {
             let importIndex = index + 1;
             const url = item.href;
-            const deferred = fetchCSS(url).then((metadata) => embedFonts(metadata, options)).then((cssText) => parseCSS(cssText).forEach((rule) => {
-              try {
-                sheet.insertRule(rule, rule.startsWith("@import") ? importIndex += 1 : sheet.cssRules.length);
-              } catch (error) {
-                console.error("Error inserting rule from remote css", {
-                  rule,
-                  error
-                });
-              }
-            })).catch((e) => {
-              console.error("Error loading remote css", e.toString());
-            });
+            const deferred = fetchCSS(url)
+              .then((metadata) => embedFonts(metadata, options))
+              .then((cssText) =>
+                parseCSS(cssText).forEach((rule) => {
+                  try {
+                    sheet.insertRule(
+                      rule,
+                      rule.startsWith("@import") ? (importIndex += 1) : sheet.cssRules.length,
+                    );
+                  } catch (error) {
+                    console.error("Error inserting rule from remote css", {
+                      rule,
+                      error,
+                    });
+                  }
+                }),
+              )
+              .catch((e) => {
+                console.error("Error loading remote css", e.toString());
+              });
             deferreds.push(deferred);
           }
         });
       } catch (e) {
         const inline = styleSheets.find((a) => a.href == null) || document.styleSheets[0];
         if (sheet.href != null) {
-          deferreds.push(fetchCSS(sheet.href).then((metadata) => embedFonts(metadata, options)).then((cssText) => parseCSS(cssText).forEach((rule) => {
-            inline.insertRule(rule, inline.cssRules.length);
-          })).catch((err) => {
-            console.error("Error loading remote stylesheet", err);
-          }));
+          deferreds.push(
+            fetchCSS(sheet.href)
+              .then((metadata) => embedFonts(metadata, options))
+              .then((cssText) =>
+                parseCSS(cssText).forEach((rule) => {
+                  inline.insertRule(rule, inline.cssRules.length);
+                }),
+              )
+              .catch((err) => {
+                console.error("Error loading remote stylesheet", err);
+              }),
+          );
         }
         console.error("Error inlining remote css file", e);
       }
@@ -683,7 +747,9 @@ async function getCSSRules(styleSheets, options) {
   });
 }
 function getWebFontRules(cssRules) {
-  return cssRules.filter((rule) => rule.type === CSSRule.FONT_FACE_RULE).filter((rule) => shouldEmbed(rule.style.getPropertyValue("src")));
+  return cssRules
+    .filter((rule) => rule.type === CSSRule.FONT_FACE_RULE)
+    .filter((rule) => shouldEmbed(rule.style.getPropertyValue("src")));
 }
 async function parseWebFontRules(node, options) {
   if (node.ownerDocument == null) {
@@ -715,14 +781,23 @@ function getUsedFonts(node) {
 async function getWebFontCSS(node, options) {
   const rules = await parseWebFontRules(node, options);
   const usedFonts = getUsedFonts(node);
-  const cssTexts = await Promise.all(rules.filter((rule) => usedFonts.has(normalizeFontFamily(rule.style.fontFamily))).map((rule) => {
-    const baseUrl = rule.parentStyleSheet ? rule.parentStyleSheet.href : null;
-    return embedResources(rule.cssText, baseUrl, options);
-  }));
+  const cssTexts = await Promise.all(
+    rules
+      .filter((rule) => usedFonts.has(normalizeFontFamily(rule.style.fontFamily)))
+      .map((rule) => {
+        const baseUrl = rule.parentStyleSheet ? rule.parentStyleSheet.href : null;
+        return embedResources(rule.cssText, baseUrl, options);
+      }),
+  );
   return cssTexts.join("\n");
 }
 async function embedWebFonts(clonedNode, options) {
-  const cssText = options.fontEmbedCSS != null ? options.fontEmbedCSS : options.skipFonts ? null : await getWebFontCSS(clonedNode, options);
+  const cssText =
+    options.fontEmbedCSS != null
+      ? options.fontEmbedCSS
+      : options.skipFonts
+        ? null
+        : await getWebFontCSS(clonedNode, options);
   if (cssText) {
     const styleNode = document.createElement("style");
     const sytleContent = document.createTextNode(cssText);
@@ -770,6 +845,4 @@ async function toPng(node, options = {}) {
   const canvas = await toCanvas(node, options);
   return canvas.toDataURL();
 }
-export {
-  toPng as t
-};
+export { toPng as t };

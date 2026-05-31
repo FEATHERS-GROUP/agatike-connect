@@ -12,6 +12,4 @@ function useEscapeKeydown(onEscapeKeyDownProp, ownerDocument = globalThis?.docum
     return () => ownerDocument.removeEventListener("keydown", handleKeyDown, { capture: true });
   }, [onEscapeKeyDown, ownerDocument]);
 }
-export {
-  useEscapeKeydown as u
-};
+export { useEscapeKeydown as u };

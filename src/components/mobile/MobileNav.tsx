@@ -33,17 +33,17 @@ export function MobileNav() {
                 <Icon
                   className={cn(
                     "h-6 w-6 transition-all duration-300",
-                    isActive ? "fill-primary/20 stroke-[2.5]" : "stroke-2"
+                    isActive ? "fill-primary/20 stroke-[2.5]" : "stroke-2",
                   )}
                 />
               </div>
-              
+
               {/* Animated active indicator */}
-              <div 
+              <div
                 className={cn(
                   "absolute -bottom-3 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary transition-all duration-300 ease-out",
-                  isActive ? "opacity-100 scale-100" : "opacity-0 scale-0"
-                )} 
+                  isActive ? "opacity-100 scale-100" : "opacity-0 scale-0",
+                )}
               />
             </Link>
           );

@@ -22,7 +22,7 @@ const typedArrays = {
   uint64: globalThis.BigUint64Array,
   int64: globalThis.BigInt64Array,
   float32: globalThis.Float32Array,
-  float64: globalThis.Float64Array
+  float64: globalThis.Float64Array,
 };
 class IOBuffer {
   /**
@@ -615,6 +615,4 @@ class IOBuffer {
     }
   }
 }
-export {
-  IOBuffer as I
-};
+export { IOBuffer as I };

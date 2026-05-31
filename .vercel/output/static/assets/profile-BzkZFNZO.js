@@ -1,4 +1,652 @@
-import{l as p,w as F,q as e,L as l,u as b,A as f,m as M}from"./index-BbCjida8.js";import{B as d}from"./button-BtHMdeJ3.js";import{N as $}from"./Navbar-8zxmLK7V.js";import{F as z}from"./Footer-CxcHC3QW.js";import{M as x}from"./map-pin-C2ftX2X_.js";import{S as j}from"./settings-DI2M_FYs.js";import{T}from"./trophy-CXfwWkLg.js";import{F as A}from"./film-BcUt-rrO.js";import{H as n}from"./heart-CaS5XG5Z.js";import{T as g}from"./ticket-BfFChqFx.js";import{C as m}from"./chevron-right-Nht500oB.js";import{C as h}from"./calendar-Ccx9if8g.js";import{Q as y}from"./qr-code-Bb2sladL.js";import{C as S}from"./clock-BqqZJLGx.js";import{S as E}from"./star-CtaeFg5C.js";import"./input-Bn2qJlr0.js";import"./plus-DEJHAl15.js";const I=[["path",{d:"M10.268 21a2 2 0 0 0 3.464 0",key:"vwvbt9"}],["path",{d:"M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326",key:"11g9vi"}]],P=p("bell",I);const R=[["path",{d:"M12 19v3",key:"npa21l"}],["path",{d:"M19 10v2a7 7 0 0 1-14 0v-2",key:"1vc78b"}],["rect",{x:"9",y:"2",width:"6",height:"13",rx:"3",key:"s6n7sd"}]],_=p("mic",R);const B=[["path",{d:"M9 18V5l12-2v13",key:"1jmyc2"}],["circle",{cx:"6",cy:"18",r:"3",key:"fqmcym"}],["circle",{cx:"18",cy:"16",r:"3",key:"1hluhg"}]],D=p("music",B),u=M.slice(2,6).map((r,t)=>({...r,histRating:3+t%3,rated:t%2===0})),N=[{label:"Music",icon:D,color:"text-purple-500",bg:"bg-purple-500/10",border:"border-purple-500/20"},{label:"Sports",icon:T,color:"text-blue-500",bg:"bg-blue-500/10",border:"border-blue-500/20"},{label:"Cinema",icon:A,color:"text-rose-500",bg:"bg-rose-500/10",border:"border-rose-500/20"},{label:"Conferences",icon:_,color:"text-amber-500",bg:"bg-amber-500/10",border:"border-amber-500/20"}];function v({ticket:r}){return e.jsxs(l,{to:"/ticket/$ticketId",params:{ticketId:r.id},className:"block rounded-3xl overflow-hidden border border-border/60 bg-card shadow-[var(--shadow-card)] hover:-translate-y-1 transition-transform",children:[e.jsxs("div",{className:"relative h-40",children:[e.jsx("img",{src:r.cover,alt:r.title,className:"w-full h-full object-cover"}),e.jsx("div",{className:"absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"}),e.jsx("span",{className:"absolute bottom-3 left-4 text-white font-bold text-sm leading-tight",children:r.title}),e.jsx("span",{className:`absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${r.ticketType==="VIP"?"bg-primary text-primary-foreground":"bg-white/20 text-white backdrop-blur-sm"}`,children:r.ticketType})]}),e.jsxs("div",{className:"px-4 py-3",children:[e.jsxs("div",{className:"flex items-center justify-between text-xs text-muted-foreground mb-2",children:[e.jsxs("span",{className:"flex items-center gap-1",children:[e.jsx(h,{className:"h-3.5 w-3.5"}),r.date]}),e.jsxs("span",{className:"flex items-center gap-1",children:[e.jsx(S,{className:"h-3.5 w-3.5"}),r.time]})]}),e.jsxs("div",{className:"flex items-center justify-between",children:[e.jsxs("div",{children:[e.jsx("p",{className:"text-xs text-muted-foreground",children:r.seat}),e.jsx("p",{className:"text-xs font-mono text-primary mt-0.5",children:r.orderId})]}),e.jsxs(d,{size:"sm",className:"h-8 px-3 rounded-full text-xs font-bold",style:{background:"var(--gradient-primary)"},children:[e.jsx(y,{className:"h-3.5 w-3.5 mr-1"}),"Show"]})]})]})]})}function w({event:r}){return e.jsxs("div",{className:"bg-card border border-border/60 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] flex gap-3 p-3",children:[e.jsx("img",{src:r.cover,alt:r.title,className:"w-20 h-20 object-cover rounded-xl shrink-0"}),e.jsxs("div",{className:"flex-1 min-w-0 flex flex-col justify-between py-0.5",children:[e.jsxs("div",{children:[e.jsx("p",{className:"font-semibold text-sm leading-tight line-clamp-2",children:r.title}),e.jsxs("p",{className:"text-xs text-muted-foreground mt-1 flex items-center gap-1",children:[e.jsx(x,{className:"h-3 w-3"}),r.city]})]}),e.jsxs("div",{className:"flex items-center justify-between mt-2",children:[e.jsx("div",{className:"flex gap-0.5",children:[1,2,3,4,5].map(t=>e.jsx(E,{className:`h-3.5 w-3.5 ${t<=r.histRating?"text-yellow-400 fill-yellow-400":"text-border"}`},t))}),!r.rated&&e.jsx("button",{className:"text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full",children:"Rate"})]})]})]})}function ae(){const[r,t]=F.useState("upcoming"),k=e.jsxs("div",{className:"hidden md:flex flex-col min-h-screen bg-background text-foreground",children:[e.jsx($,{}),e.jsxs("div",{className:"flex-1 mx-auto max-w-7xl w-full px-6 py-10 grid grid-cols-[300px_1fr] gap-8 items-start",children:[e.jsxs("aside",{className:"sticky top-24 space-y-5",children:[e.jsxs("div",{className:"rounded-3xl border border-border/60 bg-card p-6 flex flex-col items-center text-center shadow-[var(--shadow-card)]",children:[e.jsx("div",{className:"h-24 w-24 rounded-2xl p-[3px] shadow-lg mb-4",style:{background:"var(--gradient-primary)"},children:e.jsx("img",{src:"https://i.pravatar.cc/150?u=me",alt:"Alex Doe",className:"h-full w-full rounded-[14px] object-cover"})}),e.jsx("h2",{className:"font-bold text-xl",children:"Alex Doe"}),e.jsxs("p",{className:"text-sm text-muted-foreground flex items-center gap-1 mt-1",children:[e.jsx(x,{className:"h-3.5 w-3.5"})," Kigali, Rwanda"]}),e.jsx("p",{className:"text-xs text-muted-foreground mt-1",children:"Member since Jan 2024"}),e.jsx("div",{className:"grid grid-cols-3 gap-3 w-full mt-5",children:[{v:"24",l:"Attended"},{v:"8",l:"Following"},{v:"5",l:"Upcoming"}].map(({v:s,l:a})=>e.jsxs("div",{className:"bg-secondary/60 rounded-xl p-2.5 text-center",children:[e.jsx("p",{className:"font-bold text-base",children:s}),e.jsx("p",{className:"text-[10px] text-muted-foreground leading-tight mt-0.5",children:a})]},a))}),e.jsxs("div",{className:"flex gap-2 w-full mt-4",children:[e.jsx(d,{variant:"secondary",className:"flex-1 h-9 text-sm font-semibold rounded-xl",children:"Edit Profile"}),e.jsx(d,{variant:"secondary",size:"icon",className:"h-9 w-9 rounded-xl shrink-0",children:e.jsx(j,{className:"h-4 w-4"})})]})]}),e.jsxs("div",{className:"rounded-3xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]",children:[e.jsx("p",{className:"font-bold text-sm mb-4",children:"Interests"}),e.jsx("div",{className:"flex flex-wrap gap-2",children:N.map(({label:s,icon:a,color:i,bg:o,border:c})=>e.jsxs("span",{className:`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${o} ${c} ${i}`,children:[e.jsx(a,{className:"h-3.5 w-3.5"}),s]},s))})]}),e.jsxs("div",{className:"rounded-3xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]",children:[e.jsxs("div",{className:"flex items-center justify-between mb-4",children:[e.jsx("p",{className:"font-bold text-sm",children:"Following"}),e.jsx(l,{to:"/organizers",className:"text-xs text-primary font-bold",children:"See all"})]}),e.jsx("div",{className:"space-y-3",children:b.slice(0,4).map(s=>e.jsxs("div",{className:"flex items-center gap-3",children:[e.jsx("img",{src:s.avatar,alt:s.name,className:"h-9 w-9 rounded-full object-cover border border-border/40"}),e.jsxs("div",{className:"flex-1 min-w-0",children:[e.jsx("p",{className:"text-sm font-semibold truncate",children:s.name}),e.jsxs("p",{className:"text-xs text-muted-foreground",children:["@",s.handle]})]}),e.jsx(n,{className:"h-4 w-4 fill-primary text-primary shrink-0"})]},s.id))})]})]}),e.jsxs("main",{className:"space-y-8",children:[e.jsxs("section",{children:[e.jsxs("div",{className:"flex items-center justify-between mb-4",children:[e.jsxs("h2",{className:"text-xl font-bold flex items-center gap-2",children:[e.jsx(g,{className:"h-5 w-5 text-primary"})," Upcoming Tickets"]}),e.jsxs(l,{to:"/events",className:"text-sm text-primary font-bold flex items-center gap-1",children:["Browse events ",e.jsx(m,{className:"h-4 w-4"})]})]}),e.jsx("div",{className:"grid grid-cols-2 lg:grid-cols-3 gap-4 items-start",children:f.map(s=>e.jsx(v,{ticket:s},s.id))})]}),e.jsxs("section",{children:[e.jsxs("h2",{className:"text-xl font-bold mb-4 flex items-center gap-2",children:[e.jsx(h,{className:"h-5 w-5 text-primary"})," Event History"]}),e.jsx("div",{className:"grid grid-cols-2 gap-4",children:u.map(s=>e.jsx(w,{event:s},s.id))})]})]})]}),e.jsx(z,{})]}),C=e.jsxs("div",{className:"md:hidden min-h-screen bg-background pb-24 text-foreground",children:[e.jsx("div",{className:"sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/40 pt-safe-top",children:e.jsxs("div",{className:"flex items-center justify-between px-4 py-3",children:[e.jsx("h1",{className:"font-bold text-lg tracking-tight",children:"My Profile"}),e.jsxs("div",{className:"flex items-center gap-2",children:[e.jsx(l,{to:"/scanner",className:"p-2 rounded-full hover:bg-secondary transition-colors",children:e.jsx(y,{className:"h-5 w-5"})}),e.jsx("button",{className:"p-2 rounded-full hover:bg-secondary transition-colors",children:e.jsx(P,{className:"h-5 w-5"})}),e.jsx("button",{className:"p-2 rounded-full hover:bg-secondary transition-colors",children:e.jsx(j,{className:"h-5 w-5"})})]})]})}),e.jsxs("div",{className:"relative px-4 pt-6 pb-4",children:[e.jsx("div",{className:"absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-primary/8 to-transparent pointer-events-none"}),e.jsxs("div",{className:"flex items-center gap-4 relative z-10",children:[e.jsx("div",{className:"h-20 w-20 rounded-2xl p-[2px] shadow-lg shrink-0",style:{background:"var(--gradient-primary)"},children:e.jsx("img",{src:"https://i.pravatar.cc/150?u=me",alt:"Alex Doe",className:"h-full w-full rounded-[14px] object-cover bg-card"})}),e.jsxs("div",{className:"flex-1 min-w-0",children:[e.jsx("h2",{className:"font-bold text-xl tracking-tight",children:"Alex Doe"}),e.jsxs("p",{className:"text-sm text-muted-foreground flex items-center gap-1 mt-0.5",children:[e.jsx(x,{className:"h-3.5 w-3.5 shrink-0"})," Kigali, Rwanda"]}),e.jsx("p",{className:"text-xs text-muted-foreground mt-1",children:"Member since Jan 2024"})]})]}),e.jsx("div",{className:"mt-5 grid grid-cols-3 gap-3",children:[{value:"24",label:"Events Attended"},{value:"8",label:"Following"},{value:"5",label:"Upcoming"}].map(({value:s,label:a})=>e.jsxs("div",{className:"bg-card rounded-2xl border border-border/40 p-3 text-center shadow-sm",children:[e.jsx("p",{className:"font-bold text-xl",children:s}),e.jsx("p",{className:"text-[10px] text-muted-foreground mt-0.5 leading-tight",children:a})]},a))}),e.jsxs("div",{className:"flex gap-2 mt-4",children:[e.jsx(d,{variant:"secondary",className:"flex-1 h-9 text-sm font-semibold rounded-xl",children:"Edit Profile"}),e.jsx(d,{variant:"secondary",className:"flex-1 h-9 text-sm font-semibold rounded-xl",children:"Share"})]})]}),e.jsxs("div",{className:"px-4 mb-1",children:[e.jsx("h3",{className:"font-bold text-sm mb-3 text-muted-foreground uppercase tracking-wider",children:"Interests"}),e.jsx("div",{className:"flex gap-2 overflow-x-auto hide-scrollbar pb-1",children:N.map(({label:s,icon:a,color:i,bg:o,border:c})=>e.jsxs("span",{className:`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border ${o} ${c} ${i}`,children:[e.jsx(a,{className:"h-4 w-4"}),s]},s))})]}),e.jsx("div",{className:"flex border-b border-border/40 mt-4 px-4 gap-1",children:["upcoming","history","following"].map(s=>e.jsx("button",{onClick:()=>t(s),className:`flex-1 py-2.5 text-xs font-bold capitalize transition-all rounded-t-lg ${r===s?"text-primary border-b-2 border-primary":"text-muted-foreground hover:text-foreground"}`,children:e.jsxs("span",{className:"flex items-center justify-center gap-1.5",children:[s==="upcoming"&&e.jsxs(e.Fragment,{children:[e.jsx(g,{className:"h-4 w-4"})," Upcoming"]}),s==="history"&&e.jsxs(e.Fragment,{children:[e.jsx(h,{className:"h-4 w-4"})," History"]}),s==="following"&&e.jsxs(e.Fragment,{children:[e.jsx(n,{className:"h-4 w-4"})," Following"]})]})},s))}),e.jsxs("div",{className:"px-4 pt-4",children:[r==="upcoming"&&e.jsxs("div",{className:"space-y-4",children:[f.map(s=>e.jsx(v,{ticket:s},s.id)),e.jsxs(l,{to:"/events",className:"flex items-center justify-center gap-1 text-sm font-bold text-primary py-3",children:["Browse more events ",e.jsx(m,{className:"h-4 w-4"})]})]}),r==="history"&&e.jsx("div",{className:"space-y-3",children:u.map(s=>e.jsx(w,{event:s},s.id))}),r==="following"&&e.jsxs("div",{className:"space-y-3",children:[b.slice(0,5).map(s=>e.jsxs("div",{className:"bg-card border border-border/40 rounded-2xl flex items-center gap-3 p-3 shadow-sm",children:[e.jsx("img",{src:s.avatar,alt:s.name,className:"h-12 w-12 rounded-full object-cover shrink-0 border border-border/40"}),e.jsxs("div",{className:"flex-1 min-w-0",children:[e.jsx("p",{className:"font-semibold text-sm",children:s.name}),e.jsxs("p",{className:"text-xs text-muted-foreground",children:["@",s.handle," · ",(s.followers/1e3).toFixed(1),"k followers"]})]}),e.jsxs(d,{variant:"secondary",size:"sm",className:"shrink-0 h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1",children:[e.jsx(n,{className:"h-3 w-3 fill-primary text-primary"})," Following"]})]},s.id)),e.jsxs(l,{to:"/organizers",className:"flex items-center justify-center gap-1 text-sm font-bold text-primary py-3",children:["Discover more organizers ",e.jsx(m,{className:"h-4 w-4"})]})]})]}),e.jsx("style",{children:`
+import { l as p, w as F, q as e, L as l, u as b, A as f, m as M } from "./index-BbCjida8.js";
+import { B as d } from "./button-BtHMdeJ3.js";
+import { N as $ } from "./Navbar-8zxmLK7V.js";
+import { F as z } from "./Footer-CxcHC3QW.js";
+import { M as x } from "./map-pin-C2ftX2X_.js";
+import { S as j } from "./settings-DI2M_FYs.js";
+import { T } from "./trophy-CXfwWkLg.js";
+import { F as A } from "./film-BcUt-rrO.js";
+import { H as n } from "./heart-CaS5XG5Z.js";
+import { T as g } from "./ticket-BfFChqFx.js";
+import { C as m } from "./chevron-right-Nht500oB.js";
+import { C as h } from "./calendar-Ccx9if8g.js";
+import { Q as y } from "./qr-code-Bb2sladL.js";
+import { C as S } from "./clock-BqqZJLGx.js";
+import { S as E } from "./star-CtaeFg5C.js";
+import "./input-Bn2qJlr0.js";
+import "./plus-DEJHAl15.js";
+const I = [
+    ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
+    [
+      "path",
+      {
+        d: "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326",
+        key: "11g9vi",
+      },
+    ],
+  ],
+  P = p("bell", I);
+const R = [
+    ["path", { d: "M12 19v3", key: "npa21l" }],
+    ["path", { d: "M19 10v2a7 7 0 0 1-14 0v-2", key: "1vc78b" }],
+    ["rect", { x: "9", y: "2", width: "6", height: "13", rx: "3", key: "s6n7sd" }],
+  ],
+  _ = p("mic", R);
+const B = [
+    ["path", { d: "M9 18V5l12-2v13", key: "1jmyc2" }],
+    ["circle", { cx: "6", cy: "18", r: "3", key: "fqmcym" }],
+    ["circle", { cx: "18", cy: "16", r: "3", key: "1hluhg" }],
+  ],
+  D = p("music", B),
+  u = M.slice(2, 6).map((r, t) => ({ ...r, histRating: 3 + (t % 3), rated: t % 2 === 0 })),
+  N = [
+    {
+      label: "Music",
+      icon: D,
+      color: "text-purple-500",
+      bg: "bg-purple-500/10",
+      border: "border-purple-500/20",
+    },
+    {
+      label: "Sports",
+      icon: T,
+      color: "text-blue-500",
+      bg: "bg-blue-500/10",
+      border: "border-blue-500/20",
+    },
+    {
+      label: "Cinema",
+      icon: A,
+      color: "text-rose-500",
+      bg: "bg-rose-500/10",
+      border: "border-rose-500/20",
+    },
+    {
+      label: "Conferences",
+      icon: _,
+      color: "text-amber-500",
+      bg: "bg-amber-500/10",
+      border: "border-amber-500/20",
+    },
+  ];
+function v({ ticket: r }) {
+  return e.jsxs(l, {
+    to: "/ticket/$ticketId",
+    params: { ticketId: r.id },
+    className:
+      "block rounded-3xl overflow-hidden border border-border/60 bg-card shadow-[var(--shadow-card)] hover:-translate-y-1 transition-transform",
+    children: [
+      e.jsxs("div", {
+        className: "relative h-40",
+        children: [
+          e.jsx("img", { src: r.cover, alt: r.title, className: "w-full h-full object-cover" }),
+          e.jsx("div", {
+            className: "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent",
+          }),
+          e.jsx("span", {
+            className: "absolute bottom-3 left-4 text-white font-bold text-sm leading-tight",
+            children: r.title,
+          }),
+          e.jsx("span", {
+            className: `absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${r.ticketType === "VIP" ? "bg-primary text-primary-foreground" : "bg-white/20 text-white backdrop-blur-sm"}`,
+            children: r.ticketType,
+          }),
+        ],
+      }),
+      e.jsxs("div", {
+        className: "px-4 py-3",
+        children: [
+          e.jsxs("div", {
+            className: "flex items-center justify-between text-xs text-muted-foreground mb-2",
+            children: [
+              e.jsxs("span", {
+                className: "flex items-center gap-1",
+                children: [e.jsx(h, { className: "h-3.5 w-3.5" }), r.date],
+              }),
+              e.jsxs("span", {
+                className: "flex items-center gap-1",
+                children: [e.jsx(S, { className: "h-3.5 w-3.5" }), r.time],
+              }),
+            ],
+          }),
+          e.jsxs("div", {
+            className: "flex items-center justify-between",
+            children: [
+              e.jsxs("div", {
+                children: [
+                  e.jsx("p", { className: "text-xs text-muted-foreground", children: r.seat }),
+                  e.jsx("p", {
+                    className: "text-xs font-mono text-primary mt-0.5",
+                    children: r.orderId,
+                  }),
+                ],
+              }),
+              e.jsxs(d, {
+                size: "sm",
+                className: "h-8 px-3 rounded-full text-xs font-bold",
+                style: { background: "var(--gradient-primary)" },
+                children: [e.jsx(y, { className: "h-3.5 w-3.5 mr-1" }), "Show"],
+              }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+function w({ event: r }) {
+  return e.jsxs("div", {
+    className:
+      "bg-card border border-border/60 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] flex gap-3 p-3",
+    children: [
+      e.jsx("img", {
+        src: r.cover,
+        alt: r.title,
+        className: "w-20 h-20 object-cover rounded-xl shrink-0",
+      }),
+      e.jsxs("div", {
+        className: "flex-1 min-w-0 flex flex-col justify-between py-0.5",
+        children: [
+          e.jsxs("div", {
+            children: [
+              e.jsx("p", {
+                className: "font-semibold text-sm leading-tight line-clamp-2",
+                children: r.title,
+              }),
+              e.jsxs("p", {
+                className: "text-xs text-muted-foreground mt-1 flex items-center gap-1",
+                children: [e.jsx(x, { className: "h-3 w-3" }), r.city],
+              }),
+            ],
+          }),
+          e.jsxs("div", {
+            className: "flex items-center justify-between mt-2",
+            children: [
+              e.jsx("div", {
+                className: "flex gap-0.5",
+                children: [1, 2, 3, 4, 5].map((t) =>
+                  e.jsx(
+                    E,
+                    {
+                      className: `h-3.5 w-3.5 ${t <= r.histRating ? "text-yellow-400 fill-yellow-400" : "text-border"}`,
+                    },
+                    t,
+                  ),
+                ),
+              }),
+              !r.rated &&
+                e.jsx("button", {
+                  className:
+                    "text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full",
+                  children: "Rate",
+                }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+function ae() {
+  const [r, t] = F.useState("upcoming"),
+    k = e.jsxs("div", {
+      className: "hidden md:flex flex-col min-h-screen bg-background text-foreground",
+      children: [
+        e.jsx($, {}),
+        e.jsxs("div", {
+          className:
+            "flex-1 mx-auto max-w-7xl w-full px-6 py-10 grid grid-cols-[300px_1fr] gap-8 items-start",
+          children: [
+            e.jsxs("aside", {
+              className: "sticky top-24 space-y-5",
+              children: [
+                e.jsxs("div", {
+                  className:
+                    "rounded-3xl border border-border/60 bg-card p-6 flex flex-col items-center text-center shadow-[var(--shadow-card)]",
+                  children: [
+                    e.jsx("div", {
+                      className: "h-24 w-24 rounded-2xl p-[3px] shadow-lg mb-4",
+                      style: { background: "var(--gradient-primary)" },
+                      children: e.jsx("img", {
+                        src: "https://i.pravatar.cc/150?u=me",
+                        alt: "Alex Doe",
+                        className: "h-full w-full rounded-[14px] object-cover",
+                      }),
+                    }),
+                    e.jsx("h2", { className: "font-bold text-xl", children: "Alex Doe" }),
+                    e.jsxs("p", {
+                      className: "text-sm text-muted-foreground flex items-center gap-1 mt-1",
+                      children: [e.jsx(x, { className: "h-3.5 w-3.5" }), " Kigali, Rwanda"],
+                    }),
+                    e.jsx("p", {
+                      className: "text-xs text-muted-foreground mt-1",
+                      children: "Member since Jan 2024",
+                    }),
+                    e.jsx("div", {
+                      className: "grid grid-cols-3 gap-3 w-full mt-5",
+                      children: [
+                        { v: "24", l: "Attended" },
+                        { v: "8", l: "Following" },
+                        { v: "5", l: "Upcoming" },
+                      ].map(({ v: s, l: a }) =>
+                        e.jsxs(
+                          "div",
+                          {
+                            className: "bg-secondary/60 rounded-xl p-2.5 text-center",
+                            children: [
+                              e.jsx("p", { className: "font-bold text-base", children: s }),
+                              e.jsx("p", {
+                                className: "text-[10px] text-muted-foreground leading-tight mt-0.5",
+                                children: a,
+                              }),
+                            ],
+                          },
+                          a,
+                        ),
+                      ),
+                    }),
+                    e.jsxs("div", {
+                      className: "flex gap-2 w-full mt-4",
+                      children: [
+                        e.jsx(d, {
+                          variant: "secondary",
+                          className: "flex-1 h-9 text-sm font-semibold rounded-xl",
+                          children: "Edit Profile",
+                        }),
+                        e.jsx(d, {
+                          variant: "secondary",
+                          size: "icon",
+                          className: "h-9 w-9 rounded-xl shrink-0",
+                          children: e.jsx(j, { className: "h-4 w-4" }),
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                e.jsxs("div", {
+                  className:
+                    "rounded-3xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]",
+                  children: [
+                    e.jsx("p", { className: "font-bold text-sm mb-4", children: "Interests" }),
+                    e.jsx("div", {
+                      className: "flex flex-wrap gap-2",
+                      children: N.map(({ label: s, icon: a, color: i, bg: o, border: c }) =>
+                        e.jsxs(
+                          "span",
+                          {
+                            className: `flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${o} ${c} ${i}`,
+                            children: [e.jsx(a, { className: "h-3.5 w-3.5" }), s],
+                          },
+                          s,
+                        ),
+                      ),
+                    }),
+                  ],
+                }),
+                e.jsxs("div", {
+                  className:
+                    "rounded-3xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]",
+                  children: [
+                    e.jsxs("div", {
+                      className: "flex items-center justify-between mb-4",
+                      children: [
+                        e.jsx("p", { className: "font-bold text-sm", children: "Following" }),
+                        e.jsx(l, {
+                          to: "/organizers",
+                          className: "text-xs text-primary font-bold",
+                          children: "See all",
+                        }),
+                      ],
+                    }),
+                    e.jsx("div", {
+                      className: "space-y-3",
+                      children: b
+                        .slice(0, 4)
+                        .map((s) =>
+                          e.jsxs(
+                            "div",
+                            {
+                              className: "flex items-center gap-3",
+                              children: [
+                                e.jsx("img", {
+                                  src: s.avatar,
+                                  alt: s.name,
+                                  className:
+                                    "h-9 w-9 rounded-full object-cover border border-border/40",
+                                }),
+                                e.jsxs("div", {
+                                  className: "flex-1 min-w-0",
+                                  children: [
+                                    e.jsx("p", {
+                                      className: "text-sm font-semibold truncate",
+                                      children: s.name,
+                                    }),
+                                    e.jsxs("p", {
+                                      className: "text-xs text-muted-foreground",
+                                      children: ["@", s.handle],
+                                    }),
+                                  ],
+                                }),
+                                e.jsx(n, {
+                                  className: "h-4 w-4 fill-primary text-primary shrink-0",
+                                }),
+                              ],
+                            },
+                            s.id,
+                          ),
+                        ),
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            e.jsxs("main", {
+              className: "space-y-8",
+              children: [
+                e.jsxs("section", {
+                  children: [
+                    e.jsxs("div", {
+                      className: "flex items-center justify-between mb-4",
+                      children: [
+                        e.jsxs("h2", {
+                          className: "text-xl font-bold flex items-center gap-2",
+                          children: [
+                            e.jsx(g, { className: "h-5 w-5 text-primary" }),
+                            " Upcoming Tickets",
+                          ],
+                        }),
+                        e.jsxs(l, {
+                          to: "/events",
+                          className: "text-sm text-primary font-bold flex items-center gap-1",
+                          children: ["Browse events ", e.jsx(m, { className: "h-4 w-4" })],
+                        }),
+                      ],
+                    }),
+                    e.jsx("div", {
+                      className: "grid grid-cols-2 lg:grid-cols-3 gap-4 items-start",
+                      children: f.map((s) => e.jsx(v, { ticket: s }, s.id)),
+                    }),
+                  ],
+                }),
+                e.jsxs("section", {
+                  children: [
+                    e.jsxs("h2", {
+                      className: "text-xl font-bold mb-4 flex items-center gap-2",
+                      children: [e.jsx(h, { className: "h-5 w-5 text-primary" }), " Event History"],
+                    }),
+                    e.jsx("div", {
+                      className: "grid grid-cols-2 gap-4",
+                      children: u.map((s) => e.jsx(w, { event: s }, s.id)),
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        e.jsx(z, {}),
+      ],
+    }),
+    C = e.jsxs("div", {
+      className: "md:hidden min-h-screen bg-background pb-24 text-foreground",
+      children: [
+        e.jsx("div", {
+          className:
+            "sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/40 pt-safe-top",
+          children: e.jsxs("div", {
+            className: "flex items-center justify-between px-4 py-3",
+            children: [
+              e.jsx("h1", {
+                className: "font-bold text-lg tracking-tight",
+                children: "My Profile",
+              }),
+              e.jsxs("div", {
+                className: "flex items-center gap-2",
+                children: [
+                  e.jsx(l, {
+                    to: "/scanner",
+                    className: "p-2 rounded-full hover:bg-secondary transition-colors",
+                    children: e.jsx(y, { className: "h-5 w-5" }),
+                  }),
+                  e.jsx("button", {
+                    className: "p-2 rounded-full hover:bg-secondary transition-colors",
+                    children: e.jsx(P, { className: "h-5 w-5" }),
+                  }),
+                  e.jsx("button", {
+                    className: "p-2 rounded-full hover:bg-secondary transition-colors",
+                    children: e.jsx(j, { className: "h-5 w-5" }),
+                  }),
+                ],
+              }),
+            ],
+          }),
+        }),
+        e.jsxs("div", {
+          className: "relative px-4 pt-6 pb-4",
+          children: [
+            e.jsx("div", {
+              className:
+                "absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-primary/8 to-transparent pointer-events-none",
+            }),
+            e.jsxs("div", {
+              className: "flex items-center gap-4 relative z-10",
+              children: [
+                e.jsx("div", {
+                  className: "h-20 w-20 rounded-2xl p-[2px] shadow-lg shrink-0",
+                  style: { background: "var(--gradient-primary)" },
+                  children: e.jsx("img", {
+                    src: "https://i.pravatar.cc/150?u=me",
+                    alt: "Alex Doe",
+                    className: "h-full w-full rounded-[14px] object-cover bg-card",
+                  }),
+                }),
+                e.jsxs("div", {
+                  className: "flex-1 min-w-0",
+                  children: [
+                    e.jsx("h2", {
+                      className: "font-bold text-xl tracking-tight",
+                      children: "Alex Doe",
+                    }),
+                    e.jsxs("p", {
+                      className: "text-sm text-muted-foreground flex items-center gap-1 mt-0.5",
+                      children: [
+                        e.jsx(x, { className: "h-3.5 w-3.5 shrink-0" }),
+                        " Kigali, Rwanda",
+                      ],
+                    }),
+                    e.jsx("p", {
+                      className: "text-xs text-muted-foreground mt-1",
+                      children: "Member since Jan 2024",
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            e.jsx("div", {
+              className: "mt-5 grid grid-cols-3 gap-3",
+              children: [
+                { value: "24", label: "Events Attended" },
+                { value: "8", label: "Following" },
+                { value: "5", label: "Upcoming" },
+              ].map(({ value: s, label: a }) =>
+                e.jsxs(
+                  "div",
+                  {
+                    className:
+                      "bg-card rounded-2xl border border-border/40 p-3 text-center shadow-sm",
+                    children: [
+                      e.jsx("p", { className: "font-bold text-xl", children: s }),
+                      e.jsx("p", {
+                        className: "text-[10px] text-muted-foreground mt-0.5 leading-tight",
+                        children: a,
+                      }),
+                    ],
+                  },
+                  a,
+                ),
+              ),
+            }),
+            e.jsxs("div", {
+              className: "flex gap-2 mt-4",
+              children: [
+                e.jsx(d, {
+                  variant: "secondary",
+                  className: "flex-1 h-9 text-sm font-semibold rounded-xl",
+                  children: "Edit Profile",
+                }),
+                e.jsx(d, {
+                  variant: "secondary",
+                  className: "flex-1 h-9 text-sm font-semibold rounded-xl",
+                  children: "Share",
+                }),
+              ],
+            }),
+          ],
+        }),
+        e.jsxs("div", {
+          className: "px-4 mb-1",
+          children: [
+            e.jsx("h3", {
+              className: "font-bold text-sm mb-3 text-muted-foreground uppercase tracking-wider",
+              children: "Interests",
+            }),
+            e.jsx("div", {
+              className: "flex gap-2 overflow-x-auto hide-scrollbar pb-1",
+              children: N.map(({ label: s, icon: a, color: i, bg: o, border: c }) =>
+                e.jsxs(
+                  "span",
+                  {
+                    className: `shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border ${o} ${c} ${i}`,
+                    children: [e.jsx(a, { className: "h-4 w-4" }), s],
+                  },
+                  s,
+                ),
+              ),
+            }),
+          ],
+        }),
+        e.jsx("div", {
+          className: "flex border-b border-border/40 mt-4 px-4 gap-1",
+          children: ["upcoming", "history", "following"].map((s) =>
+            e.jsx(
+              "button",
+              {
+                onClick: () => t(s),
+                className: `flex-1 py-2.5 text-xs font-bold capitalize transition-all rounded-t-lg ${r === s ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`,
+                children: e.jsxs("span", {
+                  className: "flex items-center justify-center gap-1.5",
+                  children: [
+                    s === "upcoming" &&
+                      e.jsxs(e.Fragment, {
+                        children: [e.jsx(g, { className: "h-4 w-4" }), " Upcoming"],
+                      }),
+                    s === "history" &&
+                      e.jsxs(e.Fragment, {
+                        children: [e.jsx(h, { className: "h-4 w-4" }), " History"],
+                      }),
+                    s === "following" &&
+                      e.jsxs(e.Fragment, {
+                        children: [e.jsx(n, { className: "h-4 w-4" }), " Following"],
+                      }),
+                  ],
+                }),
+              },
+              s,
+            ),
+          ),
+        }),
+        e.jsxs("div", {
+          className: "px-4 pt-4",
+          children: [
+            r === "upcoming" &&
+              e.jsxs("div", {
+                className: "space-y-4",
+                children: [
+                  f.map((s) => e.jsx(v, { ticket: s }, s.id)),
+                  e.jsxs(l, {
+                    to: "/events",
+                    className:
+                      "flex items-center justify-center gap-1 text-sm font-bold text-primary py-3",
+                    children: ["Browse more events ", e.jsx(m, { className: "h-4 w-4" })],
+                  }),
+                ],
+              }),
+            r === "history" &&
+              e.jsx("div", {
+                className: "space-y-3",
+                children: u.map((s) => e.jsx(w, { event: s }, s.id)),
+              }),
+            r === "following" &&
+              e.jsxs("div", {
+                className: "space-y-3",
+                children: [
+                  b
+                    .slice(0, 5)
+                    .map((s) =>
+                      e.jsxs(
+                        "div",
+                        {
+                          className:
+                            "bg-card border border-border/40 rounded-2xl flex items-center gap-3 p-3 shadow-sm",
+                          children: [
+                            e.jsx("img", {
+                              src: s.avatar,
+                              alt: s.name,
+                              className:
+                                "h-12 w-12 rounded-full object-cover shrink-0 border border-border/40",
+                            }),
+                            e.jsxs("div", {
+                              className: "flex-1 min-w-0",
+                              children: [
+                                e.jsx("p", {
+                                  className: "font-semibold text-sm",
+                                  children: s.name,
+                                }),
+                                e.jsxs("p", {
+                                  className: "text-xs text-muted-foreground",
+                                  children: [
+                                    "@",
+                                    s.handle,
+                                    " · ",
+                                    (s.followers / 1e3).toFixed(1),
+                                    "k followers",
+                                  ],
+                                }),
+                              ],
+                            }),
+                            e.jsxs(d, {
+                              variant: "secondary",
+                              size: "sm",
+                              className:
+                                "shrink-0 h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1",
+                              children: [
+                                e.jsx(n, { className: "h-3 w-3 fill-primary text-primary" }),
+                                " Following",
+                              ],
+                            }),
+                          ],
+                        },
+                        s.id,
+                      ),
+                    ),
+                  e.jsxs(l, {
+                    to: "/organizers",
+                    className:
+                      "flex items-center justify-center gap-1 text-sm font-bold text-primary py-3",
+                    children: ["Discover more organizers ", e.jsx(m, { className: "h-4 w-4" })],
+                  }),
+                ],
+              }),
+          ],
+        }),
+        e.jsx("style", {
+          children: `
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `})]});return e.jsxs(e.Fragment,{children:[k,C]})}export{ae as component};
+      `,
+        }),
+      ],
+    });
+  return e.jsxs(e.Fragment, { children: [k, C] });
+}
+export { ae as component };

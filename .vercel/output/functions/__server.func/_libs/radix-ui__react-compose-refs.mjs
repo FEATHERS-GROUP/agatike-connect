@@ -33,7 +33,4 @@ function composeRefs(...refs) {
 function useComposedRefs(...refs) {
   return reactExports.useCallback(composeRefs(...refs), refs);
 }
-export {
-  composeRefs as c,
-  useComposedRefs as u
-};
+export { composeRefs as c, useComposedRefs as u };

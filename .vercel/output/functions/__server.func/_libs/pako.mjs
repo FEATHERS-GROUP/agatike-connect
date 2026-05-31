@@ -26,18 +26,20 @@ const END_BLOCK = 256;
 const REP_3_6 = 16;
 const REPZ_3_10 = 17;
 const REPZ_11_138 = 18;
-const extra_lbits = (
+const extra_lbits =
   /* extra bits for each length code */
-  new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0])
-);
-const extra_dbits = (
+  new Uint8Array([
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0,
+  ]);
+const extra_dbits =
   /* extra bits for each distance code */
-  new Uint8Array([0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13])
-);
-const extra_blbits = (
+  new Uint8Array([
+    0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13,
+    13,
+  ]);
+const extra_blbits =
   /* extra bits for each bit length code */
-  new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7])
-);
+  new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7]);
 const bl_order = new Uint8Array([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
 const DIST_CODE_LEN = 512;
 const static_ltree = new Array((L_CODES$1 + 2) * 2);
@@ -73,16 +75,16 @@ const d_code = (dist) => {
 };
 const put_short = (s, w) => {
   s.pending_buf[s.pending++] = w & 255;
-  s.pending_buf[s.pending++] = w >>> 8 & 255;
+  s.pending_buf[s.pending++] = (w >>> 8) & 255;
 };
 const send_bits = (s, value, length) => {
   if (s.bi_valid > Buf_size - length) {
-    s.bi_buf |= value << s.bi_valid & 65535;
+    s.bi_buf |= (value << s.bi_valid) & 65535;
     put_short(s, s.bi_buf);
-    s.bi_buf = value >> Buf_size - s.bi_valid;
+    s.bi_buf = value >> (Buf_size - s.bi_valid);
     s.bi_valid += length - Buf_size;
   } else {
-    s.bi_buf |= value << s.bi_valid & 65535;
+    s.bi_buf |= (value << s.bi_valid) & 65535;
     s.bi_valid += length;
   }
 };
@@ -90,7 +92,7 @@ const send_code = (s, c, tree) => {
   send_bits(
     s,
     tree[c * 2],
-    tree[c * 2 + 1]
+    tree[c * 2 + 1],
     /*.Len*/
   );
 };
@@ -188,7 +190,7 @@ const gen_codes = (tree, max_code, bl_count) => {
   let bits;
   let n;
   for (bits = 1; bits <= MAX_BITS$1; bits++) {
-    code = code + bl_count[bits - 1] << 1;
+    code = (code + bl_count[bits - 1]) << 1;
     next_code[bits] = code;
   }
   for (n = 0; n <= max_code; n++) {
@@ -224,7 +226,7 @@ const tr_static_init = () => {
   dist >>= 7;
   for (; code < D_CODES$1; code++) {
     base_dist[code] = dist << 7;
-    for (n = 0; n < 1 << extra_dbits[code] - 7; n++) {
+    for (n = 0; n < 1 << (extra_dbits[code] - 7); n++) {
       _dist_code[256 + dist++] = code;
     }
   }
@@ -257,7 +259,13 @@ const tr_static_init = () => {
     static_dtree[n * 2 + 1] = 5;
     static_dtree[n * 2] = bi_reverse(n, 5);
   }
-  static_l_desc = new StaticTreeDesc(static_ltree, extra_lbits, LITERALS$1 + 1, L_CODES$1, MAX_BITS$1);
+  static_l_desc = new StaticTreeDesc(
+    static_ltree,
+    extra_lbits,
+    LITERALS$1 + 1,
+    L_CODES$1,
+    MAX_BITS$1,
+  );
   static_d_desc = new StaticTreeDesc(static_dtree, extra_dbits, 0, D_CODES$1, MAX_BITS$1);
   static_bl_desc = new StaticTreeDesc(new Array(0), extra_blbits, 0, BL_CODES$1, MAX_BL_BITS);
 };
@@ -288,7 +296,7 @@ const bi_windup = (s) => {
 const smaller = (tree, n, m, depth) => {
   const _n2 = n * 2;
   const _m2 = m * 2;
-  return tree[_n2] < tree[_m2] || tree[_n2] === tree[_m2] && depth[n] <= depth[m];
+  return tree[_n2] < tree[_m2] || (tree[_n2] === tree[_m2] && depth[n] <= depth[m]);
 };
 const pqdownheap = (s, tree, k) => {
   const v = s.heap[k];
@@ -373,44 +381,38 @@ const build_tree = (s, desc) => {
   }
   node = elems;
   do {
-    n = s.heap[
-      1
+    n =
+      s.heap[1];
       /*SMALLEST*/
-    ];
-    s.heap[
-      1
-      /*SMALLEST*/
-    ] = s.heap[s.heap_len--];
+    s.heap[1] = s.heap[s.heap_len--];
+    /*SMALLEST*/
     pqdownheap(
       s,
       tree,
-      1
+      1,
       /*SMALLEST*/
     );
-    m = s.heap[
-      1
+    m =
+      s.heap[1];
       /*SMALLEST*/
-    ];
     s.heap[--s.heap_max] = n;
     s.heap[--s.heap_max] = m;
     tree[node * 2] = tree[n * 2] + tree[m * 2];
     s.depth[node] = (s.depth[n] >= s.depth[m] ? s.depth[n] : s.depth[m]) + 1;
     tree[n * 2 + 1] = tree[m * 2 + 1] = node;
-    s.heap[
-      1
-      /*SMALLEST*/
-    ] = node++;
+    s.heap[1] =
+    /*SMALLEST*/
+      node++;
     pqdownheap(
       s,
       tree,
-      1
+      1,
       /*SMALLEST*/
     );
   } while (s.heap_len >= 2);
-  s.heap[--s.heap_max] = s.heap[
-    1
+  s.heap[--s.heap_max] =
+    s.heap[1];
     /*SMALLEST*/
-  ];
   gen_bitlen(s, desc);
   gen_codes(tree, max_code, s.bl_count);
 };
@@ -587,8 +589,8 @@ const _tr_flush_block$1 = (s, buf, stored_len, last) => {
     build_tree(s, s.l_desc);
     build_tree(s, s.d_desc);
     max_blindex = build_bl_tree(s);
-    opt_lenb = s.opt_len + 3 + 7 >>> 3;
-    static_lenb = s.static_len + 3 + 7 >>> 3;
+    opt_lenb = (s.opt_len + 3 + 7) >>> 3;
+    static_lenb = (s.static_len + 3 + 7) >>> 3;
     if (static_lenb <= opt_lenb) {
       opt_lenb = static_lenb;
     }
@@ -634,29 +636,32 @@ var trees = {
   _tr_stored_block: _tr_stored_block_1,
   _tr_flush_block: _tr_flush_block_1,
   _tr_tally: _tr_tally_1,
-  _tr_align: _tr_align_1
+  _tr_align: _tr_align_1,
 };
 const adler32 = (adler, buf, len, pos) => {
-  let s1 = adler & 65535 | 0, s2 = adler >>> 16 & 65535 | 0, n = 0;
+  let s1 = (adler & 65535) | 0,
+    s2 = ((adler >>> 16) & 65535) | 0,
+    n = 0;
   while (len !== 0) {
     n = len > 2e3 ? 2e3 : len;
     len -= n;
     do {
-      s1 = s1 + buf[pos++] | 0;
-      s2 = s2 + s1 | 0;
+      s1 = (s1 + buf[pos++]) | 0;
+      s2 = (s2 + s1) | 0;
     } while (--n);
     s1 %= 65521;
     s2 %= 65521;
   }
-  return s1 | s2 << 16 | 0;
+  return s1 | (s2 << 16) | 0;
 };
 var adler32_1 = adler32;
 const makeTable = () => {
-  let c, table = [];
+  let c,
+    table = [];
   for (var n = 0; n < 256; n++) {
     c = n;
     for (var k = 0; k < 8; k++) {
-      c = c & 1 ? 3988292384 ^ c >>> 1 : c >>> 1;
+      c = c & 1 ? 3988292384 ^ (c >>> 1) : c >>> 1;
     }
     table[n] = c;
   }
@@ -668,7 +673,7 @@ const crc32 = (crc, buf, len, pos) => {
   const end = pos + len;
   crc ^= -1;
   for (let i = pos; i < end; i++) {
-    crc = crc >>> 8 ^ t[(crc ^ buf[i]) & 255];
+    crc = (crc >>> 8) ^ t[(crc ^ buf[i]) & 255];
   }
   return crc ^ -1;
 };
@@ -690,7 +695,7 @@ var messages = {
   /* Z_MEM_ERROR     (-4) */
   "-5": "buffer error",
   /* Z_BUF_ERROR     (-5) */
-  "-6": "incompatible version"
+  "-6": "incompatible version",
   /* Z_VERSION_ERROR (-6) */
 };
 var constants$2 = {
@@ -703,8 +708,8 @@ var constants$2 = {
   Z_BLOCK: 5,
   Z_TREES: 6,
   /* Return codes for the compression/decompression functions. Negative values
-  * are errors, positive values are used for special but normal events.
-  */
+   * are errors, positive values are used for special but normal events.
+   */
   Z_OK: 0,
   Z_STREAM_END: 1,
   Z_NEED_DICT: 2,
@@ -721,7 +726,7 @@ var constants$2 = {
   //Z_ASCII:                1, // = Z_TEXT (deprecated)
   Z_UNKNOWN: 2,
   /* The deflate compression method */
-  Z_DEFLATED: 8
+  Z_DEFLATED: 8,
   //Z_NULL:                 null // Use -1 or null inline, depending on var type
 };
 const { _tr_init, _tr_stored_block, _tr_flush_block, _tr_tally, _tr_align } = trees;
@@ -743,7 +748,7 @@ const {
   Z_FIXED,
   Z_DEFAULT_STRATEGY: Z_DEFAULT_STRATEGY$1,
   Z_UNKNOWN,
-  Z_DEFLATED: Z_DEFLATED$2
+  Z_DEFLATED: Z_DEFLATED$2,
 } = constants$2;
 const MAX_MEM_LEVEL = 9;
 const MAX_WBITS$1 = 15;
@@ -802,7 +807,7 @@ const slide_hash = (s) => {
     s.prev[p] = m >= wsize ? m - wsize : 0;
   } while (--n);
 };
-let HASH_ZLIB = (s, prev, data) => (prev << s.hash_shift ^ data) & s.hash_mask;
+let HASH_ZLIB = (s, prev, data) => ((prev << s.hash_shift) ^ data) & s.hash_mask;
 let HASH = HASH_ZLIB;
 const flush_pending = (strm) => {
   const s = strm.state;
@@ -832,7 +837,7 @@ const put_byte = (s, b) => {
   s.pending_buf[s.pending++] = b;
 };
 const putShortMSB = (s, b) => {
-  s.pending_buf[s.pending++] = b >>> 8 & 255;
+  s.pending_buf[s.pending++] = (b >>> 8) & 255;
   s.pending_buf[s.pending++] = b & 255;
 };
 const read_buf = (strm, buf, start, size) => {
@@ -876,13 +881,27 @@ const longest_match = (s, cur_match) => {
   }
   do {
     match = cur_match;
-    if (_win[match + best_len] !== scan_end || _win[match + best_len - 1] !== scan_end1 || _win[match] !== _win[scan] || _win[++match] !== _win[scan + 1]) {
+    if (
+      _win[match + best_len] !== scan_end ||
+      _win[match + best_len - 1] !== scan_end1 ||
+      _win[match] !== _win[scan] ||
+      _win[++match] !== _win[scan + 1]
+    ) {
       continue;
     }
     scan += 2;
     match++;
-    do {
-    } while (_win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && _win[++scan] === _win[++match] && scan < strend);
+    do {} while (
+      _win[++scan] === _win[++match] &&
+      _win[++scan] === _win[++match] &&
+      _win[++scan] === _win[++match] &&
+      _win[++scan] === _win[++match] &&
+      _win[++scan] === _win[++match] &&
+      _win[++scan] === _win[++match] &&
+      _win[++scan] === _win[++match] &&
+      _win[++scan] === _win[++match] &&
+      scan < strend
+    );
     len = MAX_MATCH - (strend - scan);
     scan = strend - MAX_MATCH;
     if (len > best_len) {
@@ -940,11 +959,14 @@ const fill_window = (s) => {
 };
 const deflate_stored = (s, flush) => {
   let min_block = s.pending_buf_size - 5 > s.w_size ? s.w_size : s.pending_buf_size - 5;
-  let len, left, have, last = 0;
+  let len,
+    left,
+    have,
+    last = 0;
   let used = s.strm.avail_in;
   do {
     len = 65535;
-    have = s.bi_valid + 42 >> 3;
+    have = (s.bi_valid + 42) >> 3;
     if (s.strm.avail_out < have) {
       break;
     }
@@ -956,7 +978,12 @@ const deflate_stored = (s, flush) => {
     if (len > have) {
       len = have;
     }
-    if (len < min_block && (len === 0 && flush !== Z_FINISH$3 || flush === Z_NO_FLUSH$2 || len !== left + s.strm.avail_in)) {
+    if (
+      len < min_block &&
+      ((len === 0 && flush !== Z_FINISH$3) ||
+        flush === Z_NO_FLUSH$2 ||
+        len !== left + s.strm.avail_in)
+    ) {
       break;
     }
     last = flush === Z_FINISH$3 && len === left + s.strm.avail_in ? 1 : 0;
@@ -1014,7 +1041,12 @@ const deflate_stored = (s, flush) => {
   if (last) {
     return BS_FINISH_DONE;
   }
-  if (flush !== Z_NO_FLUSH$2 && flush !== Z_FINISH$3 && s.strm.avail_in === 0 && s.strstart === s.block_start) {
+  if (
+    flush !== Z_NO_FLUSH$2 &&
+    flush !== Z_FINISH$3 &&
+    s.strm.avail_in === 0 &&
+    s.strstart === s.block_start
+  ) {
     return BS_BLOCK_DONE;
   }
   have = s.window_size - s.strstart;
@@ -1041,11 +1073,17 @@ const deflate_stored = (s, flush) => {
   if (s.high_water < s.strstart) {
     s.high_water = s.strstart;
   }
-  have = s.bi_valid + 42 >> 3;
+  have = (s.bi_valid + 42) >> 3;
   have = s.pending_buf_size - have > 65535 ? 65535 : s.pending_buf_size - have;
   min_block = have > s.w_size ? s.w_size : have;
   left = s.strstart - s.block_start;
-  if (left >= min_block || (left || flush === Z_FINISH$3) && flush !== Z_NO_FLUSH$2 && s.strm.avail_in === 0 && left <= have) {
+  if (
+    left >= min_block ||
+    ((left || flush === Z_FINISH$3) &&
+      flush !== Z_NO_FLUSH$2 &&
+      s.strm.avail_in === 0 &&
+      left <= have)
+  ) {
     len = left > have ? have : left;
     last = flush === Z_FINISH$3 && s.strm.avail_in === 0 && len === left ? 1 : 0;
     _tr_stored_block(s, s.block_start, len, last);
@@ -1057,7 +1095,7 @@ const deflate_stored = (s, flush) => {
 const deflate_fast = (s, flush) => {
   let hash_head;
   let bflush;
-  for (; ; ) {
+  for (;;) {
     if (s.lookahead < MIN_LOOKAHEAD) {
       fill_window(s);
       if (s.lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH$2) {
@@ -1126,7 +1164,7 @@ const deflate_slow = (s, flush) => {
   let hash_head;
   let bflush;
   let max_insert;
-  for (; ; ) {
+  for (;;) {
     if (s.lookahead < MIN_LOOKAHEAD) {
       fill_window(s);
       if (s.lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH$2) {
@@ -1145,9 +1183,17 @@ const deflate_slow = (s, flush) => {
     s.prev_length = s.match_length;
     s.prev_match = s.match_start;
     s.match_length = MIN_MATCH - 1;
-    if (hash_head !== 0 && s.prev_length < s.max_lazy_match && s.strstart - hash_head <= s.w_size - MIN_LOOKAHEAD) {
+    if (
+      hash_head !== 0 &&
+      s.prev_length < s.max_lazy_match &&
+      s.strstart - hash_head <= s.w_size - MIN_LOOKAHEAD
+    ) {
       s.match_length = longest_match(s, hash_head);
-      if (s.match_length <= 5 && (s.strategy === Z_FILTERED || s.match_length === MIN_MATCH && s.strstart - s.match_start > 4096)) {
+      if (
+        s.match_length <= 5 &&
+        (s.strategy === Z_FILTERED ||
+          (s.match_length === MIN_MATCH && s.strstart - s.match_start > 4096))
+      ) {
         s.match_length = MIN_MATCH - 1;
       }
     }
@@ -1213,7 +1259,7 @@ const deflate_rle = (s, flush) => {
   let prev;
   let scan, strend;
   const _win = s.window;
-  for (; ; ) {
+  for (;;) {
     if (s.lookahead <= MAX_MATCH) {
       fill_window(s);
       if (s.lookahead <= MAX_MATCH && flush === Z_NO_FLUSH$2) {
@@ -1229,8 +1275,17 @@ const deflate_rle = (s, flush) => {
       prev = _win[scan];
       if (prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan]) {
         strend = s.strstart + MAX_MATCH;
-        do {
-        } while (prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && prev === _win[++scan] && scan < strend);
+        do {} while (
+          prev === _win[++scan] &&
+          prev === _win[++scan] &&
+          prev === _win[++scan] &&
+          prev === _win[++scan] &&
+          prev === _win[++scan] &&
+          prev === _win[++scan] &&
+          prev === _win[++scan] &&
+          prev === _win[++scan] &&
+          scan < strend
+        );
         s.match_length = MAX_MATCH - (strend - scan);
         if (s.match_length > s.lookahead) {
           s.match_length = s.lookahead;
@@ -1272,7 +1327,7 @@ const deflate_rle = (s, flush) => {
 };
 const deflate_huff = (s, flush) => {
   let bflush;
-  for (; ; ) {
+  for (;;) {
     if (s.lookahead === 0) {
       fill_window(s);
       if (s.lookahead === 0) {
@@ -1336,7 +1391,7 @@ const configuration_table = [
   /* 7 */
   new Config(32, 128, 258, 1024, deflate_slow),
   /* 8 */
-  new Config(32, 258, 258, 4096, deflate_slow)
+  new Config(32, 258, 258, 4096, deflate_slow),
   /* 9 max compression */
 ];
 const lm_init = (s) => {
@@ -1424,9 +1479,18 @@ const deflateStateCheck = (strm) => {
     return 1;
   }
   const s = strm.state;
-  if (!s || s.strm !== strm || s.status !== INIT_STATE && //#ifdef GZIP
-  s.status !== GZIP_STATE && //#endif
-  s.status !== EXTRA_STATE && s.status !== NAME_STATE && s.status !== COMMENT_STATE && s.status !== HCRC_STATE && s.status !== BUSY_STATE && s.status !== FINISH_STATE) {
+  if (
+    !s ||
+    s.strm !== strm ||
+    (s.status !== INIT_STATE && //#ifdef GZIP
+      s.status !== GZIP_STATE && //#endif
+      s.status !== EXTRA_STATE &&
+      s.status !== NAME_STATE &&
+      s.status !== COMMENT_STATE &&
+      s.status !== HCRC_STATE &&
+      s.status !== BUSY_STATE &&
+      s.status !== FINISH_STATE)
+  ) {
     return 1;
   }
   return 0;
@@ -1444,10 +1508,12 @@ const deflateResetKeep = (strm) => {
     s.wrap = -s.wrap;
   }
   s.status = //#ifdef GZIP
-  s.wrap === 2 ? GZIP_STATE : (
-    //#endif
-    s.wrap ? INIT_STATE : BUSY_STATE
-  );
+    s.wrap === 2
+      ? GZIP_STATE
+      : //#endif
+        s.wrap
+        ? INIT_STATE
+        : BUSY_STATE;
   strm.adler = s.wrap === 2 ? 0 : 1;
   s.last_flush = -2;
   _tr_init(s);
@@ -1482,7 +1548,18 @@ const deflateInit2 = (strm, level, method, windowBits, memLevel, strategy) => {
     wrap = 2;
     windowBits -= 16;
   }
-  if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method !== Z_DEFLATED$2 || windowBits < 8 || windowBits > 15 || level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED || windowBits === 8 && wrap !== 1) {
+  if (
+    memLevel < 1 ||
+    memLevel > MAX_MEM_LEVEL ||
+    method !== Z_DEFLATED$2 ||
+    windowBits < 8 ||
+    windowBits > 15 ||
+    level < 0 ||
+    level > 9 ||
+    strategy < 0 ||
+    strategy > Z_FIXED ||
+    (windowBits === 8 && wrap !== 1)
+  ) {
     return err(strm, Z_STREAM_ERROR$2);
   }
   if (windowBits === 8) {
@@ -1504,7 +1581,7 @@ const deflateInit2 = (strm, level, method, windowBits, memLevel, strategy) => {
   s.window = new Uint8Array(s.w_size * 2);
   s.head = new Uint16Array(s.hash_size);
   s.prev = new Uint16Array(s.w_size);
-  s.lit_bufsize = 1 << memLevel + 6;
+  s.lit_bufsize = 1 << (memLevel + 6);
   s.pending_buf_size = s.lit_bufsize * 4;
   s.pending_buf = new Uint8Array(s.pending_buf_size);
   s.sym_buf = s.lit_bufsize;
@@ -1522,7 +1599,11 @@ const deflate$2 = (strm, flush) => {
     return strm ? err(strm, Z_STREAM_ERROR$2) : Z_STREAM_ERROR$2;
   }
   const s = strm.state;
-  if (!strm.output || strm.avail_in !== 0 && !strm.input || s.status === FINISH_STATE && flush !== Z_FINISH$3) {
+  if (
+    !strm.output ||
+    (strm.avail_in !== 0 && !strm.input) ||
+    (s.status === FINISH_STATE && flush !== Z_FINISH$3)
+  ) {
     return err(strm, strm.avail_out === 0 ? Z_BUF_ERROR$1 : Z_STREAM_ERROR$2);
   }
   const old_flush = s.last_flush;
@@ -1543,7 +1624,7 @@ const deflate$2 = (strm, flush) => {
     s.status = BUSY_STATE;
   }
   if (s.status === INIT_STATE) {
-    let header = Z_DEFLATED$2 + (s.w_bits - 8 << 4) << 8;
+    let header = (Z_DEFLATED$2 + ((s.w_bits - 8) << 4)) << 8;
     let level_flags = -1;
     if (s.strategy >= Z_HUFFMAN_ONLY || s.level < 2) {
       level_flags = 0;
@@ -1558,7 +1639,7 @@ const deflate$2 = (strm, flush) => {
     if (s.strstart !== 0) {
       header |= PRESET_DICT;
     }
-    header += 31 - header % 31;
+    header += 31 - (header % 31);
     putShortMSB(s, header);
     if (s.strstart !== 0) {
       putShortMSB(s, strm.adler >>> 16);
@@ -1594,17 +1675,21 @@ const deflate$2 = (strm, flush) => {
     } else {
       put_byte(
         s,
-        (s.gzhead.text ? 1 : 0) + (s.gzhead.hcrc ? 2 : 0) + (!s.gzhead.extra ? 0 : 4) + (!s.gzhead.name ? 0 : 8) + (!s.gzhead.comment ? 0 : 16)
+        (s.gzhead.text ? 1 : 0) +
+          (s.gzhead.hcrc ? 2 : 0) +
+          (!s.gzhead.extra ? 0 : 4) +
+          (!s.gzhead.name ? 0 : 8) +
+          (!s.gzhead.comment ? 0 : 16),
       );
       put_byte(s, s.gzhead.time & 255);
-      put_byte(s, s.gzhead.time >> 8 & 255);
-      put_byte(s, s.gzhead.time >> 16 & 255);
-      put_byte(s, s.gzhead.time >> 24 & 255);
+      put_byte(s, (s.gzhead.time >> 8) & 255);
+      put_byte(s, (s.gzhead.time >> 16) & 255);
+      put_byte(s, (s.gzhead.time >> 24) & 255);
       put_byte(s, s.level === 9 ? 2 : s.strategy >= Z_HUFFMAN_ONLY || s.level < 2 ? 4 : 0);
       put_byte(s, s.gzhead.os & 255);
       if (s.gzhead.extra && s.gzhead.extra.length) {
         put_byte(s, s.gzhead.extra.length & 255);
-        put_byte(s, s.gzhead.extra.length >> 8 & 255);
+        put_byte(s, (s.gzhead.extra.length >> 8) & 255);
       }
       if (s.gzhead.hcrc) {
         strm.adler = crc32_1(strm.adler, s.pending_buf, s.pending, 0);
@@ -1712,7 +1797,7 @@ const deflate$2 = (strm, flush) => {
         }
       }
       put_byte(s, strm.adler & 255);
-      put_byte(s, strm.adler >> 8 & 255);
+      put_byte(s, (strm.adler >> 8) & 255);
       strm.adler = 0;
     }
     s.status = BUSY_STATE;
@@ -1722,8 +1807,19 @@ const deflate$2 = (strm, flush) => {
       return Z_OK$3;
     }
   }
-  if (strm.avail_in !== 0 || s.lookahead !== 0 || flush !== Z_NO_FLUSH$2 && s.status !== FINISH_STATE) {
-    let bstate = s.level === 0 ? deflate_stored(s, flush) : s.strategy === Z_HUFFMAN_ONLY ? deflate_huff(s, flush) : s.strategy === Z_RLE ? deflate_rle(s, flush) : configuration_table[s.level].func(s, flush);
+  if (
+    strm.avail_in !== 0 ||
+    s.lookahead !== 0 ||
+    (flush !== Z_NO_FLUSH$2 && s.status !== FINISH_STATE)
+  ) {
+    let bstate =
+      s.level === 0
+        ? deflate_stored(s, flush)
+        : s.strategy === Z_HUFFMAN_ONLY
+          ? deflate_huff(s, flush)
+          : s.strategy === Z_RLE
+            ? deflate_rle(s, flush)
+            : configuration_table[s.level].func(s, flush);
     if (bstate === BS_FINISH_STARTED || bstate === BS_FINISH_DONE) {
       s.status = FINISH_STATE;
     }
@@ -1762,13 +1858,13 @@ const deflate$2 = (strm, flush) => {
   }
   if (s.wrap === 2) {
     put_byte(s, strm.adler & 255);
-    put_byte(s, strm.adler >> 8 & 255);
-    put_byte(s, strm.adler >> 16 & 255);
-    put_byte(s, strm.adler >> 24 & 255);
+    put_byte(s, (strm.adler >> 8) & 255);
+    put_byte(s, (strm.adler >> 16) & 255);
+    put_byte(s, (strm.adler >> 24) & 255);
     put_byte(s, strm.total_in & 255);
-    put_byte(s, strm.total_in >> 8 & 255);
-    put_byte(s, strm.total_in >> 16 & 255);
-    put_byte(s, strm.total_in >> 24 & 255);
+    put_byte(s, (strm.total_in >> 8) & 255);
+    put_byte(s, (strm.total_in >> 16) & 255);
+    put_byte(s, (strm.total_in >> 24) & 255);
   } else {
     putShortMSB(s, strm.adler >>> 16);
     putShortMSB(s, strm.adler & 65535);
@@ -1794,7 +1890,7 @@ const deflateSetDictionary = (strm, dictionary) => {
   }
   const s = strm.state;
   const wrap = s.wrap;
-  if (wrap === 2 || wrap === 1 && s.status !== INIT_STATE || s.lookahead) {
+  if (wrap === 2 || (wrap === 1 && s.status !== INIT_STATE) || s.lookahead) {
     return Z_STREAM_ERROR$2;
   }
   if (wrap === 1) {
@@ -1863,12 +1959,12 @@ var deflate_1$2 = {
   deflate: deflate_2$1,
   deflateEnd: deflateEnd_1,
   deflateSetDictionary: deflateSetDictionary_1,
-  deflateInfo
+  deflateInfo,
 };
 const _has = (obj, key) => {
   return Object.prototype.hasOwnProperty.call(obj, key);
 };
-var assign = function(obj) {
+var assign = function (obj) {
   const sources = Array.prototype.slice.call(arguments, 1);
   while (sources.length) {
     const source = sources.shift();
@@ -1901,7 +1997,7 @@ var flattenChunks = (chunks) => {
 };
 var common = {
   assign,
-  flattenChunks
+  flattenChunks,
 };
 let STR_APPLY_UIA_OK = true;
 try {
@@ -1918,13 +2014,19 @@ var string2buf = (str) => {
   if (typeof TextEncoder === "function" && TextEncoder.prototype.encode) {
     return new TextEncoder().encode(str);
   }
-  let buf, c, c2, m_pos, i, str_len = str.length, buf_len = 0;
+  let buf,
+    c,
+    c2,
+    m_pos,
+    i,
+    str_len = str.length,
+    buf_len = 0;
   for (m_pos = 0; m_pos < str_len; m_pos++) {
     c = str.charCodeAt(m_pos);
     if ((c & 64512) === 55296 && m_pos + 1 < str_len) {
       c2 = str.charCodeAt(m_pos + 1);
       if ((c2 & 64512) === 56320) {
-        c = 65536 + (c - 55296 << 10) + (c2 - 56320);
+        c = 65536 + ((c - 55296) << 10) + (c2 - 56320);
         m_pos++;
       }
     }
@@ -1936,24 +2038,24 @@ var string2buf = (str) => {
     if ((c & 64512) === 55296 && m_pos + 1 < str_len) {
       c2 = str.charCodeAt(m_pos + 1);
       if ((c2 & 64512) === 56320) {
-        c = 65536 + (c - 55296 << 10) + (c2 - 56320);
+        c = 65536 + ((c - 55296) << 10) + (c2 - 56320);
         m_pos++;
       }
     }
     if (c < 128) {
       buf[i++] = c;
     } else if (c < 2048) {
-      buf[i++] = 192 | c >>> 6;
-      buf[i++] = 128 | c & 63;
+      buf[i++] = 192 | (c >>> 6);
+      buf[i++] = 128 | (c & 63);
     } else if (c < 65536) {
-      buf[i++] = 224 | c >>> 12;
-      buf[i++] = 128 | c >>> 6 & 63;
-      buf[i++] = 128 | c & 63;
+      buf[i++] = 224 | (c >>> 12);
+      buf[i++] = 128 | ((c >>> 6) & 63);
+      buf[i++] = 128 | (c & 63);
     } else {
-      buf[i++] = 240 | c >>> 18;
-      buf[i++] = 128 | c >>> 12 & 63;
-      buf[i++] = 128 | c >>> 6 & 63;
-      buf[i++] = 128 | c & 63;
+      buf[i++] = 240 | (c >>> 18);
+      buf[i++] = 128 | ((c >>> 12) & 63);
+      buf[i++] = 128 | ((c >>> 6) & 63);
+      buf[i++] = 128 | (c & 63);
     }
   }
   return buf;
@@ -1991,7 +2093,7 @@ var buf2string = (buf, max) => {
     }
     c &= c_len === 2 ? 31 : c_len === 3 ? 15 : 7;
     while (c_len > 1 && i < len) {
-      c = c << 6 | buf[i++] & 63;
+      c = (c << 6) | (buf[i++] & 63);
       c_len--;
     }
     if (c_len > 1) {
@@ -2002,8 +2104,8 @@ var buf2string = (buf, max) => {
       utf16buf[out++] = c;
     } else {
       c -= 65536;
-      utf16buf[out++] = 55296 | c >> 10 & 1023;
-      utf16buf[out++] = 56320 | c & 1023;
+      utf16buf[out++] = 55296 | ((c >> 10) & 1023);
+      utf16buf[out++] = 56320 | (c & 1023);
     }
   }
   return buf2binstring(utf16buf, out);
@@ -2028,7 +2130,7 @@ var utf8border = (buf, max) => {
 var strings = {
   string2buf,
   buf2string,
-  utf8border
+  utf8border,
 };
 function ZStream() {
   this.input = null;
@@ -2055,17 +2157,20 @@ const {
   Z_STREAM_END: Z_STREAM_END$2,
   Z_DEFAULT_COMPRESSION,
   Z_DEFAULT_STRATEGY,
-  Z_DEFLATED: Z_DEFLATED$1
+  Z_DEFLATED: Z_DEFLATED$1,
 } = constants$2;
 function Deflate$1(options) {
-  this.options = common.assign({
-    level: Z_DEFAULT_COMPRESSION,
-    method: Z_DEFLATED$1,
-    chunkSize: 16384,
-    windowBits: 15,
-    memLevel: 8,
-    strategy: Z_DEFAULT_STRATEGY
-  }, options || {});
+  this.options = common.assign(
+    {
+      level: Z_DEFAULT_COMPRESSION,
+      method: Z_DEFLATED$1,
+      chunkSize: 16384,
+      windowBits: 15,
+      memLevel: 8,
+      strategy: Z_DEFAULT_STRATEGY,
+    },
+    options || {},
+  );
   let opt = this.options;
   if (opt.raw && opt.windowBits > 0) {
     opt.windowBits = -opt.windowBits;
@@ -2084,7 +2189,7 @@ function Deflate$1(options) {
     opt.method,
     opt.windowBits,
     opt.memLevel,
-    opt.strategy
+    opt.strategy,
   );
   if (status !== Z_OK$2) {
     throw new Error(messages[status]);
@@ -2108,7 +2213,7 @@ function Deflate$1(options) {
     this._dict_set = true;
   }
 }
-Deflate$1.prototype.push = function(data, flush_mode) {
+Deflate$1.prototype.push = function (data, flush_mode) {
   const strm = this.strm;
   const chunkSize = this.options.chunkSize;
   let status, _flush_mode;
@@ -2126,7 +2231,7 @@ Deflate$1.prototype.push = function(data, flush_mode) {
   }
   strm.next_in = 0;
   strm.avail_in = strm.input.length;
-  for (; ; ) {
+  for (;;) {
     if (strm.avail_out === 0) {
       strm.output = new Uint8Array(chunkSize);
       strm.next_out = 0;
@@ -2160,10 +2265,10 @@ Deflate$1.prototype.push = function(data, flush_mode) {
   }
   return true;
 };
-Deflate$1.prototype.onData = function(chunk) {
+Deflate$1.prototype.onData = function (chunk) {
   this.chunks.push(chunk);
 };
-Deflate$1.prototype.onEnd = function(status) {
+Deflate$1.prototype.onEnd = function (status) {
   if (status === Z_OK$2) {
     this.result = common.flattenChunks(this.chunks);
   }
@@ -2181,7 +2286,7 @@ function deflate$1(input, options) {
 }
 var deflate_2 = deflate$1;
 var deflate_1$1 = {
-  deflate: deflate_2
+  deflate: deflate_2,
 };
 const BAD$1 = 16209;
 const TYPE$1 = 16191;
@@ -2228,170 +2333,167 @@ var inffast = function inflate_fast(strm, start) {
   dcode = state.distcode;
   lmask = (1 << state.lenbits) - 1;
   dmask = (1 << state.distbits) - 1;
-  top:
-    do {
-      if (bits < 15) {
-        hold += input[_in++] << bits;
-        bits += 8;
-        hold += input[_in++] << bits;
-        bits += 8;
-      }
-      here = lcode[hold & lmask];
-      dolen:
-        for (; ; ) {
+  top: do {
+    if (bits < 15) {
+      hold += input[_in++] << bits;
+      bits += 8;
+      hold += input[_in++] << bits;
+      bits += 8;
+    }
+    here = lcode[hold & lmask];
+    dolen: for (;;) {
+      op = here >>> 24;
+      hold >>>= op;
+      bits -= op;
+      op = (here >>> 16) & 255;
+      if (op === 0) {
+        output[_out++] = here & 65535;
+      } else if (op & 16) {
+        len = here & 65535;
+        op &= 15;
+        if (op) {
+          if (bits < op) {
+            hold += input[_in++] << bits;
+            bits += 8;
+          }
+          len += hold & ((1 << op) - 1);
+          hold >>>= op;
+          bits -= op;
+        }
+        if (bits < 15) {
+          hold += input[_in++] << bits;
+          bits += 8;
+          hold += input[_in++] << bits;
+          bits += 8;
+        }
+        here = dcode[hold & dmask];
+        dodist: for (;;) {
           op = here >>> 24;
           hold >>>= op;
           bits -= op;
-          op = here >>> 16 & 255;
-          if (op === 0) {
-            output[_out++] = here & 65535;
-          } else if (op & 16) {
-            len = here & 65535;
+          op = (here >>> 16) & 255;
+          if (op & 16) {
+            dist = here & 65535;
             op &= 15;
-            if (op) {
+            if (bits < op) {
+              hold += input[_in++] << bits;
+              bits += 8;
               if (bits < op) {
                 hold += input[_in++] << bits;
                 bits += 8;
               }
-              len += hold & (1 << op) - 1;
-              hold >>>= op;
-              bits -= op;
             }
-            if (bits < 15) {
-              hold += input[_in++] << bits;
-              bits += 8;
-              hold += input[_in++] << bits;
-              bits += 8;
+            dist += hold & ((1 << op) - 1);
+            if (dist > dmax) {
+              strm.msg = "invalid distance too far back";
+              state.mode = BAD$1;
+              break top;
             }
-            here = dcode[hold & dmask];
-            dodist:
-              for (; ; ) {
-                op = here >>> 24;
-                hold >>>= op;
-                bits -= op;
-                op = here >>> 16 & 255;
-                if (op & 16) {
-                  dist = here & 65535;
-                  op &= 15;
-                  if (bits < op) {
-                    hold += input[_in++] << bits;
-                    bits += 8;
-                    if (bits < op) {
-                      hold += input[_in++] << bits;
-                      bits += 8;
-                    }
-                  }
-                  dist += hold & (1 << op) - 1;
-                  if (dist > dmax) {
-                    strm.msg = "invalid distance too far back";
-                    state.mode = BAD$1;
-                    break top;
-                  }
-                  hold >>>= op;
-                  bits -= op;
-                  op = _out - beg;
-                  if (dist > op) {
-                    op = dist - op;
-                    if (op > whave) {
-                      if (state.sane) {
-                        strm.msg = "invalid distance too far back";
-                        state.mode = BAD$1;
-                        break top;
-                      }
-                    }
-                    from = 0;
-                    from_source = s_window;
-                    if (wnext === 0) {
-                      from += wsize - op;
-                      if (op < len) {
-                        len -= op;
-                        do {
-                          output[_out++] = s_window[from++];
-                        } while (--op);
-                        from = _out - dist;
-                        from_source = output;
-                      }
-                    } else if (wnext < op) {
-                      from += wsize + wnext - op;
-                      op -= wnext;
-                      if (op < len) {
-                        len -= op;
-                        do {
-                          output[_out++] = s_window[from++];
-                        } while (--op);
-                        from = 0;
-                        if (wnext < len) {
-                          op = wnext;
-                          len -= op;
-                          do {
-                            output[_out++] = s_window[from++];
-                          } while (--op);
-                          from = _out - dist;
-                          from_source = output;
-                        }
-                      }
-                    } else {
-                      from += wnext - op;
-                      if (op < len) {
-                        len -= op;
-                        do {
-                          output[_out++] = s_window[from++];
-                        } while (--op);
-                        from = _out - dist;
-                        from_source = output;
-                      }
-                    }
-                    while (len > 2) {
-                      output[_out++] = from_source[from++];
-                      output[_out++] = from_source[from++];
-                      output[_out++] = from_source[from++];
-                      len -= 3;
-                    }
-                    if (len) {
-                      output[_out++] = from_source[from++];
-                      if (len > 1) {
-                        output[_out++] = from_source[from++];
-                      }
-                    }
-                  } else {
-                    from = _out - dist;
-                    do {
-                      output[_out++] = output[from++];
-                      output[_out++] = output[from++];
-                      output[_out++] = output[from++];
-                      len -= 3;
-                    } while (len > 2);
-                    if (len) {
-                      output[_out++] = output[from++];
-                      if (len > 1) {
-                        output[_out++] = output[from++];
-                      }
-                    }
-                  }
-                } else if ((op & 64) === 0) {
-                  here = dcode[(here & 65535) + (hold & (1 << op) - 1)];
-                  continue dodist;
-                } else {
-                  strm.msg = "invalid distance code";
+            hold >>>= op;
+            bits -= op;
+            op = _out - beg;
+            if (dist > op) {
+              op = dist - op;
+              if (op > whave) {
+                if (state.sane) {
+                  strm.msg = "invalid distance too far back";
                   state.mode = BAD$1;
                   break top;
                 }
-                break;
               }
+              from = 0;
+              from_source = s_window;
+              if (wnext === 0) {
+                from += wsize - op;
+                if (op < len) {
+                  len -= op;
+                  do {
+                    output[_out++] = s_window[from++];
+                  } while (--op);
+                  from = _out - dist;
+                  from_source = output;
+                }
+              } else if (wnext < op) {
+                from += wsize + wnext - op;
+                op -= wnext;
+                if (op < len) {
+                  len -= op;
+                  do {
+                    output[_out++] = s_window[from++];
+                  } while (--op);
+                  from = 0;
+                  if (wnext < len) {
+                    op = wnext;
+                    len -= op;
+                    do {
+                      output[_out++] = s_window[from++];
+                    } while (--op);
+                    from = _out - dist;
+                    from_source = output;
+                  }
+                }
+              } else {
+                from += wnext - op;
+                if (op < len) {
+                  len -= op;
+                  do {
+                    output[_out++] = s_window[from++];
+                  } while (--op);
+                  from = _out - dist;
+                  from_source = output;
+                }
+              }
+              while (len > 2) {
+                output[_out++] = from_source[from++];
+                output[_out++] = from_source[from++];
+                output[_out++] = from_source[from++];
+                len -= 3;
+              }
+              if (len) {
+                output[_out++] = from_source[from++];
+                if (len > 1) {
+                  output[_out++] = from_source[from++];
+                }
+              }
+            } else {
+              from = _out - dist;
+              do {
+                output[_out++] = output[from++];
+                output[_out++] = output[from++];
+                output[_out++] = output[from++];
+                len -= 3;
+              } while (len > 2);
+              if (len) {
+                output[_out++] = output[from++];
+                if (len > 1) {
+                  output[_out++] = output[from++];
+                }
+              }
+            }
           } else if ((op & 64) === 0) {
-            here = lcode[(here & 65535) + (hold & (1 << op) - 1)];
-            continue dolen;
-          } else if (op & 32) {
-            state.mode = TYPE$1;
-            break top;
+            here = dcode[(here & 65535) + (hold & ((1 << op) - 1))];
+            continue dodist;
           } else {
-            strm.msg = "invalid literal/length code";
+            strm.msg = "invalid distance code";
             state.mode = BAD$1;
             break top;
           }
           break;
         }
-    } while (_in < last && _out < end);
+      } else if ((op & 64) === 0) {
+        here = lcode[(here & 65535) + (hold & ((1 << op) - 1))];
+        continue dolen;
+      } else if (op & 32) {
+        state.mode = TYPE$1;
+        break top;
+      } else {
+        strm.msg = "invalid literal/length code";
+        state.mode = BAD$1;
+        break top;
+      }
+      break;
+    }
+  } while (_in < last && _out < end);
   len = bits >> 3;
   _in -= len;
   bits -= len << 3;
@@ -2412,147 +2514,30 @@ const LENS$1 = 1;
 const DISTS$1 = 2;
 const lbase = new Uint16Array([
   /* Length codes 257..285 base */
-  3,
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  13,
-  15,
-  17,
-  19,
-  23,
-  27,
-  31,
-  35,
-  43,
-  51,
-  59,
-  67,
-  83,
-  99,
-  115,
-  131,
-  163,
-  195,
-  227,
-  258,
-  0,
-  0
+  3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131,
+  163, 195, 227, 258, 0, 0,
 ]);
 const lext = new Uint8Array([
   /* Length codes 257..285 extra */
-  16,
-  16,
-  16,
-  16,
-  16,
-  16,
-  16,
-  16,
-  17,
-  17,
-  17,
-  17,
-  18,
-  18,
-  18,
-  18,
-  19,
-  19,
-  19,
-  19,
-  20,
-  20,
-  20,
-  20,
-  21,
-  21,
-  21,
-  21,
-  16,
-  72,
-  78
+  16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 19, 19, 19, 19, 20, 20, 20, 20,
+  21, 21, 21, 21, 16, 72, 78,
 ]);
 const dbase = new Uint16Array([
   /* Distance codes 0..29 base */
-  1,
-  2,
-  3,
-  4,
-  5,
-  7,
-  9,
-  13,
-  17,
-  25,
-  33,
-  49,
-  65,
-  97,
-  129,
-  193,
-  257,
-  385,
-  513,
-  769,
-  1025,
-  1537,
-  2049,
-  3073,
-  4097,
-  6145,
-  8193,
-  12289,
-  16385,
-  24577,
-  0,
-  0
+  1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049,
+  3073, 4097, 6145, 8193, 12289, 16385, 24577, 0, 0,
 ]);
 const dext = new Uint8Array([
   /* Distance codes 0..29 extra */
-  16,
-  16,
-  16,
-  16,
-  17,
-  17,
-  18,
-  18,
-  19,
-  19,
-  20,
-  20,
-  21,
-  21,
-  22,
-  22,
-  23,
-  23,
-  24,
-  24,
-  25,
-  25,
-  26,
-  26,
-  27,
-  27,
-  28,
-  28,
-  29,
-  29,
-  64,
-  64
+  16, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26,
+  27, 27, 28, 28, 29, 29, 64, 64,
 ]);
 const inflate_table = (type, lens, lens_index, codes, table, table_index, work, opts) => {
   const bits = opts.bits;
   let len = 0;
   let sym = 0;
-  let min = 0, max = 0;
+  let min = 0,
+    max = 0;
   let root = 0;
   let curr = 0;
   let drop = 0;
@@ -2586,8 +2571,8 @@ const inflate_table = (type, lens, lens_index, codes, table, table_index, work, 
     root = max;
   }
   if (max === 0) {
-    table[table_index++] = 1 << 24 | 64 << 16 | 0;
-    table[table_index++] = 1 << 24 | 64 << 16 | 0;
+    table[table_index++] = (1 << 24) | (64 << 16) | 0;
+    table[table_index++] = (1 << 24) | (64 << 16) | 0;
     opts.bits = 1;
     return 0;
   }
@@ -2640,10 +2625,10 @@ const inflate_table = (type, lens, lens_index, codes, table, table_index, work, 
   low = -1;
   used = 1 << root;
   mask = used - 1;
-  if (type === LENS$1 && used > ENOUGH_LENS$1 || type === DISTS$1 && used > ENOUGH_DISTS$1) {
+  if ((type === LENS$1 && used > ENOUGH_LENS$1) || (type === DISTS$1 && used > ENOUGH_DISTS$1)) {
     return 1;
   }
-  for (; ; ) {
+  for (;;) {
     here_bits = len - drop;
     if (work[sym] + 1 < match) {
       here_op = 0;
@@ -2655,14 +2640,14 @@ const inflate_table = (type, lens, lens_index, codes, table, table_index, work, 
       here_op = 32 + 64;
       here_val = 0;
     }
-    incr = 1 << len - drop;
+    incr = 1 << (len - drop);
     fill = 1 << curr;
     min = fill;
     do {
       fill -= incr;
-      table[next + (huff >> drop) + fill] = here_bits << 24 | here_op << 16 | here_val | 0;
+      table[next + (huff >> drop) + fill] = (here_bits << 24) | (here_op << 16) | here_val | 0;
     } while (fill !== 0);
-    incr = 1 << len - 1;
+    incr = 1 << (len - 1);
     while (huff & incr) {
       incr >>= 1;
     }
@@ -2695,15 +2680,18 @@ const inflate_table = (type, lens, lens_index, codes, table, table_index, work, 
         left <<= 1;
       }
       used += 1 << curr;
-      if (type === LENS$1 && used > ENOUGH_LENS$1 || type === DISTS$1 && used > ENOUGH_DISTS$1) {
+      if (
+        (type === LENS$1 && used > ENOUGH_LENS$1) ||
+        (type === DISTS$1 && used > ENOUGH_DISTS$1)
+      ) {
         return 1;
       }
       low = huff & mask;
-      table[low] = root << 24 | curr << 16 | next - table_index | 0;
+      table[low] = (root << 24) | (curr << 16) | (next - table_index) | 0;
     }
   }
   if (huff !== 0) {
-    table[next + huff] = len - drop << 24 | 64 << 16 | 0;
+    table[next + huff] = ((len - drop) << 24) | (64 << 16) | 0;
   }
   opts.bits = root;
   return 0;
@@ -2723,7 +2711,7 @@ const {
   Z_DATA_ERROR: Z_DATA_ERROR$1,
   Z_MEM_ERROR: Z_MEM_ERROR$1,
   Z_BUF_ERROR,
-  Z_DEFLATED
+  Z_DEFLATED,
 } = constants$2;
 const HEAD = 16180;
 const FLAGS = 16181;
@@ -2762,7 +2750,7 @@ const ENOUGH_DISTS = 592;
 const MAX_WBITS = 15;
 const DEF_WBITS = MAX_WBITS;
 const zswap32 = (q) => {
-  return (q >>> 24 & 255) + (q >>> 8 & 65280) + ((q & 65280) << 8) + ((q & 255) << 24);
+  return ((q >>> 24) & 255) + ((q >>> 8) & 65280) + ((q & 65280) << 8) + ((q & 255) << 24);
 };
 function InflateState() {
   this.strm = null;
@@ -2977,11 +2965,10 @@ const inflate$2 = (strm, flush) => {
   const hbuf = new Uint8Array(4);
   let opts;
   let n;
-  const order = (
+  const order =
     /* permutation of code lengths */
-    new Uint8Array([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15])
-  );
-  if (inflateStateCheck(strm) || !strm.output || !strm.input && strm.avail_in !== 0) {
+    new Uint8Array([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
+  if (inflateStateCheck(strm) || !strm.output || (!strm.input && strm.avail_in !== 0)) {
     return Z_STREAM_ERROR$1;
   }
   state = strm.state;
@@ -2999,322 +2986,434 @@ const inflate$2 = (strm, flush) => {
   _in = have;
   _out = left;
   ret = Z_OK$1;
-  inf_leave:
-    for (; ; ) {
-      switch (state.mode) {
-        case HEAD:
-          if (state.wrap === 0) {
-            state.mode = TYPEDO;
-            break;
-          }
-          while (bits < 16) {
-            if (have === 0) {
-              break inf_leave;
-            }
-            have--;
-            hold += input[next++] << bits;
-            bits += 8;
-          }
-          if (state.wrap & 2 && hold === 35615) {
-            if (state.wbits === 0) {
-              state.wbits = 15;
-            }
-            state.check = 0;
-            hbuf[0] = hold & 255;
-            hbuf[1] = hold >>> 8 & 255;
-            state.check = crc32_1(state.check, hbuf, 2, 0);
-            hold = 0;
-            bits = 0;
-            state.mode = FLAGS;
-            break;
-          }
-          if (state.head) {
-            state.head.done = false;
-          }
-          if (!(state.wrap & 1) || /* check if zlib header allowed */
-          (((hold & 255) << 8) + (hold >> 8)) % 31) {
-            strm.msg = "incorrect header check";
-            state.mode = BAD;
-            break;
-          }
-          if ((hold & 15) !== Z_DEFLATED) {
-            strm.msg = "unknown compression method";
-            state.mode = BAD;
-            break;
-          }
-          hold >>>= 4;
-          bits -= 4;
-          len = (hold & 15) + 8;
-          if (state.wbits === 0) {
-            state.wbits = len;
-          }
-          if (len > 15 || len > state.wbits) {
-            strm.msg = "invalid window size";
-            state.mode = BAD;
-            break;
-          }
-          state.dmax = 1 << state.wbits;
-          state.flags = 0;
-          strm.adler = state.check = 1;
-          state.mode = hold & 512 ? DICTID : TYPE;
-          hold = 0;
-          bits = 0;
+  inf_leave: for (;;) {
+    switch (state.mode) {
+      case HEAD:
+        if (state.wrap === 0) {
+          state.mode = TYPEDO;
           break;
-        case FLAGS:
-          while (bits < 16) {
-            if (have === 0) {
-              break inf_leave;
-            }
-            have--;
-            hold += input[next++] << bits;
-            bits += 8;
-          }
-          state.flags = hold;
-          if ((state.flags & 255) !== Z_DEFLATED) {
-            strm.msg = "unknown compression method";
-            state.mode = BAD;
-            break;
-          }
-          if (state.flags & 57344) {
-            strm.msg = "unknown header flags set";
-            state.mode = BAD;
-            break;
-          }
-          if (state.head) {
-            state.head.text = hold >> 8 & 1;
-          }
-          if (state.flags & 512 && state.wrap & 4) {
-            hbuf[0] = hold & 255;
-            hbuf[1] = hold >>> 8 & 255;
-            state.check = crc32_1(state.check, hbuf, 2, 0);
-          }
-          hold = 0;
-          bits = 0;
-          state.mode = TIME;
-        /* falls through */
-        case TIME:
-          while (bits < 32) {
-            if (have === 0) {
-              break inf_leave;
-            }
-            have--;
-            hold += input[next++] << bits;
-            bits += 8;
-          }
-          if (state.head) {
-            state.head.time = hold;
-          }
-          if (state.flags & 512 && state.wrap & 4) {
-            hbuf[0] = hold & 255;
-            hbuf[1] = hold >>> 8 & 255;
-            hbuf[2] = hold >>> 16 & 255;
-            hbuf[3] = hold >>> 24 & 255;
-            state.check = crc32_1(state.check, hbuf, 4, 0);
-          }
-          hold = 0;
-          bits = 0;
-          state.mode = OS;
-        /* falls through */
-        case OS:
-          while (bits < 16) {
-            if (have === 0) {
-              break inf_leave;
-            }
-            have--;
-            hold += input[next++] << bits;
-            bits += 8;
-          }
-          if (state.head) {
-            state.head.xflags = hold & 255;
-            state.head.os = hold >> 8;
-          }
-          if (state.flags & 512 && state.wrap & 4) {
-            hbuf[0] = hold & 255;
-            hbuf[1] = hold >>> 8 & 255;
-            state.check = crc32_1(state.check, hbuf, 2, 0);
-          }
-          hold = 0;
-          bits = 0;
-          state.mode = EXLEN;
-        /* falls through */
-        case EXLEN:
-          if (state.flags & 1024) {
-            while (bits < 16) {
-              if (have === 0) {
-                break inf_leave;
-              }
-              have--;
-              hold += input[next++] << bits;
-              bits += 8;
-            }
-            state.length = hold;
-            if (state.head) {
-              state.head.extra_len = hold;
-            }
-            if (state.flags & 512 && state.wrap & 4) {
-              hbuf[0] = hold & 255;
-              hbuf[1] = hold >>> 8 & 255;
-              state.check = crc32_1(state.check, hbuf, 2, 0);
-            }
-            hold = 0;
-            bits = 0;
-          } else if (state.head) {
-            state.head.extra = null;
-          }
-          state.mode = EXTRA;
-        /* falls through */
-        case EXTRA:
-          if (state.flags & 1024) {
-            copy = state.length;
-            if (copy > have) {
-              copy = have;
-            }
-            if (copy) {
-              if (state.head) {
-                len = state.head.extra_len - state.length;
-                if (!state.head.extra) {
-                  state.head.extra = new Uint8Array(state.head.extra_len);
-                }
-                state.head.extra.set(
-                  input.subarray(
-                    next,
-                    // extra field is limited to 65536 bytes
-                    // - no need for additional size check
-                    next + copy
-                  ),
-                  /*len + copy > state.head.extra_max - len ? state.head.extra_max : copy,*/
-                  len
-                );
-              }
-              if (state.flags & 512 && state.wrap & 4) {
-                state.check = crc32_1(state.check, input, copy, next);
-              }
-              have -= copy;
-              next += copy;
-              state.length -= copy;
-            }
-            if (state.length) {
-              break inf_leave;
-            }
-          }
-          state.length = 0;
-          state.mode = NAME;
-        /* falls through */
-        case NAME:
-          if (state.flags & 2048) {
-            if (have === 0) {
-              break inf_leave;
-            }
-            copy = 0;
-            do {
-              len = input[next + copy++];
-              if (state.head && len && state.length < 65536) {
-                state.head.name += String.fromCharCode(len);
-              }
-            } while (len && copy < have);
-            if (state.flags & 512 && state.wrap & 4) {
-              state.check = crc32_1(state.check, input, copy, next);
-            }
-            have -= copy;
-            next += copy;
-            if (len) {
-              break inf_leave;
-            }
-          } else if (state.head) {
-            state.head.name = null;
-          }
-          state.length = 0;
-          state.mode = COMMENT;
-        /* falls through */
-        case COMMENT:
-          if (state.flags & 4096) {
-            if (have === 0) {
-              break inf_leave;
-            }
-            copy = 0;
-            do {
-              len = input[next + copy++];
-              if (state.head && len && state.length < 65536) {
-                state.head.comment += String.fromCharCode(len);
-              }
-            } while (len && copy < have);
-            if (state.flags & 512 && state.wrap & 4) {
-              state.check = crc32_1(state.check, input, copy, next);
-            }
-            have -= copy;
-            next += copy;
-            if (len) {
-              break inf_leave;
-            }
-          } else if (state.head) {
-            state.head.comment = null;
-          }
-          state.mode = HCRC;
-        /* falls through */
-        case HCRC:
-          if (state.flags & 512) {
-            while (bits < 16) {
-              if (have === 0) {
-                break inf_leave;
-              }
-              have--;
-              hold += input[next++] << bits;
-              bits += 8;
-            }
-            if (state.wrap & 4 && hold !== (state.check & 65535)) {
-              strm.msg = "header crc mismatch";
-              state.mode = BAD;
-              break;
-            }
-            hold = 0;
-            bits = 0;
-          }
-          if (state.head) {
-            state.head.hcrc = state.flags >> 9 & 1;
-            state.head.done = true;
-          }
-          strm.adler = state.check = 0;
-          state.mode = TYPE;
-          break;
-        case DICTID:
-          while (bits < 32) {
-            if (have === 0) {
-              break inf_leave;
-            }
-            have--;
-            hold += input[next++] << bits;
-            bits += 8;
-          }
-          strm.adler = state.check = zswap32(hold);
-          hold = 0;
-          bits = 0;
-          state.mode = DICT;
-        /* falls through */
-        case DICT:
-          if (state.havedict === 0) {
-            strm.next_out = put;
-            strm.avail_out = left;
-            strm.next_in = next;
-            strm.avail_in = have;
-            state.hold = hold;
-            state.bits = bits;
-            return Z_NEED_DICT$1;
-          }
-          strm.adler = state.check = 1;
-          state.mode = TYPE;
-        /* falls through */
-        case TYPE:
-          if (flush === Z_BLOCK || flush === Z_TREES) {
+        }
+        while (bits < 16) {
+          if (have === 0) {
             break inf_leave;
           }
-        /* falls through */
-        case TYPEDO:
-          if (state.last) {
-            hold >>>= bits & 7;
-            bits -= bits & 7;
-            state.mode = CHECK;
+          have--;
+          hold += input[next++] << bits;
+          bits += 8;
+        }
+        if (state.wrap & 2 && hold === 35615) {
+          if (state.wbits === 0) {
+            state.wbits = 15;
+          }
+          state.check = 0;
+          hbuf[0] = hold & 255;
+          hbuf[1] = (hold >>> 8) & 255;
+          state.check = crc32_1(state.check, hbuf, 2, 0);
+          hold = 0;
+          bits = 0;
+          state.mode = FLAGS;
+          break;
+        }
+        if (state.head) {
+          state.head.done = false;
+        }
+        if (
+          !(state.wrap & 1) /* check if zlib header allowed */ ||
+          (((hold & 255) << 8) + (hold >> 8)) % 31
+        ) {
+          strm.msg = "incorrect header check";
+          state.mode = BAD;
+          break;
+        }
+        if ((hold & 15) !== Z_DEFLATED) {
+          strm.msg = "unknown compression method";
+          state.mode = BAD;
+          break;
+        }
+        hold >>>= 4;
+        bits -= 4;
+        len = (hold & 15) + 8;
+        if (state.wbits === 0) {
+          state.wbits = len;
+        }
+        if (len > 15 || len > state.wbits) {
+          strm.msg = "invalid window size";
+          state.mode = BAD;
+          break;
+        }
+        state.dmax = 1 << state.wbits;
+        state.flags = 0;
+        strm.adler = state.check = 1;
+        state.mode = hold & 512 ? DICTID : TYPE;
+        hold = 0;
+        bits = 0;
+        break;
+      case FLAGS:
+        while (bits < 16) {
+          if (have === 0) {
+            break inf_leave;
+          }
+          have--;
+          hold += input[next++] << bits;
+          bits += 8;
+        }
+        state.flags = hold;
+        if ((state.flags & 255) !== Z_DEFLATED) {
+          strm.msg = "unknown compression method";
+          state.mode = BAD;
+          break;
+        }
+        if (state.flags & 57344) {
+          strm.msg = "unknown header flags set";
+          state.mode = BAD;
+          break;
+        }
+        if (state.head) {
+          state.head.text = (hold >> 8) & 1;
+        }
+        if (state.flags & 512 && state.wrap & 4) {
+          hbuf[0] = hold & 255;
+          hbuf[1] = (hold >>> 8) & 255;
+          state.check = crc32_1(state.check, hbuf, 2, 0);
+        }
+        hold = 0;
+        bits = 0;
+        state.mode = TIME;
+      /* falls through */
+      case TIME:
+        while (bits < 32) {
+          if (have === 0) {
+            break inf_leave;
+          }
+          have--;
+          hold += input[next++] << bits;
+          bits += 8;
+        }
+        if (state.head) {
+          state.head.time = hold;
+        }
+        if (state.flags & 512 && state.wrap & 4) {
+          hbuf[0] = hold & 255;
+          hbuf[1] = (hold >>> 8) & 255;
+          hbuf[2] = (hold >>> 16) & 255;
+          hbuf[3] = (hold >>> 24) & 255;
+          state.check = crc32_1(state.check, hbuf, 4, 0);
+        }
+        hold = 0;
+        bits = 0;
+        state.mode = OS;
+      /* falls through */
+      case OS:
+        while (bits < 16) {
+          if (have === 0) {
+            break inf_leave;
+          }
+          have--;
+          hold += input[next++] << bits;
+          bits += 8;
+        }
+        if (state.head) {
+          state.head.xflags = hold & 255;
+          state.head.os = hold >> 8;
+        }
+        if (state.flags & 512 && state.wrap & 4) {
+          hbuf[0] = hold & 255;
+          hbuf[1] = (hold >>> 8) & 255;
+          state.check = crc32_1(state.check, hbuf, 2, 0);
+        }
+        hold = 0;
+        bits = 0;
+        state.mode = EXLEN;
+      /* falls through */
+      case EXLEN:
+        if (state.flags & 1024) {
+          while (bits < 16) {
+            if (have === 0) {
+              break inf_leave;
+            }
+            have--;
+            hold += input[next++] << bits;
+            bits += 8;
+          }
+          state.length = hold;
+          if (state.head) {
+            state.head.extra_len = hold;
+          }
+          if (state.flags & 512 && state.wrap & 4) {
+            hbuf[0] = hold & 255;
+            hbuf[1] = (hold >>> 8) & 255;
+            state.check = crc32_1(state.check, hbuf, 2, 0);
+          }
+          hold = 0;
+          bits = 0;
+        } else if (state.head) {
+          state.head.extra = null;
+        }
+        state.mode = EXTRA;
+      /* falls through */
+      case EXTRA:
+        if (state.flags & 1024) {
+          copy = state.length;
+          if (copy > have) {
+            copy = have;
+          }
+          if (copy) {
+            if (state.head) {
+              len = state.head.extra_len - state.length;
+              if (!state.head.extra) {
+                state.head.extra = new Uint8Array(state.head.extra_len);
+              }
+              state.head.extra.set(
+                input.subarray(
+                  next,
+                  // extra field is limited to 65536 bytes
+                  // - no need for additional size check
+                  next + copy,
+                ),
+                /*len + copy > state.head.extra_max - len ? state.head.extra_max : copy,*/
+                len,
+              );
+            }
+            if (state.flags & 512 && state.wrap & 4) {
+              state.check = crc32_1(state.check, input, copy, next);
+            }
+            have -= copy;
+            next += copy;
+            state.length -= copy;
+          }
+          if (state.length) {
+            break inf_leave;
+          }
+        }
+        state.length = 0;
+        state.mode = NAME;
+      /* falls through */
+      case NAME:
+        if (state.flags & 2048) {
+          if (have === 0) {
+            break inf_leave;
+          }
+          copy = 0;
+          do {
+            len = input[next + copy++];
+            if (state.head && len && state.length < 65536) {
+              state.head.name += String.fromCharCode(len);
+            }
+          } while (len && copy < have);
+          if (state.flags & 512 && state.wrap & 4) {
+            state.check = crc32_1(state.check, input, copy, next);
+          }
+          have -= copy;
+          next += copy;
+          if (len) {
+            break inf_leave;
+          }
+        } else if (state.head) {
+          state.head.name = null;
+        }
+        state.length = 0;
+        state.mode = COMMENT;
+      /* falls through */
+      case COMMENT:
+        if (state.flags & 4096) {
+          if (have === 0) {
+            break inf_leave;
+          }
+          copy = 0;
+          do {
+            len = input[next + copy++];
+            if (state.head && len && state.length < 65536) {
+              state.head.comment += String.fromCharCode(len);
+            }
+          } while (len && copy < have);
+          if (state.flags & 512 && state.wrap & 4) {
+            state.check = crc32_1(state.check, input, copy, next);
+          }
+          have -= copy;
+          next += copy;
+          if (len) {
+            break inf_leave;
+          }
+        } else if (state.head) {
+          state.head.comment = null;
+        }
+        state.mode = HCRC;
+      /* falls through */
+      case HCRC:
+        if (state.flags & 512) {
+          while (bits < 16) {
+            if (have === 0) {
+              break inf_leave;
+            }
+            have--;
+            hold += input[next++] << bits;
+            bits += 8;
+          }
+          if (state.wrap & 4 && hold !== (state.check & 65535)) {
+            strm.msg = "header crc mismatch";
+            state.mode = BAD;
             break;
           }
+          hold = 0;
+          bits = 0;
+        }
+        if (state.head) {
+          state.head.hcrc = (state.flags >> 9) & 1;
+          state.head.done = true;
+        }
+        strm.adler = state.check = 0;
+        state.mode = TYPE;
+        break;
+      case DICTID:
+        while (bits < 32) {
+          if (have === 0) {
+            break inf_leave;
+          }
+          have--;
+          hold += input[next++] << bits;
+          bits += 8;
+        }
+        strm.adler = state.check = zswap32(hold);
+        hold = 0;
+        bits = 0;
+        state.mode = DICT;
+      /* falls through */
+      case DICT:
+        if (state.havedict === 0) {
+          strm.next_out = put;
+          strm.avail_out = left;
+          strm.next_in = next;
+          strm.avail_in = have;
+          state.hold = hold;
+          state.bits = bits;
+          return Z_NEED_DICT$1;
+        }
+        strm.adler = state.check = 1;
+        state.mode = TYPE;
+      /* falls through */
+      case TYPE:
+        if (flush === Z_BLOCK || flush === Z_TREES) {
+          break inf_leave;
+        }
+      /* falls through */
+      case TYPEDO:
+        if (state.last) {
+          hold >>>= bits & 7;
+          bits -= bits & 7;
+          state.mode = CHECK;
+          break;
+        }
+        while (bits < 3) {
+          if (have === 0) {
+            break inf_leave;
+          }
+          have--;
+          hold += input[next++] << bits;
+          bits += 8;
+        }
+        state.last = hold & 1;
+        hold >>>= 1;
+        bits -= 1;
+        switch (hold & 3) {
+          case 0:
+            state.mode = STORED;
+            break;
+          case 1:
+            fixedtables(state);
+            state.mode = LEN_;
+            if (flush === Z_TREES) {
+              hold >>>= 2;
+              bits -= 2;
+              break inf_leave;
+            }
+            break;
+          case 2:
+            state.mode = TABLE;
+            break;
+          case 3:
+            strm.msg = "invalid block type";
+            state.mode = BAD;
+        }
+        hold >>>= 2;
+        bits -= 2;
+        break;
+      case STORED:
+        hold >>>= bits & 7;
+        bits -= bits & 7;
+        while (bits < 32) {
+          if (have === 0) {
+            break inf_leave;
+          }
+          have--;
+          hold += input[next++] << bits;
+          bits += 8;
+        }
+        if ((hold & 65535) !== ((hold >>> 16) ^ 65535)) {
+          strm.msg = "invalid stored block lengths";
+          state.mode = BAD;
+          break;
+        }
+        state.length = hold & 65535;
+        hold = 0;
+        bits = 0;
+        state.mode = COPY_;
+        if (flush === Z_TREES) {
+          break inf_leave;
+        }
+      /* falls through */
+      case COPY_:
+        state.mode = COPY;
+      /* falls through */
+      case COPY:
+        copy = state.length;
+        if (copy) {
+          if (copy > have) {
+            copy = have;
+          }
+          if (copy > left) {
+            copy = left;
+          }
+          if (copy === 0) {
+            break inf_leave;
+          }
+          output.set(input.subarray(next, next + copy), put);
+          have -= copy;
+          next += copy;
+          left -= copy;
+          put += copy;
+          state.length -= copy;
+          break;
+        }
+        state.mode = TYPE;
+        break;
+      case TABLE:
+        while (bits < 14) {
+          if (have === 0) {
+            break inf_leave;
+          }
+          have--;
+          hold += input[next++] << bits;
+          bits += 8;
+        }
+        state.nlen = (hold & 31) + 257;
+        hold >>>= 5;
+        bits -= 5;
+        state.ndist = (hold & 31) + 1;
+        hold >>>= 5;
+        bits -= 5;
+        state.ncode = (hold & 15) + 4;
+        hold >>>= 4;
+        bits -= 4;
+        if (state.nlen > 286 || state.ndist > 30) {
+          strm.msg = "too many length or distance symbols";
+          state.mode = BAD;
+          break;
+        }
+        state.have = 0;
+        state.mode = LENLENS;
+      /* falls through */
+      case LENLENS:
+        while (state.have < state.ncode) {
           while (bits < 3) {
             if (have === 0) {
               break inf_leave;
@@ -3323,35 +3422,415 @@ const inflate$2 = (strm, flush) => {
             hold += input[next++] << bits;
             bits += 8;
           }
-          state.last = hold & 1;
-          hold >>>= 1;
-          bits -= 1;
-          switch (hold & 3) {
-            case 0:
-              state.mode = STORED;
-              break;
-            case 1:
-              fixedtables(state);
-              state.mode = LEN_;
-              if (flush === Z_TREES) {
-                hold >>>= 2;
-                bits -= 2;
-                break inf_leave;
-              }
-              break;
-            case 2:
-              state.mode = TABLE;
-              break;
-            case 3:
-              strm.msg = "invalid block type";
-              state.mode = BAD;
-          }
-          hold >>>= 2;
-          bits -= 2;
+          state.lens[order[state.have++]] = hold & 7;
+          hold >>>= 3;
+          bits -= 3;
+        }
+        while (state.have < 19) {
+          state.lens[order[state.have++]] = 0;
+        }
+        state.lencode = state.lendyn;
+        state.lenbits = 7;
+        opts = { bits: state.lenbits };
+        ret = inftrees(CODES, state.lens, 0, 19, state.lencode, 0, state.work, opts);
+        state.lenbits = opts.bits;
+        if (ret) {
+          strm.msg = "invalid code lengths set";
+          state.mode = BAD;
           break;
-        case STORED:
-          hold >>>= bits & 7;
-          bits -= bits & 7;
+        }
+        state.have = 0;
+        state.mode = CODELENS;
+      /* falls through */
+      case CODELENS:
+        while (state.have < state.nlen + state.ndist) {
+          for (;;) {
+            here = state.lencode[hold & ((1 << state.lenbits) - 1)];
+            here_bits = here >>> 24;
+            here_op = (here >>> 16) & 255;
+            here_val = here & 65535;
+            if (here_bits <= bits) {
+              break;
+            }
+            if (have === 0) {
+              break inf_leave;
+            }
+            have--;
+            hold += input[next++] << bits;
+            bits += 8;
+          }
+          if (here_val < 16) {
+            hold >>>= here_bits;
+            bits -= here_bits;
+            state.lens[state.have++] = here_val;
+          } else {
+            if (here_val === 16) {
+              n = here_bits + 2;
+              while (bits < n) {
+                if (have === 0) {
+                  break inf_leave;
+                }
+                have--;
+                hold += input[next++] << bits;
+                bits += 8;
+              }
+              hold >>>= here_bits;
+              bits -= here_bits;
+              if (state.have === 0) {
+                strm.msg = "invalid bit length repeat";
+                state.mode = BAD;
+                break;
+              }
+              len = state.lens[state.have - 1];
+              copy = 3 + (hold & 3);
+              hold >>>= 2;
+              bits -= 2;
+            } else if (here_val === 17) {
+              n = here_bits + 3;
+              while (bits < n) {
+                if (have === 0) {
+                  break inf_leave;
+                }
+                have--;
+                hold += input[next++] << bits;
+                bits += 8;
+              }
+              hold >>>= here_bits;
+              bits -= here_bits;
+              len = 0;
+              copy = 3 + (hold & 7);
+              hold >>>= 3;
+              bits -= 3;
+            } else {
+              n = here_bits + 7;
+              while (bits < n) {
+                if (have === 0) {
+                  break inf_leave;
+                }
+                have--;
+                hold += input[next++] << bits;
+                bits += 8;
+              }
+              hold >>>= here_bits;
+              bits -= here_bits;
+              len = 0;
+              copy = 11 + (hold & 127);
+              hold >>>= 7;
+              bits -= 7;
+            }
+            if (state.have + copy > state.nlen + state.ndist) {
+              strm.msg = "invalid bit length repeat";
+              state.mode = BAD;
+              break;
+            }
+            while (copy--) {
+              state.lens[state.have++] = len;
+            }
+          }
+        }
+        if (state.mode === BAD) {
+          break;
+        }
+        if (state.lens[256] === 0) {
+          strm.msg = "invalid code -- missing end-of-block";
+          state.mode = BAD;
+          break;
+        }
+        state.lenbits = 9;
+        opts = { bits: state.lenbits };
+        ret = inftrees(LENS, state.lens, 0, state.nlen, state.lencode, 0, state.work, opts);
+        state.lenbits = opts.bits;
+        if (ret) {
+          strm.msg = "invalid literal/lengths set";
+          state.mode = BAD;
+          break;
+        }
+        state.distbits = 6;
+        state.distcode = state.distdyn;
+        opts = { bits: state.distbits };
+        ret = inftrees(
+          DISTS,
+          state.lens,
+          state.nlen,
+          state.ndist,
+          state.distcode,
+          0,
+          state.work,
+          opts,
+        );
+        state.distbits = opts.bits;
+        if (ret) {
+          strm.msg = "invalid distances set";
+          state.mode = BAD;
+          break;
+        }
+        state.mode = LEN_;
+        if (flush === Z_TREES) {
+          break inf_leave;
+        }
+      /* falls through */
+      case LEN_:
+        state.mode = LEN;
+      /* falls through */
+      case LEN:
+        if (have >= 6 && left >= 258) {
+          strm.next_out = put;
+          strm.avail_out = left;
+          strm.next_in = next;
+          strm.avail_in = have;
+          state.hold = hold;
+          state.bits = bits;
+          inffast(strm, _out);
+          put = strm.next_out;
+          output = strm.output;
+          left = strm.avail_out;
+          next = strm.next_in;
+          input = strm.input;
+          have = strm.avail_in;
+          hold = state.hold;
+          bits = state.bits;
+          if (state.mode === TYPE) {
+            state.back = -1;
+          }
+          break;
+        }
+        state.back = 0;
+        for (;;) {
+          here = state.lencode[hold & ((1 << state.lenbits) - 1)];
+          here_bits = here >>> 24;
+          here_op = (here >>> 16) & 255;
+          here_val = here & 65535;
+          if (here_bits <= bits) {
+            break;
+          }
+          if (have === 0) {
+            break inf_leave;
+          }
+          have--;
+          hold += input[next++] << bits;
+          bits += 8;
+        }
+        if (here_op && (here_op & 240) === 0) {
+          last_bits = here_bits;
+          last_op = here_op;
+          last_val = here_val;
+          for (;;) {
+            here =
+              state.lencode[last_val + ((hold & ((1 << (last_bits + last_op)) - 1)) >> last_bits)];
+            here_bits = here >>> 24;
+            here_op = (here >>> 16) & 255;
+            here_val = here & 65535;
+            if (last_bits + here_bits <= bits) {
+              break;
+            }
+            if (have === 0) {
+              break inf_leave;
+            }
+            have--;
+            hold += input[next++] << bits;
+            bits += 8;
+          }
+          hold >>>= last_bits;
+          bits -= last_bits;
+          state.back += last_bits;
+        }
+        hold >>>= here_bits;
+        bits -= here_bits;
+        state.back += here_bits;
+        state.length = here_val;
+        if (here_op === 0) {
+          state.mode = LIT;
+          break;
+        }
+        if (here_op & 32) {
+          state.back = -1;
+          state.mode = TYPE;
+          break;
+        }
+        if (here_op & 64) {
+          strm.msg = "invalid literal/length code";
+          state.mode = BAD;
+          break;
+        }
+        state.extra = here_op & 15;
+        state.mode = LENEXT;
+      /* falls through */
+      case LENEXT:
+        if (state.extra) {
+          n = state.extra;
+          while (bits < n) {
+            if (have === 0) {
+              break inf_leave;
+            }
+            have--;
+            hold += input[next++] << bits;
+            bits += 8;
+          }
+          state.length += hold & ((1 << state.extra) - 1);
+          hold >>>= state.extra;
+          bits -= state.extra;
+          state.back += state.extra;
+        }
+        state.was = state.length;
+        state.mode = DIST;
+      /* falls through */
+      case DIST:
+        for (;;) {
+          here = state.distcode[hold & ((1 << state.distbits) - 1)];
+          here_bits = here >>> 24;
+          here_op = (here >>> 16) & 255;
+          here_val = here & 65535;
+          if (here_bits <= bits) {
+            break;
+          }
+          if (have === 0) {
+            break inf_leave;
+          }
+          have--;
+          hold += input[next++] << bits;
+          bits += 8;
+        }
+        if ((here_op & 240) === 0) {
+          last_bits = here_bits;
+          last_op = here_op;
+          last_val = here_val;
+          for (;;) {
+            here =
+              state.distcode[last_val + ((hold & ((1 << (last_bits + last_op)) - 1)) >> last_bits)];
+            here_bits = here >>> 24;
+            here_op = (here >>> 16) & 255;
+            here_val = here & 65535;
+            if (last_bits + here_bits <= bits) {
+              break;
+            }
+            if (have === 0) {
+              break inf_leave;
+            }
+            have--;
+            hold += input[next++] << bits;
+            bits += 8;
+          }
+          hold >>>= last_bits;
+          bits -= last_bits;
+          state.back += last_bits;
+        }
+        hold >>>= here_bits;
+        bits -= here_bits;
+        state.back += here_bits;
+        if (here_op & 64) {
+          strm.msg = "invalid distance code";
+          state.mode = BAD;
+          break;
+        }
+        state.offset = here_val;
+        state.extra = here_op & 15;
+        state.mode = DISTEXT;
+      /* falls through */
+      case DISTEXT:
+        if (state.extra) {
+          n = state.extra;
+          while (bits < n) {
+            if (have === 0) {
+              break inf_leave;
+            }
+            have--;
+            hold += input[next++] << bits;
+            bits += 8;
+          }
+          state.offset += hold & ((1 << state.extra) - 1);
+          hold >>>= state.extra;
+          bits -= state.extra;
+          state.back += state.extra;
+        }
+        if (state.offset > state.dmax) {
+          strm.msg = "invalid distance too far back";
+          state.mode = BAD;
+          break;
+        }
+        state.mode = MATCH;
+      /* falls through */
+      case MATCH:
+        if (left === 0) {
+          break inf_leave;
+        }
+        copy = _out - left;
+        if (state.offset > copy) {
+          copy = state.offset - copy;
+          if (copy > state.whave) {
+            if (state.sane) {
+              strm.msg = "invalid distance too far back";
+              state.mode = BAD;
+              break;
+            }
+          }
+          if (copy > state.wnext) {
+            copy -= state.wnext;
+            from = state.wsize - copy;
+          } else {
+            from = state.wnext - copy;
+          }
+          if (copy > state.length) {
+            copy = state.length;
+          }
+          from_source = state.window;
+        } else {
+          from_source = output;
+          from = put - state.offset;
+          copy = state.length;
+        }
+        if (copy > left) {
+          copy = left;
+        }
+        left -= copy;
+        state.length -= copy;
+        do {
+          output[put++] = from_source[from++];
+        } while (--copy);
+        if (state.length === 0) {
+          state.mode = LEN;
+        }
+        break;
+      case LIT:
+        if (left === 0) {
+          break inf_leave;
+        }
+        output[put++] = state.length;
+        left--;
+        state.mode = LEN;
+        break;
+      case CHECK:
+        if (state.wrap) {
+          while (bits < 32) {
+            if (have === 0) {
+              break inf_leave;
+            }
+            have--;
+            hold |= input[next++] << bits;
+            bits += 8;
+          }
+          _out -= left;
+          strm.total_out += _out;
+          state.total += _out;
+          if (state.wrap & 4 && _out) {
+            strm.adler = state.check =
+              /*UPDATE_CHECK(state.check, put - _out, _out);*/
+              state.flags
+                ? crc32_1(state.check, output, _out, put - _out)
+                : adler32_1(state.check, output, _out, put - _out);
+          }
+          _out = left;
+          if (state.wrap & 4 && (state.flags ? hold : zswap32(hold)) !== state.check) {
+            strm.msg = "incorrect data check";
+            state.mode = BAD;
+            break;
+          }
+          hold = 0;
+          bits = 0;
+        }
+        state.mode = LENGTH;
+      /* falls through */
+      case LENGTH:
+        if (state.wrap && state.flags) {
           while (bits < 32) {
             if (have === 0) {
               break inf_leave;
@@ -3360,515 +3839,41 @@ const inflate$2 = (strm, flush) => {
             hold += input[next++] << bits;
             bits += 8;
           }
-          if ((hold & 65535) !== (hold >>> 16 ^ 65535)) {
-            strm.msg = "invalid stored block lengths";
+          if (state.wrap & 4 && hold !== (state.total & 4294967295)) {
+            strm.msg = "incorrect length check";
             state.mode = BAD;
             break;
           }
-          state.length = hold & 65535;
           hold = 0;
           bits = 0;
-          state.mode = COPY_;
-          if (flush === Z_TREES) {
-            break inf_leave;
-          }
-        /* falls through */
-        case COPY_:
-          state.mode = COPY;
-        /* falls through */
-        case COPY:
-          copy = state.length;
-          if (copy) {
-            if (copy > have) {
-              copy = have;
-            }
-            if (copy > left) {
-              copy = left;
-            }
-            if (copy === 0) {
-              break inf_leave;
-            }
-            output.set(input.subarray(next, next + copy), put);
-            have -= copy;
-            next += copy;
-            left -= copy;
-            put += copy;
-            state.length -= copy;
-            break;
-          }
-          state.mode = TYPE;
-          break;
-        case TABLE:
-          while (bits < 14) {
-            if (have === 0) {
-              break inf_leave;
-            }
-            have--;
-            hold += input[next++] << bits;
-            bits += 8;
-          }
-          state.nlen = (hold & 31) + 257;
-          hold >>>= 5;
-          bits -= 5;
-          state.ndist = (hold & 31) + 1;
-          hold >>>= 5;
-          bits -= 5;
-          state.ncode = (hold & 15) + 4;
-          hold >>>= 4;
-          bits -= 4;
-          if (state.nlen > 286 || state.ndist > 30) {
-            strm.msg = "too many length or distance symbols";
-            state.mode = BAD;
-            break;
-          }
-          state.have = 0;
-          state.mode = LENLENS;
-        /* falls through */
-        case LENLENS:
-          while (state.have < state.ncode) {
-            while (bits < 3) {
-              if (have === 0) {
-                break inf_leave;
-              }
-              have--;
-              hold += input[next++] << bits;
-              bits += 8;
-            }
-            state.lens[order[state.have++]] = hold & 7;
-            hold >>>= 3;
-            bits -= 3;
-          }
-          while (state.have < 19) {
-            state.lens[order[state.have++]] = 0;
-          }
-          state.lencode = state.lendyn;
-          state.lenbits = 7;
-          opts = { bits: state.lenbits };
-          ret = inftrees(CODES, state.lens, 0, 19, state.lencode, 0, state.work, opts);
-          state.lenbits = opts.bits;
-          if (ret) {
-            strm.msg = "invalid code lengths set";
-            state.mode = BAD;
-            break;
-          }
-          state.have = 0;
-          state.mode = CODELENS;
-        /* falls through */
-        case CODELENS:
-          while (state.have < state.nlen + state.ndist) {
-            for (; ; ) {
-              here = state.lencode[hold & (1 << state.lenbits) - 1];
-              here_bits = here >>> 24;
-              here_op = here >>> 16 & 255;
-              here_val = here & 65535;
-              if (here_bits <= bits) {
-                break;
-              }
-              if (have === 0) {
-                break inf_leave;
-              }
-              have--;
-              hold += input[next++] << bits;
-              bits += 8;
-            }
-            if (here_val < 16) {
-              hold >>>= here_bits;
-              bits -= here_bits;
-              state.lens[state.have++] = here_val;
-            } else {
-              if (here_val === 16) {
-                n = here_bits + 2;
-                while (bits < n) {
-                  if (have === 0) {
-                    break inf_leave;
-                  }
-                  have--;
-                  hold += input[next++] << bits;
-                  bits += 8;
-                }
-                hold >>>= here_bits;
-                bits -= here_bits;
-                if (state.have === 0) {
-                  strm.msg = "invalid bit length repeat";
-                  state.mode = BAD;
-                  break;
-                }
-                len = state.lens[state.have - 1];
-                copy = 3 + (hold & 3);
-                hold >>>= 2;
-                bits -= 2;
-              } else if (here_val === 17) {
-                n = here_bits + 3;
-                while (bits < n) {
-                  if (have === 0) {
-                    break inf_leave;
-                  }
-                  have--;
-                  hold += input[next++] << bits;
-                  bits += 8;
-                }
-                hold >>>= here_bits;
-                bits -= here_bits;
-                len = 0;
-                copy = 3 + (hold & 7);
-                hold >>>= 3;
-                bits -= 3;
-              } else {
-                n = here_bits + 7;
-                while (bits < n) {
-                  if (have === 0) {
-                    break inf_leave;
-                  }
-                  have--;
-                  hold += input[next++] << bits;
-                  bits += 8;
-                }
-                hold >>>= here_bits;
-                bits -= here_bits;
-                len = 0;
-                copy = 11 + (hold & 127);
-                hold >>>= 7;
-                bits -= 7;
-              }
-              if (state.have + copy > state.nlen + state.ndist) {
-                strm.msg = "invalid bit length repeat";
-                state.mode = BAD;
-                break;
-              }
-              while (copy--) {
-                state.lens[state.have++] = len;
-              }
-            }
-          }
-          if (state.mode === BAD) {
-            break;
-          }
-          if (state.lens[256] === 0) {
-            strm.msg = "invalid code -- missing end-of-block";
-            state.mode = BAD;
-            break;
-          }
-          state.lenbits = 9;
-          opts = { bits: state.lenbits };
-          ret = inftrees(LENS, state.lens, 0, state.nlen, state.lencode, 0, state.work, opts);
-          state.lenbits = opts.bits;
-          if (ret) {
-            strm.msg = "invalid literal/lengths set";
-            state.mode = BAD;
-            break;
-          }
-          state.distbits = 6;
-          state.distcode = state.distdyn;
-          opts = { bits: state.distbits };
-          ret = inftrees(DISTS, state.lens, state.nlen, state.ndist, state.distcode, 0, state.work, opts);
-          state.distbits = opts.bits;
-          if (ret) {
-            strm.msg = "invalid distances set";
-            state.mode = BAD;
-            break;
-          }
-          state.mode = LEN_;
-          if (flush === Z_TREES) {
-            break inf_leave;
-          }
-        /* falls through */
-        case LEN_:
-          state.mode = LEN;
-        /* falls through */
-        case LEN:
-          if (have >= 6 && left >= 258) {
-            strm.next_out = put;
-            strm.avail_out = left;
-            strm.next_in = next;
-            strm.avail_in = have;
-            state.hold = hold;
-            state.bits = bits;
-            inffast(strm, _out);
-            put = strm.next_out;
-            output = strm.output;
-            left = strm.avail_out;
-            next = strm.next_in;
-            input = strm.input;
-            have = strm.avail_in;
-            hold = state.hold;
-            bits = state.bits;
-            if (state.mode === TYPE) {
-              state.back = -1;
-            }
-            break;
-          }
-          state.back = 0;
-          for (; ; ) {
-            here = state.lencode[hold & (1 << state.lenbits) - 1];
-            here_bits = here >>> 24;
-            here_op = here >>> 16 & 255;
-            here_val = here & 65535;
-            if (here_bits <= bits) {
-              break;
-            }
-            if (have === 0) {
-              break inf_leave;
-            }
-            have--;
-            hold += input[next++] << bits;
-            bits += 8;
-          }
-          if (here_op && (here_op & 240) === 0) {
-            last_bits = here_bits;
-            last_op = here_op;
-            last_val = here_val;
-            for (; ; ) {
-              here = state.lencode[last_val + ((hold & (1 << last_bits + last_op) - 1) >> last_bits)];
-              here_bits = here >>> 24;
-              here_op = here >>> 16 & 255;
-              here_val = here & 65535;
-              if (last_bits + here_bits <= bits) {
-                break;
-              }
-              if (have === 0) {
-                break inf_leave;
-              }
-              have--;
-              hold += input[next++] << bits;
-              bits += 8;
-            }
-            hold >>>= last_bits;
-            bits -= last_bits;
-            state.back += last_bits;
-          }
-          hold >>>= here_bits;
-          bits -= here_bits;
-          state.back += here_bits;
-          state.length = here_val;
-          if (here_op === 0) {
-            state.mode = LIT;
-            break;
-          }
-          if (here_op & 32) {
-            state.back = -1;
-            state.mode = TYPE;
-            break;
-          }
-          if (here_op & 64) {
-            strm.msg = "invalid literal/length code";
-            state.mode = BAD;
-            break;
-          }
-          state.extra = here_op & 15;
-          state.mode = LENEXT;
-        /* falls through */
-        case LENEXT:
-          if (state.extra) {
-            n = state.extra;
-            while (bits < n) {
-              if (have === 0) {
-                break inf_leave;
-              }
-              have--;
-              hold += input[next++] << bits;
-              bits += 8;
-            }
-            state.length += hold & (1 << state.extra) - 1;
-            hold >>>= state.extra;
-            bits -= state.extra;
-            state.back += state.extra;
-          }
-          state.was = state.length;
-          state.mode = DIST;
-        /* falls through */
-        case DIST:
-          for (; ; ) {
-            here = state.distcode[hold & (1 << state.distbits) - 1];
-            here_bits = here >>> 24;
-            here_op = here >>> 16 & 255;
-            here_val = here & 65535;
-            if (here_bits <= bits) {
-              break;
-            }
-            if (have === 0) {
-              break inf_leave;
-            }
-            have--;
-            hold += input[next++] << bits;
-            bits += 8;
-          }
-          if ((here_op & 240) === 0) {
-            last_bits = here_bits;
-            last_op = here_op;
-            last_val = here_val;
-            for (; ; ) {
-              here = state.distcode[last_val + ((hold & (1 << last_bits + last_op) - 1) >> last_bits)];
-              here_bits = here >>> 24;
-              here_op = here >>> 16 & 255;
-              here_val = here & 65535;
-              if (last_bits + here_bits <= bits) {
-                break;
-              }
-              if (have === 0) {
-                break inf_leave;
-              }
-              have--;
-              hold += input[next++] << bits;
-              bits += 8;
-            }
-            hold >>>= last_bits;
-            bits -= last_bits;
-            state.back += last_bits;
-          }
-          hold >>>= here_bits;
-          bits -= here_bits;
-          state.back += here_bits;
-          if (here_op & 64) {
-            strm.msg = "invalid distance code";
-            state.mode = BAD;
-            break;
-          }
-          state.offset = here_val;
-          state.extra = here_op & 15;
-          state.mode = DISTEXT;
-        /* falls through */
-        case DISTEXT:
-          if (state.extra) {
-            n = state.extra;
-            while (bits < n) {
-              if (have === 0) {
-                break inf_leave;
-              }
-              have--;
-              hold += input[next++] << bits;
-              bits += 8;
-            }
-            state.offset += hold & (1 << state.extra) - 1;
-            hold >>>= state.extra;
-            bits -= state.extra;
-            state.back += state.extra;
-          }
-          if (state.offset > state.dmax) {
-            strm.msg = "invalid distance too far back";
-            state.mode = BAD;
-            break;
-          }
-          state.mode = MATCH;
-        /* falls through */
-        case MATCH:
-          if (left === 0) {
-            break inf_leave;
-          }
-          copy = _out - left;
-          if (state.offset > copy) {
-            copy = state.offset - copy;
-            if (copy > state.whave) {
-              if (state.sane) {
-                strm.msg = "invalid distance too far back";
-                state.mode = BAD;
-                break;
-              }
-            }
-            if (copy > state.wnext) {
-              copy -= state.wnext;
-              from = state.wsize - copy;
-            } else {
-              from = state.wnext - copy;
-            }
-            if (copy > state.length) {
-              copy = state.length;
-            }
-            from_source = state.window;
-          } else {
-            from_source = output;
-            from = put - state.offset;
-            copy = state.length;
-          }
-          if (copy > left) {
-            copy = left;
-          }
-          left -= copy;
-          state.length -= copy;
-          do {
-            output[put++] = from_source[from++];
-          } while (--copy);
-          if (state.length === 0) {
-            state.mode = LEN;
-          }
-          break;
-        case LIT:
-          if (left === 0) {
-            break inf_leave;
-          }
-          output[put++] = state.length;
-          left--;
-          state.mode = LEN;
-          break;
-        case CHECK:
-          if (state.wrap) {
-            while (bits < 32) {
-              if (have === 0) {
-                break inf_leave;
-              }
-              have--;
-              hold |= input[next++] << bits;
-              bits += 8;
-            }
-            _out -= left;
-            strm.total_out += _out;
-            state.total += _out;
-            if (state.wrap & 4 && _out) {
-              strm.adler = state.check = /*UPDATE_CHECK(state.check, put - _out, _out);*/
-              state.flags ? crc32_1(state.check, output, _out, put - _out) : adler32_1(state.check, output, _out, put - _out);
-            }
-            _out = left;
-            if (state.wrap & 4 && (state.flags ? hold : zswap32(hold)) !== state.check) {
-              strm.msg = "incorrect data check";
-              state.mode = BAD;
-              break;
-            }
-            hold = 0;
-            bits = 0;
-          }
-          state.mode = LENGTH;
-        /* falls through */
-        case LENGTH:
-          if (state.wrap && state.flags) {
-            while (bits < 32) {
-              if (have === 0) {
-                break inf_leave;
-              }
-              have--;
-              hold += input[next++] << bits;
-              bits += 8;
-            }
-            if (state.wrap & 4 && hold !== (state.total & 4294967295)) {
-              strm.msg = "incorrect length check";
-              state.mode = BAD;
-              break;
-            }
-            hold = 0;
-            bits = 0;
-          }
-          state.mode = DONE;
-        /* falls through */
-        case DONE:
-          ret = Z_STREAM_END$1;
-          break inf_leave;
-        case BAD:
-          ret = Z_DATA_ERROR$1;
-          break inf_leave;
-        case MEM:
-          return Z_MEM_ERROR$1;
-        case SYNC:
-        /* falls through */
-        default:
-          return Z_STREAM_ERROR$1;
-      }
+        }
+        state.mode = DONE;
+      /* falls through */
+      case DONE:
+        ret = Z_STREAM_END$1;
+        break inf_leave;
+      case BAD:
+        ret = Z_DATA_ERROR$1;
+        break inf_leave;
+      case MEM:
+        return Z_MEM_ERROR$1;
+      case SYNC:
+      /* falls through */
+      default:
+        return Z_STREAM_ERROR$1;
     }
+  }
   strm.next_out = put;
   strm.avail_out = left;
   strm.next_in = next;
   strm.avail_in = have;
   state.hold = hold;
   state.bits = bits;
-  if (state.wsize || _out !== strm.avail_out && state.mode < BAD && (state.mode < CHECK || flush !== Z_FINISH$1)) {
-    if (updatewindow(strm, strm.output, strm.next_out, _out - strm.avail_out)) ;
+  if (
+    state.wsize ||
+    (_out !== strm.avail_out && state.mode < BAD && (state.mode < CHECK || flush !== Z_FINISH$1))
+  ) {
+    if (updatewindow(strm, strm.output, strm.next_out, _out - strm.avail_out));
   }
   _in -= strm.avail_in;
   _out -= strm.avail_out;
@@ -3876,11 +3881,18 @@ const inflate$2 = (strm, flush) => {
   strm.total_out += _out;
   state.total += _out;
   if (state.wrap & 4 && _out) {
-    strm.adler = state.check = /*UPDATE_CHECK(state.check, strm.next_out - _out, _out);*/
-    state.flags ? crc32_1(state.check, output, _out, strm.next_out - _out) : adler32_1(state.check, output, _out, strm.next_out - _out);
+    strm.adler = state.check =
+      /*UPDATE_CHECK(state.check, strm.next_out - _out, _out);*/
+      state.flags
+        ? crc32_1(state.check, output, _out, strm.next_out - _out)
+        : adler32_1(state.check, output, _out, strm.next_out - _out);
   }
-  strm.data_type = state.bits + (state.last ? 64 : 0) + (state.mode === TYPE ? 128 : 0) + (state.mode === LEN_ || state.mode === COPY_ ? 256 : 0);
-  if ((_in === 0 && _out === 0 || flush === Z_FINISH$1) && ret === Z_OK$1) {
+  strm.data_type =
+    state.bits +
+    (state.last ? 64 : 0) +
+    (state.mode === TYPE ? 128 : 0) +
+    (state.mode === LEN_ || state.mode === COPY_ ? 256 : 0);
+  if (((_in === 0 && _out === 0) || flush === Z_FINISH$1) && ret === Z_OK$1) {
     ret = Z_BUF_ERROR;
   }
   return ret;
@@ -3955,7 +3967,7 @@ var inflate_1$2 = {
   inflateEnd: inflateEnd_1,
   inflateGetHeader: inflateGetHeader_1,
   inflateSetDictionary: inflateSetDictionary_1,
-  inflateInfo
+  inflateInfo,
 };
 function GZheader() {
   this.text = 0;
@@ -3979,14 +3991,17 @@ const {
   Z_NEED_DICT,
   Z_STREAM_ERROR,
   Z_DATA_ERROR,
-  Z_MEM_ERROR
+  Z_MEM_ERROR,
 } = constants$2;
 function Inflate$1(options) {
-  this.options = common.assign({
-    chunkSize: 1024 * 64,
-    windowBits: 15,
-    to: ""
-  }, options || {});
+  this.options = common.assign(
+    {
+      chunkSize: 1024 * 64,
+      windowBits: 15,
+      to: "",
+    },
+    options || {},
+  );
   const opt = this.options;
   if (opt.raw && opt.windowBits >= 0 && opt.windowBits < 16) {
     opt.windowBits = -opt.windowBits;
@@ -4008,10 +4023,7 @@ function Inflate$1(options) {
   this.chunks = [];
   this.strm = new zstream();
   this.strm.avail_out = 0;
-  let status = inflate_1$2.inflateInit2(
-    this.strm,
-    opt.windowBits
-  );
+  let status = inflate_1$2.inflateInit2(this.strm, opt.windowBits);
   if (status !== Z_OK) {
     throw new Error(messages[status]);
   }
@@ -4031,7 +4043,7 @@ function Inflate$1(options) {
     }
   }
 }
-Inflate$1.prototype.push = function(data, flush_mode) {
+Inflate$1.prototype.push = function (data, flush_mode) {
   const strm = this.strm;
   const chunkSize = this.options.chunkSize;
   const dictionary = this.options.dictionary;
@@ -4046,7 +4058,7 @@ Inflate$1.prototype.push = function(data, flush_mode) {
   }
   strm.next_in = 0;
   strm.avail_in = strm.input.length;
-  for (; ; ) {
+  for (;;) {
     if (strm.avail_out === 0) {
       strm.output = new Uint8Array(chunkSize);
       strm.next_out = 0;
@@ -4061,7 +4073,12 @@ Inflate$1.prototype.push = function(data, flush_mode) {
         status = Z_NEED_DICT;
       }
     }
-    while (strm.avail_in > 0 && status === Z_STREAM_END && strm.state.wrap > 0 && data[strm.next_in] !== 0) {
+    while (
+      strm.avail_in > 0 &&
+      status === Z_STREAM_END &&
+      strm.state.wrap > 0 &&
+      data[strm.next_in] !== 0
+    ) {
       inflate_1$2.inflateReset(strm);
       status = inflate_1$2.inflate(strm, _flush_mode);
     }
@@ -4086,7 +4103,11 @@ Inflate$1.prototype.push = function(data, flush_mode) {
           if (tail) strm.output.set(strm.output.subarray(next_out_utf8, next_out_utf8 + tail), 0);
           this.onData(utf8str);
         } else {
-          this.onData(strm.output.length === strm.next_out ? strm.output : strm.output.subarray(0, strm.next_out));
+          this.onData(
+            strm.output.length === strm.next_out
+              ? strm.output
+              : strm.output.subarray(0, strm.next_out),
+          );
         }
       }
     }
@@ -4101,10 +4122,10 @@ Inflate$1.prototype.push = function(data, flush_mode) {
   }
   return true;
 };
-Inflate$1.prototype.onData = function(chunk) {
+Inflate$1.prototype.onData = function (chunk) {
   this.chunks.push(chunk);
 };
-Inflate$1.prototype.onEnd = function(status) {
+Inflate$1.prototype.onEnd = function (status) {
   if (status === Z_OK) {
     if (this.options.to === "string") {
       this.result = this.chunks.join("");
@@ -4126,15 +4147,11 @@ var Inflate_1$1 = Inflate$1;
 var inflate_2 = inflate$1;
 var inflate_1$1 = {
   Inflate: Inflate_1$1,
-  inflate: inflate_2
+  inflate: inflate_2,
 };
 const { deflate } = deflate_1$1;
 const { Inflate, inflate } = inflate_1$1;
 var deflate_1 = deflate;
 var Inflate_1 = Inflate;
 var inflate_1 = inflate;
-export {
-  Inflate_1 as I,
-  deflate_1 as d,
-  inflate_1 as i
-};
+export { Inflate_1 as I, deflate_1 as d, inflate_1 as i };

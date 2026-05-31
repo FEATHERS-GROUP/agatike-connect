@@ -1,5 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Plus, Search, Filter, MoreHorizontal, Users, Calendar, LayoutTemplate, Link as LinkIcon, Loader2, Edit2, Eye, Ban } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Users,
+  Calendar,
+  LayoutTemplate,
+  Link as LinkIcon,
+  Loader2,
+  Edit2,
+  Eye,
+  Ban,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -30,8 +43,8 @@ function RsvpsPage() {
     enabled: !!activeWorkspace?.id,
   });
 
-  const filteredForms = forms.filter((f: any) => 
-    !search || f.title.toLowerCase().includes(search.toLowerCase())
+  const filteredForms = forms.filter(
+    (f: any) => !search || f.title.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -40,7 +53,8 @@ function RsvpsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">RSVP Forms</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Create and manage custom registration forms for {activeWorkspace?.name || "your workspace"}.
+            Create and manage custom registration forms for{" "}
+            {activeWorkspace?.name || "your workspace"}.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -62,7 +76,7 @@ function RsvpsPage() {
           <div className="flex items-center justify-between relative z-10">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Active Forms</p>
-              <h3 className="text-3xl font-bold mt-2">{forms.filter(f => f.is_active).length}</h3>
+              <h3 className="text-3xl font-bold mt-2">{forms.filter((f) => f.is_active).length}</h3>
             </div>
             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
               <LayoutTemplate className="h-6 w-6" />
@@ -123,48 +137,70 @@ function RsvpsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredForms.map((form: any) => (
-            <div 
-              key={form.id} 
+            <div
+              key={form.id}
               className="group rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col"
-              onClick={() => navigate({
-                to: "/dashboard/$workspaceSlug/rsvps/$formId",
-                params: {
-                  workspaceSlug,
-                  formId: form.id
-                }
-              })}
+              onClick={() =>
+                navigate({
+                  to: "/dashboard/$workspaceSlug/rsvps/$formId",
+                  params: {
+                    workspaceSlug,
+                    formId: form.id,
+                  },
+                })
+              }
             >
               <div className="h-32 w-full bg-secondary relative overflow-hidden">
-                <img src={form.cover_image_url || "/default-form-cover.png"} alt={form.title} className="w-full h-full object-cover" />
+                <img
+                  src={form.cover_image_url || "/default-form-cover.png"}
+                  alt={form.title}
+                  className="w-full h-full object-cover"
+                />
                 <div className="absolute top-3 right-3">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                    form.is_active ? 'bg-green-500/90 text-white backdrop-blur-sm shadow-sm' : 'bg-secondary/90 text-muted-foreground backdrop-blur-sm'
-                  }`}>
-                    {form.is_active ? 'Active' : 'Closed'}
+                  <span
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      form.is_active
+                        ? "bg-green-500/90 text-white backdrop-blur-sm shadow-sm"
+                        : "bg-secondary/90 text-muted-foreground backdrop-blur-sm"
+                    }`}
+                  >
+                    {form.is_active ? "Active" : "Closed"}
                   </span>
                 </div>
               </div>
               <div className="p-5 flex-1 flex flex-col">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">{form.title}</h3>
-                  
+                  <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">
+                    {form.title}
+                  </h3>
+
                   <div onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full -mt-1 -mr-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-full -mt-1 -mr-2"
+                        >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="rounded-xl w-48">
-                        <DropdownMenuItem onClick={() => {
-                          navigator.clipboard.writeText(`${window.location.origin}/f/${form.id}`);
-                        }}>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/f/${form.id}`);
+                          }}
+                        >
                           <LinkIcon className="mr-2 h-4 w-4" /> Copy Public Link
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate({
-                          to: "/dashboard/$workspaceSlug/rsvps/$formId",
-                          params: { workspaceSlug, formId: form.id }
-                        })}>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            navigate({
+                              to: "/dashboard/$workspaceSlug/rsvps/$formId",
+                              params: { workspaceSlug, formId: form.id },
+                            })
+                          }
+                        >
                           <Eye className="mr-2 h-4 w-4" /> View RSVPs
                         </DropdownMenuItem>
                         <DropdownMenuItem>
@@ -178,11 +214,11 @@ function RsvpsPage() {
                     </DropdownMenu>
                   </div>
                 </div>
-                
+
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
                   {form.description || "No description provided."}
                 </p>
-                
+
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/40">
                   <div className="flex items-center text-sm font-medium">
                     <Users className="mr-1.5 h-4 w-4 text-muted-foreground" />

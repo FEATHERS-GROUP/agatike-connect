@@ -120,7 +120,9 @@ function RootComponent() {
   const location = useRouterState({ select: (s) => s.location });
 
   // Hide bottom nav on detail/booking/community/ticket/f pages and dashboard
-  const hideNav = location.pathname.match(/^\/(events|book|community|ticket|f)\/.+/) || location.pathname.startsWith('/dashboard');
+  const hideNav =
+    location.pathname.match(/^\/(events|book|community|ticket|f)\/.+/) ||
+    location.pathname.startsWith("/dashboard");
 
   return (
     <AppProvider>
@@ -138,7 +140,7 @@ function RootComponent() {
                 <MobileNav />
               </div>
             )}
-            
+
             <Toaster position="top-center" />
           </LoaderProvider>
         </WorkspaceProvider>

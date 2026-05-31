@@ -8,13 +8,44 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getOrganizerProfile, updateOrganizerProfile, changeOrganizerPassword } from "@/api/organizers";
-import { ArrowLeft, Save, User, Link as LinkIcon, Instagram, Twitter, Youtube, Building2, LayoutList, Heart, MessageSquare, Send, Pencil, Share, Trash2, MapPin, Tag, AlertTriangle, Upload, Lock } from "lucide-react";
+import {
+  getOrganizerProfile,
+  updateOrganizerProfile,
+  changeOrganizerPassword,
+} from "@/api/organizers";
+import {
+  ArrowLeft,
+  Save,
+  User,
+  Link as LinkIcon,
+  Instagram,
+  Twitter,
+  Youtube,
+  Building2,
+  LayoutList,
+  Heart,
+  MessageSquare,
+  Send,
+  Pencil,
+  Share,
+  Trash2,
+  MapPin,
+  Tag,
+  AlertTriangle,
+  Upload,
+  Lock,
+} from "lucide-react";
 import { toast } from "sonner";
 import { updateDatabaseWorkspace, disableDatabaseWorkspace } from "@/api/workspaces";
 import { stories as defaultStories } from "@/lib/mock-data";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { StoryViewer } from "@/components/site/StoryViewer";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
 
@@ -41,14 +72,16 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z.string().min(6, "New password must be at least 6 characters"),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const passwordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(6, "New password must be at least 6 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
@@ -82,7 +115,16 @@ function OrganizerSettings() {
   ];
 
   const generateAvatarsForCategory = (category: string) => {
-    const BACKGROUND_COLORS = ["b6e3f4", "c0aede", "ffdfbf", "ffd5dc", "d1d4f9", "c0aede", "b6e3f4", "ffdfbf"];
+    const BACKGROUND_COLORS = [
+      "b6e3f4",
+      "c0aede",
+      "ffdfbf",
+      "ffd5dc",
+      "d1d4f9",
+      "c0aede",
+      "b6e3f4",
+      "ffdfbf",
+    ];
     return Array.from({ length: 12 }).map(() => {
       const bg = BACKGROUND_COLORS[Math.floor(Math.random() * BACKGROUND_COLORS.length)];
       const seed = Math.random().toString(36).substring(7);
@@ -119,7 +161,14 @@ function OrganizerSettings() {
 
   const { data: platformModules = [] } = usePlatformModules();
 
-  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<FormValues>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+    setValue,
+  } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -130,7 +179,7 @@ function OrganizerSettings() {
       instagram: "",
       twitter: "",
       youtube: "",
-    }
+    },
   });
 
   const passwordForm = useForm<PasswordFormValues>({
@@ -139,13 +188,13 @@ function OrganizerSettings() {
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
-    }
+    },
   });
 
   const nameValue = watch("name");
   useEffect(() => {
     if (nameValue !== undefined) {
-      const computedHandle = nameValue.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const computedHandle = nameValue.toLowerCase().replace(/[^a-z0-9]/g, "");
       setValue("handle", computedHandle, { shouldValidate: true });
     }
   }, [nameValue, setValue]);
@@ -166,7 +215,9 @@ function OrganizerSettings() {
       if (profile.image) {
         setAvatar(profile.image);
       } else {
-        setAvatar(`https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`);
+        setAvatar(
+          `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`,
+        );
       }
     }
   }, [profile, reset]);
@@ -179,7 +230,7 @@ function OrganizerSettings() {
           ...core,
           image: avatar,
           socials: { instagram, twitter, youtube },
-        } as any
+        } as any,
       });
     },
     onSuccess: () => {
@@ -189,7 +240,7 @@ function OrganizerSettings() {
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update profile.");
-    }
+    },
   });
 
   const changePasswordMutation = useMutation({
@@ -198,7 +249,7 @@ function OrganizerSettings() {
         data: {
           currentPassword: values.currentPassword,
           newPassword: values.newPassword,
-        } as any
+        } as any,
       });
     },
     onSuccess: () => {
@@ -206,8 +257,10 @@ function OrganizerSettings() {
       passwordForm.reset();
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to change password. Please check your current password.");
-    }
+      toast.error(
+        error.message || "Failed to change password. Please check your current password.",
+      );
+    },
   });
 
   const updateWorkspaceMutation = useMutation({
@@ -217,7 +270,7 @@ function OrganizerSettings() {
       setEditingWorkspace(null);
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
-    onError: (error) => toast.error(error.message || "Failed to update workspace.")
+    onError: (error) => toast.error(error.message || "Failed to update workspace."),
   });
 
   const disableWorkspaceMutation = useMutation({
@@ -227,7 +280,7 @@ function OrganizerSettings() {
       setDisableConfirmWorkspace(null);
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
-    onError: (error) => toast.error(error.message || "Failed to disable workspace.")
+    onError: (error) => toast.error(error.message || "Failed to disable workspace."),
   });
 
   if (isLoading) {
@@ -243,11 +296,12 @@ function OrganizerSettings() {
   const mockPosts = Array.from({ length: 5 }).map((_, i) => ({
     id: `post-${i}`,
     title: `Event Announcement ${i + 1}`,
-    description: "Get ready for the biggest event of the year! We are bringing the heat with amazing performances and unbeatable vibes. Tickets dropping soon!",
+    description:
+      "Get ready for the biggest event of the year! We are bringing the heat with amazing performances and unbeatable vibes. Tickets dropping soon!",
     image: `https://picsum.photos/seed/${i + 200}/600/400`,
     likes: Math.floor(Math.random() * 1000) + 120,
     comments: Math.floor(Math.random() * 50) + 5,
-    date: "2 days ago"
+    date: "2 days ago",
   }));
 
   const mockComments = [
@@ -263,14 +317,21 @@ function OrganizerSettings() {
       <header className="sticky top-0 z-40 backdrop-blur-md border-b border-border/40">
         <div className="mx-auto max-w-4xl px-4 md:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => {
-              if (isEditing) setIsEditing(false);
-              else navigate({ to: "/dashboard/workspaces" });
-            }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              onClick={() => {
+                if (isEditing) setIsEditing(false);
+                else navigate({ to: "/dashboard/workspaces" });
+              }}
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex flex-col">
-              <h1 className={`text-xl font-bold transition-colors duration-300 ${!isEditing && scrolled ? "text-orange-500" : ""}`}>
+              <h1
+                className={`text-xl font-bold transition-colors duration-300 ${!isEditing && scrolled ? "text-orange-500" : ""}`}
+              >
                 {isEditing ? "Edit Profile" : profile?.handle || "Profile"}
               </h1>
               {!isEditing && scrolled && (
@@ -281,12 +342,18 @@ function OrganizerSettings() {
             </div>
           </div>
           {isEditing && (
-            <Button 
-              onClick={handleSubmit((d) => updateMutation.mutate(d))} 
+            <Button
+              onClick={handleSubmit((d) => updateMutation.mutate(d))}
               disabled={updateMutation.isPending}
-              className="rounded-full gap-2" 
+              className="rounded-full gap-2"
             >
-              {updateMutation.isPending ? "Saving..." : <><Save className="h-4 w-4" /> Save</>}
+              {updateMutation.isPending ? (
+                "Saving..."
+              ) : (
+                <>
+                  <Save className="h-4 w-4" /> Save
+                </>
+              )}
             </Button>
           )}
         </div>
@@ -302,12 +369,16 @@ function OrganizerSettings() {
             <div className="flex items-center gap-6 md:gap-10">
               <div className="relative shrink-0">
                 <div className="h-20 w-20 md:h-28 md:w-28 rounded-full overflow-hidden border border-border/40 bg-secondary">
-                  {avatar && <img src={avatar} alt={profile?.name} className="w-full h-full object-cover" />}
+                  {avatar && (
+                    <img src={avatar} alt={profile?.name} className="w-full h-full object-cover" />
+                  )}
                 </div>
               </div>
               <div className="flex-1 flex items-center justify-around md:justify-start md:gap-10">
                 <div className="flex flex-col items-center">
-                  <span className="font-bold text-lg md:text-xl">{profile?.numberOfEvents || 0}</span>
+                  <span className="font-bold text-lg md:text-xl">
+                    {profile?.numberOfEvents || 0}
+                  </span>
                   <span className="text-xs md:text-sm text-muted-foreground">Posts</span>
                 </div>
                 <div className="flex flex-col items-center">
@@ -328,22 +399,37 @@ function OrganizerSettings() {
               <p className="text-sm whitespace-pre-wrap leading-relaxed max-w-lg">
                 {profile?.bio || "No bio added yet. Click Edit Profile to add one!"}
               </p>
-              
+
               {/* Social Links rendering */}
-              {profile?.socials && Object.values(profile.socials).some(val => val) && (
+              {profile?.socials && Object.values(profile.socials).some((val) => val) && (
                 <div className="flex items-center gap-3 pt-1">
                   {profile.socials.instagram && (
-                    <a href={profile.socials.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium">
+                    <a
+                      href={profile.socials.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium"
+                    >
                       <Instagram className="h-4 w-4" /> Instagram
                     </a>
                   )}
                   {profile.socials.twitter && (
-                    <a href={profile.socials.twitter} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium">
+                    <a
+                      href={profile.socials.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium"
+                    >
                       <Twitter className="h-4 w-4" /> Twitter
                     </a>
                   )}
                   {profile.socials.youtube && (
-                    <a href={profile.socials.youtube} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium">
+                    <a
+                      href={profile.socials.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium"
+                    >
                       <Youtube className="h-4 w-4" /> YouTube
                     </a>
                   )}
@@ -353,14 +439,17 @@ function OrganizerSettings() {
 
             {/* Action Buttons */}
             <div className="flex gap-2">
-              <Button 
-                variant="default" 
+              <Button
+                variant="default"
                 className="flex-1 font-semibold rounded-xl h-10 bg-orange-500 hover:bg-orange-600 text-white border-transparent shadow-sm gap-2"
                 onClick={() => setIsEditing(true)}
               >
                 <Pencil className="h-4 w-4" /> Edit Profile
               </Button>
-              <Button variant="default" className="flex-1 font-semibold rounded-xl h-10 bg-orange-500 hover:bg-orange-600 text-white border-transparent shadow-sm gap-2">
+              <Button
+                variant="default"
+                className="flex-1 font-semibold rounded-xl h-10 bg-orange-500 hover:bg-orange-600 text-white border-transparent shadow-sm gap-2"
+              >
                 <Share className="h-4 w-4" /> Share Profile
               </Button>
             </div>
@@ -369,8 +458,8 @@ function OrganizerSettings() {
             <div className="pt-4">
               <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
                 {mockHighlights.map((highlight, index) => (
-                  <div 
-                    key={highlight.id} 
+                  <div
+                    key={highlight.id}
                     className="flex shrink-0 flex-col items-center gap-2 cursor-pointer"
                     onClick={() => setActiveStoryIndex(index)}
                   >
@@ -389,13 +478,13 @@ function OrganizerSettings() {
 
             {/* Tabs */}
             <div className="flex border-b border-border/40 mt-4">
-              <button 
+              <button
                 onClick={() => setActiveTab("posts")}
                 className={`flex-1 flex justify-center py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === "posts" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
               >
                 <LayoutList className="h-5 w-5 mr-2" /> Updates
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab("workspaces")}
                 className={`flex-1 flex justify-center py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === "workspaces" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
               >
@@ -407,8 +496,8 @@ function OrganizerSettings() {
             {activeTab === "posts" && (
               <div className="space-y-6 pt-2">
                 {mockPosts.map((post) => (
-                  <div 
-                    key={post.id} 
+                  <div
+                    key={post.id}
                     className="flex flex-col bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden cursor-pointer hover:border-primary/50 transition-colors"
                     onClick={() => setActivePost(post)}
                   >
@@ -417,25 +506,33 @@ function OrganizerSettings() {
                         <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1">
-                        <p className="font-bold text-sm leading-tight">{profile?.name || "Organizer"}</p>
+                        <p className="font-bold text-sm leading-tight">
+                          {profile?.name || "Organizer"}
+                        </p>
                         <p className="text-xs text-muted-foreground">{post.date}</p>
                       </div>
                     </div>
-                    
+
                     <div className="px-4 pb-2">
                       <p className="text-sm line-clamp-2">{post.description}</p>
                     </div>
 
                     <div className="w-full aspect-video bg-muted relative">
-                      <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
 
                     <div className="p-4 flex items-center gap-6">
                       <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                        <Heart className="h-5 w-5" /> <span className="text-sm font-medium">{post.likes}</span>
+                        <Heart className="h-5 w-5" />{" "}
+                        <span className="text-sm font-medium">{post.likes}</span>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                        <MessageSquare className="h-5 w-5" /> <span className="text-sm font-medium">{post.comments}</span>
+                        <MessageSquare className="h-5 w-5" />{" "}
+                        <span className="text-sm font-medium">{post.comments}</span>
                       </div>
                     </div>
                   </div>
@@ -449,62 +546,63 @@ function OrganizerSettings() {
                   <div className="col-span-full py-12 text-center text-muted-foreground border border-dashed border-border/60 rounded-2xl">
                     No workspaces created yet.
                   </div>
-                ) : workspaces.map((w) => {
-                  return (
-                    <div
-                      key={w.id}
-                      className="flex flex-col rounded-3xl border bg-card p-5 shadow-sm transition-all border-border/60 hover:border-primary/50 relative group"
-                    >
-                      {/* Action Overlay */}
-                      <div className="absolute top-4 right-4 flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                        <Button 
-                          size="icon" 
-                          variant="secondary" 
-                          className="h-8 w-8 rounded-full bg-secondary/80 hover:bg-primary hover:text-primary-foreground"
-                          onClick={() => setEditingWorkspace(w)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          size="icon" 
-                          variant="secondary" 
-                          className="h-8 w-8 rounded-full bg-secondary/80 hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={() => setDisableConfirmWorkspace(w)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                ) : (
+                  workspaces.map((w) => {
+                    return (
+                      <div
+                        key={w.id}
+                        className="flex flex-col rounded-3xl border bg-card p-5 shadow-sm transition-all border-border/60 hover:border-primary/50 relative group"
+                      >
+                        {/* Action Overlay */}
+                        <div className="absolute top-4 right-4 flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                          <Button
+                            size="icon"
+                            variant="secondary"
+                            className="h-8 w-8 rounded-full bg-secondary/80 hover:bg-primary hover:text-primary-foreground"
+                            onClick={() => setEditingWorkspace(w)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="secondary"
+                            className="h-8 w-8 rounded-full bg-secondary/80 hover:bg-destructive hover:text-destructive-foreground"
+                            onClick={() => setDisableConfirmWorkspace(w)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
 
-                      <div className="flex items-start gap-4 mb-4 pr-20">
-                        <div
-                          className="grid h-12 w-12 place-items-center rounded-2xl text-xl shrink-0 overflow-hidden bg-secondary text-secondary-foreground"
-                        >
-                          {w.icon?.startsWith("http") || w.icon?.startsWith("data:") ? (
-                            <img src={w.icon} alt="Logo" className="w-full h-full object-cover" />
-                          ) : (
-                            w.icon || <Building2 className="h-5 w-5" />
-                          )}
+                        <div className="flex items-start gap-4 mb-4 pr-20">
+                          <div className="grid h-12 w-12 place-items-center rounded-2xl text-xl shrink-0 overflow-hidden bg-secondary text-secondary-foreground">
+                            {w.icon?.startsWith("http") || w.icon?.startsWith("data:") ? (
+                              <img src={w.icon} alt="Logo" className="w-full h-full object-cover" />
+                            ) : (
+                              w.icon || <Building2 className="h-5 w-5" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-base truncate">{w.name}</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 truncate">
+                              <Tag className="h-3 w-3 shrink-0" /> {w.type || "General Workspace"}
+                            </p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 truncate">
+                              <MapPin className="h-3 w-3 shrink-0" /> {w.city}
+                              {w.country ? `, ${w.country}` : ""}
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-bold text-base truncate">{w.name}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 truncate">
-                            <Tag className="h-3 w-3 shrink-0" /> {w.type || "General Workspace"}
-                          </p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 truncate">
-                            <MapPin className="h-3 w-3 shrink-0" /> {w.city}{w.country ? `, ${w.country}` : ""}
-                          </p>
-                        </div>
+
+                        {w.address && (
+                          <div className="text-sm bg-secondary/30 p-3 rounded-xl border border-border/40 mt-auto">
+                            <p className="font-medium mb-1">Address Details</p>
+                            <p className="text-xs text-muted-foreground">{w.address}</p>
+                          </div>
+                        )}
                       </div>
-                      
-                      {w.address && (
-                        <div className="text-sm bg-secondary/30 p-3 rounded-xl border border-border/40 mt-auto">
-                          <p className="font-medium mb-1">Address Details</p>
-                          <p className="text-xs text-muted-foreground">{w.address}</p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             )}
           </div>
@@ -520,9 +618,14 @@ function OrganizerSettings() {
 
               <div className="flex-1 w-full space-y-4">
                 <div className="flex justify-center mb-8">
-                  <div className="relative group cursor-pointer" onClick={() => setIsAvatarModalOpen(true)}>
+                  <div
+                    className="relative group cursor-pointer"
+                    onClick={() => setIsAvatarModalOpen(true)}
+                  >
                     <div className="h-24 w-24 rounded-full overflow-hidden border-2 border-primary bg-secondary">
-                      {avatar && <img src={avatar} alt="Profile" className="h-full w-full object-cover" />}
+                      {avatar && (
+                        <img src={avatar} alt="Profile" className="h-full w-full object-cover" />
+                      )}
                     </div>
                     <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <Pencil className="h-6 w-6 text-white" />
@@ -533,34 +636,55 @@ function OrganizerSettings() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Organizer Name</Label>
-                    <Input {...register("name")} className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
+                    <Input
+                      {...register("name")}
+                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
+                    />
                     {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label>Handle / Username</Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">@</span>
-                      <Input {...register("handle")} disabled className="pl-7 rounded-xl bg-secondary/50 border-transparent focus:border-primary font-mono text-sm opacity-70 cursor-not-allowed" />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
+                        @
+                      </span>
+                      <Input
+                        {...register("handle")}
+                        disabled
+                        className="pl-7 rounded-xl bg-secondary/50 border-transparent focus:border-primary font-mono text-sm opacity-70 cursor-not-allowed"
+                      />
                     </div>
-                    {errors.handle && <p className="text-xs text-red-500">{errors.handle.message}</p>}
+                    {errors.handle && (
+                      <p className="text-xs text-red-500">{errors.handle.message}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Email</Label>
-                    <Input {...register("email")} type="email" className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
+                    <Input
+                      {...register("email")}
+                      type="email"
+                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Phone Number</Label>
-                    <Input {...register("phone")} className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
+                    <Input
+                      {...register("phone")}
+                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
+                    />
                   </div>
                 </div>
 
-
                 <div className="space-y-2">
                   <Label>Bio / Description</Label>
-                  <Textarea {...register("bio")} className="rounded-xl bg-secondary/50 border-transparent focus:border-primary min-h-[100px]" placeholder="Tell your audience about your brand..." />
+                  <Textarea
+                    {...register("bio")}
+                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary min-h-[100px]"
+                    placeholder="Tell your audience about your brand..."
+                  />
                 </div>
               </div>
             </div>
@@ -572,15 +696,27 @@ function OrganizerSettings() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Instagram URL</Label>
-                  <Input {...register("instagram")} placeholder="https://instagram.com/..." className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
+                  <Input
+                    {...register("instagram")}
+                    placeholder="https://instagram.com/..."
+                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Twitter / X URL</Label>
-                  <Input {...register("twitter")} placeholder="https://twitter.com/..." className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
+                  <Input
+                    {...register("twitter")}
+                    placeholder="https://twitter.com/..."
+                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>YouTube URL</Label>
-                  <Input {...register("youtube")} placeholder="https://youtube.com/..." className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
+                  <Input
+                    {...register("youtube")}
+                    placeholder="https://youtube.com/..."
+                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
+                  />
                 </div>
               </div>
             </div>
@@ -589,36 +725,64 @@ function OrganizerSettings() {
               <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
                 <Lock className="h-5 w-5 text-primary" /> Security
               </h2>
-              
+
               <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   <span className="font-medium text-foreground block mb-1">Optional Section</span>
-                  You do not need to fill this out unless you want to change your password. Leave these fields blank to keep your current password.
+                  You do not need to fill this out unless you want to change your password. Leave
+                  these fields blank to keep your current password.
                 </p>
               </div>
 
               <div className="flex-1 w-full space-y-4 max-w-2xl">
                 <div className="space-y-2">
                   <Label>Current Password</Label>
-                  <Input {...passwordForm.register("currentPassword")} type="password" placeholder="Verify your current password" className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
-                  {passwordForm.formState.errors.currentPassword && <p className="text-xs text-red-500">{passwordForm.formState.errors.currentPassword.message}</p>}
+                  <Input
+                    {...passwordForm.register("currentPassword")}
+                    type="password"
+                    placeholder="Verify your current password"
+                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
+                  />
+                  {passwordForm.formState.errors.currentPassword && (
+                    <p className="text-xs text-red-500">
+                      {passwordForm.formState.errors.currentPassword.message}
+                    </p>
+                  )}
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>New Password</Label>
-                    <Input {...passwordForm.register("newPassword")} type="password" placeholder="New secure password" className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
-                    {passwordForm.formState.errors.newPassword && <p className="text-xs text-red-500">{passwordForm.formState.errors.newPassword.message}</p>}
+                    <Input
+                      {...passwordForm.register("newPassword")}
+                      type="password"
+                      placeholder="New secure password"
+                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
+                    />
+                    {passwordForm.formState.errors.newPassword && (
+                      <p className="text-xs text-red-500">
+                        {passwordForm.formState.errors.newPassword.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Confirm New Password</Label>
-                    <Input {...passwordForm.register("confirmPassword")} type="password" placeholder="Confirm new password" className="rounded-xl bg-secondary/50 border-transparent focus:border-primary" />
-                    {passwordForm.formState.errors.confirmPassword && <p className="text-xs text-red-500">{passwordForm.formState.errors.confirmPassword.message}</p>}
+                    <Input
+                      {...passwordForm.register("confirmPassword")}
+                      type="password"
+                      placeholder="Confirm new password"
+                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
+                    />
+                    {passwordForm.formState.errors.confirmPassword && (
+                      <p className="text-xs text-red-500">
+                        {passwordForm.formState.errors.confirmPassword.message}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="pt-2">
-                  <Button 
-                    onClick={passwordForm.handleSubmit((d) => changePasswordMutation.mutate(d))} 
+                  <Button
+                    onClick={passwordForm.handleSubmit((d) => changePasswordMutation.mutate(d))}
                     disabled={changePasswordMutation.isPending}
                     variant="secondary"
                     className="rounded-xl"
@@ -639,14 +803,18 @@ function OrganizerSettings() {
             <DialogTitle>Post View</DialogTitle>
             <DialogDescription>Viewing conversation for post</DialogDescription>
           </DialogHeader>
-          
+
           {activePost && (
             <>
               {/* Image side (Desktop) / Top (Mobile) */}
               <div className="w-full md:w-1/2 bg-black flex items-center justify-center">
-                <img src={activePost.image} alt={activePost.title} className="w-full h-auto max-h-[40vh] md:max-h-full object-contain" />
+                <img
+                  src={activePost.image}
+                  alt={activePost.title}
+                  className="w-full h-auto max-h-[40vh] md:max-h-full object-contain"
+                />
               </div>
-              
+
               {/* Conversation side */}
               <div className="w-full md:w-1/2 flex flex-col h-[50vh] md:h-auto max-h-full bg-card">
                 {/* Header */}
@@ -666,7 +834,10 @@ function OrganizerSettings() {
                       <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
                     </div>
                     <div>
-                      <p className="text-sm"><span className="font-bold mr-2">{profile?.handle || "organizer"}</span>{activePost.description}</p>
+                      <p className="text-sm">
+                        <span className="font-bold mr-2">{profile?.handle || "organizer"}</span>
+                        {activePost.description}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-1">{activePost.date}</p>
                     </div>
                   </div>
@@ -679,7 +850,10 @@ function OrganizerSettings() {
                         <User className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="text-sm"><span className="font-bold mr-2">{c.user}</span>{c.text}</p>
+                        <p className="text-sm">
+                          <span className="font-bold mr-2">{c.user}</span>
+                          {c.text}
+                        </p>
                         <p className="text-xs text-muted-foreground mt-1">Reply</p>
                       </div>
                     </div>
@@ -695,9 +869,12 @@ function OrganizerSettings() {
                   </div>
                   <p className="font-bold text-sm mb-1">{activePost.likes} likes</p>
                   <p className="text-xs text-muted-foreground mb-4">{activePost.date}</p>
-                  
+
                   <div className="relative">
-                    <Input placeholder="Add a comment..." className="pr-10 rounded-full bg-secondary/50 border-transparent focus:border-border" />
+                    <Input
+                      placeholder="Add a comment..."
+                      className="pr-10 rounded-full bg-secondary/50 border-transparent focus:border-border"
+                    />
                     <button className="absolute right-3 top-1/2 -translate-y-1/2 text-primary text-sm font-bold opacity-70 hover:opacity-100">
                       Post
                     </button>
@@ -708,7 +885,7 @@ function OrganizerSettings() {
           )}
         </DialogContent>
       </Dialog>
-      
+
       {/* Edit Workspace Modal */}
       <Dialog open={!!editingWorkspace} onOpenChange={(open) => !open && setEditingWorkspace(null)}>
         <DialogContent className="sm:max-w-4xl w-[95vw] rounded-3xl bg-card border-border/60 max-h-[90vh] overflow-y-auto">
@@ -722,55 +899,69 @@ function OrganizerSettings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
               {/* Left Column: Basic Details */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-2">Workspace Details</h3>
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-2">
+                  Workspace Details
+                </h3>
                 <div className="space-y-2">
                   <Label>Workspace Name</Label>
-                  <Input 
-                    defaultValue={editingWorkspace.name} 
+                  <Input
+                    defaultValue={editingWorkspace.name}
                     className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                    onChange={(e) => setEditingWorkspace({ ...editingWorkspace, name: e.target.value })}
+                    onChange={(e) =>
+                      setEditingWorkspace({ ...editingWorkspace, name: e.target.value })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Type</Label>
-                  <Input 
-                    defaultValue={editingWorkspace.type} 
+                  <Input
+                    defaultValue={editingWorkspace.type}
                     placeholder="e.g. Venue, Club, Agency"
                     className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                    onChange={(e) => setEditingWorkspace({ ...editingWorkspace, type: e.target.value })}
+                    onChange={(e) =>
+                      setEditingWorkspace({ ...editingWorkspace, type: e.target.value })
+                    }
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>City</Label>
-                    <Input 
-                      defaultValue={editingWorkspace.city} 
+                    <Input
+                      defaultValue={editingWorkspace.city}
                       className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                      onChange={(e) => setEditingWorkspace({ ...editingWorkspace, city: e.target.value })}
+                      onChange={(e) =>
+                        setEditingWorkspace({ ...editingWorkspace, city: e.target.value })
+                      }
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Country</Label>
-                    <Input 
-                      defaultValue={editingWorkspace.country} 
+                    <Input
+                      defaultValue={editingWorkspace.country}
                       className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                      onChange={(e) => setEditingWorkspace({ ...editingWorkspace, country: e.target.value })}
+                      onChange={(e) =>
+                        setEditingWorkspace({ ...editingWorkspace, country: e.target.value })
+                      }
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Full Address</Label>
-                  <Input 
-                    defaultValue={editingWorkspace.address} 
+                  <Input
+                    defaultValue={editingWorkspace.address}
                     className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                    onChange={(e) => setEditingWorkspace({ ...editingWorkspace, address: e.target.value })}
+                    onChange={(e) =>
+                      setEditingWorkspace({ ...editingWorkspace, address: e.target.value })
+                    }
                   />
                 </div>
               </div>
 
               {/* Right Column: Platform Modules */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-2">Active Modules</h3>
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-2">
+                  Active Modules
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
                   {platformModules.map((mod) => {
                     const currentModules = editingWorkspace.moduls || [];
@@ -782,22 +973,36 @@ function OrganizerSettings() {
                         onClick={() => {
                           if (isMandatory) return;
                           if (isSelected) {
-                            setEditingWorkspace({ ...editingWorkspace, moduls: currentModules.filter((m: string) => m !== mod.id) });
+                            setEditingWorkspace({
+                              ...editingWorkspace,
+                              moduls: currentModules.filter((m: string) => m !== mod.id),
+                            });
                           } else {
-                            setEditingWorkspace({ ...editingWorkspace, moduls: [...currentModules, mod.id] });
+                            setEditingWorkspace({
+                              ...editingWorkspace,
+                              moduls: [...currentModules, mod.id],
+                            });
                           }
                         }}
-                        className={`flex items-start gap-3 p-3 rounded-2xl border transition-all ${isMandatory ? 'opacity-70 cursor-not-allowed bg-secondary/30' : 'cursor-pointer hover:border-primary/50'} ${isSelected ? 'border-primary bg-primary/5' : 'border-border/60 bg-card'}`}
+                        className={`flex items-start gap-3 p-3 rounded-2xl border transition-all ${isMandatory ? "opacity-70 cursor-not-allowed bg-secondary/30" : "cursor-pointer hover:border-primary/50"} ${isSelected ? "border-primary bg-primary/5" : "border-border/60 bg-card"}`}
                       >
-                        <div className={`mt-0.5 rounded-xl p-2 ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>
+                        <div
+                          className={`mt-0.5 rounded-xl p-2 ${isSelected ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+                        >
                           <mod.icon className="h-4 w-4" />
                         </div>
                         <div className="flex-1">
                           <p className="font-semibold text-sm leading-tight flex items-center gap-2">
                             {mod.label}
-                            {isMandatory && <span className="text-[10px] uppercase tracking-wider bg-secondary px-1.5 py-0.5 rounded text-muted-foreground">Req</span>}
+                            {isMandatory && (
+                              <span className="text-[10px] uppercase tracking-wider bg-secondary px-1.5 py-0.5 rounded text-muted-foreground">
+                                Req
+                              </span>
+                            )}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{mod.desc}</p>
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {mod.desc}
+                          </p>
                         </div>
                       </div>
                     );
@@ -807,14 +1012,14 @@ function OrganizerSettings() {
 
               {/* Action Buttons span full width */}
               <div className="col-span-full pt-6 flex gap-3 border-t border-border/40">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="flex-1 rounded-xl"
                   onClick={() => setEditingWorkspace(null)}
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   className="flex-1 rounded-xl bg-primary text-primary-foreground"
                   disabled={updateWorkspaceMutation.isPending}
                   onClick={() => updateWorkspaceMutation.mutate(editingWorkspace)}
@@ -828,7 +1033,10 @@ function OrganizerSettings() {
       </Dialog>
 
       {/* Disable Workspace Confirmation Modal */}
-      <Dialog open={!!disableConfirmWorkspace} onOpenChange={(open) => !open && setDisableConfirmWorkspace(null)}>
+      <Dialog
+        open={!!disableConfirmWorkspace}
+        onOpenChange={(open) => !open && setDisableConfirmWorkspace(null)}
+      >
         <DialogContent className="sm:max-w-[425px] rounded-3xl bg-card border-border/60">
           <DialogHeader>
             <div className="flex items-center gap-3 text-destructive mb-2">
@@ -838,19 +1046,20 @@ function OrganizerSettings() {
               <DialogTitle className="text-xl">Disable Workspace?</DialogTitle>
             </div>
             <DialogDescription className="text-base pt-2">
-              Are you sure you want to disable <strong>{disableConfirmWorkspace?.name}</strong>? 
-              This will remove your access and hide it from the platform. This action cannot be undone from the dashboard.
+              Are you sure you want to disable <strong>{disableConfirmWorkspace?.name}</strong>?
+              This will remove your access and hide it from the platform. This action cannot be
+              undone from the dashboard.
             </DialogDescription>
           </DialogHeader>
           <div className="pt-6 flex gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex-1 rounded-xl h-11"
               onClick={() => setDisableConfirmWorkspace(null)}
             >
               Keep Workspace
             </Button>
-            <Button 
+            <Button
               variant="destructive"
               className="flex-1 rounded-xl h-11"
               disabled={disableWorkspaceMutation.isPending}
@@ -861,49 +1070,47 @@ function OrganizerSettings() {
           </div>
         </DialogContent>
       </Dialog>
-      
+
       {/* Avatar Selection Modal */}
       <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
         <DialogContent className="sm:max-w-2xl rounded-3xl bg-card border-border/60">
           <DialogHeader>
             <DialogTitle>Choose Profile Image</DialogTitle>
-            <DialogDescription>
-              Select an avatar for your profile.
-            </DialogDescription>
+            <DialogDescription>Select an avatar for your profile.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 pt-4 w-full min-w-0">
             {/* Category Tabs & Upload */}
             <div className="w-full overflow-hidden">
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none items-center w-full">
-              <Button
-                variant="outline"
-                className="rounded-full shrink-0 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                onClick={() => document.getElementById('avatar-upload')?.click()}
-              >
-                <Upload className="h-4 w-4" /> Upload Custom
-              </Button>
-              <input 
-                id="avatar-upload" 
-                type="file" 
-                accept="image/*" 
-                className="hidden" 
-                onChange={handleImageUpload} 
-              />
-              
-              {/* Divider */}
-              <div className="h-6 w-px bg-border/60 mx-1 shrink-0" />
-
-              {CATEGORIES.map(cat => (
                 <Button
-                  key={cat.id}
-                  variant={activeCategory === cat.id ? "default" : "secondary"}
-                  className={`rounded-full shrink-0 ${activeCategory === cat.id ? 'bg-primary' : 'bg-secondary/60 hover:bg-secondary'}`}
-                  onClick={() => setActiveCategory(cat.id)}
+                  variant="outline"
+                  className="rounded-full shrink-0 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  onClick={() => document.getElementById("avatar-upload")?.click()}
                 >
-                  {cat.label}
+                  <Upload className="h-4 w-4" /> Upload Custom
                 </Button>
-              ))}
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+
+                {/* Divider */}
+                <div className="h-6 w-px bg-border/60 mx-1 shrink-0" />
+
+                {CATEGORIES.map((cat) => (
+                  <Button
+                    key={cat.id}
+                    variant={activeCategory === cat.id ? "default" : "secondary"}
+                    className={`rounded-full shrink-0 ${activeCategory === cat.id ? "bg-primary" : "bg-secondary/60 hover:bg-secondary"}`}
+                    onClick={() => setActiveCategory(cat.id)}
+                  >
+                    {cat.label}
+                  </Button>
+                ))}
               </div>
             </div>
 
@@ -912,23 +1119,27 @@ function OrganizerSettings() {
               {avatarOptions.map((opt, i) => (
                 <div
                   key={i}
-                  className={`cursor-pointer rounded-2xl overflow-hidden border-2 transition-all hover:scale-105 ${avatar === opt ? 'border-primary ring-2 ring-primary/20' : 'border-transparent'}`}
+                  className={`cursor-pointer rounded-2xl overflow-hidden border-2 transition-all hover:scale-105 ${avatar === opt ? "border-primary ring-2 ring-primary/20" : "border-transparent"}`}
                   onClick={() => setAvatar(opt)}
                 >
-                  <img src={opt} alt="Avatar option" className="w-full aspect-square object-cover bg-secondary/30" />
+                  <img
+                    src={opt}
+                    alt="Avatar option"
+                    className="w-full aspect-square object-cover bg-secondary/30"
+                  />
                 </div>
               ))}
             </div>
 
             <div className="pt-4 flex gap-3 border-t border-border/40">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="flex-1 rounded-xl"
                 onClick={() => setIsAvatarModalOpen(false)}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 className="flex-1 rounded-xl bg-primary text-primary-foreground"
                 onClick={() => setIsAvatarModalOpen(false)}
               >
@@ -947,7 +1158,7 @@ function OrganizerSettings() {
           onClose={() => setActiveStoryIndex(null)}
         />
       )}
-      
+
       {/* Hide Scrollbar Style for Highlights */}
       <style>{`
         .scrollbar-none::-webkit-scrollbar { display: none; }
