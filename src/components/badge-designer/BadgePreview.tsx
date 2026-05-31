@@ -178,27 +178,9 @@ export function BadgePreview({
       >
         {/* THE BADGE */}
         <div
-          className={`relative w-[340px] aspect-[1/1.6] rounded-[2.5rem] overflow-hidden shadow-2xl border ${config.fontFamily} ${config.theme === "minimal" ? "border-border/60 bg-white" : config.theme === "glass" ? "border-white/20 shadow-[0_0_40px_rgba(0,0,0,0.3)]" : "border-black/50 shadow-black/50"} transition-transform duration-700 preserve-3d`}
+          className={`relative w-[340px] aspect-[1/1.6] rounded-[2.5rem] shadow-2xl border ${config.fontFamily} ${config.theme === "minimal" ? "border-border/60 bg-white" : config.theme === "glass" ? "border-white/20 shadow-[0_0_40px_rgba(0,0,0,0.3)]" : "border-black/50 shadow-black/50"} transition-transform duration-700 preserve-3d`}
           style={{ transform: activeSide === "back" ? "rotateY(180deg)" : "rotateY(0deg)" }}
         >
-          {/* Background Layer (Shared) */}
-          {config.theme !== "minimal" && (
-            <div className={`absolute inset-0 bg-gradient-to-b ${config.gradientClass}`}></div>
-          )}
-          {config.bgImageUrl && (
-            <div className="absolute inset-0 z-0">
-              <img
-                src={config.bgImageUrl}
-                alt=""
-                className="w-full h-full object-cover"
-                style={{ opacity: config.bgOpacity / 100 }}
-              />
-            </div>
-          )}
-          {config.theme === "glass" && (
-            <div className="absolute inset-0 bg-white/5 backdrop-blur-[20px] pointer-events-none z-0"></div>
-          )}
-
           {/* Lanyard Hole (Shared) */}
           <div
             className={`absolute top-6 left-1/2 -translate-x-1/2 w-20 h-4 rounded-full shadow-inner z-20 pointer-events-none transform-style-preserve-3d translate-z-1 ${config.theme === "minimal" ? "bg-slate-200 border-none" : "bg-black/40 border border-white/10 backdrop-blur-md"}`}
@@ -206,10 +188,28 @@ export function BadgePreview({
 
           {/* === FRONT DESIGN === */}
           <div
-            className={`absolute inset-0 flex flex-col p-8 pt-14 text-center backface-hidden transition-opacity duration-500 z-10 ${activeSide !== "front" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+            className={`absolute inset-0 flex flex-col p-8 pt-14 text-center backface-hidden transition-opacity duration-500 z-10 rounded-[2.5rem] overflow-hidden ${activeSide !== "front" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
           >
+            {/* Background Layer */}
+            {config.theme !== "minimal" && (
+              <div className={`absolute inset-0 bg-gradient-to-b ${config.gradientClass} z-0`}></div>
+            )}
+            {config.bgImageUrl && (
+              <div className="absolute inset-0 z-0">
+                <img
+                  src={config.bgImageUrl}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  style={{ opacity: config.bgOpacity / 100 }}
+                />
+              </div>
+            )}
+            {config.theme === "glass" && (
+              <div className="absolute inset-0 bg-white/5 backdrop-blur-[20px] pointer-events-none z-0"></div>
+            )}
+
             {/* Event Name */}
-            <div className="mb-6 pointer-events-none">
+            <div className="mb-6 pointer-events-none relative z-10">
               <h3
                 className={`font-black tracking-[0.2em] text-xs uppercase ${config.theme === "minimal" ? "text-black" : "text-white drop-shadow-md"}`}
               >
@@ -264,11 +264,29 @@ export function BadgePreview({
 
           {/* === BACK DESIGN === */}
           <div
-            className={`absolute inset-0 flex flex-col p-8 pt-14 text-center backface-hidden transition-opacity duration-500 z-10 ${activeSide !== "back" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+            className={`absolute inset-0 flex flex-col p-8 pt-14 text-center backface-hidden transition-opacity duration-500 z-10 rounded-[2.5rem] overflow-hidden ${activeSide !== "back" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
             style={{ transform: "rotateY(180deg)" }}
           >
+            {/* Background Layer */}
+            {config.theme !== "minimal" && (
+              <div className={`absolute inset-0 bg-gradient-to-b ${config.gradientClass} z-0`}></div>
+            )}
+            {config.bgImageUrl && (
+              <div className="absolute inset-0 z-0">
+                <img
+                  src={config.bgImageUrl}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  style={{ opacity: config.bgOpacity / 100 }}
+                />
+              </div>
+            )}
+            {config.theme === "glass" && (
+              <div className="absolute inset-0 bg-white/5 backdrop-blur-[20px] pointer-events-none z-0"></div>
+            )}
+
             {/* Event Name */}
-            <div className="mb-6 opacity-60 pointer-events-none">
+            <div className="mb-6 opacity-60 pointer-events-none relative z-10">
               <h3
                 className={`font-black tracking-[0.2em] text-xs uppercase ${config.theme === "minimal" ? "text-black" : "text-white drop-shadow-md"}`}
               >
@@ -281,7 +299,7 @@ export function BadgePreview({
 
             {/* Back Custom Text */}
             <div
-              className="flex-1 flex flex-col items-center justify-center px-4 pointer-events-none"
+              className="flex-1 flex flex-col items-center justify-center px-4 pointer-events-none relative z-10"
               style={{ transform: "translateZ(5px)" }}
             >
               <div
