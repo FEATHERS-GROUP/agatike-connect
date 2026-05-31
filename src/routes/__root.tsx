@@ -123,6 +123,7 @@ import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { LoaderProvider } from "@/contexts/LoaderContext";
 import { Toaster } from "@/components/ui/sonner";
 import { InstallPrompt } from "@/components/mobile/InstallPrompt";
+import { SplashLoader } from "@/components/site/SplashLoader";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -151,6 +152,7 @@ function RootComponent() {
             )}
 
             <InstallPrompt />
+            <SplashLoader />
             <Toaster position="top-center" />
           </LoaderProvider>
         </WorkspaceProvider>
