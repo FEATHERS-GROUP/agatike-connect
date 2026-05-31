@@ -103,3 +103,17 @@ export const addEventStaff = createServerFn({ method: "POST" }).handler(async (c
   const staffData = ctx.data as any;
   return hasuraRequest(ADD_EVENT_STAFF, { object: staffData });
 });
+
+const UPDATE_EVENT_STAFF = `
+  mutation UpdateEventStaff($id: uuid!, $allowed_sections: jsonb) {
+    update_event_staff_by_pk(pk_columns: { id: $id }, _set: { allowed_sections: $allowed_sections }) {
+      id
+      allowed_sections
+    }
+  }
+`;
+
+export const updateEventStaff = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, allowed_sections } = ctx.data as any;
+  return hasuraRequest(UPDATE_EVENT_STAFF, { id, allowed_sections });
+});

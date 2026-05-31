@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getEventSections, getEventStaff, createEventSection, addEventStaff } from "@/api/staff";
+import { getEventSections, getEventStaff, createEventSection, addEventStaff, updateEventStaff } from "@/api/staff";
 import { getEventById } from "@/api/events";
 import { createCustomForm } from "@/api/rsvps";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -411,16 +411,18 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
             <div className="space-y-2 border border-border/50 rounded-xl p-3 bg-secondary/10 max-h-[150px] overflow-y-auto">
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <Checkbox
-                  checked={formData.allowed_sections.length === 0}
+                  checked={formData.allowed_sections.includes("*")}
                   onCheckedChange={(c) => {
-                    if (c) setFormData({ ...formData, allowed_sections: [] });
+                    if (c) setFormData({ ...formData, allowed_sections: ["*"] });
+                    else setFormData({ ...formData, allowed_sections: [] });
                   }}
                 />
                 <span className="font-medium">All Access (Everywhere)</span>
               </label>
               {sections.map((s) => (
-                <label key={s.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                <label key={s.id} className={`flex items-center gap-2 text-sm cursor-pointer ${formData.allowed_sections.includes("*") ? "opacity-50 pointer-events-none" : ""}`}>
                   <Checkbox
+                    disabled={formData.allowed_sections.includes("*")}
                     checked={formData.allowed_sections.includes(s.id)}
                     onCheckedChange={(c) => {
                       if (c) {
@@ -444,6 +446,86 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
           >
             {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Generate Staff Badge
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditAccessModal({ staff, sections }: { staff: any, sections: any[] }) {
+  const [open, setOpen] = useState(false);
+  const [allowedSections, setAllowedSections] = useState<string[]>(staff.allowed_sections || []);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      return await updateEventStaff({
+        data: { id: staff.id, allowed_sections: allowedSections },
+      } as any);
+    },
+    onSuccess: () => {
+      toast.success("Access updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["event-staff"] });
+      setOpen(false);
+    },
+    onError: () => toast.error("Failed to update access"),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(val) => {
+      setOpen(val);
+      if (val) setAllowedSections(staff.allowed_sections || []);
+    }}>
+      <DialogTrigger asChild>
+        <button 
+          onClick={(e) => e.stopPropagation()} 
+          className="text-[10px] font-bold text-primary bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded ml-2 transition-colors uppercase tracking-wider"
+        >
+          Edit
+        </button>
+      </DialogTrigger>
+      <DialogContent onClick={(e) => e.stopPropagation()}>
+        <DialogHeader>
+          <DialogTitle>Edit Staff Access</DialogTitle>
+          <DialogDescription>
+            Update the sections {staff.first_name} {staff.last_name} is allowed to access.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 pt-4">
+          <div className="space-y-2 border border-border/50 rounded-xl p-3 bg-secondary/10 max-h-[200px] overflow-y-auto">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox
+                checked={allowedSections.includes("*")}
+                onCheckedChange={(c) => {
+                  if (c) setAllowedSections(["*"]);
+                  else setAllowedSections([]);
+                }}
+              />
+              <span className="font-medium">All Access (Everywhere)</span>
+            </label>
+            {sections.map((s) => (
+              <label key={s.id} className={`flex items-center gap-2 text-sm cursor-pointer ${allowedSections.includes("*") ? "opacity-50 pointer-events-none" : ""}`}>
+                <Checkbox
+                  disabled={allowedSections.includes("*")}
+                  checked={allowedSections.includes(s.id)}
+                  onCheckedChange={(c) => {
+                    if (c) setAllowedSections([...allowedSections, s.id]);
+                    else setAllowedSections(allowedSections.filter(id => id !== s.id));
+                  }}
+                />
+                <span>{s.name}</span>
+              </label>
+            ))}
+          </div>
+          <Button
+            className="w-full mt-4"
+            style={{ background: "var(--gradient-primary)", color: "white" }}
+            onClick={() => mutation.mutate()}
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Access Changes
           </Button>
         </div>
       </DialogContent>
@@ -591,17 +673,22 @@ function StaffView() {
                       </td>
                       <td className="px-6 py-4 font-medium">{s.role}</td>
                       <td className="px-6 py-4">
-                        {assignedSections.length > 0 ? (
-                          <div className="flex flex-wrap gap-1 max-w-[200px]">
-                            {assignedSections.map((sec: any) => (
-                              <span key={sec.id} className="inline-flex items-center gap-1.5 text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-md text-[10px] font-medium whitespace-nowrap">
-                                <MapPin className="h-3 w-3" /> {sec.name}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground text-xs font-medium">All Access</span>
-                        )}
+                        <div className="flex items-center">
+                          {s.allowed_sections?.includes("*") ? (
+                            <span className="text-muted-foreground text-xs font-medium bg-secondary/50 px-2 py-0.5 rounded-md">All Access</span>
+                          ) : assignedSections.length > 0 ? (
+                            <div className="flex flex-wrap gap-1 max-w-[200px]">
+                              {assignedSections.map((sec: any) => (
+                                <span key={sec.id} className="inline-flex items-center gap-1.5 text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-md text-[10px] font-medium whitespace-nowrap">
+                                  <MapPin className="h-3 w-3" /> {sec.name}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-red-500 text-[10px] font-medium uppercase tracking-wider bg-red-500/10 px-2 py-0.5 rounded-md">No Access</span>
+                          )}
+                          <EditAccessModal staff={s} sections={sections} />
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground bg-secondary/50 px-2 py-1 rounded-md w-max">
@@ -711,9 +798,11 @@ function StaffView() {
                         : `User ${selectedStaff.user_id?.substring(0, 6) || "Unknown"}`,
                       role: selectedStaff.role,
                       qrString: selectedStaff.badge_qr_string,
-                      sectionName: selectedStaff.sectionObjs && selectedStaff.sectionObjs.length > 0 
-                        ? selectedStaff.sectionObjs.map((s: any) => s.name).join(", ") 
-                        : "ALL ACCESS",
+                      sectionName: selectedStaff.allowed_sections?.includes("*") 
+                        ? "ALL ACCESS" 
+                        : (selectedStaff.sectionObjs && selectedStaff.sectionObjs.length > 0)
+                          ? selectedStaff.sectionObjs.map((s: any) => s.name).join(", ") 
+                          : "NO ACCESS",
                       initials: `${selectedStaff.first_name?.[0] || ""}${selectedStaff.last_name?.[0] || ""}`.toUpperCase(),
                       profileImage: selectedStaff.profile_image
                     }}
