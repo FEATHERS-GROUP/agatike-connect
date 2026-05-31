@@ -33,6 +33,7 @@ import { Route as DashboardLoginRouteImport } from './routes/dashboard.login'
 import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard.create-organizer'
 import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
+import { Route as BQrStringRouteImport } from './routes/b.$qrString'
 import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard.$workspaceSlug.index'
 import { Route as PublicBadgeBadgeIdRouteImport } from './routes/public.badge.$badgeId'
 import { Route as DashboardWorkspaceSlugWithdrawalsRouteImport } from './routes/dashboard.$workspaceSlug.withdrawals'
@@ -181,6 +182,11 @@ const CommunityPostIdRoute = CommunityPostIdRouteImport.update({
 const BookEventIdRoute = BookEventIdRouteImport.update({
   id: '/book/$eventId',
   path: '/book/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BQrStringRoute = BQrStringRouteImport.update({
+  id: '/b/$qrString',
+  path: '/b/$qrString',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardWorkspaceSlugIndexRoute =
@@ -366,6 +372,7 @@ export interface FileRoutesByFullPath {
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
+  '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
@@ -420,6 +427,7 @@ export interface FileRoutesByTo {
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
+  '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
@@ -475,6 +483,7 @@ export interface FileRoutesById {
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
+  '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
@@ -531,6 +540,7 @@ export interface FileRouteTypes {
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
+    | '/b/$qrString'
     | '/book/$eventId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
@@ -585,6 +595,7 @@ export interface FileRouteTypes {
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
+    | '/b/$qrString'
     | '/book/$eventId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
@@ -639,6 +650,7 @@ export interface FileRouteTypes {
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
+    | '/b/$qrString'
     | '/book/$eventId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
@@ -694,6 +706,7 @@ export interface RootRouteChildren {
   TicketDesignerRoute: typeof TicketDesignerRoute
   VenueDesignerRoute: typeof VenueDesignerRoute
   WalletRoute: typeof WalletRoute
+  BQrStringRoute: typeof BQrStringRoute
   BookEventIdRoute: typeof BookEventIdRoute
   CommunityPostIdRoute: typeof CommunityPostIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
@@ -871,6 +884,13 @@ declare module '@tanstack/react-router' {
       path: '/book/$eventId'
       fullPath: '/book/$eventId'
       preLoaderRoute: typeof BookEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/b/$qrString': {
+      id: '/b/$qrString'
+      path: '/b/$qrString'
+      fullPath: '/b/$qrString'
+      preLoaderRoute: typeof BQrStringRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/$workspaceSlug/': {
@@ -1194,6 +1214,7 @@ const rootRouteChildren: RootRouteChildren = {
   TicketDesignerRoute: TicketDesignerRoute,
   VenueDesignerRoute: VenueDesignerRoute,
   WalletRoute: WalletRoute,
+  BQrStringRoute: BQrStringRoute,
   BookEventIdRoute: BookEventIdRoute,
   CommunityPostIdRoute: CommunityPostIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,

@@ -30,11 +30,11 @@ interface BadgePreviewProps {
 export function BadgePreview({
   config,
   activeSide = "front",
-  setActiveSide = () => {},
+  setActiveSide = () => { },
   sponsors = [],
   draggingId = null,
-  setDraggingId = () => {},
-  handlePointerDown = () => {},
+  setDraggingId = () => { },
+  handlePointerDown = () => { },
   isDesigner = true,
   mockUser = {
     name: "David Kim",
@@ -63,7 +63,11 @@ export function BadgePreview({
           className={`p-4 rounded-3xl ${theme === "minimal" ? "bg-slate-100" : "bg-white/10 backdrop-blur-md border border-white/10"}`}
         >
           <div className="w-24 h-24 p-1 bg-white rounded-xl flex items-center justify-center">
-            <QRCode value={mockUser.qrString || "STAFF-XYZ123"} size={88} className="w-full h-full" />
+            <QRCode
+              value={`${typeof window !== "undefined" ? window.location.origin : "https://agatike.rw"}/b/${mockUser.qrString || "STAFF-XYZ123"}`}
+              size={88}
+              className="w-full h-full"
+            />
           </div>
         </div>
         <p
