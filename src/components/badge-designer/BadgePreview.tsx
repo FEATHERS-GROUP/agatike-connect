@@ -1,5 +1,6 @@
 import React from "react";
-import { FlipHorizontal, UserCheck, MapPin, ShieldAlert, Briefcase } from "lucide-react";
+import { FlipHorizontal, UserCheck, MapPin, ShieldAlert, Briefcase, QrCode } from "lucide-react";
+import QRCode from "react-qr-code";
 import { Sponsor } from "./constants";
 
 interface BadgePreviewProps {
@@ -61,25 +62,8 @@ export function BadgePreview({
         <div
           className={`p-4 rounded-3xl ${theme === "minimal" ? "bg-slate-100" : "bg-white/10 backdrop-blur-md border border-white/10"}`}
         >
-          <div className="w-24 h-24 grid grid-cols-5 grid-rows-5 gap-1 p-1 bg-white rounded-xl">
-            <div className="col-span-2 row-span-2 bg-black rounded-tl-lg border-[3px] border-black">
-              <div className="w-full h-full bg-white m-[2px]"></div>
-            </div>
-            <div className="col-span-1 row-span-1 bg-black rounded-sm"></div>
-            <div className="col-span-2 row-span-2 bg-black rounded-tr-lg border-[3px] border-black">
-              <div className="w-full h-full bg-white m-[2px]"></div>
-            </div>
-            <div className="col-span-1 row-span-1 bg-black rounded-sm"></div>
-            <div
-              className="col-span-1 row-span-2 bg-black rounded-sm"
-              style={{ backgroundColor: accentColor }}
-            ></div>
-            <div className="col-span-1 row-span-1 bg-black rounded-sm"></div>
-            <div className="col-span-2 row-span-2 bg-black rounded-bl-lg border-[3px] border-black">
-              <div className="w-full h-full bg-white m-[2px]"></div>
-            </div>
-            <div className="col-span-1 row-span-1 bg-black rounded-sm"></div>
-            <div className="col-span-2 row-span-1 bg-black rounded-br-lg"></div>
+          <div className="w-24 h-24 p-1 bg-white rounded-xl flex items-center justify-center">
+            <QRCode value={mockUser.qrString || "STAFF-XYZ123"} size={88} className="w-full h-full" />
           </div>
         </div>
         <p
