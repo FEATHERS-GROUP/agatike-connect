@@ -122,6 +122,7 @@ import { AppProvider } from "@/lib/AppContext";
 import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { LoaderProvider } from "@/contexts/LoaderContext";
 import { Toaster } from "@/components/ui/sonner";
+import { InstallPrompt } from "@/components/mobile/InstallPrompt";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -149,6 +150,7 @@ function RootComponent() {
               </div>
             )}
 
+            <InstallPrompt />
             <Toaster position="top-center" />
           </LoaderProvider>
         </WorkspaceProvider>
