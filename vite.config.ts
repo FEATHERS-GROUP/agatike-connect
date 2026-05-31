@@ -10,7 +10,9 @@ export default defineConfig({
     tanstackStart({
       server: { entry: "server" },
     }),
-    nitro(),
+    nitro({
+      preset: process.env.VERCEL ? "vercel" : "node-server",
+    }),
     viteReact(),
     tsConfigPaths({
       projects: ["./tsconfig.json"],
