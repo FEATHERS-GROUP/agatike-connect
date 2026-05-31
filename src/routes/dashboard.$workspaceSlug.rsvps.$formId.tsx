@@ -642,9 +642,9 @@ function BulkImportStaffDialog({
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["workspace-events", workspaceId],
     queryFn: async () => {
-      // dynamic import for getEvents here or we just assume getEvents exists
-      const { getEvents } = await import("@/api/events");
-      return await getEvents({ data: { workspace_id: workspaceId } } as any);
+      // dynamic import for getWorkspaceEvents here or we just assume getWorkspaceEvents exists
+      const { getWorkspaceEvents } = await import("@/api/events");
+      return await getWorkspaceEvents({ data: { workspace_id: workspaceId } } as any);
     },
     enabled: !!workspaceId,
   });

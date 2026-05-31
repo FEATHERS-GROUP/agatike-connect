@@ -21,7 +21,7 @@ import {
 import { toast } from "sonner";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getStaffByBadgeId, getEventSections } from "@/api/staff";
-import { getEvents } from "@/api/events";
+import { getWorkspaceEvents } from "@/api/events";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
   Dialog,
@@ -56,7 +56,7 @@ export function ScannerMobile() {
 
   const { data: events = [] } = useQuery({
     queryKey: ["workspace-events", activeWorkspace?.id],
-    queryFn: async () => getEvents({ data: { workspace_id: activeWorkspace?.id } } as any),
+    queryFn: async () => getWorkspaceEvents({ data: { workspace_id: activeWorkspace?.id } } as any),
     enabled: !!activeWorkspace?.id,
   });
 

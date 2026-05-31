@@ -1,9 +1,10 @@
+import React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getStaffByBadgeId } from "@/api/staff";
 import { getBadgeProjectByEventId } from "@/api/badges";
 import { Loader2, AlertCircle } from "lucide-react";
-import BadgePreview from "@/components/badge-designer/BadgePreview";
+import { BadgePreview } from "@/components/badge-designer/BadgePreview";
 
 export const Route = createFileRoute("/public/badge/$badgeId")({
   component: PublicBadgeView,
