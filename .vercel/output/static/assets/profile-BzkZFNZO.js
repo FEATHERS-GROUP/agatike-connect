@@ -300,41 +300,39 @@ function ae() {
                     }),
                     e.jsx("div", {
                       className: "space-y-3",
-                      children: b
-                        .slice(0, 4)
-                        .map((s) =>
-                          e.jsxs(
-                            "div",
-                            {
-                              className: "flex items-center gap-3",
-                              children: [
-                                e.jsx("img", {
-                                  src: s.avatar,
-                                  alt: s.name,
-                                  className:
-                                    "h-9 w-9 rounded-full object-cover border border-border/40",
-                                }),
-                                e.jsxs("div", {
-                                  className: "flex-1 min-w-0",
-                                  children: [
-                                    e.jsx("p", {
-                                      className: "text-sm font-semibold truncate",
-                                      children: s.name,
-                                    }),
-                                    e.jsxs("p", {
-                                      className: "text-xs text-muted-foreground",
-                                      children: ["@", s.handle],
-                                    }),
-                                  ],
-                                }),
-                                e.jsx(n, {
-                                  className: "h-4 w-4 fill-primary text-primary shrink-0",
-                                }),
-                              ],
-                            },
-                            s.id,
-                          ),
+                      children: b.slice(0, 4).map((s) =>
+                        e.jsxs(
+                          "div",
+                          {
+                            className: "flex items-center gap-3",
+                            children: [
+                              e.jsx("img", {
+                                src: s.avatar,
+                                alt: s.name,
+                                className:
+                                  "h-9 w-9 rounded-full object-cover border border-border/40",
+                              }),
+                              e.jsxs("div", {
+                                className: "flex-1 min-w-0",
+                                children: [
+                                  e.jsx("p", {
+                                    className: "text-sm font-semibold truncate",
+                                    children: s.name,
+                                  }),
+                                  e.jsxs("p", {
+                                    className: "text-xs text-muted-foreground",
+                                    children: ["@", s.handle],
+                                  }),
+                                ],
+                              }),
+                              e.jsx(n, {
+                                className: "h-4 w-4 fill-primary text-primary shrink-0",
+                              }),
+                            ],
+                          },
+                          s.id,
                         ),
+                      ),
                     }),
                   ],
                 }),
@@ -580,55 +578,53 @@ function ae() {
               e.jsxs("div", {
                 className: "space-y-3",
                 children: [
-                  b
-                    .slice(0, 5)
-                    .map((s) =>
-                      e.jsxs(
-                        "div",
-                        {
-                          className:
-                            "bg-card border border-border/40 rounded-2xl flex items-center gap-3 p-3 shadow-sm",
-                          children: [
-                            e.jsx("img", {
-                              src: s.avatar,
-                              alt: s.name,
-                              className:
-                                "h-12 w-12 rounded-full object-cover shrink-0 border border-border/40",
-                            }),
-                            e.jsxs("div", {
-                              className: "flex-1 min-w-0",
-                              children: [
-                                e.jsx("p", {
-                                  className: "font-semibold text-sm",
-                                  children: s.name,
-                                }),
-                                e.jsxs("p", {
-                                  className: "text-xs text-muted-foreground",
-                                  children: [
-                                    "@",
-                                    s.handle,
-                                    " · ",
-                                    (s.followers / 1e3).toFixed(1),
-                                    "k followers",
-                                  ],
-                                }),
-                              ],
-                            }),
-                            e.jsxs(d, {
-                              variant: "secondary",
-                              size: "sm",
-                              className:
-                                "shrink-0 h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1",
-                              children: [
-                                e.jsx(n, { className: "h-3 w-3 fill-primary text-primary" }),
-                                " Following",
-                              ],
-                            }),
-                          ],
-                        },
-                        s.id,
-                      ),
+                  b.slice(0, 5).map((s) =>
+                    e.jsxs(
+                      "div",
+                      {
+                        className:
+                          "bg-card border border-border/40 rounded-2xl flex items-center gap-3 p-3 shadow-sm",
+                        children: [
+                          e.jsx("img", {
+                            src: s.avatar,
+                            alt: s.name,
+                            className:
+                              "h-12 w-12 rounded-full object-cover shrink-0 border border-border/40",
+                          }),
+                          e.jsxs("div", {
+                            className: "flex-1 min-w-0",
+                            children: [
+                              e.jsx("p", {
+                                className: "font-semibold text-sm",
+                                children: s.name,
+                              }),
+                              e.jsxs("p", {
+                                className: "text-xs text-muted-foreground",
+                                children: [
+                                  "@",
+                                  s.handle,
+                                  " · ",
+                                  (s.followers / 1e3).toFixed(1),
+                                  "k followers",
+                                ],
+                              }),
+                            ],
+                          }),
+                          e.jsxs(d, {
+                            variant: "secondary",
+                            size: "sm",
+                            className:
+                              "shrink-0 h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1",
+                            children: [
+                              e.jsx(n, { className: "h-3 w-3 fill-primary text-primary" }),
+                              " Following",
+                            ],
+                          }),
+                        ],
+                      },
+                      s.id,
                     ),
+                  ),
                   e.jsxs(l, {
                     to: "/organizers",
                     className:

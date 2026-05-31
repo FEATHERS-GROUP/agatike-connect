@@ -489,50 +489,48 @@ function W() {
                 }),
                 e.jsx("div", {
                   className: "divide-y divide-border/60",
-                  children: v
-                    .slice(0, 5)
-                    .map((s, a) =>
-                      e.jsxs(
-                        "div",
-                        {
-                          className: "flex items-center gap-4 px-6 py-3 text-sm",
-                          children: [
-                            e.jsx("img", {
-                              src: s.cover,
-                              className: "h-10 w-10 rounded-lg object-cover",
-                              alt: "",
-                            }),
-                            e.jsxs("div", {
-                              className: "min-w-0 flex-1",
-                              children: [
-                                e.jsx("p", {
-                                  className: "truncate font-medium",
-                                  children: s.title,
-                                }),
-                                e.jsxs("p", {
-                                  className: "text-xs text-muted-foreground",
-                                  children: [s.organizer, " · ", s.date],
-                                }),
-                              ],
-                            }),
-                            e.jsxs("span", {
-                              className: "hidden md:inline text-xs text-muted-foreground",
-                              children: ["x", 2 + a],
-                            }),
-                            e.jsxs("span", {
-                              className: "font-semibold",
-                              children: ["$", (s.price * (2 + a)).toFixed(0)],
-                            }),
-                            e.jsx("span", {
-                              className:
-                                "rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground",
-                              children: "Paid",
-                            }),
-                          ],
-                        },
-                        s.id,
-                      ),
+                  children: v.slice(0, 5).map((s, a) =>
+                    e.jsxs(
+                      "div",
+                      {
+                        className: "flex items-center gap-4 px-6 py-3 text-sm",
+                        children: [
+                          e.jsx("img", {
+                            src: s.cover,
+                            className: "h-10 w-10 rounded-lg object-cover",
+                            alt: "",
+                          }),
+                          e.jsxs("div", {
+                            className: "min-w-0 flex-1",
+                            children: [
+                              e.jsx("p", {
+                                className: "truncate font-medium",
+                                children: s.title,
+                              }),
+                              e.jsxs("p", {
+                                className: "text-xs text-muted-foreground",
+                                children: [s.organizer, " · ", s.date],
+                              }),
+                            ],
+                          }),
+                          e.jsxs("span", {
+                            className: "hidden md:inline text-xs text-muted-foreground",
+                            children: ["x", 2 + a],
+                          }),
+                          e.jsxs("span", {
+                            className: "font-semibold",
+                            children: ["$", (s.price * (2 + a)).toFixed(0)],
+                          }),
+                          e.jsx("span", {
+                            className:
+                              "rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground",
+                            children: "Paid",
+                          }),
+                        ],
+                      },
+                      s.id,
                     ),
+                  ),
                 }),
               ],
             }),

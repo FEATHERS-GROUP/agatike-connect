@@ -363,41 +363,39 @@ function ProfilePage() {
                   }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("div", {
                     className: "space-y-3",
-                    children: organizers
-                      .slice(0, 4)
-                      .map((org) =>
-                        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                          "div",
-                          {
-                            className: "flex items-center gap-3",
-                            children: [
-                              /* @__PURE__ */ jsxRuntimeExports.jsx("img", {
-                                src: org.avatar,
-                                alt: org.name,
-                                className:
-                                  "h-9 w-9 rounded-full object-cover border border-border/40",
-                              }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
-                                className: "flex-1 min-w-0",
-                                children: [
-                                  /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
-                                    className: "text-sm font-semibold truncate",
-                                    children: org.name,
-                                  }),
-                                  /* @__PURE__ */ jsxRuntimeExports.jsxs("p", {
-                                    className: "text-xs text-muted-foreground",
-                                    children: ["@", org.handle],
-                                  }),
-                                ],
-                              }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(Heart, {
-                                className: "h-4 w-4 fill-primary text-primary shrink-0",
-                              }),
-                            ],
-                          },
-                          org.id,
-                        ),
+                    children: organizers.slice(0, 4).map((org) =>
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        "div",
+                        {
+                          className: "flex items-center gap-3",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx("img", {
+                              src: org.avatar,
+                              alt: org.name,
+                              className:
+                                "h-9 w-9 rounded-full object-cover border border-border/40",
+                            }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+                              className: "flex-1 min-w-0",
+                              children: [
+                                /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
+                                  className: "text-sm font-semibold truncate",
+                                  children: org.name,
+                                }),
+                                /* @__PURE__ */ jsxRuntimeExports.jsxs("p", {
+                                  className: "text-xs text-muted-foreground",
+                                  children: ["@", org.handle],
+                                }),
+                              ],
+                            }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(Heart, {
+                              className: "h-4 w-4 fill-primary text-primary shrink-0",
+                            }),
+                          ],
+                        },
+                        org.id,
                       ),
+                    ),
                   }),
                 ],
               }),
@@ -696,57 +694,55 @@ function ProfilePage() {
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
               className: "space-y-3",
               children: [
-                organizers
-                  .slice(0, 5)
-                  .map((org) =>
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                      "div",
-                      {
-                        className:
-                          "bg-card border border-border/40 rounded-2xl flex items-center gap-3 p-3 shadow-sm",
-                        children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx("img", {
-                            src: org.avatar,
-                            alt: org.name,
-                            className:
-                              "h-12 w-12 rounded-full object-cover shrink-0 border border-border/40",
-                          }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
-                            className: "flex-1 min-w-0",
-                            children: [
-                              /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
-                                className: "font-semibold text-sm",
-                                children: org.name,
-                              }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsxs("p", {
-                                className: "text-xs text-muted-foreground",
-                                children: [
-                                  "@",
-                                  org.handle,
-                                  " · ",
-                                  (org.followers / 1e3).toFixed(1),
-                                  "k followers",
-                                ],
-                              }),
-                            ],
-                          }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, {
-                            variant: "secondary",
-                            size: "sm",
-                            className:
-                              "shrink-0 h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1",
-                            children: [
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(Heart, {
-                                className: "h-3 w-3 fill-primary text-primary",
-                              }),
-                              " Following",
-                            ],
-                          }),
-                        ],
-                      },
-                      org.id,
-                    ),
+                organizers.slice(0, 5).map((org) =>
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    "div",
+                    {
+                      className:
+                        "bg-card border border-border/40 rounded-2xl flex items-center gap-3 p-3 shadow-sm",
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("img", {
+                          src: org.avatar,
+                          alt: org.name,
+                          className:
+                            "h-12 w-12 rounded-full object-cover shrink-0 border border-border/40",
+                        }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+                          className: "flex-1 min-w-0",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
+                              className: "font-semibold text-sm",
+                              children: org.name,
+                            }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs("p", {
+                              className: "text-xs text-muted-foreground",
+                              children: [
+                                "@",
+                                org.handle,
+                                " · ",
+                                (org.followers / 1e3).toFixed(1),
+                                "k followers",
+                              ],
+                            }),
+                          ],
+                        }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, {
+                          variant: "secondary",
+                          size: "sm",
+                          className:
+                            "shrink-0 h-8 px-3 rounded-full text-xs font-bold flex items-center gap-1",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(Heart, {
+                              className: "h-3 w-3 fill-primary text-primary",
+                            }),
+                            " Following",
+                          ],
+                        }),
+                      ],
+                    },
+                    org.id,
                   ),
+                ),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs(Link, {
                   to: "/organizers",
                   className:

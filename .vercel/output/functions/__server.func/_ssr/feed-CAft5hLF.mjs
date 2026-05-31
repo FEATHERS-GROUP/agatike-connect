@@ -104,43 +104,41 @@ function Feed() {
                   }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("div", {
                     className: "mt-4 space-y-3",
-                    children: events
-                      .slice(2, 5)
-                      .map((e) =>
-                        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                          "div",
-                          {
-                            className: "flex items-center gap-3",
-                            children: [
-                              /* @__PURE__ */ jsxRuntimeExports.jsx("img", {
-                                src: e.cover,
-                                className: "h-10 w-10 rounded-full object-cover",
-                                alt: e.organizer,
-                              }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
-                                className: "min-w-0",
-                                children: [
-                                  /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
-                                    className: "truncate text-sm font-medium",
-                                    children: e.organizer,
-                                  }),
-                                  /* @__PURE__ */ jsxRuntimeExports.jsxs("p", {
-                                    className: "text-xs text-muted-foreground",
-                                    children: ["@", e.organizerHandle],
-                                  }),
-                                ],
-                              }),
-                              /* @__PURE__ */ jsxRuntimeExports.jsx(Button, {
-                                size: "sm",
-                                variant: "outline",
-                                className: "ml-auto rounded-full",
-                                children: "Follow",
-                              }),
-                            ],
-                          },
-                          e.id,
-                        ),
+                    children: events.slice(2, 5).map((e) =>
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        "div",
+                        {
+                          className: "flex items-center gap-3",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx("img", {
+                              src: e.cover,
+                              className: "h-10 w-10 rounded-full object-cover",
+                              alt: e.organizer,
+                            }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+                              className: "min-w-0",
+                              children: [
+                                /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
+                                  className: "truncate text-sm font-medium",
+                                  children: e.organizer,
+                                }),
+                                /* @__PURE__ */ jsxRuntimeExports.jsxs("p", {
+                                  className: "text-xs text-muted-foreground",
+                                  children: ["@", e.organizerHandle],
+                                }),
+                              ],
+                            }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(Button, {
+                              size: "sm",
+                              variant: "outline",
+                              className: "ml-auto rounded-full",
+                              children: "Follow",
+                            }),
+                          ],
+                        },
+                        e.id,
                       ),
+                    ),
                   }),
                 ],
               }),

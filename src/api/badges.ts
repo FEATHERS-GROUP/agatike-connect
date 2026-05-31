@@ -65,7 +65,9 @@ const GET_BADGE_PROJECT_BY_EVENT_ID = `
 
 export const getBadgeProjectByEventId = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { event_id } = ctx.data as unknown as { event_id: string };
-  const data = await hasuraRequest<{ badge_projects: any[] }>(GET_BADGE_PROJECT_BY_EVENT_ID, { event_id });
+  const data = await hasuraRequest<{ badge_projects: any[] }>(GET_BADGE_PROJECT_BY_EVENT_ID, {
+    event_id,
+  });
   return data.badge_projects?.[0] || null;
 });
 

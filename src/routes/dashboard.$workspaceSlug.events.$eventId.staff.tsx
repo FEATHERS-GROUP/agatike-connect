@@ -28,7 +28,13 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getEventSections, getEventStaff, createEventSection, addEventStaff, updateEventStaff } from "@/api/staff";
+import {
+  getEventSections,
+  getEventStaff,
+  createEventSection,
+  addEventStaff,
+  updateEventStaff,
+} from "@/api/staff";
 import { getEventById } from "@/api/events";
 import { createCustomForm } from "@/api/rsvps";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -115,7 +121,13 @@ function AddSectionModal({ eventId }: { eventId: string }) {
   );
 }
 
-function GenerateVendorFormModal({ eventId, activeWorkspace }: { eventId: string, activeWorkspace: any }) {
+function GenerateVendorFormModal({
+  eventId,
+  activeWorkspace,
+}: {
+  eventId: string;
+  activeWorkspace: any;
+}) {
   const [open, setOpen] = useState(false);
   const [vendorName, setVendorName] = useState("");
   const [collectPhone, setCollectPhone] = useState(true);
@@ -137,34 +149,56 @@ function GenerateVendorFormModal({ eventId, activeWorkspace }: { eventId: string
           label: "Staff Member Role / Title",
           field_type: "text",
           is_required: true,
-          order: 1
-        }
+          order: 1,
+        },
       ];
 
       let order = 2;
       if (collectPhone) {
-        fields.push({ label: "Staff Member Phone Number", field_type: "text", is_required: true, order: order++ });
+        fields.push({
+          label: "Staff Member Phone Number",
+          field_type: "text",
+          is_required: true,
+          order: order++,
+        });
       }
       if (collectProfileImage) {
-        fields.push({ label: "Profile Image", field_type: "file", is_required: false, order: order++ });
+        fields.push({
+          label: "Profile Image",
+          field_type: "file",
+          is_required: false,
+          order: order++,
+        });
       }
       if (collectGender) {
-        fields.push({ label: "Gender", field_type: "select", is_required: false, order: order++, options: ["Male", "Female", "Other", "Prefer not to say"] });
+        fields.push({
+          label: "Gender",
+          field_type: "select",
+          is_required: false,
+          order: order++,
+          options: ["Male", "Female", "Other", "Prefer not to say"],
+        });
       }
       if (collectDob) {
-        fields.push({ label: "Date of Birth", field_type: "date", is_required: false, order: order++ });
+        fields.push({
+          label: "Date of Birth",
+          field_type: "date",
+          is_required: false,
+          order: order++,
+        });
       }
 
       const formPayload = {
         title: `${vendorName} - Staff Registration`,
-        description: "Please fill out this form for each staff member you are bringing to the event.",
+        description:
+          "Please fill out this form for each staff member you are bringing to the event.",
         workspace_id: activeWorkspace?.id,
         event_id: eventId,
         cover_image_url: eventData?.cover || null,
         is_active: true,
         form_fields: {
-          data: fields
-        }
+          data: fields,
+        },
       };
       return await createCustomForm({ data: formPayload } as any);
     },
@@ -174,11 +208,11 @@ function GenerateVendorFormModal({ eventId, activeWorkspace }: { eventId: string
         setOpen(false);
         navigate({
           to: "/dashboard/$workspaceSlug/rsvps/$formId",
-          params: { workspaceSlug: activeWorkspace?.slug || "workspace", formId: data.id }
+          params: { workspaceSlug: activeWorkspace?.slug || "workspace", formId: data.id },
         });
       }
     },
-    onError: (err: any) => toast.error(err.message || "Failed to generate form")
+    onError: (err: any) => toast.error(err.message || "Failed to generate form"),
   });
 
   return (
@@ -203,7 +237,9 @@ function GenerateVendorFormModal({ eventId, activeWorkspace }: { eventId: string
               value={vendorName}
               onChange={(e) => setVendorName(e.target.value)}
             />
-            <p className="text-[10px] text-muted-foreground">This will be used as the form's title.</p>
+            <p className="text-[10px] text-muted-foreground">
+              This will be used as the form's title.
+            </p>
           </div>
 
           <div className="space-y-3 pt-2 border-t border-border/50">
@@ -211,22 +247,43 @@ function GenerateVendorFormModal({ eventId, activeWorkspace }: { eventId: string
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked disabled className="rounded border-gray-300" />
-                First Name, Last Name, Email <span className="text-xs text-muted-foreground">(Required)</span>
+                First Name, Last Name, Email{" "}
+                <span className="text-xs text-muted-foreground">(Required)</span>
               </label>
               <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={collectPhone} onChange={e => setCollectPhone(e.target.checked)} className="rounded border-gray-300" />
+                <input
+                  type="checkbox"
+                  checked={collectPhone}
+                  onChange={(e) => setCollectPhone(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
                 Phone Number <span className="text-xs text-muted-foreground">(Required)</span>
               </label>
               <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={collectProfileImage} onChange={e => setCollectProfileImage(e.target.checked)} className="rounded border-gray-300" />
+                <input
+                  type="checkbox"
+                  checked={collectProfileImage}
+                  onChange={(e) => setCollectProfileImage(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
                 Profile Image <span className="text-xs text-muted-foreground">(Recommended)</span>
               </label>
               <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={collectGender} onChange={e => setCollectGender(e.target.checked)} className="rounded border-gray-300" />
+                <input
+                  type="checkbox"
+                  checked={collectGender}
+                  onChange={(e) => setCollectGender(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
                 Gender
               </label>
               <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={collectDob} onChange={e => setCollectDob(e.target.checked)} className="rounded border-gray-300" />
+                <input
+                  type="checkbox"
+                  checked={collectDob}
+                  onChange={(e) => setCollectDob(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
                 Date of Birth
               </label>
             </div>
@@ -267,7 +324,10 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
   const mutation = useMutation({
     mutationFn: async () => {
       // Mock user_id for demonstration if none provided
-      const finalUserId = registrationType === "account" ? (formData.user_id || "00000000-0000-0000-0000-000000000000") : null;
+      const finalUserId =
+        registrationType === "account"
+          ? formData.user_id || "00000000-0000-0000-0000-000000000000"
+          : null;
       const randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
       return await addEventStaff({
         data: {
@@ -420,15 +480,24 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
                 <span className="font-medium">All Access (Everywhere)</span>
               </label>
               {sections.map((s) => (
-                <label key={s.id} className={`flex items-center gap-2 text-sm cursor-pointer ${formData.allowed_sections.includes("*") ? "opacity-50 pointer-events-none" : ""}`}>
+                <label
+                  key={s.id}
+                  className={`flex items-center gap-2 text-sm cursor-pointer ${formData.allowed_sections.includes("*") ? "opacity-50 pointer-events-none" : ""}`}
+                >
                   <Checkbox
                     disabled={formData.allowed_sections.includes("*")}
                     checked={formData.allowed_sections.includes(s.id)}
                     onCheckedChange={(c) => {
                       if (c) {
-                        setFormData({ ...formData, allowed_sections: [...formData.allowed_sections, s.id] });
+                        setFormData({
+                          ...formData,
+                          allowed_sections: [...formData.allowed_sections, s.id],
+                        });
                       } else {
-                        setFormData({ ...formData, allowed_sections: formData.allowed_sections.filter(id => id !== s.id) });
+                        setFormData({
+                          ...formData,
+                          allowed_sections: formData.allowed_sections.filter((id) => id !== s.id),
+                        });
                       }
                     }}
                   />
@@ -436,7 +505,9 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
                 </label>
               ))}
             </div>
-            <p className="text-[10px] text-muted-foreground">Selecting specific sections restricts their badge scan to only those areas.</p>
+            <p className="text-[10px] text-muted-foreground">
+              Selecting specific sections restricts their badge scan to only those areas.
+            </p>
           </div>
           <Button
             className="w-full mt-4"
@@ -453,7 +524,7 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
   );
 }
 
-function EditAccessModal({ staff, sections }: { staff: any, sections: any[] }) {
+function EditAccessModal({ staff, sections }: { staff: any; sections: any[] }) {
   const [open, setOpen] = useState(false);
   const [allowedSections, setAllowedSections] = useState<string[]>(staff.allowed_sections || []);
   const queryClient = useQueryClient();
@@ -473,13 +544,16 @@ function EditAccessModal({ staff, sections }: { staff: any, sections: any[] }) {
   });
 
   return (
-    <Dialog open={open} onOpenChange={(val) => {
-      setOpen(val);
-      if (val) setAllowedSections(staff.allowed_sections || []);
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(val) => {
+        setOpen(val);
+        if (val) setAllowedSections(staff.allowed_sections || []);
+      }}
+    >
       <DialogTrigger asChild>
-        <button 
-          onClick={(e) => e.stopPropagation()} 
+        <button
+          onClick={(e) => e.stopPropagation()}
           className="text-[10px] font-bold text-primary bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded ml-2 transition-colors uppercase tracking-wider"
         >
           Edit
@@ -505,13 +579,16 @@ function EditAccessModal({ staff, sections }: { staff: any, sections: any[] }) {
               <span className="font-medium">All Access (Everywhere)</span>
             </label>
             {sections.map((s) => (
-              <label key={s.id} className={`flex items-center gap-2 text-sm cursor-pointer ${allowedSections.includes("*") ? "opacity-50 pointer-events-none" : ""}`}>
+              <label
+                key={s.id}
+                className={`flex items-center gap-2 text-sm cursor-pointer ${allowedSections.includes("*") ? "opacity-50 pointer-events-none" : ""}`}
+              >
                 <Checkbox
                   disabled={allowedSections.includes("*")}
                   checked={allowedSections.includes(s.id)}
                   onCheckedChange={(c) => {
                     if (c) setAllowedSections([...allowedSections, s.id]);
-                    else setAllowedSections(allowedSections.filter(id => id !== s.id));
+                    else setAllowedSections(allowedSections.filter((id) => id !== s.id));
                   }}
                 />
                 <span>{s.name}</span>
@@ -635,16 +712,21 @@ function StaffView() {
               </thead>
               <tbody className="divide-y divide-border/60">
                 {staff.map((s: any) => {
-                  const assignedSections = s.allowed_sections && s.allowed_sections.length > 0 
-                    ? s.allowed_sections.map((id: string) => sections.find((sec: any) => sec.id === id)).filter(Boolean)
-                    : [];
+                  const assignedSections =
+                    s.allowed_sections && s.allowed_sections.length > 0
+                      ? s.allowed_sections
+                          .map((id: string) => sections.find((sec: any) => sec.id === id))
+                          .filter(Boolean)
+                      : [];
                   const isUnregistered = !s.user_id && (s.first_name || s.last_name);
                   const displayName = isUnregistered
                     ? `${s.first_name || ""} ${s.last_name || ""}`.trim()
                     : `User ${s.user_id?.substring(0, 6) || "Unknown"}`;
-                  const displayInitials = isUnregistered
-                    ? `${s.first_name?.[0] || ""}${s.last_name?.[0] || ""}`.toUpperCase()
-                    : <UserCheck className="h-4 w-4" />;
+                  const displayInitials = isUnregistered ? (
+                    `${s.first_name?.[0] || ""}${s.last_name?.[0] || ""}`.toUpperCase()
+                  ) : (
+                    <UserCheck className="h-4 w-4" />
+                  );
 
                   return (
                     <tr
@@ -655,16 +737,18 @@ function StaffView() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           {s.profile_image ? (
-                            <img src={s.profile_image} alt={displayName} className="h-9 w-9 rounded-full object-cover border border-border shadow-sm shrink-0" />
+                            <img
+                              src={s.profile_image}
+                              alt={displayName}
+                              className="h-9 w-9 rounded-full object-cover border border-border shadow-sm shrink-0"
+                            />
                           ) : (
                             <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors font-bold text-xs shrink-0">
                               {displayInitials}
                             </div>
                           )}
                           <div>
-                            <p className="font-semibold text-foreground">
-                              {displayName}
-                            </p>
+                            <p className="font-semibold text-foreground">{displayName}</p>
                             {isUnregistered && s.email && (
                               <p className="text-xs text-muted-foreground">{s.email}</p>
                             )}
@@ -675,17 +759,24 @@ function StaffView() {
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           {s.allowed_sections?.includes("*") ? (
-                            <span className="text-muted-foreground text-xs font-medium bg-secondary/50 px-2 py-0.5 rounded-md">All Access</span>
+                            <span className="text-muted-foreground text-xs font-medium bg-secondary/50 px-2 py-0.5 rounded-md">
+                              All Access
+                            </span>
                           ) : assignedSections.length > 0 ? (
                             <div className="flex flex-wrap gap-1 max-w-[200px]">
                               {assignedSections.map((sec: any) => (
-                                <span key={sec.id} className="inline-flex items-center gap-1.5 text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-md text-[10px] font-medium whitespace-nowrap">
+                                <span
+                                  key={sec.id}
+                                  className="inline-flex items-center gap-1.5 text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-md text-[10px] font-medium whitespace-nowrap"
+                                >
                                   <MapPin className="h-3 w-3" /> {sec.name}
                                 </span>
                               ))}
                             </div>
                           ) : (
-                            <span className="text-red-500 text-[10px] font-medium uppercase tracking-wider bg-red-500/10 px-2 py-0.5 rounded-md">No Access</span>
+                            <span className="text-red-500 text-[10px] font-medium uppercase tracking-wider bg-red-500/10 px-2 py-0.5 rounded-md">
+                              No Access
+                            </span>
                           )}
                           <EditAccessModal staff={s} sections={sections} />
                         </div>
@@ -697,10 +788,11 @@ function StaffView() {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.status === "active"
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            s.status === "active"
                               ? "bg-green-500/10 text-green-500"
                               : "bg-yellow-500/10 text-yellow-500"
-                            }`}
+                          }`}
                         >
                           {s.status}
                         </span>
@@ -753,13 +845,13 @@ function StaffView() {
           <div className="rounded-2xl border border-border/60 bg-card p-8 text-center shadow-[var(--shadow-card)]">
             <h3 className="text-lg font-semibold mb-2">Vendor & Contractor Forms</h3>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Share a dedicated form with external companies (e.g., Security, Caterers) to let them list their staff. Once submitted, you can import their roster directly into your staff directory.
+              Share a dedicated form with external companies (e.g., Security, Caterers) to let them
+              list their staff. Once submitted, you can import their roster directly into your staff
+              directory.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/dashboard/$workspaceSlug/rsvps" params={{ workspaceSlug }}>
-                <Button variant="outline">
-                  View All Custom Forms
-                </Button>
+                <Button variant="outline">View All Custom Forms</Button>
               </Link>
               <GenerateVendorFormModal eventId={eventId} activeWorkspace={activeWorkspace} />
             </div>
@@ -793,18 +885,21 @@ function StaffView() {
                     }}
                     isDesigner={false}
                     mockUser={{
-                      name: (!selectedStaff.user_id && (selectedStaff.first_name || selectedStaff.last_name))
-                        ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim()
-                        : `User ${selectedStaff.user_id?.substring(0, 6) || "Unknown"}`,
+                      name:
+                        !selectedStaff.user_id &&
+                        (selectedStaff.first_name || selectedStaff.last_name)
+                          ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim()
+                          : `User ${selectedStaff.user_id?.substring(0, 6) || "Unknown"}`,
                       role: selectedStaff.role,
                       qrString: selectedStaff.badge_qr_string,
-                      sectionName: selectedStaff.allowed_sections?.includes("*") 
-                        ? "ALL ACCESS" 
-                        : (selectedStaff.sectionObjs && selectedStaff.sectionObjs.length > 0)
-                          ? selectedStaff.sectionObjs.map((s: any) => s.name).join(", ") 
+                      sectionName: selectedStaff.allowed_sections?.includes("*")
+                        ? "ALL ACCESS"
+                        : selectedStaff.sectionObjs && selectedStaff.sectionObjs.length > 0
+                          ? selectedStaff.sectionObjs.map((s: any) => s.name).join(", ")
                           : "NO ACCESS",
-                      initials: `${selectedStaff.first_name?.[0] || ""}${selectedStaff.last_name?.[0] || ""}`.toUpperCase(),
-                      profileImage: selectedStaff.profile_image
+                      initials:
+                        `${selectedStaff.first_name?.[0] || ""}${selectedStaff.last_name?.[0] || ""}`.toUpperCase(),
+                      profileImage: selectedStaff.profile_image,
                     }}
                     sponsors={badgeProject.sponsors_json || []}
                   />
@@ -813,10 +908,10 @@ function StaffView() {
                 <div className="p-12 text-center text-muted-foreground border border-dashed rounded-2xl w-full flex flex-col items-center">
                   <Palette className="h-10 w-10 text-muted-foreground/50 mb-3" />
                   <p>No Badge Design created for this event yet.</p>
-                  <Link 
-                    to="/dashboard/$workspaceSlug/badge-designer/new" 
-                    params={{ workspaceSlug }} 
-                    search={{ eventId }} 
+                  <Link
+                    to="/dashboard/$workspaceSlug/badge-designer/new"
+                    params={{ workspaceSlug }}
+                    search={{ eventId }}
                     className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
                   >
                     Create Badge Design

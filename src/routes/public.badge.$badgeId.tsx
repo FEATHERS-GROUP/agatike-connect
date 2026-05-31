@@ -12,7 +12,11 @@ export const Route = createFileRoute("/public/badge/$badgeId")({
 function PublicBadgeView() {
   const { badgeId } = Route.useParams();
 
-  const { data: staff, isLoading: staffLoading, error: staffError } = useQuery({
+  const {
+    data: staff,
+    isLoading: staffLoading,
+    error: staffError,
+  } = useQuery({
     queryKey: ["staff-by-badge", badgeId],
     queryFn: async () => {
       const res = await getStaffByBadgeId({ data: { badge_qr_string: badgeId } } as any);
@@ -55,10 +59,10 @@ function PublicBadgeView() {
 
   // Build the mock config for BadgePreview from the DB row.
   const isUnregistered = !staff.user_id && (staff.first_name || staff.last_name);
-  const displayName = isUnregistered 
-    ? `${staff.first_name || ""} ${staff.last_name || ""}`.trim() 
+  const displayName = isUnregistered
+    ? `${staff.first_name || ""} ${staff.last_name || ""}`.trim()
     : `User ${staff.user_id?.substring(0, 6) || "Unknown"}`;
-  
+
   const displayInitials = isUnregistered
     ? `${staff.first_name?.[0] || ""}${staff.last_name?.[0] || ""}`.toUpperCase()
     : "US";
@@ -74,7 +78,9 @@ function PublicBadgeView() {
     showUserImage: project?.show_user_image ?? true,
     sponsors: Array.isArray(project?.sponsors_json) ? project.sponsors_json : [],
     frontDesign: project?.front_design || { elements: [] },
-    backDesign: project?.back_design || { rulesText: "NON-TRANSFERABLE\nValid only for the specified event date." },
+    backDesign: project?.back_design || {
+      rulesText: "NON-TRANSFERABLE\nValid only for the specified event date.",
+    },
   };
 
   const [activeSide, setActiveSide] = React.useState<"front" | "back">("front");
@@ -89,23 +95,23 @@ function PublicBadgeView() {
 
         {/* The Badge Container */}
         <div className="flex justify-center w-full">
-          <BadgePreview 
-            config={badgeConfig} 
-            isDesigner={false} 
+          <BadgePreview
+            config={badgeConfig}
+            isDesigner={false}
             activeSide={activeSide}
             mockUser={{
               name: displayName,
               role: staff.role,
               qrString: staff.badge_qr_string,
               sectionName: "ALL ACCESS", // We could fetch the section name if needed
-              initials: displayInitials
+              initials: displayInitials,
             }}
           />
         </div>
 
         <div className="flex justify-center mt-6">
           <button
-            onClick={() => setActiveSide(prev => prev === "front" ? "back" : "front")}
+            onClick={() => setActiveSide((prev) => (prev === "front" ? "back" : "front"))}
             className="px-6 py-2 rounded-full bg-zinc-800 text-zinc-300 font-medium text-sm hover:bg-zinc-700 transition-colors border border-zinc-700 flex items-center gap-2"
           >
             Flip to {activeSide === "front" ? "Back" : "Front"}
@@ -115,8 +121,10 @@ function PublicBadgeView() {
         <div className="mt-8 bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-4 flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Status</p>
-            <p className={`font-bold mt-1 ${staff.status === 'active' ? 'text-emerald-400' : 'text-amber-400'}`}>
-              {staff.status === 'active' ? 'VALID' : staff.status.toUpperCase()}
+            <p
+              className={`font-bold mt-1 ${staff.status === "active" ? "text-emerald-400" : "text-amber-400"}`}
+            >
+              {staff.status === "active" ? "VALID" : staff.status.toUpperCase()}
             </p>
           </div>
           <div className="text-right">

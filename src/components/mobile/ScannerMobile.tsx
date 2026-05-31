@@ -16,7 +16,7 @@ import {
   Minus,
   Plus,
   Settings,
-  Search
+  Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -31,7 +31,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 
 type Result = "idle" | "success" | "fail" | "vip" | "staff" | "voucher" | "punch";
@@ -40,7 +46,7 @@ export function ScannerMobile() {
   const [result, setResult] = useState<Result>("idle");
   const [online, setOnline] = useState(true);
   const [torch, setTorch] = useState(false);
-  
+
   const { activeWorkspace } = useWorkspace();
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [currentSectionId, setCurrentSectionId] = useState<string>("none");
@@ -72,14 +78,14 @@ export function ScannerMobile() {
         return;
       }
       setScannedStaff(staff);
-      
+
       // Restriction Logic
       if (staff.status !== "active") {
         setResult("fail");
         setFailReason("BADGE INACTIVE");
         return;
       }
-      
+
       if (currentSectionId !== "none") {
         const allowed = staff.allowed_sections || [];
         if (allowed.length > 0 && !allowed.includes(currentSectionId)) {
@@ -88,13 +94,13 @@ export function ScannerMobile() {
           return;
         }
       }
-      
+
       setResult("staff");
     },
     onError: () => {
       setResult("fail");
       setFailReason("NETWORK ERROR");
-    }
+    },
   });
 
   const handleManualScan = (e: React.FormEvent) => {
@@ -138,8 +144,12 @@ export function ScannerMobile() {
           <ArrowLeft className="h-6 w-6" />
         </Link>
         <div className="text-center">
-          <h1 className="font-bold text-sm tracking-tight">{events.find((e: any) => e.id === selectedEventId)?.title || "Scanner App"}</h1>
-          <p className="text-[10px] text-white/50">{sections.find((s: any) => s.id === currentSectionId)?.name || "All Access Mode"}</p>
+          <h1 className="font-bold text-sm tracking-tight">
+            {events.find((e: any) => e.id === selectedEventId)?.title || "Scanner App"}
+          </h1>
+          <p className="text-[10px] text-white/50">
+            {sections.find((s: any) => s.id === currentSectionId)?.name || "All Access Mode"}
+          </p>
         </div>
         <div className="flex gap-2 items-center">
           <Dialog>
@@ -156,19 +166,31 @@ export function ScannerMobile() {
                 <div className="space-y-2">
                   <Label>Select Event</Label>
                   <Select value={selectedEventId} onValueChange={setSelectedEventId}>
-                    <SelectTrigger><SelectValue placeholder="Choose event" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose event" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {events.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.title}</SelectItem>)}
+                      {events.map((e: any) => (
+                        <SelectItem key={e.id} value={e.id}>
+                          {e.title}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Current Location (Gate/Section)</Label>
                   <Select value={currentSectionId} onValueChange={setCurrentSectionId}>
-                    <SelectTrigger><SelectValue placeholder="All Access Gate" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Access Gate" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Anywhere (All Access Gate)</SelectItem>
-                      {sections.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                      {sections.map((s: any) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -282,7 +304,7 @@ export function ScannerMobile() {
                   : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
               }`}
             >
-              {result === "fail" ? (failReason || "TICKET ALREADY SCANNED") : "ENTRY APPROVED"}
+              {result === "fail" ? failReason || "TICKET ALREADY SCANNED" : "ENTRY APPROVED"}
             </div>
           </div>
         )}
@@ -307,20 +329,25 @@ export function ScannerMobile() {
                 </div>
                 <div>
                   <h3 className="text-2xl font-bold text-white">
-                    {scannedStaff?.first_name || scannedStaff?.last_name 
+                    {scannedStaff?.first_name || scannedStaff?.last_name
                       ? `${scannedStaff.first_name || ""} ${scannedStaff.last_name || ""}`.trim()
-                      : `User ${scannedStaff?.user_id?.substring(0,6) || "Unknown"}`}
+                      : `User ${scannedStaff?.user_id?.substring(0, 6) || "Unknown"}`}
                   </h3>
                   <p className="text-primary font-bold uppercase text-xs tracking-wider">
                     {scannedStaff?.role || "Staff"}
                   </p>
-                  <p className="text-white/40 font-mono text-[10px] mt-1">{scannedStaff?.badge_qr_string}</p>
+                  <p className="text-white/40 font-mono text-[10px] mt-1">
+                    {scannedStaff?.badge_qr_string}
+                  </p>
                 </div>
               </div>
               <div className="relative z-10 mt-5 pt-4 border-t border-white/10 flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-emerald-400" />
                 <span className="text-emerald-400 font-bold text-sm uppercase">
-                  Access: {currentSectionId === "none" ? "All Areas" : sections.find((s: any) => s.id === currentSectionId)?.name}
+                  Access:{" "}
+                  {currentSectionId === "none"
+                    ? "All Areas"
+                    : sections.find((s: any) => s.id === currentSectionId)?.name}
                 </span>
               </div>
             </div>
@@ -401,12 +428,12 @@ export function ScannerMobile() {
               Simulate Ticket
             </button>
             <form onSubmit={handleManualScan} className="flex-none flex items-center gap-2">
-              <input 
-                type="text" 
-                placeholder="Type QR Code (e.g. STAFF-123)" 
+              <input
+                type="text"
+                placeholder="Type QR Code (e.g. STAFF-123)"
                 className="bg-white/10 text-white border border-white/20 rounded-full px-4 py-3 text-xs focus:outline-none focus:border-primary w-48"
                 value={qrInput}
-                onChange={e => setQrInput(e.target.value)}
+                onChange={(e) => setQrInput(e.target.value)}
               />
               <button
                 type="submit"

@@ -116,50 +116,48 @@ function v() {
               }),
               e.jsx("div", {
                 className: "grid grid-cols-2 gap-3",
-                children: l
-                  .slice(0, 4)
-                  .map((s, a) =>
-                    e.jsxs(
-                      r,
-                      {
-                        to: "/events/$eventId",
-                        params: { eventId: s.id },
-                        className: `group relative rounded-3xl overflow-hidden bg-card shadow-[var(--shadow-card)] ${a === 0 || a === 3 ? "aspect-[3/4]" : "aspect-square"}`,
-                        children: [
-                          e.jsx("img", {
-                            src: s.cover,
-                            alt: s.title,
-                            className:
-                              "w-full h-full object-cover transition-transform duration-500 group-hover:scale-110",
-                          }),
-                          e.jsx("div", {
-                            className:
-                              "absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent",
-                          }),
-                          e.jsxs("div", {
-                            className: "absolute bottom-0 left-0 right-0 p-3",
-                            children: [
-                              e.jsx("div", {
-                                className:
-                                  "text-[10px] font-bold text-primary mb-1 uppercase tracking-wider",
-                                children: s.category,
-                              }),
-                              e.jsx("h3", {
-                                className:
-                                  "text-white font-semibold text-sm leading-tight line-clamp-2",
-                                children: s.title,
-                              }),
-                              e.jsxs("div", {
-                                className: "text-white/80 text-[10px] mt-1 flex items-center gap-1",
-                                children: [e.jsx(p, { className: "h-3 w-3" }), " ", s.city],
-                              }),
-                            ],
-                          }),
-                        ],
-                      },
-                      s.id,
-                    ),
+                children: l.slice(0, 4).map((s, a) =>
+                  e.jsxs(
+                    r,
+                    {
+                      to: "/events/$eventId",
+                      params: { eventId: s.id },
+                      className: `group relative rounded-3xl overflow-hidden bg-card shadow-[var(--shadow-card)] ${a === 0 || a === 3 ? "aspect-[3/4]" : "aspect-square"}`,
+                      children: [
+                        e.jsx("img", {
+                          src: s.cover,
+                          alt: s.title,
+                          className:
+                            "w-full h-full object-cover transition-transform duration-500 group-hover:scale-110",
+                        }),
+                        e.jsx("div", {
+                          className:
+                            "absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent",
+                        }),
+                        e.jsxs("div", {
+                          className: "absolute bottom-0 left-0 right-0 p-3",
+                          children: [
+                            e.jsx("div", {
+                              className:
+                                "text-[10px] font-bold text-primary mb-1 uppercase tracking-wider",
+                              children: s.category,
+                            }),
+                            e.jsx("h3", {
+                              className:
+                                "text-white font-semibold text-sm leading-tight line-clamp-2",
+                              children: s.title,
+                            }),
+                            e.jsxs("div", {
+                              className: "text-white/80 text-[10px] mt-1 flex items-center gap-1",
+                              children: [e.jsx(p, { className: "h-3 w-3" }), " ", s.city],
+                            }),
+                          ],
+                        }),
+                      ],
+                    },
+                    s.id,
                   ),
+                ),
               }),
             ],
           }),

@@ -228,14 +228,26 @@ function PublicFormPage() {
                           {formData[field.id] ? (
                             <>
                               <FileIcon className="w-8 h-8 mb-3 text-primary" />
-                              <p className="mb-2 text-sm text-foreground font-semibold">File Uploaded</p>
-                              <a href={formData[field.id]} target="_blank" rel="noreferrer" className="text-xs text-primary underline truncate max-w-[200px]" onClick={(e) => e.stopPropagation()}>View File</a>
+                              <p className="mb-2 text-sm text-foreground font-semibold">
+                                File Uploaded
+                              </p>
+                              <a
+                                href={formData[field.id]}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-xs text-primary underline truncate max-w-[200px]"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                View File
+                              </a>
                             </>
                           ) : (
                             <>
                               <UploadCloud className="w-8 h-8 mb-3 text-muted-foreground" />
                               <p className="mb-2 text-sm text-muted-foreground">
-                                <span className="font-semibold text-foreground">Click to upload</span>
+                                <span className="font-semibold text-foreground">
+                                  Click to upload
+                                </span>
                               </p>
                               <p className="text-xs text-muted-foreground">Max file size: 5MB</p>
                             </>

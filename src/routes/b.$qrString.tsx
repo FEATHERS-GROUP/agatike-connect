@@ -13,7 +13,11 @@ export const Route = createFileRoute("/b/$qrString")({
 function PublicBadgeRoute() {
   const { qrString } = Route.useParams();
 
-  const { data: staff, isLoading: isStaffLoading, error: staffError } = useQuery({
+  const {
+    data: staff,
+    isLoading: isStaffLoading,
+    error: staffError,
+  } = useQuery({
     queryKey: ["staff-by-qr", qrString],
     queryFn: async () => {
       const res = await getStaffByBadgeId({ data: { badge_qr_string: qrString } } as any);
@@ -45,7 +49,7 @@ function PublicBadgeRoute() {
       setExpired(true);
       return;
     }
-    const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
+    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearInterval(timer);
   }, [timeLeft, expired, isStaffLoading, isBadgeLoading, staff]);
 
@@ -59,7 +63,9 @@ function PublicBadgeRoute() {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-        <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">Verifying Identity...</p>
+        <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
+          Verifying Identity...
+        </p>
       </div>
     );
   }
@@ -71,14 +77,17 @@ function PublicBadgeRoute() {
           <ShieldAlert className="h-10 w-10 text-red-500" />
         </div>
         <h1 className="text-2xl font-black uppercase tracking-widest mb-2">Invalid Badge</h1>
-        <p className="text-muted-foreground">The QR code scanned does not match any active credentials in our system.</p>
+        <p className="text-muted-foreground">
+          The QR code scanned does not match any active credentials in our system.
+        </p>
       </div>
     );
   }
 
-  const name = (!staff.user_id && (staff.first_name || staff.last_name))
-    ? `${staff.first_name || ""} ${staff.last_name || ""}`.trim()
-    : `User ${staff.user_id?.substring(0, 6) || "Unknown"}`;
+  const name =
+    !staff.user_id && (staff.first_name || staff.last_name)
+      ? `${staff.first_name || ""} ${staff.last_name || ""}`.trim()
+      : `User ${staff.user_id?.substring(0, 6) || "Unknown"}`;
 
   if (expired) {
     return (
@@ -87,8 +96,11 @@ function PublicBadgeRoute() {
           <Clock className="h-10 w-10 text-slate-400" />
         </div>
         <h1 className="text-2xl font-black uppercase tracking-widest mb-2">View Expired</h1>
-        <p className="text-muted-foreground mb-8">For security, this identity verification page expires after 60 seconds. Please scan the QR code again.</p>
-        <button 
+        <p className="text-muted-foreground mb-8">
+          For security, this identity verification page expires after 60 seconds. Please scan the QR
+          code again.
+        </p>
+        <button
           onClick={handleClose}
           className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-8 rounded-full transition-colors"
         >
@@ -100,7 +112,7 @@ function PublicBadgeRoute() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center py-10 px-4 relative">
-      <button 
+      <button
         onClick={handleClose}
         className="absolute top-6 right-6 h-10 w-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors z-50"
       >
@@ -123,32 +135,35 @@ function PublicBadgeRoute() {
 
       {badgeProject ? (
         <div className="w-[340px] animate-in zoom-in-95 duration-700 fade-in delay-150 relative mx-auto">
-           <BadgePreview
-              config={{
-                theme: badgeProject.theme,
-                fontFamily: badgeProject.font_family,
-                gradientClass: badgeProject.gradient_class,
-                bgImageUrl: badgeProject.bg_image_url,
-                logoText: badgeProject.logo_text,
-                showUserImage: badgeProject.show_user_image,
-                accentColor: badgeProject.accent_color,
-                ...(badgeProject.front_design || {}),
-              }}
-              isDesigner={false}
-              mockUser={{
-                name: name,
-                role: staff.role,
-                qrString: staff.badge_qr_string,
-                sectionName: staff.allowed_sections?.includes("*") 
-                  ? "ALL ACCESS" 
-                  : (staff.allowed_sections && staff.allowed_sections.length > 0)
-                    ? staff.allowed_sections.map((id: string) => sections.find((s: any) => s.id === id)?.name).filter(Boolean).join(", ") 
-                    : "NO ACCESS",
-                initials: `${staff.first_name?.[0] || ""}${staff.last_name?.[0] || ""}`.toUpperCase(),
-                profileImage: staff.profile_image
-              }}
-              sponsors={badgeProject.sponsors_json || []}
-            />
+          <BadgePreview
+            config={{
+              theme: badgeProject.theme,
+              fontFamily: badgeProject.font_family,
+              gradientClass: badgeProject.gradient_class,
+              bgImageUrl: badgeProject.bg_image_url,
+              logoText: badgeProject.logo_text,
+              showUserImage: badgeProject.show_user_image,
+              accentColor: badgeProject.accent_color,
+              ...(badgeProject.front_design || {}),
+            }}
+            isDesigner={false}
+            mockUser={{
+              name: name,
+              role: staff.role,
+              qrString: staff.badge_qr_string,
+              sectionName: staff.allowed_sections?.includes("*")
+                ? "ALL ACCESS"
+                : staff.allowed_sections && staff.allowed_sections.length > 0
+                  ? staff.allowed_sections
+                      .map((id: string) => sections.find((s: any) => s.id === id)?.name)
+                      .filter(Boolean)
+                      .join(", ")
+                  : "NO ACCESS",
+              initials: `${staff.first_name?.[0] || ""}${staff.last_name?.[0] || ""}`.toUpperCase(),
+              profileImage: staff.profile_image,
+            }}
+            sponsors={badgeProject.sponsors_json || []}
+          />
         </div>
       ) : (
         <div className="w-full max-w-sm bg-slate-900 border border-border/10 rounded-3xl p-8 text-center shadow-2xl">
@@ -156,10 +171,14 @@ function PublicBadgeRoute() {
             <ShieldAlert className="h-10 w-10 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-1">{name}</h1>
-          <p className="text-primary font-bold uppercase tracking-widest text-sm mb-4">{staff.role}</p>
+          <p className="text-primary font-bold uppercase tracking-widest text-sm mb-4">
+            {staff.role}
+          </p>
           <div className="bg-black/50 rounded-xl py-3 px-4 mb-4">
-             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Badge ID</p>
-             <p className="font-mono text-sm text-white/80">{staff.badge_qr_string}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+              Badge ID
+            </p>
+            <p className="font-mono text-sm text-white/80">{staff.badge_qr_string}</p>
           </div>
         </div>
       )}

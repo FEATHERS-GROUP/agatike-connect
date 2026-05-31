@@ -25,7 +25,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -199,11 +205,7 @@ function FormRsvpsPage() {
           >
             <Settings className="mr-2 h-4 w-4" /> Form Settings
           </Button>
-          <Button
-            className="rounded-full shadow-sm"
-            variant="outline"
-            onClick={handleExportData}
-          >
+          <Button className="rounded-full shadow-sm" variant="outline" onClick={handleExportData}>
             <Download className="mr-2 h-4 w-4" /> Export Data
           </Button>
         </div>
@@ -227,9 +229,11 @@ function FormRsvpsPage() {
             <thead className="bg-secondary/30 text-muted-foreground text-xs uppercase tracking-wider">
               <tr>
                 <th className="px-6 py-4 font-medium md:sticky md:left-0 bg-card z-10 shadow-[1px_0_0_0_rgba(0,0,0,0.05)] w-12">
-                  <Checkbox 
-                    checked={selectedRsvps.length === filteredRsvps.length && filteredRsvps.length > 0} 
-                    onCheckedChange={(c) => handleSelectAll(c as boolean)} 
+                  <Checkbox
+                    checked={
+                      selectedRsvps.length === filteredRsvps.length && filteredRsvps.length > 0
+                    }
+                    onCheckedChange={(c) => handleSelectAll(c as boolean)}
                   />
                 </th>
                 <th className="px-6 py-4 font-medium">Attendee</th>
@@ -257,96 +261,109 @@ function FormRsvpsPage() {
                 filteredRsvps.map((rsvp: any) => {
                   const extracted = extractStaffDataFromRsvp(rsvp, dynamicFields);
                   return (
-                  <tr key={rsvp.id} className="hover:bg-secondary/20 transition-colors group">
-                    <td className="px-6 py-4 md:sticky md:left-0 bg-card group-hover:bg-secondary/20 z-10 shadow-[1px_0_0_0_rgba(0,0,0,0.05)]">
-                      <Checkbox 
-                        checked={selectedRsvps.includes(rsvp.id)} 
-                        onCheckedChange={(c) => handleSelectRsvp(rsvp.id, c as boolean)} 
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        {extracted.profileImage ? (
-                          <div className="h-9 w-9 rounded-full overflow-hidden border border-border shadow-sm shrink-0">
-                            <img src={extracted.profileImage} alt={extracted.firstName} className="h-full w-full object-cover" />
-                          </div>
-                        ) : (
-                          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm shrink-0">
-                            <span className="font-semibold text-xs">
-                              {(extracted.firstName?.[0] || "?") + (extracted.lastName?.[0] || "")}
-                            </span>
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-semibold text-foreground">
-                            {extracted.firstName} {extracted.lastName}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{extracted.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          rsvp.status === "Attended"
-                            ? "bg-green-500/10 text-green-500 border border-green-500/20"
-                            : rsvp.status === "Imported"
-                            ? "bg-purple-500/10 text-purple-500 border border-purple-500/20"
-                            : "bg-blue-500/10 text-blue-500 border border-blue-500/20"
-                        }`}
-                      >
-                        {rsvp.status || "Registered"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground">
-                      {new Date(rsvp.created_at).toLocaleString()}
-                    </td>
-
-                    {/* Render dynamic answers */}
-                    {dynamicFields.map((field: any) => {
-                      const answerObj = rsvp.rsvp_answers?.find(
-                        (a: any) => a.field_id === field.id,
-                      );
-                      const val = answerObj?.answer_value;
-                      
-                      const isImage = val && (field.field_type === "file" || val.includes("firebasestorage") || val.match(/\.(jpeg|jpg|gif|png|webp)$/i));
-
-                      return (
-                        <td
-                          key={field.id}
-                          className="px-6 py-4 text-muted-foreground max-w-[200px] truncate"
-                          title={!isImage ? val : "Image Upload"}
-                        >
-                          {isImage ? (
-                            <a href={val} target="_blank" rel="noreferrer" className="block">
-                              <img src={val} alt="Upload" className="h-10 w-10 object-cover rounded-md border border-border/50 hover:scale-150 transition-transform shadow-sm" />
-                            </a>
+                    <tr key={rsvp.id} className="hover:bg-secondary/20 transition-colors group">
+                      <td className="px-6 py-4 md:sticky md:left-0 bg-card group-hover:bg-secondary/20 z-10 shadow-[1px_0_0_0_rgba(0,0,0,0.05)]">
+                        <Checkbox
+                          checked={selectedRsvps.includes(rsvp.id)}
+                          onCheckedChange={(c) => handleSelectRsvp(rsvp.id, c as boolean)}
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          {extracted.profileImage ? (
+                            <div className="h-9 w-9 rounded-full overflow-hidden border border-border shadow-sm shrink-0">
+                              <img
+                                src={extracted.profileImage}
+                                alt={extracted.firstName}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
                           ) : (
-                            val || "-"
+                            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm shrink-0">
+                              <span className="font-semibold text-xs">
+                                {(extracted.firstName?.[0] || "?") +
+                                  (extracted.lastName?.[0] || "")}
+                              </span>
+                            </div>
                           )}
-                        </td>
-                      );
-                    })}
+                          <div>
+                            <p className="font-semibold text-foreground">
+                              {extracted.firstName} {extracted.lastName}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{extracted.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            rsvp.status === "Attended"
+                              ? "bg-green-500/10 text-green-500 border border-green-500/20"
+                              : rsvp.status === "Imported"
+                                ? "bg-purple-500/10 text-purple-500 border border-purple-500/20"
+                                : "bg-blue-500/10 text-blue-500 border border-blue-500/20"
+                          }`}
+                        >
+                          {rsvp.status || "Registered"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-muted-foreground">
+                        {new Date(rsvp.created_at).toLocaleString()}
+                      </td>
 
-                    <td className="px-6 py-4 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-xl">
-                          <DropdownMenuItem>Mark as Attended</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setImportRsvp(rsvp)}>
-                            Import as Event Staff
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
-                            Delete RSVP
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
+                      {/* Render dynamic answers */}
+                      {dynamicFields.map((field: any) => {
+                        const answerObj = rsvp.rsvp_answers?.find(
+                          (a: any) => a.field_id === field.id,
+                        );
+                        const val = answerObj?.answer_value;
+
+                        const isImage =
+                          val &&
+                          (field.field_type === "file" ||
+                            val.includes("firebasestorage") ||
+                            val.match(/\.(jpeg|jpg|gif|png|webp)$/i));
+
+                        return (
+                          <td
+                            key={field.id}
+                            className="px-6 py-4 text-muted-foreground max-w-[200px] truncate"
+                            title={!isImage ? val : "Image Upload"}
+                          >
+                            {isImage ? (
+                              <a href={val} target="_blank" rel="noreferrer" className="block">
+                                <img
+                                  src={val}
+                                  alt="Upload"
+                                  className="h-10 w-10 object-cover rounded-md border border-border/50 hover:scale-150 transition-transform shadow-sm"
+                                />
+                              </a>
+                            ) : (
+                              val || "-"
+                            )}
+                          </td>
+                        );
+                      })}
+
+                      <td className="px-6 py-4 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="rounded-xl">
+                            <DropdownMenuItem>Mark as Attended</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setImportRsvp(rsvp)}>
+                              Import as Event Staff
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
+                              Delete RSVP
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
                   );
                 })
               )}
@@ -409,25 +426,25 @@ function FormRsvpsPage() {
       </Dialog>
 
       {importRsvp && (
-        <ImportStaffDialog 
-          rsvp={importRsvp} 
-          workspaceId={activeWorkspace?.id} 
+        <ImportStaffDialog
+          rsvp={importRsvp}
+          workspaceId={activeWorkspace?.id}
           defaultEventId={form.event_id}
           formFields={dynamicFields}
-          onClose={() => setImportRsvp(null)} 
+          onClose={() => setImportRsvp(null)}
         />
       )}
 
       {showBulkImport && selectedRsvps.length > 0 && (
-        <BulkImportStaffDialog 
-          rsvps={rsvps.filter((r: any) => selectedRsvps.includes(r.id))} 
-          workspaceId={activeWorkspace?.id || ""} 
+        <BulkImportStaffDialog
+          rsvps={rsvps.filter((r: any) => selectedRsvps.includes(r.id))}
+          workspaceId={activeWorkspace?.id || ""}
           defaultEventId={form.event_id}
           formFields={dynamicFields}
           onClose={() => {
             setShowBulkImport(false);
             setSelectedRsvps([]);
-          }} 
+          }}
         />
       )}
     </div>
@@ -457,7 +474,10 @@ const extractStaffDataFromRsvp = (rsvp: any, formFields: any[] = []) => {
         email = val;
       }
       // Try to find name if missing
-      if ((!firstName || !lastName) && (fieldLabel.includes("name") || fieldLabel.includes("staff member"))) {
+      if (
+        (!firstName || !lastName) &&
+        (fieldLabel.includes("name") || fieldLabel.includes("staff member"))
+      ) {
         if (!firstName && !lastName) {
           const parts = val.split(" ");
           firstName = parts[0] || "";
@@ -465,7 +485,14 @@ const extractStaffDataFromRsvp = (rsvp: any, formFields: any[] = []) => {
         }
       }
       // Try to find image
-      if (!profileImage && (val.includes("firebasestorage") || fieldType === "file" || fieldLabel.includes("image") || fieldLabel.includes("photo") || fieldLabel.includes("avatar"))) {
+      if (
+        !profileImage &&
+        (val.includes("firebasestorage") ||
+          fieldType === "file" ||
+          fieldLabel.includes("image") ||
+          fieldLabel.includes("photo") ||
+          fieldLabel.includes("avatar"))
+      ) {
         profileImage = val;
       }
     }
@@ -474,7 +501,19 @@ const extractStaffDataFromRsvp = (rsvp: any, formFields: any[] = []) => {
   return { firstName, lastName, email, phone, profileImage };
 };
 
-function ImportStaffDialog({ rsvp, workspaceId, defaultEventId, formFields, onClose }: { rsvp: any, workspaceId?: string, defaultEventId?: string, formFields: any[], onClose: () => void }) {
+function ImportStaffDialog({
+  rsvp,
+  workspaceId,
+  defaultEventId,
+  formFields,
+  onClose,
+}: {
+  rsvp: any;
+  workspaceId?: string;
+  defaultEventId?: string;
+  formFields: any[];
+  onClose: () => void;
+}) {
   const queryClient = useQueryClient();
   const [eventId, setEventId] = useState(defaultEventId || "");
   const [role, setRole] = useState("Security");
@@ -503,7 +542,7 @@ function ImportStaffDialog({ rsvp, workspaceId, defaultEventId, formFields, onCl
           allowed_sections: [],
           status: "active",
           badge_qr_string: `STAFF-${randomId}`,
-        }
+        },
       } as any);
 
       await updateRsvpStatus({ data: { id: rsvp.id, status: "Imported" } } as any);
@@ -514,7 +553,7 @@ function ImportStaffDialog({ rsvp, workspaceId, defaultEventId, formFields, onCl
       queryClient.invalidateQueries({ queryKey: ["custom-form"] });
       onClose();
     },
-    onError: (err: any) => toast.error(err.message || "Failed to import staff")
+    onError: (err: any) => toast.error(err.message || "Failed to import staff"),
   });
 
   return (
@@ -531,7 +570,9 @@ function ImportStaffDialog({ rsvp, workspaceId, defaultEventId, formFields, onCl
             <div className="space-y-2">
               <Label>Select Event</Label>
               {isLoading ? (
-                <div className="text-sm text-muted-foreground flex items-center"><Loader2 className="h-4 w-4 mr-2 animate-spin"/> Loading events...</div>
+                <div className="text-sm text-muted-foreground flex items-center">
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Loading events...
+                </div>
               ) : (
                 <Select value={eventId} onValueChange={setEventId}>
                   <SelectTrigger>
@@ -539,7 +580,9 @@ function ImportStaffDialog({ rsvp, workspaceId, defaultEventId, formFields, onCl
                   </SelectTrigger>
                   <SelectContent>
                     {events.map((e: any) => (
-                      <SelectItem key={e.id} value={e.id}>{e.title}</SelectItem>
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.title}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -564,8 +607,8 @@ function ImportStaffDialog({ rsvp, workspaceId, defaultEventId, formFields, onCl
               </SelectContent>
             </Select>
           </div>
-          <Button 
-            className="w-full mt-2" 
+          <Button
+            className="w-full mt-2"
             style={{ background: "var(--gradient-primary)", color: "white" }}
             disabled={!eventId || mutation.isPending}
             onClick={() => mutation.mutate()}
@@ -579,7 +622,19 @@ function ImportStaffDialog({ rsvp, workspaceId, defaultEventId, formFields, onCl
   );
 }
 
-function BulkImportStaffDialog({ rsvps, onClose, workspaceId, defaultEventId, formFields }: { rsvps: any[], onClose: () => void, workspaceId: string, defaultEventId?: string, formFields: any[] }) {
+function BulkImportStaffDialog({
+  rsvps,
+  onClose,
+  workspaceId,
+  defaultEventId,
+  formFields,
+}: {
+  rsvps: any[];
+  onClose: () => void;
+  workspaceId: string;
+  defaultEventId?: string;
+  formFields: any[];
+}) {
   const queryClient = useQueryClient();
   const [eventId, setEventId] = useState<string>(defaultEventId || "");
   const [role, setRole] = useState<string>("Security");
@@ -613,7 +668,7 @@ function BulkImportStaffDialog({ rsvps, onClose, workspaceId, defaultEventId, fo
             allowed_sections: [],
             status: "active",
             badge_qr_string: `STAFF-${randomId}`,
-          }
+          },
         } as any);
 
         await updateRsvpStatus({ data: { id: rsvp.id, status: "Imported" } } as any);
@@ -626,7 +681,7 @@ function BulkImportStaffDialog({ rsvps, onClose, workspaceId, defaultEventId, fo
       queryClient.invalidateQueries({ queryKey: ["custom-form"] });
       onClose();
     },
-    onError: (err: any) => toast.error(err.message || "Failed to import bulk staff")
+    onError: (err: any) => toast.error(err.message || "Failed to import bulk staff"),
   });
 
   return (
@@ -643,7 +698,9 @@ function BulkImportStaffDialog({ rsvps, onClose, workspaceId, defaultEventId, fo
             <div className="space-y-2">
               <Label>Select Event</Label>
               {isLoading ? (
-                <div className="text-sm text-muted-foreground flex items-center"><Loader2 className="h-4 w-4 mr-2 animate-spin"/> Loading events...</div>
+                <div className="text-sm text-muted-foreground flex items-center">
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Loading events...
+                </div>
               ) : (
                 <Select value={eventId} onValueChange={setEventId}>
                   <SelectTrigger>
@@ -651,7 +708,9 @@ function BulkImportStaffDialog({ rsvps, onClose, workspaceId, defaultEventId, fo
                   </SelectTrigger>
                   <SelectContent>
                     {events.map((e: any) => (
-                      <SelectItem key={e.id} value={e.id}>{e.title}</SelectItem>
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.title}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -676,8 +735,8 @@ function BulkImportStaffDialog({ rsvps, onClose, workspaceId, defaultEventId, fo
               </SelectContent>
             </Select>
           </div>
-          <Button 
-            className="w-full mt-2" 
+          <Button
+            className="w-full mt-2"
             style={{ background: "var(--gradient-primary)", color: "white" }}
             disabled={!eventId || mutation.isPending}
             onClick={() => mutation.mutate()}

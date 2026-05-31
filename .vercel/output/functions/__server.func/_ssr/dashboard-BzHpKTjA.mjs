@@ -577,50 +577,48 @@ function DashboardDesktop() {
                 }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("div", {
                   className: "divide-y divide-border/60",
-                  children: events
-                    .slice(0, 5)
-                    .map((e, i) =>
-                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                        "div",
-                        {
-                          className: "flex items-center gap-4 px-6 py-3 text-sm",
-                          children: [
-                            /* @__PURE__ */ jsxRuntimeExports.jsx("img", {
-                              src: e.cover,
-                              className: "h-10 w-10 rounded-lg object-cover",
-                              alt: "",
-                            }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
-                              className: "min-w-0 flex-1",
-                              children: [
-                                /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
-                                  className: "truncate font-medium",
-                                  children: e.title,
-                                }),
-                                /* @__PURE__ */ jsxRuntimeExports.jsxs("p", {
-                                  className: "text-xs text-muted-foreground",
-                                  children: [e.organizer, " · ", e.date],
-                                }),
-                              ],
-                            }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", {
-                              className: "hidden md:inline text-xs text-muted-foreground",
-                              children: ["x", 2 + i],
-                            }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", {
-                              className: "font-semibold",
-                              children: ["$", (e.price * (2 + i)).toFixed(0)],
-                            }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsx("span", {
-                              className:
-                                "rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground",
-                              children: "Paid",
-                            }),
-                          ],
-                        },
-                        e.id,
-                      ),
+                  children: events.slice(0, 5).map((e, i) =>
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      "div",
+                      {
+                        className: "flex items-center gap-4 px-6 py-3 text-sm",
+                        children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("img", {
+                            src: e.cover,
+                            className: "h-10 w-10 rounded-lg object-cover",
+                            alt: "",
+                          }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+                            className: "min-w-0 flex-1",
+                            children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
+                                className: "truncate font-medium",
+                                children: e.title,
+                              }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs("p", {
+                                className: "text-xs text-muted-foreground",
+                                children: [e.organizer, " · ", e.date],
+                              }),
+                            ],
+                          }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", {
+                            className: "hidden md:inline text-xs text-muted-foreground",
+                            children: ["x", 2 + i],
+                          }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", {
+                            className: "font-semibold",
+                            children: ["$", (e.price * (2 + i)).toFixed(0)],
+                          }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("span", {
+                            className:
+                              "rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground",
+                            children: "Paid",
+                          }),
+                        ],
+                      },
+                      e.id,
                     ),
+                  ),
                 }),
               ],
             }),

@@ -34,40 +34,38 @@ function b() {
                   s.jsx("p", { className: "text-sm font-semibold", children: "Upcoming for you" }),
                   s.jsx("div", {
                     className: "mt-4 space-y-3",
-                    children: r
-                      .slice(0, 3)
-                      .map((e) =>
-                        s.jsxs(
-                          i,
-                          {
-                            to: "/events/$eventId",
-                            params: { eventId: e.id },
-                            className:
-                              "flex items-center gap-3 rounded-xl p-2 hover:bg-secondary transition",
-                            children: [
-                              s.jsx("img", {
-                                src: e.cover,
-                                className: "h-12 w-12 rounded-lg object-cover",
-                                alt: e.title,
-                              }),
-                              s.jsxs("div", {
-                                className: "min-w-0",
-                                children: [
-                                  s.jsx("p", {
-                                    className: "truncate text-sm font-medium",
-                                    children: e.title,
-                                  }),
-                                  s.jsxs("p", {
-                                    className: "text-xs text-muted-foreground",
-                                    children: [e.date, " · ", e.city],
-                                  }),
-                                ],
-                              }),
-                            ],
-                          },
-                          e.id,
-                        ),
+                    children: r.slice(0, 3).map((e) =>
+                      s.jsxs(
+                        i,
+                        {
+                          to: "/events/$eventId",
+                          params: { eventId: e.id },
+                          className:
+                            "flex items-center gap-3 rounded-xl p-2 hover:bg-secondary transition",
+                          children: [
+                            s.jsx("img", {
+                              src: e.cover,
+                              className: "h-12 w-12 rounded-lg object-cover",
+                              alt: e.title,
+                            }),
+                            s.jsxs("div", {
+                              className: "min-w-0",
+                              children: [
+                                s.jsx("p", {
+                                  className: "truncate text-sm font-medium",
+                                  children: e.title,
+                                }),
+                                s.jsxs("p", {
+                                  className: "text-xs text-muted-foreground",
+                                  children: [e.date, " · ", e.city],
+                                }),
+                              ],
+                            }),
+                          ],
+                        },
+                        e.id,
                       ),
+                    ),
                   }),
                 ],
               }),
@@ -80,43 +78,41 @@ function b() {
                   }),
                   s.jsx("div", {
                     className: "mt-4 space-y-3",
-                    children: r
-                      .slice(2, 5)
-                      .map((e) =>
-                        s.jsxs(
-                          "div",
-                          {
-                            className: "flex items-center gap-3",
-                            children: [
-                              s.jsx("img", {
-                                src: e.cover,
-                                className: "h-10 w-10 rounded-full object-cover",
-                                alt: e.organizer,
-                              }),
-                              s.jsxs("div", {
-                                className: "min-w-0",
-                                children: [
-                                  s.jsx("p", {
-                                    className: "truncate text-sm font-medium",
-                                    children: e.organizer,
-                                  }),
-                                  s.jsxs("p", {
-                                    className: "text-xs text-muted-foreground",
-                                    children: ["@", e.organizerHandle],
-                                  }),
-                                ],
-                              }),
-                              s.jsx(l, {
-                                size: "sm",
-                                variant: "outline",
-                                className: "ml-auto rounded-full",
-                                children: "Follow",
-                              }),
-                            ],
-                          },
-                          e.id,
-                        ),
+                    children: r.slice(2, 5).map((e) =>
+                      s.jsxs(
+                        "div",
+                        {
+                          className: "flex items-center gap-3",
+                          children: [
+                            s.jsx("img", {
+                              src: e.cover,
+                              className: "h-10 w-10 rounded-full object-cover",
+                              alt: e.organizer,
+                            }),
+                            s.jsxs("div", {
+                              className: "min-w-0",
+                              children: [
+                                s.jsx("p", {
+                                  className: "truncate text-sm font-medium",
+                                  children: e.organizer,
+                                }),
+                                s.jsxs("p", {
+                                  className: "text-xs text-muted-foreground",
+                                  children: ["@", e.organizerHandle],
+                                }),
+                              ],
+                            }),
+                            s.jsx(l, {
+                              size: "sm",
+                              variant: "outline",
+                              className: "ml-auto rounded-full",
+                              children: "Follow",
+                            }),
+                          ],
+                        },
+                        e.id,
                       ),
+                    ),
                   }),
                 ],
               }),

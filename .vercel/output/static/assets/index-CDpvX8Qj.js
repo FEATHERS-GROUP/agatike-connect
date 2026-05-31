@@ -604,56 +604,54 @@ function M() {
           }),
           e.jsx("div", {
             className: "grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3",
-            children: x
-              .slice(0, 3)
-              .map((s) =>
-                e.jsxs(
-                  t,
-                  {
-                    to: "/experiences",
-                    className:
-                      "group overflow-hidden rounded-3xl bg-card shadow-[var(--shadow-card)] transition hover:-translate-y-1",
-                    children: [
-                      e.jsxs("div", {
-                        className: "relative aspect-[4/3] overflow-hidden",
-                        children: [
-                          e.jsx("img", {
-                            src: s.cover,
-                            alt: s.title,
-                            className:
-                              "h-full w-full object-cover transition-transform duration-500 group-hover:scale-110",
-                            loading: "lazy",
-                          }),
-                          e.jsx("span", {
-                            className:
-                              "absolute top-3 left-3 rounded-full bg-background/90 px-3 py-1 text-xs",
-                            children: s.category,
-                          }),
-                        ],
-                      }),
-                      e.jsxs("div", {
-                        className: "p-4",
-                        children: [
-                          e.jsx("p", { className: "font-semibold", children: s.title }),
-                          e.jsxs("p", {
-                            className: "text-xs text-muted-foreground",
-                            children: [s.host, " · ", s.city],
-                          }),
-                          e.jsxs("p", {
-                            className: "mt-2 text-sm",
-                            children: [
-                              s.price === 0 ? "Free" : `From ${s.currency || "$"}${s.price}`,
-                              " · ",
-                              s.duration,
-                            ],
-                          }),
-                        ],
-                      }),
-                    ],
-                  },
-                  s.id,
-                ),
+            children: x.slice(0, 3).map((s) =>
+              e.jsxs(
+                t,
+                {
+                  to: "/experiences",
+                  className:
+                    "group overflow-hidden rounded-3xl bg-card shadow-[var(--shadow-card)] transition hover:-translate-y-1",
+                  children: [
+                    e.jsxs("div", {
+                      className: "relative aspect-[4/3] overflow-hidden",
+                      children: [
+                        e.jsx("img", {
+                          src: s.cover,
+                          alt: s.title,
+                          className:
+                            "h-full w-full object-cover transition-transform duration-500 group-hover:scale-110",
+                          loading: "lazy",
+                        }),
+                        e.jsx("span", {
+                          className:
+                            "absolute top-3 left-3 rounded-full bg-background/90 px-3 py-1 text-xs",
+                          children: s.category,
+                        }),
+                      ],
+                    }),
+                    e.jsxs("div", {
+                      className: "p-4",
+                      children: [
+                        e.jsx("p", { className: "font-semibold", children: s.title }),
+                        e.jsxs("p", {
+                          className: "text-xs text-muted-foreground",
+                          children: [s.host, " · ", s.city],
+                        }),
+                        e.jsxs("p", {
+                          className: "mt-2 text-sm",
+                          children: [
+                            s.price === 0 ? "Free" : `From ${s.currency || "$"}${s.price}`,
+                            " · ",
+                            s.duration,
+                          ],
+                        }),
+                      ],
+                    }),
+                  ],
+                },
+                s.id,
               ),
+            ),
           }),
         ],
       }),
@@ -684,48 +682,46 @@ function M() {
           }),
           e.jsx("div", {
             className: "grid grid-cols-2 gap-4 md:grid-cols-4",
-            children: i
-              .slice(0, 4)
-              .map((s) =>
-                e.jsxs(
-                  "div",
-                  {
-                    className:
-                      "rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-1",
-                    children: [
-                      e.jsx("img", {
-                        src: s.cover,
-                        alt: s.organizer,
-                        className: "h-16 w-16 rounded-full object-cover",
-                        loading: "lazy",
-                      }),
-                      e.jsx("p", { className: "mt-4 font-semibold", children: s.organizer }),
-                      e.jsxs("p", {
-                        className: "text-xs text-muted-foreground",
-                        children: ["@", s.organizerHandle, " · ", s.city],
-                      }),
-                      e.jsxs("div", {
-                        className: "mt-3 flex items-center gap-1 text-xs",
-                        children: [
-                          e.jsx($, { className: "h-3 w-3 fill-primary text-primary" }),
-                          " ",
-                          s.rating,
-                          " ·",
-                          " ",
-                          (s.attendees * 12).toLocaleString(),
-                          " followers",
-                        ],
-                      }),
-                      e.jsx(l, {
-                        variant: "outline",
-                        className: "mt-4 w-full rounded-full",
-                        children: "Follow",
-                      }),
-                    ],
-                  },
-                  s.id,
-                ),
+            children: i.slice(0, 4).map((s) =>
+              e.jsxs(
+                "div",
+                {
+                  className:
+                    "rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-1",
+                  children: [
+                    e.jsx("img", {
+                      src: s.cover,
+                      alt: s.organizer,
+                      className: "h-16 w-16 rounded-full object-cover",
+                      loading: "lazy",
+                    }),
+                    e.jsx("p", { className: "mt-4 font-semibold", children: s.organizer }),
+                    e.jsxs("p", {
+                      className: "text-xs text-muted-foreground",
+                      children: ["@", s.organizerHandle, " · ", s.city],
+                    }),
+                    e.jsxs("div", {
+                      className: "mt-3 flex items-center gap-1 text-xs",
+                      children: [
+                        e.jsx($, { className: "h-3 w-3 fill-primary text-primary" }),
+                        " ",
+                        s.rating,
+                        " ·",
+                        " ",
+                        (s.attendees * 12).toLocaleString(),
+                        " followers",
+                      ],
+                    }),
+                    e.jsx(l, {
+                      variant: "outline",
+                      className: "mt-4 w-full rounded-full",
+                      children: "Follow",
+                    }),
+                  ],
+                },
+                s.id,
               ),
+            ),
           }),
         ],
       }),
@@ -756,36 +752,34 @@ function M() {
           }),
           e.jsx("div", {
             className: "grid grid-cols-2 gap-3 md:grid-cols-4",
-            children: p
-              .slice(0, 4)
-              .map((s) =>
-                e.jsxs(
-                  "div",
-                  {
-                    className: "group relative aspect-square overflow-hidden rounded-2xl",
-                    children: [
-                      e.jsx("img", {
-                        src: s.image,
-                        alt: s.eventTitle,
-                        className:
-                          "h-full w-full object-cover transition-transform duration-500 group-hover:scale-110",
-                        loading: "lazy",
-                      }),
-                      e.jsx("div", {
-                        className: "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent",
-                      }),
-                      e.jsxs("div", {
-                        className: "absolute bottom-3 left-3 right-3 text-xs text-white",
-                        children: [
-                          e.jsxs("p", { className: "font-semibold", children: ["@", s.handle] }),
-                          e.jsx("p", { className: "opacity-80 line-clamp-1", children: s.caption }),
-                        ],
-                      }),
-                    ],
-                  },
-                  s.id,
-                ),
+            children: p.slice(0, 4).map((s) =>
+              e.jsxs(
+                "div",
+                {
+                  className: "group relative aspect-square overflow-hidden rounded-2xl",
+                  children: [
+                    e.jsx("img", {
+                      src: s.image,
+                      alt: s.eventTitle,
+                      className:
+                        "h-full w-full object-cover transition-transform duration-500 group-hover:scale-110",
+                      loading: "lazy",
+                    }),
+                    e.jsx("div", {
+                      className: "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent",
+                    }),
+                    e.jsxs("div", {
+                      className: "absolute bottom-3 left-3 right-3 text-xs text-white",
+                      children: [
+                        e.jsxs("p", { className: "font-semibold", children: ["@", s.handle] }),
+                        e.jsx("p", { className: "opacity-80 line-clamp-1", children: s.caption }),
+                      ],
+                    }),
+                  ],
+                },
+                s.id,
               ),
+            ),
           }),
         ],
       }),

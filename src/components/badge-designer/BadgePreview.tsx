@@ -30,19 +30,19 @@ interface BadgePreviewProps {
 export function BadgePreview({
   config,
   activeSide = "front",
-  setActiveSide = () => { },
+  setActiveSide = () => {},
   sponsors = [],
   draggingId = null,
-  setDraggingId = () => { },
-  handlePointerDown = () => { },
+  setDraggingId = () => {},
+  handlePointerDown = () => {},
   isDesigner = true,
   mockUser = {
     name: "David Kim",
     role: "Security Lead",
     qrString: "STAFF-DK8492X",
     sectionName: "VIP Lounge",
-    initials: "DK"
-  }
+    initials: "DK",
+  },
 }: BadgePreviewProps) {
   const renderQRCode = (theme: string, accentColor: string) => {
     const x = config.qrX ?? 50;
@@ -50,7 +50,7 @@ export function BadgePreview({
 
     return (
       <div
-        className={`absolute flex flex-col items-center animate-in fade-in zoom-in duration-500 z-40 ${isDesigner ? 'cursor-move' : ''} ${draggingId === "qrcode" ? "opacity-70 scale-105" : "hover:scale-105"} transition-transform bg-transparent p-2 ${isDesigner ? 'pointer-events-auto' : ''}`}
+        className={`absolute flex flex-col items-center animate-in fade-in zoom-in duration-500 z-40 ${isDesigner ? "cursor-move" : ""} ${draggingId === "qrcode" ? "opacity-70 scale-105" : "hover:scale-105"} transition-transform bg-transparent p-2 ${isDesigner ? "pointer-events-auto" : ""}`}
         style={{
           left: `${x}%`,
           top: `${y}%`,
@@ -110,7 +110,7 @@ export function BadgePreview({
         return (
           <div
             key={s.id}
-            className={`absolute flex flex-col items-center justify-center gap-1 z-30 ${isDesigner ? 'cursor-move' : ''} ${draggingId === s.id ? "opacity-70 scale-105" : "hover:scale-105"} transition-transform ${isDesigner ? 'pointer-events-auto' : ''}`}
+            className={`absolute flex flex-col items-center justify-center gap-1 z-30 ${isDesigner ? "cursor-move" : ""} ${draggingId === s.id ? "opacity-70 scale-105" : "hover:scale-105"} transition-transform ${isDesigner ? "pointer-events-auto" : ""}`}
             style={{
               left: `${x}%`,
               top: `${y}%`,
@@ -201,7 +201,9 @@ export function BadgePreview({
           >
             {/* Background Layer */}
             {config.theme !== "minimal" && (
-              <div className={`absolute inset-0 bg-gradient-to-b ${config.gradientClass} z-0`}></div>
+              <div
+                className={`absolute inset-0 bg-gradient-to-b ${config.gradientClass} z-0`}
+              ></div>
             )}
             {config.bgImageUrl && (
               <div className="absolute inset-0 z-0">
@@ -245,7 +247,7 @@ export function BadgePreview({
                   style={{
                     backgroundColor: config.theme === "minimal" ? "#f1f5f9" : "rgba(0,0,0,0.3)",
                     borderColor: config.accentColor,
-                    color: config.theme === "minimal" ? "black" : "white"
+                    color: config.theme === "minimal" ? "black" : "white",
                   }}
                 >
                   {mockUser.initials || <UserCheck className="h-8 w-8" />}
@@ -277,7 +279,9 @@ export function BadgePreview({
           >
             {/* Background Layer */}
             {config.theme !== "minimal" && (
-              <div className={`absolute inset-0 bg-gradient-to-b ${config.gradientClass} z-0`}></div>
+              <div
+                className={`absolute inset-0 bg-gradient-to-b ${config.gradientClass} z-0`}
+              ></div>
             )}
             {config.bgImageUrl && (
               <div className="absolute inset-0 z-0">
