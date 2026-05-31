@@ -22,6 +22,7 @@ interface BadgePreviewProps {
     qrString: string;
     sectionName: string;
     initials: string;
+    profileImage?: string;
   };
 }
 
@@ -245,9 +246,9 @@ export function BadgePreview({
                   style={{ borderColor: config.accentColor }}
                 >
                   <img
-                    src="https://i.pravatar.cc/300?img=12"
+                    src={mockUser.profileImage || "https://i.pravatar.cc/300?img=12"}
                     alt="Staff"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover bg-slate-200"
                   />
                 </div>
               ) : (

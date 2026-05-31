@@ -33,6 +33,9 @@ import { getEventById } from "@/api/events";
 import { createCustomForm } from "@/api/rsvps";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { getBadgeProjectByEventId } from "@/api/badges";
+import { BadgePreview } from "@/components/badge-designer/BadgePreview";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/staff")({
   component: StaffView,
@@ -169,7 +172,7 @@ function GenerateVendorFormModal({ eventId, activeWorkspace }: { eventId: string
       if (data && data.id) {
         toast.success("Vendor Form Created");
         setOpen(false);
-        navigate({ 
+        navigate({
           to: "/dashboard/$workspaceSlug/rsvps/$formId",
           params: { workspaceSlug: activeWorkspace?.slug || "workspace", formId: data.id }
         });
@@ -202,7 +205,7 @@ function GenerateVendorFormModal({ eventId, activeWorkspace }: { eventId: string
             />
             <p className="text-[10px] text-muted-foreground">This will be used as the form's title.</p>
           </div>
-          
+
           <div className="space-y-3 pt-2 border-t border-border/50">
             <Label className="text-sm font-semibold">Information to Collect</Label>
             <div className="space-y-2">
@@ -228,7 +231,7 @@ function GenerateVendorFormModal({ eventId, activeWorkspace }: { eventId: string
               </label>
             </div>
           </div>
-          
+
           <Button
             className="w-full mt-4"
             style={{ background: "var(--gradient-primary)", color: "white" }}
@@ -252,13 +255,13 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
   const queryClient = useQueryClient();
   const [registrationType, setRegistrationType] = useState("account"); // "account" or "no-account"
   const [formData, setFormData] = useState({
-    user_id: "", 
+    user_id: "",
     first_name: "",
     last_name: "",
     email: "",
     phone: "",
     role: "Volunteer",
-    section_id: "none",
+    allowed_sections: [] as string[],
   });
 
   const mutation = useMutation({
@@ -275,7 +278,7 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
           email: registrationType === "no-account" ? formData.email : null,
           phone: registrationType === "no-account" ? formData.phone : null,
           role: formData.role,
-          section_id: formData.section_id === "none" ? null : formData.section_id,
+          allowed_sections: formData.allowed_sections,
           badge_qr_string: `STAFF-${randomId}`,
           status: "active",
         },
@@ -286,13 +289,13 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
       setFormData({
-        user_id: "", 
+        user_id: "",
         first_name: "",
         last_name: "",
         email: "",
         phone: "",
         role: "Volunteer",
-        section_id: "none",
+        allowed_sections: [],
       });
     },
     onError: (err: any) => toast.error(err.message || "Failed to add staff"),
@@ -321,7 +324,7 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
               <TabsTrigger value="account">Agatike Account</TabsTrigger>
               <TabsTrigger value="no-account">No Account (Link)</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="account" className="space-y-4 mt-0">
               <div className="space-y-2">
                 <Label>User ID / Email Search</Label>
@@ -332,7 +335,7 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
                 />
               </div>
             </TabsContent>
-            
+
             <TabsContent value="no-account" className="space-y-4 mt-0">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -403,24 +406,35 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label>Assigned Section (Optional)</Label>
-            <Select
-              value={formData.section_id}
-              onValueChange={(val) => setFormData({ ...formData, section_id: val })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="No specific section" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Anywhere (All Access)</SelectItem>
-                {sections.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="space-y-3 pt-2">
+            <Label className="text-sm font-semibold">Allowed Sections (Access Control)</Label>
+            <div className="space-y-2 border border-border/50 rounded-xl p-3 bg-secondary/10 max-h-[150px] overflow-y-auto">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <Checkbox
+                  checked={formData.allowed_sections.length === 0}
+                  onCheckedChange={(c) => {
+                    if (c) setFormData({ ...formData, allowed_sections: [] });
+                  }}
+                />
+                <span className="font-medium">All Access (Everywhere)</span>
+              </label>
+              {sections.map((s) => (
+                <label key={s.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                  <Checkbox
+                    checked={formData.allowed_sections.includes(s.id)}
+                    onCheckedChange={(c) => {
+                      if (c) {
+                        setFormData({ ...formData, allowed_sections: [...formData.allowed_sections, s.id] });
+                      } else {
+                        setFormData({ ...formData, allowed_sections: formData.allowed_sections.filter(id => id !== s.id) });
+                      }
+                    }}
+                  />
+                  <span>{s.name}</span>
+                </label>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground">Selecting specific sections restricts their badge scan to only those areas.</p>
           </div>
           <Button
             className="w-full mt-4"
@@ -444,6 +458,12 @@ function StaffView() {
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
 
+  const { data: badgeProject } = useQuery({
+    queryKey: ["badge-project", eventId],
+    queryFn: () => getBadgeProjectByEventId({ data: { event_id: eventId } } as any),
+    enabled: !!eventId,
+  });
+
   // We are using fallback mock data if the DB tables aren't perfectly seeded yet
   const { data: sections = [] } = useQuery({
     queryKey: ["event-sections", eventId],
@@ -462,30 +482,8 @@ function StaffView() {
   const { data: staff = [] } = useQuery({
     queryKey: ["event-staff", eventId],
     queryFn: async () => {
-      try {
-        const res = await getEventStaff({ data: { event_id: eventId } } as any);
-        if (res.length > 0) return res;
-        throw new Error("No real data");
-      } catch {
-        return [
-          {
-            id: "1",
-            user_id: "User A",
-            role: "Manager",
-            status: "active",
-            badge_qr_string: "STAFF-XYZ123",
-            section: null,
-          },
-          {
-            id: "2",
-            user_id: "User B",
-            role: "Bartender",
-            status: "active",
-            badge_qr_string: "STAFF-ABC987",
-            section: { name: "VIP Lounge" },
-          },
-        ];
-      }
+      const res = await getEventStaff({ data: { event_id: eventId } } as any);
+      return res || [];
     },
   });
 
@@ -555,26 +553,32 @@ function StaffView() {
               </thead>
               <tbody className="divide-y divide-border/60">
                 {staff.map((s: any) => {
-                  const assignedSection = sections.find((sec: any) => sec.id === s.section_id);
+                  const assignedSections = s.allowed_sections && s.allowed_sections.length > 0 
+                    ? s.allowed_sections.map((id: string) => sections.find((sec: any) => sec.id === id)).filter(Boolean)
+                    : [];
                   const isUnregistered = !s.user_id && (s.first_name || s.last_name);
-                  const displayName = isUnregistered 
-                    ? `${s.first_name || ""} ${s.last_name || ""}`.trim() 
+                  const displayName = isUnregistered
+                    ? `${s.first_name || ""} ${s.last_name || ""}`.trim()
                     : `User ${s.user_id?.substring(0, 6) || "Unknown"}`;
                   const displayInitials = isUnregistered
                     ? `${s.first_name?.[0] || ""}${s.last_name?.[0] || ""}`.toUpperCase()
                     : <UserCheck className="h-4 w-4" />;
-                    
+
                   return (
                     <tr
                       key={s.id}
                       className="hover:bg-secondary/40 transition-colors cursor-pointer group"
-                      onClick={() => setSelectedStaff({ ...s, sectionObj: assignedSection })}
+                      onClick={() => setSelectedStaff({ ...s, sectionObjs: assignedSections })}
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors font-bold text-xs">
-                            {displayInitials}
-                          </div>
+                          {s.profile_image ? (
+                            <img src={s.profile_image} alt={displayName} className="h-9 w-9 rounded-full object-cover border border-border shadow-sm shrink-0" />
+                          ) : (
+                            <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors font-bold text-xs shrink-0">
+                              {displayInitials}
+                            </div>
+                          )}
                           <div>
                             <p className="font-semibold text-foreground">
                               {displayName}
@@ -587,12 +591,16 @@ function StaffView() {
                       </td>
                       <td className="px-6 py-4 font-medium">{s.role}</td>
                       <td className="px-6 py-4">
-                        {assignedSection ? (
-                          <span className="inline-flex items-center gap-1.5 text-blue-500 bg-blue-500/10 px-2.5 py-1 rounded-md text-xs font-medium">
-                            <MapPin className="h-3 w-3" /> {assignedSection.name}
-                          </span>
+                        {assignedSections.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 max-w-[200px]">
+                            {assignedSections.map((sec: any) => (
+                              <span key={sec.id} className="inline-flex items-center gap-1.5 text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-md text-[10px] font-medium whitespace-nowrap">
+                                <MapPin className="h-3 w-3" /> {sec.name}
+                              </span>
+                            ))}
+                          </div>
                         ) : (
-                          <span className="text-muted-foreground text-xs">All Access</span>
+                          <span className="text-muted-foreground text-xs font-medium">All Access</span>
                         )}
                       </td>
                       <td className="px-6 py-4">
@@ -602,11 +610,10 @@ function StaffView() {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            s.status === "active"
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.status === "active"
                               ? "bg-green-500/10 text-green-500"
                               : "bg-yellow-500/10 text-yellow-500"
-                          }`}
+                            }`}
                         >
                           {s.status}
                         </span>
@@ -635,7 +642,7 @@ function StaffView() {
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
-                     <MapPin className="h-5 w-5" />
+                    <MapPin className="h-5 w-5" />
                   </div>
                 </div>
                 <h3 className="font-semibold text-lg">{s.name}</h3>
@@ -684,54 +691,49 @@ function StaffView() {
 
           {selectedStaff && (
             <div className="flex flex-col items-center mt-4">
-              <div className="relative w-full aspect-[1/1.5] rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-b from-slate-900 to-black border border-slate-800">
-                <div className="absolute inset-0 bg-white/5 backdrop-blur-3xl"></div>
-
-                {/* Lanyard Hole */}
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-16 h-4 bg-background rounded-full shadow-inner z-20 border border-border/20"></div>
-
-                <div className="relative z-10 flex flex-col h-full p-8">
-                  <div className="flex-grow flex flex-col items-center justify-center text-center mt-8">
-                    <div className="h-24 w-24 rounded-full bg-slate-800 flex items-center justify-center mb-6 shadow-lg border-2 border-slate-700">
-                      <UserCheck className="h-10 w-10 text-slate-400" />
-                    </div>
-
-                    <h2 className="text-white text-2xl font-bold tracking-tight">
-                      {(!selectedStaff.user_id && (selectedStaff.first_name || selectedStaff.last_name))
+              {badgeProject ? (
+                <div className="w-[340px] relative origin-top mx-auto">
+                  <BadgePreview
+                    config={{
+                      theme: badgeProject.theme,
+                      fontFamily: badgeProject.font_family,
+                      gradientClass: badgeProject.gradient_class,
+                      bgImageUrl: badgeProject.bg_image_url,
+                      logoText: badgeProject.logo_text,
+                      showUserImage: badgeProject.show_user_image,
+                      accentColor: badgeProject.accent_color,
+                      ...(badgeProject.front_design || {}),
+                    }}
+                    isDesigner={false}
+                    mockUser={{
+                      name: (!selectedStaff.user_id && (selectedStaff.first_name || selectedStaff.last_name))
                         ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim()
-                        : `User ${selectedStaff.user_id?.substring(0, 6) || "Unknown"}`}
-                    </h2>
-                    <p className="text-primary font-semibold tracking-widest uppercase mt-2 text-sm">
-                      {selectedStaff.role}
-                    </p>
-
-                    <div className="mt-6 w-full max-w-[200px] aspect-square bg-white rounded-2xl p-3 shadow-lg mx-auto">
-                      {/* Fake QR Code Visual */}
-                      <div className="w-full h-full border-[10px] border-black flex items-center justify-center relative">
-                        <div className="absolute top-0 left-0 w-4 h-4 bg-black"></div>
-                        <div className="absolute top-0 right-0 w-4 h-4 bg-black"></div>
-                        <div className="absolute bottom-0 left-0 w-4 h-4 bg-black"></div>
-                        <QrCode className="h-16 w-16 text-black" />
-                      </div>
-                    </div>
-                    <p className="text-slate-500 font-mono text-xs mt-3">
-                      {selectedStaff.badge_qr_string}
-                    </p>
-                  </div>
-
-                  <div className="mt-auto pt-6 border-t border-slate-800 w-full flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-blue-400" />
-                      <span className="text-white font-medium text-sm">
-                        {selectedStaff.sectionObj ? selectedStaff.sectionObj.name : "ALL ACCESS"}
-                      </span>
-                    </div>
-                    <div className="h-8 w-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <ShieldAlert className="h-4 w-4 text-green-400" />
-                    </div>
-                  </div>
+                        : `User ${selectedStaff.user_id?.substring(0, 6) || "Unknown"}`,
+                      role: selectedStaff.role,
+                      qrString: selectedStaff.badge_qr_string,
+                      sectionName: selectedStaff.sectionObjs && selectedStaff.sectionObjs.length > 0 
+                        ? selectedStaff.sectionObjs.map((s: any) => s.name).join(", ") 
+                        : "ALL ACCESS",
+                      initials: `${selectedStaff.first_name?.[0] || ""}${selectedStaff.last_name?.[0] || ""}`.toUpperCase(),
+                      profileImage: selectedStaff.profile_image
+                    }}
+                    sponsors={badgeProject.sponsors_json || []}
+                  />
                 </div>
-              </div>
+              ) : (
+                <div className="p-12 text-center text-muted-foreground border border-dashed rounded-2xl w-full flex flex-col items-center">
+                  <Palette className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                  <p>No Badge Design created for this event yet.</p>
+                  <Link 
+                    to="/dashboard/$workspaceSlug/badge-designer/new" 
+                    params={{ workspaceSlug }} 
+                    search={{ eventId }} 
+                    className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+                  >
+                    Create Badge Design
+                  </Link>
+                </div>
+              )}
 
               <div className="mt-8 flex gap-3 w-full">
                 <Button

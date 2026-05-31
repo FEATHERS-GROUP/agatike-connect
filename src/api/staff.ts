@@ -47,7 +47,8 @@ const GET_EVENT_STAFF = `
       role
       status
       badge_qr_string
-      section_id
+      allowed_sections
+      profile_image
     }
   }
 `;
@@ -70,7 +71,8 @@ const GET_STAFF_BY_BADGE = `
       role
       status
       badge_qr_string
-      section_id
+      allowed_sections
+      profile_image
       event_id
     }
   }

@@ -494,13 +494,13 @@ function ImportStaffDialog({ rsvp, workspaceId, defaultEventId, formFields, onCl
         data: {
           event_id: eventId,
           user_id: rsvp.user_id || null,
-          section_id: null,
           first_name: extracted.firstName,
           last_name: extracted.lastName,
           email: extracted.email,
           phone: extracted.phone,
           profile_image: extracted.profileImage,
           role: role,
+          allowed_sections: [],
           status: "active",
           badge_qr_string: `STAFF-${randomId}`,
         }
@@ -604,13 +604,13 @@ function BulkImportStaffDialog({ rsvps, onClose, workspaceId, defaultEventId, fo
           data: {
             event_id: eventId,
             user_id: rsvp.user_id || null,
-            section_id: null,
             first_name: extracted.firstName,
             last_name: extracted.lastName,
             email: extracted.email,
             phone: extracted.phone,
             profile_image: extracted.profileImage,
             role: role,
+            allowed_sections: [],
             status: "active",
             badge_qr_string: `STAFF-${randomId}`,
           }
