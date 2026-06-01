@@ -124,19 +124,24 @@ import { LoaderProvider } from "@/contexts/LoaderContext";
 import { Toaster } from "@/components/ui/sonner";
 import { InstallPrompt } from "@/components/mobile/InstallPrompt";
 import { SplashLoader } from "@/components/site/SplashLoader";
+import { UserAuthProvider } from "@/contexts/UserAuthContext";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const location = useRouterState({ select: (s) => s.location });
 
-  // Hide bottom nav on detail/booking/community/ticket/f/b pages and dashboard
+  // Hide bottom nav on detail/booking/community/ticket/f/b pages, dashboard, and auth pages
   const hideNav =
     location.pathname.match(/^\/(events|book|community|ticket|f|b)\/.+/) ||
-    location.pathname.startsWith("/dashboard");
+    location.pathname.startsWith("/dashboard") ||
+    location.pathname === "/signin" ||
+    location.pathname === "/signup" ||
+    location.pathname === "/onboarding";
 
   return (
     <AppProvider>
       <QueryClientProvider client={queryClient}>
+        <UserAuthProvider>
         <WorkspaceProvider>
           <LoaderProvider>
             {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
@@ -156,6 +161,7 @@ function RootComponent() {
             <Toaster position="top-center" />
           </LoaderProvider>
         </WorkspaceProvider>
+        </UserAuthProvider>
       </QueryClientProvider>
     </AppProvider>
   );

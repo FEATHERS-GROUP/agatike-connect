@@ -30,7 +30,7 @@ export function SplashLoader() {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-between pb-16 pt-32 transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-between pb-16 pt-32 transition-opacity duration-500 md:hidden ${
         isFading ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
       style={{ background: "var(--gradient-primary)" }}

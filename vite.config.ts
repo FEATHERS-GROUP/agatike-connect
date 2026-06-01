@@ -9,6 +9,9 @@ export default defineConfig({
   plugins: [
     tanstackStart({
       server: { entry: "server" },
+      serverFns: {
+        disableCsrfMiddlewareWarning: true,
+      },
     }),
     nitro({
       preset: process.env.VERCEL ? "vercel" : "node-server",

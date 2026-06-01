@@ -1,12 +1,37 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { feedPosts, events, experiences, movies, organizers, stories } from "@/lib/mock-data";
 import { FeedCard } from "@/components/site/FeedCard";
 import { Stories } from "@/components/site/Stories";
-import { Camera, Send } from "lucide-react";
+import { Camera, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useUserAuth } from "@/contexts/UserAuthContext";
+import { useEffect } from "react";
 
 export function HomeMobile() {
+  const { user, isLoading, isLoggedIn } = useUserAuth();
+  const navigate = useNavigate();
   const items = feedPosts;
+
+  // Redirect to signin if not logged in (mobile only)
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      navigate({ to: "/signin" });
+    }
+  }, [isLoading, isLoggedIn, navigate]);
+
+  // Show loading spinner while checking session
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Avoid rendering if not logged in (redirect in progress)
+  if (!isLoggedIn) {
+    return null;
+  }
 
   return (
     <div className="h-full w-full bg-background text-foreground pb-20">
@@ -25,6 +50,15 @@ export function HomeMobile() {
           <Send className="h-6 w-6" />
         </button>
       </div>
+
+      {/* Welcome Banner */}
+      {user && (
+        <div className="px-4 pt-4 pb-2">
+          <p className="text-sm text-muted-foreground">
+            Welcome back, <span className="font-semibold text-foreground">{user.username}</span> 👋
+          </p>
+        </div>
+      )}
 
       {/* Top Stories Row */}
       <div className="px-4 py-3 border-b border-border/40">

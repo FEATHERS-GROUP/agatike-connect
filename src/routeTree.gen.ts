@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as VenueDesignerRouteImport } from './routes/venue-designer'
 import { Route as TicketDesignerRouteImport } from './routes/ticket-designer'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OrganizersRouteImport } from './routes/organizers'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as FeedRouteImport } from './routes/feed'
@@ -78,6 +80,11 @@ const TicketDesignerRoute = TicketDesignerRouteImport.update({
   path: '/ticket-designer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
@@ -91,6 +98,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const OrganizersRoute = OrganizersRouteImport.update({
   id: '/organizers',
   path: '/organizers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MoviesRoute = MoviesRouteImport.update({
@@ -366,9 +378,11 @@ export interface FileRoutesByFullPath {
   '/feed': typeof FeedRoute
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
+  '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
@@ -421,9 +435,11 @@ export interface FileRoutesByTo {
   '/feed': typeof FeedRoute
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
+  '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
@@ -477,9 +493,11 @@ export interface FileRoutesById {
   '/feed': typeof FeedRoute
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
+  '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
   '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
@@ -534,9 +552,11 @@ export interface FileRouteTypes {
     | '/feed'
     | '/map'
     | '/movies'
+    | '/onboarding'
     | '/organizers'
     | '/profile'
     | '/signin'
+    | '/signup'
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
@@ -589,9 +609,11 @@ export interface FileRouteTypes {
     | '/feed'
     | '/map'
     | '/movies'
+    | '/onboarding'
     | '/organizers'
     | '/profile'
     | '/signin'
+    | '/signup'
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
@@ -644,9 +666,11 @@ export interface FileRouteTypes {
     | '/feed'
     | '/map'
     | '/movies'
+    | '/onboarding'
     | '/organizers'
     | '/profile'
     | '/signin'
+    | '/signup'
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
@@ -700,9 +724,11 @@ export interface RootRouteChildren {
   FeedRoute: typeof FeedRoute
   MapRoute: typeof MapRoute
   MoviesRoute: typeof MoviesRoute
+  OnboardingRoute: typeof OnboardingRoute
   OrganizersRoute: typeof OrganizersRoute
   ProfileRoute: typeof ProfileRoute
   SigninRoute: typeof SigninRoute
+  SignupRoute: typeof SignupRoute
   TicketDesignerRoute: typeof TicketDesignerRoute
   VenueDesignerRoute: typeof VenueDesignerRoute
   WalletRoute: typeof WalletRoute
@@ -739,6 +765,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TicketDesignerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signin': {
       id: '/signin'
       path: '/signin'
@@ -758,6 +791,13 @@ declare module '@tanstack/react-router' {
       path: '/organizers'
       fullPath: '/organizers'
       preLoaderRoute: typeof OrganizersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/movies': {
@@ -1208,9 +1248,11 @@ const rootRouteChildren: RootRouteChildren = {
   FeedRoute: FeedRoute,
   MapRoute: MapRoute,
   MoviesRoute: MoviesRoute,
+  OnboardingRoute: OnboardingRoute,
   OrganizersRoute: OrganizersRoute,
   ProfileRoute: ProfileRoute,
   SigninRoute: SigninRoute,
+  SignupRoute: SignupRoute,
   TicketDesignerRoute: TicketDesignerRoute,
   VenueDesignerRoute: VenueDesignerRoute,
   WalletRoute: WalletRoute,
