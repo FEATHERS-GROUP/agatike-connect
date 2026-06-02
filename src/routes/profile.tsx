@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Settings,
   Ticket,
@@ -17,6 +17,7 @@ import {
   Film,
   Mic,
   ScanLine,
+  LogOut,
 } from "lucide-react";
 import { events, organizers, movies, experiences } from "@/lib/mock-data";
 import { useState } from "react";
@@ -208,8 +209,15 @@ function HistoryCard({ event }: { event: (typeof pastEvents)[0] }) {
 
 /* ─── Main Page ─── */
 function ProfilePage() {
-  const { user } = useUserAuth();
+  const { user, signOut } = useUserAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("upcoming");
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate({ to: "/signin" });
+  };
 
   const joinDate = user?.created_at 
     ? new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(new Date(user.created_at)) 
@@ -268,8 +276,8 @@ function ProfilePage() {
               <Button variant="secondary" className="flex-1 h-9 text-sm font-semibold rounded-xl">
                 Edit Profile
               </Button>
-              <Button variant="secondary" size="icon" className="h-9 w-9 rounded-xl shrink-0">
-                <Settings className="h-4 w-4" />
+              <Button onClick={() => setShowLogoutModal(true)} variant="secondary" size="icon" className="h-9 w-9 rounded-xl shrink-0 text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-colors">
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -375,8 +383,8 @@ function ProfilePage() {
             <button className="p-2 rounded-full hover:bg-secondary transition-colors">
               <Bell className="h-5 w-5" />
             </button>
-            <button className="p-2 rounded-full hover:bg-secondary transition-colors">
-              <Settings className="h-5 w-5" />
+            <button onClick={() => setShowLogoutModal(true)} className="p-2 rounded-full hover:bg-red-500/10 text-red-500 transition-colors">
+              <LogOut className="h-5 w-5" />
             </button>
           </div>
         </div>
@@ -559,10 +567,42 @@ function ProfilePage() {
     </div>
   );
 
+  const logoutModal = showLogoutModal && (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+      <div className="bg-card border border-border/60 shadow-xl rounded-3xl p-6 max-w-sm w-full animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex flex-col items-center text-center">
+          <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+            <LogOut className="h-6 w-6 text-red-500" />
+          </div>
+          <h3 className="text-lg font-bold">Sign Out</h3>
+          <p className="text-sm text-muted-foreground mt-2 mb-6">
+            Are you sure you want to log out of your account? You will need to sign back in to access your tickets.
+          </p>
+          <div className="flex gap-3 w-full">
+            <Button
+              variant="secondary"
+              className="flex-1 rounded-xl h-11"
+              onClick={() => setShowLogoutModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1 rounded-xl h-11 bg-red-500 hover:bg-red-600 text-white"
+              onClick={handleLogout}
+            >
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       {desktop}
       {mobile}
+      {logoutModal}
     </>
   );
 }
