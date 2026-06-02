@@ -69,9 +69,6 @@ function BusMobile() {
               </div>
               <span className="font-semibold text-lg">Available Buses</span>
             </button>
-            <div className="w-8 h-8 rounded-full bg-background/20 flex items-center justify-center backdrop-blur-sm text-primary-foreground">
-              <Bell className="h-4 w-4 fill-current" />
-            </div>
           </div>
 
           <div className="max-w-5xl mx-auto text-center text-primary-foreground space-y-2 mt-2">
@@ -160,9 +157,6 @@ function BusMobile() {
                 <Bus className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="text-primary-foreground font-semibold">Agatike</span>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-background/20 flex items-center justify-center backdrop-blur-sm text-primary-foreground">
-              <Bell className="h-4 w-4 fill-current" />
             </div>
           </div>
           <h1 className="text-[28px] font-bold text-primary-foreground leading-[1.1] tracking-tight">

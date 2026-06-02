@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Clock, MapPin, CheckCircle2, AlertCircle, ArrowRight, X, Calendar, Search } from "lucide-react";
+import { Search, MapPin, Calendar, Clock, ArrowRight, ChevronDown, ArrowLeftRight, Bus } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/buses/")({
   head: () => ({
     meta: [
       { title: "Bus Tickets — Agatike" },
-      { name: "description", content: "Book bus tickets across Africa easily." },
+      { name: "description", content: "Book bus tickets across East Africa instantly." },
     ],
   }),
   component: BusesIndex,
@@ -34,69 +34,90 @@ function BusesIndex() {
   });
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 shadow-xl lg:shadow-none">
-      <div className="hidden md:block">
-        <Navbar />
-      </div>
+    <div className="min-h-screen bg-secondary/20 font-sans">
+      <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
-        <div className="relative mx-auto max-w-7xl px-4 md:px-6 py-12 md:py-24">
+      {/* Hero & Search Section */}
+      <section className="relative border-b border-border/40 overflow-hidden bg-background">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-50 blur-[100px]"></div>
+        
+        <div className="relative mx-auto max-w-7xl px-4 md:px-6 py-12 md:py-20 lg:py-24">
           <div className="max-w-2xl text-center md:text-left">
-            <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">
+            <h1 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl text-foreground">
               Cross borders with ease.
             </h1>
-            <p className="mt-4 text-muted-foreground md:text-lg">
+            <p className="mt-4 text-muted-foreground md:text-lg font-medium">
               Book bus tickets across East Africa instantly. Choose your seat, pay with mobile money, and get your digital ticket.
             </p>
           </div>
 
-          {/* Search Card */}
-          <div className="mt-8 rounded-2xl border border-border/60 bg-card p-4 shadow-[var(--shadow-card)] md:p-6 backdrop-blur-xl max-w-4xl mx-auto md:mx-0">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Leaving from..."
-                  className="pl-9 bg-secondary/60 h-12 rounded-xl border-transparent focus-visible:bg-background"
-                  value={from}
-                  onChange={(e) => setFrom(e.target.value)}
-                />
-              </div>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Going to..."
-                  className="pl-9 bg-secondary/60 h-12 rounded-xl border-transparent focus-visible:bg-background"
-                  value={to}
-                  onChange={(e) => setTo(e.target.value)}
-                />
-              </div>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="date"
-                  className="pl-9 bg-secondary/60 h-12 rounded-xl border-transparent focus-visible:bg-background"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
-              </div>
-              <div className="relative">
-                <select
-                  className="pl-9 bg-secondary/60 h-12 w-full rounded-xl border-transparent focus-visible:bg-background"
-                  value={agencyFilter}
-                  onChange={(e) => setAgencyFilter(e.target.value)}
-                >
-                  {agencies.map((agency) => (
-                    <option key={agency} value={agency}>{agency}</option>
-                  ))}
-                </select>
-              </div>
-              <Button className="h-12 rounded-xl w-full" style={{ background: "var(--gradient-primary)" }}>
-                <Search className="h-4 w-4 mr-2" /> Search Buses
-              </Button>
-            </div>
+          {/* Premium Desktop Search Card */}
+          <div className="mt-10 rounded-3xl border border-border/40 bg-card/60 p-3 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-2xl backdrop-saturate-150 max-w-[1000px] mx-auto md:mx-0">
+             <div className="flex flex-col md:flex-row gap-3 items-center">
+                 
+                 {/* Locations */}
+                 <div className="flex-1 flex w-full bg-background rounded-2xl shadow-sm border border-border/40 p-1 relative overflow-hidden focus-within:ring-2 focus-within:ring-primary/20">
+                     <div className="relative flex-1 flex items-center group">
+                        <MapPin className="absolute left-4 h-5 w-5 text-primary" />
+                        <Input 
+                          className="w-full pl-12 h-14 bg-transparent border-0 shadow-none text-[15px] font-medium focus-visible:ring-0 placeholder:text-muted-foreground/60" 
+                          placeholder="Leaving from..." 
+                          value={from}
+                          onChange={(e) => setFrom(e.target.value)}
+                        />
+                     </div>
+                     <div className="w-px bg-border/60 my-2 mx-1" />
+                     <button 
+                        onClick={() => { const tmp = from; setFrom(to); setTo(tmp); }}
+                        className="h-10 w-10 shrink-0 self-center rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary transition-colors border border-border/40 shadow-sm z-10 hover:scale-105 active:scale-95"
+                     >
+                         <ArrowLeftRight className="h-4 w-4" />
+                     </button>
+                     <div className="w-px bg-border/60 my-2 mx-1" />
+                     <div className="relative flex-1 flex items-center group">
+                        <MapPin className="absolute left-4 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <Input 
+                          className="w-full pl-12 h-14 bg-transparent border-0 shadow-none text-[15px] font-medium focus-visible:ring-0 placeholder:text-muted-foreground/60" 
+                          placeholder="Going to..." 
+                          value={to}
+                          onChange={(e) => setTo(e.target.value)}
+                        />
+                     </div>
+                 </div>
+
+                 {/* Date & Agency */}
+                 <div className="flex w-full md:w-[380px] shrink-0 bg-background rounded-2xl shadow-sm border border-border/40 p-1 relative overflow-hidden focus-within:ring-2 focus-within:ring-primary/20">
+                     <div className="relative flex-[0.8] flex items-center group">
+                        <Calendar className="absolute left-4 h-4 w-4 text-primary" />
+                        <Input 
+                          type="date" 
+                          className="w-full pl-11 pr-2 h-14 bg-transparent border-0 shadow-none text-[14px] font-medium focus-visible:ring-0" 
+                          value={date}
+                          onChange={(e) => setDate(e.target.value)}
+                        />
+                     </div>
+                     <div className="w-px bg-border/60 my-2 mx-1" />
+                     <div className="relative flex-1 flex items-center group">
+                        <Bus className="absolute left-4 h-4 w-4 text-primary" />
+                        <select 
+                          className="w-full pl-11 pr-8 h-14 bg-transparent border-0 text-[14px] font-medium focus:outline-none appearance-none"
+                          value={agencyFilter}
+                          onChange={(e) => setAgencyFilter(e.target.value)}
+                        >
+                          {agencies.map((agency) => (
+                            <option key={agency} value={agency}>{agency}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 h-4 w-4 text-muted-foreground pointer-events-none" />
+                     </div>
+                 </div>
+
+                 {/* Search Action */}
+                 <Button className="h-[64px] px-8 rounded-2xl font-bold text-base shadow-lg shadow-primary/20 shrink-0 w-full md:w-auto active:scale-[0.98] transition-transform" style={{ background: "var(--gradient-primary)" }}>
+                    <Search className="h-5 w-5 mr-2" /> Search
+                 </Button>
+             </div>
           </div>
         </div>
       </section>
@@ -105,7 +126,6 @@ function BusesIndex() {
       <section className="mx-auto max-w-7xl px-4 md:px-6 py-12">
         <div className="flex flex-col md:flex-row gap-8">
           
-          {/* Filters Sidebar */}
 
 
           {/* Trip Listings */}
