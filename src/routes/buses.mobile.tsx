@@ -148,13 +148,11 @@ function BusMobile() {
     <div className="min-h-screen bg-background text-foreground pb-28">
       {/* Default Search Header */}
       <div
-        className="relative overflow-hidden px-4 pt-12 pb-12"
-        style={{ background: "var(--gradient-primary)" }}
+        className="relative overflow-hidden px-4 pt-12 pb-12 bg-cover bg-center"
+        style={{ 
+          backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url('/kigali-bus-park.png')",
+        }}
       >
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-        }} />
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
