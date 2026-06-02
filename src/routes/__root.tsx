@@ -126,23 +126,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-const navigate = useNavigate();
-const { isLoggedIn, isLoading } = useUserAuth();
-const location = useRouterState({ select: s => s.location });
-
-useEffect(() => {
-  if (typeof window === 'undefined' || isLoading) return;
-  const isMobile = window.matchMedia('(max-width: 767px)').matches;
-  const publicPaths = ['/signin', '/signup', '/onboarding'];
-  const isPublic = publicPaths.some(p => location.pathname.startsWith(p));
-  if (isMobile && !isLoggedIn && !isPublic) {
-    navigate({ to: '/signin', replace: true });
-  }
-}, [isLoading, isLoggedIn, location.pathname, navigate]);
-
 function RootComponent() {
+  // No auth logic here; AuthRedirect will manage redirects.
   const { queryClient } = Route.useRouteContext();
-  const location = useRouterState({ select: (s) => s.location });
+  // Auth redirect logic is handled by AuthRedirect component.
+  // location variable removed; handled in AuthRedirect
+
+  const location = useRouterState({ select: s => s.location });
 
   // Hide bottom nav on detail/booking/community/ticket/f/b pages, dashboard, and auth pages
   const hideNav =
@@ -156,6 +146,7 @@ function RootComponent() {
     <AppProvider>
       <QueryClientProvider client={queryClient}>
         <UserAuthProvider>
+          <AuthRedirect />
           <WorkspaceProvider>
             <LoaderProvider>
               {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
@@ -179,4 +170,23 @@ function RootComponent() {
       </QueryClientProvider>
     </AppProvider>
   );
+}
+
+// Component to handle authentication redirect based on user status and device type.
+function AuthRedirect() {
+  const navigate = useNavigate();
+  const { isLoggedIn, isLoading } = useUserAuth();
+  const location = useRouterState({ select: (s) => s.location });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || isLoading) return;
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    const publicPaths = ['/signin', '/signup', '/onboarding'];
+    const isPublic = publicPaths.some((p) => location.pathname.startsWith(p));
+    if (isMobile && !isLoggedIn && !isPublic) {
+      navigate({ to: '/signin', replace: true });
+    }
+  }, [isLoading, isLoggedIn, location.pathname, navigate]);
+
+  return null;
 }

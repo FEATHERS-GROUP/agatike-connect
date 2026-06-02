@@ -23,6 +23,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -207,7 +208,21 @@ function HistoryCard({ event }: { event: (typeof pastEvents)[0] }) {
 
 /* ─── Main Page ─── */
 function ProfilePage() {
+  const { user } = useUserAuth();
   const [tab, setTab] = useState<Tab>("upcoming");
+
+  const joinDate = user?.created_at 
+    ? new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(new Date(user.created_at)) 
+    : "Jan 2024";
+    
+  let userInterests: string[] = [];
+  try {
+    userInterests = Array.isArray(user?.interests) 
+      ? user.interests 
+      : (typeof user?.interests === 'string' ? JSON.parse(user.interests) : []);
+  } catch (e) {
+    userInterests = [];
+  }
 
   /* ── Desktop ── */
   const desktop = (
@@ -222,16 +237,21 @@ function ProfilePage() {
               style={{ background: "var(--gradient-primary)" }}
             >
               <img
-                src="https://i.pravatar.cc/150?u=me"
-                alt="Alex Doe"
+                src={user?.profile || "https://i.pravatar.cc/150?u=me"}
+                alt={user?.username || "User"}
                 className="h-full w-full rounded-[14px] object-cover"
               />
             </div>
-            <h2 className="font-bold text-xl">Alex Doe</h2>
+            <h2 className="font-bold text-xl">{user?.username || "Guest User"}</h2>
             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-              <MapPin className="h-3.5 w-3.5" /> Kigali, Rwanda
+              @{user?.handle || "guest"}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Member since Jan 2024</p>
+            {user?.phone && (
+              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                {user.phone}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground mt-1">Member since {joinDate}</p>
             <div className="grid grid-cols-3 gap-3 w-full mt-5">
               {[
                 { v: "24", l: "Attended" },
@@ -258,15 +278,25 @@ function ProfilePage() {
           <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
             <p className="font-bold text-sm mb-4">Interests</p>
             <div className="flex flex-wrap gap-2">
-              {favoriteCategories.map(({ label, icon: Icon, color, bg, border }) => (
-                <span
-                  key={label}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${bg} ${border} ${color}`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
-                </span>
-              ))}
+              {userInterests.length > 0 ? (
+                userInterests.map((interest: string) => {
+                  const cat = favoriteCategories.find(c => c.label.toLowerCase() === interest.toLowerCase());
+                  const bg = cat?.bg || "bg-primary/10";
+                  const color = cat?.color || "text-primary";
+                  const border = cat?.border || "border-primary/20";
+                  return (
+                    <span
+                      key={interest}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${bg} ${border} ${color}`}
+                    >
+                      {cat?.icon && <cat.icon className="h-3.5 w-3.5" />}
+                      {interest}
+                    </span>
+                  );
+                })
+              ) : (
+                <p className="text-xs text-muted-foreground">No interests added yet.</p>
+              )}
             </div>
           </div>
 
@@ -361,17 +391,22 @@ function ProfilePage() {
             style={{ background: "var(--gradient-primary)" }}
           >
             <img
-              src="https://i.pravatar.cc/150?u=me"
-              alt="Alex Doe"
+              src={user?.profile || "https://i.pravatar.cc/150?u=me"}
+              alt={user?.username || "User"}
               className="h-full w-full rounded-[14px] object-cover bg-card"
             />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="font-bold text-xl tracking-tight">Alex Doe</h2>
+            <h2 className="font-bold text-xl tracking-tight">{user?.username || "Guest User"}</h2>
             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-              <MapPin className="h-3.5 w-3.5 shrink-0" /> Kigali, Rwanda
+              @{user?.handle || "guest"}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Member since Jan 2024</p>
+            {user?.phone && (
+              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
+                {user.phone}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground mt-1">Member since {joinDate}</p>
           </div>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-3">
@@ -400,20 +435,30 @@ function ProfilePage() {
       </div>
 
       {/* Favorite Categories */}
-      <div className="px-4 mb-1">
+      <div className="px-4 mb-1 mt-5">
         <h3 className="font-bold text-sm mb-3 text-muted-foreground uppercase tracking-wider">
           Interests
         </h3>
         <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-          {favoriteCategories.map(({ label, icon: Icon, color, bg, border }) => (
-            <span
-              key={label}
-              className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border ${bg} ${border} ${color}`}
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </span>
-          ))}
+          {userInterests.length > 0 ? (
+            userInterests.map((interest: string) => {
+              const cat = favoriteCategories.find(c => c.label.toLowerCase() === interest.toLowerCase());
+              const bg = cat?.bg || "bg-primary/10";
+              const color = cat?.color || "text-primary";
+              const border = cat?.border || "border-primary/20";
+              return (
+                <span
+                  key={interest}
+                  className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border ${bg} ${border} ${color}`}
+                >
+                  {cat?.icon && <cat.icon className="h-4 w-4" />}
+                  {interest}
+                </span>
+              );
+            })
+          ) : (
+            <p className="text-xs text-muted-foreground px-1">No interests added yet.</p>
+          )}
         </div>
       </div>
 

@@ -82,6 +82,9 @@ export interface UserProfile {
   dateOfBirth: string | null;
   interests: string | null;
   active: boolean;
+  phone: string | null;
+  created_at: string | null;
+  profile: string | null;
 }
 
 export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
@@ -230,6 +233,9 @@ export const getUserSession = createServerFn({ method: "GET" }).handler(async ()
           dateOfBirth
           interests
           active
+          phone
+          created_at
+          profile
         }
       }
     `;

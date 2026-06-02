@@ -1,12 +1,20 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { BookingMobile } from "@/components/mobile/BookingMobile";
 import { BookingDesktop } from "@/components/desktop/BookingDesktop";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useEffect } from "react";
 
+export const Route = createFileRoute("/book/$eventId")({
+  head: () => ({
+    meta: [{ title: "Checkout — Agatike" }],
+  }),
+  component: BookingRoute,
+});
+
 function BookingRoute() {
   const { isLoggedIn, isLoading } = useUserAuth();
   const navigate = useNavigate();
+  const { eventId } = useParams({ strict: false });
 
   useEffect(() => {
     if (typeof window === "undefined" || isLoading) return;
@@ -15,8 +23,6 @@ function BookingRoute() {
       navigate({ to: "/signin", replace: true });
     }
   }, [isLoading, isLoggedIn, navigate]);
-
-  const { eventId } = Route.useParams();
 
   return (
     <>
@@ -29,10 +35,3 @@ function BookingRoute() {
     </>
   );
 }
-
-export const Route = createFileRoute("/book/$eventId")({
-  head: () => ({
-    meta: [{ title: "Checkout — Agatike" }],
-  }),
-  component: BookingRoute,
-});
