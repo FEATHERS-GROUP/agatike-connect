@@ -305,7 +305,7 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
   const eventDate = firstStop.date || "[Event Date]";
   const eventTime = firstStop.time || "[Event Time]";
   const eventVenue = firstStop.venue || firstStop.city || "[Venue Name]";
-  const orgName = activeWorkspace?.name || "[Organization Name]";
+  const orgName = activeWorkspace?.name || "The Organizer";
   const contactEmail = organizer?.email || "[Contact Email]";
   const contactPhone = organizer?.phone || "[Phone Number]";
   
@@ -371,9 +371,17 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
           `;
 
         finalMessage = finalMessage
-          .replace(/\[first\s*name\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
-          .replace(/\[registration\s*details\]/gi, registrationInfo.trim())
-          .replace(/\[regisration\s*detaails\]/gi, registrationInfo.trim());
+          .replace(/&#91;/g, '[')
+          .replace(/&#93;/g, ']')
+          .replace(/\{\{\s*(?:first\s*)?name\s*\}\}/gi, attendee.names?.split(' ')[0] || 'Attendee')
+          .replace(/\[[^\]]*first[^\]]*name[^\]]*\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
+          .replace(/\{\{\s*registration[_\s]*details\s*\}\}/gi, registrationInfo.trim())
+          .replace(/\[[^\]]*registration[^\]]*details?[^\]]*\]/gi, registrationInfo.trim())
+          .replace(/\[[^\]]*regisration[^\]]*detaails?[^\]]*\]/gi, registrationInfo.trim())
+          .replace(/\{\{\s*contact[_\s]*email\s*\}\}/gi, contactEmail)
+          .replace(/\[[^\]]*contact[^\]]*email[^\]]*\]/gi, contactEmail)
+          .replace(/\{\{\s*phone[_\s]*number\s*\}\}/gi, contactPhone)
+          .replace(/\[[^\]]*phone[^\]]*number[^\]]*\]/gi, contactPhone);
           
         return sendAttendeeEmail({ 
           data: { 
@@ -578,7 +586,7 @@ function BulkEmailModal({
   const eventDate = firstStop.date || "[Event Date]";
   const eventTime = firstStop.time || "[Event Time]";
   const eventVenue = firstStop.venue || firstStop.city || "[Venue Name]";
-  const orgName = activeWorkspace?.name || "[Organization Name]";
+  const orgName = activeWorkspace?.name || "The Organizer";
   const contactEmail = organizer?.email || "[Contact Email]";
   const contactPhone = organizer?.phone || "[Phone Number]";
 
@@ -655,9 +663,17 @@ function BulkEmailModal({
         `;
 
       const finalMessage = message
-        .replace(/\[first\s*name\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
-        .replace(/\[registration\s*details\]/gi, registrationInfo.trim())
-        .replace(/\[regisration\s*detaails\]/gi, registrationInfo.trim());
+        .replace(/&#91;/g, '[')
+        .replace(/&#93;/g, ']')
+        .replace(/\{\{\s*(?:first\s*)?name\s*\}\}/gi, attendee.names?.split(' ')[0] || 'Attendee')
+        .replace(/\[[^\]]*first[^\]]*name[^\]]*\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
+        .replace(/\{\{\s*registration[_\s]*details\s*\}\}/gi, registrationInfo.trim())
+        .replace(/\[[^\]]*registration[^\]]*details?[^\]]*\]/gi, registrationInfo.trim())
+        .replace(/\[[^\]]*regisration[^\]]*detaails?[^\]]*\]/gi, registrationInfo.trim())
+        .replace(/\{\{\s*contact[_\s]*email\s*\}\}/gi, contactEmail)
+        .replace(/\[[^\]]*contact[^\]]*email[^\]]*\]/gi, contactEmail)
+        .replace(/\{\{\s*phone[_\s]*number\s*\}\}/gi, contactPhone)
+        .replace(/\[[^\]]*phone[^\]]*number[^\]]*\]/gi, contactPhone);
       
       try {
         await sendAttendeeEmail({ 

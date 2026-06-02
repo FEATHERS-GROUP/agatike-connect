@@ -6,8 +6,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
   // Header with Agatike Logo
   const agatikeIconUrl = (appUrl && !appUrl.includes('localhost') && !appUrl.includes('127.0.0.1')) 
     ? `${appUrl}/agatike-icon.png` 
-    : "https://i.ibb.co/3sZqZqZ/agatike-logo.png";
-  const agatikeLogoTextUrl = "https://ui-avatars.com/api/?name=Agatike&background=fff&color=F2571D&rounded=true";
+    : "https://ui-avatars.com/api/?name=A&background=F2571D&color=fff&rounded=true&bold=true";
 
   // Build Social Links HTML if available
   let socialsHtml = '';
