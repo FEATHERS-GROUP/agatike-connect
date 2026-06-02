@@ -2,8 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { Search, Plus, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 
 export function Navbar() {
+  const { isLoggedIn, user } = useUserAuth();
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
@@ -67,20 +70,37 @@ export function Navbar() {
         </div>
 
         <div className="ml-auto flex items-center gap-1 sm:gap-2 md:ml-2">
-          <Link to="/signin">
-            <Button variant="ghost" className="hidden sm:inline-flex text-sm font-medium">
-              Sign in
-            </Button>
-          </Link>
-          <Link to="/dashboard">
-            <Button
-              className="rounded-full shadow-[var(--shadow-glow)] px-3 sm:px-4"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Plus className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline-block text-sm font-medium">Create event</span>
-            </Button>
-          </Link>
+          {!isLoggedIn ? (
+            <>
+              <Link to="/signin">
+                <Button variant="ghost" className="hidden sm:inline-flex text-sm font-medium">
+                  Sign in
+                </Button>
+              </Link>
+              <Link to="/dashboard">
+                <Button
+                  className="rounded-full shadow-[var(--shadow-glow)] px-3 sm:px-4"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  <Plus className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline-block text-sm font-medium">Create event</span>
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <Link to="/profile">
+              <div
+                className="h-9 w-9 rounded-full p-[2px] shadow-sm shrink-0 hover:opacity-80 transition-opacity"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                <img
+                  src={user?.profile || "https://i.pravatar.cc/150?u=me"}
+                  alt={user?.username || "Profile"}
+                  className="h-full w-full rounded-full object-cover bg-card"
+                />
+              </div>
+            </Link>
+          )}
           <Button
             variant="ghost"
             size="icon"
