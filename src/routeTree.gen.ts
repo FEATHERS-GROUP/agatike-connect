@@ -42,6 +42,7 @@ import { Route as BusesMobileRouteImport } from './routes/buses.mobile'
 import { Route as BusesTripIdRouteImport } from './routes/buses.$tripId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
 import { Route as BQrStringRouteImport } from './routes/b.$qrString'
+import { Route as AQrStringRouteImport } from './routes/a.$qrString'
 import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard.$workspaceSlug.index'
 import { Route as VenuesCheckoutVenueIdRouteImport } from './routes/venues.checkout.$venueId'
 import { Route as PublicBadgeBadgeIdRouteImport } from './routes/public.badge.$badgeId'
@@ -237,6 +238,11 @@ const BookEventIdRoute = BookEventIdRouteImport.update({
 const BQrStringRoute = BQrStringRouteImport.update({
   id: '/b/$qrString',
   path: '/b/$qrString',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AQrStringRoute = AQrStringRouteImport.update({
+  id: '/a/$qrString',
+  path: '/a/$qrString',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardWorkspaceSlugIndexRoute =
@@ -435,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
+  '/a/$qrString': typeof AQrStringRoute
   '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
@@ -500,6 +507,7 @@ export interface FileRoutesByTo {
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
+  '/a/$qrString': typeof AQrStringRoute
   '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
@@ -566,6 +574,7 @@ export interface FileRoutesById {
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
+  '/a/$qrString': typeof AQrStringRoute
   '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
@@ -633,6 +642,7 @@ export interface FileRouteTypes {
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
+    | '/a/$qrString'
     | '/b/$qrString'
     | '/book/$eventId'
     | '/buses/$tripId'
@@ -698,6 +708,7 @@ export interface FileRouteTypes {
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
+    | '/a/$qrString'
     | '/b/$qrString'
     | '/book/$eventId'
     | '/buses/$tripId'
@@ -763,6 +774,7 @@ export interface FileRouteTypes {
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
+    | '/a/$qrString'
     | '/b/$qrString'
     | '/book/$eventId'
     | '/buses/$tripId'
@@ -829,6 +841,7 @@ export interface RootRouteChildren {
   TicketDesignerRoute: typeof TicketDesignerRoute
   VenueDesignerRoute: typeof VenueDesignerRoute
   WalletRoute: typeof WalletRoute
+  AQrStringRoute: typeof AQrStringRoute
   BQrStringRoute: typeof BQrStringRoute
   BookEventIdRoute: typeof BookEventIdRoute
   BusesTripIdRoute: typeof BusesTripIdRoute
@@ -1077,6 +1090,13 @@ declare module '@tanstack/react-router' {
       path: '/b/$qrString'
       fullPath: '/b/$qrString'
       preLoaderRoute: typeof BQrStringRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/a/$qrString': {
+      id: '/a/$qrString'
+      path: '/a/$qrString'
+      fullPath: '/a/$qrString'
+      preLoaderRoute: typeof AQrStringRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/$workspaceSlug/': {
@@ -1419,6 +1439,7 @@ const rootRouteChildren: RootRouteChildren = {
   TicketDesignerRoute: TicketDesignerRoute,
   VenueDesignerRoute: VenueDesignerRoute,
   WalletRoute: WalletRoute,
+  AQrStringRoute: AQrStringRoute,
   BQrStringRoute: BQrStringRoute,
   BookEventIdRoute: BookEventIdRoute,
   BusesTripIdRoute: BusesTripIdRoute,

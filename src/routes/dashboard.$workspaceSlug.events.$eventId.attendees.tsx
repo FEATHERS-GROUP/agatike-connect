@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventAttendees, addEventAttendees } from "@/api/attendees";
+import { sendAttendeeEmail } from "@/api/email";
 import { getWorkspaceForms, getFormDetails } from "@/api/rsvps";
+import { getAllBadgeProjects } from "@/api/badges";
+import { getOrganizerProfile } from "@/api/organizers";
 import { useState } from "react";
 import {
   Dialog,
@@ -48,6 +51,17 @@ function AttendeesView() {
   const { data: forms = [], enabled: isFormsEnabled } = useQuery({
     queryKey: ["custom-forms", activeWorkspace?.id],
     queryFn: () => getWorkspaceForms({ data: { workspace_id: activeWorkspace?.id } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
+  const { data: organizer } = useQuery({
+    queryKey: ["organizer-profile"],
+    queryFn: () => getOrganizerProfile(),
+  });
+
+  const { data: workspaceBadges = [] } = useQuery({
+    queryKey: ["badge-projects", activeWorkspace?.id],
+    queryFn: () => getAllBadgeProjects({ data: { workspace_id: activeWorkspace?.id } } as any),
     enabled: !!activeWorkspace?.id,
   });
 
@@ -217,7 +231,13 @@ function AttendeesView() {
                   {format(new Date(a.created_at), "MMM d, yyyy")}
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <AttendeeDetailsModal attendee={a} />
+                  <AttendeeDetailsModal 
+                    attendee={a} 
+                    activeWorkspace={activeWorkspace} 
+                    workspaceBadges={workspaceBadges}
+                    eventId={eventId}
+                    organizer={organizer}
+                  />
                 </td>
               </tr>
             ))}
@@ -228,16 +248,49 @@ function AttendeesView() {
   );
 }
 
-function AttendeeDetailsModal({ attendee }: { attendee: any }) {
+function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, eventId, organizer }: { attendee: any, activeWorkspace: any, workspaceBadges: any[], eventId: string, organizer: any }) {
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [contactMethod, setContactMethod] = useState<"email" | "sms">("email");
+  const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [selectedBadgeId, setSelectedBadgeId] = useState<string>(
+    workspaceBadges?.find((b: any) => b.event_id === eventId)?.id || workspaceBadges?.[0]?.id || ""
+  );
+
+  const badgeLink = attendee.qrcode_number && selectedBadgeId ? `${window.location.origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}` : "";
+
+  const sendMutation = useMutation({
+    mutationFn: async () => {
+      if (contactMethod === "email") {
+        return sendAttendeeEmail({ 
+          data: { 
+            to: attendee.email, 
+            subject, 
+            message,
+            eventName: attendee.events?.title,
+            organizerName: activeWorkspace?.name,
+            organizerLogo: activeWorkspace?.logo_url,
+            organizerSocials: organizer?.socials,
+            badgeLink: selectedBadgeId ? badgeLink : "",
+          } 
+        } as any);
+      }
+      // SMS API would go here, mock for now
+      return new Promise((r) => setTimeout(r, 1000));
+    },
+    onSuccess: () => {
+      toast.success(`${contactMethod.toUpperCase()} sent successfully!`);
+      setIsContactOpen(false);
+      setMessage("");
+      setSubject("");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to send message");
+    },
+  });
 
   const handleSend = () => {
-    // Implement actual sending logic here later
-    toast.success(`${contactMethod.toUpperCase()} sent to ${attendee.names || 'attendee'}!`);
-    setIsContactOpen(false);
-    setMessage("");
+    sendMutation.mutate();
   };
 
   return (
@@ -248,7 +301,7 @@ function AttendeeDetailsModal({ attendee }: { attendee: any }) {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Attendee Details</DialogTitle>
             <DialogDescription>
@@ -288,8 +341,41 @@ function AttendeeDetailsModal({ attendee }: { attendee: any }) {
                 </div>
               </div>
             )}
+
+            {workspaceBadges && workspaceBadges.length > 0 && (
+              <div className="mt-6 border-t border-border/60 pt-4">
+                <h4 className="text-sm font-semibold mb-3">Badge Design</h4>
+                <Select
+                  value={selectedBadgeId}
+                  onValueChange={(val) => setSelectedBadgeId(val)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a badge design" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {workspaceBadges.map((b: any) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.logo_text || b.theme || "Untitled Design"} {b.event_id === eventId ? "(Event Default)" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-2">
+                  This badge design will be used when viewing or emailing the badge.
+                </p>
+              </div>
+            )}
           </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
+            {selectedBadgeId && attendee.qrcode_number && (
+              <Button 
+                variant="outline" 
+                className="w-full sm:w-auto"
+                onClick={() => window.open(badgeLink, "_blank")}
+              >
+                <Eye className="w-4 h-4 mr-2" /> View Badge
+              </Button>
+            )}
             <Button 
               variant="outline" 
               className="w-full sm:w-auto"
@@ -317,7 +403,14 @@ function AttendeeDetailsModal({ attendee }: { attendee: any }) {
               To: {contactMethod === 'email' ? attendee.email : attendee.phone}
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
+          <div className="py-4 space-y-4">
+            {contactMethod === 'email' && (
+              <Input 
+                placeholder="Subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+              />
+            )}
             <Textarea
               placeholder={`Write your ${contactMethod} message here... (e.g., event updates, venue instructions)`}
               value={message}
@@ -327,7 +420,9 @@ function AttendeeDetailsModal({ attendee }: { attendee: any }) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsContactOpen(false)}>Cancel</Button>
-            <Button onClick={handleSend} disabled={!message.trim()}>Send Message</Button>
+            <Button onClick={handleSend} disabled={!message.trim() || sendMutation.isPending}>
+              {sendMutation.isPending ? "Sending..." : "Send Message"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

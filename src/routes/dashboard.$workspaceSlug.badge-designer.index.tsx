@@ -93,8 +93,9 @@ function BadgeDesignerIndex() {
     isLoading: isLoadingProjects,
     refetch,
   } = useQuery({
-    queryKey: ["badge-projects"],
-    queryFn: () => getAllBadgeProjects({ data: {} } as any),
+    queryKey: ["badge-projects", activeWorkspace?.id],
+    queryFn: () => getAllBadgeProjects({ data: { workspace_id: activeWorkspace?.id } } as any),
+    enabled: !!activeWorkspace?.id,
   });
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
