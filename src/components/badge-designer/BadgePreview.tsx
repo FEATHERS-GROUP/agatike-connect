@@ -182,7 +182,7 @@ export function BadgePreview({
       )}
 
       <div
-        className="relative transform transition-all duration-700 hover:scale-[1.02]"
+        className="print-wrapper relative transform transition-all duration-700 hover:scale-[1.02]"
         style={{ perspective: "1000px" }}
       >
         {/* THE BADGE */}
@@ -197,7 +197,7 @@ export function BadgePreview({
 
           {/* === FRONT DESIGN === */}
           <div
-            className={`absolute inset-0 flex flex-col p-8 pt-14 text-center backface-hidden transition-opacity duration-500 z-10 rounded-[2.5rem] overflow-hidden ${activeSide !== "front" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+            className={`print-face absolute inset-0 flex flex-col p-8 pt-14 text-center backface-hidden transition-opacity duration-500 z-10 rounded-[2.5rem] overflow-hidden ${activeSide !== "front" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
           >
             {/* Background Layer */}
             {config.theme !== "minimal" && (
@@ -274,7 +274,7 @@ export function BadgePreview({
 
           {/* === BACK DESIGN === */}
           <div
-            className={`absolute inset-0 flex flex-col p-8 pt-14 text-center backface-hidden transition-opacity duration-500 z-10 rounded-[2.5rem] overflow-hidden ${activeSide !== "back" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+            className={`print-face absolute inset-0 flex flex-col p-8 pt-14 text-center backface-hidden transition-opacity duration-500 z-10 rounded-[2.5rem] overflow-hidden ${activeSide !== "back" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
             style={{ transform: "rotateY(180deg)" }}
           >
             {/* Background Layer */}
@@ -327,7 +327,7 @@ export function BadgePreview({
         </div>
 
         {/* Decorative Lanyard Strings (Visual Only) */}
-        <div className="absolute -top-[120px] left-1/2 -translate-x-1/2 w-[140px] h-[120px] opacity-80 pointer-events-none z-0">
+        <div className="decorative-lanyard absolute -top-[120px] left-1/2 -translate-x-1/2 w-[140px] h-[120px] opacity-80 pointer-events-none z-0">
           <svg
             viewBox="0 0 100 100"
             preserveAspectRatio="none"

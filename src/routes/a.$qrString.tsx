@@ -100,11 +100,71 @@ function PublicAttendeeBadgeRoute() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center py-10 px-4 relative">
-      {/* Hide controls when printing */}
+      {/* Advanced Print Styles to isolate just the badge */}
       <style>{`
         @media print {
-          body { background: white; }
-          .no-print { display: none !important; }
+          @page { margin: 0; size: auto; }
+          body, html { 
+            background: white !important; 
+            margin: 0; 
+            padding: 0;
+          }
+          body * {
+            visibility: hidden;
+          }
+          #badge-print-container, #badge-print-container * {
+            visibility: visible;
+          }
+          #badge-print-container {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            transform: translateX(-50%);
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+          }
+          .print-wrapper {
+            perspective: none !important;
+            transform: none !important;
+          }
+          /* Override 3D container */
+          .preserve-3d {
+            transform: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            height: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 40px !important;
+            align-items: center !important;
+          }
+          /* Show both faces stacked vertically */
+          .print-face {
+            position: relative !important;
+            opacity: 1 !important;
+            transform: none !important;
+            pointer-events: auto !important;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            margin: 0 !important;
+            height: 544px !important;
+            width: 340px !important;
+            border: 1px dashed #ccc !important;
+            border-radius: 2.5rem !important;
+            box-shadow: none !important;
+            flex-shrink: 0 !important;
+          }
+          .decorative-lanyard {
+            display: none !important;
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
         }
       `}</style>
 
@@ -126,7 +186,7 @@ function PublicAttendeeBadgeRoute() {
         <p className="text-muted-foreground text-xs mb-3">Event Registration</p>
       </div>
 
-      <div className="w-[340px] animate-in zoom-in-95 duration-700 fade-in delay-150 relative mx-auto" ref={badgeRef}>
+      <div id="badge-print-container" className="w-[340px] animate-in zoom-in-95 duration-700 fade-in delay-150 relative mx-auto" ref={badgeRef}>
         {badgeProject ? (
           <BadgePreview
             config={{
