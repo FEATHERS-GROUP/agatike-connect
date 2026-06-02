@@ -71,7 +71,7 @@ import { Route as DashboardWorkspaceSlugEventsEventIdProductsChar38addOnsRouteIm
 import { Route as DashboardWorkspaceSlugEventsEventIdPlanningRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.planning'
 import { Route as DashboardWorkspaceSlugEventsEventIdParkingRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.parking'
 import { Route as DashboardWorkspaceSlugEventsEventIdEditRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.edit'
-import { Route as DashboardWorkspaceSlugEventsEventIdCustomersRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.customers'
+import { Route as DashboardWorkspaceSlugEventsEventIdAttendeesRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.attendees'
 
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
@@ -411,10 +411,10 @@ const DashboardWorkspaceSlugEventsEventIdEditRoute =
     path: '/$workspaceSlug/events/$eventId/edit',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardWorkspaceSlugEventsEventIdCustomersRoute =
-  DashboardWorkspaceSlugEventsEventIdCustomersRouteImport.update({
-    id: '/$workspaceSlug/events/$eventId/customers',
-    path: '/$workspaceSlug/events/$eventId/customers',
+const DashboardWorkspaceSlugEventsEventIdAttendeesRoute =
+  DashboardWorkspaceSlugEventsEventIdAttendeesRouteImport.update({
+    id: '/$workspaceSlug/events/$eventId/attendees',
+    path: '/$workspaceSlug/events/$eventId/attendees',
     getParentRoute: () => DashboardRoute,
   } as any)
 
@@ -471,7 +471,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/events/': typeof DashboardWorkspaceSlugEventsIndexRoute
   '/dashboard/$workspaceSlug/rsvps/': typeof DashboardWorkspaceSlugRsvpsIndexRoute
   '/dashboard/$workspaceSlug/ticket-designer/': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
-  '/dashboard/$workspaceSlug/events/$eventId/customers': typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
+  '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
   '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
   '/dashboard/$workspaceSlug/events/$eventId/planning': typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
@@ -536,7 +536,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/events': typeof DashboardWorkspaceSlugEventsIndexRoute
   '/dashboard/$workspaceSlug/rsvps': typeof DashboardWorkspaceSlugRsvpsIndexRoute
   '/dashboard/$workspaceSlug/ticket-designer': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
-  '/dashboard/$workspaceSlug/events/$eventId/customers': typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
+  '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
   '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
   '/dashboard/$workspaceSlug/events/$eventId/planning': typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
@@ -602,7 +602,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/events/': typeof DashboardWorkspaceSlugEventsIndexRoute
   '/dashboard/$workspaceSlug/rsvps/': typeof DashboardWorkspaceSlugRsvpsIndexRoute
   '/dashboard/$workspaceSlug/ticket-designer/': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
-  '/dashboard/$workspaceSlug/events/$eventId/customers': typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
+  '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
   '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
   '/dashboard/$workspaceSlug/events/$eventId/planning': typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
@@ -669,7 +669,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events/'
     | '/dashboard/$workspaceSlug/rsvps/'
     | '/dashboard/$workspaceSlug/ticket-designer/'
-    | '/dashboard/$workspaceSlug/events/$eventId/customers'
+    | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
     | '/dashboard/$workspaceSlug/events/$eventId/parking'
     | '/dashboard/$workspaceSlug/events/$eventId/planning'
@@ -734,7 +734,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events'
     | '/dashboard/$workspaceSlug/rsvps'
     | '/dashboard/$workspaceSlug/ticket-designer'
-    | '/dashboard/$workspaceSlug/events/$eventId/customers'
+    | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
     | '/dashboard/$workspaceSlug/events/$eventId/parking'
     | '/dashboard/$workspaceSlug/events/$eventId/planning'
@@ -799,7 +799,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events/'
     | '/dashboard/$workspaceSlug/rsvps/'
     | '/dashboard/$workspaceSlug/ticket-designer/'
-    | '/dashboard/$workspaceSlug/events/$eventId/customers'
+    | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
     | '/dashboard/$workspaceSlug/events/$eventId/parking'
     | '/dashboard/$workspaceSlug/events/$eventId/planning'
@@ -1282,11 +1282,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdEditRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/$workspaceSlug/events/$eventId/customers': {
-      id: '/dashboard/$workspaceSlug/events/$eventId/customers'
-      path: '/$workspaceSlug/events/$eventId/customers'
-      fullPath: '/dashboard/$workspaceSlug/events/$eventId/customers'
-      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdCustomersRouteImport
+    '/dashboard/$workspaceSlug/events/$eventId/attendees': {
+      id: '/dashboard/$workspaceSlug/events/$eventId/attendees'
+      path: '/$workspaceSlug/events/$eventId/attendees'
+      fullPath: '/dashboard/$workspaceSlug/events/$eventId/attendees'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdAttendeesRouteImport
       parentRoute: typeof DashboardRoute
     }
   }
@@ -1335,7 +1335,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugEventsIndexRoute: typeof DashboardWorkspaceSlugEventsIndexRoute
   DashboardWorkspaceSlugRsvpsIndexRoute: typeof DashboardWorkspaceSlugRsvpsIndexRoute
   DashboardWorkspaceSlugTicketDesignerIndexRoute: typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
-  DashboardWorkspaceSlugEventsEventIdCustomersRoute: typeof DashboardWorkspaceSlugEventsEventIdCustomersRoute
+  DashboardWorkspaceSlugEventsEventIdAttendeesRoute: typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   DashboardWorkspaceSlugEventsEventIdEditRoute: typeof DashboardWorkspaceSlugEventsEventIdEditRoute
   DashboardWorkspaceSlugEventsEventIdParkingRoute: typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
   DashboardWorkspaceSlugEventsEventIdPlanningRoute: typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
@@ -1380,8 +1380,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardWorkspaceSlugRsvpsIndexRoute: DashboardWorkspaceSlugRsvpsIndexRoute,
   DashboardWorkspaceSlugTicketDesignerIndexRoute:
     DashboardWorkspaceSlugTicketDesignerIndexRoute,
-  DashboardWorkspaceSlugEventsEventIdCustomersRoute:
-    DashboardWorkspaceSlugEventsEventIdCustomersRoute,
+  DashboardWorkspaceSlugEventsEventIdAttendeesRoute:
+    DashboardWorkspaceSlugEventsEventIdAttendeesRoute,
   DashboardWorkspaceSlugEventsEventIdEditRoute:
     DashboardWorkspaceSlugEventsEventIdEditRoute,
   DashboardWorkspaceSlugEventsEventIdParkingRoute:

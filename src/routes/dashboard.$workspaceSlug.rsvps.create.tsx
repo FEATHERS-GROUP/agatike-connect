@@ -54,13 +54,40 @@ import {
 
 const TEMPLATES = [
   {
-    id: "event",
-    title: "Event RSVP",
-    description: "Collect attendee information, dietary restrictions, and attendance confirmation.",
+    id: "attendee",
+    title: "Event Attendee Registration",
+    description: "Register attendees for your event with custom questions like T-Shirt size.",
     icon: Calendar,
     bgClass: "bg-blue-500/10",
     textClass: "text-blue-500",
     glowClass: "group-hover:bg-blue-500/20",
+    formValues: {
+      title: "Event Attendee Registration",
+      description: "Please fill out this form to register for the upcoming event.",
+      fields: [
+        { id: "1", label: "Names", field_type: "text", is_required: true },
+        { id: "2", label: "Email Address", field_type: "email", is_required: true },
+        { id: "3", label: "Phone Number", field_type: "text", is_required: true },
+        {
+          id: "4",
+          label: "Ticket Type / Registration Type",
+          field_type: "radio",
+          is_required: true,
+          options: "General Admission, VIP, Media",
+        },
+        { id: "5", label: "T-Shirt Size", field_type: "select", is_required: false, options: "S, M, L, XL, XXL" },
+        { id: "6", label: "How many kilometers are you running?", field_type: "text", is_required: false },
+      ],
+    },
+  },
+  {
+    id: "event",
+    title: "Simple Event RSVP",
+    description: "Collect attendee information, dietary restrictions, and attendance confirmation.",
+    icon: Calendar,
+    bgClass: "bg-indigo-500/10",
+    textClass: "text-indigo-500",
+    glowClass: "group-hover:bg-indigo-500/20",
     formValues: {
       title: "Event RSVP",
       description: "Please fill out this form to confirm your attendance.",

@@ -35,8 +35,8 @@ export function EventSidebar() {
       icon: LayoutDashboard,
     },
     {
-      label: "Customers",
-      href: `/dashboard/${workspaceSlug}/events/${eventId}/customers`,
+      label: "Attendees",
+      href: `/dashboard/${workspaceSlug}/events/${eventId}/attendees`,
       icon: Users,
     },
     { label: "Parking", href: `/dashboard/${workspaceSlug}/events/${eventId}/parking`, icon: Car },
