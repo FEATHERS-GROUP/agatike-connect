@@ -1,11 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 
 export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { to, subject, message, eventName, organizerName, organizerLogo, organizerSocials, badgeLink } = ctx.data as any;
+  const { to, subject, message, eventName, organizerName, organizerLogo, organizerSocials, badgeLink, appUrl } = ctx.data as any;
 
   // Header with Agatike Logo
-  const agatikeLogo = "https://i.ibb.co/3sZqZqZ/agatike-logo.png"; // Placeholder online image or user's asset
-  const fallbackLogo = "https://ui-avatars.com/api/?name=Agatike&background=fff&color=F2571D&rounded=true";
+  const agatikeIconUrl = appUrl ? `${appUrl}/agatike-icon.png` : "https://i.ibb.co/3sZqZqZ/agatike-logo.png";
+  const agatikeLogoTextUrl = "https://ui-avatars.com/api/?name=Agatike&background=fff&color=F2571D&rounded=true"; // or another wordmark if available
 
   // Build Social Links HTML if available
   let socialsHtml = '';
@@ -38,8 +38,8 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
       <!-- Header -->
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
-        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-          <img src="${fallbackLogo}" alt="Agatike" style="width: 100%; height: auto;" />
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
+          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Event Update</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px; font-weight: 500;">from ${organizerName || 'your event organizer'}</p>
@@ -48,7 +48,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
       <!-- Body -->
       <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
         ${eventName ? `<h3 style="margin-top: 0; color: #111; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; margin-bottom: 24px;">Regarding: ${eventName}</h3>` : ''}
-        <p style="margin: 0; white-space: pre-wrap;">${message}</p>
+        <div style="margin: 0;">${message}</div>
         
         ${badgeLink ? `
         <div style="margin-top: 32px; text-align: center; background-color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px dashed #cbd5e1;">
@@ -63,30 +63,32 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
       
       <!-- Footer -->
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
-        <p style="font-size: 13px; color: #666; margin: 0 0 20px 0; line-height: 1.5;">
+        <p style="font-size: 13px; color: #666; margin: 0 0 24px 0; line-height: 1.5;">
           This message was sent securely by <strong>Agatike Connect</strong><br/>
           on behalf of ${organizerName || 'the event organizer'}.
         </p>
         
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 16px;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
           <tr>
             <td align="center">
               <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   ${organizerLogo ? `
-                  <td align="center" style="padding-right: 16px; border-right: 1px solid #ddd;">
-                    <img src="${organizerLogo}" alt="${organizerName}" style="height: 36px; border-radius: 6px; object-fit: contain;" />
+                  <td align="center" style="padding-right: 16px; border-right: 1px solid #cbd5e1;">
+                    <img src="${organizerLogo}" alt="${organizerName}" style="height: 40px; border-radius: 8px; object-fit: contain; display: block;" />
                   </td>
                   <td width="16"></td>
                   ` : ''}
                   <td align="center">
-                    <div style="color: #F2571D; font-weight: 800; font-size: 18px; letter-spacing: -0.5px;">AGATIKE</div>
+                    <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; display: block;" />
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
         </table>
+        
+        <div style="color: #F2571D; font-weight: 900; font-size: 16px; letter-spacing: 1px;">AGATIKE</div>
       </div>
     </div>
   `;
