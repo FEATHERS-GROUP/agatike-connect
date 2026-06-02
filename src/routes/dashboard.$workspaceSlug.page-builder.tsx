@@ -38,6 +38,8 @@ function PageBuilder() {
   const [themeColor, setThemeColor] = useState("#000000");
   const [headerImageUrl, setHeaderImageUrl] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [logoPosition, setLogoPosition] = useState("hero"); // 'hero' or 'navbar'
+  const [fontFamily, setFontFamily] = useState("Inter"); // 'Inter', 'Outfit', 'Montserrat', 'Playfair Display', 'Lora'
   const [components, setComponents] = useState<any[]>([]);
 
   useEffect(() => {
@@ -48,7 +50,15 @@ function PageBuilder() {
       setThemeColor(pageData.theme_color || "#000000");
       setHeaderImageUrl(pageData.header_image_url || "");
       setLogoUrl(pageData.logo_url || "");
-      setComponents(pageData.components || []);
+      
+      // Extract settings from components array if it exists, otherwise use defaults
+      const settingsBlock = pageData.components?.find((c: any) => c.type === "page_settings");
+      if (settingsBlock) {
+        setLogoPosition(settingsBlock.logoPosition || "hero");
+        setFontFamily(settingsBlock.fontFamily || "Inter");
+      }
+      
+      setComponents(pageData.components?.filter((c: any) => c.type !== "page_settings") || []);
     }
   }, [pageData]);
 
@@ -72,7 +82,10 @@ function PageBuilder() {
       theme_color: themeColor,
       header_image_url: headerImageUrl,
       logo_url: logoUrl,
-      components,
+      components: [
+        { type: "page_settings", logoPosition, fontFamily },
+        ...components
+      ],
       is_published: true,
     });
   };
@@ -160,7 +173,8 @@ function PageBuilder() {
           )}
           <Button variant="secondary" onClick={() => {
             const previewData = {
-              workspace_id, title, description, theme_color: themeColor, header_image_url: headerImageUrl, logo_url: logoUrl, components
+              workspace_id, title, description, theme_color: themeColor, header_image_url: headerImageUrl, logo_url: logoUrl, 
+              components: [{ type: "page_settings", logoPosition, fontFamily }, ...components]
             };
             localStorage.setItem("page_preview_data", JSON.stringify(previewData));
             window.open(`/p/${slug || 'preview'}?preview=true`, '_blank');
@@ -227,6 +241,35 @@ function PageBuilder() {
                   <Input type="color" value={themeColor} onChange={(e) => setThemeColor(e.target.value)} className="w-12 h-12 p-1 rounded-lg" />
                   <span className="text-sm text-muted-foreground font-mono">{themeColor}</span>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Logo Position</Label>
+                <Select value={logoPosition} onValueChange={setLogoPosition}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hero">Centered on Hero Image</SelectItem>
+                    <SelectItem value="navbar">Top Navigation Bar</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Typography (Font)</Label>
+                <Select value={fontFamily} onValueChange={setFontFamily}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Inter">Inter (Modern, Clean)</SelectItem>
+                    <SelectItem value="Outfit">Outfit (Geometric, Tech)</SelectItem>
+                    <SelectItem value="Montserrat">Montserrat (Bold, Wide)</SelectItem>
+                    <SelectItem value="Playfair Display">Playfair Display (Elegant Serif)</SelectItem>
+                    <SelectItem value="Lora">Lora (Refined Serif)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -311,6 +354,21 @@ function PageBuilder() {
 
                     <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                       <button onClick={() => removeComponent(idx)} className="text-destructive bg-background shadow-sm hover:bg-destructive/10 p-1.5 rounded-md transition-colors"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+
+                    <div className="mb-6 flex items-center justify-between border-b border-border/40 pb-4">
+                      <div className="flex items-center gap-2">
+                         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{comp.type.replace('_', ' ')}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label className="text-[10px] uppercase text-muted-foreground whitespace-nowrap">Menu Link Name</Label>
+                        <Input 
+                          placeholder="e.g. About, Pricing" 
+                          value={comp.menuName || ""} 
+                          onChange={(e) => updateComponent(idx, "menuName", e.target.value)}
+                          className="h-7 text-xs w-40 bg-background"
+                        />
+                      </div>
                     </div>
 
                     {comp.type === "text" && (
@@ -517,16 +575,28 @@ function PageBuilder() {
                       <div className="space-y-4 mt-2">
                         <div className="flex items-center justify-between">
                           <Label className="text-xs text-muted-foreground flex items-center gap-1"><Grid className="w-3 h-3" /> Advanced Form Grid</Label>
-                          <Select value={comp.columns || "2"} onValueChange={(val) => updateComponent(idx, "columns", val)}>
-                            <SelectTrigger className="w-32 bg-background h-8 text-xs">
-                              <SelectValue placeholder="Columns" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">1 Column</SelectItem>
-                              <SelectItem value="2">2 Columns</SelectItem>
-                              <SelectItem value="3">3 Columns</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="flex items-center gap-2">
+                            <Select value={comp.cardBgColor || "white"} onValueChange={(val) => updateComponent(idx, "cardBgColor", val)}>
+                              <SelectTrigger className="w-32 bg-background h-8 text-xs">
+                                <SelectValue placeholder="Card Color" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="white">White Cards</SelectItem>
+                                <SelectItem value="transparent">Transparent Cards</SelectItem>
+                                <SelectItem value="muted">Muted Gray Cards</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Select value={comp.columns || "2"} onValueChange={(val) => updateComponent(idx, "columns", val)}>
+                              <SelectTrigger className="w-32 bg-background h-8 text-xs">
+                                <SelectValue placeholder="Columns" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">1 Column</SelectItem>
+                                <SelectItem value="2">2 Columns</SelectItem>
+                                <SelectItem value="3">3 Columns</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                         
                         <div className="space-y-4">

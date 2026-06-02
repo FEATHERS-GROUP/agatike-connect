@@ -66,45 +66,115 @@ function PublicCompanyPage() {
   }
 
   const { title, description, header_image_url, logo_url, theme_color, components } = page;
+  
+  // Extract settings from components
+  const settingsBlock = components?.find((c: any) => c.type === "page_settings");
+  const logoPosition = settingsBlock?.logoPosition || "hero";
+  const fontFamily = settingsBlock?.fontFamily || "Inter";
+  const actualComponents = components?.filter((c: any) => c.type !== "page_settings") || [];
+  
   const activeForms = forms.filter((f: any) => f.is_active);
 
+  // Generate menu links
+  const menuLinks = actualComponents
+    .filter((comp: any) => comp.menuName?.trim())
+    .map((comp: any) => ({
+      name: comp.menuName.trim(),
+      id: `section-${comp.id}`
+    }));
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const hasNavbar = logoPosition === "navbar" || menuLinks.length > 0;
+
+  // Generate Google Fonts URL based on selected font
+  const googleFontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@400;500;600;700;800&display=swap`;
+
   return (
-    <div className="min-h-screen bg-background" style={{ "--primary": theme_color, "--primary-foreground": "#fff" } as React.CSSProperties}>
-      
+    <>
+      <style>
+        {`@import url('${googleFontUrl}');`}
+      </style>
+      <div 
+        className="min-h-screen bg-background" 
+        style={{ 
+          "--primary": theme_color, 
+          "--primary-foreground": "#fff",
+          fontFamily: `'${fontFamily}', sans-serif`
+        } as React.CSSProperties}
+      >
+        
+        {/* Sticky Navbar */}
+      {hasNavbar && (
+        <nav className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm transition-all">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex-shrink-0 flex items-center">
+              {logoPosition === "navbar" && logo_url ? (
+                <img src={logo_url} alt="Logo" className="h-10 w-auto object-contain rounded" />
+              ) : logoPosition === "navbar" && title ? (
+                <span className="font-bold text-xl tracking-tight truncate max-w-[200px]">{title}</span>
+              ) : (
+                <div />
+              )}
+            </div>
+            
+            {/* Menu Links */}
+            <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+              {menuLinks.map((link) => (
+                <button
+                  key={link.id}
+                  onClick={() => scrollToSection(link.id)}
+                  className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                >
+                  {link.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </nav>
+      )}
+
       {/* Header Overlay Section */}
-      <div className="relative w-full h-80 md:h-[450px] bg-secondary flex flex-col items-center justify-center text-center p-6">
+      <div className="relative w-full min-h-[50vh] md:min-h-[60vh] bg-secondary flex flex-col items-center justify-center text-center p-6 md:p-12 overflow-hidden">
         {header_image_url ? (
-          <img src={header_image_url} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
+          <img src={header_image_url} alt="Cover" className="absolute inset-0 w-full h-full object-cover transform scale-105" />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-primary/40" />
         )}
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-black/60" />
         
-        <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center">
-          {logo_url && (
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl shadow-xl overflow-hidden mb-6 bg-background border-4 border-background">
+        <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center mt-12 md:mt-0">
+          {logo_url && logoPosition === "hero" && (
+            <div className="w-28 h-28 md:w-40 md:h-40 rounded-3xl shadow-2xl overflow-hidden mb-8 bg-background border-4 border-background/50 backdrop-blur-sm">
               <img src={logo_url} alt="Logo" className="w-full h-full object-cover" />
             </div>
           )}
-          {title && <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 text-white drop-shadow-md">{title}</h1>}
+          {title && <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 text-white drop-shadow-lg leading-tight">{title}</h1>}
           {description && (
-            <p className="text-lg md:text-xl text-white/90 max-w-2xl drop-shadow-sm whitespace-pre-wrap">{description}</p>
+            <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-3xl drop-shadow-md whitespace-pre-wrap leading-relaxed">{description}</p>
           )}
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-12 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative z-10">
         {/* Dynamic Components */}
-        <div className="space-y-12">
-          {components?.map((comp: any) => {
+        <div className="space-y-16 md:space-y-24">
+          {actualComponents?.map((comp: any) => {
             
-            if (comp.type === "text") {
-              return (
-                <div key={comp.id} className="prose prose-lg dark:prose-invert max-w-none bg-card p-8 rounded-3xl shadow-sm">
-                  <p className="whitespace-pre-wrap">{comp.content}</p>
-                </div>
-              );
-            }
+            const renderComponent = () => {
+              if (comp.type === "text") {
+                return (
+                  <div className="prose prose-lg dark:prose-invert max-w-none bg-card p-8 rounded-3xl shadow-sm">
+                    <p className="whitespace-pre-wrap">{comp.content}</p>
+                  </div>
+                );
+              }
 
             if (comp.type === "image" && comp.url) {
               return (
@@ -133,8 +203,8 @@ function PublicCompanyPage() {
 
             if (comp.type === "button") {
               return (
-                <div key={comp.id} className="flex justify-center">
-                  <Button asChild size="lg" className="rounded-full px-8 text-lg" style={{ background: theme_color }}>
+                <div key={comp.id} className="flex justify-center w-full px-4">
+                  <Button asChild size="lg" className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center" style={{ background: theme_color }}>
                     <a href={comp.url} target="_blank" rel="noreferrer">
                       {comp.label || "Click Here"}
                     </a>
@@ -161,7 +231,7 @@ function PublicCompanyPage() {
                     if (!linkedForm) return null;
 
                     return (
-                      <div key={idx} className="bg-card border border-border/60 rounded-3xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col h-full group">
+                      <div key={idx} className={`${comp.cardBgColor === 'transparent' ? 'bg-transparent border-2' : comp.cardBgColor === 'muted' ? 'bg-secondary' : 'bg-card'} border border-border/60 rounded-3xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col h-full group`}>
                         <div className="flex items-start justify-between mb-4">
                           <h3 className="text-2xl font-bold group-hover:text-primary transition-colors">{card.customTitle || linkedForm.title}</h3>
                           {linkedForm.cover_image_url && (
@@ -224,10 +294,10 @@ function PublicCompanyPage() {
 
               if (comp.design === "button") {
                 return (
-                  <div key={comp.id} className="flex justify-center">
-                    <Button asChild size="lg" className="rounded-full px-8 text-lg" style={{ background: theme_color }}>
+                  <div key={comp.id} className="flex justify-center w-full px-4">
+                    <Button asChild size="lg" className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center" style={{ background: theme_color }}>
                       <Link to={`/f/${linkedForm.id}`}>
-                        {linkedForm.title} <ArrowRight className="w-4 h-4 ml-2" />
+                        {linkedForm.title} <ArrowRight className="w-5 h-5 ml-2 md:ml-3 shrink-0" />
                       </Link>
                     </Button>
                   </div>
@@ -260,7 +330,18 @@ function PublicCompanyPage() {
               );
             }
 
-            return null;
+              return null;
+            };
+
+            return (
+              <div 
+                key={comp.id} 
+                id={`section-${comp.id}`}
+                className={comp.menuName?.trim() ? "scroll-mt-24" : ""}
+              >
+                {renderComponent()}
+              </div>
+            );
           })}
         </div>
       </div>
@@ -279,5 +360,6 @@ function PublicCompanyPage() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
