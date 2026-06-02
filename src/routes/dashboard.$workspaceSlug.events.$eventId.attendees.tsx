@@ -299,7 +299,12 @@ function AttendeesView() {
 function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, eventId, organizer }: { attendee: any, activeWorkspace: any, workspaceBadges: any[], eventId: string, organizer: any }) {
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [contactMethod, setContactMethod] = useState<"email" | "sms">("email");
-  const eventName = attendee?.events?.title || "[Event Name]";
+  const eventObj = attendee?.events || {};
+  const eventName = eventObj.title || "[Event Name]";
+  const firstStop = eventObj.tour_stops?.[0] || {};
+  const eventDate = firstStop.date || "[Event Date]";
+  const eventTime = firstStop.time || "[Event Time]";
+  const eventVenue = firstStop.venue || firstStop.city || "[Venue Name]";
   const orgName = activeWorkspace?.name || "[Organization Name]";
   const contactEmail = organizer?.email || "[Contact Email]";
   const contactPhone = organizer?.phone || "[Phone Number]";
@@ -312,20 +317,13 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
 <h3>Event Details</h3>
 <ul>
   <li><strong>Event:</strong> ${eventName}</li>
-  <li><strong>Date:</strong> [Event Date]</li>
-  <li><strong>Time:</strong> [Event Time]</li>
-  <li><strong>Venue:</strong> [Venue Name]</li>
-  <li><strong>Address:</strong> [Venue Address]</li>
+  <li><strong>Date:</strong> ${eventDate}</li>
+  <li><strong>Time:</strong> ${eventTime}</li>
+  <li><strong>Venue:</strong> ${eventVenue}</li>
 </ul>
 <br/>
 <h3>Your Registration Information</h3>
-<p>Please keep the following details available, as they will be required to access the venue:</p>
-<ul>
-  <li><strong>Registration ID:</strong> [Registration ID]</li>
-  <li><strong>Ticket Number:</strong> [Ticket Number]</li>
-  <li><strong>Registered Name:</strong> [Attendee Name]</li>
-  <li><strong>Registered Email:</strong> [Attendee Email]</li>
-</ul>
+[Registration Details]
 <br/>
 <h3>Important Information</h3>
 <ul>
@@ -354,12 +352,26 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
     mutationFn: async () => {
       let finalMessage = message;
       if (contactMethod === "email") {
+        const isCustomer = attendee.type !== 'rsvp';
+        const registrationInfo = isCustomer 
+          ? `
+            <p>Please keep the following details available, as they will be required to access the venue:</p>
+            <ul>
+              <li><strong>Registration ID:</strong> ${attendee.id?.substring(0,8).toUpperCase()}</li>
+              <li><strong>Ticket Number:</strong> ${attendee.qrcode_number || 'N/A'}</li>
+              <li><strong>Registered Name:</strong> ${attendee.names}</li>
+              <li><strong>Registered Email:</strong> ${attendee.email}</li>
+            </ul>
+            <p><a href="${badgeLink}" target="_blank"><strong>Click here to view your digital ticket</strong></a></p>
+          `
+          : `
+            <p>Here is your digital badge information. You will use this badge to seamlessly access the event.</p>
+            <p><a href="${badgeLink}" target="_blank"><strong>Click here to view and download your digital badge</strong></a></p>
+          `;
+
         finalMessage = finalMessage
           .replace(/\[First Name\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
-          .replace(/\[Attendee Name\]/gi, attendee.names || 'Attendee')
-          .replace(/\[Attendee Email\]/gi, attendee.email || 'N/A')
-          .replace(/\[Registration ID\]/gi, attendee.id?.substring(0,8).toUpperCase() || 'N/A')
-          .replace(/\[Ticket Number\]/gi, attendee.qrcode_number || 'N/A');
+          .replace(/\[Registration Details\]/gi, registrationInfo.trim());
           
         return sendAttendeeEmail({ 
           data: { 
@@ -558,7 +570,12 @@ function BulkEmailModal({
   organizer: any;
   onClearSelection: () => void;
 }) {
-  const eventName = attendees?.[0]?.events?.title || "[Event Name]";
+  const eventObj = attendees?.[0]?.events || {};
+  const eventName = eventObj.title || "[Event Name]";
+  const firstStop = eventObj.tour_stops?.[0] || {};
+  const eventDate = firstStop.date || "[Event Date]";
+  const eventTime = firstStop.time || "[Event Time]";
+  const eventVenue = firstStop.venue || firstStop.city || "[Venue Name]";
   const orgName = activeWorkspace?.name || "[Organization Name]";
   const contactEmail = organizer?.email || "[Contact Email]";
   const contactPhone = organizer?.phone || "[Phone Number]";
@@ -571,20 +588,13 @@ function BulkEmailModal({
 <h3>Event Details</h3>
 <ul>
   <li><strong>Event:</strong> ${eventName}</li>
-  <li><strong>Date:</strong> [Event Date]</li>
-  <li><strong>Time:</strong> [Event Time]</li>
-  <li><strong>Venue:</strong> [Venue Name]</li>
-  <li><strong>Address:</strong> [Venue Address]</li>
+  <li><strong>Date:</strong> ${eventDate}</li>
+  <li><strong>Time:</strong> ${eventTime}</li>
+  <li><strong>Venue:</strong> ${eventVenue}</li>
 </ul>
 <br/>
 <h3>Your Registration Information</h3>
-<p>Please keep the following details available, as they will be required to access the venue:</p>
-<ul>
-  <li><strong>Registration ID:</strong> [Registration ID]</li>
-  <li><strong>Ticket Number:</strong> [Ticket Number]</li>
-  <li><strong>Registered Name:</strong> [Attendee Name]</li>
-  <li><strong>Registered Email:</strong> [Attendee Email]</li>
-</ul>
+[Registration Details]
 <br/>
 <h3>Important Information</h3>
 <ul>
@@ -624,12 +634,26 @@ function BulkEmailModal({
       
       const badgeLink = attendee.qrcode_number && selectedBadgeId ? `${window.location.origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}` : "";
       
+      const isCustomer = attendee.type !== 'rsvp';
+      const registrationInfo = isCustomer 
+        ? `
+          <p>Please keep the following details available, as they will be required to access the venue:</p>
+          <ul>
+            <li><strong>Registration ID:</strong> ${attendee.id?.substring(0,8).toUpperCase()}</li>
+            <li><strong>Ticket Number:</strong> ${attendee.qrcode_number || 'N/A'}</li>
+            <li><strong>Registered Name:</strong> ${attendee.names}</li>
+            <li><strong>Registered Email:</strong> ${attendee.email}</li>
+          </ul>
+          <p><a href="${badgeLink}" target="_blank"><strong>Click here to view your digital ticket</strong></a></p>
+        `
+        : `
+          <p>Here is your digital badge information. You will use this badge to seamlessly access the event.</p>
+          <p><a href="${badgeLink}" target="_blank"><strong>Click here to view and download your digital badge</strong></a></p>
+        `;
+
       const finalMessage = message
         .replace(/\[First Name\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
-        .replace(/\[Attendee Name\]/gi, attendee.names || 'Attendee')
-        .replace(/\[Attendee Email\]/gi, attendee.email || 'N/A')
-        .replace(/\[Registration ID\]/gi, attendee.id?.substring(0,8).toUpperCase() || 'N/A')
-        .replace(/\[Ticket Number\]/gi, attendee.qrcode_number || 'N/A');
+        .replace(/\[Registration Details\]/gi, registrationInfo.trim());
       
       try {
         await sendAttendeeEmail({ 

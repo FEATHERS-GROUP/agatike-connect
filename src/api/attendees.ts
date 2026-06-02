@@ -22,6 +22,7 @@ const GET_EVENT_ATTENDEES = `
       user_id
       events {
         title
+        tour_stops
       }
     }
   }
