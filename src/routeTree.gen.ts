@@ -30,6 +30,7 @@ import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as BusesIndexRouteImport } from './routes/buses.index'
 import { Route as VenuesVenueIdRouteImport } from './routes/venues.$venueId'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
+import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as FFormIdRouteImport } from './routes/f.$formId'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 import { Route as DashboardWorkspacesRouteImport } from './routes/dashboard.workspaces'
@@ -49,6 +50,7 @@ import { Route as DashboardWorkspaceSlugVenueRentRouteImport } from './routes/da
 import { Route as DashboardWorkspaceSlugVenueDesignerRouteImport } from './routes/dashboard.$workspaceSlug.venue-designer'
 import { Route as DashboardWorkspaceSlugScannerRouteImport } from './routes/dashboard.$workspaceSlug.scanner'
 import { Route as DashboardWorkspaceSlugProductsChar38addOnsRouteImport } from './routes/dashboard.$workspaceSlug.products&add-ons'
+import { Route as DashboardWorkspaceSlugPageBuilderRouteImport } from './routes/dashboard.$workspaceSlug.page-builder'
 import { Route as DashboardWorkspaceSlugTicketDesignerIndexRouteImport } from './routes/dashboard.$workspaceSlug.ticket-designer.index'
 import { Route as DashboardWorkspaceSlugRsvpsIndexRouteImport } from './routes/dashboard.$workspaceSlug.rsvps.index'
 import { Route as DashboardWorkspaceSlugEventsIndexRouteImport } from './routes/dashboard.$workspaceSlug.events.index'
@@ -176,6 +178,11 @@ const TicketTicketIdRoute = TicketTicketIdRouteImport.update({
   path: '/ticket/$ticketId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PSlugRoute = PSlugRouteImport.update({
+  id: '/p/$slug',
+  path: '/p/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FFormIdRoute = FFormIdRouteImport.update({
   id: '/f/$formId',
   path: '/f/$formId',
@@ -276,6 +283,12 @@ const DashboardWorkspaceSlugProductsChar38addOnsRoute =
   DashboardWorkspaceSlugProductsChar38addOnsRouteImport.update({
     id: '/$workspaceSlug/products&add-ons',
     path: '/$workspaceSlug/products&add-ons',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugPageBuilderRoute =
+  DashboardWorkspaceSlugPageBuilderRouteImport.update({
+    id: '/$workspaceSlug/page-builder',
+    path: '/$workspaceSlug/page-builder',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardWorkspaceSlugTicketDesignerIndexRoute =
@@ -433,11 +446,13 @@ export interface FileRoutesByFullPath {
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
+  '/p/$slug': typeof PSlugRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
   '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
   '/venues/': typeof VenuesIndexRoute
+  '/dashboard/$workspaceSlug/page-builder': typeof DashboardWorkspaceSlugPageBuilderRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
@@ -496,11 +511,13 @@ export interface FileRoutesByTo {
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
+  '/p/$slug': typeof PSlugRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
   '/buses': typeof BusesIndexRoute
   '/events': typeof EventsIndexRoute
   '/venues': typeof VenuesIndexRoute
+  '/dashboard/$workspaceSlug/page-builder': typeof DashboardWorkspaceSlugPageBuilderRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
@@ -560,11 +577,13 @@ export interface FileRoutesById {
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
+  '/p/$slug': typeof PSlugRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
   '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
   '/venues/': typeof VenuesIndexRoute
+  '/dashboard/$workspaceSlug/page-builder': typeof DashboardWorkspaceSlugPageBuilderRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
@@ -625,11 +644,13 @@ export interface FileRouteTypes {
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
+    | '/p/$slug'
     | '/ticket/$ticketId'
     | '/venues/$venueId'
     | '/buses/'
     | '/events/'
     | '/venues/'
+    | '/dashboard/$workspaceSlug/page-builder'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
     | '/dashboard/$workspaceSlug/venue-designer'
@@ -688,11 +709,13 @@ export interface FileRouteTypes {
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
+    | '/p/$slug'
     | '/ticket/$ticketId'
     | '/venues/$venueId'
     | '/buses'
     | '/events'
     | '/venues'
+    | '/dashboard/$workspaceSlug/page-builder'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
     | '/dashboard/$workspaceSlug/venue-designer'
@@ -751,11 +774,13 @@ export interface FileRouteTypes {
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
+    | '/p/$slug'
     | '/ticket/$ticketId'
     | '/venues/$venueId'
     | '/buses/'
     | '/events/'
     | '/venues/'
+    | '/dashboard/$workspaceSlug/page-builder'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
     | '/dashboard/$workspaceSlug/venue-designer'
@@ -811,6 +836,7 @@ export interface RootRouteChildren {
   CommunityPostIdRoute: typeof CommunityPostIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   FFormIdRoute: typeof FFormIdRoute
+  PSlugRoute: typeof PSlugRoute
   TicketTicketIdRoute: typeof TicketTicketIdRoute
   VenuesVenueIdRoute: typeof VenuesVenueIdRoute
   BusesIndexRoute: typeof BusesIndexRoute
@@ -969,6 +995,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TicketTicketIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/p/$slug': {
+      id: '/p/$slug'
+      path: '/p/$slug'
+      fullPath: '/p/$slug'
+      preLoaderRoute: typeof PSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/f/$formId': {
       id: '/f/$formId'
       path: '/f/$formId'
@@ -1100,6 +1133,13 @@ declare module '@tanstack/react-router' {
       path: '/$workspaceSlug/products&add-ons'
       fullPath: '/dashboard/$workspaceSlug/products&add-ons'
       preLoaderRoute: typeof DashboardWorkspaceSlugProductsChar38addOnsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/page-builder': {
+      id: '/dashboard/$workspaceSlug/page-builder'
+      path: '/$workspaceSlug/page-builder'
+      fullPath: '/dashboard/$workspaceSlug/page-builder'
+      preLoaderRoute: typeof DashboardWorkspaceSlugPageBuilderRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/$workspaceSlug/ticket-designer/': {
@@ -1278,6 +1318,7 @@ interface DashboardRouteChildren {
   DashboardLoginRoute: typeof DashboardLoginRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardWorkspacesRoute: typeof DashboardWorkspacesRoute
+  DashboardWorkspaceSlugPageBuilderRoute: typeof DashboardWorkspaceSlugPageBuilderRoute
   DashboardWorkspaceSlugProductsChar38addOnsRoute: typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   DashboardWorkspaceSlugScannerRoute: typeof DashboardWorkspaceSlugScannerRoute
   DashboardWorkspaceSlugVenueDesignerRoute: typeof DashboardWorkspaceSlugVenueDesignerRoute
@@ -1309,6 +1350,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardLoginRoute: DashboardLoginRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardWorkspacesRoute: DashboardWorkspacesRoute,
+  DashboardWorkspaceSlugPageBuilderRoute:
+    DashboardWorkspaceSlugPageBuilderRoute,
   DashboardWorkspaceSlugProductsChar38addOnsRoute:
     DashboardWorkspaceSlugProductsChar38addOnsRoute,
   DashboardWorkspaceSlugScannerRoute: DashboardWorkspaceSlugScannerRoute,
@@ -1383,6 +1426,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommunityPostIdRoute: CommunityPostIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   FFormIdRoute: FFormIdRoute,
+  PSlugRoute: PSlugRoute,
   TicketTicketIdRoute: TicketTicketIdRoute,
   VenuesVenueIdRoute: VenuesVenueIdRoute,
   BusesIndexRoute: BusesIndexRoute,

@@ -56,6 +56,18 @@ export function DesktopSidebar() {
     });
   }
 
+  // Inject Page Builder for all workspaces
+  if (!nav.some((n) => n.id === "page-builder")) {
+    nav.push({
+      id: "page-builder",
+      label: "Page Builder",
+      desc: "Design custom landing page",
+      href: "page-builder",
+      icon: LucideIcons.LayoutTemplate,
+      category: "Tools",
+    });
+  }
+
   const workspacePrefix = activeWorkspace ? `/dashboard/${activeWorkspace.slug}` : "/dashboard";
 
   return (
