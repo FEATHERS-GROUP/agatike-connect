@@ -57,6 +57,13 @@ export function Navbar() {
           >
             Stories
           </Link>
+          <Link
+            to="/buses"
+            className="hover:text-foreground transition-colors"
+            activeProps={{ className: "text-foreground font-medium" }}
+          >
+            Bus Tickets
+          </Link>
         </nav>
 
         <div className="ml-auto hidden flex-1 max-w-sm md:block">

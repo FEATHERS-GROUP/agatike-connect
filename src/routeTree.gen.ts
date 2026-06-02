@@ -26,6 +26,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
+import { Route as BusesIndexRouteImport } from './routes/buses.index'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
 import { Route as FFormIdRouteImport } from './routes/f.$formId'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
@@ -34,6 +35,7 @@ import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settin
 import { Route as DashboardLoginRouteImport } from './routes/dashboard.login'
 import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard.create-organizer'
 import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
+import { Route as BusesTripIdRouteImport } from './routes/buses.$tripId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
 import { Route as BQrStringRouteImport } from './routes/b.$qrString'
 import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard.$workspaceSlug.index'
@@ -150,6 +152,11 @@ const EventsIndexRoute = EventsIndexRouteImport.update({
   path: '/events/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BusesIndexRoute = BusesIndexRouteImport.update({
+  id: '/buses/',
+  path: '/buses/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TicketTicketIdRoute = TicketTicketIdRouteImport.update({
   id: '/ticket/$ticketId',
   path: '/ticket/$ticketId',
@@ -189,6 +196,11 @@ const DashboardCreateOrganizerRoute =
 const CommunityPostIdRoute = CommunityPostIdRouteImport.update({
   id: '/community/$postId',
   path: '/community/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusesTripIdRoute = BusesTripIdRouteImport.update({
+  id: '/buses/$tripId',
+  path: '/buses/$tripId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookEventIdRoute = BookEventIdRouteImport.update({
@@ -388,6 +400,7 @@ export interface FileRoutesByFullPath {
   '/wallet': typeof WalletRoute
   '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
+  '/buses/$tripId': typeof BusesTripIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -396,6 +409,7 @@ export interface FileRoutesByFullPath {
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
+  '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
@@ -445,6 +459,7 @@ export interface FileRoutesByTo {
   '/wallet': typeof WalletRoute
   '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
+  '/buses/$tripId': typeof BusesTripIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -453,6 +468,7 @@ export interface FileRoutesByTo {
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
+  '/buses': typeof BusesIndexRoute
   '/events': typeof EventsIndexRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
@@ -503,6 +519,7 @@ export interface FileRoutesById {
   '/wallet': typeof WalletRoute
   '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
+  '/buses/$tripId': typeof BusesTripIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -511,6 +528,7 @@ export interface FileRoutesById {
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
+  '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
@@ -562,6 +580,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/b/$qrString'
     | '/book/$eventId'
+    | '/buses/$tripId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
@@ -570,6 +589,7 @@ export interface FileRouteTypes {
     | '/events/$eventId'
     | '/f/$formId'
     | '/ticket/$ticketId'
+    | '/buses/'
     | '/events/'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
@@ -619,6 +639,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/b/$qrString'
     | '/book/$eventId'
+    | '/buses/$tripId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
@@ -627,6 +648,7 @@ export interface FileRouteTypes {
     | '/events/$eventId'
     | '/f/$formId'
     | '/ticket/$ticketId'
+    | '/buses'
     | '/events'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
@@ -676,6 +698,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/b/$qrString'
     | '/book/$eventId'
+    | '/buses/$tripId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
@@ -684,6 +707,7 @@ export interface FileRouteTypes {
     | '/events/$eventId'
     | '/f/$formId'
     | '/ticket/$ticketId'
+    | '/buses/'
     | '/events/'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
@@ -734,10 +758,12 @@ export interface RootRouteChildren {
   WalletRoute: typeof WalletRoute
   BQrStringRoute: typeof BQrStringRoute
   BookEventIdRoute: typeof BookEventIdRoute
+  BusesTripIdRoute: typeof BusesTripIdRoute
   CommunityPostIdRoute: typeof CommunityPostIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   FFormIdRoute: typeof FFormIdRoute
   TicketTicketIdRoute: typeof TicketTicketIdRoute
+  BusesIndexRoute: typeof BusesIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
   PublicBadgeBadgeIdRoute: typeof PublicBadgeBadgeIdRoute
 }
@@ -863,6 +889,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/buses/': {
+      id: '/buses/'
+      path: '/buses'
+      fullPath: '/buses/'
+      preLoaderRoute: typeof BusesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ticket/$ticketId': {
       id: '/ticket/$ticketId'
       path: '/ticket/$ticketId'
@@ -917,6 +950,13 @@ declare module '@tanstack/react-router' {
       path: '/community/$postId'
       fullPath: '/community/$postId'
       preLoaderRoute: typeof CommunityPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/buses/$tripId': {
+      id: '/buses/$tripId'
+      path: '/buses/$tripId'
+      fullPath: '/buses/$tripId'
+      preLoaderRoute: typeof BusesTripIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/book/$eventId': {
@@ -1258,10 +1298,12 @@ const rootRouteChildren: RootRouteChildren = {
   WalletRoute: WalletRoute,
   BQrStringRoute: BQrStringRoute,
   BookEventIdRoute: BookEventIdRoute,
+  BusesTripIdRoute: BusesTripIdRoute,
   CommunityPostIdRoute: CommunityPostIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   FFormIdRoute: FFormIdRoute,
   TicketTicketIdRoute: TicketTicketIdRoute,
+  BusesIndexRoute: BusesIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
   PublicBadgeBadgeIdRoute: PublicBadgeBadgeIdRoute,
 }
