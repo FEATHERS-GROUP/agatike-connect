@@ -576,16 +576,14 @@ function PageBuilder() {
                         <div className="flex items-center justify-between">
                           <Label className="text-xs text-muted-foreground flex items-center gap-1"><Grid className="w-3 h-3" /> Advanced Form Grid</Label>
                           <div className="flex items-center gap-2">
-                            <Select value={comp.cardBgColor || "white"} onValueChange={(val) => updateComponent(idx, "cardBgColor", val)}>
-                              <SelectTrigger className="w-32 bg-background h-8 text-xs">
-                                <SelectValue placeholder="Card Color" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="white">White Cards</SelectItem>
-                                <SelectItem value="transparent">Transparent Cards</SelectItem>
-                                <SelectItem value="muted">Muted Gray Cards</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
+                               <Label className="text-[10px] text-muted-foreground cursor-pointer" htmlFor={`bg-${idx}`}>Bg</Label>
+                               <Input id={`bg-${idx}`} type="color" value={comp.cardBgColor || "#ffffff"} onChange={(e) => updateComponent(idx, "cardBgColor", e.target.value)} className="w-5 h-5 p-0 border-0 bg-transparent cursor-pointer" />
+                            </div>
+                            <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
+                               <Label className="text-[10px] text-muted-foreground cursor-pointer" htmlFor={`text-${idx}`}>Text</Label>
+                               <Input id={`text-${idx}`} type="color" value={comp.cardTextColor || "#000000"} onChange={(e) => updateComponent(idx, "cardTextColor", e.target.value)} className="w-5 h-5 p-0 border-0 bg-transparent cursor-pointer" />
+                            </div>
                             <Select value={comp.columns || "2"} onValueChange={(val) => updateComponent(idx, "columns", val)}>
                               <SelectTrigger className="w-32 bg-background h-8 text-xs">
                                 <SelectValue placeholder="Columns" />

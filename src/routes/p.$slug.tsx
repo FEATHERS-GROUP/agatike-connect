@@ -231,9 +231,16 @@ function PublicCompanyPage() {
                     if (!linkedForm) return null;
 
                     return (
-                      <div key={idx} className={`${comp.cardBgColor === 'transparent' ? 'bg-transparent border-2' : comp.cardBgColor === 'muted' ? 'bg-secondary' : 'bg-card'} border border-border/60 rounded-3xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col h-full group`}>
+                      <div 
+                        key={idx} 
+                        className="border border-border/60 rounded-3xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col h-full group"
+                        style={{ 
+                          backgroundColor: comp.cardBgColor || 'var(--card)', 
+                          color: comp.cardTextColor || 'inherit' 
+                        }}
+                      >
                         <div className="flex items-start justify-between mb-4">
-                          <h3 className="text-2xl font-bold group-hover:text-primary transition-colors">{card.customTitle || linkedForm.title}</h3>
+                          <h3 className="text-2xl font-bold group-hover:opacity-80 transition-opacity">{card.customTitle || linkedForm.title}</h3>
                           {linkedForm.cover_image_url && (
                             <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 ml-4 hidden sm:block">
                               <img src={linkedForm.cover_image_url} alt={linkedForm.title} className="w-full h-full object-cover" />
@@ -242,11 +249,11 @@ function PublicCompanyPage() {
                         </div>
                         
                         {card.bulletPoints ? (
-                          <div className="prose prose-sm dark:prose-invert text-muted-foreground mb-8 flex-1 whitespace-pre-wrap">
+                          <div className="prose prose-sm dark:prose-invert mb-8 flex-1 whitespace-pre-wrap" style={{ color: comp.cardTextColor || 'var(--muted-foreground)' }}>
                             {card.bulletPoints}
                           </div>
                         ) : linkedForm.description ? (
-                          <p className="text-muted-foreground line-clamp-3 mb-8 flex-1">{linkedForm.description}</p>
+                          <p className="line-clamp-3 mb-8 flex-1" style={{ color: comp.cardTextColor || 'var(--muted-foreground)' }}>{linkedForm.description}</p>
                         ) : (
                           <div className="flex-1" />
                         )}
