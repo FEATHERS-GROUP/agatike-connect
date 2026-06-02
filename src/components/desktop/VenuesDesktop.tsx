@@ -1,4 +1,5 @@
 import { Search, MapPin, Clock, Star, Ticket } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { mockVenues } from "@/lib/mock-venue-data";
@@ -106,9 +107,11 @@ export function VenuesDesktop() {
                       <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">Entry Fee</p>
                       <span className="text-xl font-bold text-primary">{venue.price > 0 ? `${venue.currency} ${venue.price}` : "Free"}</span>
                     </div>
-                    <Button className="rounded-xl px-6 shadow-[var(--shadow-glow)] transition-all group-hover:scale-105" style={{ background: "var(--gradient-primary)" }}>
-                      Get Ticket
-                    </Button>
+                    <Link to="/venues/$venueId" params={{ venueId: venue.id }}>
+                      <Button className="rounded-xl px-6 shadow-[var(--shadow-glow)] transition-all group-hover:scale-105" style={{ background: "var(--gradient-primary)" }}>
+                        Get Ticket
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>

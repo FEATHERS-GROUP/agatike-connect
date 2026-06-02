@@ -69,7 +69,7 @@ export function VenuesMobile() {
           </div>
         ) : (
           filteredVenues.map((venue) => (
-            <Link key={venue.id} to="/venues" className="block active:scale-[0.98] transition-transform">
+            <Link key={venue.id} to="/venues/$venueId" params={{ venueId: venue.id }} className="block active:scale-[0.98] transition-transform">
               <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm">
                 <div className="aspect-[16/9] relative">
                   <img src={venue.cover} alt={venue.name} className="w-full h-full object-cover" />
