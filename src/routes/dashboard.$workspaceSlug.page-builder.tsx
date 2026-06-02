@@ -167,7 +167,13 @@ function PageBuilder() {
     });
   };
 
+  const MAX_PAGE_MEDIA_SIZE_MB = 7;
+
   const handleImageUpload = async (file: File, setter: (url: string) => void) => {
+    if (file.size > MAX_PAGE_MEDIA_SIZE_MB * 1024 * 1024) {
+      toast.error(`Image too large`, { description: `Max size is ${MAX_PAGE_MEDIA_SIZE_MB}MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.` });
+      return;
+    }
     const loadingToast = toast.loading("Uploading image...");
     try {
       const url = await uploadFileToStorage(file, `pages/${workspace_id}/${Date.now()}`);
@@ -490,9 +496,15 @@ function PageBuilder() {
                           </div>
                         </div>
                       ) : (
-                        <Input type="file" accept="image/*" className="text-xs" onChange={(e) => {
-                          if (e.target.files?.[0]) handleImageUpload(e.target.files[0], set("logoUrl"));
-                        }} />
+                        <label className="cursor-pointer block w-full">
+                          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              if (e.target.files[0].size > 2 * 1024 * 1024) return alert("File too large (max 2MB)");
+                              handleImageUpload(e.target.files[0], set("logoUrl"));
+                            }
+                          }} />
+                          <div className="border-2 border-dashed border-border p-2 rounded-lg text-center text-xs text-muted-foreground hover:bg-secondary/50">Upload Logo</div>
+                        </label>
                       )}
                     </div>
                   </div>
@@ -514,14 +526,17 @@ function PageBuilder() {
                       <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
                       <div className="absolute top-3 right-3 z-20 flex gap-2">
-                        <div className="relative">
-                          <Input type="file" accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={(e) => {
-                            if (e.target.files?.[0]) handleImageUpload(e.target.files[0], set("headerImageUrl"));
+                        <label className="cursor-pointer">
+                          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              if (e.target.files[0].size > 5 * 1024 * 1024) return alert("File too large (max 5MB)");
+                              handleImageUpload(e.target.files[0], set("headerImageUrl"));
+                            }
                           }} />
-                          <Button variant="secondary" size="sm" className="pointer-events-none text-xs h-8">
+                          <div className="bg-secondary text-secondary-foreground hover:bg-secondary/80 h-8 flex items-center px-3 rounded-md text-xs">
                             <ImageIcon className="w-3.5 h-3.5 mr-1.5" /> Change Cover
-                          </Button>
-                        </div>
+                          </div>
+                        </label>
                         {editorState.headerImageUrl && (
                           <Button variant="destructive" size="sm" className="h-8 w-8 p-0" onClick={() => set("headerImageUrl")("")}>
                             <Trash2 className="w-3.5 h-3.5" />
@@ -644,12 +659,16 @@ function ComponentBlock({ comp, idx, forms, workspace_id, updateComponent, remov
               </div>
             </div>
           ) : (
-            <div className="border-2 border-dashed border-border/60 rounded-lg p-8 flex flex-col items-center justify-center bg-background">
+            <label className="border-2 border-dashed border-border/60 rounded-lg p-8 flex flex-col items-center justify-center bg-background cursor-pointer hover:border-primary/50">
               <ImageIcon className="w-8 h-8 text-muted-foreground mb-3" />
-              <Input type="file" accept="image/*" className="w-full max-w-xs" onChange={(e) => {
-                if (e.target.files?.[0]) handleImageUpload(e.target.files[0], (url: string) => updateComponent(idx, "url", url));
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  if (e.target.files[0].size > 5 * 1024 * 1024) return alert("File too large (max 5MB)");
+                  handleImageUpload(e.target.files[0], (url: string) => updateComponent(idx, "url", url));
+                }
               }} />
-            </div>
+              <span className="text-xs text-muted-foreground">Upload Image (Max 5MB)</span>
+            </label>
           )}
         </div>
       )}
@@ -680,9 +699,14 @@ function ComponentBlock({ comp, idx, forms, workspace_id, updateComponent, remov
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
                   <ImageIcon className="w-6 h-6 text-muted-foreground mb-2" />
-                  <Input type="file" accept="image/*" className="w-full max-w-[180px] text-xs" onChange={(e) => {
-                    if (e.target.files?.[0]) handleImageUpload(e.target.files[0], (url: string) => updateComponent(idx, "imageUrl", url));
-                  }} />
+                  <label className="cursor-pointer text-xs underline">Choose File
+                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        if (e.target.files[0].size > 5 * 1024 * 1024) return alert("File too large (max 5MB)");
+                        handleImageUpload(e.target.files[0], (url: string) => updateComponent(idx, "imageUrl", url));
+                      }
+                    }} />
+                  </label>
                 </div>
               )}
             </div>

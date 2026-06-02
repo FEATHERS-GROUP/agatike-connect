@@ -91,7 +91,13 @@ function FeedbackForm() {
     );
   };
 
+  const MAX_REVIEW_MEDIA_SIZE_MB = 5;
+
   const handleImageUpload = async (file: File) => {
+    if (file.size > MAX_REVIEW_MEDIA_SIZE_MB * 1024 * 1024) {
+      toast.error(`Image too large`, { description: `Max size is ${MAX_REVIEW_MEDIA_SIZE_MB}MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.` });
+      return;
+    }
     setIsUploading(true);
     try {
       const url = await uploadFileToStorage(file, `feedback/${eventId}`);
@@ -289,7 +295,7 @@ function FeedbackForm() {
                 )}
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
                   className="hidden"
                   disabled={isUploading}
                   onChange={(e) => { if (e.target.files?.[0]) handleImageUpload(e.target.files[0]); }}
@@ -297,6 +303,7 @@ function FeedbackForm() {
               </label>
             )}
           </div>
+          <p className="text-xs text-muted-foreground">Images only · Max {MAX_REVIEW_MEDIA_SIZE_MB}MB · JPG, PNG, WebP, GIF</p>
         </div>
 
         {/* Identity */}

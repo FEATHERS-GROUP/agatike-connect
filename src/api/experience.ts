@@ -34,12 +34,13 @@ export const createEventStory = createServerFn({ method: "POST" }).handler(async
     object: {
       event_id: input.event_id,
       workspace_id: input.workspace_id || null,
-      user_id: session.sub,
+      // user_id omitted — organizer session.sub is not in the users table
+      // the column is nullable so NULL is inserted safely
       media_url: input.media_url,
       media_type: input.media_type,
       caption: input.caption || null,
       expires_at,
-      views_count: 0,
+      views_count: "0",
     },
   });
   return data.insert_event_stories_one;
@@ -133,9 +134,9 @@ export const createEventPost = createServerFn({ method: "POST" }).handler(async 
     object: {
       event_id: input.event_id,
       workspace_id: input.workspace_id,
-      user_id: session.sub,
+      // user_id omitted — organizer session.sub is not in the users table
       content: input.content,
-      media_urls: input.media_urls || [],
+      media_urls: input.media_urls?.length ? JSON.stringify(input.media_urls) : "[]",
       likes_count: 0,
       comments_count: 0,
       is_pinned: false,
@@ -169,7 +170,22 @@ export const getEventPosts = createServerFn({ method: "POST" }).handler(async (c
   `;
 
   const data = await hasuraRequest<{ event_posts: any[] }>(query, { event_id });
-  return data.event_posts || [];
+  return (data.event_posts || []).map(post => {
+    let parsedMediaUrls = [];
+    try {
+      if (typeof post.media_urls === 'string') {
+        parsedMediaUrls = JSON.parse(post.media_urls);
+      } else if (Array.isArray(post.media_urls)) {
+        parsedMediaUrls = post.media_urls;
+      }
+    } catch (e) {
+      console.error("Failed to parse media_urls for post", post.id, e);
+    }
+    return {
+      ...post,
+      media_urls: parsedMediaUrls,
+    };
+  });
 });
 
 export const togglePinPost = createServerFn({ method: "POST" }).handler(async (ctx) => {

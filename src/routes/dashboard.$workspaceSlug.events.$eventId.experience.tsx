@@ -108,7 +108,13 @@ function ExperienceDashboard() {
     },
   });
 
-  const handleStoryUpload = async (file: File, mediaType: "photo" | "video") => {
+  const MAX_STORY_SIZE_MB = 6;
+
+  const handleStoryUpload = async (file: File) => {
+    if (file.size > MAX_STORY_SIZE_MB * 1024 * 1024) {
+      toast.error(`Image too large`, { description: `Max size is ${MAX_STORY_SIZE_MB}MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.` });
+      return;
+    }
     setIsUploadingStory(true);
     try {
       const url = await uploadFileToStorage(file, `stories/${eventId}`);
@@ -117,15 +123,15 @@ function ExperienceDashboard() {
           event_id: eventId,
           workspace_id: activeWorkspace?.id,
           media_url: url,
-          media_type: mediaType,
+          media_type: "photo",
           caption: storyCaption || undefined,
         },
       } as any);
       queryClient.invalidateQueries({ queryKey: ["event-stories", eventId] });
       setStoryCaption("");
       toast.success("Story posted!");
-    } catch {
-      toast.error("Failed to post story.");
+    } catch (err: any) {
+      toast.error("Failed to post story.", { description: err?.message });
     } finally {
       setIsUploadingStory(false);
     }
@@ -175,7 +181,13 @@ function ExperienceDashboard() {
     },
   });
 
+  const MAX_POST_MEDIA_SIZE_MB = 5;
+
   const handlePostMediaUpload = async (file: File) => {
+    if (file.size > MAX_POST_MEDIA_SIZE_MB * 1024 * 1024) {
+      toast.error(`Image too large`, { description: `Max size is ${MAX_POST_MEDIA_SIZE_MB}MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.` });
+      return;
+    }
     setIsUploadingPostMedia(true);
     try {
       const url = await uploadFileToStorage(file, `posts/${eventId}`);
@@ -417,29 +429,21 @@ function ExperienceDashboard() {
               <div className="relative flex-1">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   disabled={isUploadingStory}
-                  onChange={(e) => { if (e.target.files?.[0]) handleStoryUpload(e.target.files[0], "photo"); }}
+                  onChange={(e) => { if (e.target.files?.[0]) handleStoryUpload(e.target.files[0]); }}
                 />
                 <Button variant="outline" className="w-full gap-2 pointer-events-none" disabled={isUploadingStory}>
                   {isUploadingStory ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
                   Upload Photo
                 </Button>
               </div>
-              <div className="relative flex-1">
-                <input
-                  type="file"
-                  accept="video/*"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  disabled={isUploadingStory}
-                  onChange={(e) => { if (e.target.files?.[0]) handleStoryUpload(e.target.files[0], "video"); }}
-                />
-                <Button variant="outline" className="w-full gap-2 pointer-events-none" disabled={isUploadingStory}>
-                  <Video className="h-4 w-4" /> Upload Video
-                </Button>
-              </div>
+              <Button variant="outline" className="flex-1 gap-2 opacity-40 cursor-not-allowed" disabled title="Video upload coming soon">
+                <Video className="h-4 w-4" /> Video (coming soon)
+              </Button>
             </div>
+            <p className="text-xs text-muted-foreground">Images only · Max {MAX_STORY_SIZE_MB}MB · JPG, PNG, WebP, GIF</p>
           </div>
 
           {/* Stories Grid */}
@@ -522,7 +526,7 @@ function ExperienceDashboard() {
               <div className="relative">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   disabled={isUploadingPostMedia}
                   onChange={(e) => { if (e.target.files?.[0]) handlePostMediaUpload(e.target.files[0]); }}
@@ -532,6 +536,7 @@ function ExperienceDashboard() {
                   Photo
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground mr-auto">Max {MAX_POST_MEDIA_SIZE_MB}MB</p>
               <div className="flex-1" />
               <Button
                 onClick={() => createPostMutation.mutate()}
@@ -598,13 +603,27 @@ function ExperienceDashboard() {
 
                   <p className="text-sm leading-relaxed">{post.content}</p>
 
-                  {post.media_urls?.length > 0 && (
-                    <div className={`grid gap-2 ${post.media_urls.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
-                      {post.media_urls.map((url: string, i: number) => (
-                        <img key={i} src={url} alt="" className="rounded-xl w-full h-48 object-cover border border-border" />
-                      ))}
-                    </div>
-                  )}
+                  {(() => {
+                    let urls: string[] = [];
+                    if (Array.isArray(post.media_urls)) {
+                      urls = post.media_urls;
+                    } else if (typeof post.media_urls === 'string') {
+                      try {
+                        urls = JSON.parse(post.media_urls);
+                        if (!Array.isArray(urls)) urls = [];
+                      } catch (e) {
+                        urls = [];
+                      }
+                    }
+                    if (urls.length === 0) return null;
+                    return (
+                      <div className={`grid gap-2 ${urls.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+                        {urls.map((url: string, i: number) => (
+                          <img key={i} src={url} alt="" className="rounded-xl w-full h-48 object-cover border border-border" />
+                        ))}
+                      </div>
+                    );
+                  })()}
 
                   <div className="flex items-center gap-4 pt-2 border-t border-border/40">
                     <span className="flex items-center gap-1.5 text-xs text-muted-foreground">

@@ -39,6 +39,31 @@ export const submitEventFeedback = createServerFn({ method: "POST" }).handler(as
     }
   }
 
+  // Build the insert object — only include attendee_id when we actually have one
+  // because the DB column is NON_NULL uuid and rejects explicit null values.
+  // user_id is nullable in the DB — we intentionally omit it here to avoid FK
+  // violations when the reviewer is not a registered platform user.
+  const insertObject: Record<string, any> = {
+    event_id: input.event_id,
+    reviewer_name: input.reviewer_name,
+    reviewer_email: input.reviewer_email,
+    rating: input.rating,
+    title: input.title || null,
+    body: input.body || null,
+    category_scores: input.category_scores || null,
+    tags: input.tags?.length ? JSON.stringify(input.tags) : "[]",
+    media_urls: input.media_urls?.length ? JSON.stringify(input.media_urls) : "[]",
+    source: input.source || "web",
+    is_verified,
+    is_featured: false,
+    is_public: true,
+  };
+
+  // Only include attendee_id when it's a real value
+  if (input.attendee_id) {
+    insertObject.attendee_id = input.attendee_id;
+  }
+
   const mutation = `
     mutation SubmitEventFeedback($object: event_feedback_insert_input!) {
       insert_event_feedback_one(object: $object) {
@@ -50,22 +75,7 @@ export const submitEventFeedback = createServerFn({ method: "POST" }).handler(as
   `;
 
   const data = await hasuraRequest<{ insert_event_feedback_one: any }>(mutation, {
-    object: {
-      event_id: input.event_id,
-      attendee_id: input.attendee_id || null,
-      reviewer_name: input.reviewer_name,
-      reviewer_email: input.reviewer_email,
-      rating: input.rating,
-      title: input.title || null,
-      body: input.body || null,
-      category_scores: input.category_scores || null,
-      tags: input.tags || [],
-      media_urls: input.media_urls || [],
-      source: input.source || "web",
-      is_verified,
-      is_featured: false,
-      is_public: true,
-    },
+    object: insertObject,
   });
   return data.insert_event_feedback_one;
 });
@@ -113,7 +123,11 @@ export const getEventFeedback = createServerFn({ method: "POST" }).handler(async
   }>(query, { event_id });
 
   return {
-    reviews: data.event_feedback || [],
+    reviews: data.event_feedback?.map((r) => ({
+      ...r,
+      tags: r.tags ? (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags) : [],
+      media_urls: r.media_urls ? (typeof r.media_urls === "string" ? JSON.parse(r.media_urls) : r.media_urls) : [],
+    })) || [],
     aggregate: data.event_feedback_aggregate?.aggregate || { count: 0, avg: { rating: 0 } },
   };
 });
@@ -154,7 +168,11 @@ export const getEventFeedbackPublic = createServerFn({ method: "POST" }).handler
   }>(query, { event_id });
 
   return {
-    reviews: data.event_feedback || [],
+    reviews: data.event_feedback?.map((r) => ({
+      ...r,
+      tags: r.tags ? (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags) : [],
+      media_urls: r.media_urls ? (typeof r.media_urls === "string" ? JSON.parse(r.media_urls) : r.media_urls) : [],
+    })) || [],
     aggregate: data.event_feedback_aggregate?.aggregate || { count: 0, avg: { rating: 0 } },
   };
 });
