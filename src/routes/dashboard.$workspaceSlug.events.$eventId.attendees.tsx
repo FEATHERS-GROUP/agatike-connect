@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventAttendees, addEventAttendees } from "@/api/attendees";
-import { getCustomForms, getRSVPs } from "@/api/rsvps";
+import { getWorkspaceForms, getFormDetails } from "@/api/rsvps";
 import { useState } from "react";
 import {
   Dialog,
@@ -26,12 +26,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+
 export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/attendees")({
   component: AttendeesView,
 });
 
 function AttendeesView() {
   const { eventId, workspaceSlug } = useParams({ strict: false });
+  const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -42,21 +45,30 @@ function AttendeesView() {
     queryFn: () => getEventAttendees({ data: { event_id: eventId } } as any),
   });
 
-  const { data: forms = [] } = useQuery({
-    queryKey: ["custom-forms", workspaceSlug],
-    queryFn: () => getCustomForms({ data: { workspace_id: workspaceSlug } } as any),
+  const { data: forms = [], enabled: isFormsEnabled } = useQuery({
+    queryKey: ["custom-forms", activeWorkspace?.id],
+    queryFn: () => getWorkspaceForms({ data: { workspace_id: activeWorkspace?.id } } as any),
+    enabled: !!activeWorkspace?.id,
   });
 
   const importMutation = useMutation({
     mutationFn: async (formId: string) => {
-      const rsvps = await getRSVPs({ data: { custom_form_id: formId } } as any);
+      const formDetails = await getFormDetails({ data: { id: formId } } as any);
+      const rsvps = formDetails?.rsvps || [];
       if (!rsvps.length) throw new Error("No responses found for this form.");
 
+      const formFields = formDetails.form_fields || [];
+      const fieldMap = formFields.reduce((acc: any, f: any) => ({ ...acc, [f.id]: f.label }), {});
+
       const objects = rsvps.map((rsvp: any) => {
-        const answers = rsvp.answers || {};
-        // Attempt to extract names and email
-        const names = answers["Name"] || answers["Names"] || answers["First Name"] || answers["Full Name"] || "";
-        const email = answers["Email"] || answers["Email Address"] || "";
+        const answers: any = {};
+        (rsvp.rsvp_answers || []).forEach((ans: any) => {
+          const label = fieldMap[ans.field_id] || ans.field_id;
+          answers[label] = ans.answer_value;
+        });
+
+        const names = answers["Names"] || answers["Name"] || rsvp.first_name || "";
+        const email = answers["Email"] || answers["Email Address"] || rsvp.email || "";
         const phone = answers["Phone"] || answers["Phone Number"] || "";
 
         return {
