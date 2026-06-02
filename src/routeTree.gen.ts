@@ -35,6 +35,7 @@ import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settin
 import { Route as DashboardLoginRouteImport } from './routes/dashboard.login'
 import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard.create-organizer'
 import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
+import { Route as BusesMobileRouteImport } from './routes/buses.mobile'
 import { Route as BusesTripIdRouteImport } from './routes/buses.$tripId'
 import { Route as BookEventIdRouteImport } from './routes/book.$eventId'
 import { Route as BQrStringRouteImport } from './routes/b.$qrString'
@@ -196,6 +197,11 @@ const DashboardCreateOrganizerRoute =
 const CommunityPostIdRoute = CommunityPostIdRouteImport.update({
   id: '/community/$postId',
   path: '/community/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusesMobileRoute = BusesMobileRouteImport.update({
+  id: '/buses/mobile',
+  path: '/buses/mobile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BusesTripIdRoute = BusesTripIdRouteImport.update({
@@ -401,6 +407,7 @@ export interface FileRoutesByFullPath {
   '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
+  '/buses/mobile': typeof BusesMobileRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -460,6 +467,7 @@ export interface FileRoutesByTo {
   '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
+  '/buses/mobile': typeof BusesMobileRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -520,6 +528,7 @@ export interface FileRoutesById {
   '/b/$qrString': typeof BQrStringRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
+  '/buses/mobile': typeof BusesMobileRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -581,6 +590,7 @@ export interface FileRouteTypes {
     | '/b/$qrString'
     | '/book/$eventId'
     | '/buses/$tripId'
+    | '/buses/mobile'
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
@@ -640,6 +650,7 @@ export interface FileRouteTypes {
     | '/b/$qrString'
     | '/book/$eventId'
     | '/buses/$tripId'
+    | '/buses/mobile'
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
@@ -699,6 +710,7 @@ export interface FileRouteTypes {
     | '/b/$qrString'
     | '/book/$eventId'
     | '/buses/$tripId'
+    | '/buses/mobile'
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
@@ -759,6 +771,7 @@ export interface RootRouteChildren {
   BQrStringRoute: typeof BQrStringRoute
   BookEventIdRoute: typeof BookEventIdRoute
   BusesTripIdRoute: typeof BusesTripIdRoute
+  BusesMobileRoute: typeof BusesMobileRoute
   CommunityPostIdRoute: typeof CommunityPostIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   FFormIdRoute: typeof FFormIdRoute
@@ -950,6 +963,13 @@ declare module '@tanstack/react-router' {
       path: '/community/$postId'
       fullPath: '/community/$postId'
       preLoaderRoute: typeof CommunityPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/buses/mobile': {
+      id: '/buses/mobile'
+      path: '/buses/mobile'
+      fullPath: '/buses/mobile'
+      preLoaderRoute: typeof BusesMobileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/buses/$tripId': {
@@ -1299,6 +1319,7 @@ const rootRouteChildren: RootRouteChildren = {
   BQrStringRoute: BQrStringRoute,
   BookEventIdRoute: BookEventIdRoute,
   BusesTripIdRoute: BusesTripIdRoute,
+  BusesMobileRoute: BusesMobileRoute,
   CommunityPostIdRoute: CommunityPostIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   FFormIdRoute: FFormIdRoute,

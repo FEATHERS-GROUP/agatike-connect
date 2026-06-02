@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Search, Plus, Menu } from "lucide-react";
+import { Search, Plus, Menu, Bus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUserAuth } from "@/contexts/UserAuthContext";
@@ -68,9 +68,9 @@ export function Navbar() {
 
         <div className="ml-auto hidden flex-1 max-w-sm md:block">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Bus className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search events, cities, organizers"
+              placeholder="Search buses, routes, agencies"
               className="pl-9 rounded-full bg-secondary/60 border-transparent focus-visible:bg-background"
             />
           </div>
@@ -108,13 +108,16 @@ export function Navbar() {
               </div>
             </Link>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden ml-1 rounded-full text-foreground/80 hover:text-foreground hover:bg-secondary/80 active:scale-95 transition-all"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+            <Link to="/buses/mobile" className="md:hidden ml-2" aria-label="Bus tickets">
+              <Bus className="h-5 w-5 text-foreground/80 hover:text-foreground" />
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden ml-1 rounded-full text-foreground/80 hover:text-foreground hover:bg-secondary/80 active:scale-95 transition-all"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
         </div>
       </div>
     </header>

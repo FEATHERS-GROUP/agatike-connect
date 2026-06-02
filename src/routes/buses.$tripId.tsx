@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { ArrowLeft, Clock, MapPin, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Bell } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ function BusTripDetails() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold">Trip not found</h2>
-          <Link to="/buses" className="text-primary hover:underline mt-4 inline-block">Back to search</Link>
+          <Link to="/buses/mobile" className="text-primary hover:underline mt-4 inline-block">Back to search</Link>
         </div>
       </div>
     );
@@ -44,7 +44,6 @@ function BusTripDetails() {
   const totalPrice = selectedSeats.length * trip.price;
 
   // Group seats by row for easier rendering
-  // The layout.seats is a flat array, we need to reconstruct rows based on the pattern
   const rows = useMemo(() => {
     const r = [];
     let seatIndex = 0;
@@ -64,123 +63,110 @@ function BusTripDetails() {
   }, [layout]);
 
   return (
-    <div className="min-h-screen bg-secondary/30 text-foreground pb-24 md:pb-0">
+    <div className="min-h-screen bg-secondary/20 text-foreground pb-24 md:pb-0 font-sans relative">
       <div className="hidden md:block bg-background">
         <Navbar />
       </div>
 
-      {/* Premium Header Banner */}
-      <div className="bg-background border-b border-border/60 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent pointer-events-none" />
-        <div className="mx-auto max-w-5xl px-4 py-8 relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <Link to="/buses" className="h-10 w-10 bg-background border border-border/60 shadow-sm flex items-center justify-center rounded-full hover:bg-secondary transition-colors shrink-0">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div>
-              <div className="flex items-center gap-3 text-2xl md:text-3xl font-bold tracking-tight">
-                <span>{trip.origin.split(",")[0]}</span>
-                <div className="flex items-center text-muted-foreground/50 px-2">
-                  <div className="h-[2px] w-4 bg-muted-foreground/50 rounded-full" />
-                  <ArrowRight className="h-5 w-5 mx-1" />
-                  <div className="h-[2px] w-4 bg-muted-foreground/50 rounded-full" />
-                </div>
-                <span>{trip.destination.split(",")[0]}</span>
-              </div>
-              <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground font-medium">
-                <span className="flex items-center gap-1.5 bg-secondary px-2.5 py-1 rounded-md text-foreground">
-                  <img src={trip.agencyLogo} alt={trip.agency} className="w-4 h-4 rounded-full" />
-                  {trip.agency}
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {trip.date} at {trip.departureTime}</span>
-              </div>
+      {/* Mobile Premium Curved Header */}
+      <div 
+        className="relative pt-12 pb-24 px-4 md:px-8 rounded-b-[2rem] md:rounded-none z-0"
+        style={{ background: "var(--gradient-primary)" }}
+      >
+        <div className="max-w-5xl mx-auto flex items-center justify-between mb-6">
+          <Link to="/buses/mobile" className="flex items-center gap-2 text-primary-foreground">
+            <div className="w-8 h-8 rounded-full bg-background/20 flex items-center justify-center backdrop-blur-sm">
+              <ArrowLeft className="h-4 w-4" />
             </div>
+            <span className="font-semibold text-lg">Booking Details</span>
+          </Link>
+          <div className="w-8 h-8 rounded-full bg-background/20 flex items-center justify-center backdrop-blur-sm text-primary-foreground">
+            <Bell className="h-4 w-4 fill-current" />
           </div>
-          
-          <div className="flex items-center gap-3 bg-background border border-border/60 rounded-xl p-3 shadow-sm">
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Base Price</p>
-              <p className="text-lg font-bold text-primary">{trip.currency} {trip.price.toLocaleString()}</p>
-            </div>
+        </div>
+
+        <div className="max-w-5xl mx-auto text-center text-primary-foreground space-y-2 mt-4">
+          <p className="text-primary-foreground/90 font-medium text-lg">Select your Seats</p>
+          <div className="flex items-center justify-center gap-4 text-2xl font-bold py-2">
+            <span>{trip.origin.split(",")[0]}</span>
+            <ArrowLeftRight className="h-5 w-5 opacity-90" />
+            <span>{trip.destination.split(",")[0]}</span>
           </div>
+          <p className="text-sm text-primary-foreground/80 font-medium">{trip.date} | {trip.departureTime}</p>
         </div>
       </div>
 
       {/* Main Content Grid */}
-      <div className="mx-auto max-w-5xl px-4 py-8 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
+      <div className="mx-auto max-w-5xl px-4 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start relative z-10 -mt-10">
         
         {/* Left Column: Seating Map */}
         <div className="flex flex-col gap-6">
-          <div className="bg-background border border-border/60 rounded-3xl p-6 md:p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-xl font-bold">Select Your Seats</h2>
-                <p className="text-sm text-muted-foreground mt-1">Click on an available seat to select it.</p>
+          {/* Trip Details Card (Floating) */}
+          <div className="bg-card rounded-2xl shadow-lg border border-border/40 p-5 flex items-center justify-between">
+             <div className="space-y-1">
+               <p className="font-bold text-lg">{trip.agency}</p>
+               <p className="text-xs text-muted-foreground font-medium">{trip.busType}</p>
+               <p className="text-sm font-semibold mt-2">{trip.departureTime} - {trip.arrivalTime}</p>
+               <p className="text-xs text-primary font-bold mt-1">{totalSeats - bookedSeatsCount} Seats left</p>
+             </div>
+             <div className="text-right space-y-1 flex flex-col justify-between h-full">
+               <p className="font-bold text-xl text-primary">{trip.currency} {trip.price.toLocaleString()}</p>
+               <p className="text-xs text-muted-foreground font-medium mt-auto">Direct</p>
+             </div>
+          </div>
+
+          <div className="bg-card border border-border/40 rounded-3xl p-6 shadow-sm mb-8 md:mb-0">
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-8 mb-8 text-xs font-semibold">
+              <div className="flex items-center gap-2 flex-col">
+                <div className="w-6 h-6 rounded-md bg-secondary border border-border/60"></div>
+                <span className="text-muted-foreground">Booked</span>
               </div>
-              {isBusFull && <span className="inline-flex items-center gap-1.5 bg-destructive/10 text-destructive px-3 py-1.5 rounded-full text-sm font-semibold"><AlertCircle className="h-4 w-4" /> Bus Full</span>}
+              <div className="flex items-center gap-2 flex-col">
+                <div className="w-6 h-6 rounded-md bg-secondary/30 border border-border"></div>
+                <span>Available</span>
+              </div>
+              <div className="flex items-center gap-2 flex-col">
+                <div className="w-6 h-6 rounded-md bg-primary shadow-sm shadow-primary/40"></div>
+                <span className="text-primary">Your Seat</span>
+              </div>
             </div>
 
-            {/* Legend (Compact) */}
-            <div className="flex flex-wrap items-center gap-5 mb-10 text-sm justify-center bg-secondary/40 p-3 rounded-xl border border-border/40 inline-flex mx-auto">
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded border border-border bg-background"></div>
-                <span className="font-medium">Available</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded bg-primary text-primary-foreground flex items-center justify-center">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                </div>
-                <span className="font-medium">Selected</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded bg-secondary border border-border/60 opacity-50 flex items-center justify-center">
-                  <div className="w-3 h-[1px] bg-muted-foreground rotate-45 absolute" />
-                </div>
-                <span className="font-medium text-muted-foreground">Booked</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded border border-amber-500/40 bg-amber-500/10"></div>
-                <span className="font-medium text-amber-600">VIP</span>
-              </div>
-            </div>
-
-            {/* Bus Layout Container (Tighter) */}
-            <div className="relative mx-auto bg-card border-4 border-border/80 rounded-[3rem] rounded-b-[1.5rem] p-5 pb-10 w-fit min-w-[260px] shadow-lg">
+            {/* Bus Layout Container */}
+            <div className="relative mx-auto bg-card border-[3px] border-border/50 rounded-[3rem] p-6 pb-12 w-fit min-w-[280px]">
               
-              {/* Bus Front Windshield */}
-              <div className="absolute top-0 left-0 right-0 h-10 bg-secondary/80 rounded-t-[2.5rem] border-b-2 border-border/40"></div>
-
-              {/* Driver Section */}
-              <div className="relative z-10 mb-8 flex justify-end px-2 border-b border-border/40 pb-4 mt-6">
-                <div className="w-10 h-10 rounded-full border-2 border-border/80 bg-background flex items-center justify-center text-muted-foreground">
-                  <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/40"></div>
+              {/* Bus Front */}
+              <div className="absolute top-0 left-0 right-0 h-16 bg-secondary/30 rounded-t-[2.5rem] border-b border-border/30 flex items-center justify-end px-6">
+                <div className="w-8 h-8 rounded-full border border-border bg-background flex items-center justify-center mt-4">
+                   {/* Steering wheel dot */}
+                   <div className="w-2 h-2 rounded-full bg-border"></div>
                 </div>
               </div>
 
               {/* Seats Matrix */}
-              <div className="relative z-10 flex flex-col gap-3">
+              <div className="relative z-10 flex flex-col gap-4 mt-16">
+                 {/* Lower Deck Text in Aisle */}
+                 <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none">
+                    <span className="text-border text-2xl font-bold tracking-[0.5em] -rotate-90 whitespace-nowrap opacity-60">LOWER DECK</span>
+                 </div>
+
                 {rows.map((row, rowIndex) => (
-                  <div key={rowIndex} className="flex gap-3 justify-center">
+                  <div key={rowIndex} className="flex gap-4 justify-center relative z-10">
                     {row.map((seat, colIndex) => {
                       if (seat === null) {
-                        return <div key={`aisle-${rowIndex}-${colIndex}`} className="w-6 relative"></div>; // Tighter aisle
+                        return <div key={`aisle-${rowIndex}-${colIndex}`} className="w-8"></div>;
                       }
 
                       const isSelected = selectedSeats.includes(seat.id);
                       
-                      let seatColorClass = "text-muted-foreground";
-                      let bgColorClass = "bg-background border-border hover:border-primary/60 hover:text-primary";
+                      let bgColorClass = "bg-secondary/40 border-border";
                       
                       if (seat.isBooked) {
-                        bgColorClass = "bg-secondary border-border/60 opacity-40 cursor-not-allowed";
-                        seatColorClass = "text-muted-foreground";
+                        bgColorClass = "bg-secondary border-border/60 cursor-not-allowed opacity-60";
                       } else if (isSelected) {
-                        bgColorClass = "bg-primary border-primary shadow-md";
-                        seatColorClass = "text-primary-foreground";
+                        bgColorClass = "bg-primary border-primary shadow-sm shadow-primary/40";
                       } else if (seat.isVip) {
-                        bgColorClass = "bg-amber-50 border-amber-300 hover:border-amber-500";
-                        seatColorClass = "text-amber-700";
+                        bgColorClass = "bg-amber-100 border-amber-300";
                       }
 
                       return (
@@ -188,22 +174,9 @@ function BusTripDetails() {
                           key={seat.id}
                           disabled={seat.isBooked}
                           onClick={() => toggleSeat(seat.id)}
-                          className={`relative w-11 h-12 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all duration-200 border-2 ${bgColorClass} ${seatColorClass} ${isSelected ? 'scale-105' : ''}`}
-                          title={seat.isVip ? `Seat ${seat.number} (VIP)` : `Seat ${seat.number}`}
+                          className={`w-10 h-10 rounded-lg border flex items-center justify-center transition-all ${bgColorClass} ${isSelected ? 'scale-110' : 'hover:scale-105 active:scale-95'}`}
                         >
-                          {/* Chair SVG Top-Down */}
-                          <svg viewBox="0 0 24 24" fill="currentColor" className="absolute inset-0 w-full h-full p-1 opacity-70 z-0 pointer-events-none">
-                            <rect x="5" y="2" width="14" height="4" rx="1" className="opacity-90" />
-                            <rect x="6" y="7" width="12" height="12" rx="1.5" />
-                            <rect x="3" y="9" width="2" height="9" rx="1" className="opacity-80" />
-                            <rect x="19" y="9" width="2" height="9" rx="1" className="opacity-80" />
-                          </svg>
-
-                          <span className="relative z-10 bg-background/90 px-1 rounded shadow-sm mt-0.5 text-foreground">{seat.number}</span>
-                          
-                          {seat.isVip && !isSelected && !seat.isBooked && (
-                            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 border border-background z-20"></div>
-                          )}
+                           {/* Empty square for seat */}
                         </button>
                       );
                     })}
@@ -214,71 +187,30 @@ function BusTripDetails() {
           </div>
         </div>
 
-        {/* Right Column: Ticket Summary Sticky */}
-        <div className="sticky top-24">
-          <div className="bg-background rounded-3xl shadow-[var(--shadow-card)] overflow-hidden border border-border/60">
-            {/* Ticket Header */}
-            <div className="bg-secondary/40 p-6 border-b border-border/60 border-dashed relative">
-              <div className="absolute -bottom-3 -left-3 w-6 h-6 bg-secondary/30 rounded-full border-r border-t border-border/60 rotate-45" />
-              <div className="absolute -bottom-3 -right-3 w-6 h-6 bg-secondary/30 rounded-full border-l border-t border-border/60 -rotate-45" />
-              
-              <h3 className="font-bold text-lg mb-4">Ticket Summary</h3>
-              
-              <div className="relative pl-6 space-y-5">
-                <div className="absolute left-1.5 top-2 bottom-2 w-0.5 bg-border border-dashed border-l border-border/60" />
-                <div className="relative">
-                  <div className="absolute -left-[26px] top-1 w-3 h-3 rounded-full border-2 border-primary bg-background" />
-                  <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">Departure</p>
-                  <p className="font-semibold">{trip.origin}</p>
-                  <p className="text-sm text-muted-foreground">{trip.departureTime}</p>
-                </div>
-                <div className="relative">
-                  <div className="absolute -left-[26px] top-1 w-3 h-3 rounded-full border-2 border-primary bg-primary" />
-                  <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">Arrival</p>
-                  <p className="font-semibold">{trip.destination}</p>
-                  <p className="text-sm text-muted-foreground">{trip.arrivalTime}</p>
-                </div>
-              </div>
+        {/* Right Column / Bottom Bar: Ticket Summary */}
+        <div className="fixed bottom-0 left-0 right-0 md:sticky md:top-24 z-50 md:z-auto">
+          <div className="bg-background/95 backdrop-blur-xl md:bg-card md:rounded-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-[var(--shadow-card)] border-t md:border border-border/60 p-4 md:p-6 pb-safe">
+            
+            <div className="flex items-center justify-between mb-4">
+               <div>
+                  <p className="text-sm text-muted-foreground font-medium">Total Price</p>
+                  <p className="text-2xl font-bold text-primary">{trip.currency} {totalPrice.toLocaleString()}</p>
+               </div>
+               <div className="text-right">
+                  <p className="text-sm font-bold">{selectedSeats.length} {selectedSeats.length === 1 ? 'Seat' : 'Seats'}</p>
+                  <p className="text-xs text-muted-foreground font-medium mt-1 min-h-[16px]">
+                    {selectedSeats.length > 0 ? selectedSeats.map(id => layout.seats.find(s => s.id === id)?.number).join(", ") : "None selected"}
+                  </p>
+               </div>
             </div>
 
-            {/* Ticket Body */}
-            <div className="p-6">
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Passengers</span>
-                  <span className="font-semibold">{selectedSeats.length} {selectedSeats.length === 1 ? 'Seat' : 'Seats'}</span>
-                </div>
-                {selectedSeats.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {selectedSeats.map(id => {
-                      const seat = layout.seats.find(s => s.id === id);
-                      return (
-                        <span key={id} className="text-xs font-medium bg-secondary px-2 py-1 rounded-md border border-border/40">
-                          {seat?.number} {seat?.isVip && <span className="text-amber-600">(VIP)</span>}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Price per seat</span>
-                  <span className="font-medium">{trip.currency} {trip.price.toLocaleString()}</span>
-                </div>
-              </div>
-
-              <div className="bg-secondary/20 rounded-2xl p-4 flex justify-between items-center mb-6 border border-border/40">
-                <span className="font-semibold">Total Amount</span>
-                <span className="text-2xl font-bold text-primary">{trip.currency} {totalPrice.toLocaleString()}</span>
-              </div>
-
-              <Button 
-                className="w-full rounded-xl h-12 text-md shadow-[var(--shadow-glow)] transition-transform active:scale-95" 
-                style={{ background: "var(--gradient-primary)" }}
-                disabled={selectedSeats.length === 0 || isBusFull}
-              >
-                {isBusFull ? "Trip Fully Booked" : selectedSeats.length === 0 ? "Select Seats" : "Continue to Payment"}
-              </Button>
-            </div>
+            <Button 
+              className="w-full rounded-2xl h-14 text-lg font-bold shadow-lg transition-transform active:scale-[0.98]" 
+              style={{ background: "var(--gradient-primary)" }}
+              disabled={selectedSeats.length === 0 || isBusFull}
+            >
+              {isBusFull ? "Trip Fully Booked" : selectedSeats.length === 0 ? "Select Seats" : "Continue"}
+            </Button>
           </div>
         </div>
 
@@ -290,3 +222,4 @@ function BusTripDetails() {
     </div>
   );
 }
+

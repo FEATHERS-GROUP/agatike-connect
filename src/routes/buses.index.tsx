@@ -54,7 +54,7 @@ function BusesIndex() {
 
           {/* Search Card */}
           <div className="mt-8 rounded-2xl border border-border/60 bg-card p-4 shadow-[var(--shadow-card)] md:p-6 backdrop-blur-xl max-w-4xl mx-auto md:mx-0">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -82,6 +82,17 @@ function BusesIndex() {
                   onChange={(e) => setDate(e.target.value)}
                 />
               </div>
+              <div className="relative">
+                <select
+                  className="pl-9 bg-secondary/60 h-12 w-full rounded-xl border-transparent focus-visible:bg-background"
+                  value={agencyFilter}
+                  onChange={(e) => setAgencyFilter(e.target.value)}
+                >
+                  {agencies.map((agency) => (
+                    <option key={agency} value={agency}>{agency}</option>
+                  ))}
+                </select>
+              </div>
               <Button className="h-12 rounded-xl w-full" style={{ background: "var(--gradient-primary)" }}>
                 <Search className="h-4 w-4 mr-2" /> Search Buses
               </Button>
@@ -95,28 +106,7 @@ function BusesIndex() {
         <div className="flex flex-col md:flex-row gap-8">
           
           {/* Filters Sidebar */}
-          <aside className="w-full md:w-64 shrink-0">
-            <div className="sticky top-24 space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-4">Bus Agency</h3>
-                <div className="space-y-2">
-                  {agencies.map((agency) => (
-                    <label key={agency} className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="agency"
-                        value={agency}
-                        checked={agencyFilter === agency}
-                        onChange={(e) => setAgencyFilter(e.target.value)}
-                        className="text-primary focus:ring-primary h-4 w-4 rounded border-border"
-                      />
-                      <span className="text-sm">{agency}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </aside>
+
 
           {/* Trip Listings */}
           <div className="flex-1 space-y-6">
