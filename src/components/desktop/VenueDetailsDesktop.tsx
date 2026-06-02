@@ -12,7 +12,10 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
       <Navbar />
 
       <section className="mx-auto max-w-7xl px-4 md:px-6 py-8">
-        <Link to="/venues" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-6 transition-colors">
+        <Link
+          to="/venues"
+          className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-6 transition-colors"
+        >
           <ChevronLeft className="w-4 h-4 mr-1" /> Back to Venues
         </Link>
 
@@ -31,21 +34,37 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
             <div>
               <h1 className="text-4xl font-bold tracking-tight mb-4">{venue.name}</h1>
               <div className="flex flex-wrap items-center gap-4 text-muted-foreground font-medium mb-6">
-                <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-full"><MapPin className="w-4 h-4 text-primary" /> {venue.location}</span>
-                <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-full"><Clock className="w-4 h-4 text-primary" /> {venue.openTime} - {venue.closeTime}</span>
-                <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-full text-primary font-bold">{venue.type}</span>
+                <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-full">
+                  <MapPin className="w-4 h-4 text-primary" /> {venue.location}
+                </span>
+                <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-full">
+                  <Clock className="w-4 h-4 text-primary" /> {venue.openTime} - {venue.closeTime}
+                </span>
+                <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-full text-primary font-bold">
+                  {venue.type}
+                </span>
               </div>
               <div className="prose prose-neutral dark:prose-invert max-w-none">
                 <h3 className="text-xl font-semibold mb-2">About</h3>
                 <p className="text-muted-foreground leading-relaxed text-lg">{venue.description}</p>
               </div>
             </div>
-            
+
             <div className="border-t border-border/40 pt-8">
               <h3 className="text-xl font-semibold mb-4">Amenities & Features</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {['Free WiFi', 'Parking Available', 'Wheelchair Accessible', 'Guided Tours', 'Cafeteria', 'Restrooms'].map((amenity, i) => (
-                  <div key={i} className="flex items-center gap-2 text-muted-foreground bg-secondary/30 p-3 rounded-xl border border-border/40">
+                {[
+                  "Free WiFi",
+                  "Parking Available",
+                  "Wheelchair Accessible",
+                  "Guided Tours",
+                  "Cafeteria",
+                  "Restrooms",
+                ].map((amenity, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 text-muted-foreground bg-secondary/30 p-3 rounded-xl border border-border/40"
+                  >
                     <div className="w-2 h-2 rounded-full bg-primary" /> {amenity}
                   </div>
                 ))}
@@ -58,10 +77,12 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
             <div className="sticky top-24 rounded-3xl border border-border/50 bg-card p-6 shadow-[var(--shadow-card)]">
               <h3 className="text-2xl font-bold tracking-tight mb-2">Entry Ticket</h3>
               <p className="text-muted-foreground mb-6">Book your access in advance</p>
-              
+
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-border/40">
                 <span className="text-muted-foreground font-medium">Standard Entry</span>
-                <span className="text-3xl font-bold text-primary">{venue.price > 0 ? `${venue.currency} ${venue.price}` : "Free"}</span>
+                <span className="text-3xl font-bold text-primary">
+                  {venue.price > 0 ? `${venue.currency} ${venue.price}` : "Free"}
+                </span>
               </div>
 
               <div className="space-y-4 mb-8">
@@ -75,8 +96,15 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                 </div>
               </div>
 
-              <Link to="/venues/checkout/$venueId" params={{ venueId: venue.id }} className="block w-full">
-                <Button className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]" style={{ background: "var(--gradient-primary)" }}>
+              <Link
+                to="/venues/checkout/$venueId"
+                params={{ venueId: venue.id }}
+                className="block w-full"
+              >
+                <Button
+                  className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
                   Book Ticket Now <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>

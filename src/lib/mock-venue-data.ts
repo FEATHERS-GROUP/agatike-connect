@@ -3,78 +3,86 @@ export const mockVenues = [
     id: "v1",
     name: "Nyandugu Eco Park",
     type: "Park",
-    cover: "https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=800",
+    cover:
+      "https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=800",
     price: 5000,
     currency: "RWF",
     location: "Kigali, Rwanda",
     rating: 4.8,
     openTime: "08:00 AM",
     closeTime: "06:00 PM",
-    description: "Enjoy a beautiful natural wetland and park in the heart of Kigali. Perfect for cycling, walking, and bird watching."
+    description:
+      "Enjoy a beautiful natural wetland and park in the heart of Kigali. Perfect for cycling, walking, and bird watching.",
   },
   {
     id: "v2",
     name: "Kigali Genocide Memorial",
     type: "Museum",
-    cover: "https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=800",
+    cover:
+      "https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=800",
     price: 0,
     currency: "RWF",
     location: "Gisozi, Kigali",
     rating: 4.9,
     openTime: "08:00 AM",
     closeTime: "05:00 PM",
-    description: "A place of remembrance and learning dedicated to the victims of the 1994 Genocide against the Tutsi."
+    description:
+      "A place of remembrance and learning dedicated to the victims of the 1994 Genocide against the Tutsi.",
   },
   {
     id: "v3",
     name: "Century Cinema",
     type: "Entertainment",
-    cover: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=800",
+    cover:
+      "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=800",
     price: 4500,
     currency: "RWF",
     location: "KCT, Kigali",
     rating: 4.5,
     openTime: "10:00 AM",
     closeTime: "11:00 PM",
-    description: "Experience the latest blockbusters in 3D and 5D formats."
+    description: "Experience the latest blockbusters in 3D and 5D formats.",
   },
   {
     id: "v4",
     name: "Arena Gaming Center",
     type: "Gaming",
-    cover: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&q=80&w=800",
+    cover:
+      "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&q=80&w=800",
     price: 2000,
     currency: "RWF",
     location: "Remera, Kigali",
     rating: 4.7,
     openTime: "09:00 AM",
     closeTime: "10:00 PM",
-    description: "The ultimate gaming destination with high-end PCs, PS5s, and VR setups."
+    description: "The ultimate gaming destination with high-end PCs, PS5s, and VR setups.",
   },
   {
     id: "v5",
     name: "Camp Kigali",
     type: "Park",
-    cover: "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&q=80&w=800",
+    cover:
+      "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&q=80&w=800",
     price: 3000,
     currency: "RWF",
     location: "Kigali, Rwanda",
     rating: 4.6,
     openTime: "07:00 AM",
     closeTime: "08:00 PM",
-    description: "A great park for historical tours and outdoor activities."
+    description: "A great park for historical tours and outdoor activities.",
   },
   {
     id: "v6",
     name: "Kandt House Museum",
     type: "Museum",
-    cover: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&q=80&w=800",
+    cover:
+      "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&q=80&w=800",
     price: 3000,
     currency: "RWF",
     location: "Kigali, Rwanda",
     rating: 4.3,
     openTime: "08:00 AM",
     closeTime: "05:00 PM",
-    description: "Museum dedicated to Richard Kandt and Rwanda's natural history."
-  }
+    description: "Museum dedicated to Richard Kandt and Rwanda's natural history.",
+  },
 ];

@@ -93,7 +93,7 @@ export function Navbar() {
               <span className="hidden sm:inline-block text-sm font-medium">Create event</span>
             </Button>
           </Link>
-          
+
           {!isLoggedIn ? (
             <Link to="/signin">
               <Button variant="ghost" className="hidden sm:inline-flex text-sm font-medium">
@@ -114,16 +114,16 @@ export function Navbar() {
               </div>
             </Link>
           )}
-            <Link to="/buses/mobile" className="md:hidden ml-2" aria-label="Bus tickets">
-              <Bus className="h-5 w-5 text-foreground/80 hover:text-foreground" />
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden ml-1 rounded-full text-foreground/80 hover:text-foreground hover:bg-secondary/80 active:scale-95 transition-all"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+          <Link to="/buses/mobile" className="md:hidden ml-2" aria-label="Bus tickets">
+            <Bus className="h-5 w-5 text-foreground/80 hover:text-foreground" />
+          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden ml-1 rounded-full text-foreground/80 hover:text-foreground hover:bg-secondary/80 active:scale-95 transition-all"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
         </div>
       </div>
     </header>

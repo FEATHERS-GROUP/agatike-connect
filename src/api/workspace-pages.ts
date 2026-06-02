@@ -5,7 +5,7 @@ import { deleteFiles } from "./storage";
 
 export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(async (ctx) => {
   const { slug } = ctx.data as unknown as { slug: string };
-  
+
   const query = `
     query GetWorkspacePageBySlug($slug: String!) {
       workspace_pages(where: { slug: { _eq: $slug }, is_published: { _eq: true } }) {
@@ -196,7 +196,9 @@ export const deleteWorkspacePage = createServerFn({ method: "POST" }).handler(as
       if (comp.type === "image" && comp.url) imageUrls.push(comp.url);
       if (comp.type === "split_block" && comp.imageUrl) imageUrls.push(comp.imageUrl);
       if (comp.type === "sponsor_logos" && Array.isArray(comp.logos)) {
-        comp.logos.forEach((l: any) => { if (l.url) imageUrls.push(l.url); });
+        comp.logos.forEach((l: any) => {
+          if (l.url) imageUrls.push(l.url);
+        });
       }
     }
 

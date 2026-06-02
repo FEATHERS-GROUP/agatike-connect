@@ -32,7 +32,9 @@ export function InstallPrompt() {
     // Detect user agent for mobile
     const ua = window.navigator.userAgent;
     const isIOSDevice = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      ua,
+    );
 
     setIsMobile(isMobileDevice);
     setIsIOS(isIOSDevice);
@@ -104,15 +106,15 @@ export function InstallPrompt() {
         <div className="bg-primary/10 p-3 rounded-2xl flex-shrink-0">
           <img src="/icon.svg" alt="Agatike Logo" className="w-8 h-8 object-contain rounded" />
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-sm">Install Agatike</h3>
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-            {isIOS 
-              ? "Install the app for a better experience. Tap the Share button below." 
+            {isIOS
+              ? "Install the app for a better experience. Tap the Share button below."
               : "Install the app on your home screen for quick and easy access."}
           </p>
-          
+
           <div className="mt-3 flex gap-2">
             <button
               onClick={handleInstallClick}
@@ -137,7 +139,7 @@ export function InstallPrompt() {
           </div>
         </div>
 
-        <button 
+        <button
           onClick={handleDismiss}
           className="text-muted-foreground hover:text-foreground absolute top-3 right-3"
         >

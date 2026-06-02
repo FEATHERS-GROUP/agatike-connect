@@ -2,4 +2,3 @@
   "buildCommand": "bun run build",
   "framework": null
 }
-

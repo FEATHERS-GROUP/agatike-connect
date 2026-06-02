@@ -1,6 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, ArrowLeftRight, ArrowRight, Bell, Bus, Calendar, ChevronDown, MapPin, Search, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowLeftRight,
+  ArrowRight,
+  Bell,
+  Bus,
+  Calendar,
+  ChevronDown,
+  MapPin,
+  Search,
+  X,
+} from "lucide-react";
 import { mockBusTrips } from "@/lib/mock-bus-data";
 import { cn } from "@/lib/utils";
 
@@ -58,12 +69,15 @@ function BusMobile() {
     return (
       <div className="min-h-screen bg-secondary/20 text-foreground pb-28 font-sans">
         {/* Results Curved Header (Matches Reference) */}
-        <div 
+        <div
           className="relative pt-12 pb-16 px-4 rounded-b-[2rem] z-0"
           style={{ background: "var(--gradient-primary)" }}
         >
           <div className="max-w-5xl mx-auto flex items-center justify-between mb-6">
-            <button onClick={clearSearch} className="flex items-center gap-2 text-primary-foreground">
+            <button
+              onClick={clearSearch}
+              className="flex items-center gap-2 text-primary-foreground"
+            >
               <div className="w-8 h-8 rounded-full bg-background/20 flex items-center justify-center backdrop-blur-sm">
                 <ArrowLeft className="h-4 w-4" />
               </div>
@@ -88,7 +102,9 @@ function BusMobile() {
               <Bus className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
               <p className="font-medium">No trips found</p>
               <p className="text-sm text-muted-foreground mt-1">Try a different route or date</p>
-              <button onClick={clearSearch} className="mt-4 text-primary font-medium text-sm">Clear Search</button>
+              <button onClick={clearSearch} className="mt-4 text-primary font-medium text-sm">
+                Clear Search
+              </button>
             </div>
           ) : (
             filteredTrips.map((trip) => {
@@ -99,16 +115,25 @@ function BusMobile() {
 
               if (isFull) {
                 return (
-                  <div key={trip.id} className="bg-card rounded-3xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-border/40 p-5 opacity-60">
-                     <div className="flex justify-between items-start">
+                  <div
+                    key={trip.id}
+                    className="bg-card rounded-3xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-border/40 p-5 opacity-60"
+                  >
+                    <div className="flex justify-between items-start">
                       <div className="space-y-1">
-                        <h3 className="font-bold text-[17px] text-muted-foreground">{trip.agency}</h3>
+                        <h3 className="font-bold text-[17px] text-muted-foreground">
+                          {trip.agency}
+                        </h3>
                         <p className="text-[13px] text-muted-foreground">{trip.busType}</p>
-                        <p className="text-[14px] font-semibold pt-1 text-muted-foreground">{trip.departureTime} - {trip.arrivalTime}</p>
+                        <p className="text-[14px] font-semibold pt-1 text-muted-foreground">
+                          {trip.departureTime} - {trip.arrivalTime}
+                        </p>
                         <p className="text-xs font-bold text-destructive pt-1.5">Sold Out</p>
                       </div>
                       <div className="text-right space-y-1">
-                        <p className="text-lg font-bold text-muted-foreground">{trip.currency} {trip.price.toLocaleString()}</p>
+                        <p className="text-lg font-bold text-muted-foreground">
+                          {trip.currency} {trip.price.toLocaleString()}
+                        </p>
                         <p className="text-[13px] text-muted-foreground font-medium">Direct</p>
                       </div>
                     </div>
@@ -117,17 +142,30 @@ function BusMobile() {
               }
 
               return (
-                <Link key={trip.id} to="/buses/$tripId" params={{ tripId: trip.id }} className="block active:scale-[0.98] transition-transform">
+                <Link
+                  key={trip.id}
+                  to="/buses/$tripId"
+                  params={{ tripId: trip.id }}
+                  className="block active:scale-[0.98] transition-transform"
+                >
                   <div className="bg-card rounded-3xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-border/40 p-5">
                     <div className="flex justify-between items-start">
                       <div className="space-y-1">
-                        <h3 className="font-bold text-[17px] leading-none text-foreground/90">{trip.agency}</h3>
+                        <h3 className="font-bold text-[17px] leading-none text-foreground/90">
+                          {trip.agency}
+                        </h3>
                         <p className="text-[13px] text-muted-foreground">{trip.busType}</p>
-                        <p className="text-[14px] font-semibold pt-1 text-foreground/80">{trip.departureTime} - {trip.arrivalTime}</p>
-                        <p className="text-xs font-bold text-emerald-500 pt-1.5">{available} Seats left</p>
+                        <p className="text-[14px] font-semibold pt-1 text-foreground/80">
+                          {trip.departureTime} - {trip.arrivalTime}
+                        </p>
+                        <p className="text-xs font-bold text-emerald-500 pt-1.5">
+                          {available} Seats left
+                        </p>
                       </div>
                       <div className="text-right space-y-1">
-                        <p className="text-lg font-bold text-primary">{trip.currency} {trip.price.toLocaleString()}</p>
+                        <p className="text-lg font-bold text-primary">
+                          {trip.currency} {trip.price.toLocaleString()}
+                        </p>
                         <p className="text-[13px] text-muted-foreground font-medium">Direct</p>
                       </div>
                     </div>
@@ -146,8 +184,9 @@ function BusMobile() {
       {/* Default Search Header */}
       <div
         className="relative overflow-hidden px-4 pt-12 pb-12 bg-cover bg-center"
-        style={{ 
-          backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url('/kigali-bus-park.png')",
+        style={{
+          backgroundImage:
+            "linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url('/kigali-bus-park.png')",
         }}
       >
         <div className="relative">
@@ -160,7 +199,9 @@ function BusMobile() {
             </div>
           </div>
           <h1 className="text-[28px] font-bold text-primary-foreground leading-[1.1] tracking-tight">
-            Where are you<br />headed today?
+            Where are you
+            <br />
+            headed today?
           </h1>
         </div>
       </div>
@@ -182,7 +223,11 @@ function BusMobile() {
 
           <div className="absolute right-6 top-1/2 -translate-y-1/2 z-10">
             <button
-              onClick={() => { const tmp = from; setFrom(to); setTo(tmp); }}
+              onClick={() => {
+                const tmp = from;
+                setFrom(to);
+                setTo(tmp);
+              }}
               className="h-9 w-9 rounded-full bg-background flex items-center justify-center text-primary shadow-md border border-border/40 hover:scale-105 active:scale-95 transition-all"
             >
               <ArrowLeftRight className="h-4 w-4 rotate-90" />
@@ -224,7 +269,9 @@ function BusMobile() {
               onChange={(e) => setAgencyFilter(e.target.value)}
             >
               {agencies.map((a) => (
-                <option key={a} value={a}>{a}</option>
+                <option key={a} value={a}>
+                  {a}
+                </option>
               ))}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -269,19 +316,28 @@ function BusMobile() {
             {mockBusTrips.slice(0, 3).map((trip) => {
               const available = trip.layout.seats.filter((s) => !s.isBooked).length;
               const isFull = available === 0;
-              
+
               if (isFull) {
                 return (
-                  <div key={trip.id} className="bg-card rounded-2xl shadow-sm border border-border/40 p-4 opacity-60">
-                     <div className="flex justify-between items-start">
+                  <div
+                    key={trip.id}
+                    className="bg-card rounded-2xl shadow-sm border border-border/40 p-4 opacity-60"
+                  >
+                    <div className="flex justify-between items-start">
                       <div className="space-y-0.5">
-                        <h3 className="font-bold text-[15px] text-muted-foreground">{trip.agency}</h3>
+                        <h3 className="font-bold text-[15px] text-muted-foreground">
+                          {trip.agency}
+                        </h3>
                         <p className="text-[12px] text-muted-foreground">{trip.busType}</p>
-                        <p className="text-[13px] font-semibold pt-1 text-muted-foreground">{trip.departureTime} - {trip.arrivalTime}</p>
+                        <p className="text-[13px] font-semibold pt-1 text-muted-foreground">
+                          {trip.departureTime} - {trip.arrivalTime}
+                        </p>
                         <p className="text-[11px] font-bold text-destructive pt-1">Sold Out</p>
                       </div>
                       <div className="text-right space-y-0.5">
-                        <p className="text-base font-bold text-muted-foreground">{trip.currency} {trip.price.toLocaleString()}</p>
+                        <p className="text-base font-bold text-muted-foreground">
+                          {trip.currency} {trip.price.toLocaleString()}
+                        </p>
                         <p className="text-[12px] text-muted-foreground font-medium">Direct</p>
                       </div>
                     </div>
@@ -290,17 +346,30 @@ function BusMobile() {
               }
 
               return (
-                <Link key={trip.id} to="/buses/$tripId" params={{ tripId: trip.id }} className="block active:scale-[0.98] transition-transform">
+                <Link
+                  key={trip.id}
+                  to="/buses/$tripId"
+                  params={{ tripId: trip.id }}
+                  className="block active:scale-[0.98] transition-transform"
+                >
                   <div className="bg-card rounded-2xl shadow-sm border border-border/40 p-4 hover:border-primary/40 hover:shadow-md transition-all">
                     <div className="flex justify-between items-start">
                       <div className="space-y-0.5">
-                        <h3 className="font-bold text-[15px] leading-none text-foreground/90">{trip.agency}</h3>
+                        <h3 className="font-bold text-[15px] leading-none text-foreground/90">
+                          {trip.agency}
+                        </h3>
                         <p className="text-[12px] text-muted-foreground">{trip.busType}</p>
-                        <p className="text-[13px] font-semibold pt-1 text-foreground/80">{trip.departureTime} - {trip.arrivalTime}</p>
-                        <p className="text-[11px] font-bold text-emerald-500 pt-1">{available} Seats left</p>
+                        <p className="text-[13px] font-semibold pt-1 text-foreground/80">
+                          {trip.departureTime} - {trip.arrivalTime}
+                        </p>
+                        <p className="text-[11px] font-bold text-emerald-500 pt-1">
+                          {available} Seats left
+                        </p>
                       </div>
                       <div className="text-right space-y-0.5">
-                        <p className="text-base font-bold text-primary">{trip.currency} {trip.price.toLocaleString()}</p>
+                        <p className="text-base font-bold text-primary">
+                          {trip.currency} {trip.price.toLocaleString()}
+                        </p>
                         <p className="text-[12px] text-muted-foreground font-medium">Direct</p>
                       </div>
                     </div>
@@ -314,4 +383,3 @@ function BusMobile() {
     </div>
   );
 }
-

@@ -4,7 +4,17 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { updateUserOnboarding } from "@/api/auth";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Loader2, Music, Ticket, Map, Trophy, Check, ArrowRight, Coffee, Palette } from "lucide-react";
+import {
+  Loader2,
+  Music,
+  Ticket,
+  Map,
+  Trophy,
+  Check,
+  ArrowRight,
+  Coffee,
+  Palette,
+} from "lucide-react";
 import hero from "@/assets/hero-event.jpg";
 
 export const Route = createFileRoute("/onboarding")({
@@ -15,10 +25,38 @@ export const Route = createFileRoute("/onboarding")({
 });
 
 const INTERESTS = [
-  { id: "entertainment", label: "Entertainment", icon: Music, color: "text-purple-500", bg: "bg-purple-500/10", border: "border-purple-500" },
-  { id: "event", label: "Events", icon: Ticket, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500" },
-  { id: "experience", label: "Experiences", icon: Map, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500" },
-  { id: "sport", label: "Sports", icon: Trophy, color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500" },
+  {
+    id: "entertainment",
+    label: "Entertainment",
+    icon: Music,
+    color: "text-purple-500",
+    bg: "bg-purple-500/10",
+    border: "border-purple-500",
+  },
+  {
+    id: "event",
+    label: "Events",
+    icon: Ticket,
+    color: "text-blue-500",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500",
+  },
+  {
+    id: "experience",
+    label: "Experiences",
+    icon: Map,
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500",
+  },
+  {
+    id: "sport",
+    label: "Sports",
+    icon: Trophy,
+    color: "text-rose-500",
+    bg: "bg-rose-500/10",
+    border: "border-rose-500",
+  },
 ];
 
 const AVATARS = [
@@ -49,7 +87,7 @@ function OnboardingPage() {
 
   const toggleInterest = (id: string) => {
     setSelectedInterests((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
@@ -58,13 +96,13 @@ function OnboardingPage() {
       toast.error("Please select at least one interest!");
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
       await updateUserOnboarding({
         data: { interests: selectedInterests, profile: selectedAvatar },
       } as any);
-      
+
       toast.success("Profile complete! Welcome to Agatike.");
       await refresh();
       await router.invalidate();
@@ -91,9 +129,7 @@ function OnboardingPage() {
           <img src={hero} alt="Live event" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent lg:from-black/85 lg:via-black/30" />
           <div className="absolute bottom-0 left-0 right-0 p-10 text-white">
-            <h2 className="text-3xl font-semibold leading-tight">
-              Curate your vibe.
-            </h2>
+            <h2 className="text-3xl font-semibold leading-tight">Curate your vibe.</h2>
             <p className="mt-3 text-sm opacity-80">
               Tell us what you love, and we'll bring the culture directly to your feed.
             </p>
@@ -104,8 +140,12 @@ function OnboardingPage() {
         <div className="relative flex flex-1 flex-col px-6 py-12 lg:mx-auto lg:w-full lg:max-w-md lg:p-0">
           {/* Progress Bar */}
           <div className="mb-8 flex items-center justify-between gap-4">
-            <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? "bg-primary" : "bg-secondary"}`} />
-            <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? "bg-primary" : "bg-secondary"}`} />
+            <div
+              className={`h-1.5 flex-1 rounded-full ${step >= 1 ? "bg-primary" : "bg-secondary"}`}
+            />
+            <div
+              className={`h-1.5 flex-1 rounded-full ${step >= 2 ? "bg-primary" : "bg-secondary"}`}
+            />
           </div>
 
           <div className="flex-1 animate-fade-in">
@@ -114,7 +154,8 @@ function OnboardingPage() {
                 <div>
                   <h1 className="text-3xl font-bold tracking-tight">What are you into?</h1>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Select the categories you love. We'll use these to recommend events and organizers.
+                    Select the categories you love. We'll use these to recommend events and
+                    organizers.
                   </p>
                 </div>
 
@@ -139,7 +180,7 @@ function OnboardingPage() {
                         <span className={`font-semibold ${isSelected ? "text-primary" : ""}`}>
                           {interest.label}
                         </span>
-                        
+
                         {isSelected && (
                           <div className="absolute right-3 top-3 rounded-full bg-primary p-1 text-primary-foreground">
                             <Check className="h-3 w-3" />
@@ -170,9 +211,9 @@ function OnboardingPage() {
 
                 <div className="flex justify-center py-6">
                   <div className="relative">
-                    <img 
-                      src={selectedAvatar} 
-                      alt="Selected profile" 
+                    <img
+                      src={selectedAvatar}
+                      alt="Selected profile"
                       className="h-32 w-32 rounded-full border-4 border-background bg-card shadow-2xl"
                     />
                     <div className="absolute -bottom-2 -right-2 rounded-full bg-primary p-2 text-primary-foreground">

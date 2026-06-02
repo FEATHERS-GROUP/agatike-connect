@@ -35,9 +35,10 @@ function PublicAttendeeBadgeRoute() {
 
   const { data: badgeProject, isLoading: isBadgeLoading } = useQuery({
     queryKey: ["badge-project", badgeId || attendee?.event_id],
-    queryFn: () => badgeId 
-      ? getBadgeProjectById({ data: { id: badgeId } } as any) 
-      : getBadgeProjectByEventId({ data: { event_id: attendee.event_id } } as any),
+    queryFn: () =>
+      badgeId
+        ? getBadgeProjectById({ data: { id: badgeId } } as any)
+        : getBadgeProjectByEventId({ data: { event_id: attendee.event_id } } as any),
     enabled: !!badgeId || !!attendee?.event_id,
   });
 
@@ -186,7 +187,11 @@ function PublicAttendeeBadgeRoute() {
         <p className="text-muted-foreground text-xs mb-3">Event Registration</p>
       </div>
 
-      <div id="badge-print-container" className="w-[340px] animate-in zoom-in-95 duration-700 fade-in delay-150 relative mx-auto" ref={badgeRef}>
+      <div
+        id="badge-print-container"
+        className="w-[340px] animate-in zoom-in-95 duration-700 fade-in delay-150 relative mx-auto"
+        ref={badgeRef}
+      >
         {badgeProject ? (
           <BadgePreview
             config={{

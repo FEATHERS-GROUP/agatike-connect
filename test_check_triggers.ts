@@ -3,8 +3,8 @@ import { hasuraRequest } from "./src/api/graphql.server";
 async function run() {
   // Use Hasura's run_sql to check triggers and column defaults on event_feedback
   const config = (await import("./src/lib/config.server")).getServerConfig();
-  
-  const res = await fetch(`${config.hasuraAdminApi.replace('/v1/graphql', '/v2/query')}`, {
+
+  const res = await fetch(`${config.hasuraAdminApi.replace("/v1/graphql", "/v2/query")}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -22,14 +22,14 @@ async function run() {
           ORDER BY ordinal_position;
         `,
         read_only: true,
-      }
-    })
+      },
+    }),
   });
   const json = await res.json();
   console.log("Column info:", JSON.stringify(json?.result, null, 2));
-  
+
   // Check triggers
-  const triggerRes = await fetch(`${config.hasuraAdminApi.replace('/v1/graphql', '/v2/query')}`, {
+  const triggerRes = await fetch(`${config.hasuraAdminApi.replace("/v1/graphql", "/v2/query")}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -45,8 +45,8 @@ async function run() {
           WHERE event_object_table = 'event_feedback';
         `,
         read_only: true,
-      }
-    })
+      },
+    }),
   });
   const triggerJson = await triggerRes.json();
   console.log("Triggers:", JSON.stringify(triggerJson?.result, null, 2));

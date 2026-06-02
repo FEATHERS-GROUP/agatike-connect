@@ -22,9 +22,17 @@ export const Route = createFileRoute("/f/$eventId/review")({
 });
 
 const TAGS = [
-  "well_organized", "great_speakers", "great_venue", "good_food",
-  "excellent_networking", "good_value", "loved_the_content", "would_attend_again",
-  "poor_organization", "too_crowded", "needs_improvement",
+  "well_organized",
+  "great_speakers",
+  "great_venue",
+  "good_food",
+  "excellent_networking",
+  "good_value",
+  "loved_the_content",
+  "would_attend_again",
+  "poor_organization",
+  "too_crowded",
+  "needs_improvement",
 ];
 
 const CATEGORIES = [
@@ -35,7 +43,15 @@ const CATEGORIES = [
   { key: "networking", label: "Networking" },
 ];
 
-function StarPicker({ value, onChange, size = "lg" }: { value: number; onChange: (v: number) => void; size?: "sm" | "lg" }) {
+function StarPicker({
+  value,
+  onChange,
+  size = "lg",
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  size?: "sm" | "lg";
+}) {
   const [hovered, setHovered] = useState(0);
   return (
     <div className="flex gap-1">
@@ -86,8 +102,8 @@ function FeedbackForm() {
   const [isUploading, setIsUploading] = useState(false);
 
   const toggleTag = (tag: string) => {
-    setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
     );
   };
 
@@ -95,13 +111,15 @@ function FeedbackForm() {
 
   const handleImageUpload = async (file: File) => {
     if (file.size > MAX_REVIEW_MEDIA_SIZE_MB * 1024 * 1024) {
-      toast.error(`Image too large`, { description: `Max size is ${MAX_REVIEW_MEDIA_SIZE_MB}MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.` });
+      toast.error(`Image too large`, {
+        description: `Max size is ${MAX_REVIEW_MEDIA_SIZE_MB}MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`,
+      });
       return;
     }
     setIsUploading(true);
     try {
       const url = await uploadFileToStorage(file, `feedback/${eventId}`);
-      setMediaUrls(prev => [...prev, url]);
+      setMediaUrls((prev) => [...prev, url]);
     } catch {
       toast.error("Failed to upload image");
     } finally {
@@ -167,8 +185,11 @@ function FeedbackForm() {
           </span>
         )}
         <div className="flex gap-1 mt-4">
-          {[1,2,3,4,5].map(s => (
-            <Star key={s} className={`h-6 w-6 ${s <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+          {[1, 2, 3, 4, 5].map((s) => (
+            <Star
+              key={s}
+              className={`h-6 w-6 ${s <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
+            />
           ))}
         </div>
       </div>
@@ -204,21 +225,25 @@ function FeedbackForm() {
           <div className="flex flex-col items-start gap-2">
             <StarPicker value={rating} onChange={setRating} size="lg" />
             <span className="text-sm text-muted-foreground">
-              {["", "Poor", "Fair", "Good", "Very Good", "Excellent"][rating] || "Tap a star to rate"}
+              {["", "Poor", "Fair", "Good", "Very Good", "Excellent"][rating] ||
+                "Tap a star to rate"}
             </span>
           </div>
         </div>
 
         {/* Category Scores */}
         <div className="space-y-3">
-          <Label className="text-base font-semibold">Rate by Category <span className="text-muted-foreground font-normal text-sm">(optional)</span></Label>
+          <Label className="text-base font-semibold">
+            Rate by Category{" "}
+            <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+          </Label>
           <div className="space-y-4 bg-secondary/20 p-4 rounded-xl border border-border/60">
             {CATEGORIES.map(({ key, label }) => (
               <div key={key} className="flex items-center justify-between gap-4">
                 <span className="text-sm text-muted-foreground w-40">{label}</span>
                 <StarPicker
                   value={categoryScores[key] || 0}
-                  onChange={(v) => setCategoryScores(prev => ({ ...prev, [key]: v }))}
+                  onChange={(v) => setCategoryScores((prev) => ({ ...prev, [key]: v }))}
                   size="sm"
                 />
               </div>
@@ -229,7 +254,8 @@ function FeedbackForm() {
         {/* Tags */}
         <div className="space-y-3">
           <Label className="text-base font-semibold flex items-center gap-2">
-            <Tag className="h-4 w-4" /> Quick Tags <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+            <Tag className="h-4 w-4" /> Quick Tags{" "}
+            <span className="text-muted-foreground font-normal text-sm">(optional)</span>
           </Label>
           <div className="flex flex-wrap gap-2">
             {TAGS.map((tag) => (
@@ -251,7 +277,10 @@ function FeedbackForm() {
 
         {/* Review Title + Body */}
         <div className="space-y-4">
-          <Label className="text-base font-semibold">Write a Review <span className="text-muted-foreground font-normal text-sm">(optional)</span></Label>
+          <Label className="text-base font-semibold">
+            Write a Review{" "}
+            <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+          </Label>
           <Input
             placeholder='Headline, e.g. "Best event I attended this year!"'
             value={title}
@@ -270,15 +299,19 @@ function FeedbackForm() {
         {/* Media Upload */}
         <div className="space-y-3">
           <Label className="text-base font-semibold flex items-center gap-2">
-            <Camera className="h-4 w-4" /> Add Photos <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+            <Camera className="h-4 w-4" /> Add Photos{" "}
+            <span className="text-muted-foreground font-normal text-sm">(optional)</span>
           </Label>
           <div className="flex flex-wrap gap-3">
             {mediaUrls.map((url, i) => (
-              <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border group">
+              <div
+                key={i}
+                className="relative w-20 h-20 rounded-xl overflow-hidden border border-border group"
+              >
                 <img src={url} alt="" className="w-full h-full object-cover" />
                 <button
                   type="button"
-                  onClick={() => setMediaUrls(prev => prev.filter((_, idx) => idx !== i))}
+                  onClick={() => setMediaUrls((prev) => prev.filter((_, idx) => idx !== i))}
                   className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs"
                 >
                   Remove
@@ -287,7 +320,9 @@ function FeedbackForm() {
             ))}
             {mediaUrls.length < 5 && (
               <label className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-secondary transition-colors">
-                {isUploading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : (
+                {isUploading ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                ) : (
                   <>
                     <Camera className="h-5 w-5 text-muted-foreground mb-1" />
                     <span className="text-[10px] text-muted-foreground">Add photo</span>
@@ -298,12 +333,16 @@ function FeedbackForm() {
                   accept="image/jpeg,image/png,image/webp,image/gif"
                   className="hidden"
                   disabled={isUploading}
-                  onChange={(e) => { if (e.target.files?.[0]) handleImageUpload(e.target.files[0]); }}
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) handleImageUpload(e.target.files[0]);
+                  }}
                 />
               </label>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">Images only · Max {MAX_REVIEW_MEDIA_SIZE_MB}MB · JPG, PNG, WebP, GIF</p>
+          <p className="text-xs text-muted-foreground">
+            Images only · Max {MAX_REVIEW_MEDIA_SIZE_MB}MB · JPG, PNG, WebP, GIF
+          </p>
         </div>
 
         {/* Identity */}
@@ -332,7 +371,8 @@ function FeedbackForm() {
           </div>
           <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
             <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-            Your email is used only to verify your attendance and prevent duplicate submissions. It won't be displayed publicly.
+            Your email is used only to verify your attendance and prevent duplicate submissions. It
+            won't be displayed publicly.
           </p>
         </div>
 

@@ -104,7 +104,14 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
   `;
 
   const result = await hasuraRequest<{
-    users: { id: string; username: string; handle: string; email: string; password: string; active: boolean }[];
+    users: {
+      id: string;
+      username: string;
+      handle: string;
+      email: string;
+      password: string;
+      active: boolean;
+    }[];
   }>(query, { email });
 
   const user = result.users[0];
@@ -137,15 +144,16 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
 });
 
 export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { username, email, password, dateOfBirth, gender, country, phone } = ctx.data as unknown as {
-    username: string;
-    email: string;
-    password: string;
-    dateOfBirth: string;
-    gender: string;
-    country: string;
-    phone: string;
-  };
+  const { username, email, password, dateOfBirth, gender, country, phone } =
+    ctx.data as unknown as {
+      username: string;
+      email: string;
+      password: string;
+      dateOfBirth: string;
+      gender: string;
+      country: string;
+      phone: string;
+    };
 
   // Check if email already exists
   const checkQuery = `
@@ -164,10 +172,11 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // Generate handle from username
-  const handle = username
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")
-    .slice(0, 20) + Math.floor(Math.random() * 1000);
+  const handle =
+    username
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "")
+      .slice(0, 20) + Math.floor(Math.random() * 1000);
 
   // Insert user
   const insertQuery = `
@@ -193,7 +202,16 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
 
   const result = await hasuraRequest<{
     insert_users_one: { id: string; username: string; handle: string; email: string };
-  }>(insertQuery, { username, email, password: hashedPassword, handle, dateOfBirth, gender, country, phone });
+  }>(insertQuery, {
+    username,
+    email,
+    password: hashedPassword,
+    handle,
+    dateOfBirth,
+    gender,
+    country,
+    phone,
+  });
 
   const user = result.insert_users_one;
 

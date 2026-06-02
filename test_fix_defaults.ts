@@ -2,7 +2,7 @@ import { getServerConfig } from "./src/lib/config.server";
 
 async function runSql(sql: string) {
   const config = getServerConfig();
-  const res = await fetch(`${config.hasuraAdminApi.replace('/v1/graphql', '/v2/query')}`, {
+  const res = await fetch(`${config.hasuraAdminApi.replace("/v1/graphql", "/v2/query")}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -10,8 +10,8 @@ async function runSql(sql: string) {
     },
     body: JSON.stringify({
       type: "run_sql",
-      args: { source: "default", sql, read_only: false }
-    })
+      args: { source: "default", sql, read_only: false },
+    }),
   });
   const json = await res.json();
   if (json.error) throw new Error(json.error);

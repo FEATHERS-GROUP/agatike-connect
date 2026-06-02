@@ -29,7 +29,9 @@ export function DesktopSalesChart({ liveEvent }: { liveEvent?: any }) {
       <div className="rounded-2xl border border-border/60 bg-card p-6">
         <h3 className="font-semibold">{liveEvent ? "Live event" : "No live event"}</h3>
         <p className="mt-1 text-xs text-muted-foreground">
-          {liveEvent ? `${liveEvent.title}${location ? ` · ${location}` : ""}` : "No events are currently live"}
+          {liveEvent
+            ? `${liveEvent.title}${location ? ` · ${location}` : ""}`
+            : "No events are currently live"}
         </p>
         <div className="mt-4 space-y-3">
           <Stat label="Checked in" value="0 / 0" pct={0} />

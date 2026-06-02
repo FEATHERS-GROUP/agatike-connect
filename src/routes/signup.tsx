@@ -1,6 +1,18 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { Mail, Lock, Eye, EyeOff, Apple, ArrowLeft, User, Loader2, Calendar, Phone, MapPin } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Apple,
+  ArrowLeft,
+  User,
+  Loader2,
+  Calendar,
+  Phone,
+  MapPin,
+} from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,15 +93,15 @@ function SignUp() {
         <Navbar />
       </div>
 
-
-
       <div className="flex flex-1 flex-col lg:mx-auto lg:grid lg:min-h-[calc(100vh-4rem)] lg:max-w-7xl lg:grid-cols-2 lg:items-center lg:gap-10 lg:px-6 lg:py-10">
         {/* Visual Header */}
         <div className="relative h-[25vh] w-full shrink-0 lg:h-[640px] lg:overflow-hidden lg:rounded-3xl">
           <img src={hero} alt="Live event" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent lg:from-black/85 lg:via-black/30" />
           <div className="absolute bottom-8 left-6 right-6 lg:bottom-0 lg:left-0 lg:right-0 lg:p-10 lg:text-white">
-            <p className="text-xs font-medium text-white/90 lg:text-sm lg:opacity-80">Africa's premium platform</p>
+            <p className="text-xs font-medium text-white/90 lg:text-sm lg:opacity-80">
+              Africa's premium platform
+            </p>
             <h2 className="mt-1 text-2xl font-semibold leading-tight text-white lg:mt-2 lg:text-3xl">
               Join the movement.
             </h2>
@@ -115,7 +127,9 @@ function SignUp() {
               <span className="text-lg font-semibold">Agatike</span>
             </div>
             <h1 className="text-2xl font-semibold tracking-tight lg:mt-6">Create your account</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Join thousands discovering events across Africa.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Join thousands discovering events across Africa.
+            </p>
 
             <div className="mt-6 grid grid-cols-2 gap-2">
               <Button variant="outline" type="button" className="rounded-xl">
@@ -128,7 +142,8 @@ function SignUp() {
             </div>
 
             <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="h-px flex-1 bg-border" /> or with email <span className="h-px flex-1 bg-border" />
+              <span className="h-px flex-1 bg-border" /> or with email{" "}
+              <span className="h-px flex-1 bg-border" />
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4">
@@ -136,12 +151,12 @@ function SignUp() {
                 <Label htmlFor="signup-name">Full name</Label>
                 <div className="relative mt-1">
                   <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input 
-                    id="signup-name" 
-                    required 
+                  <Input
+                    id="signup-name"
+                    required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Amaka Okafor" 
+                    placeholder="Amaka Okafor"
                     className="pl-9"
                     disabled={isLoading}
                   />
@@ -163,7 +178,6 @@ function SignUp() {
                   />
                 </div>
               </div>
-
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -213,7 +227,9 @@ function SignUp() {
                   className="mt-1 flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isLoading}
                 >
-                  <option value="" disabled>Select country</option>
+                  <option value="" disabled>
+                    Select country
+                  </option>
                   {COUNTRIES.map((c) => (
                     <option key={c.code} value={c.name}>
                       {c.name}
@@ -283,11 +299,17 @@ function SignUp() {
               </Link>
             </p>
           </div>
-          
+
           <p className="mt-auto pt-6 text-center text-xs text-muted-foreground lg:mt-4 lg:pt-0">
             By continuing you agree to our{" "}
-            <Link to="/" className="underline">Terms</Link> and{" "}
-            <Link to="/" className="underline">Privacy</Link>.
+            <Link to="/" className="underline">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link to="/" className="underline">
+              Privacy
+            </Link>
+            .
           </p>
         </div>
       </div>

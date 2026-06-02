@@ -38,12 +38,16 @@ export function SplashLoader() {
       <div className="flex-1 flex items-center justify-center">
         <div className="flex flex-col items-center gap-6 animate-in zoom-in duration-700">
           <div className="bg-white/20 p-4 rounded-3xl backdrop-blur-sm shadow-2xl">
-            <img src="/icon.svg" alt="Agatike Logo" className="w-24 h-24 object-contain rounded-2xl" />
+            <img
+              src="/icon.svg"
+              alt="Agatike Logo"
+              className="w-24 h-24 object-contain rounded-2xl"
+            />
           </div>
           <h1 className="text-white text-3xl font-bold tracking-tight">Agatike</h1>
         </div>
       </div>
-      
+
       <div className="flex flex-col items-center gap-3 text-white/80 animate-pulse">
         <Loader2 className="w-8 h-8 animate-spin text-white" />
         <span className="text-sm font-medium tracking-wide uppercase">Loading App...</span>

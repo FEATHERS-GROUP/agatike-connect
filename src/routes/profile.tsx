@@ -219,15 +219,19 @@ function ProfilePage() {
     navigate({ to: "/signin" });
   };
 
-  const joinDate = user?.created_at 
-    ? new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(new Date(user.created_at)) 
+  const joinDate = user?.created_at
+    ? new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(
+        new Date(user.created_at),
+      )
     : "Jan 2024";
-    
+
   let userInterests: string[] = [];
   try {
-    userInterests = Array.isArray(user?.interests) 
-      ? user.interests 
-      : (typeof user?.interests === 'string' ? JSON.parse(user.interests) : []);
+    userInterests = Array.isArray(user?.interests)
+      ? user.interests
+      : typeof user?.interests === "string"
+        ? JSON.parse(user.interests)
+        : [];
   } catch (e) {
     userInterests = [];
   }
@@ -276,7 +280,12 @@ function ProfilePage() {
               <Button variant="secondary" className="flex-1 h-9 text-sm font-semibold rounded-xl">
                 Edit Profile
               </Button>
-              <Button onClick={() => setShowLogoutModal(true)} variant="secondary" size="icon" className="h-9 w-9 rounded-xl shrink-0 text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-colors">
+              <Button
+                onClick={() => setShowLogoutModal(true)}
+                variant="secondary"
+                size="icon"
+                className="h-9 w-9 rounded-xl shrink-0 text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-colors"
+              >
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -288,7 +297,9 @@ function ProfilePage() {
             <div className="flex flex-wrap gap-2">
               {userInterests.length > 0 ? (
                 userInterests.map((interest: string) => {
-                  const cat = favoriteCategories.find(c => c.label.toLowerCase() === interest.toLowerCase());
+                  const cat = favoriteCategories.find(
+                    (c) => c.label.toLowerCase() === interest.toLowerCase(),
+                  );
                   const bg = cat?.bg || "bg-primary/10";
                   const color = cat?.color || "text-primary";
                   const border = cat?.border || "border-primary/20";
@@ -383,7 +394,10 @@ function ProfilePage() {
             <button className="p-2 rounded-full hover:bg-secondary transition-colors">
               <Bell className="h-5 w-5" />
             </button>
-            <button onClick={() => setShowLogoutModal(true)} className="p-2 rounded-full hover:bg-red-500/10 text-red-500 transition-colors">
+            <button
+              onClick={() => setShowLogoutModal(true)}
+              className="p-2 rounded-full hover:bg-red-500/10 text-red-500 transition-colors"
+            >
               <LogOut className="h-5 w-5" />
             </button>
           </div>
@@ -450,7 +464,9 @@ function ProfilePage() {
         <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
           {userInterests.length > 0 ? (
             userInterests.map((interest: string) => {
-              const cat = favoriteCategories.find(c => c.label.toLowerCase() === interest.toLowerCase());
+              const cat = favoriteCategories.find(
+                (c) => c.label.toLowerCase() === interest.toLowerCase(),
+              );
               const bg = cat?.bg || "bg-primary/10";
               const color = cat?.color || "text-primary";
               const border = cat?.border || "border-primary/20";
@@ -576,7 +592,8 @@ function ProfilePage() {
           </div>
           <h3 className="text-lg font-bold">Sign Out</h3>
           <p className="text-sm text-muted-foreground mt-2 mb-6">
-            Are you sure you want to log out of your account? You will need to sign back in to access your tickets.
+            Are you sure you want to log out of your account? You will need to sign back in to
+            access your tickets.
           </p>
           <div className="flex gap-3 w-full">
             <Button

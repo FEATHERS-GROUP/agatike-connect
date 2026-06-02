@@ -87,7 +87,11 @@ function AttendeesView() {
         const names = answers["Names"] || answers["Name"] || rsvp.first_name || "";
         const email = answers["Email"] || answers["Email Address"] || rsvp.email || "";
         const phone = answers["Phone"] || answers["Phone Number"] || "";
-        const ticket_type = answers["Ticket Type / Registration Type"] || answers["Ticket Type"] || answers["Registration Type"] || "Form Registration";
+        const ticket_type =
+          answers["Ticket Type / Registration Type"] ||
+          answers["Ticket Type"] ||
+          answers["Registration Type"] ||
+          "Form Registration";
 
         // Generate a random 8-character alphanumeric string for the QR code
         const qrcode_number = Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -149,7 +153,8 @@ function AttendeesView() {
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <p className="text-sm text-muted-foreground">
-                  Select a Custom Form to import its responses as attendees. Answers will be mapped into custom fields.
+                  Select a Custom Form to import its responses as attendees. Answers will be mapped
+                  into custom fields.
                 </p>
                 <Select value={selectedFormId} onValueChange={setSelectedFormId}>
                   <SelectTrigger>
@@ -157,15 +162,19 @@ function AttendeesView() {
                   </SelectTrigger>
                   <SelectContent>
                     {forms.map((f: any) => (
-                      <SelectItem key={f.id} value={f.id}>{f.title}</SelectItem>
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.title}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsImportModalOpen(false)}>Cancel</Button>
-                <Button 
-                  disabled={!selectedFormId || importMutation.isPending} 
+                <Button variant="outline" onClick={() => setIsImportModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  disabled={!selectedFormId || importMutation.isPending}
                   onClick={() => importMutation.mutate(selectedFormId)}
                 >
                   {importMutation.isPending ? "Importing..." : "Import Attendees"}
@@ -196,7 +205,7 @@ function AttendeesView() {
             <span className="text-sm font-medium text-muted-foreground bg-secondary/30 px-3 py-1 rounded-full">
               {selectedAttendees.length} selected
             </span>
-            <BulkEmailModal 
+            <BulkEmailModal
               selectedAttendees={selectedAttendees}
               attendees={attendees}
               activeWorkspace={activeWorkspace}
@@ -214,10 +223,13 @@ function AttendeesView() {
           <thead className="bg-secondary/30 text-muted-foreground text-xs uppercase tracking-wider">
             <tr>
               <th className="px-6 py-4 w-12 text-center">
-                <input 
+                <input
                   type="checkbox"
                   className="rounded border-muted-foreground/30 text-primary cursor-pointer"
-                  checked={filteredAttendees.length > 0 && selectedAttendees.length === filteredAttendees.length}
+                  checked={
+                    filteredAttendees.length > 0 &&
+                    selectedAttendees.length === filteredAttendees.length
+                  }
                   onChange={(e) => {
                     if (e.target.checked) {
                       setSelectedAttendees(filteredAttendees.map((a: any) => a.id));
@@ -236,59 +248,75 @@ function AttendeesView() {
           </thead>
           <tbody className="divide-y divide-border/60">
             {isLoading ? (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">Loading attendees...</td></tr>
-            ) : filteredAttendees.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">No attendees found.</td></tr>
-            ) : filteredAttendees.map((a: any) => (
-              <tr key={a.id} className="hover:bg-secondary/20 transition-colors">
-                <td className="px-6 py-4 text-center">
-                  <input 
-                    type="checkbox"
-                    className="rounded border-muted-foreground/30 text-primary cursor-pointer"
-                    checked={selectedAttendees.includes(a.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedAttendees(prev => [...prev, a.id]);
-                      } else {
-                        setSelectedAttendees(prev => prev.filter(id => id !== a.id));
-                      }
-                    }}
-                  />
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                      <User className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-foreground truncate">{a.names || "Unknown"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{a.email || a.phone || "No contact info"}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 font-medium capitalize">
-                  <span className={`inline-flex px-2 py-1 rounded text-xs ${a.type === 'customer' ? 'bg-blue-500/10 text-blue-500' : 'bg-green-500/10 text-green-500'}`}>
-                    {a.type || "Attendee"}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <p className="font-medium">{a.ticket_type || "N/A"}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{a.status}</p>
-                </td>
-                <td className="px-6 py-4 text-muted-foreground">
-                  {format(new Date(a.created_at), "MMM d, yyyy")}
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <AttendeeDetailsModal 
-                    attendee={a} 
-                    activeWorkspace={activeWorkspace} 
-                    workspaceBadges={workspaceBadges}
-                    eventId={eventId}
-                    organizer={organizer}
-                  />
+              <tr>
+                <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                  Loading attendees...
                 </td>
               </tr>
-            ))}
+            ) : filteredAttendees.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                  No attendees found.
+                </td>
+              </tr>
+            ) : (
+              filteredAttendees.map((a: any) => (
+                <tr key={a.id} className="hover:bg-secondary/20 transition-colors">
+                  <td className="px-6 py-4 text-center">
+                    <input
+                      type="checkbox"
+                      className="rounded border-muted-foreground/30 text-primary cursor-pointer"
+                      checked={selectedAttendees.includes(a.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedAttendees((prev) => [...prev, a.id]);
+                        } else {
+                          setSelectedAttendees((prev) => prev.filter((id) => id !== a.id));
+                        }
+                      }}
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <User className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-foreground truncate">
+                          {a.names || "Unknown"}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {a.email || a.phone || "No contact info"}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 font-medium capitalize">
+                    <span
+                      className={`inline-flex px-2 py-1 rounded text-xs ${a.type === "customer" ? "bg-blue-500/10 text-blue-500" : "bg-green-500/10 text-green-500"}`}
+                    >
+                      {a.type || "Attendee"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="font-medium">{a.ticket_type || "N/A"}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{a.status}</p>
+                  </td>
+                  <td className="px-6 py-4 text-muted-foreground">
+                    {format(new Date(a.created_at), "MMM d, yyyy")}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <AttendeeDetailsModal
+                      attendee={a}
+                      activeWorkspace={activeWorkspace}
+                      workspaceBadges={workspaceBadges}
+                      eventId={eventId}
+                      organizer={organizer}
+                    />
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -296,7 +324,19 @@ function AttendeesView() {
   );
 }
 
-function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, eventId, organizer }: { attendee: any, activeWorkspace: any, workspaceBadges: any[], eventId: string, organizer: any }) {
+function AttendeeDetailsModal({
+  attendee,
+  activeWorkspace,
+  workspaceBadges,
+  eventId,
+  organizer,
+}: {
+  attendee: any;
+  activeWorkspace: any;
+  workspaceBadges: any[];
+  eventId: string;
+  organizer: any;
+}) {
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [contactMethod, setContactMethod] = useState<"email" | "sms">("email");
   const eventObj = attendee?.events || {};
@@ -308,7 +348,7 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
   const orgName = activeWorkspace?.name || "The Organizer";
   const contactEmail = organizer?.email || "[Contact Email]";
   const contactPhone = organizer?.phone || "[Phone Number]";
-  
+
   const defaultTemplate = `
 <p>Dear [First Name],</p>
 <br/>
@@ -337,29 +377,34 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
 <p>We look forward to seeing you at the event.</p>
 <br/>
 <p>Kind regards,</p>
-<p>${organizer?.name || activeWorkspace?.name || 'Organizer'}<br/>${orgName}<br/>${contactEmail}<br/>${contactPhone}</p>
+<p>${organizer?.name || activeWorkspace?.name || "Organizer"}<br/>${orgName}<br/>${contactEmail}<br/>${contactPhone}</p>
   `.trim();
 
   const [subject, setSubject] = useState(`Registration Confirmed – ${eventName}`);
   const [message, setMessage] = useState(defaultTemplate);
   const [selectedBadgeId, setSelectedBadgeId] = useState<string>(
-    workspaceBadges?.find((b: any) => b.event_id === eventId)?.id || workspaceBadges?.[0]?.id || ""
+    workspaceBadges?.find((b: any) => b.event_id === eventId)?.id || workspaceBadges?.[0]?.id || "",
   );
 
-  const origin = window.location.origin.includes("localhost") ? "https://agatike.rw" : window.location.origin;
-  const badgeLink = attendee.qrcode_number && selectedBadgeId ? `${origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}` : "";
+  const origin = window.location.origin.includes("localhost")
+    ? "https://agatike.rw"
+    : window.location.origin;
+  const badgeLink =
+    attendee.qrcode_number && selectedBadgeId
+      ? `${origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}`
+      : "";
 
   const sendMutation = useMutation({
     mutationFn: async () => {
       let finalMessage = message;
       if (contactMethod === "email") {
-        const isCustomer = attendee.type !== 'rsvp';
-        const registrationInfo = isCustomer 
+        const isCustomer = attendee.type !== "rsvp";
+        const registrationInfo = isCustomer
           ? `
             <p>Please keep the following details available, as they will be required to access the venue:</p>
             <ul>
-              <li><strong>Registration ID:</strong> ${attendee.id?.substring(0,8).toUpperCase()}</li>
-              <li><strong>Ticket Number:</strong> ${attendee.qrcode_number || 'N/A'}</li>
+              <li><strong>Registration ID:</strong> ${attendee.id?.substring(0, 8).toUpperCase()}</li>
+              <li><strong>Ticket Number:</strong> ${attendee.qrcode_number || "N/A"}</li>
               <li><strong>Registered Name:</strong> ${attendee.names}</li>
               <li><strong>Registered Email:</strong> ${attendee.email}</li>
             </ul>
@@ -371,21 +416,30 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
           `;
 
         finalMessage = finalMessage
-          .replace(/&#91;/g, '[')
-          .replace(/&#93;/g, ']')
-          .replace(/\{\{\s*(?:first\s*)?name\s*\}\}/gi, attendee.names?.split(' ')[0] || 'Attendee')
-          .replace(/\[[^\]]*(?:first\s*)?name[^\]]*\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
-          .replace(/\{\{\s*registration[_\s]*(?:details|information|info)\s*\}\}/gi, registrationInfo.trim())
-          .replace(/\[[^\]]*registration[^\]]*(?:details?|information|info)[^\]]*\]/gi, registrationInfo.trim())
+          .replace(/&#91;/g, "[")
+          .replace(/&#93;/g, "]")
+          .replace(/\{\{\s*(?:first\s*)?name\s*\}\}/gi, attendee.names?.split(" ")[0] || "Attendee")
+          .replace(
+            /\[[^\]]*(?:first\s*)?name[^\]]*\]/gi,
+            attendee.names?.split(" ")[0] || "Attendee",
+          )
+          .replace(
+            /\{\{\s*registration[_\s]*(?:details|information|info)\s*\}\}/gi,
+            registrationInfo.trim(),
+          )
+          .replace(
+            /\[[^\]]*registration[^\]]*(?:details?|information|info)[^\]]*\]/gi,
+            registrationInfo.trim(),
+          )
           .replace(/\{\{\s*contact[_\s]*email\s*\}\}/gi, contactEmail)
           .replace(/\[[^\]]*contact[^\]]*email[^\]]*\]/gi, contactEmail)
           .replace(/\{\{\s*phone[_\s]*number\s*\}\}/gi, contactPhone)
           .replace(/\[[^\]]*phone[^\]]*number[^\]]*\]/gi, contactPhone);
-          
-        return sendAttendeeEmail({ 
-          data: { 
-            to: attendee.email, 
-            subject, 
+
+        return sendAttendeeEmail({
+          data: {
+            to: attendee.email,
+            subject,
             message: finalMessage,
             eventName: attendee.events?.title,
             organizerName: activeWorkspace?.name,
@@ -393,7 +447,7 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
             organizerSocials: organizer?.socials,
             badgeLink: selectedBadgeId ? badgeLink : "",
             appUrl: window.location.origin,
-          } 
+          },
         } as any);
       }
       // SMS API would go here, mock for now
@@ -433,11 +487,11 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground text-xs">Type</p>
-                <p className="font-medium capitalize">{attendee.type || 'Attendee'}</p>
+                <p className="font-medium capitalize">{attendee.type || "Attendee"}</p>
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Ticket Type</p>
-                <p className="font-medium">{attendee.ticket_type || 'N/A'}</p>
+                <p className="font-medium">{attendee.ticket_type || "N/A"}</p>
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Status</p>
@@ -445,7 +499,7 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Quantity</p>
-                <p className="font-medium">{attendee.quanity || '1'}</p>
+                <p className="font-medium">{attendee.quanity || "1"}</p>
               </div>
             </div>
 
@@ -453,12 +507,16 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
               <div className="mt-6 border-t border-border/60 pt-4">
                 <h4 className="text-sm font-semibold mb-3">Custom Responses</h4>
                 <div className="space-y-3">
-                  {Object.entries(attendee.custom_fields).map(([question, answer]: [string, any]) => (
-                    <div key={question} className="bg-secondary/30 p-3 rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">{question}</p>
-                      <p className="text-sm">{Array.isArray(answer) ? answer.join(", ") : String(answer)}</p>
-                    </div>
-                  ))}
+                  {Object.entries(attendee.custom_fields).map(
+                    ([question, answer]: [string, any]) => (
+                      <div key={question} className="bg-secondary/30 p-3 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">{question}</p>
+                        <p className="text-sm">
+                          {Array.isArray(answer) ? answer.join(", ") : String(answer)}
+                        </p>
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             )}
@@ -466,17 +524,15 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
             {workspaceBadges && workspaceBadges.length > 0 && (
               <div className="mt-6 border-t border-border/60 pt-4">
                 <h4 className="text-sm font-semibold mb-3">Badge Design</h4>
-                <Select
-                  value={selectedBadgeId}
-                  onValueChange={(val) => setSelectedBadgeId(val)}
-                >
+                <Select value={selectedBadgeId} onValueChange={(val) => setSelectedBadgeId(val)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a badge design" />
                   </SelectTrigger>
                   <SelectContent>
                     {workspaceBadges.map((b: any) => (
                       <SelectItem key={b.id} value={b.id}>
-                        {b.logo_text || b.theme || "Untitled Design"} {b.event_id === eventId ? "(Event Default)" : ""}
+                        {b.logo_text || b.theme || "Untitled Design"}{" "}
+                        {b.event_id === eventId ? "(Event Default)" : ""}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -489,26 +545,32 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
             {selectedBadgeId && attendee.qrcode_number && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full sm:w-auto"
                 onClick={() => window.open(badgeLink, "_blank")}
               >
                 <Eye className="w-4 h-4 mr-2" /> View Badge
               </Button>
             )}
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full sm:w-auto"
               disabled={!attendee.phone}
-              onClick={() => { setContactMethod("sms"); setIsContactOpen(true); }}
+              onClick={() => {
+                setContactMethod("sms");
+                setIsContactOpen(true);
+              }}
             >
               <MessageSquare className="w-4 h-4 mr-2" /> SMS
             </Button>
-            <Button 
+            <Button
               className="w-full sm:w-auto"
               disabled={!attendee.email}
-              onClick={() => { setContactMethod("email"); setIsContactOpen(true); }}
+              onClick={() => {
+                setContactMethod("email");
+                setIsContactOpen(true);
+              }}
             >
               <Mail className="w-4 h-4 mr-2" /> Email
             </Button>
@@ -517,22 +579,22 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
       </Dialog>
 
       <Dialog open={isContactOpen} onOpenChange={setIsContactOpen}>
-        <DialogContent className={contactMethod === 'email' ? 'max-w-3xl' : ''}>
+        <DialogContent className={contactMethod === "email" ? "max-w-3xl" : ""}>
           <DialogHeader>
             <DialogTitle>Send {contactMethod.toUpperCase()}</DialogTitle>
             <DialogDescription>
-              To: {contactMethod === 'email' ? attendee.email : attendee.phone}
+              To: {contactMethod === "email" ? attendee.email : attendee.phone}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            {contactMethod === 'email' && (
-              <Input 
+            {contactMethod === "email" && (
+              <Input
                 placeholder="Subject"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
               />
             )}
-            {contactMethod === 'email' ? (
+            {contactMethod === "email" ? (
               <div className="bg-background rounded-md border border-input">
                 <ReactQuill
                   theme="snow"
@@ -551,7 +613,9 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsContactOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setIsContactOpen(false)}>
+              Cancel
+            </Button>
             <Button onClick={handleSend} disabled={!message.trim() || sendMutation.isPending}>
               {sendMutation.isPending ? "Sending..." : "Send Message"}
             </Button>
@@ -617,40 +681,45 @@ function BulkEmailModal({
 <p>We look forward to seeing you at the event.</p>
 <br/>
 <p>Kind regards,</p>
-<p>${organizer?.name || activeWorkspace?.name || 'Organizer'}<br/>${orgName}<br/>${contactEmail}<br/>${contactPhone}</p>
+<p>${organizer?.name || activeWorkspace?.name || "Organizer"}<br/>${orgName}<br/>${contactEmail}<br/>${contactPhone}</p>
   `.trim();
 
   const [isOpen, setIsOpen] = useState(false);
   const [subject, setSubject] = useState(`Registration Confirmed – ${eventName}`);
   const [message, setMessage] = useState(defaultTemplate);
   const [selectedBadgeId, setSelectedBadgeId] = useState<string>(
-    workspaceBadges?.find((b: any) => b.event_id === eventId)?.id || workspaceBadges?.[0]?.id || ""
+    workspaceBadges?.find((b: any) => b.event_id === eventId)?.id || workspaceBadges?.[0]?.id || "",
   );
-  
+
   const [isSending, setIsSending] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
 
   const handleSendBulk = async () => {
     setIsSending(true);
     setProgress({ current: 0, total: selectedAttendees.length });
-    
+
     for (let i = 0; i < selectedAttendees.length; i++) {
-      const attendee = attendees.find(a => a.id === selectedAttendees[i]);
+      const attendee = attendees.find((a) => a.id === selectedAttendees[i]);
       if (!attendee || !attendee.email) {
-         setProgress(prev => ({ ...prev, current: prev.current + 1 }));
-         continue;
+        setProgress((prev) => ({ ...prev, current: prev.current + 1 }));
+        continue;
       }
-      
-      const origin = window.location.origin.includes("localhost") ? "https://agatike.rw" : window.location.origin;
-      const badgeLink = attendee.qrcode_number && selectedBadgeId ? `${origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}` : "";
-      
-      const isCustomer = attendee.type !== 'rsvp';
-      const registrationInfo = isCustomer 
+
+      const origin = window.location.origin.includes("localhost")
+        ? "https://agatike.rw"
+        : window.location.origin;
+      const badgeLink =
+        attendee.qrcode_number && selectedBadgeId
+          ? `${origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}`
+          : "";
+
+      const isCustomer = attendee.type !== "rsvp";
+      const registrationInfo = isCustomer
         ? `
           <p>Please keep the following details available, as they will be required to access the venue:</p>
           <ul>
-            <li><strong>Registration ID:</strong> ${attendee.id?.substring(0,8).toUpperCase()}</li>
-            <li><strong>Ticket Number:</strong> ${attendee.qrcode_number || 'N/A'}</li>
+            <li><strong>Registration ID:</strong> ${attendee.id?.substring(0, 8).toUpperCase()}</li>
+            <li><strong>Ticket Number:</strong> ${attendee.qrcode_number || "N/A"}</li>
             <li><strong>Registered Name:</strong> ${attendee.names}</li>
             <li><strong>Registered Email:</strong> ${attendee.email}</li>
           </ul>
@@ -662,22 +731,28 @@ function BulkEmailModal({
         `;
 
       const finalMessage = message
-        .replace(/&#91;/g, '[')
-        .replace(/&#93;/g, ']')
-        .replace(/\{\{\s*(?:first\s*)?name\s*\}\}/gi, attendee.names?.split(' ')[0] || 'Attendee')
-        .replace(/\[[^\]]*(?:first\s*)?name[^\]]*\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
-        .replace(/\{\{\s*registration[_\s]*(?:details|information|info)\s*\}\}/gi, registrationInfo.trim())
-        .replace(/\[[^\]]*registration[^\]]*(?:details?|information|info)[^\]]*\]/gi, registrationInfo.trim())
+        .replace(/&#91;/g, "[")
+        .replace(/&#93;/g, "]")
+        .replace(/\{\{\s*(?:first\s*)?name\s*\}\}/gi, attendee.names?.split(" ")[0] || "Attendee")
+        .replace(/\[[^\]]*(?:first\s*)?name[^\]]*\]/gi, attendee.names?.split(" ")[0] || "Attendee")
+        .replace(
+          /\{\{\s*registration[_\s]*(?:details|information|info)\s*\}\}/gi,
+          registrationInfo.trim(),
+        )
+        .replace(
+          /\[[^\]]*registration[^\]]*(?:details?|information|info)[^\]]*\]/gi,
+          registrationInfo.trim(),
+        )
         .replace(/\{\{\s*contact[_\s]*email\s*\}\}/gi, contactEmail)
         .replace(/\[[^\]]*contact[^\]]*email[^\]]*\]/gi, contactEmail)
         .replace(/\{\{\s*phone[_\s]*number\s*\}\}/gi, contactPhone)
         .replace(/\[[^\]]*phone[^\]]*number[^\]]*\]/gi, contactPhone);
-      
+
       try {
-        await sendAttendeeEmail({ 
-          data: { 
-            to: attendee.email, 
-            subject, 
+        await sendAttendeeEmail({
+          data: {
+            to: attendee.email,
+            subject,
             message: finalMessage,
             eventName: attendee.events?.title,
             organizerName: activeWorkspace?.name,
@@ -685,14 +760,14 @@ function BulkEmailModal({
             organizerSocials: organizer?.socials,
             badgeLink,
             appUrl: window.location.origin,
-          } 
+          },
         } as any);
       } catch (err) {
         console.error("Failed to send to", attendee.email, err);
       }
-      setProgress(prev => ({ ...prev, current: prev.current + 1 }));
+      setProgress((prev) => ({ ...prev, current: prev.current + 1 }));
     }
-    
+
     setIsSending(false);
     toast.success(`Successfully sent emails to ${selectedAttendees.length} attendees.`);
     setIsOpen(false);
@@ -716,7 +791,7 @@ function BulkEmailModal({
         <div className="py-4 space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Subject</label>
-            <Input 
+            <Input
               placeholder="Subject"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
@@ -735,7 +810,7 @@ function BulkEmailModal({
               />
             </div>
           </div>
-          
+
           {workspaceBadges && workspaceBadges.length > 0 && (
             <div className="mt-4 border-t border-border/60 pt-4">
               <label className="text-sm font-medium mb-2 block">Attach Badge Design</label>
@@ -750,7 +825,8 @@ function BulkEmailModal({
                 <SelectContent>
                   {workspaceBadges.map((b: any) => (
                     <SelectItem key={b.id} value={b.id}>
-                      {b.logo_text || b.theme || "Untitled Design"} {b.event_id === eventId ? "(Event Default)" : ""}
+                      {b.logo_text || b.theme || "Untitled Design"}{" "}
+                      {b.event_id === eventId ? "(Event Default)" : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -761,9 +837,11 @@ function BulkEmailModal({
           {isSending && (
             <div className="mt-6 p-4 bg-secondary/30 rounded-lg text-center animate-in fade-in">
               <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-primary" />
-              <p className="text-sm font-medium">Sending emails... {progress.current} of {progress.total}</p>
+              <p className="text-sm font-medium">
+                Sending emails... {progress.current} of {progress.total}
+              </p>
               <div className="w-full bg-secondary mt-2 rounded-full h-2 overflow-hidden">
-                <div 
+                <div
                   className="bg-primary h-full transition-all duration-300"
                   style={{ width: `${(progress.current / progress.total) * 100}%` }}
                 />
@@ -772,7 +850,9 @@ function BulkEmailModal({
           )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isSending}>Cancel</Button>
+          <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isSending}>
+            Cancel
+          </Button>
           <Button onClick={handleSendBulk} disabled={!message.trim() || isSending}>
             {isSending ? "Sending..." : "Send to All"}
           </Button>

@@ -170,10 +170,10 @@ export const getEventPosts = createServerFn({ method: "POST" }).handler(async (c
   `;
 
   const data = await hasuraRequest<{ event_posts: any[] }>(query, { event_id });
-  return (data.event_posts || []).map(post => {
+  return (data.event_posts || []).map((post) => {
     let parsedMediaUrls = [];
     try {
-      if (typeof post.media_urls === 'string') {
+      if (typeof post.media_urls === "string") {
         parsedMediaUrls = JSON.parse(post.media_urls);
       } else if (Array.isArray(post.media_urls)) {
         parsedMediaUrls = post.media_urls;

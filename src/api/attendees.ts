@@ -62,7 +62,9 @@ const GET_ATTENDEE_BY_QR_CODE = `
 
 export const getAttendeeByQrCode = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { qrcode_number } = ctx.data as unknown as { qrcode_number: string };
-  const data = await hasuraRequest<{ event_attendees: any[] }>(GET_ATTENDEE_BY_QR_CODE, { qrcode_number });
+  const data = await hasuraRequest<{ event_attendees: any[] }>(GET_ATTENDEE_BY_QR_CODE, {
+    qrcode_number,
+  });
   return data.event_attendees?.[0] || null;
 });
 
@@ -84,12 +86,12 @@ export const addEventAttendees = createServerFn({ method: "POST" }).handler(asyn
 
 export const checkUserAttendance = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { event_id } = ctx.data as unknown as { event_id: string };
-  
+
   // Need to dynamically import to avoid circular dependencies if auth imports from elsewhere,
   // but a static import at top is fine too. Let's just use it dynamically to be safe.
   const { getUserSession } = await import("./auth");
   const user = await getUserSession();
-  
+
   if (!user || !user.email) return null;
 
   const query = `
@@ -108,12 +110,11 @@ export const checkUserAttendance = createServerFn({ method: "POST" }).handler(as
     }
   `;
 
-  const data = await hasuraRequest<{ event_attendees: any[] }>(query, { 
-    event_id, 
-    user_id: user.id || null, 
-    email: user.email 
+  const data = await hasuraRequest<{ event_attendees: any[] }>(query, {
+    event_id,
+    user_id: user.id || null,
+    email: user.email,
   });
 
   return data.event_attendees.length > 0 ? data.event_attendees[0] : null;
 });
-

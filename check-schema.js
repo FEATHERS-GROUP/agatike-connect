@@ -26,13 +26,16 @@ async function run() {
 
   const json = await response.json();
   const types = json.data.__schema.types;
-  const pageType = types.find(t => t.name.includes("page"));
+  const pageType = types.find((t) => t.name.includes("page"));
   console.log("Page Type Found:", pageType?.name);
   if (pageType && pageType.fields) {
-    console.log("Fields:", pageType.fields.map(f => f.name));
+    console.log(
+      "Fields:",
+      pageType.fields.map((f) => f.name),
+    );
   } else {
     console.log("Looking for workspace_pages specifically...");
-    const wp = types.find(t => t.name === "workspace_pages");
+    const wp = types.find((t) => t.name === "workspace_pages");
     if (wp) {
       console.log("Found workspace_pages");
     } else {

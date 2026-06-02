@@ -132,7 +132,7 @@ function RootComponent() {
   // Auth redirect logic is handled by AuthRedirect component.
   // location variable removed; handled in AuthRedirect
 
-  const location = useRouterState({ select: s => s.location });
+  const location = useRouterState({ select: (s) => s.location });
 
   // Hide bottom nav on detail/booking/community/ticket/f/b pages, dashboard, and auth pages
   const hideNav =
@@ -180,12 +180,12 @@ function AuthRedirect() {
   const location = useRouterState({ select: (s) => s.location });
 
   useEffect(() => {
-    if (typeof window === 'undefined' || isLoading) return;
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    const publicPaths = ['/signin', '/signup', '/onboarding'];
+    if (typeof window === "undefined" || isLoading) return;
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+    const publicPaths = ["/signin", "/signup", "/onboarding"];
     const isPublic = publicPaths.some((p) => location.pathname.startsWith(p));
     if (isMobile && !isLoggedIn && !isPublic) {
-      navigate({ to: '/signin', replace: true });
+      navigate({ to: "/signin", replace: true });
     }
   }, [isLoading, isLoggedIn, location.pathname, navigate]);
 

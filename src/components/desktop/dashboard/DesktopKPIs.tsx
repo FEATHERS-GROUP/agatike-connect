@@ -10,9 +10,17 @@ interface KPIStats {
 
 export function DesktopKPIs({ stats }: { stats?: KPIStats }) {
   const kpis = [
-    { label: "Total Revenue", value: `$${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign },
+    {
+      label: "Total Revenue",
+      value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
+      icon: DollarSign,
+    },
     { label: "Tickets Sold", value: (stats?.totalSold || 0).toLocaleString(), icon: Ticket },
-    { label: "RSVP Registrations", value: (stats?.totalRegistered || 0).toLocaleString(), icon: Users },
+    {
+      label: "RSVP Registrations",
+      value: (stats?.totalRegistered || 0).toLocaleString(),
+      icon: Users,
+    },
     { label: "Total Events", value: (stats?.totalEvents || 0).toString(), icon: Calendar },
   ];
 

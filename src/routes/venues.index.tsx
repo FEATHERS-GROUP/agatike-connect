@@ -6,7 +6,10 @@ export const Route = createFileRoute("/venues/")({
   head: () => ({
     meta: [
       { title: "Venue Tickets — Agatike" },
-      { name: "description", content: "Get access tickets for parks, museums, and gaming centers." },
+      {
+        name: "description",
+        content: "Get access tickets for parks, museums, and gaming centers.",
+      },
     ],
   }),
   component: VenuesIndex,

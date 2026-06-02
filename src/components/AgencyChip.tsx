@@ -13,7 +13,7 @@ export function AgencyChip({ agency, logoUrl, selected, onSelect }: AgencyChipPr
     <button
       className={cn(
         "flex items-center gap-2 p-2 rounded-xl border border-border/60 bg-card hover:bg-card/80 transition-colors",
-        selected && "border-primary bg-primary/10"
+        selected && "border-primary bg-primary/10",
       )}
       onClick={() => onSelect(agency)}
     >

@@ -42,8 +42,8 @@ export function EventDetailsDesktop({ eventId }: { eventId: string }) {
   });
 
   const reviews = feedbackData?.reviews || [];
-  const avgRating = feedbackData?.aggregate?.avg?.rating 
-    ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1) 
+  const avgRating = feedbackData?.aggregate?.avg?.rating
+    ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1)
     : "5.0";
 
   return (
@@ -209,10 +209,14 @@ export function EventDetailsDesktop({ eventId }: { eventId: string }) {
               <h2 className="text-xl font-semibold">Community reviews</h2>
               {attendeeRecord && (
                 <Button asChild variant="outline" size="sm" className="rounded-full">
-                  <Link 
-                    to="/f/$eventId/review" 
-                    params={{ eventId }} 
-                    search={{ attendeeId: attendeeRecord.id, name: attendeeRecord.names, email: attendeeRecord.email }}
+                  <Link
+                    to="/f/$eventId/review"
+                    params={{ eventId }}
+                    search={{
+                      attendeeId: attendeeRecord.id,
+                      name: attendeeRecord.names,
+                      email: attendeeRecord.email,
+                    }}
                   >
                     Leave a Review
                   </Link>
@@ -235,7 +239,9 @@ export function EventDetailsDesktop({ eventId }: { eventId: string }) {
                       </span>
                     </div>
                     {r.title && <p className="mt-2 text-sm font-semibold">{r.title}</p>}
-                    {r.body && <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{r.body}</p>}
+                    {r.body && (
+                      <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{r.body}</p>
+                    )}
                   </div>
                 ))
               ) : (

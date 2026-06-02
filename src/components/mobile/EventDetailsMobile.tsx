@@ -41,8 +41,8 @@ export function EventDetailsMobile({ eventId }: { eventId: string }) {
   });
 
   const reviews = feedbackData?.reviews || [];
-  const avgRating = feedbackData?.aggregate?.avg?.rating 
-    ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1) 
+  const avgRating = feedbackData?.aggregate?.avg?.rating
+    ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1)
     : "5.0";
 
   return (
@@ -154,17 +154,20 @@ export function EventDetailsMobile({ eventId }: { eventId: string }) {
           </div>
         </div>
 
-
         {/* Community Reviews */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold">Community reviews</h2>
             {attendeeRecord && (
               <Button asChild variant="outline" size="sm" className="rounded-full h-8">
-                <Link 
-                  to="/f/$eventId/review" 
-                  params={{ eventId }} 
-                  search={{ attendeeId: attendeeRecord.id, name: attendeeRecord.names, email: attendeeRecord.email }}
+                <Link
+                  to="/f/$eventId/review"
+                  params={{ eventId }}
+                  search={{
+                    attendeeId: attendeeRecord.id,
+                    name: attendeeRecord.names,
+                    email: attendeeRecord.email,
+                  }}
                 >
                   Leave a Review
                 </Link>
@@ -174,7 +177,10 @@ export function EventDetailsMobile({ eventId }: { eventId: string }) {
           <div className="space-y-3">
             {reviews.length > 0 ? (
               reviews.slice(0, 3).map((r: any) => (
-                <div key={r.id} className="rounded-3xl border border-border/40 bg-card/60 p-4 backdrop-blur">
+                <div
+                  key={r.id}
+                  className="rounded-3xl border border-border/40 bg-card/60 p-4 backdrop-blur"
+                >
                   <div className="flex items-center gap-2 text-sm font-medium">
                     {r.reviewer_name}
                     {r.is_verified && (
@@ -187,7 +193,11 @@ export function EventDetailsMobile({ eventId }: { eventId: string }) {
                     </span>
                   </div>
                   {r.title && <p className="mt-2 text-sm font-semibold">{r.title}</p>}
-                  {r.body && <p className="mt-1 text-sm text-muted-foreground leading-relaxed line-clamp-3">{r.body}</p>}
+                  {r.body && (
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                      {r.body}
+                    </p>
+                  )}
                 </div>
               ))
             ) : (

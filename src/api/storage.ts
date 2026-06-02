@@ -77,9 +77,7 @@ export const deleteFiles = createServerFn({ method: "POST" }).handler(async (ctx
   const PREFIX = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
 
   // Extract storage paths from full public URLs and filter to only files in our bucket
-  const paths = urls
-    .filter((u) => u && u.startsWith(PREFIX))
-    .map((u) => u.replace(PREFIX, ""));
+  const paths = urls.filter((u) => u && u.startsWith(PREFIX)).map((u) => u.replace(PREFIX, ""));
 
   if (paths.length === 0) return { deleted: 0 };
 
@@ -102,4 +100,3 @@ export const deleteFiles = createServerFn({ method: "POST" }).handler(async (ctx
 
   return { deleted: paths.length };
 });
-

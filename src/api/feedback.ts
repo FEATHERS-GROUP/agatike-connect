@@ -123,11 +123,16 @@ export const getEventFeedback = createServerFn({ method: "POST" }).handler(async
   }>(query, { event_id });
 
   return {
-    reviews: data.event_feedback?.map((r) => ({
-      ...r,
-      tags: r.tags ? (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags) : [],
-      media_urls: r.media_urls ? (typeof r.media_urls === "string" ? JSON.parse(r.media_urls) : r.media_urls) : [],
-    })) || [],
+    reviews:
+      data.event_feedback?.map((r) => ({
+        ...r,
+        tags: r.tags ? (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags) : [],
+        media_urls: r.media_urls
+          ? typeof r.media_urls === "string"
+            ? JSON.parse(r.media_urls)
+            : r.media_urls
+          : [],
+      })) || [],
     aggregate: data.event_feedback_aggregate?.aggregate || { count: 0, avg: { rating: 0 } },
   };
 });
@@ -168,11 +173,16 @@ export const getEventFeedbackPublic = createServerFn({ method: "POST" }).handler
   }>(query, { event_id });
 
   return {
-    reviews: data.event_feedback?.map((r) => ({
-      ...r,
-      tags: r.tags ? (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags) : [],
-      media_urls: r.media_urls ? (typeof r.media_urls === "string" ? JSON.parse(r.media_urls) : r.media_urls) : [],
-    })) || [],
+    reviews:
+      data.event_feedback?.map((r) => ({
+        ...r,
+        tags: r.tags ? (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags) : [],
+        media_urls: r.media_urls
+          ? typeof r.media_urls === "string"
+            ? JSON.parse(r.media_urls)
+            : r.media_urls
+          : [],
+      })) || [],
     aggregate: data.event_feedback_aggregate?.aggregate || { count: 0, avg: { rating: 0 } },
   };
 });

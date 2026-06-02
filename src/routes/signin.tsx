@@ -59,15 +59,15 @@ function SignIn() {
         <Navbar />
       </div>
 
-
-
       <div className="flex flex-1 flex-col lg:mx-auto lg:grid lg:min-h-[calc(100vh-4rem)] lg:max-w-7xl lg:grid-cols-2 lg:items-center lg:gap-10 lg:px-6 lg:py-10">
         {/* Visual Header */}
         <div className="relative h-[35vh] w-full shrink-0 lg:h-[640px] lg:overflow-hidden lg:rounded-3xl">
           <img src={hero} alt="Live event" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent lg:from-black/85 lg:via-black/30" />
           <div className="absolute bottom-8 left-6 right-6 lg:bottom-0 lg:left-0 lg:right-0 lg:p-10 lg:text-white">
-            <p className="text-xs font-medium text-white/90 lg:text-sm lg:opacity-80">Africa's premium platform</p>
+            <p className="text-xs font-medium text-white/90 lg:text-sm lg:opacity-80">
+              Africa's premium platform
+            </p>
             <h2 className="mt-1 text-2xl font-semibold leading-tight text-white lg:mt-2 lg:text-3xl">
               Where the culture meets the calendar.
             </h2>
@@ -93,7 +93,9 @@ function SignIn() {
               <span className="text-lg font-semibold">Agatike</span>
             </div>
             <h1 className="text-2xl font-semibold tracking-tight lg:mt-6">Welcome back</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Sign in to keep the culture moving.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Sign in to keep the culture moving.
+            </p>
 
             <div className="mt-6 grid grid-cols-2 gap-2">
               <Button variant="outline" type="button" className="rounded-xl">
@@ -106,7 +108,8 @@ function SignIn() {
             </div>
 
             <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="h-px flex-1 bg-border" /> or with email <span className="h-px flex-1 bg-border" />
+              <span className="h-px flex-1 bg-border" /> or with email{" "}
+              <span className="h-px flex-1 bg-border" />
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4">
@@ -178,11 +181,17 @@ function SignIn() {
               </Link>
             </p>
           </div>
-          
+
           <p className="mt-auto pt-6 text-center text-xs text-muted-foreground lg:mt-4 lg:pt-0">
             By continuing you agree to our{" "}
-            <Link to="/" className="underline">Terms</Link> and{" "}
-            <Link to="/" className="underline">Privacy</Link>.
+            <Link to="/" className="underline">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link to="/" className="underline">
+              Privacy
+            </Link>
+            .
           </p>
         </div>
       </div>

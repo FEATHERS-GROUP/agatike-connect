@@ -34,7 +34,13 @@ const agencies = [
   { name: "Volcano", logo: "https://ui-avatars.com/api/?name=Volcano&background=random" },
 ];
 
-function generateSeats(rows: number, columns: number, pattern: ("seat" | "aisle")[], bookedIndices: number[], vipIndices: number[] = []): BusSeat[] {
+function generateSeats(
+  rows: number,
+  columns: number,
+  pattern: ("seat" | "aisle")[],
+  bookedIndices: number[],
+  vipIndices: number[] = [],
+): BusSeat[] {
   const seats: BusSeat[] = [];
   let seatCounter = 1;
 
@@ -59,8 +65,8 @@ function generateSeats(rows: number, columns: number, pattern: ("seat" | "aisle"
   return seats;
 }
 
-const today = new Date().toISOString().split('T')[0];
-const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+const today = new Date().toISOString().split("T")[0];
+const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
 
 export const mockBusTrips: BusTrip[] = [
   {
@@ -79,7 +85,13 @@ export const mockBusTrips: BusTrip[] = [
       rows: 10,
       columns: 4,
       pattern: ["seat", "seat", "aisle", "seat", "seat"],
-      seats: generateSeats(10, 4, ["seat", "seat", "aisle", "seat", "seat"], [2, 5, 8, 9, 10, 30, 35, 36], [1, 2, 3, 4]),
+      seats: generateSeats(
+        10,
+        4,
+        ["seat", "seat", "aisle", "seat", "seat"],
+        [2, 5, 8, 9, 10, 30, 35, 36],
+        [1, 2, 3, 4],
+      ),
     },
   },
   {
@@ -98,7 +110,12 @@ export const mockBusTrips: BusTrip[] = [
       rows: 12,
       columns: 5,
       pattern: ["seat", "seat", "aisle", "seat", "seat", "seat"],
-      seats: generateSeats(12, 5, ["seat", "seat", "aisle", "seat", "seat", "seat"], [10, 11, 12, 13, 14, 15, 20, 21]),
+      seats: generateSeats(
+        12,
+        5,
+        ["seat", "seat", "aisle", "seat", "seat", "seat"],
+        [10, 11, 12, 13, 14, 15, 20, 21],
+      ),
     },
   },
   {
@@ -117,7 +134,12 @@ export const mockBusTrips: BusTrip[] = [
       rows: 10,
       columns: 3,
       pattern: ["seat", "aisle", "seat", "seat"],
-      seats: generateSeats(10, 3, ["seat", "aisle", "seat", "seat"], Array.from({length: 30}, (_, i) => i + 1)), // Fully booked
+      seats: generateSeats(
+        10,
+        3,
+        ["seat", "aisle", "seat", "seat"],
+        Array.from({ length: 30 }, (_, i) => i + 1),
+      ), // Fully booked
     },
   },
   {
@@ -136,7 +158,12 @@ export const mockBusTrips: BusTrip[] = [
       rows: 14,
       columns: 5,
       pattern: ["seat", "seat", "aisle", "seat", "seat", "seat"],
-      seats: generateSeats(14, 5, ["seat", "seat", "aisle", "seat", "seat", "seat"], [1, 2, 3, 50, 51]),
+      seats: generateSeats(
+        14,
+        5,
+        ["seat", "seat", "aisle", "seat", "seat", "seat"],
+        [1, 2, 3, 50, 51],
+      ),
     },
   },
   {
@@ -157,5 +184,5 @@ export const mockBusTrips: BusTrip[] = [
       pattern: ["seat", "seat", "aisle", "seat", "seat"],
       seats: generateSeats(9, 4, ["seat", "seat", "aisle", "seat", "seat"], [5, 6]),
     },
-  }
+  },
 ];

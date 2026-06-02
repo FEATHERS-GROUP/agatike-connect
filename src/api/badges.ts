@@ -20,7 +20,9 @@ const GET_ALL_BADGE_PROJECTS = `
 export const getAllBadgeProjects = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { workspace_id } = ctx.data as unknown as { workspace_id?: string };
   if (!workspace_id) return [];
-  const data = await hasuraRequest<{ badge_projects: any[] }>(GET_ALL_BADGE_PROJECTS, { workspace_id });
+  const data = await hasuraRequest<{ badge_projects: any[] }>(GET_ALL_BADGE_PROJECTS, {
+    workspace_id,
+  });
   return data.badge_projects || [];
 });
 
