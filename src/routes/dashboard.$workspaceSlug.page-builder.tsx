@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, Plus, GripVertical, Image as ImageIcon, Type, Link as LinkIcon, Trash2, LayoutTemplate, Columns, AlignLeft, AlignRight, Link2, Users2 } from "lucide-react";
+import { Loader2, Plus, GripVertical, Image as ImageIcon, Type, Link as LinkIcon, Trash2, LayoutTemplate, Columns, AlignLeft, AlignRight, Link2, Users2, Grid } from "lucide-react";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -104,6 +104,9 @@ function PageBuilder() {
     } else if (type === "sponsor_logos") {
       newComp.title = "Our Sponsors";
       newComp.logos = []; // array of { url: string }
+    } else if (type === "form_grid") {
+      newComp.columns = "2"; // "1", "2", "3"
+      newComp.cards = []; // array of { id, formId, customTitle, bulletPoints, buttonLabel }
     }
 
     setComponents([...components, newComp]);
@@ -148,14 +151,21 @@ function PageBuilder() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => {
+          {slug && (
+            <Button variant="outline" asChild>
+              <a href={`/p/${slug}`} target="_blank" rel="noreferrer">
+                View Published
+              </a>
+            </Button>
+          )}
+          <Button variant="secondary" onClick={() => {
             const previewData = {
-              title, description, theme_color: themeColor, header_image_url: headerImageUrl, logo_url: logoUrl, components
+              workspace_id, title, description, theme_color: themeColor, header_image_url: headerImageUrl, logo_url: logoUrl, components
             };
             localStorage.setItem("page_preview_data", JSON.stringify(previewData));
             window.open(`/p/${slug || 'preview'}?preview=true`, '_blank');
           }}>
-            Preview Page
+            Preview Edits
           </Button>
           <Button onClick={handlePublish} disabled={mutation.isPending}>
             {mutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -165,8 +175,35 @@ function PageBuilder() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-        {/* Settings Panel */}
+        {/* Toolbox & Settings Panel */}
         <div className="md:col-span-1 space-y-6">
+          <div className="bg-card border border-border/60 rounded-xl p-5 shadow-sm">
+            <h2 className="font-semibold mb-4 text-sm uppercase tracking-wider">Toolbox: Add Blocks</h2>
+            <div className="flex flex-col gap-2">
+              <Button variant="outline" size="sm" className="justify-start gap-3 w-full" onClick={() => addComponent("text")}>
+                <Type className="w-4 h-4 text-muted-foreground" /> Text Block
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start gap-3 w-full" onClick={() => addComponent("image")}>
+                <ImageIcon className="w-4 h-4 text-muted-foreground" /> Image Block
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start gap-3 w-full" onClick={() => addComponent("split_block")}>
+                <Columns className="w-4 h-4 text-muted-foreground" /> Split Layout
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start gap-3 w-full" onClick={() => addComponent("button")}>
+                <Link2 className="w-4 h-4 text-muted-foreground" /> Action Button
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start gap-3 w-full" onClick={() => addComponent("form_link")}>
+                <LayoutTemplate className="w-4 h-4 text-muted-foreground" /> Basic Form Link
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start gap-3 w-full border-primary/30 hover:bg-primary/5" onClick={() => addComponent("form_grid")}>
+                <Grid className="w-4 h-4 text-primary" /> Advanced Form Grid
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start gap-3 w-full" onClick={() => addComponent("sponsor_logos")}>
+                <Users2 className="w-4 h-4 text-muted-foreground" /> Logos Grid
+              </Button>
+            </div>
+          </div>
+
           <div className="bg-card border border-border/60 rounded-xl p-5 shadow-sm">
             <h2 className="font-semibold mb-4 text-sm uppercase tracking-wider">Page Settings</h2>
             
@@ -476,34 +513,122 @@ function PageBuilder() {
                       </div>
                     )}
 
+                    {comp.type === "form_grid" && (
+                      <div className="space-y-4 mt-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs text-muted-foreground flex items-center gap-1"><Grid className="w-3 h-3" /> Advanced Form Grid</Label>
+                          <Select value={comp.columns || "2"} onValueChange={(val) => updateComponent(idx, "columns", val)}>
+                            <SelectTrigger className="w-32 bg-background h-8 text-xs">
+                              <SelectValue placeholder="Columns" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">1 Column</SelectItem>
+                              <SelectItem value="2">2 Columns</SelectItem>
+                              <SelectItem value="3">3 Columns</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          {comp.cards?.map((card: any, cardIdx: number) => (
+                            <div key={card.id || cardIdx} className="bg-background border border-border/60 rounded-xl p-4 relative group/card">
+                              <button 
+                                onClick={() => {
+                                  const newCards = [...comp.cards];
+                                  newCards.splice(cardIdx, 1);
+                                  updateComponent(idx, "cards", newCards);
+                                }}
+                                className="absolute top-2 right-2 text-destructive opacity-0 group-hover/card:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-3">
+                                  <div>
+                                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Link to Form</Label>
+                                    <Select 
+                                      value={card.formId} 
+                                      onValueChange={(val) => {
+                                        const newCards = [...comp.cards];
+                                        newCards[cardIdx].formId = val;
+                                        updateComponent(idx, "cards", newCards);
+                                      }}
+                                    >
+                                      <SelectTrigger className="h-8 text-xs">
+                                        <SelectValue placeholder="Select Form" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {forms.filter((f:any) => f.is_active).map((f: any) => (
+                                          <SelectItem key={f.id} value={f.id}>{f.title}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div>
+                                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Custom Title</Label>
+                                    <Input 
+                                      className="h-8 text-xs" 
+                                      value={card.customTitle || ""} 
+                                      onChange={(e) => {
+                                        const newCards = [...comp.cards];
+                                        newCards[cardIdx].customTitle = e.target.value;
+                                        updateComponent(idx, "cards", newCards);
+                                      }} 
+                                      placeholder="e.g. VIP Registration" 
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Button Label</Label>
+                                    <Input 
+                                      className="h-8 text-xs" 
+                                      value={card.buttonLabel || ""} 
+                                      onChange={(e) => {
+                                        const newCards = [...comp.cards];
+                                        newCards[cardIdx].buttonLabel = e.target.value;
+                                        updateComponent(idx, "cards", newCards);
+                                      }} 
+                                      placeholder="e.g. Register Now" 
+                                    />
+                                  </div>
+                                </div>
+                                <div>
+                                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 block">Bullet Points / Description</Label>
+                                  <textarea 
+                                    className="w-full h-full min-h-[100px] bg-secondary/30 border border-border/60 rounded-md p-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                                    value={card.bulletPoints || ""} 
+                                    onChange={(e) => {
+                                      const newCards = [...comp.cards];
+                                      newCards[cardIdx].bulletPoints = e.target.value;
+                                      updateComponent(idx, "cards", newCards);
+                                    }} 
+                                    placeholder="• Name&#10;• Email&#10;• Ticket Type"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full border-dashed"
+                            onClick={() => {
+                              const newCard = { id: Date.now().toString(), formId: "", customTitle: "", bulletPoints: "", buttonLabel: "Register" };
+                              updateComponent(idx, "cards", [...(comp.cards || []), newCard]);
+                            }}
+                          >
+                            <Plus className="w-4 h-4 mr-2" /> Add Detailed Form Card
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
                   </div>
                 ))}
               </div>
 
-              {/* Add Component Menu */}
-              <div className="mt-8 border-t border-dashed border-border/60 pt-6">
-                <p className="text-sm font-medium mb-4">Add Component Block</p>
-                <div className="flex flex-wrap gap-3">
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => addComponent("text")}>
-                    <Type className="w-4 h-4" /> Text
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => addComponent("image")}>
-                    <ImageIcon className="w-4 h-4" /> Image
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => addComponent("split_block")}>
-                    <Columns className="w-4 h-4" /> Split Layout
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => addComponent("button")}>
-                    <Link2 className="w-4 h-4" /> Button
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => addComponent("form_link")}>
-                    <LayoutTemplate className="w-4 h-4" /> Form Link
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => addComponent("sponsor_logos")}>
-                    <Users2 className="w-4 h-4" /> Logos Grid
-                  </Button>
-                </div>
-              </div>
+              {/* No longer showing the add component menu here since it was moved to sidebar */}
 
             </div>
           </div>

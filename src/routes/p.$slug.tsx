@@ -37,12 +37,12 @@ function PublicCompanyPage() {
   });
 
   const page = isPreview ? previewData : dbPage;
-  const workspace_id = page?.workspace_id || dbPage?.workspace_id; // in preview, forms might rely on DB workspace_id if available, but if purely previewing brand new, might fail to load forms. Best effort.
+  const workspace_id = page?.workspace_id || dbPage?.workspace_id;
 
   const { data: forms = [] } = useQuery({
     queryKey: ["workspace-forms", workspace_id],
     queryFn: () => getWorkspaceForms({ data: { workspace_id } } as any),
-    enabled: !!workspace_id && !isPreview, // If previewing a completely unsaved workspace, forms query might not work well without workspace_id, but it's ok.
+    enabled: !!workspace_id,
   });
 
   if (isLoadingPage && !isPreview) {
@@ -139,6 +139,56 @@ function PublicCompanyPage() {
                       {comp.label || "Click Here"}
                     </a>
                   </Button>
+                </div>
+              );
+            }
+
+            if (comp.type === "form_grid" && comp.cards?.length > 0) {
+              const gridCols = comp.columns === "1" ? "grid-cols-1" : comp.columns === "3" ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2";
+              
+              return (
+                <div key={comp.id} className={`grid ${gridCols} gap-6 md:gap-8`}>
+                  {comp.cards.map((card: any, idx: number) => {
+                    const linkedForm = activeForms.find((f: any) => f.id === card.formId);
+                    
+                    if (!linkedForm && isPreview) {
+                      return (
+                         <div key={idx} className="p-8 border-2 border-dashed border-primary/30 rounded-3xl text-center bg-card text-muted-foreground flex flex-col justify-center items-center h-full min-h-[300px]">
+                            [Preview] Form Card Placeholder
+                         </div>
+                      );
+                    }
+                    if (!linkedForm) return null;
+
+                    return (
+                      <div key={idx} className="bg-card border border-border/60 rounded-3xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col h-full group">
+                        <div className="flex items-start justify-between mb-4">
+                          <h3 className="text-2xl font-bold group-hover:text-primary transition-colors">{card.customTitle || linkedForm.title}</h3>
+                          {linkedForm.cover_image_url && (
+                            <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 ml-4 hidden sm:block">
+                              <img src={linkedForm.cover_image_url} alt={linkedForm.title} className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                        </div>
+                        
+                        {card.bulletPoints ? (
+                          <div className="prose prose-sm dark:prose-invert text-muted-foreground mb-8 flex-1 whitespace-pre-wrap">
+                            {card.bulletPoints}
+                          </div>
+                        ) : linkedForm.description ? (
+                          <p className="text-muted-foreground line-clamp-3 mb-8 flex-1">{linkedForm.description}</p>
+                        ) : (
+                          <div className="flex-1" />
+                        )}
+                        
+                        <Button asChild className="w-full rounded-full mt-auto group-hover:shadow-md transition-all" style={{ background: theme_color }}>
+                          <Link to={`/f/${linkedForm.id}`}>
+                            {card.buttonLabel || "Register"} <ArrowRight className="w-4 h-4 ml-2" />
+                          </Link>
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             }
