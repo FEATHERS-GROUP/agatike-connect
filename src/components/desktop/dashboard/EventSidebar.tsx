@@ -60,6 +60,11 @@ export function EventSidebar() {
       href: `/dashboard/${workspaceSlug}/events/${eventId}/products&add-ons`,
       icon: ShoppingBag,
     },
+    {
+      label: "Experience",
+      href: `/dashboard/${workspaceSlug}/events/${eventId}/experience`,
+      icon: Sparkles,
+    },
   ];
 
   return (

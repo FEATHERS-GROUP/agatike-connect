@@ -58,3 +58,48 @@ export const uploadFile = createServerFn({ method: "POST" }).handler(async (ctx)
   const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${filename}`;
   return { url: publicUrl };
 });
+
+/**
+ * Server-side bulk file deletion from Supabase Storage.
+ * Accepts an array of full public URLs and deletes each one.
+ */
+export const deleteFiles = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { urls } = ctx.data as unknown as { urls: string[] };
+
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const anonKey = process.env.VITE_SUPABASE_ANOM_KEY;
+  const isServiceKeyValid =
+    serviceKey && serviceKey !== "YOUR_SERVICE_ROLE_KEY_HERE" && serviceKey.startsWith("eyJ");
+  const authKey = isServiceKeyValid ? serviceKey : anonKey;
+
+  if (!authKey) throw new Error("Supabase credentials not configured in .env");
+
+  const PREFIX = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
+
+  // Extract storage paths from full public URLs and filter to only files in our bucket
+  const paths = urls
+    .filter((u) => u && u.startsWith(PREFIX))
+    .map((u) => u.replace(PREFIX, ""));
+
+  if (paths.length === 0) return { deleted: 0 };
+
+  // Supabase Storage bulk delete endpoint
+  const deleteUrl = `${SUPABASE_URL}/storage/v1/object/${BUCKET}`;
+  const response = await fetch(deleteUrl, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${authKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prefixes: paths }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error(`Storage deletion failed (${response.status}): ${errText}`);
+    // Don't throw — still proceed with DB deletion
+  }
+
+  return { deleted: paths.length };
+});
+

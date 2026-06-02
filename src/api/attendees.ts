@@ -82,4 +82,38 @@ export const addEventAttendees = createServerFn({ method: "POST" }).handler(asyn
   return hasuraRequest(ADD_EVENT_ATTENDEES, { objects });
 });
 
+export const checkUserAttendance = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { event_id } = ctx.data as unknown as { event_id: string };
+  
+  // Need to dynamically import to avoid circular dependencies if auth imports from elsewhere,
+  // but a static import at top is fine too. Let's just use it dynamically to be safe.
+  const { getUserSession } = await import("./auth");
+  const user = await getUserSession();
+  
+  if (!user || !user.email) return null;
+
+  const query = `
+    query CheckUserAttendance($event_id: uuid!, $user_id: uuid, $email: String!) {
+      event_attendees(where: {
+        event_id: { _eq: $event_id },
+        _or: [
+          { user_id: { _eq: $user_id } },
+          { email: { _eq: $email } }
+        ]
+      }, limit: 1) {
+        id
+        email
+        names
+      }
+    }
+  `;
+
+  const data = await hasuraRequest<{ event_attendees: any[] }>(query, { 
+    event_id, 
+    user_id: user.id || null, 
+    email: user.email 
+  });
+
+  return data.event_attendees.length > 0 ? data.event_attendees[0] : null;
+});
 

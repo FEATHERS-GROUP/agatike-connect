@@ -15,6 +15,9 @@ import {
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { events, experiences, movies, ticketTiers, merch } from "@/lib/mock-data";
+import { useQuery } from "@tanstack/react-query";
+import { getEventFeedbackPublic } from "@/api/feedback";
+import { checkUserAttendance } from "@/api/attendees";
 
 export function EventDetailsMobile({ eventId }: { eventId: string }) {
   const event: any =
@@ -26,6 +29,21 @@ export function EventDetailsMobile({ eventId }: { eventId: string }) {
   const [qty, setQty] = useState(1);
   const selected = ticketTiers.find((t) => t.id === tier)!;
   const total = selected.price * qty;
+
+  const { data: feedbackData } = useQuery({
+    queryKey: ["public-feedback", eventId],
+    queryFn: () => getEventFeedbackPublic({ data: { event_id: eventId } } as any),
+  });
+
+  const { data: attendeeRecord } = useQuery({
+    queryKey: ["check-attendance", eventId],
+    queryFn: () => checkUserAttendance({ data: { event_id: eventId } } as any),
+  });
+
+  const reviews = feedbackData?.reviews || [];
+  const avgRating = feedbackData?.aggregate?.avg?.rating 
+    ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1) 
+    : "5.0";
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-32">
@@ -72,7 +90,7 @@ export function EventDetailsMobile({ eventId }: { eventId: string }) {
               {event.venue || event.cinema || event.city}, {event.city}
             </span>
             <span className="flex items-center gap-1.5">
-              <Star className="h-4 w-4 text-primary fill-primary" /> {event.rating || "5.0"}
+              <Star className="h-4 w-4 text-primary fill-primary" /> {avgRating}
             </span>
           </div>
         </div>
@@ -133,6 +151,50 @@ export function EventDetailsMobile({ eventId }: { eventId: string }) {
                 ? (event.attendees || event.spots || 0) - 6
                 : 0}
             </div>
+          </div>
+        </div>
+
+
+        {/* Community Reviews */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold">Community reviews</h2>
+            {attendeeRecord && (
+              <Button asChild variant="outline" size="sm" className="rounded-full h-8">
+                <Link 
+                  to="/f/$eventId/review" 
+                  params={{ eventId }} 
+                  search={{ attendeeId: attendeeRecord.id, name: attendeeRecord.names, email: attendeeRecord.email }}
+                >
+                  Leave a Review
+                </Link>
+              </Button>
+            )}
+          </div>
+          <div className="space-y-3">
+            {reviews.length > 0 ? (
+              reviews.slice(0, 3).map((r: any) => (
+                <div key={r.id} className="rounded-3xl border border-border/40 bg-card/60 p-4 backdrop-blur">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    {r.reviewer_name}
+                    {r.is_verified && (
+                      <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-semibold">
+                        Verified
+                      </span>
+                    )}
+                    <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      <Star className="h-3 w-3 fill-primary text-primary" /> {r.rating.toFixed(1)}
+                    </span>
+                  </div>
+                  {r.title && <p className="mt-2 text-sm font-semibold">{r.title}</p>}
+                  {r.body && <p className="mt-1 text-sm text-muted-foreground leading-relaxed line-clamp-3">{r.body}</p>}
+                </div>
+              ))
+            ) : (
+              <div className="rounded-3xl border border-border/40 bg-card/60 p-6 text-center text-muted-foreground backdrop-blur">
+                <p className="text-sm">No reviews yet.</p>
+              </div>
+            )}
           </div>
         </div>
 

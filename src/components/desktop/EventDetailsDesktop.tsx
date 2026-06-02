@@ -16,6 +16,9 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { events, experiences, movies, ticketTiers, merch } from "@/lib/mock-data";
+import { useQuery } from "@tanstack/react-query";
+import { getEventFeedbackPublic } from "@/api/feedback";
+import { checkUserAttendance } from "@/api/attendees";
 
 export function EventDetailsDesktop({ eventId }: { eventId: string }) {
   const event: any =
@@ -27,6 +30,21 @@ export function EventDetailsDesktop({ eventId }: { eventId: string }) {
   const [qty, setQty] = useState(1);
   const selected = ticketTiers.find((t) => t.id === tier)!;
   const total = selected.price * qty;
+
+  const { data: feedbackData } = useQuery({
+    queryKey: ["public-feedback", eventId],
+    queryFn: () => getEventFeedbackPublic({ data: { event_id: eventId } } as any),
+  });
+
+  const { data: attendeeRecord } = useQuery({
+    queryKey: ["check-attendance", eventId],
+    queryFn: () => checkUserAttendance({ data: { event_id: eventId } } as any),
+  });
+
+  const reviews = feedbackData?.reviews || [];
+  const avgRating = feedbackData?.aggregate?.avg?.rating 
+    ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1) 
+    : "5.0";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -57,7 +75,7 @@ export function EventDetailsDesktop({ eventId }: { eventId: string }) {
               {event.city}
             </span>
             <span className="inline-flex items-center gap-1">
-              <Star className="h-4 w-4 fill-primary text-primary" /> {event.rating || "5.0"}
+              <Star className="h-4 w-4 fill-primary text-primary" /> {avgRating}
             </span>
           </div>
         </div>
@@ -187,22 +205,44 @@ export function EventDetailsDesktop({ eventId }: { eventId: string }) {
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold">Community reviews</h2>
-            <div className="mt-4 space-y-3">
-              {[
-                { n: "Amaka O.", t: "Best night out I've had in months. Sound was unreal." },
-                { n: "Kwame B.", t: "Smooth entry, great staff, would 100% come back." },
-              ].map((r) => (
-                <div key={r.n} className="rounded-2xl border border-border/60 bg-card p-4">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    {r.n}
-                    <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      <Star className="h-3 w-3 fill-primary text-primary" /> 5.0
-                    </span>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Community reviews</h2>
+              {attendeeRecord && (
+                <Button asChild variant="outline" size="sm" className="rounded-full">
+                  <Link 
+                    to="/f/$eventId/review" 
+                    params={{ eventId }} 
+                    search={{ attendeeId: attendeeRecord.id, name: attendeeRecord.names, email: attendeeRecord.email }}
+                  >
+                    Leave a Review
+                  </Link>
+                </Button>
+              )}
+            </div>
+            <div className="space-y-3">
+              {reviews.length > 0 ? (
+                reviews.map((r: any) => (
+                  <div key={r.id} className="rounded-2xl border border-border/60 bg-card p-4">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      {r.reviewer_name}
+                      {r.is_verified && (
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-semibold">
+                          Verified
+                        </span>
+                      )}
+                      <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <Star className="h-3 w-3 fill-primary text-primary" /> {r.rating.toFixed(1)}
+                      </span>
+                    </div>
+                    {r.title && <p className="mt-2 text-sm font-semibold">{r.title}</p>}
+                    {r.body && <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{r.body}</p>}
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">{r.t}</p>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-border/60 bg-card p-6 text-center text-muted-foreground">
+                  <p className="text-sm">No reviews yet.</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

@@ -46,6 +46,7 @@ import { Route as AQrStringRouteImport } from './routes/a.$qrString'
 import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard.$workspaceSlug.index'
 import { Route as VenuesCheckoutVenueIdRouteImport } from './routes/venues.checkout.$venueId'
 import { Route as PublicBadgeBadgeIdRouteImport } from './routes/public.badge.$badgeId'
+import { Route as FEventIdReviewRouteImport } from './routes/f.$eventId.review'
 import { Route as DashboardWorkspaceSlugWithdrawalsRouteImport } from './routes/dashboard.$workspaceSlug.withdrawals'
 import { Route as DashboardWorkspaceSlugVenueRentRouteImport } from './routes/dashboard.$workspaceSlug.venue-rent'
 import { Route as DashboardWorkspaceSlugVenueDesignerRouteImport } from './routes/dashboard.$workspaceSlug.venue-designer'
@@ -71,6 +72,7 @@ import { Route as DashboardWorkspaceSlugEventsEventIdStaffRouteImport } from './
 import { Route as DashboardWorkspaceSlugEventsEventIdProductsChar38addOnsRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.products&add-ons'
 import { Route as DashboardWorkspaceSlugEventsEventIdPlanningRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.planning'
 import { Route as DashboardWorkspaceSlugEventsEventIdParkingRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.parking'
+import { Route as DashboardWorkspaceSlugEventsEventIdExperienceRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.experience'
 import { Route as DashboardWorkspaceSlugEventsEventIdEditRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.edit'
 import { Route as DashboardWorkspaceSlugEventsEventIdAttendeesRouteImport } from './routes/dashboard.$workspaceSlug.events.$eventId.attendees'
 
@@ -261,6 +263,11 @@ const PublicBadgeBadgeIdRoute = PublicBadgeBadgeIdRouteImport.update({
   path: '/public/badge/$badgeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FEventIdReviewRoute = FEventIdReviewRouteImport.update({
+  id: '/f/$eventId/review',
+  path: '/f/$eventId/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardWorkspaceSlugWithdrawalsRoute =
   DashboardWorkspaceSlugWithdrawalsRouteImport.update({
     id: '/$workspaceSlug/withdrawals',
@@ -411,6 +418,12 @@ const DashboardWorkspaceSlugEventsEventIdParkingRoute =
     path: '/$workspaceSlug/events/$eventId/parking',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugEventsEventIdExperienceRoute =
+  DashboardWorkspaceSlugEventsEventIdExperienceRouteImport.update({
+    id: '/$workspaceSlug/events/$eventId/experience',
+    path: '/$workspaceSlug/events/$eventId/experience',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugEventsEventIdEditRoute =
   DashboardWorkspaceSlugEventsEventIdEditRouteImport.update({
     id: '/$workspaceSlug/events/$eventId/edit',
@@ -465,6 +478,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
+  '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
@@ -480,6 +494,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/ticket-designer/': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
+  '/dashboard/$workspaceSlug/events/$eventId/experience': typeof DashboardWorkspaceSlugEventsEventIdExperienceRoute
   '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
   '/dashboard/$workspaceSlug/events/$eventId/planning': typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
   '/dashboard/$workspaceSlug/events/$eventId/products&add-ons': typeof DashboardWorkspaceSlugEventsEventIdProductsChar38addOnsRoute
@@ -531,6 +546,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
+  '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/dashboard/$workspaceSlug': typeof DashboardWorkspaceSlugIndexRoute
@@ -546,6 +562,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/ticket-designer': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
+  '/dashboard/$workspaceSlug/events/$eventId/experience': typeof DashboardWorkspaceSlugEventsEventIdExperienceRoute
   '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
   '/dashboard/$workspaceSlug/events/$eventId/planning': typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
   '/dashboard/$workspaceSlug/events/$eventId/products&add-ons': typeof DashboardWorkspaceSlugEventsEventIdProductsChar38addOnsRoute
@@ -598,6 +615,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
+  '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
@@ -613,6 +631,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/ticket-designer/': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
+  '/dashboard/$workspaceSlug/events/$eventId/experience': typeof DashboardWorkspaceSlugEventsEventIdExperienceRoute
   '/dashboard/$workspaceSlug/events/$eventId/parking': typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
   '/dashboard/$workspaceSlug/events/$eventId/planning': typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
   '/dashboard/$workspaceSlug/events/$eventId/products&add-ons': typeof DashboardWorkspaceSlugEventsEventIdProductsChar38addOnsRoute
@@ -666,6 +685,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/withdrawals'
+    | '/f/$eventId/review'
     | '/public/badge/$badgeId'
     | '/venues/checkout/$venueId'
     | '/dashboard/$workspaceSlug/'
@@ -681,6 +701,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/ticket-designer/'
     | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
+    | '/dashboard/$workspaceSlug/events/$eventId/experience'
     | '/dashboard/$workspaceSlug/events/$eventId/parking'
     | '/dashboard/$workspaceSlug/events/$eventId/planning'
     | '/dashboard/$workspaceSlug/events/$eventId/products&add-ons'
@@ -732,6 +753,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/withdrawals'
+    | '/f/$eventId/review'
     | '/public/badge/$badgeId'
     | '/venues/checkout/$venueId'
     | '/dashboard/$workspaceSlug'
@@ -747,6 +769,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/ticket-designer'
     | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
+    | '/dashboard/$workspaceSlug/events/$eventId/experience'
     | '/dashboard/$workspaceSlug/events/$eventId/parking'
     | '/dashboard/$workspaceSlug/events/$eventId/planning'
     | '/dashboard/$workspaceSlug/events/$eventId/products&add-ons'
@@ -798,6 +821,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/withdrawals'
+    | '/f/$eventId/review'
     | '/public/badge/$badgeId'
     | '/venues/checkout/$venueId'
     | '/dashboard/$workspaceSlug/'
@@ -813,6 +837,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/ticket-designer/'
     | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
+    | '/dashboard/$workspaceSlug/events/$eventId/experience'
     | '/dashboard/$workspaceSlug/events/$eventId/parking'
     | '/dashboard/$workspaceSlug/events/$eventId/planning'
     | '/dashboard/$workspaceSlug/events/$eventId/products&add-ons'
@@ -855,6 +880,7 @@ export interface RootRouteChildren {
   BusesIndexRoute: typeof BusesIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
   VenuesIndexRoute: typeof VenuesIndexRoute
+  FEventIdReviewRoute: typeof FEventIdReviewRoute
   PublicBadgeBadgeIdRoute: typeof PublicBadgeBadgeIdRoute
   VenuesCheckoutVenueIdRoute: typeof VenuesCheckoutVenueIdRoute
 }
@@ -1120,6 +1146,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicBadgeBadgeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/f/$eventId/review': {
+      id: '/f/$eventId/review'
+      path: '/f/$eventId/review'
+      fullPath: '/f/$eventId/review'
+      preLoaderRoute: typeof FEventIdReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/$workspaceSlug/withdrawals': {
       id: '/dashboard/$workspaceSlug/withdrawals'
       path: '/$workspaceSlug/withdrawals'
@@ -1295,6 +1328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdParkingRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/events/$eventId/experience': {
+      id: '/dashboard/$workspaceSlug/events/$eventId/experience'
+      path: '/$workspaceSlug/events/$eventId/experience'
+      fullPath: '/dashboard/$workspaceSlug/events/$eventId/experience'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdExperienceRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/events/$eventId/edit': {
       id: '/dashboard/$workspaceSlug/events/$eventId/edit'
       path: '/$workspaceSlug/events/$eventId/edit'
@@ -1357,6 +1397,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugTicketDesignerIndexRoute: typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   DashboardWorkspaceSlugEventsEventIdAttendeesRoute: typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   DashboardWorkspaceSlugEventsEventIdEditRoute: typeof DashboardWorkspaceSlugEventsEventIdEditRoute
+  DashboardWorkspaceSlugEventsEventIdExperienceRoute: typeof DashboardWorkspaceSlugEventsEventIdExperienceRoute
   DashboardWorkspaceSlugEventsEventIdParkingRoute: typeof DashboardWorkspaceSlugEventsEventIdParkingRoute
   DashboardWorkspaceSlugEventsEventIdPlanningRoute: typeof DashboardWorkspaceSlugEventsEventIdPlanningRoute
   DashboardWorkspaceSlugEventsEventIdProductsChar38addOnsRoute: typeof DashboardWorkspaceSlugEventsEventIdProductsChar38addOnsRoute
@@ -1404,6 +1445,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugEventsEventIdAttendeesRoute,
   DashboardWorkspaceSlugEventsEventIdEditRoute:
     DashboardWorkspaceSlugEventsEventIdEditRoute,
+  DashboardWorkspaceSlugEventsEventIdExperienceRoute:
+    DashboardWorkspaceSlugEventsEventIdExperienceRoute,
   DashboardWorkspaceSlugEventsEventIdParkingRoute:
     DashboardWorkspaceSlugEventsEventIdParkingRoute,
   DashboardWorkspaceSlugEventsEventIdPlanningRoute:
@@ -1453,6 +1496,7 @@ const rootRouteChildren: RootRouteChildren = {
   BusesIndexRoute: BusesIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
   VenuesIndexRoute: VenuesIndexRoute,
+  FEventIdReviewRoute: FEventIdReviewRoute,
   PublicBadgeBadgeIdRoute: PublicBadgeBadgeIdRoute,
   VenuesCheckoutVenueIdRoute: VenuesCheckoutVenueIdRoute,
 }
