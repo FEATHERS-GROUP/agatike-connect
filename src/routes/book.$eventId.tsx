@@ -14,7 +14,7 @@ export const Route = createFileRoute("/book/$eventId")({
 function BookingRoute() {
   const { isLoggedIn, isLoading } = useUserAuth();
   const navigate = useNavigate();
-  const { eventId } = useParams({ strict: false });
+  const { eventId } = Route.useParams();
 
   useEffect(() => {
     if (typeof window === "undefined" || isLoading) return;
