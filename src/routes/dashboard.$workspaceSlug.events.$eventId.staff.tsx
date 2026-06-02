@@ -144,7 +144,7 @@ function GenerateVendorFormModal({
 
   const generateVendorForm = useMutation({
     mutationFn: async () => {
-      const fields = [
+      const fields: any[] = [
         {
           label: "Staff Member Role / Title",
           field_type: "text",
@@ -909,8 +909,8 @@ function StaffView() {
                   <Palette className="h-10 w-10 text-muted-foreground/50 mb-3" />
                   <p>No Badge Design created for this event yet.</p>
                   <Link
-                    to="/dashboard/$workspaceSlug/badge-designer/new"
-                    params={{ workspaceSlug }}
+                    to="/dashboard/$workspaceSlug/badge-designer/$projectId"
+                    params={{ workspaceSlug, projectId: "new" }}
                     search={{ eventId }}
                     className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
                   >
