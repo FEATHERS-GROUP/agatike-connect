@@ -10,7 +10,16 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
-
+import { AppProvider } from "@/lib/AppContext";
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { UserAuthProvider, useUserAuth } from "@/contexts/UserAuthContext";
+import { MobileNav } from "@/components/mobile/MobileNav";
+import { InstallPrompt } from "@/components/mobile/InstallPrompt";
+import { LoaderProvider } from "@/contexts/LoaderContext";
+import { SplashLoader } from "@/components/site/SplashLoader";
+import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
+import { Toaster } from "@/components/ui/sonner";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -117,14 +126,19 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-import { MobileNav } from "@/components/mobile/MobileNav";
-import { AppProvider } from "@/lib/AppContext";
-import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
-import { LoaderProvider } from "@/contexts/LoaderContext";
-import { Toaster } from "@/components/ui/sonner";
-import { InstallPrompt } from "@/components/mobile/InstallPrompt";
-import { SplashLoader } from "@/components/site/SplashLoader";
-import { UserAuthProvider } from "@/contexts/UserAuthContext";
+const navigate = useNavigate();
+const { isLoggedIn, isLoading } = useUserAuth();
+const location = useRouterState({ select: s => s.location });
+
+useEffect(() => {
+  if (typeof window === 'undefined' || isLoading) return;
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+  const publicPaths = ['/signin', '/signup', '/onboarding'];
+  const isPublic = publicPaths.some(p => location.pathname.startsWith(p));
+  if (isMobile && !isLoggedIn && !isPublic) {
+    navigate({ to: '/signin', replace: true });
+  }
+}, [isLoading, isLoggedIn, location.pathname, navigate]);
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -142,25 +156,25 @@ function RootComponent() {
     <AppProvider>
       <QueryClientProvider client={queryClient}>
         <UserAuthProvider>
-        <WorkspaceProvider>
-          <LoaderProvider>
-            {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
-            <div className={`min-h-screen md:pb-0 ${hideNav ? "" : "pb-24"}`}>
-              <Outlet />
-            </div>
-
-            {/* Floating Mobile Navigation - Hidden on Desktop */}
-            {!hideNav && (
-              <div className="md:hidden">
-                <MobileNav />
+          <WorkspaceProvider>
+            <LoaderProvider>
+              {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
+              <div className={`min-h-screen md:pb-0 ${hideNav ? "" : "pb-24"}`}>
+                <Outlet />
               </div>
-            )}
 
-            <InstallPrompt />
-            <SplashLoader />
-            <Toaster position="top-center" />
-          </LoaderProvider>
-        </WorkspaceProvider>
+              {/* Floating Mobile Navigation - Hidden on Desktop */}
+              {!hideNav && (
+                <div className="md:hidden">
+                  <MobileNav />
+                </div>
+              )}
+
+              <InstallPrompt />
+              <SplashLoader />
+              <Toaster position="top-center" />
+            </LoaderProvider>
+          </WorkspaceProvider>
         </UserAuthProvider>
       </QueryClientProvider>
     </AppProvider>

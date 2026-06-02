@@ -4,7 +4,7 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { updateUserOnboarding } from "@/api/auth";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Loader2, Music, Ticket, Map, Trophy, Check, ArrowRight } from "lucide-react";
+import { Loader2, Music, Ticket, Map, Trophy, Check, ArrowRight, Coffee, Palette } from "lucide-react";
 import hero from "@/assets/hero-event.jpg";
 
 export const Route = createFileRoute("/onboarding")({

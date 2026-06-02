@@ -126,7 +126,7 @@ function TicketCard({ ticket }: { ticket: any }) {
       params={{ ticketId: ticket.id }}
       className="block rounded-3xl overflow-hidden border border-border/60 bg-card shadow-[var(--shadow-card)] hover:-translate-y-1 transition-transform"
     >
-      <div className="relative h-40">
+      <div className="relative h-32">
         <img src={ticket.cover} alt={ticket.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
         <span className="absolute bottom-3 left-4 text-white font-bold text-sm leading-tight">
