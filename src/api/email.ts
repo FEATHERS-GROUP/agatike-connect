@@ -4,8 +4,10 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
   const { to, subject, message, eventName, organizerName, organizerLogo, organizerSocials, badgeLink, appUrl } = ctx.data as any;
 
   // Header with Agatike Logo
-  const agatikeIconUrl = appUrl ? `${appUrl}/agatike-icon.png` : "https://i.ibb.co/3sZqZqZ/agatike-logo.png";
-  const agatikeLogoTextUrl = "https://ui-avatars.com/api/?name=Agatike&background=fff&color=F2571D&rounded=true"; // or another wordmark if available
+  const agatikeIconUrl = (appUrl && !appUrl.includes('localhost') && !appUrl.includes('127.0.0.1')) 
+    ? `${appUrl}/agatike-icon.png` 
+    : "https://i.ibb.co/3sZqZqZ/agatike-logo.png";
+  const agatikeLogoTextUrl = "https://ui-avatars.com/api/?name=Agatike&background=fff&color=F2571D&rounded=true";
 
   // Build Social Links HTML if available
   let socialsHtml = '';
@@ -73,7 +75,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
             <td align="center">
               <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  ${organizerLogo ? `
+                  ${(organizerLogo && !organizerLogo.includes('localhost') && organizerLogo.startsWith('http')) ? `
                   <td align="center" style="padding-right: 16px; border-right: 1px solid #cbd5e1;">
                     <img src="${organizerLogo}" alt="${organizerName}" style="height: 40px; border-radius: 8px; object-fit: contain; display: block;" />
                   </td>

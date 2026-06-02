@@ -346,7 +346,8 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
     workspaceBadges?.find((b: any) => b.event_id === eventId)?.id || workspaceBadges?.[0]?.id || ""
   );
 
-  const badgeLink = attendee.qrcode_number && selectedBadgeId ? `${window.location.origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}` : "";
+  const origin = window.location.origin.includes("localhost") ? "https://agatike.rw" : window.location.origin;
+  const badgeLink = attendee.qrcode_number && selectedBadgeId ? `${origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}` : "";
 
   const sendMutation = useMutation({
     mutationFn: async () => {
@@ -370,8 +371,9 @@ function AttendeeDetailsModal({ attendee, activeWorkspace, workspaceBadges, even
           `;
 
         finalMessage = finalMessage
-          .replace(/\[First Name\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
-          .replace(/\[Registration Details\]/gi, registrationInfo.trim());
+          .replace(/\[first\s*name\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
+          .replace(/\[registration\s*details\]/gi, registrationInfo.trim())
+          .replace(/\[regisration\s*detaails\]/gi, registrationInfo.trim());
           
         return sendAttendeeEmail({ 
           data: { 
@@ -632,7 +634,8 @@ function BulkEmailModal({
          continue;
       }
       
-      const badgeLink = attendee.qrcode_number && selectedBadgeId ? `${window.location.origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}` : "";
+      const origin = window.location.origin.includes("localhost") ? "https://agatike.rw" : window.location.origin;
+      const badgeLink = attendee.qrcode_number && selectedBadgeId ? `${origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}` : "";
       
       const isCustomer = attendee.type !== 'rsvp';
       const registrationInfo = isCustomer 
@@ -652,8 +655,9 @@ function BulkEmailModal({
         `;
 
       const finalMessage = message
-        .replace(/\[First Name\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
-        .replace(/\[Registration Details\]/gi, registrationInfo.trim());
+        .replace(/\[first\s*name\]/gi, attendee.names?.split(' ')[0] || 'Attendee')
+        .replace(/\[registration\s*details\]/gi, registrationInfo.trim())
+        .replace(/\[regisration\s*detaails\]/gi, registrationInfo.trim());
       
       try {
         await sendAttendeeEmail({ 
