@@ -25,6 +25,7 @@ import { Route as ExperiencesRouteImport } from './routes/experiences'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VenuesIndexRouteImport } from './routes/venues.index'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as BusesIndexRouteImport } from './routes/buses.index'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
@@ -146,6 +147,11 @@ const ActivityRoute = ActivityRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VenuesIndexRoute = VenuesIndexRouteImport.update({
+  id: '/venues/',
+  path: '/venues/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsIndexRoute = EventsIndexRouteImport.update({
@@ -418,6 +424,7 @@ export interface FileRoutesByFullPath {
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/venues/': typeof VenuesIndexRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
@@ -478,6 +485,7 @@ export interface FileRoutesByTo {
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/buses': typeof BusesIndexRoute
   '/events': typeof EventsIndexRoute
+  '/venues': typeof VenuesIndexRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
@@ -539,6 +547,7 @@ export interface FileRoutesById {
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/venues/': typeof VenuesIndexRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
@@ -601,6 +610,7 @@ export interface FileRouteTypes {
     | '/ticket/$ticketId'
     | '/buses/'
     | '/events/'
+    | '/venues/'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
     | '/dashboard/$workspaceSlug/venue-designer'
@@ -661,6 +671,7 @@ export interface FileRouteTypes {
     | '/ticket/$ticketId'
     | '/buses'
     | '/events'
+    | '/venues'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
     | '/dashboard/$workspaceSlug/venue-designer'
@@ -721,6 +732,7 @@ export interface FileRouteTypes {
     | '/ticket/$ticketId'
     | '/buses/'
     | '/events/'
+    | '/venues/'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
     | '/dashboard/$workspaceSlug/venue-designer'
@@ -778,6 +790,7 @@ export interface RootRouteChildren {
   TicketTicketIdRoute: typeof TicketTicketIdRoute
   BusesIndexRoute: typeof BusesIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
+  VenuesIndexRoute: typeof VenuesIndexRoute
   PublicBadgeBadgeIdRoute: typeof PublicBadgeBadgeIdRoute
 }
 
@@ -893,6 +906,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/venues/': {
+      id: '/venues/'
+      path: '/venues'
+      fullPath: '/venues/'
+      preLoaderRoute: typeof VenuesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events/': {
@@ -1326,6 +1346,7 @@ const rootRouteChildren: RootRouteChildren = {
   TicketTicketIdRoute: TicketTicketIdRoute,
   BusesIndexRoute: BusesIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
+  VenuesIndexRoute: VenuesIndexRoute,
   PublicBadgeBadgeIdRoute: PublicBadgeBadgeIdRoute,
 }
 export const routeTree = rootRouteImport

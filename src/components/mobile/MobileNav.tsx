@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Compass, Bus, Activity, User } from "lucide-react";
+import { Home, Compass, Bus, Ticket, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function MobileNav() {
@@ -9,7 +9,7 @@ export function MobileNav() {
     { name: "Home", href: "/", icon: Home },
     { name: "Explore", href: "/explore", icon: Compass },
     { name: "Bus", href: "/buses/mobile", icon: Bus },
-    { name: "Activity", href: "/activity", icon: Activity },
+    { name: "Venues", href: "/venues", icon: Ticket },
     { name: "Profile", href: "/profile", icon: User },
   ];
 

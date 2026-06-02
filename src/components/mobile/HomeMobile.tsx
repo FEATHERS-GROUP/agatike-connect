@@ -2,7 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { feedPosts, events, experiences, movies, organizers, stories } from "@/lib/mock-data";
 import { FeedCard } from "@/components/site/FeedCard";
 import { Stories } from "@/components/site/Stories";
-import { Camera, Send, Loader2 } from "lucide-react";
+import { Camera, Activity, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useEffect } from "react";
@@ -34,8 +34,8 @@ export function HomeMobile() {
         >
           Agatike
         </h1>
-        <button className="text-foreground" style={{ transform: "rotate(15deg) translateY(-2px)" }}>
-          <Send className="h-6 w-6" />
+        <button className="text-foreground">
+          <Activity className="h-6 w-6" />
         </button>
       </div>
 
