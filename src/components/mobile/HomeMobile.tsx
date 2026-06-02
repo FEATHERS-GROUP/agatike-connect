@@ -12,13 +12,6 @@ export function HomeMobile() {
   const navigate = useNavigate();
   const items = feedPosts;
 
-  // Redirect to signin if not logged in (mobile only)
-  useEffect(() => {
-    if (!isLoading && !isLoggedIn) {
-      navigate({ to: "/signin" });
-    }
-  }, [isLoading, isLoggedIn, navigate]);
-
   // Show loading spinner while checking session
   if (isLoading) {
     return (
@@ -26,11 +19,6 @@ export function HomeMobile() {
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  // Avoid rendering if not logged in (redirect in progress)
-  if (!isLoggedIn) {
-    return null;
   }
 
   return (
