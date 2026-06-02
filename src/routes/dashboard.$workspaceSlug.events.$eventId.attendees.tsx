@@ -70,14 +70,24 @@ function AttendeesView() {
         const names = answers["Names"] || answers["Name"] || rsvp.first_name || "";
         const email = answers["Email"] || answers["Email Address"] || rsvp.email || "";
         const phone = answers["Phone"] || answers["Phone Number"] || "";
+        const ticket_type = answers["Ticket Type / Registration Type"] || answers["Ticket Type"] || answers["Registration Type"] || "Form Registration";
+
+        // Generate a random 8-character alphanumeric string for the QR code
+        const qrcode_number = Math.random().toString(36).substring(2, 10).toUpperCase();
 
         return {
           event_id: eventId,
           names,
           email,
           phone,
+          ticket_type,
+          quanity: "1",
+          qrcode_number,
+          payment_method: "None",
           status: "registered",
           type: "attendee", // To differentiate from customer
+          ticket_id: null,
+          user_id: null,
           custom_fields: answers,
         };
       });
