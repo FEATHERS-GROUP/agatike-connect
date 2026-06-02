@@ -28,12 +28,7 @@ export function HomeMobile() {
         <button className="text-foreground">
           <Camera className="h-6 w-6" />
         </button>
-        <h1
-          className="text-xl font-semibold tracking-tight"
-          style={{ fontFamily: "cursive", fontStyle: "italic" }}
-        >
-          Agatike
-        </h1>
+        <img src="/agatike-icon.png" alt="Agatike" className="h-8 w-auto object-contain" />
         <button className="text-foreground">
           <Activity className="h-6 w-6" />
         </button>

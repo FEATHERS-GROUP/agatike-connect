@@ -11,13 +11,7 @@ export function Navbar() {
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2">
-          <div
-            className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground font-bold"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            A
-          </div>
-          <span className="text-lg font-semibold tracking-tight">Agatike</span>
+          <img src="/icon.svg" alt="Agatike" className="h-8 w-auto" />
         </Link>
 
         <nav className="ml-6 hidden items-center gap-6 md:flex text-sm text-muted-foreground">

@@ -73,13 +73,7 @@ export function DesktopSidebar() {
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:flex md:flex-col overflow-y-auto">
       <Link to="/" className="mb-5 flex items-center gap-2.5 px-1 shrink-0">
-        <div
-          className="grid h-8 w-8 place-items-center rounded-lg text-primary-foreground font-bold text-sm"
-          style={{ background: "var(--gradient-primary)" }}
-        >
-          A
-        </div>
-        <span className="text-base font-semibold tracking-tight">Agatike</span>
+        <img src="/agatike-logo.png" alt="Agatike" className="h-7 w-auto object-contain" />
       </Link>
 
       <WorkspaceSwitcher />

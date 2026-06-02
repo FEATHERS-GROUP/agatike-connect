@@ -4,13 +4,7 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-6 py-14 grid gap-10 md:grid-cols-5">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2">
-            <div
-              className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground font-bold"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              A
-            </div>
-            <span className="text-lg font-semibold">Agatike</span>
+            <img src="/agatike-logo.png" alt="Agatike" className="h-8 w-auto object-contain" />
           </div>
           <p className="mt-4 max-w-sm text-sm text-muted-foreground">
             Africa's premium social event platform. Discover, share and live the moments that
