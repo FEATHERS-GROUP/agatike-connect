@@ -12,15 +12,48 @@ export type WorkspaceModule = {
   mandatory?: boolean;
 };
 
+// Defines the canonical order for the sidebar nav.
+// Dashboard must always be first. Modules not listed here appear at the end.
+const CANONICAL_ORDER: string[] = [
+  "Dashboard",
+  "Events",
+  "Tickets",
+  "RSVPs",
+  "Attendees",
+  "Scanning",
+  "Products & Add-ons",
+  "Merchandise",
+  "VIP Access",
+  "Campaigns",
+  "Venue Listings",
+  "Venue Designer",
+  "Badge Designer",
+  "Experiences",
+  "Analytics",
+  "Withdrawals",
+  "Settings",
+];
+
 export function usePlatformModules() {
   return useQuery({
     queryKey: ["platformModules"],
     queryFn: async () => {
       const data = await getPlatformModules();
-      return data.map((mod) => ({
+      const mapped = data.map((mod) => ({
         ...mod,
         icon: (LucideIcons as any)[mod.icon] || LucideIcons.LayoutDashboard,
       })) as WorkspaceModule[];
+
+      // Sort by the canonical order; unknown modules go to the end
+      mapped.sort((a, b) => {
+        const ai = CANONICAL_ORDER.indexOf(a.label);
+        const bi = CANONICAL_ORDER.indexOf(b.label);
+        const aIdx = ai === -1 ? 999 : ai;
+        const bIdx = bi === -1 ? 999 : bi;
+        return aIdx - bIdx;
+      });
+
+      return mapped;
     },
   });
 }

@@ -28,42 +28,47 @@ export function VenueSidebar() {
   ];
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:block">
-      <div className="mb-6 px-2">
-        <Link
-          to="/dashboard/$workspaceSlug/venue-rent"
-          params={{ workspaceSlug: workspaceSlug || "" }}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Listings
-        </Link>
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 overflow-hidden rounded-xl bg-secondary">
-            {venue?.cover && (
-              <img src={venue.cover} alt={venue.name} className="h-full w-full object-cover" />
-            )}
-          </div>
-          <div>
-            <p className="font-semibold leading-tight line-clamp-1">{venue?.name}</p>
-            <p className="text-xs text-muted-foreground">{venue?.type}</p>
-          </div>
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:flex flex-col">
+      <Link
+        to="/dashboard/$workspaceSlug/venue-rent"
+        params={{ workspaceSlug: workspaceSlug || "" }}
+        className="mb-5 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
+      >
+        <ArrowLeft className="h-4 w-4 shrink-0 group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-medium">Back to Listings</span>
+      </Link>
+
+      <div className="mb-4 flex items-center gap-3">
+        <div className="h-9 w-9 overflow-hidden rounded-lg bg-secondary shrink-0">
+          {venue?.cover && (
+            <img src={venue.cover} alt={venue.name} className="h-full w-full object-cover" />
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="font-semibold text-sm leading-tight truncate">{venue?.name}</p>
+          <p className="text-xs text-muted-foreground">{venue?.type}</p>
         </div>
       </div>
 
-      <nav className="space-y-1 text-sm">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Venue Workspace
+      </p>
+
+      <nav className="space-y-0.5 text-sm flex-1">
         {nav.map((n) => {
           const isActive = location.pathname.includes(n.href);
           return (
             <Link
               key={n.label}
               to={n.href}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${
+              className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors ${
                 isActive
                   ? "bg-accent text-accent-foreground font-medium"
-                  : "text-muted-foreground hover:bg-secondary"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               }`}
             >
-              <n.icon className="h-4 w-4" /> {n.label}
+              <n.icon className="h-4 w-4 shrink-0" />
+              <span className="truncate">{n.label}</span>
             </Link>
           );
         })}

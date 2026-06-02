@@ -26,7 +26,7 @@ export function WorkspaceSwitcher() {
   const ActiveIcon = typeIcons[activeWorkspace.type];
 
   return (
-    <div className="mb-6 px-2">
+    <div className="mb-4">
       <DropdownMenu>
         <DropdownMenuTrigger className="flex w-full items-center justify-between rounded-xl border border-border/60 bg-card px-3 py-2 text-left shadow-sm transition hover:bg-secondary/50 focus:outline-none">
           <div className="flex items-center gap-3">
@@ -53,8 +53,10 @@ export function WorkspaceSwitcher() {
           <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          className="w-56 rounded-xl border-border/60 shadow-[var(--shadow-card)]"
+          className="rounded-xl border-border/60 shadow-[var(--shadow-card)]"
+          style={{ width: "var(--radix-dropdown-menu-trigger-width)" }}
           align="start"
+          sideOffset={4}
         >
           <DropdownMenuLabel className="text-xs text-muted-foreground">
             Switch Workspace

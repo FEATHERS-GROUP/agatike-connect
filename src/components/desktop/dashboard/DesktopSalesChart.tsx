@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
 
-export function DesktopSalesChart() {
+export function DesktopSalesChart({ liveEvent }: { liveEvent?: any }) {
+  const firstStop = liveEvent?.tour_stops?.[0];
+  const location = firstStop
+    ? `${firstStop.venue ? firstStop.venue + " · " : ""}${firstStop.city || ""}`
+    : "";
+
   return (
     <div className="mt-6 grid gap-4 lg:grid-cols-3">
       <div className="rounded-2xl border border-border/60 bg-card p-6 lg:col-span-2">
@@ -22,14 +27,16 @@ export function DesktopSalesChart() {
         </div>
       </div>
       <div className="rounded-2xl border border-border/60 bg-card p-6">
-        <h3 className="font-semibold">Live event</h3>
-        <p className="mt-1 text-xs text-muted-foreground">Afrobeats Night Live · Eko</p>
+        <h3 className="font-semibold">{liveEvent ? "Live event" : "No live event"}</h3>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {liveEvent ? `${liveEvent.title}${location ? ` · ${location}` : ""}` : "No events are currently live"}
+        </p>
         <div className="mt-4 space-y-3">
-          <Stat label="Checked in" value="842 / 1,200" pct={70} />
-          <Stat label="Bar revenue" value="$3,420" pct={48} />
-          <Stat label="Merch sold" value="186" pct={62} />
+          <Stat label="Checked in" value="0 / 0" pct={0} />
+          <Stat label="Bar revenue" value="$0" pct={0} />
+          <Stat label="Merch sold" value="0" pct={0} />
         </div>
-        <Button variant="outline" className="mt-5 w-full rounded-full">
+        <Button variant="outline" className="mt-5 w-full rounded-full" disabled={!liveEvent}>
           Open scanner
         </Button>
       </div>
@@ -55,8 +62,8 @@ function Stat({ label, value, pct }: { label: string; value: string; pct: number
 }
 
 function SalesChart() {
-  const points = [12, 28, 22, 40, 36, 52, 48, 64, 58, 72, 80, 76, 92, 88];
-  const max = Math.max(...points);
+  const points = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const max = 100; // avoid divide by 0 if max is 0
   const w = 600,
     h = 220,
     step = w / (points.length - 1);

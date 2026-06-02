@@ -60,19 +60,19 @@ export function DesktopSidebar() {
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:flex md:flex-col overflow-y-auto">
-      <Link to="/" className="mb-6 flex items-center gap-2 px-2 shrink-0">
+      <Link to="/" className="mb-5 flex items-center gap-2.5 px-1 shrink-0">
         <div
-          className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground font-bold"
+          className="grid h-8 w-8 place-items-center rounded-lg text-primary-foreground font-bold text-sm"
           style={{ background: "var(--gradient-primary)" }}
         >
           A
         </div>
-        <span className="text-lg font-semibold">Agatike</span>
+        <span className="text-base font-semibold tracking-tight">Agatike</span>
       </Link>
 
       <WorkspaceSwitcher />
 
-      <nav className="space-y-1 text-sm flex-1">
+      <nav className="space-y-0.5 text-sm flex-1">
         {nav.map((n) => {
           // Construct the full href: e.g. /dashboard/kigali-arenas/events
           const fullHref =
@@ -92,27 +92,33 @@ export function DesktopSidebar() {
             }
           }
 
-          const cls = `flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${isActive ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:bg-secondary"}`;
+          const cls = `flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+            isActive
+              ? "bg-accent text-accent-foreground font-medium"
+              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+          }`;
 
           return fullHref ? (
             <Link key={n.id} to={fullHref} className={cls}>
-              <n.icon className="h-4 w-4" /> {n.label}
+              <n.icon className="h-4 w-4 shrink-0" />
+              <span className="truncate">{n.label}</span>
             </Link>
           ) : (
             <button key={n.id} className={cls}>
-              <n.icon className="h-4 w-4" /> {n.label}
+              <n.icon className="h-4 w-4 shrink-0" />
+              <span className="truncate">{n.label}</span>
             </button>
           );
         })}
       </nav>
 
-      <div className="mt-8 rounded-2xl border border-border/60 p-4 shrink-0">
+      <div className="mt-4 rounded-xl border border-border/60 bg-accent/20 p-3.5 shrink-0">
         <p className="text-sm font-semibold">Upgrade to Pro</p>
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           Branded pages, marketing & advanced analytics.
         </p>
         <Button
-          className="mt-3 w-full rounded-full"
+          className="mt-3 w-full rounded-full text-xs h-8"
           style={{ background: "var(--gradient-primary)" }}
         >
           Upgrade

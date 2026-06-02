@@ -1,11 +1,19 @@
-import { DollarSign, Ticket, Eye, TrendingUp } from "lucide-react";
+import { DollarSign, Ticket, Calendar, Users } from "lucide-react";
 
-export function DesktopKPIs() {
+interface KPIStats {
+  totalRevenue: number;
+  totalSold: number;
+  totalDrafted: number;
+  totalEvents: number;
+  totalRegistered?: number;
+}
+
+export function DesktopKPIs({ stats }: { stats?: KPIStats }) {
   const kpis = [
-    { label: "Revenue (30d)", value: "$48,920", delta: "+18.4%", icon: DollarSign },
-    { label: "Tickets sold", value: "1,284", delta: "+9.1%", icon: Ticket },
-    { label: "Page views", value: "92,310", delta: "+24%", icon: Eye },
-    { label: "Conversion", value: "6.8%", delta: "+1.2pt", icon: TrendingUp },
+    { label: "Total Revenue", value: `$${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign },
+    { label: "Tickets Sold", value: (stats?.totalSold || 0).toLocaleString(), icon: Ticket },
+    { label: "RSVP Registrations", value: (stats?.totalRegistered || 0).toLocaleString(), icon: Users },
+    { label: "Total Events", value: (stats?.totalEvents || 0).toString(), icon: Calendar },
   ];
 
   return (
@@ -20,7 +28,6 @@ export function DesktopKPIs() {
             <k.icon className="h-4 w-4 text-primary" />
           </div>
           <p className="mt-2 text-2xl font-semibold">{k.value}</p>
-          <p className="mt-1 text-xs text-primary">{k.delta} vs last period</p>
         </div>
       ))}
     </div>
