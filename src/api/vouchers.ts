@@ -131,6 +131,13 @@ const GET_SPONSORED_VOUCHERS = `
         current_balance
         is_active
         created_at
+        voucher_transactions_aggregate {
+          aggregate {
+            sum {
+              amount
+            }
+          }
+        }
       }
     }
   }

@@ -1,9 +1,10 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { DollarSign, Wallet, TrendingUp, PieChart, Store, CreditCard, Plus, Loader2, Trash2 } from "lucide-react";
+import { DollarSign, Wallet, TrendingUp, PieChart, Store, CreditCard, Plus, Loader2, Trash2, BookOpen, FileText, FileSpreadsheet, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventVendors, createEventVendor, deleteEventVendor, getVendorTransactions } from "@/api/vendors";
+import { getAgatikeBookRecords, createAgatikeBookRecord, deleteAgatikeBookRecord } from "@/api/book";
 import { batchGenerateSponsoredVouchers, getSponsoredVouchers } from "@/api/vouchers";
 import { getEventById } from "@/api/events";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -42,6 +43,9 @@ function PlanningView() {
           </TabsTrigger>
           <TabsTrigger value="vouchers" className="rounded-xl h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
             <CreditCard className="h-4 w-4 mr-2" /> Sponsored Vouchers
+          </TabsTrigger>
+          <TabsTrigger value="book" className="rounded-xl h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <BookOpen className="h-4 w-4 mr-2" /> Agatike Book
           </TabsTrigger>
         </TabsList>
 
@@ -99,6 +103,10 @@ function PlanningView() {
 
         <TabsContent value="vouchers" className="mt-0">
           <VouchersTab eventId={eventId} />
+        </TabsContent>
+
+        <TabsContent value="book" className="mt-0">
+          <AgatikeBookTab eventId={eventId} />
         </TabsContent>
       </Tabs>
     </div>
@@ -358,12 +366,34 @@ function VouchersTab({ eventId }: { eventId: string }) {
   const totalPages = Math.ceil(vouchers.length / pageSize);
   const paginatedVouchers = vouchers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  let totalSpent = 0;
+  let totalRemaining = 0;
+  const campaignStats: any[] = [];
+
+  vouchers.forEach((batch: any) => {
+    let batchSpent = 0;
+    let batchRemaining = 0;
+    batch.vouchers?.forEach((v: any) => {
+      batchRemaining += Number(v.current_balance || 0);
+      batchSpent += Number(v.voucher_transactions_aggregate?.aggregate?.sum?.amount || 0);
+    });
+    totalSpent += batchSpent;
+    totalRemaining += batchRemaining;
+    campaignStats.push({
+      name: batch.name,
+      spent: batchSpent,
+      remaining: batchRemaining,
+      total: batchSpent + batchRemaining
+    });
+  });
+  const totalProvisioned = totalSpent + totalRemaining;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-lg font-semibold">Sponsored Vouchers</h2>
-          <p className="text-sm text-muted-foreground">Generate and track pre-paid vouchers for attendees.</p>
+          <h2 className="text-lg font-semibold">Sponsored Vouchers Analytics</h2>
+          <p className="text-sm text-muted-foreground">Monitor the total liability and spending of all generated vouchers.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -545,6 +575,211 @@ function VouchersTab({ eventId }: { eventId: string }) {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function AgatikeBookTab({ eventId }: { eventId: string }) {
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [recordType, setRecordType] = useState("expense"); // expense, note, invoice, staff
+  const [formData, setFormData] = useState({ title: "", description: "", amount: "", status: "pending", file_url: "" });
+
+  const { data: records = [], isLoading } = useQuery({
+    queryKey: ["agatike-book", eventId],
+    queryFn: () => getAgatikeBookRecords({ data: { event_id: eventId } } as any),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      return await createAgatikeBookRecord({
+        data: { 
+          event_id: eventId, 
+          record_type: recordType,
+          title: formData.title,
+          description: formData.description,
+          amount: formData.amount ? Number(formData.amount) : null,
+          status: formData.status,
+          file_url: formData.file_url,
+          metadata: {} // Future custom fields
+        },
+      } as any);
+    },
+    onSuccess: () => {
+      toast.success("Record added to Agatike Book!");
+      setOpen(false);
+      setFormData({ title: "", description: "", amount: "", status: "pending", file_url: "" });
+      queryClient.invalidateQueries({ queryKey: ["agatike-book", eventId] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to add record");
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await deleteAgatikeBookRecord({ data: { id } } as any);
+    },
+    onSuccess: () => {
+      toast.success("Record deleted");
+      queryClient.invalidateQueries({ queryKey: ["agatike-book", eventId] });
+    }
+  });
+
+  const expenses = records.filter((r: any) => r.record_type === "expense");
+  const notes = records.filter((r: any) => r.record_type === "note");
+  const staff = records.filter((r: any) => r.record_type === "staff");
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-semibold">The Agatike Book</h2>
+          <p className="text-sm text-muted-foreground">Your flexible ledger for expenses, notes, staff, and invoices.</p>
+        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+              <Plus className="mr-1 h-4 w-4" /> Add Record
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>New Agatike Book Record</DialogTitle>
+              <DialogDescription>What would you like to log?</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(); }} className="space-y-4 mt-2">
+              
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <Button type="button" variant={recordType === "expense" ? "default" : "outline"} onClick={() => setRecordType("expense")} className="h-10 text-xs">
+                  <DollarSign className="mr-2 h-3 w-3" /> Expense
+                </Button>
+                <Button type="button" variant={recordType === "note" ? "default" : "outline"} onClick={() => setRecordType("note")} className="h-10 text-xs">
+                  <FileText className="mr-2 h-3 w-3" /> Note
+                </Button>
+                <Button type="button" variant={recordType === "staff" ? "default" : "outline"} onClick={() => setRecordType("staff")} className="h-10 text-xs">
+                  <Users className="mr-2 h-3 w-3" /> Staff Hire
+                </Button>
+                <Button type="button" variant={recordType === "invoice" ? "default" : "outline"} onClick={() => setRecordType("invoice")} className="h-10 text-xs">
+                  <FileSpreadsheet className="mr-2 h-3 w-3" /> Invoice
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Title</Label>
+                <Input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder={recordType === "staff" ? "e.g. DJ Smith" : "e.g. Venue Rental"} />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Description / Details</Label>
+                <Input value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Optional details..." />
+              </div>
+
+              {(recordType === "expense" || recordType === "staff" || recordType === "invoice") && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Amount (RWF)</Label>
+                    <Input required={recordType !== "invoice"} type="number" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} placeholder="0" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select value={formData.status} onValueChange={(val) => setFormData({...formData, status: val})}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {recordType === "invoice" && (
+                <div className="space-y-2">
+                  <Label>File URL (Link)</Label>
+                  <Input value={formData.file_url} onChange={e => setFormData({...formData, file_url: e.target.value})} placeholder="https://..." />
+                </div>
+              )}
+
+              <Button type="submit" disabled={createMutation.isPending} className="w-full h-11 rounded-xl" style={{ background: "var(--gradient-primary)" }}>
+                {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save to Book
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Expenses & Invoices Panel */}
+        <div className="rounded-2xl border border-border/60 bg-card p-6">
+          <h3 className="font-semibold text-lg flex items-center mb-4"><DollarSign className="mr-2 h-5 w-5 text-primary" /> Expenses & Payouts</h3>
+          {isLoading ? <div className="py-8 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> : expenses.length === 0 ? <p className="text-sm text-muted-foreground text-center py-8">No expenses logged yet.</p> : (
+            <div className="space-y-3">
+              {expenses.map((r: any) => (
+                <div key={r.id} className="flex justify-between items-center p-3 rounded-xl border bg-secondary/20">
+                  <div>
+                    <p className="font-medium">{r.title}</p>
+                    {r.description && <p className="text-xs text-muted-foreground line-clamp-1">{r.description}</p>}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className="font-semibold">{Number(r.amount).toLocaleString()} RWF</p>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider ${r.status === 'paid' ? 'bg-green-500/10 text-green-500' : 'bg-orange-500/10 text-orange-500'}`}>{r.status}</span>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(r.id)} className="text-destructive h-8 w-8 opacity-50 hover:opacity-100"><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Staff Roster Panel */}
+        <div className="rounded-2xl border border-border/60 bg-card p-6">
+          <h3 className="font-semibold text-lg flex items-center mb-4"><Users className="mr-2 h-5 w-5 text-primary" /> Staff Roster</h3>
+          {isLoading ? <div className="py-8 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> : staff.length === 0 ? <p className="text-sm text-muted-foreground text-center py-8">No staff logged yet.</p> : (
+            <div className="space-y-3">
+              {staff.map((r: any) => (
+                <div key={r.id} className="flex justify-between items-center p-3 rounded-xl border bg-secondary/20">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{r.title}</p>
+                      {r.description && <p className="text-xs text-muted-foreground line-clamp-1">{r.description}</p>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className="font-semibold">{Number(r.amount).toLocaleString()} RWF</p>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider ${r.status === 'paid' ? 'bg-green-500/10 text-green-500' : 'bg-orange-500/10 text-orange-500'}`}>{r.status}</span>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(r.id)} className="text-destructive h-8 w-8 opacity-50 hover:opacity-100"><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Notes Panel */}
+        <div className="lg:col-span-2 rounded-2xl border border-border/60 bg-card p-6">
+          <h3 className="font-semibold text-lg flex items-center mb-4"><FileText className="mr-2 h-5 w-5 text-primary" /> Event Notes & Checklist</h3>
+          {isLoading ? <div className="py-8 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> : notes.length === 0 ? <p className="text-sm text-muted-foreground text-center py-8">No notes logged yet.</p> : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {notes.map((r: any) => (
+                <div key={r.id} className="p-4 rounded-xl border bg-[#ffeb3b]/10 border-[#ffeb3b]/30 relative group">
+                  <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(r.id)} className="absolute top-2 right-2 h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="h-3 w-3" /></Button>
+                  <p className="font-semibold mb-2 pr-6">{r.title}</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{r.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
