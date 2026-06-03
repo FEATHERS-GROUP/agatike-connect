@@ -30,16 +30,15 @@ export function SplashLoader() {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-between pb-16 pt-32 transition-opacity duration-500 md:hidden ${
-        isFading ? "opacity-0 pointer-events-none" : "opacity-100"
-      }`}
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-between pb-16 pt-32 transition-opacity duration-500 md:hidden ${isFading ? "opacity-0 pointer-events-none" : "opacity-100"
+        }`}
       style={{ background: "var(--gradient-primary)" }}
     >
       <div className="flex-1 flex items-center justify-center">
         <div className="flex flex-col items-center gap-6 animate-in zoom-in duration-700">
           <div className="bg-white/20 p-4 rounded-3xl backdrop-blur-sm shadow-2xl">
             <img
-              src="/agatike-icon.png"
+              src="/icon.svg"
               alt="Agatike"
               className="w-24 h-24 object-contain rounded-2xl brightness-0 invert"
             />

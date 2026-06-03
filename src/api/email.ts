@@ -14,10 +14,9 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
   } = ctx.data as any;
 
   // Header with Agatike Logo
-  const agatikeIconUrl =
-    appUrl && !appUrl.includes("localhost") && !appUrl.includes("127.0.0.1")
-      ? `${appUrl}/agatike-icon.png`
-      : "https://ui-avatars.com/api/?name=A&background=F2571D&color=fff&rounded=true&bold=true";
+  const agatikeIconUrl = import.meta.env.PROD
+    ? "https://agatike.rw/agatike-logo-white.svg"
+    : `${appUrl}/agatike-logo-white.svg`;
 
   // Build Social Links HTML if available
   let socialsHtml = "";

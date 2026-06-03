@@ -28,7 +28,7 @@ export function HomeMobile() {
         <button className="text-foreground">
           <Camera className="h-6 w-6" />
         </button>
-        <img src="/agatike-icon.png" alt="Agatike" className="h-8 w-auto object-contain" />
+        <img src="/icon.svg" alt="Agatike" className="h-8 w-auto object-contain" />
         <button className="text-foreground">
           <Activity className="h-6 w-6" />
         </button>
