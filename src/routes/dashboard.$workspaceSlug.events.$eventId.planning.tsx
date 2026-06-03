@@ -4,11 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventVendors, createEventVendor, deleteEventVendor } from "@/api/vendors";
+import { batchGenerateSponsoredVouchers, getSponsoredVouchers } from "@/api/vouchers";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/planning")({
   component: PlanningView,
@@ -92,13 +96,7 @@ function PlanningView() {
         </TabsContent>
 
         <TabsContent value="vouchers" className="mt-0">
-          <div className="rounded-3xl border border-border/60 bg-card p-12 text-center shadow-[var(--shadow-card)]">
-            <CreditCard className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Voucher Settlement</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              This area will display all issued B2B sponsored vouchers and their real-time usage by attendees across different vendors.
-            </p>
-          </div>
+          <VouchersTab eventId={eventId} />
         </TabsContent>
       </Tabs>
     </div>
@@ -221,6 +219,158 @@ function VendorsTab({ eventId }: { eventId: string }) {
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function VouchersTab({ eventId }: { eventId: string }) {
+  const queryClient = useQueryClient();
+  const { activeWorkspace } = useWorkspace();
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({ batch_name: "", value_per_person: "", quantity: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const { data: vouchers = [], isLoading } = useQuery({
+    queryKey: ["sponsored-vouchers", eventId],
+    queryFn: () => getSponsoredVouchers({ data: { event_id: eventId } } as any),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      return await batchGenerateSponsoredVouchers({
+        data: { 
+          event_id: eventId, 
+          workspace_id: activeWorkspace?.id,
+          batch_name: formData.batch_name,
+          value_per_person: Number(formData.value_per_person),
+          quantity: Number(formData.quantity)
+        },
+      } as any);
+    },
+    onSuccess: () => {
+      toast.success("Vouchers generated successfully!");
+      setOpen(false);
+      setFormData({ batch_name: "", value_per_person: "", quantity: "" });
+      queryClient.invalidateQueries({ queryKey: ["sponsored-vouchers", eventId] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to generate vouchers");
+    }
+  });
+
+  const totalPages = Math.ceil(vouchers.length / pageSize);
+  const paginatedVouchers = vouchers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-semibold">Sponsored Vouchers</h2>
+          <p className="text-sm text-muted-foreground">Generate and track pre-paid vouchers for attendees.</p>
+        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+              <Plus className="mr-1 h-4 w-4" /> Generate Vouchers
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Batch Generate Vouchers</DialogTitle>
+              <DialogDescription>Instantly create multiple vouchers with a set spending limit.</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(); }} className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>Batch Name</Label>
+                <Input required value={formData.batch_name} onChange={e => setFormData({...formData, batch_name: e.target.value})} placeholder="e.g. VIP Speakers" />
+              </div>
+              <div className="space-y-2">
+                <Label>Value per Voucher (RWF)</Label>
+                <Input required type="number" value={formData.value_per_person} onChange={e => setFormData({...formData, value_per_person: e.target.value})} placeholder="e.g. 10000" />
+              </div>
+              <div className="space-y-2">
+                <Label>Quantity to Generate</Label>
+                <Input required type="number" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} placeholder="e.g. 100" />
+              </div>
+              <Button type="submit" disabled={createMutation.isPending} className="w-full h-11 rounded-xl" style={{ background: "var(--gradient-primary)" }}>
+                {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Generate {formData.quantity || "0"} Vouchers
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+        <div className="p-4 bg-secondary/30 font-semibold text-sm grid grid-cols-4 gap-4 border-b">
+          <div>Voucher Code</div>
+          <div>Batch</div>
+          <div>Total Value</div>
+          <div>Remaining Balance</div>
+        </div>
+        <div className="divide-y divide-border/60">
+          {isLoading && <div className="p-8 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></div>}
+          {!isLoading && vouchers.length === 0 && (
+            <div className="p-12 text-center text-muted-foreground">No sponsored vouchers generated yet.</div>
+          )}
+          {paginatedVouchers.map((voucher: any) => (
+            <div key={voucher.id} className="p-4 text-sm grid grid-cols-4 gap-4 items-center">
+              <div className="font-mono text-xs bg-secondary/50 px-2 py-1 rounded w-fit">{voucher.qr_code_string}</div>
+              <div className="truncate">{voucher.batch?.name}</div>
+              <div>${voucher.batch?.value_per_voucher}</div>
+              <div>
+                <span className={Number(voucher.current_balance) === 0 ? "text-destructive font-semibold" : "text-green-500 font-semibold"}>
+                  ${voucher.current_balance}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+        {!isLoading && vouchers.length > 0 && (
+          <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground bg-secondary/10">
+            <div className="flex items-center gap-2">
+              <span>Show</span>
+              <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setCurrentPage(1); }}>
+                <SelectTrigger className="h-8 w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+              <span>per page</span>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <span>Page {currentPage} of {totalPages || 1}</span>
+              <div className="flex items-center gap-1">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-8 w-8" 
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-8 w-8" 
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

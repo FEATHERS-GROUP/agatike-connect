@@ -193,7 +193,6 @@ function ProductModal({
           <div className="grid grid-cols-2 gap-4 mt-4">
             {[
               { id: "physical", label: "Physical Merch", icon: ShoppingBag, desc: "T-shirts, posters, physical goods" },
-              { id: "voucher", label: "Digital Voucher", icon: Ticket, desc: "Pre-paid digital wallets" },
               { id: "punch_card", label: "Punch Card", icon: QrCode, desc: "Pre-paid quantity of items" },
               { id: "loyalty_card", label: "Loyalty Card", icon: Check, desc: "Free card to earn rewards" },
             ].map((typeOption) => {

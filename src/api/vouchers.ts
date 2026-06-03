@@ -57,8 +57,88 @@ const GET_VOUCHER_TRANSACTIONS = `
 // Fetch all transactions for an event's vouchers
 export const getEventVoucherTransactions = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { event_id } = ctx.data as unknown as { event_id: string };
-  // Note: requires relationship setup between voucher_transactions -> product_orders -> events
-  // For the sake of UI mocking if relations aren't fully nested, we'll return mock data or basic fetch
   const data = await hasuraRequest<{ voucher_transactions: any[] }>(GET_VOUCHER_TRANSACTIONS, { event_id }).catch(() => ({ voucher_transactions: [] }));
   return data.voucher_transactions || [];
+});
+
+const BATCH_GENERATE_VOUCHERS = `
+  mutation CreateSponsoredBatch($object: sponsored_voucher_batches_insert_input!) {
+    insert_sponsored_voucher_batches_one(object: $object) {
+      id
+      vouchers {
+        id
+        qr_code_string
+        current_balance
+      }
+    }
+  }
+`;
+
+export const batchGenerateSponsoredVouchers = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+
+  const { event_id, workspace_id, batch_name, value_per_person, quantity } = ctx.data as any;
+
+  const batchInput = {
+    event_id,
+    workspace_id,
+    organizer_id: session.sub,
+    name: batch_name,
+    value_per_voucher: String(value_per_person),
+    vouchers: {
+      data: Array.from({ length: Number(quantity) }).map(() => ({
+        qr_code_string: `VCH-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+        current_balance: String(value_per_person),
+        is_active: true
+      }))
+    }
+  };
+
+  return hasuraRequest(BATCH_GENERATE_VOUCHERS, { object: batchInput });
+});
+
+const GET_SPONSORED_VOUCHERS = `
+  query GetSponsoredVouchers($event_id: uuid!) {
+    sponsored_voucher_batches(where: { event_id: { _eq: $event_id } }, order_by: { created_at: desc }) {
+      id
+      name
+      value_per_voucher
+      vouchers(order_by: { created_at: desc }) {
+        id
+        qr_code_string
+        current_balance
+        is_active
+        created_at
+      }
+    }
+  }
+`;
+
+export const getSponsoredVouchers = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { event_id } = ctx.data as unknown as { event_id: string };
+  const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(GET_SPONSORED_VOUCHERS, { event_id });
+  
+  // Flatten the result into a list of vouchers with their batch attached
+  const vouchers: any[] = [];
+  if (data.sponsored_voucher_batches) {
+    for (const batch of data.sponsored_voucher_batches) {
+      if (batch.vouchers) {
+        for (const voucher of batch.vouchers) {
+          vouchers.push({
+            ...voucher,
+            batch: {
+              name: batch.name,
+              value_per_voucher: batch.value_per_voucher
+            }
+          });
+        }
+      }
+    }
+  }
+  
+  // Sort flat list by created_at desc
+  vouchers.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  
+  return vouchers;
 });
