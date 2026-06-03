@@ -245,7 +245,11 @@ function CreateOrganizerPage() {
       <div className="bg-background border-b border-border/60 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <img src="/icon.svg" alt="Agatike" className="h-10 w-10 object-contain hidden sm:block" />
+            <img
+              src="/icon.svg"
+              alt="Agatike"
+              className="h-10 w-10 object-contain hidden sm:block"
+            />
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Create Organizer Profile</h1>
               <p className="text-sm text-muted-foreground">

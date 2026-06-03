@@ -23,16 +23,33 @@ import { checkUserAttendance } from "@/api/attendees";
 
 function getCurrencySymbol(currency?: string) {
   const map: Record<string, string> = {
-    RWF: "RWF ", USD: "$", EUR: "€", GBP: "£", KES: "KES ",
-    UGX: "UGX ", TZS: "TZS ", NGN: "₦", GHS: "GH₵", XOF: "CFA ",
-    ZAR: "R", MAD: "MAD ", ETB: "Br ", dollars: "$"
+    RWF: "RWF ",
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    KES: "KES ",
+    UGX: "UGX ",
+    TZS: "TZS ",
+    NGN: "₦",
+    GHS: "GH₵",
+    XOF: "CFA ",
+    ZAR: "R",
+    MAD: "MAD ",
+    ETB: "Br ",
+    dollars: "$",
   };
   return map[currency || ""] || currency || "$";
 }
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 
-export function EventDetailsDesktop({ eventId, event: initialEvent }: { eventId: string, event?: any }) {
+export function EventDetailsDesktop({
+  eventId,
+  event: initialEvent,
+}: {
+  eventId: string;
+  event?: any;
+}) {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => setIsClient(true), []);
 
@@ -44,55 +61,74 @@ export function EventDetailsDesktop({ eventId, event: initialEvent }: { eventId:
     events[0];
 
   const isMock = !!ev.organizer || !!ev.host || !!ev.cinema;
-  const tourStops = Array.isArray(ev.tour_stops) && ev.tour_stops.length > 0 ? ev.tour_stops : [{ city: ev.city, venue: ev.venue, date: ev.date, time: ev.time }];
+  const tourStops =
+    Array.isArray(ev.tour_stops) && ev.tour_stops.length > 0
+      ? ev.tour_stops
+      : [{ city: ev.city, venue: ev.venue, date: ev.date, time: ev.time }];
   const [selectedStopIdx, setSelectedStopIdx] = useState(0);
-  
+
   const currentStop = tourStops[selectedStopIdx] || tourStops[0];
   const date = isMock ? ev.date : currentStop.date || "TBD";
   const time = isMock ? ev.time || ev.duration : currentStop.time || "";
   const venue = isMock ? ev.venue || ev.cinema : currentStop.venue || "";
   const city = isMock ? ev.city : currentStop.city || "";
-  
-  const rawLat = isMock ? ev.lat : (currentStop.latitude || currentStop.lat);
-  const rawLng = isMock ? ev.lng : (currentStop.longitude || currentStop.lng);
+
+  const rawLat = isMock ? ev.lat : currentStop.latitude || currentStop.lat;
+  const rawLng = isMock ? ev.lng : currentStop.longitude || currentStop.lng;
   let lat = rawLat ? parseFloat(rawLat) : -1.9441;
   let lng = rawLng ? parseFloat(rawLng) : 30.0619;
   if (isNaN(lat)) lat = -1.9441;
   if (isNaN(lng)) lng = 30.0619;
-  
-  const organizerName = isMock ? ev.organizer || ev.host || ev.cinema : (ev.workspaces?.organizer?.name || ev.workspaces?.name || "Organizer");
-  const organizerHandle = isMock ? ev.organizerHandle : (ev.workspaces?.organizer?.handle || "host");
+
+  const organizerName = isMock
+    ? ev.organizer || ev.host || ev.cinema
+    : ev.workspaces?.organizer?.name || ev.workspaces?.name || "Organizer";
+  const organizerHandle = isMock ? ev.organizerHandle : ev.workspaces?.organizer?.handle || "host";
   const currency = getCurrencySymbol(isMock ? ev.currency : ev.workspaces?.wallet?.currency);
   const description = ev.description || ev.synopsis || "";
   const category = ev.category || ev.genre || "Event";
-  const attendeesCount = isMock ? (ev.attendees || ev.spots || 0) : (ev.event_tickets?.reduce((acc: number, t: any) => acc + (parseInt(t.sold) || 0), 0) || 0);
-  
-  const lineup = Array.isArray(ev.lineup) && ev.lineup.length > 0 ? ev.lineup : (isMock ? [
-    { id: '1', name: "DJ Nala", role: "Main DJ", instagram: "djnala" },
-    { id: '2', name: "Burna Sound", role: "Guest Artist" },
-    { id: '3', name: "Amapiano Live", role: "Set", instagram: "amapianolive" },
-    { id: '4', name: "Surprise Guest", role: "Special Appearance" }
-  ] : []);
-  
-  const allTicketTiers = isMock 
-    ? ticketTiers 
-    : (ev.event_tickets?.length ? ev.event_tickets : [{ id: 'ga', type: 'General Admission', cost: 0, remaining: 100 }]).map((t: any) => ({
+  const attendeesCount = isMock
+    ? ev.attendees || ev.spots || 0
+    : ev.event_tickets?.reduce((acc: number, t: any) => acc + (parseInt(t.sold) || 0), 0) || 0;
+
+  const lineup =
+    Array.isArray(ev.lineup) && ev.lineup.length > 0
+      ? ev.lineup
+      : isMock
+        ? [
+            { id: "1", name: "DJ Nala", role: "Main DJ", instagram: "djnala" },
+            { id: "2", name: "Burna Sound", role: "Guest Artist" },
+            { id: "3", name: "Amapiano Live", role: "Set", instagram: "amapianolive" },
+            { id: "4", name: "Surprise Guest", role: "Special Appearance" },
+          ]
+        : [];
+
+  const allTicketTiers = isMock
+    ? ticketTiers
+    : (ev.event_tickets?.length
+        ? ev.event_tickets
+        : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100 }]
+      ).map((t: any) => ({
         id: t.id,
         name: t.type,
         price: parseFloat(t.cost) || 0,
         perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
         remaining: t.remaining,
-        tour_stop_idx: t.tour_stop_idx || 0
+        tour_stop_idx: t.tour_stop_idx || 0,
       }));
 
-  const activeTicketTiers = allTicketTiers.filter((t: any) => t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1);
-      
-  const activeMerch = isMock ? merch : (ev.merchandises || []).map((m: any) => ({
-    id: m.id,
-    name: m.name,
-    price: m.price,
-    image: m.image_url || ev.cover
-  }));
+  const activeTicketTiers = allTicketTiers.filter(
+    (t: any) => t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1,
+  );
+
+  const activeMerch = isMock
+    ? merch
+    : (ev.merchandises || []).map((m: any) => ({
+        id: m.id,
+        name: m.name,
+        price: m.price,
+        image: m.image_url || ev.cover,
+      }));
 
   const [tier, setTier] = useState(activeTicketTiers[0]?.id);
   const [qty, setQty] = useState(1);
@@ -165,9 +201,7 @@ export function EventDetailsDesktop({ eventId, event: initialEvent }: { eventId:
                 </p>
                 <p className="font-semibold">
                   {organizerName}{" "}
-                  <span className="text-xs text-muted-foreground">
-                    @{organizerHandle}
-                  </span>
+                  <span className="text-xs text-muted-foreground">@{organizerHandle}</span>
                 </p>
               </div>
             </div>
@@ -185,9 +219,8 @@ export function EventDetailsDesktop({ eventId, event: initialEvent }: { eventId:
           <div>
             <h2 className="text-xl font-semibold">About this event</h2>
             <p className="mt-3 text-muted-foreground leading-relaxed">
-              {description} Expect
-              curated sound, immersive lighting and a crowd that brings the energy. Doors open one
-              hour before showtime — bring an ID and your good vibes.
+              {description} Expect curated sound, immersive lighting and a crowd that brings the
+              energy. Doors open one hour before showtime — bring an ID and your good vibes.
             </p>
           </div>
 
@@ -213,10 +246,12 @@ export function EventDetailsDesktop({ eventId, event: initialEvent }: { eventId:
                       />
                     )}
                     <p className="mt-3 text-sm font-semibold truncate">{member.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{member.role || "Artist"}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {member.role || "Artist"}
+                    </p>
                     {member.instagram && (
-                      <a 
-                        href={`https://instagram.com/${member.instagram.replace('@', '')}`}
+                      <a
+                        href={`https://instagram.com/${member.instagram.replace("@", "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mt-3 mx-auto flex items-center justify-center h-8 w-8 rounded-full bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
@@ -360,7 +395,8 @@ export function EventDetailsDesktop({ eventId, event: initialEvent }: { eventId:
             <div className="flex items-baseline justify-between">
               <p className="text-sm text-muted-foreground">Starting from</p>
               <p className="text-2xl font-semibold">
-                {currency}{activeTicketTiers[0]?.price || 0}
+                {currency}
+                {activeTicketTiers[0]?.price || 0}
               </p>
             </div>
 
@@ -395,7 +431,8 @@ export function EventDetailsDesktop({ eventId, event: initialEvent }: { eventId:
                   <div className="flex items-center justify-between">
                     <p className="font-medium">{t.name}</p>
                     <p className="font-semibold">
-                      {currency}{t.price}
+                      {currency}
+                      {t.price}
                     </p>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">{t.perks.join(" · ")}</p>
@@ -420,7 +457,8 @@ export function EventDetailsDesktop({ eventId, event: initialEvent }: { eventId:
             <div className="mt-5 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Total</span>
               <span className="text-lg font-semibold">
-                {currency}{total}
+                {currency}
+                {total}
               </span>
             </div>
 
@@ -441,8 +479,7 @@ export function EventDetailsDesktop({ eventId, event: initialEvent }: { eventId:
 
           <div className="mt-4 flex items-center justify-between rounded-2xl border border-border/60 bg-card p-4 text-sm">
             <span className="inline-flex items-center gap-2 text-muted-foreground">
-              <Users className="h-4 w-4" /> {attendeesCount.toLocaleString()}{" "}
-              going
+              <Users className="h-4 w-4" /> {attendeesCount.toLocaleString()} going
             </span>
             <Link to="/feed" className="text-primary hover:underline">
               See moments

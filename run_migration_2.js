@@ -2,7 +2,7 @@ import { config } from "dotenv";
 config();
 
 async function run() {
-  const trackRes = await fetch(process.env.HASURA_ADMIN_API.replace('/graphql', '/metadata'), {
+  const trackRes = await fetch(process.env.HASURA_ADMIN_API.replace("/graphql", "/metadata"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -10,9 +10,7 @@ async function run() {
     },
     body: JSON.stringify({
       type: "bulk",
-      args: [
-        { type: "pg_track_table", args: { schema: "public", name: "voucher_transactions" } }
-      ]
+      args: [{ type: "pg_track_table", args: { schema: "public", name: "voucher_transactions" } }],
     }),
   });
   console.log(await trackRes.json());

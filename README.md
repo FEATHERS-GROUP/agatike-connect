@@ -326,6 +326,7 @@ graph LR
 Vendors are physical stalls or service providers at the event who can accept sponsored vouchers as payment.
 
 **Key Logic:**
+
 - On creation, each vendor is auto-assigned a system ID: `VND-` + 6 random alphanumeric characters (e.g. `VND-AB3K7F`). This ID is used by the Agatike Scanner app to identify the vendor terminal.
 - Clicking any vendor card opens a **Ledger Modal** showing every voucher transaction they have processed, with date, description, voucher QR code, and amount.
 - The ledger can be **exported to CSV** via a browser Blob download, with proper quote-escaping on text fields.
@@ -353,12 +354,13 @@ flowchart TD
 
 Sponsored Vouchers are digital credit instruments issued to attendees. The system supports two distinct campaign types:
 
-| Type | Behaviour |
-|---|---|
-| **Standalone Batch** | N voucher QR codes are pre-generated immediately with a fixed monetary value |
-| **Ticket-Attached** | No vouchers pre-generated; one voucher is created automatically when a qualifying ticket is purchased |
+| Type                 | Behaviour                                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Standalone Batch** | N voucher QR codes are pre-generated immediately with a fixed monetary value                          |
+| **Ticket-Attached**  | No vouchers pre-generated; one voucher is created automatically when a qualifying ticket is purchased |
 
 **Voucher Value Types (Ticket-Attached only):**
+
 - `match_ticket_price` — Voucher value = the cost of the ticket that triggered it
 - `fixed` — Voucher value = a custom RWF amount defined by the organizer
 
@@ -379,6 +381,7 @@ flowchart TD
 **Pagination:** The voucher table supports 10/20/50/100 rows per page using client-side slicing (`vouchers.slice((currentPage-1)*pageSize, currentPage*pageSize)`).
 
 **Analytics (computed client-side):**
+
 - `totalProvisioned` = sum of `current_balance + voucher_transactions.sum` per voucher
 - `totalSpent` = sum of all transaction amounts
 - `totalRemaining` = sum of current balances
@@ -430,15 +433,16 @@ flowchart TD
 
 #### Field Types
 
-| Type | UI Control | Stored As |
-|---|---|---|
-| `text` | `<Input type="text">` | string |
-| `number` | `<Input type="number">` | numeric string |
-| `boolean` | `<Checkbox>` | `true / false` |
+| Type      | UI Control              | Stored As      |
+| --------- | ----------------------- | -------------- |
+| `text`    | `<Input type="text">`   | string         |
+| `number`  | `<Input type="number">` | numeric string |
+| `boolean` | `<Checkbox>`            | `true / false` |
 
 #### Data Schema
 
 `agatike_books.schema_fields` (JSONB):
+
 ```json
 [
   { "name": "Description", "type": "text" },
@@ -448,6 +452,7 @@ flowchart TD
 ```
 
 `agatike_book_records.record_data` (JSONB):
+
 ```json
 {
   "Description": "Sound Equipment Hire",
@@ -489,13 +494,13 @@ flowchart TD
 
 #### KPI Cards
 
-| Card | Formula |
-|---|---|
-| Ticket Sales | `SUM(sold × cost)` across all ticket types |
-| Vouchers Provisioned | `SUM(current_balance + spent)` per voucher |
-| Vendor Payouts | `SUM(vendor.total_revenue)` |
-| Book Expenses | `SUM(first number field)` in each Agatike Book |
-| Est. Net Profit | `Ticket Sales − (Vendor Payouts + Book Expenses)` |
+| Card                 | Formula                                           |
+| -------------------- | ------------------------------------------------- |
+| Ticket Sales         | `SUM(sold × cost)` across all ticket types        |
+| Vouchers Provisioned | `SUM(current_balance + spent)` per voucher        |
+| Vendor Payouts       | `SUM(vendor.total_revenue)`                       |
+| Book Expenses        | `SUM(first number field)` in each Agatike Book    |
+| Est. Net Profit      | `Ticket Sales − (Vendor Payouts + Book Expenses)` |
 
 #### Voucher Portfolio Table
 
@@ -548,6 +553,7 @@ flowchart TD
 ### RSVP Form Import
 
 When an organizer imports from a custom form:
+
 1. `getFormDetails` fetches the full form schema + all RSVP submissions
 2. `form_fields` are reduced into a `{ field_id: label }` map
 3. Each RSVP answer object is transformed using this map to produce a normalized attendee object
@@ -565,21 +571,21 @@ When an organizer imports from a custom form:
 
 ## 15. Database Tables Reference
 
-| Table | Purpose |
-|---|---|
-| `events` | Core event data: title, dates, ticket types, tour stops |
-| `event_vendors` | Vendors registered to an event; holds unique `VND-XXXXXX` IDs |
-| `sponsored_voucher_batches` | Voucher campaigns: name, type, value, linked ticket IDs |
-| `sponsored_vouchers` | Individual voucher QR codes and their current balances |
-| `voucher_transactions` | Each time a vendor scans and charges a voucher |
-| `agatike_books` | Custom book definitions: name + `schema_fields` JSONB |
-| `agatike_book_records` | Individual data rows: `record_data` JSONB keyed by field name |
-| `event_attendees` | Attendee roster per event |
-| `event_staff` | Staff members with access control sections |
-| `badge_projects` | Visual badge design configurations |
-| `ticket_projects` | Visual ticket design configurations |
-| `wallets` | Workspace financial balance |
-| `wallet_transactions` | Ledger: credits (sales) and debits (payouts) |
+| Table                       | Purpose                                                       |
+| --------------------------- | ------------------------------------------------------------- |
+| `events`                    | Core event data: title, dates, ticket types, tour stops       |
+| `event_vendors`             | Vendors registered to an event; holds unique `VND-XXXXXX` IDs |
+| `sponsored_voucher_batches` | Voucher campaigns: name, type, value, linked ticket IDs       |
+| `sponsored_vouchers`        | Individual voucher QR codes and their current balances        |
+| `voucher_transactions`      | Each time a vendor scans and charges a voucher                |
+| `agatike_books`             | Custom book definitions: name + `schema_fields` JSONB         |
+| `agatike_book_records`      | Individual data rows: `record_data` JSONB keyed by field name |
+| `event_attendees`           | Attendee roster per event                                     |
+| `event_staff`               | Staff members with access control sections                    |
+| `badge_projects`            | Visual badge design configurations                            |
+| `ticket_projects`           | Visual ticket design configurations                           |
+| `wallets`                   | Workspace financial balance                                   |
+| `wallet_transactions`       | Ledger: credits (sales) and debits (payouts)                  |
 
 ---
 
@@ -587,65 +593,65 @@ When an organizer imports from a custom form:
 
 ### Vendors (`src/api/vendors.ts`)
 
-| Function | Purpose |
-|---|---|
-| `getEventVendors` | Fetch all vendors for an event |
-| `createEventVendor` | Create vendor with auto-generated `VND-XXXXXX` ID |
-| `deleteEventVendor` | Delete vendor by ID |
-| `getVendorTransactions` | All voucher transactions for a specific vendor |
+| Function                | Purpose                                           |
+| ----------------------- | ------------------------------------------------- |
+| `getEventVendors`       | Fetch all vendors for an event                    |
+| `createEventVendor`     | Create vendor with auto-generated `VND-XXXXXX` ID |
+| `deleteEventVendor`     | Delete vendor by ID                               |
+| `getVendorTransactions` | All voucher transactions for a specific vendor    |
 
 ### Vouchers (`src/api/vouchers.ts`)
 
-| Function | Shape Returned | Used In |
-|---|---|---|
-| `getSponsoredVouchers` | **Flat list** — one item per voucher, batch metadata attached | Vouchers Tab table |
-| `getSponsoredVoucherBatches` | **Batch objects** — one item per campaign, vouchers nested inside | Overview Tab analytics |
-| `batchGenerateSponsoredVouchers` | Creates batch + optional pre-generated vouchers | Vouchers Tab create form |
-| `chargeVoucher` | Records a vendor scan transaction | Scanner App |
+| Function                         | Shape Returned                                                    | Used In                  |
+| -------------------------------- | ----------------------------------------------------------------- | ------------------------ |
+| `getSponsoredVouchers`           | **Flat list** — one item per voucher, batch metadata attached     | Vouchers Tab table       |
+| `getSponsoredVoucherBatches`     | **Batch objects** — one item per campaign, vouchers nested inside | Overview Tab analytics   |
+| `batchGenerateSponsoredVouchers` | Creates batch + optional pre-generated vouchers                   | Vouchers Tab create form |
+| `chargeVoucher`                  | Records a vendor scan transaction                                 | Scanner App              |
 
 ### Agatike Books (`src/api/book.ts`)
 
-| Function | Purpose |
-|---|---|
-| `getAgatikeBooks` | Fetch all books + nested records for an event |
-| `createAgatikeBook` | Create a new book with `name` + `schema_fields` JSONB |
-| `createAgatikeBookRecord` | Add a row (`record_data` JSONB) to a book |
-| `deleteAgatikeBook` | Delete a book and all its records |
-| `deleteAgatikeBookRecord` | Delete a single record from a book |
+| Function                  | Purpose                                               |
+| ------------------------- | ----------------------------------------------------- |
+| `getAgatikeBooks`         | Fetch all books + nested records for an event         |
+| `createAgatikeBook`       | Create a new book with `name` + `schema_fields` JSONB |
+| `createAgatikeBookRecord` | Add a row (`record_data` JSONB) to a book             |
+| `deleteAgatikeBook`       | Delete a book and all its records                     |
+| `deleteAgatikeBookRecord` | Delete a single record from a book                    |
 
 ### Attendees (`src/api/attendees.ts`)
 
-| Function | Purpose |
-|---|---|
-| `getEventAttendees` | Fetch all attendees for an event |
+| Function            | Purpose                                         |
+| ------------------- | ----------------------------------------------- |
+| `getEventAttendees` | Fetch all attendees for an event                |
 | `addEventAttendees` | Bulk insert attendees (used during RSVP import) |
 
 ### Events (`src/api/events.ts`)
 
-| Function | Purpose |
-|---|---|
+| Function       | Purpose                                               |
+| -------------- | ----------------------------------------------------- |
 | `getEventById` | Full event: metadata + `event_tickets` + `tour_stops` |
 
 ### Email (`src/api/email.ts`)
 
-| Function | Purpose |
-|---|---|
+| Function            | Purpose                                       |
+| ------------------- | --------------------------------------------- |
 | `sendAttendeeEmail` | Send rich HTML email to one or more attendees |
 
 ---
 
 ## Updated Routing Architecture
 
-| Route File | URL | Page |
-|---|---|---|
-| `index.tsx` | `/` | Landing / Home |
-| `dashboard.$workspaceSlug.tsx` | `/dashboard/:slug` | Dashboard shell |
-| `dashboard.$workspaceSlug.events.$eventId.planning.tsx` | `.../planning` | Budget & Settlement |
-| `dashboard.$workspaceSlug.events.$eventId.attendees.tsx` | `.../attendees` | Attendees |
-| `dashboard.$workspaceSlug.events.$eventId.lineup.tsx` | `.../lineup` | Event Lineup |
-| `dashboard.$workspaceSlug.page-builder.tsx` | `.../page-builder` | Page Builder |
-| `b.$qrString.tsx` | `/b/:qrString` | Public Verification |
-| `__root.tsx` | — | Global App Shell |
+| Route File                                               | URL                | Page                |
+| -------------------------------------------------------- | ------------------ | ------------------- |
+| `index.tsx`                                              | `/`                | Landing / Home      |
+| `dashboard.$workspaceSlug.tsx`                           | `/dashboard/:slug` | Dashboard shell     |
+| `dashboard.$workspaceSlug.events.$eventId.planning.tsx`  | `.../planning`     | Budget & Settlement |
+| `dashboard.$workspaceSlug.events.$eventId.attendees.tsx` | `.../attendees`    | Attendees           |
+| `dashboard.$workspaceSlug.events.$eventId.lineup.tsx`    | `.../lineup`       | Event Lineup        |
+| `dashboard.$workspaceSlug.page-builder.tsx`              | `.../page-builder` | Page Builder        |
+| `b.$qrString.tsx`                                        | `/b/:qrString`     | Public Verification |
+| `__root.tsx`                                             | —                  | Global App Shell    |
 
 ---
 
@@ -668,13 +674,14 @@ graph LR
 
 ### State Model
 
-| State | Type | Purpose |
-|---|---|---|
-| `activePageId` | `string \| null` | Which saved page is selected; null = nothing selected |
-| `editorState` | `object` | Full local working copy of the page being edited |
-| `isNewPage` | `boolean` | Whether the current session is building a brand-new, unsaved page |
+| State          | Type             | Purpose                                                           |
+| -------------- | ---------------- | ----------------------------------------------------------------- |
+| `activePageId` | `string \| null` | Which saved page is selected; null = nothing selected             |
+| `editorState`  | `object`         | Full local working copy of the page being edited                  |
+| `isNewPage`    | `boolean`        | Whether the current session is building a brand-new, unsaved page |
 
 The `editorState` object shape:
+
 ```ts
 {
   id: string | null,       // null until first save
@@ -696,13 +703,13 @@ The `editorState` object shape:
 flowchart TD
     A[Page Builder mounts] --> B[getAllWorkspacePages - list all pages]
     B --> C[Left sidebar shows page list with slug + Published/Draft badge]
-    
+
     C --> D{User action}
     D -->|Click existing page| E[setActivePageId]
     E --> F[getWorkspacePage - fetch full page data]
     F --> G[useEffect hydrates editorState from pageData\nFilters out page_settings block into top-level fields]
     G --> H[Canvas + settings panel populate]
-    
+
     D -->|Click + New Page| I[setIsNewPage true\nReset editorState to makeBlankPage]
     I --> H
 
@@ -711,7 +718,7 @@ flowchart TD
     K --> L[saveMutation: upsertWorkspacePage\nMerges page_settings block back into components array]
     L -->|New page| M[Store returned id in editorState\nUpdate activePageId]
     L -->|Existing page| N[invalidateQueries - sidebar refreshes]
-    
+
     H --> O{Delete button}
     O --> P[AlertDialog confirm]
     P --> Q[deleteMutation: deleteWorkspacePage]
@@ -721,6 +728,7 @@ flowchart TD
 ### The `page_settings` Block Pattern
 
 When a page is **saved**, a special `{ type: "page_settings" }` block is prepended to the `components` array:
+
 ```json
 {
   "type": "page_settings",
@@ -746,6 +754,7 @@ This allows organizers to preview their page exactly as it will look — **witho
 ### Image Upload System
 
 All image uploads (header, logo, blocks) route through `uploadFileToStorage`:
+
 - Validates file size before upload (7MB for page media, 5MB for blocks, 2MB for logos)
 - Uploads to Firebase Storage at path `pages/{workspace_id}/{timestamp}`
 - Returns a permanent URL stored in the component's state
@@ -756,6 +765,7 @@ All image uploads (header, logo, blocks) route through `uploadFileToStorage`:
 ### Block System
 
 Every content block on the canvas is rendered by the `ComponentBlock` sub-component. Each block has:
+
 - A type label in the top-left corner
 - An optional **Nav Label** input (used by the public page renderer to build an anchor navigation bar)
 - Move-up / Move-down controls (shown on hover via `moveComponent`)
@@ -763,15 +773,15 @@ Every content block on the canvas is rendered by the `ComponentBlock` sub-compon
 
 #### Available Block Types
 
-| Block Type | Key | Config Fields |
-|---|---|---|
-| **Text Block** | `text` | `content` (textarea) |
-| **Image Block** | `image` | `url` (file upload → Firebase) |
-| **Split Layout** | `split_block` | `text`, `imageUrl`, `imagePosition` (`left`/`right`) |
-| **Action Button** | `button` | `label`, `url` (external link) |
-| **Basic Form Link** | `form_link` | `content` (form ID), `design` (`card`/`button`) |
-| **Advanced Form Grid** | `form_grid` | `columns` (1/2/3), `cardBgColor`, `cardTextColor`, array of cards |
-| **Logos Grid** | `sponsor_logos` | `title`, `logos[]` (array of uploaded image URLs) |
+| Block Type             | Key             | Config Fields                                                     |
+| ---------------------- | --------------- | ----------------------------------------------------------------- |
+| **Text Block**         | `text`          | `content` (textarea)                                              |
+| **Image Block**        | `image`         | `url` (file upload → Firebase)                                    |
+| **Split Layout**       | `split_block`   | `text`, `imageUrl`, `imagePosition` (`left`/`right`)              |
+| **Action Button**      | `button`        | `label`, `url` (external link)                                    |
+| **Basic Form Link**    | `form_link`     | `content` (form ID), `design` (`card`/`button`)                   |
+| **Advanced Form Grid** | `form_grid`     | `columns` (1/2/3), `cardBgColor`, `cardTextColor`, array of cards |
+| **Logos Grid**         | `sponsor_logos` | `title`, `logos[]` (array of uploaded image URLs)                 |
 
 #### Block State Management Pattern
 
@@ -779,7 +789,7 @@ Every content block on the canvas is rendered by the `ComponentBlock` sub-compon
 flowchart LR
     addComponent --> newComp[Creates new block object with id=Date.now]
     newComp --> setEditorState[Appends to components array]
-    
+
     updateComponent --> immutableCopy[Spreads existing components array]
     immutableCopy --> overwrite[Overwrites specific key on target index]
     overwrite --> setEditorState
@@ -823,10 +833,10 @@ This creates the full end-to-end funnel: **Page Builder → Public Page → Form
 
 ### Attendee Types
 
-| `type` value | Origin | Display |
-|---|---|---|
-| `customer` | Bought a ticket through the platform | Blue badge |
-| `attendee` | Imported from an RSVP form | Green badge |
+| `type` value | Origin                               | Display     |
+| ------------ | ------------------------------------ | ----------- |
+| `customer`   | Bought a ticket through the platform | Blue badge  |
+| `attendee`   | Imported from an RSVP form           | Green badge |
 
 ### Full Page Data Flow
 
@@ -881,11 +891,13 @@ flowchart TD
 ### Attendee Details Modal (`AttendeeDetailsModal`)
 
 Opened per row via the Eye icon button. Displays:
+
 - Core fields: Type, Ticket Type, Status, Quantity
 - **Custom Responses**: all key→value pairs from `custom_fields`
 - **Badge Design selector**: choose which badge design to link in the email
 
 Actions available:
+
 - **View Badge** — opens `/a/{qrcode_number}?badgeId={selectedBadgeId}` in new tab
 - **SMS** — opens SMS composer (plain textarea)
 - **Email** — opens rich email composer with React Quill
@@ -906,6 +918,7 @@ flowchart TD
 ```
 
 The **Registration Details** block is generated differently based on attendee type:
+
 - `customer` type → shows Registration ID + Ticket Number + clickable "View your digital ticket" badge link
 - `rsvp` type → shows "Here is your digital badge" + clickable badge link
 

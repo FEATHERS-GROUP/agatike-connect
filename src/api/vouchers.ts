@@ -22,7 +22,7 @@ export const chargeVoucher = createServerFn({ method: "POST" }).handler(async (c
   if (!session || !session.sub) throw new Error("unauthenticated");
 
   const { product_order_id, vendor_id, amount, description } = ctx.data as any;
-  
+
   // Here we would also typically decrement the current_balance on product_orders
   // and ensure they have enough balance. For now, we record the transaction.
 
@@ -55,11 +55,15 @@ const GET_VOUCHER_TRANSACTIONS = `
 `;
 
 // Fetch all transactions for an event's vouchers
-export const getEventVoucherTransactions = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { event_id } = ctx.data as unknown as { event_id: string };
-  const data = await hasuraRequest<{ voucher_transactions: any[] }>(GET_VOUCHER_TRANSACTIONS, { event_id }).catch(() => ({ voucher_transactions: [] }));
-  return data.voucher_transactions || [];
-});
+export const getEventVoucherTransactions = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { event_id } = ctx.data as unknown as { event_id: string };
+    const data = await hasuraRequest<{ voucher_transactions: any[] }>(GET_VOUCHER_TRANSACTIONS, {
+      event_id,
+    }).catch(() => ({ voucher_transactions: [] }));
+    return data.voucher_transactions || [];
+  },
+);
 
 const BATCH_GENERATE_VOUCHERS = `
   mutation CreateSponsoredBatch($object: sponsored_voucher_batches_insert_input!) {
@@ -76,45 +80,47 @@ const BATCH_GENERATE_VOUCHERS = `
   }
 `;
 
-export const batchGenerateSponsoredVouchers = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const session = await getSession();
-  if (!session || !session.sub) throw new Error("unauthenticated");
+export const batchGenerateSponsoredVouchers = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const { 
-    event_id, 
-    workspace_id, 
-    batch_name, 
-    value_per_person, 
-    quantity,
-    generation_type = "manual",
-    linked_ticket_ids = [],
-    value_type = "fixed"
-  } = ctx.data as any;
+    const {
+      event_id,
+      workspace_id,
+      batch_name,
+      value_per_person,
+      quantity,
+      generation_type = "manual",
+      linked_ticket_ids = [],
+      value_type = "fixed",
+    } = ctx.data as any;
 
-  const batchInput: any = {
-    event_id,
-    workspace_id,
-    organizer_id: session.sub,
-    name: batch_name,
-    value_per_voucher: String(value_per_person || 0),
-    generation_type,
-    linked_ticket_ids: linked_ticket_ids || [],
-    value_type
-  };
-
-  // Only pre-generate the actual voucher records if this is a manual batch
-  if (generation_type === "manual" && quantity > 0) {
-    batchInput.vouchers = {
-      data: Array.from({ length: Number(quantity) }).map(() => ({
-        qr_code_string: `VCH-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-        current_balance: String(value_per_person),
-        is_active: true
-      }))
+    const batchInput: any = {
+      event_id,
+      workspace_id,
+      organizer_id: session.sub,
+      name: batch_name,
+      value_per_voucher: String(value_per_person || 0),
+      generation_type,
+      linked_ticket_ids: linked_ticket_ids || [],
+      value_type,
     };
-  }
 
-  return hasuraRequest(BATCH_GENERATE_VOUCHERS, { object: batchInput });
-});
+    // Only pre-generate the actual voucher records if this is a manual batch
+    if (generation_type === "manual" && quantity > 0) {
+      batchInput.vouchers = {
+        data: Array.from({ length: Number(quantity) }).map(() => ({
+          qr_code_string: `VCH-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+          current_balance: String(value_per_person),
+          is_active: true,
+        })),
+      };
+    }
+
+    return hasuraRequest(BATCH_GENERATE_VOUCHERS, { object: batchInput });
+  },
+);
 
 const GET_SPONSORED_VOUCHERS = `
   query GetSponsoredVouchers($event_id: uuid!) {
@@ -145,8 +151,10 @@ const GET_SPONSORED_VOUCHERS = `
 
 export const getSponsoredVouchers = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { event_id } = ctx.data as unknown as { event_id: string };
-  const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(GET_SPONSORED_VOUCHERS, { event_id });
-  
+  const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(GET_SPONSORED_VOUCHERS, {
+    event_id,
+  });
+
   // Flatten the result into a list of vouchers with their batch attached
   const vouchers: any[] = [];
   if (data.sponsored_voucher_batches) {
@@ -160,20 +168,20 @@ export const getSponsoredVouchers = createServerFn({ method: "POST" }).handler(a
               value_per_voucher: batch.value_per_voucher,
               generation_type: batch.generation_type,
               value_type: batch.value_type,
-              linked_ticket_ids: batch.linked_ticket_ids
-            }
+              linked_ticket_ids: batch.linked_ticket_ids,
+            },
           });
         }
       } else {
-        // If it's a ticket-linked batch with no vouchers generated yet, we might want to show the batch itself 
+        // If it's a ticket-linked batch with no vouchers generated yet, we might want to show the batch itself
         // as a placeholder, or just skip it. For now, we skip showing empty batches in the individual voucher list.
       }
     }
   }
-  
+
   // Sort flat list by created_at desc
   vouchers.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  
+
   return vouchers;
 });
 
@@ -202,9 +210,13 @@ const GET_SPONSORED_VOUCHER_BATCHES = `
   }
 `;
 
-export const getSponsoredVoucherBatches = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { event_id } = ctx.data as unknown as { event_id: string };
-  const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(GET_SPONSORED_VOUCHER_BATCHES, { event_id }).catch(() => ({ sponsored_voucher_batches: [] }));
-  return data.sponsored_voucher_batches || [];
-});
-
+export const getSponsoredVoucherBatches = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { event_id } = ctx.data as unknown as { event_id: string };
+    const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(
+      GET_SPONSORED_VOUCHER_BATCHES,
+      { event_id },
+    ).catch(() => ({ sponsored_voucher_batches: [] }));
+    return data.sponsored_voucher_batches || [];
+  },
+);

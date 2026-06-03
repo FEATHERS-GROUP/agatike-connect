@@ -40,7 +40,7 @@ export const createAgatikeBook = createServerFn({ method: "POST" }).handler(asyn
 
   const bookData = ctx.data as any;
   bookData.workspace_id = session.sub;
-  
+
   return hasuraRequest(CREATE_AGATIKE_BOOK, { object: bookData });
 });
 

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/events/$eventId")({
       events.find((e) => e.id === params.eventId) ||
       experiences.find((x) => x.id === params.eventId) ||
       movies.find((m) => m.id === params.eventId);
-      
+
     if (!ev) {
       try {
         ev = await getEventById({ data: { id: params.eventId } } as any);

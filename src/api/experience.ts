@@ -64,7 +64,9 @@ export const getEventStories = createServerFn({ method: "POST" }).handler(async 
   `;
   hasuraRequest<{ delete_event_stories: any }>(cleanupMutation, { now })
     .then(async (res) => {
-      const deletedUrls = res.delete_event_stories?.returning?.map((r: any) => r.media_url).filter(Boolean);
+      const deletedUrls = res.delete_event_stories?.returning
+        ?.map((r: any) => r.media_url)
+        .filter(Boolean);
       if (deletedUrls && deletedUrls.length > 0) {
         await deleteFiles({ data: { urls: deletedUrls } } as any);
       }
@@ -125,7 +127,7 @@ export const deleteEventStory = createServerFn({ method: "POST" }).handler(async
     }
   `;
   const storyData = await hasuraRequest<{ event_stories_by_pk: any }>(getStoryQuery, { id });
-  
+
   if (storyData.event_stories_by_pk?.media_url) {
     try {
       await deleteFiles({ data: { urls: [storyData.event_stories_by_pk.media_url] } } as any);
@@ -259,7 +261,7 @@ export const deleteEventPost = createServerFn({ method: "POST" }).handler(async 
     }
   `;
   const postData = await hasuraRequest<{ event_posts_by_pk: any }>(getPostQuery, { id });
-  
+
   if (postData.event_posts_by_pk?.media_urls) {
     try {
       let urls: string[] = [];
@@ -269,7 +271,7 @@ export const deleteEventPost = createServerFn({ method: "POST" }).handler(async 
       } else if (Array.isArray(rawUrls)) {
         urls = rawUrls;
       }
-      
+
       if (urls.length > 0) {
         await deleteFiles({ data: { urls } } as any);
       }

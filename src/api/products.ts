@@ -18,7 +18,7 @@ export const createProduct = createServerFn({ method: "POST" }).handler(async (c
 
   const productData = ctx.data as any;
   productData.organizer_id = session.sub;
-  
+
   return hasuraRequest(CREATE_PRODUCT, { object: productData });
 });
 
@@ -37,7 +37,7 @@ export const updateProduct = createServerFn({ method: "POST" }).handler(async (c
   if (!session || !session.sub) throw new Error("unauthenticated");
 
   const { id, ...setData } = ctx.data as any;
-  
+
   return hasuraRequest(UPDATE_PRODUCT, { id, set: setData });
 });
 

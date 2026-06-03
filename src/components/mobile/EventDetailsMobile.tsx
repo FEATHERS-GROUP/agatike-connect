@@ -21,16 +21,33 @@ import { checkUserAttendance } from "@/api/attendees";
 
 function getCurrencySymbol(currency?: string) {
   const map: Record<string, string> = {
-    RWF: "RWF ", USD: "$", EUR: "€", GBP: "£", KES: "KES ",
-    UGX: "UGX ", TZS: "TZS ", NGN: "₦", GHS: "GH₵", XOF: "CFA ",
-    ZAR: "R", MAD: "MAD ", ETB: "Br ", dollars: "$"
+    RWF: "RWF ",
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    KES: "KES ",
+    UGX: "UGX ",
+    TZS: "TZS ",
+    NGN: "₦",
+    GHS: "GH₵",
+    XOF: "CFA ",
+    ZAR: "R",
+    MAD: "MAD ",
+    ETB: "Br ",
+    dollars: "$",
   };
   return map[currency || ""] || currency || "$";
 }
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 
-export function EventDetailsMobile({ eventId, event: initialEvent }: { eventId: string, event?: any }) {
+export function EventDetailsMobile({
+  eventId,
+  event: initialEvent,
+}: {
+  eventId: string;
+  event?: any;
+}) {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => setIsClient(true), []);
 
@@ -42,55 +59,74 @@ export function EventDetailsMobile({ eventId, event: initialEvent }: { eventId: 
     events[0];
 
   const isMock = !!ev.organizer || !!ev.host || !!ev.cinema;
-  const tourStops = Array.isArray(ev.tour_stops) && ev.tour_stops.length > 0 ? ev.tour_stops : [{ city: ev.city, venue: ev.venue, date: ev.date, time: ev.time }];
+  const tourStops =
+    Array.isArray(ev.tour_stops) && ev.tour_stops.length > 0
+      ? ev.tour_stops
+      : [{ city: ev.city, venue: ev.venue, date: ev.date, time: ev.time }];
   const [selectedStopIdx, setSelectedStopIdx] = useState(0);
-  
+
   const currentStop = tourStops[selectedStopIdx] || tourStops[0];
   const date = isMock ? ev.date : currentStop.date || "TBD";
   const time = isMock ? ev.time || ev.duration : currentStop.time || "";
   const venue = isMock ? ev.venue || ev.cinema : currentStop.venue || "";
   const city = isMock ? ev.city : currentStop.city || "";
-  
-  const rawLat = isMock ? ev.lat : (currentStop.latitude || currentStop.lat);
-  const rawLng = isMock ? ev.lng : (currentStop.longitude || currentStop.lng);
+
+  const rawLat = isMock ? ev.lat : currentStop.latitude || currentStop.lat;
+  const rawLng = isMock ? ev.lng : currentStop.longitude || currentStop.lng;
   let lat = rawLat ? parseFloat(rawLat) : -1.9441;
   let lng = rawLng ? parseFloat(rawLng) : 30.0619;
   if (isNaN(lat)) lat = -1.9441;
   if (isNaN(lng)) lng = 30.0619;
-  
-  const organizerName = isMock ? ev.organizer || ev.host || ev.cinema : (ev.workspaces?.organizer?.name || ev.workspaces?.name || "Organizer");
-  const organizerHandle = isMock ? ev.organizerHandle : (ev.workspaces?.organizer?.handle || "host");
+
+  const organizerName = isMock
+    ? ev.organizer || ev.host || ev.cinema
+    : ev.workspaces?.organizer?.name || ev.workspaces?.name || "Organizer";
+  const organizerHandle = isMock ? ev.organizerHandle : ev.workspaces?.organizer?.handle || "host";
   const currency = getCurrencySymbol(isMock ? ev.currency : ev.workspaces?.wallet?.currency);
   const description = ev.description || ev.synopsis || "";
   const category = ev.category || ev.genre || "Event";
-  const attendeesCount = isMock ? (ev.attendees || ev.spots || 0) : (ev.event_tickets?.reduce((acc: number, t: any) => acc + (parseInt(t.sold) || 0), 0) || 0);
-  
-  const lineup = Array.isArray(ev.lineup) && ev.lineup.length > 0 ? ev.lineup : (isMock ? [
-    { id: '1', name: "DJ Nala", role: "Main DJ", instagram: "djnala" },
-    { id: '2', name: "Burna Sound", role: "Guest Artist" },
-    { id: '3', name: "Amapiano Live", role: "Set", instagram: "amapianolive" },
-    { id: '4', name: "Surprise Guest", role: "Special Appearance" }
-  ] : []);
-  
-  const allTicketTiers = isMock 
-    ? ticketTiers 
-    : (ev.event_tickets?.length ? ev.event_tickets : [{ id: 'ga', type: 'General Admission', cost: 0, remaining: 100 }]).map((t: any) => ({
+  const attendeesCount = isMock
+    ? ev.attendees || ev.spots || 0
+    : ev.event_tickets?.reduce((acc: number, t: any) => acc + (parseInt(t.sold) || 0), 0) || 0;
+
+  const lineup =
+    Array.isArray(ev.lineup) && ev.lineup.length > 0
+      ? ev.lineup
+      : isMock
+        ? [
+            { id: "1", name: "DJ Nala", role: "Main DJ", instagram: "djnala" },
+            { id: "2", name: "Burna Sound", role: "Guest Artist" },
+            { id: "3", name: "Amapiano Live", role: "Set", instagram: "amapianolive" },
+            { id: "4", name: "Surprise Guest", role: "Special Appearance" },
+          ]
+        : [];
+
+  const allTicketTiers = isMock
+    ? ticketTiers
+    : (ev.event_tickets?.length
+        ? ev.event_tickets
+        : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100 }]
+      ).map((t: any) => ({
         id: t.id,
         name: t.type,
         price: parseFloat(t.cost) || 0,
         perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
         remaining: t.remaining,
-        tour_stop_idx: t.tour_stop_idx || 0
+        tour_stop_idx: t.tour_stop_idx || 0,
       }));
 
-  const activeTicketTiers = allTicketTiers.filter((t: any) => t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1);
-      
-  const activeMerch = isMock ? merch : (ev.merchandises || []).map((m: any) => ({
-    id: m.id,
-    name: m.name,
-    price: m.price,
-    image: m.image_url || ev.cover
-  }));
+  const activeTicketTiers = allTicketTiers.filter(
+    (t: any) => t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1,
+  );
+
+  const activeMerch = isMock
+    ? merch
+    : (ev.merchandises || []).map((m: any) => ({
+        id: m.id,
+        name: m.name,
+        price: m.price,
+        image: m.image_url || ev.cover,
+      }));
 
   const [tier, setTier] = useState(activeTicketTiers[0]?.id);
   const [qty, setQty] = useState(1);
@@ -153,8 +189,8 @@ export function EventDetailsMobile({ eventId, event: initialEvent }: { eventId: 
               <Clock className="h-4 w-4 text-primary" /> {time || "All day"}
             </span>
             <span className="flex items-center gap-1.5">
-              <MapPin className="h-4 w-4 text-primary" />{" "}
-              {venue ? `${venue}, ` : ""}{city}
+              <MapPin className="h-4 w-4 text-primary" /> {venue ? `${venue}, ` : ""}
+              {city}
             </span>
             <span className="flex items-center gap-1.5">
               <Star className="h-4 w-4 text-primary fill-primary" /> {avgRating}
@@ -174,9 +210,7 @@ export function EventDetailsMobile({ eventId, event: initialEvent }: { eventId: 
               alt={organizerName}
             />
             <div>
-              <p className="font-semibold leading-tight">
-                {organizerName}
-              </p>
+              <p className="font-semibold leading-tight">{organizerName}</p>
               <p className="text-xs text-muted-foreground">@{organizerHandle}</p>
             </div>
           </div>
@@ -214,9 +248,7 @@ export function EventDetailsMobile({ eventId, event: initialEvent }: { eventId: 
           <p className="text-sm uppercase tracking-wider text-muted-foreground font-semibold">
             {date || "Today"} · {time || "All day"}
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed mt-2">
-            {description}
-          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed mt-2">{description}</p>
         </div>
 
         {/* Lineup & Speakers */}
@@ -242,10 +274,12 @@ export function EventDetailsMobile({ eventId, event: initialEvent }: { eventId: 
                     />
                   )}
                   <p className="mt-3 text-sm font-bold truncate">{member.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{member.role || "Artist"}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {member.role || "Artist"}
+                  </p>
                   {member.instagram && (
-                    <a 
-                      href={`https://instagram.com/${member.instagram.replace('@', '')}`}
+                    <a
+                      href={`https://instagram.com/${member.instagram.replace("@", "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-3 mx-auto flex items-center justify-center h-8 w-8 rounded-full bg-secondary text-muted-foreground"
@@ -263,9 +297,7 @@ export function EventDetailsMobile({ eventId, event: initialEvent }: { eventId: 
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold">Community</h2>
-            <span className="text-sm text-primary">
-              {attendeesCount.toLocaleString()} going
-            </span>
+            <span className="text-sm text-primary">{attendeesCount.toLocaleString()} going</span>
           </div>
           {attendeesCount > 10 && (
             <div className="flex -space-x-3">
@@ -372,7 +404,8 @@ export function EventDetailsMobile({ eventId, event: initialEvent }: { eventId: 
                 <div className="flex items-center justify-between mb-1">
                   <p className="font-bold text-base">{t.name}</p>
                   <p className="font-bold text-lg text-primary">
-                    {currency}{t.price}
+                    {currency}
+                    {t.price}
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">{t.perks.join(" · ")}</p>
@@ -413,7 +446,8 @@ export function EventDetailsMobile({ eventId, event: initialEvent }: { eventId: 
         <div className="flex items-center justify-between mb-3 px-2">
           <span className="text-sm font-medium text-muted-foreground">Total</span>
           <span className="text-xl font-bold">
-            {currency}{total}
+            {currency}
+            {total}
           </span>
         </div>
         <Button

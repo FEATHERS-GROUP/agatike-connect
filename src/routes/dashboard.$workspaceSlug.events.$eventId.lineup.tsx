@@ -1,15 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Plus,
-  Trash2,
-  Camera,
-  Loader2,
-  Check,
-  Instagram,
-  Mic,
-} from "lucide-react";
+import { Plus, Trash2, Camera, Loader2, Check, Instagram, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,9 +63,9 @@ function LineupPage() {
             return { ...member, avatarUrl: url, avatarFile: undefined };
           }
           return member;
-        })
+        }),
       );
-      
+
       // We need to keep the other event data intact when updating just the lineup
       return updateEvent({
         data: {
@@ -156,7 +148,10 @@ function LineupPage() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {lineup.map((member: any, idx: number) => (
-            <div key={member.id || idx} className="rounded-2xl border border-border/60 bg-secondary/10 p-4 space-y-4 relative">
+            <div
+              key={member.id || idx}
+              className="rounded-2xl border border-border/60 bg-secondary/10 p-4 space-y-4 relative"
+            >
               <Button
                 variant="ghost"
                 size="icon"
@@ -168,7 +163,11 @@ function LineupPage() {
               <div className="flex flex-col items-center gap-3">
                 <label className="relative block h-20 w-20 cursor-pointer overflow-hidden rounded-full border-2 border-dashed border-border bg-background hover:border-primary">
                   {member.avatarUrl ? (
-                    <img src={member.avatarUrl} alt="avatar" className="h-full w-full object-cover" />
+                    <img
+                      src={member.avatarUrl}
+                      alt="avatar"
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <div className="grid h-full place-items-center text-muted-foreground">
                       <Camera className="h-6 w-6" />
@@ -215,7 +214,9 @@ function LineupPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs flex items-center gap-1"><Instagram className="h-3 w-3"/> Instagram Handle or Link</Label>
+                    <Label className="text-xs flex items-center gap-1">
+                      <Instagram className="h-3 w-3" /> Instagram Handle or Link
+                    </Label>
                     <Input
                       value={member.instagram}
                       onChange={(e) => {
@@ -239,7 +240,8 @@ function LineupPage() {
         </div>
         {lineup.length === 0 && (
           <div className="rounded-2xl border-2 border-dashed border-border p-8 text-center text-muted-foreground">
-            No lineup members added yet. Add speakers, artists, or DJs to display them on your event page!
+            No lineup members added yet. Add speakers, artists, or DJs to display them on your event
+            page!
           </div>
         )}
       </div>

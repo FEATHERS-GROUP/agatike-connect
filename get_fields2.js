@@ -21,7 +21,9 @@ async function run() {
   });
   const json = await response.json();
   const types = json.data.__schema.types;
-  const targetTables = types.filter(t => t.name.includes("order") || t.name.includes("transaction"));
-  targetTables.forEach(t => console.log(t.name));
+  const targetTables = types.filter(
+    (t) => t.name.includes("order") || t.name.includes("transaction"),
+  );
+  targetTables.forEach((t) => console.log(t.name));
 }
 run();

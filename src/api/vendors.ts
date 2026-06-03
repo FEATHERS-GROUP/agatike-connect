@@ -26,9 +26,9 @@ const GET_EVENT_VENDORS = `
 export const getEventVendors = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { event_id } = ctx.data as unknown as { event_id: string };
   const data = await hasuraRequest<{ event_vendors: any[] }>(GET_EVENT_VENDORS, { event_id });
-  return data.event_vendors.map(v => ({
+  return data.event_vendors.map((v) => ({
     ...v,
-    total_revenue: v.voucher_transactions_aggregate?.aggregate?.sum?.amount || 0
+    total_revenue: v.voucher_transactions_aggregate?.aggregate?.sum?.amount || 0,
   }));
 });
 
@@ -103,6 +103,8 @@ const GET_VENDOR_TRANSACTIONS = `
 
 export const getVendorTransactions = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { vendor_id } = ctx.data as unknown as { vendor_id: string };
-  const data = await hasuraRequest<{ voucher_transactions: any[] }>(GET_VENDOR_TRANSACTIONS, { vendor_id });
+  const data = await hasuraRequest<{ voucher_transactions: any[] }>(GET_VENDOR_TRANSACTIONS, {
+    vendor_id,
+  });
   return data.voucher_transactions || [];
 });

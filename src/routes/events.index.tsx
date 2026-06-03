@@ -50,13 +50,31 @@ function getCurrencySymbol(currency?: string) {
 function EventCard({ event }: { event: any }) {
   // Support both DB and mock data shapes
   const isMock = !!event.organizer || !!event.host || !!event.cinema;
-  
-  const date = isMock ? event.date : (Array.isArray(event.tour_stops) ? event.tour_stops[0]?.date : "TBD");
-  const time = isMock ? event.time || event.duration : (Array.isArray(event.tour_stops) ? event.tour_stops[0]?.time : "");
-  const venue = isMock ? event.venue || event.cinema : (Array.isArray(event.tour_stops) ? event.tour_stops[0]?.venue : "");
-  const city = isMock ? event.city : (Array.isArray(event.tour_stops) ? event.tour_stops[0]?.city : "");
-  const tourStopsCount = isMock ? 1 : (event.tour_stops?.length || 1);
-  const organizerName = isMock ? event.organizer || event.host || event.cinema : (event.workspaces?.organizer?.name || event.workspaces?.name || "Organizer");
+
+  const date = isMock
+    ? event.date
+    : Array.isArray(event.tour_stops)
+      ? event.tour_stops[0]?.date
+      : "TBD";
+  const time = isMock
+    ? event.time || event.duration
+    : Array.isArray(event.tour_stops)
+      ? event.tour_stops[0]?.time
+      : "";
+  const venue = isMock
+    ? event.venue || event.cinema
+    : Array.isArray(event.tour_stops)
+      ? event.tour_stops[0]?.venue
+      : "";
+  const city = isMock
+    ? event.city
+    : Array.isArray(event.tour_stops)
+      ? event.tour_stops[0]?.city
+      : "";
+  const tourStopsCount = isMock ? 1 : event.tour_stops?.length || 1;
+  const organizerName = isMock
+    ? event.organizer || event.host || event.cinema
+    : event.workspaces?.organizer?.name || event.workspaces?.name || "Organizer";
 
   return (
     <Link
@@ -126,11 +144,12 @@ function EventsBrowse() {
   const filtered = useMemo(() => {
     return allEvents.filter((e: any) => {
       const isMock = !!e.organizer || !!e.host || !!e.cinema;
-      const city = isMock ? e.city : (Array.isArray(e.tour_stops) ? e.tour_stops[0]?.city : "");
-      const organizerName = isMock ? e.organizer || e.host || e.cinema : (e.workspaces?.organizer?.name || e.workspaces?.name || "");
+      const city = isMock ? e.city : Array.isArray(e.tour_stops) ? e.tour_stops[0]?.city : "";
+      const organizerName = isMock
+        ? e.organizer || e.host || e.cinema
+        : e.workspaces?.organizer?.name || e.workspaces?.name || "";
       const matchesQ =
-        !q ||
-        `${e.title} ${organizerName} ${city}`.toLowerCase().includes(q.toLowerCase());
+        !q || `${e.title} ${organizerName} ${city}`.toLowerCase().includes(q.toLowerCase());
       const matchesCat = !cat || e.category === cat;
       return matchesQ && matchesCat;
     });

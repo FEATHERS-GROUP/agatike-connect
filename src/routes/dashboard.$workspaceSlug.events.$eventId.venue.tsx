@@ -1,7 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MapPin, Image as ImageIcon, Map, Check, Plus, Trash2, Loader2, Upload } from "lucide-react";
+import {
+  MapPin,
+  Image as ImageIcon,
+  Map,
+  Check,
+  Plus,
+  Trash2,
+  Loader2,
+  Upload,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getEventById, updateEvent } from "@/api/events";
@@ -44,15 +53,18 @@ function VenueView() {
       const processedStops = await Promise.all(
         tourStops.map(async (stop) => {
           let updatedStop = { ...stop };
-          
+
           if (updatedStop.venueImageFile) {
-            const url = await uploadFileToStorage(updatedStop.venueImageFile, "events/venues/images");
+            const url = await uploadFileToStorage(
+              updatedStop.venueImageFile,
+              "events/venues/images",
+            );
             updatedStop.venue_image_url = url;
             updatedStop.venueImageFile = undefined;
           }
-          
+
           return updatedStop;
-        })
+        }),
       );
 
       return updateEvent({
@@ -93,7 +105,9 @@ function VenueView() {
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Venue Details</h1>
-          <p className="text-sm text-muted-foreground">Manage locations, amenities, and floor plans for this event.</p>
+          <p className="text-sm text-muted-foreground">
+            Manage locations, amenities, and floor plans for this event.
+          </p>
         </div>
         <Button
           onClick={() => saveMutation.mutate()}
@@ -121,14 +135,19 @@ function VenueView() {
         tourStops.map((stop: any, idx: number) => {
           const stopId = stop.id || idx;
           return (
-            <div key={stopId} className="rounded-[2rem] border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)]">
+            <div
+              key={stopId}
+              className="rounded-[2rem] border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)]"
+            >
               <div className="bg-secondary/30 px-6 py-4 border-b border-border/60">
                 <h2 className="font-semibold text-lg flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-primary" />
-                  {tourStops.length > 1 ? `Stop ${idx + 1}: ${stop.venue || stop.city || 'Unnamed'}` : stop.venue || stop.city || 'Event Venue'}
+                  {tourStops.length > 1
+                    ? `Stop ${idx + 1}: ${stop.venue || stop.city || "Unnamed"}`
+                    : stop.venue || stop.city || "Event Venue"}
                 </h2>
               </div>
-              
+
               <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-8">
                   {/* Location Basic Info */}
@@ -212,7 +231,8 @@ function VenueView() {
                           <Check className="h-5 w-5 text-primary" /> Amenities
                         </h3>
                         <p className="text-xs text-muted-foreground mt-1 max-w-[280px] sm:max-w-sm">
-                          Physical features of the location (e.g., "Wheelchair Accessible", "500 Parking Spots"). Note: Use the VIP tab for special ticket perks.
+                          Physical features of the location (e.g., "Wheelchair Accessible", "500
+                          Parking Spots"). Note: Use the VIP tab for special ticket perks.
                         </p>
                       </div>
                       <Button
@@ -228,8 +248,8 @@ function VenueView() {
                         <Plus className="mr-1 h-3 w-3" /> Add Amenity
                       </Button>
                     </div>
-                    
-                    {(!stop.amenities || stop.amenities.length === 0) ? (
+
+                    {!stop.amenities || stop.amenities.length === 0 ? (
                       <p className="text-sm text-muted-foreground italic">No amenities added.</p>
                     ) : (
                       <ul className="space-y-2">
@@ -251,7 +271,9 @@ function VenueView() {
                               className="h-9 w-9 shrink-0 text-muted-foreground hover:text-red-500"
                               onClick={() => {
                                 const newStops = [...tourStops];
-                                newStops[idx].amenities = newStops[idx].amenities.filter((_: any, i: number) => i !== amenityIdx);
+                                newStops[idx].amenities = newStops[idx].amenities.filter(
+                                  (_: any, i: number) => i !== amenityIdx,
+                                );
                                 setTourStops(newStops);
                               }}
                             >
@@ -280,7 +302,11 @@ function VenueView() {
                       }}
                     >
                       {stop.venue_image_url ? (
-                        <img src={stop.venue_image_url} alt="Venue" className="h-full w-full object-cover" />
+                        <img
+                          src={stop.venue_image_url}
+                          alt="Venue"
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <div className="grid h-full place-items-center text-sm text-muted-foreground">
                           <div className="text-center">
@@ -304,10 +330,10 @@ function VenueView() {
                           return;
                         }
                         const newStops = [...tourStops];
-                        newStops[idx] = { 
-                          ...newStops[idx], 
-                          venueImageFile: f, 
-                          venue_image_url: URL.createObjectURL(f) 
+                        newStops[idx] = {
+                          ...newStops[idx],
+                          venueImageFile: f,
+                          venue_image_url: URL.createObjectURL(f),
                         };
                         setTourStops(newStops);
                       }}

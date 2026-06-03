@@ -26,9 +26,20 @@ async function run() {
 
   const json = await response.json();
   const types = json.data.__schema.types;
-  const tableTypes = types.filter((t) => !t.name.startsWith("__") && !t.name.includes("_aggregate") && !t.name.includes("_mutation") && !t.name.includes("_input") && !t.name.includes("_response") && !t.name.includes("Query") && !t.name.includes("Mutation") && !t.name.includes("Subscription") && !t.name.endsWith("_enum"));
+  const tableTypes = types.filter(
+    (t) =>
+      !t.name.startsWith("__") &&
+      !t.name.includes("_aggregate") &&
+      !t.name.includes("_mutation") &&
+      !t.name.includes("_input") &&
+      !t.name.includes("_response") &&
+      !t.name.includes("Query") &&
+      !t.name.includes("Mutation") &&
+      !t.name.includes("Subscription") &&
+      !t.name.endsWith("_enum"),
+  );
   console.log("Tables/Types available:");
-  tableTypes.forEach(t => console.log(`- ${t.name}`));
+  tableTypes.forEach((t) => console.log(`- ${t.name}`));
 }
 
 run();

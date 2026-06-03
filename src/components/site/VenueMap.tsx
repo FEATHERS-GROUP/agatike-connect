@@ -28,7 +28,17 @@ function MapUpdater({ center }: { center: [number, number] }) {
   return null;
 }
 
-export default function VenueMap({ lat, lng, venue, city }: { lat: number; lng: number; venue: string; city: string }) {
+export default function VenueMap({
+  lat,
+  lng,
+  venue,
+  city,
+}: {
+  lat: number;
+  lng: number;
+  venue: string;
+  city: string;
+}) {
   const safeLat = isNaN(lat) || lat == null ? -1.9441 : Number(lat);
   const safeLng = isNaN(lng) || lng == null ? 30.0619 : Number(lng);
 
@@ -44,7 +54,7 @@ export default function VenueMap({ lat, lng, venue, city }: { lat: number; lng: 
         <MapUpdater center={[safeLat, safeLng]} />
         <Marker position={[safeLat, safeLng]} icon={venueIcon} />
       </MapContainer>
-      <a 
+      <a
         href={`https://www.google.com/maps/search/?api=1&query=${safeLat},${safeLng}`}
         target="_blank"
         rel="noopener noreferrer"
@@ -53,7 +63,8 @@ export default function VenueMap({ lat, lng, venue, city }: { lat: number; lng: 
         <div className="flex items-center gap-3 min-w-0">
           <MapPin className="h-5 w-5 text-primary shrink-0" />
           <p className="text-sm font-semibold truncate">
-            {venue ? `${venue}, ` : ""}{city}
+            {venue ? `${venue}, ` : ""}
+            {city}
           </p>
         </div>
         <div className="shrink-0 text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
