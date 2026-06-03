@@ -3,8 +3,9 @@ import { DollarSign, Wallet, TrendingUp, PieChart, Store, CreditCard, Plus, Load
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getEventVendors, createEventVendor, deleteEventVendor } from "@/api/vendors";
+import { getEventVendors, createEventVendor, deleteEventVendor, getVendorTransactions } from "@/api/vendors";
 import { batchGenerateSponsoredVouchers, getSponsoredVouchers } from "@/api/vouchers";
+import { getEventById } from "@/api/events";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
@@ -12,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Ticket, Wand2, Download } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/planning")({
   component: PlanningView,
@@ -107,11 +109,39 @@ function VendorsTab({ eventId }: { eventId: string }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", description: "", contact_info: "" });
+  const [selectedVendor, setSelectedVendor] = useState<any>(null);
 
   const { data: vendors = [], isLoading } = useQuery({
     queryKey: ["event-vendors", eventId],
     queryFn: () => getEventVendors({ data: { event_id: eventId } } as any),
   });
+
+  const { data: vendorTransactions = [], isLoading: loadingTx } = useQuery({
+    queryKey: ["vendor-transactions", selectedVendor?.id],
+    queryFn: () => getVendorTransactions({ data: { vendor_id: selectedVendor.id } } as any),
+    enabled: !!selectedVendor,
+  });
+
+  const exportToCSV = () => {
+    if (!vendorTransactions || vendorTransactions.length === 0) return toast.error("No transactions to export");
+    const headers = ["Date", "Description", "Voucher ID", "Amount (RWF)"];
+    const rows = vendorTransactions.map((tx: any) => [
+      new Date(tx.created_at).toLocaleString(),
+      `"${(tx.description || tx.voucher?.batch?.name || 'Voucher Scan').replace(/"/g, '""')}"`,
+      tx.voucher?.qr_code_string || "Unknown",
+      tx.amount
+    ]);
+    const csvContent = [headers.join(","), ...rows.map((e: any) => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${selectedVendor.name.replace(/\s+/g, '_')}_Transactions.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -192,13 +222,13 @@ function VendorsTab({ eventId }: { eventId: string }) {
           </div>
         )}
         {vendors.map((vendor: any) => (
-          <div key={vendor.id} className="rounded-2xl border border-border/60 bg-card p-5 flex flex-col justify-between">
+          <div key={vendor.id} onClick={() => setSelectedVendor(vendor)} className="cursor-pointer hover:border-primary transition-colors rounded-2xl border border-border/60 bg-card p-5 flex flex-col justify-between">
             <div>
               <div className="flex justify-between items-start">
                 <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground mb-3">
                   <Store className="h-5 w-5" />
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(vendor.id)} className="text-destructive opacity-50 hover:opacity-100">
+                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(vendor.id); }} className="text-destructive opacity-50 hover:opacity-100">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -214,12 +244,61 @@ function VendorsTab({ eventId }: { eventId: string }) {
               {vendor.description && <p className="text-sm text-muted-foreground">{vendor.description}</p>}
             </div>
             <div className="mt-4 pt-4 border-t border-border/50">
-              <p className="text-xs text-muted-foreground">Revenue Processed</p>
-              <p className="font-semibold text-foreground mt-1">$0.00</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Voucher Revenue</p>
+              <p className="text-xl font-bold text-green-500 mt-1">{vendor.total_revenue || 0} RWF</p>
             </div>
           </div>
         ))}
       </div>
+
+      <Dialog open={!!selectedVendor} onOpenChange={(open) => !open && setSelectedVendor(null)}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex justify-between items-center pr-6">
+              <span>{selectedVendor?.name} Ledger</span>
+              <Button onClick={exportToCSV} variant="outline" size="sm" className="h-8">
+                <Download className="mr-2 h-3 w-3" /> Export CSV
+              </Button>
+            </DialogTitle>
+            <DialogDescription>Full history of voucher transactions processed by this vendor.</DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto mt-4 pr-2">
+            {loadingTx ? (
+              <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+            ) : vendorTransactions.length === 0 ? (
+              <div className="py-12 text-center text-muted-foreground bg-secondary/20 rounded-xl">No transactions found.</div>
+            ) : (
+              <div className="border rounded-xl overflow-hidden text-sm">
+                <table className="w-full text-left">
+                  <thead className="bg-secondary/50 text-muted-foreground text-xs uppercase">
+                    <tr>
+                      <th className="p-3 font-medium">Date</th>
+                      <th className="p-3 font-medium">Description</th>
+                      <th className="p-3 font-medium">Voucher ID</th>
+                      <th className="p-3 font-medium text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {vendorTransactions.map((tx: any) => (
+                      <tr key={tx.id} className="hover:bg-secondary/10 transition-colors">
+                        <td className="p-3 text-muted-foreground">{new Date(tx.created_at).toLocaleString()}</td>
+                        <td className="p-3">{tx.description || tx.voucher?.batch?.name || "Voucher Scan"}</td>
+                        <td className="p-3 font-mono text-xs">{tx.voucher?.qr_code_string}</td>
+                        <td className="p-3 text-right font-medium">{tx.amount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+          <div className="mt-4 pt-4 border-t flex justify-between items-center text-lg">
+            <span className="font-semibold text-muted-foreground">Total Revenue</span>
+            <span className="font-bold text-green-500">{selectedVendor?.total_revenue || 0} RWF</span>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -228,9 +307,22 @@ function VouchersTab({ eventId }: { eventId: string }) {
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({ batch_name: "", value_per_person: "", quantity: "" });
+  const [formData, setFormData] = useState({ 
+    batch_name: "", 
+    value_per_person: "", 
+    quantity: "",
+    generation_type: "manual",
+    linked_ticket_ids: [] as string[],
+    value_type: "fixed"
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  const { data: eventData } = useQuery({
+    queryKey: ["event", eventId],
+    queryFn: () => getEventById({ data: { id: eventId } } as any),
+  });
+  const eventTickets = eventData?.event_tickets || [];
 
   const { data: vouchers = [], isLoading } = useQuery({
     queryKey: ["sponsored-vouchers", eventId],
@@ -245,14 +337,17 @@ function VouchersTab({ eventId }: { eventId: string }) {
           workspace_id: activeWorkspace?.id,
           batch_name: formData.batch_name,
           value_per_person: Number(formData.value_per_person),
-          quantity: Number(formData.quantity)
+          quantity: formData.generation_type === "manual" ? Number(formData.quantity) : 0,
+          generation_type: formData.generation_type,
+          linked_ticket_ids: formData.generation_type === "ticket_linked" ? formData.linked_ticket_ids : [],
+          value_type: formData.generation_type === "ticket_linked" ? formData.value_type : "fixed"
         },
       } as any);
     },
     onSuccess: () => {
-      toast.success("Vouchers generated successfully!");
+      toast.success("Campaign created successfully!");
       setOpen(false);
-      setFormData({ batch_name: "", value_per_person: "", quantity: "" });
+      setFormData({ batch_name: "", value_per_person: "", quantity: "", generation_type: "manual", linked_ticket_ids: [], value_type: "fixed" });
       queryClient.invalidateQueries({ queryKey: ["sponsored-vouchers", eventId] });
     },
     onError: (err: any) => {
@@ -276,27 +371,91 @@ function VouchersTab({ eventId }: { eventId: string }) {
               <Plus className="mr-1 h-4 w-4" /> Generate Vouchers
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Batch Generate Vouchers</DialogTitle>
-              <DialogDescription>Instantly create multiple vouchers with a set spending limit.</DialogDescription>
+              <DialogTitle>Voucher Campaign</DialogTitle>
+              <DialogDescription>Create a standalone batch or attach vouchers to ticket sales.</DialogDescription>
             </DialogHeader>
-            <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(); }} className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Batch Name</Label>
-                <Input required value={formData.batch_name} onChange={e => setFormData({...formData, batch_name: e.target.value})} placeholder="e.g. VIP Speakers" />
+            <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(); }} className="space-y-4 mt-2">
+              
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <Button type="button" variant={formData.generation_type === "manual" ? "default" : "outline"} onClick={() => setFormData({...formData, generation_type: "manual"})} className="h-12">
+                  <Wand2 className="mr-2 h-4 w-4" /> Standalone Batch
+                </Button>
+                <Button type="button" variant={formData.generation_type === "ticket_linked" ? "default" : "outline"} onClick={() => setFormData({...formData, generation_type: "ticket_linked"})} className="h-12">
+                  <Ticket className="mr-2 h-4 w-4" /> Ticket Attached
+                </Button>
               </div>
+
               <div className="space-y-2">
-                <Label>Value per Voucher (RWF)</Label>
-                <Input required type="number" value={formData.value_per_person} onChange={e => setFormData({...formData, value_per_person: e.target.value})} placeholder="e.g. 10000" />
+                <Label>Campaign Name</Label>
+                <Input required value={formData.batch_name} onChange={e => setFormData({...formData, batch_name: e.target.value})} placeholder="e.g. VIP Drinks" />
               </div>
-              <div className="space-y-2">
-                <Label>Quantity to Generate</Label>
-                <Input required type="number" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} placeholder="e.g. 100" />
-              </div>
-              <Button type="submit" disabled={createMutation.isPending} className="w-full h-11 rounded-xl" style={{ background: "var(--gradient-primary)" }}>
+
+              {formData.generation_type === "ticket_linked" && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Select Trigger Tickets (by Tour Stop)</Label>
+                    <div className="space-y-4 max-h-[300px] overflow-y-auto p-4 border rounded-xl bg-secondary/5">
+                      {eventData?.tour_stops?.map((stop: any, idx: number) => {
+                        const stopTickets = eventTickets.filter((t: any) => t.tour_stop_idx === idx);
+                        if (stopTickets.length === 0) return null;
+                        return (
+                          <div key={idx} className="space-y-2">
+                            <h4 className="font-semibold text-sm border-b pb-1 border-border/50">{stop.name || `Stop ${idx + 1}`}</h4>
+                            <div className="space-y-2 pt-1">
+                              {stopTickets.map((t: any) => (
+                                <div key={t.id} className="flex items-center space-x-2">
+                                  <Checkbox 
+                                    id={`ticket-${t.id}`}
+                                    checked={formData.linked_ticket_ids.includes(t.id)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) setFormData({...formData, linked_ticket_ids: [...formData.linked_ticket_ids, t.id]});
+                                      else setFormData({...formData, linked_ticket_ids: formData.linked_ticket_ids.filter(id => id !== t.id)});
+                                    }}
+                                  />
+                                  <label htmlFor={`ticket-${t.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
+                                    {t.type} (${t.cost})
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {eventTickets.length === 0 && <div className="text-sm text-muted-foreground text-center">No tickets available</div>}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Voucher Value</Label>
+                    <Select required value={formData.value_type} onValueChange={(val) => setFormData({...formData, value_type: val})}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="match_ticket_price">Match Ticket Price</SelectItem>
+                        <SelectItem value="fixed">Fixed Custom Amount</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+
+              {(formData.generation_type === "manual" || formData.value_type === "fixed") && (
+                <div className="space-y-2">
+                  <Label>Value per Voucher (RWF)</Label>
+                  <Input required type="number" value={formData.value_per_person} onChange={e => setFormData({...formData, value_per_person: e.target.value})} placeholder="e.g. 10000" />
+                </div>
+              )}
+
+              {formData.generation_type === "manual" && (
+                <div className="space-y-2">
+                  <Label>Quantity to Generate Now</Label>
+                  <Input required type="number" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} placeholder="e.g. 100" />
+                </div>
+              )}
+
+              <Button type="submit" disabled={createMutation.isPending} className="w-full h-11 rounded-xl mt-4" style={{ background: "var(--gradient-primary)" }}>
                 {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Generate {formData.quantity || "0"} Vouchers
+                {formData.generation_type === "manual" ? `Generate ${formData.quantity || "0"} Vouchers` : "Save Attached Campaign"}
               </Button>
             </form>
           </DialogContent>
@@ -316,10 +475,25 @@ function VouchersTab({ eventId }: { eventId: string }) {
             <div className="p-12 text-center text-muted-foreground">No sponsored vouchers generated yet.</div>
           )}
           {paginatedVouchers.map((voucher: any) => (
-            <div key={voucher.id} className="p-4 text-sm grid grid-cols-4 gap-4 items-center">
-              <div className="font-mono text-xs bg-secondary/50 px-2 py-1 rounded w-fit">{voucher.qr_code_string}</div>
-              <div className="truncate">{voucher.batch?.name}</div>
-              <div>${voucher.batch?.value_per_voucher}</div>
+            <div key={voucher.id} className="p-4 text-sm grid grid-cols-4 gap-4 items-center hover:bg-secondary/20 transition-colors">
+              <div className="font-mono text-xs bg-secondary/50 px-2 py-1 rounded w-fit flex items-center gap-1">
+                {voucher.qr_code_string}
+              </div>
+              <div>
+                <div className="font-medium truncate">{voucher.batch?.name}</div>
+                {voucher.batch?.generation_type === "ticket_linked" && (
+                  <div className="text-[10px] text-muted-foreground truncate uppercase tracking-wider flex items-center gap-1 mt-0.5">
+                    <Ticket className="w-3 h-3" /> {voucher.batch?.linked_ticket_ids?.length || 0} Linked Tickets
+                  </div>
+                )}
+              </div>
+              <div>
+                {voucher.batch?.value_type === "match_ticket_price" ? (
+                  <span className="italic text-muted-foreground text-xs">Matches Ticket</span>
+                ) : (
+                  <span>${voucher.batch?.value_per_voucher}</span>
+                )}
+              </div>
               <div>
                 <span className={Number(voucher.current_balance) === 0 ? "text-destructive font-semibold" : "text-green-500 font-semibold"}>
                   ${voucher.current_balance}

@@ -12,6 +12,13 @@ const GET_EVENT_VENDORS = `
       description
       contact_info
       created_at
+      voucher_transactions_aggregate {
+        aggregate {
+          sum {
+            amount
+          }
+        }
+      }
     }
   }
 `;
@@ -19,7 +26,10 @@ const GET_EVENT_VENDORS = `
 export const getEventVendors = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { event_id } = ctx.data as unknown as { event_id: string };
   const data = await hasuraRequest<{ event_vendors: any[] }>(GET_EVENT_VENDORS, { event_id });
-  return data.event_vendors || [];
+  return data.event_vendors.map(v => ({
+    ...v,
+    total_revenue: v.voucher_transactions_aggregate?.aggregate?.sum?.amount || 0
+  }));
 });
 
 const CREATE_EVENT_VENDOR = `
@@ -72,4 +82,27 @@ export const deleteEventVendor = createServerFn({ method: "POST" }).handler(asyn
 
   const { id } = ctx.data as unknown as { id: string };
   return hasuraRequest(DELETE_EVENT_VENDOR, { id });
+});
+
+const GET_VENDOR_TRANSACTIONS = `
+  query GetVendorTransactions($vendor_id: uuid!) {
+    voucher_transactions(where: { vendor_id: { _eq: $vendor_id } }, order_by: { created_at: desc }) {
+      id
+      amount
+      description
+      created_at
+      voucher {
+        qr_code_string
+        batch {
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const getVendorTransactions = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { vendor_id } = ctx.data as unknown as { vendor_id: string };
+  const data = await hasuraRequest<{ voucher_transactions: any[] }>(GET_VENDOR_TRANSACTIONS, { vendor_id });
+  return data.voucher_transactions || [];
 });

@@ -65,6 +65,8 @@ const BATCH_GENERATE_VOUCHERS = `
   mutation CreateSponsoredBatch($object: sponsored_voucher_batches_insert_input!) {
     insert_sponsored_voucher_batches_one(object: $object) {
       id
+      generation_type
+      value_type
       vouchers {
         id
         qr_code_string
@@ -78,22 +80,38 @@ export const batchGenerateSponsoredVouchers = createServerFn({ method: "POST" })
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const { event_id, workspace_id, batch_name, value_per_person, quantity } = ctx.data as any;
+  const { 
+    event_id, 
+    workspace_id, 
+    batch_name, 
+    value_per_person, 
+    quantity,
+    generation_type = "manual",
+    linked_ticket_ids = [],
+    value_type = "fixed"
+  } = ctx.data as any;
 
-  const batchInput = {
+  const batchInput: any = {
     event_id,
     workspace_id,
     organizer_id: session.sub,
     name: batch_name,
-    value_per_voucher: String(value_per_person),
-    vouchers: {
+    value_per_voucher: String(value_per_person || 0),
+    generation_type,
+    linked_ticket_ids: linked_ticket_ids || [],
+    value_type
+  };
+
+  // Only pre-generate the actual voucher records if this is a manual batch
+  if (generation_type === "manual" && quantity > 0) {
+    batchInput.vouchers = {
       data: Array.from({ length: Number(quantity) }).map(() => ({
         qr_code_string: `VCH-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         current_balance: String(value_per_person),
         is_active: true
       }))
-    }
-  };
+    };
+  }
 
   return hasuraRequest(BATCH_GENERATE_VOUCHERS, { object: batchInput });
 });
@@ -104,6 +122,9 @@ const GET_SPONSORED_VOUCHERS = `
       id
       name
       value_per_voucher
+      generation_type
+      value_type
+      linked_ticket_ids
       vouchers(order_by: { created_at: desc }) {
         id
         qr_code_string
@@ -123,16 +144,22 @@ export const getSponsoredVouchers = createServerFn({ method: "POST" }).handler(a
   const vouchers: any[] = [];
   if (data.sponsored_voucher_batches) {
     for (const batch of data.sponsored_voucher_batches) {
-      if (batch.vouchers) {
+      if (batch.vouchers && batch.vouchers.length > 0) {
         for (const voucher of batch.vouchers) {
           vouchers.push({
             ...voucher,
             batch: {
               name: batch.name,
-              value_per_voucher: batch.value_per_voucher
+              value_per_voucher: batch.value_per_voucher,
+              generation_type: batch.generation_type,
+              value_type: batch.value_type,
+              linked_ticket_ids: batch.linked_ticket_ids
             }
           });
         }
+      } else {
+        // If it's a ticket-linked batch with no vouchers generated yet, we might want to show the batch itself 
+        // as a placeholder, or just skip it. For now, we skip showing empty batches in the individual voucher list.
       }
     }
   }
