@@ -210,7 +210,7 @@ function AttendeesView() {
               attendees={attendees}
               activeWorkspace={activeWorkspace}
               workspaceBadges={workspaceBadges}
-              eventId={eventId}
+              eventId={eventId!}
               organizer={organizer}
               onClearSelection={() => setSelectedAttendees([])}
             />
@@ -310,7 +310,7 @@ function AttendeesView() {
                       attendee={a}
                       activeWorkspace={activeWorkspace}
                       workspaceBadges={workspaceBadges}
-                      eventId={eventId}
+                      eventId={eventId!}
                       organizer={organizer}
                     />
                   </td>
