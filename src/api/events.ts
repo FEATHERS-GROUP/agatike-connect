@@ -25,7 +25,7 @@ const GET_PUBLIC_EVENTS = `
       tour_stops
       vipPerks
       created_at
-      workspace {
+      workspaces {
         name
         orgnizer_id
         wallet {

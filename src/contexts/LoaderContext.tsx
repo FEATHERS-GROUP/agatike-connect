@@ -47,13 +47,11 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
           {/* Centered Logo Overlay */}
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/40 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-4 animate-pulse">
-              <div
-                className="grid h-20 w-20 place-items-center rounded-3xl text-primary-foreground font-bold text-3xl shadow-[var(--shadow-glow)]"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                A
-              </div>
-              <span className="text-3xl font-bold tracking-tight">Agatike</span>
+              <img
+                src="/agatike-icon.png"
+                alt="Agatike"
+                className="w-16 h-16 object-contain"
+              />
             </div>
           </div>
 

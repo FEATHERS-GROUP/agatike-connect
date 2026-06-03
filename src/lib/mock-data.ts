@@ -228,6 +228,26 @@ export const events: Event[] = [
     lng: 36.758,
     hasStory: false,
   },
+  {
+    id: "amapiano-fest-sa",
+    title: "Amapiano Sun City Fest",
+    organizer: "Piano Hub",
+    organizerHandle: "pianohubsa",
+    city: "Johannesburg, ZA",
+    venue: "Sun City Resort",
+    date: "Fri, Nov 27",
+    time: "15:00",
+    category: "Music",
+    currency: "ZAR",
+    price: 350,
+    cover: e2,
+    attendees: 15000,
+    rating: 4.9,
+    description: "The ultimate Amapiano festival featuring the biggest names in the genre, set at the legendary Sun City Resort.",
+    lat: -25.341,
+    lng: 27.093,
+    hasStory: true,
+  },
 ];
 
 export const categories = [
