@@ -48,7 +48,7 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/40 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-4 animate-pulse">
               <img
-                src="/agatike-logo-white.svg"
+                src="/icon.svg"
                 alt="Agatike"
                 className="w-16 h-16 object-contain"
               />
