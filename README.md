@@ -643,7 +643,321 @@ When an organizer imports from a custom form:
 | `dashboard.$workspaceSlug.events.$eventId.planning.tsx` | `.../planning` | Budget & Settlement |
 | `dashboard.$workspaceSlug.events.$eventId.attendees.tsx` | `.../attendees` | Attendees |
 | `dashboard.$workspaceSlug.events.$eventId.lineup.tsx` | `.../lineup` | Event Lineup |
+| `dashboard.$workspaceSlug.page-builder.tsx` | `.../page-builder` | Page Builder |
 | `b.$qrString.tsx` | `/b/:qrString` | Public Verification |
 | `__root.tsx` | — | Global App Shell |
+
+---
+
+## 17. Page Builder (`/page-builder`)
+
+**Route:** `/dashboard/$workspaceSlug/page-builder`  
+**File:** `src/routes/dashboard.$workspaceSlug.page-builder.tsx`
+
+The Page Builder is a no-code visual website editor that allows organizers to build branded public-facing landing pages — event pages, registration hubs, sponsor showcases — and publish them live at `/p/:slug`.
+
+### Architecture: 3-Panel Layout
+
+```mermaid
+graph LR
+    PageBuilder --> LeftSidebar[Left Sidebar\nPage list + create]
+    PageBuilder --> RightMain[Main Area - 2 columns]
+    RightMain --> SettingsPanel[Left Col: Toolbox + Page Settings]
+    RightMain --> Canvas[Right Col: Live Canvas preview]
+```
+
+### State Model
+
+| State | Type | Purpose |
+|---|---|---|
+| `activePageId` | `string \| null` | Which saved page is selected; null = nothing selected |
+| `editorState` | `object` | Full local working copy of the page being edited |
+| `isNewPage` | `boolean` | Whether the current session is building a brand-new, unsaved page |
+
+The `editorState` object shape:
+```ts
+{
+  id: string | null,       // null until first save
+  slug: string,            // URL-safe path e.g. "my-event-2026"
+  title: string,           // Hero headline
+  description: string,     // Hero subtitle
+  themeColor: string,      // Hex color e.g. "#7C3AED"
+  headerImageUrl: string,  // Cover/hero background image
+  logoUrl: string,         // Organisation logo
+  logoPosition: "hero" | "navbar",
+  fontFamily: string,      // One of Inter | Outfit | Montserrat | Playfair | Lora
+  components: Block[],     // Ordered array of content blocks
+}
+```
+
+### Page Lifecycle
+
+```mermaid
+flowchart TD
+    A[Page Builder mounts] --> B[getAllWorkspacePages - list all pages]
+    B --> C[Left sidebar shows page list with slug + Published/Draft badge]
+    
+    C --> D{User action}
+    D -->|Click existing page| E[setActivePageId]
+    E --> F[getWorkspacePage - fetch full page data]
+    F --> G[useEffect hydrates editorState from pageData\nFilters out page_settings block into top-level fields]
+    G --> H[Canvas + settings panel populate]
+    
+    D -->|Click + New Page| I[setIsNewPage true\nReset editorState to makeBlankPage]
+    I --> H
+
+    H --> J{Publish button}
+    J --> K[Validate: slug is required]
+    K --> L[saveMutation: upsertWorkspacePage\nMerges page_settings block back into components array]
+    L -->|New page| M[Store returned id in editorState\nUpdate activePageId]
+    L -->|Existing page| N[invalidateQueries - sidebar refreshes]
+    
+    H --> O{Delete button}
+    O --> P[AlertDialog confirm]
+    P --> Q[deleteMutation: deleteWorkspacePage]
+    Q --> R[Reset editor to blank state]
+```
+
+### The `page_settings` Block Pattern
+
+When a page is **saved**, a special `{ type: "page_settings" }` block is prepended to the `components` array:
+```json
+{
+  "type": "page_settings",
+  "logoPosition": "hero",
+  "fontFamily": "Inter"
+}
+```
+
+When a page is **loaded**, `useEffect` extracts this block, puts its values into top-level `editorState` fields, and **filters it out** of the `components` array so it never appears as a draggable block in the canvas. This keeps `logoPosition` and `fontFamily` cleanly separated from user-facing blocks.
+
+### Preview Mode
+
+```mermaid
+flowchart LR
+    A[Preview button clicked] --> B[Serialize full editorState + page_settings block]
+    B --> C[localStorage.setItem page_preview_data]
+    C --> D[window.open /p/slug?preview=true in new tab]
+    D --> E[Public page route reads localStorage when preview=true\nDisplays live unsaved state]
+```
+
+This allows organizers to preview their page exactly as it will look — **without needing to save first**.
+
+### Image Upload System
+
+All image uploads (header, logo, blocks) route through `uploadFileToStorage`:
+- Validates file size before upload (7MB for page media, 5MB for blocks, 2MB for logos)
+- Uploads to Firebase Storage at path `pages/{workspace_id}/{timestamp}`
+- Returns a permanent URL stored in the component's state
+- Uses a loading toast that transitions to success/error on completion
+
+---
+
+### Block System
+
+Every content block on the canvas is rendered by the `ComponentBlock` sub-component. Each block has:
+- A type label in the top-left corner
+- An optional **Nav Label** input (used by the public page renderer to build an anchor navigation bar)
+- Move-up / Move-down controls (shown on hover via `moveComponent`)
+- A delete button (shown on hover via `removeComponent`)
+
+#### Available Block Types
+
+| Block Type | Key | Config Fields |
+|---|---|---|
+| **Text Block** | `text` | `content` (textarea) |
+| **Image Block** | `image` | `url` (file upload → Firebase) |
+| **Split Layout** | `split_block` | `text`, `imageUrl`, `imagePosition` (`left`/`right`) |
+| **Action Button** | `button` | `label`, `url` (external link) |
+| **Basic Form Link** | `form_link` | `content` (form ID), `design` (`card`/`button`) |
+| **Advanced Form Grid** | `form_grid` | `columns` (1/2/3), `cardBgColor`, `cardTextColor`, array of cards |
+| **Logos Grid** | `sponsor_logos` | `title`, `logos[]` (array of uploaded image URLs) |
+
+#### Block State Management Pattern
+
+```mermaid
+flowchart LR
+    addComponent --> newComp[Creates new block object with id=Date.now]
+    newComp --> setEditorState[Appends to components array]
+    
+    updateComponent --> immutableCopy[Spreads existing components array]
+    immutableCopy --> overwrite[Overwrites specific key on target index]
+    overwrite --> setEditorState
+
+    removeComponent --> spliceOut[Removes index from copy]
+    spliceOut --> setEditorState
+
+    moveComponent --> swap[Swaps block at index with index+dir]
+    swap --> setEditorState
+```
+
+All mutations are pure immutable operations — the full `components` array is always replaced, never mutated in-place.
+
+---
+
+### Form-Page Integration
+
+The Page Builder pulls `getWorkspaceForms` at mount. Any form marked `is_active = true` is available for embedding in pages via two block types:
+
+```mermaid
+flowchart TD
+    PageBuilder -->|on mount| Forms[(getWorkspaceForms)]
+    Forms --> FormLink[form_link block\nEmbed a single form as card or button]
+    Forms --> FormGrid[form_grid block\nEmbed multiple forms as a card grid]
+    FormLink --> PublicPage[/p/slug - renders inline form embed]
+    FormGrid --> PublicPage
+    PublicPage -->|user submits| RSVP[(rsvp_answers)]
+    RSVP --> AttendeesPage[Import to /attendees]
+```
+
+This creates the full end-to-end funnel: **Page Builder → Public Page → Form Submission → Attendee Import**.
+
+**Database tables:** `workspace_pages`
+
+---
+
+## 18. Attendees Page — Full Logic & Forms Integration
+
+**Route:** `/dashboard/$workspaceSlug/events/$eventId/attendees`  
+**File:** `src/routes/dashboard.$workspaceSlug.events.$eventId.attendees.tsx`
+
+### Attendee Types
+
+| `type` value | Origin | Display |
+|---|---|---|
+| `customer` | Bought a ticket through the platform | Blue badge |
+| `attendee` | Imported from an RSVP form | Green badge |
+
+### Full Page Data Flow
+
+```mermaid
+flowchart TD
+    A[Page mounts] --> B[getEventAttendees\nAll attendees for this event]
+    A --> C[getWorkspaceForms\nAll workspace forms for import dropdown]
+    A --> D[getAllBadgeProjects\nAll badge designs for email attachment]
+    A --> E[getOrganizerProfile\nOrganizer name/email/phone for email templates]
+
+    B --> F[filteredAttendees = attendees.filter by searchTerm\nMatches names + email + type]
+    F --> G[Table renders: avatar + name + email + type badge + ticket + date + actions]
+```
+
+### RSVP Form Import — Detailed Mapping Flow
+
+```mermaid
+flowchart TD
+    A[Organizer opens Import Modal] --> B[Select from workspace forms dropdown]
+    B --> C[Click Import Attendees]
+    C --> D[getFormDetails: fetch form schema + all rsvp submissions]
+    D --> E[Build fieldMap:\nreduce form_fields to id→label lookup]
+    E --> F[Loop each rsvp submission]
+    F --> G[Loop rsvp_answers array\nMap each answer field_id → label via fieldMap]
+    G --> H[Extract known fields with fallback chains:\nnames: answers.Names OR answers.Name OR rsvp.first_name\nemail: answers.Email OR answers.Email Address OR rsvp.email\nphone: answers.Phone OR answers.Phone Number\nticket_type: answers.Ticket Type/Registration Type OR Form Registration]
+    H --> I[Generate random 8-char alphanumeric qrcode_number]
+    I --> J[Assemble attendee object:\nevent_id, names, email, phone, ticket_type,\nqrcode_number, status=registered, type=attendee,\ncustom_fields=full answers object]
+    J --> K[addEventAttendees: bulk insert all objects]
+    K --> L[invalidateQueries event-attendees]
+    L --> M[Table refreshes with imported attendees]
+```
+
+#### Why `custom_fields`?
+
+Every attendee imported from a form stores the **full raw answers** object as `custom_fields` (JSONB). This means any question asked in the form (even custom ones like "Dietary Requirements", "Company Name") is preserved and viewable in the **Attendee Details Modal** → "Custom Responses" section — even if the field wasn't one of the standard extracted fields.
+
+### Attendee Selection & Bulk Actions
+
+```mermaid
+flowchart TD
+    Table --> CheckboxHeader[Select All checkbox in header]
+    Table --> RowCheckbox[Individual row checkboxes]
+    CheckboxHeader -->|checked| SelectAll[setSelectedAttendees filteredAttendees.map id]
+    CheckboxHeader -->|unchecked| ClearAll[setSelectedAttendees empty array]
+    RowCheckbox -->|checked| AddToArray[append id to selectedAttendees]
+    RowCheckbox -->|unchecked| RemoveFromArray[filter out id from selectedAttendees]
+
+    SelectedAttendees -->|length > 0| BulkBar[Bulk action bar slides in with count badge]
+    BulkBar --> BulkEmail[Send Bulk Email button → BulkEmailModal]
+```
+
+### Attendee Details Modal (`AttendeeDetailsModal`)
+
+Opened per row via the Eye icon button. Displays:
+- Core fields: Type, Ticket Type, Status, Quantity
+- **Custom Responses**: all key→value pairs from `custom_fields`
+- **Badge Design selector**: choose which badge design to link in the email
+
+Actions available:
+- **View Badge** — opens `/a/{qrcode_number}?badgeId={selectedBadgeId}` in new tab
+- **SMS** — opens SMS composer (plain textarea)
+- **Email** — opens rich email composer with React Quill
+
+### Email Template System
+
+Both single-attendee and bulk emails use an identical template with **template variables** that are replaced via regex before sending:
+
+```mermaid
+flowchart TD
+    Template[HTML Template with placeholders] --> Regex[Regex replace chain]
+    Regex --> V1["[First Name] / {{name}} → attendee first name"]
+    Regex --> V2["[Registration Details] → auto-generated HTML block\nwith Registration ID + Ticket Number + Badge Link"]
+    Regex --> V3["[Contact Email] / {{contact_email}} → organizer email"]
+    Regex --> V4["[Phone Number] / {{phone_number}} → organizer phone"]
+    Regex --> Final[finalMessage HTML string]
+    Final --> sendAttendeeEmail[API call with to/subject/message/badgeLink/org branding]
+```
+
+The **Registration Details** block is generated differently based on attendee type:
+- `customer` type → shows Registration ID + Ticket Number + clickable "View your digital ticket" badge link
+- `rsvp` type → shows "Here is your digital badge" + clickable badge link
+
+### Bulk Email — Sequential Send with Progress
+
+The `BulkEmailModal` sends emails **one-by-one** in a sequential `for` loop (not in parallel) to avoid rate-limiting:
+
+```mermaid
+flowchart TD
+    Start[handleSendBulk called] --> Init[setIsSending true\nsetProgress 0 of N]
+    Init --> Loop[for i=0 to selectedAttendees.length]
+    Loop --> FindAttendee[attendees.find by id]
+    FindAttendee --> Guard{Has email?}
+    Guard -->|No| Skip[increment progress, continue]
+    Guard -->|Yes| BuildBadgeLink[Build /a/qrcode?badgeId URL]
+    BuildBadgeLink --> BuildRegistrationInfo[Generate registration HTML block]
+    BuildRegistrationInfo --> ApplyTemplate[Apply template variable replacements]
+    ApplyTemplate --> SendEmail[await sendAttendeeEmail]
+    SendEmail --> IncrProgress[increment progress.current]
+    IncrProgress --> Loop
+    Loop -->|done| SuccessToast[toast.success N emails sent]
+    SuccessToast --> CloseModal[setIsOpen false]
+    CloseModal --> ClearSelection[onClearSelection callback]
+```
+
+A real-time **progress bar** (`progress.current / progress.total × 100%`) fills as each email is sent, giving the organizer live visual feedback. The modal's close button is disabled during sending to prevent accidental interruption.
+
+### Badge Link URL Structure
+
+```
+/a/{qrcode_number}?badgeId={selectedBadgeId}
+```
+
+- `/a/` routes to the public attendee badge view
+- `qrcode_number` = 8-character alphanumeric string generated on import
+- `badgeId` query param controls which visual badge design is rendered
+- The badge design is selected per-email by the organizer from all `badge_projects` in the workspace
+
+### Forms ↔ Page Builder ↔ Attendees: End-to-End Funnel
+
+```mermaid
+flowchart TD
+    Organizer -->|Creates form| FormBuilder[Form Builder\nCustom RSVP form with dynamic fields]
+    FormBuilder -->|Embeds form on| PageBuilder[Page Builder\nform_link or form_grid block]
+    PageBuilder -->|Publishes to| PublicPage[/p/:slug\nPublic landing page]
+    PublicPage -->|Visitor submits| RSVPAnswers[(rsvp_answers table)]
+    RSVPAnswers -->|Import Registrations| AttendeesPage[Attendees Page]
+    AttendeesPage -->|Field mapping transforms| AttendeeRecords[(event_attendees table\nwith custom_fields JSONB)]
+    AttendeeRecords -->|Select + email| BulkEmail[Bulk Email with badge link]
+    BulkEmail -->|Opens| BadgeRoute[/a/:qrcode_number\nDigital badge/ticket]
+```
+
+**Database tables:** `event_attendees`, `rsvp_answers`, `workspace_pages`, `custom_forms`
 
 _Last updated: June 2026 — Agatike Connect_
