@@ -51,7 +51,7 @@ function AttendeesView() {
     queryFn: () => getEventAttendees({ data: { event_id: eventId } } as any),
   });
 
-  const { data: forms = [], enabled: isFormsEnabled } = useQuery({
+  const { data: forms = [] } = useQuery({
     queryKey: ["custom-forms", activeWorkspace?.id],
     queryFn: () => getWorkspaceForms({ data: { workspace_id: activeWorkspace?.id } } as any),
     enabled: !!activeWorkspace?.id,
