@@ -386,9 +386,7 @@ function AttendeeDetailsModal({
     workspaceBadges?.find((b: any) => b.event_id === eventId)?.id || workspaceBadges?.[0]?.id || "",
   );
 
-  const origin = window.location.origin.includes("localhost")
-    ? "https://agatike.rw"
-    : window.location.origin;
+  const origin = window.location.origin;
   const badgeLink =
     attendee.qrcode_number && selectedBadgeId
       ? `${origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}`
@@ -705,9 +703,7 @@ function BulkEmailModal({
         continue;
       }
 
-      const origin = window.location.origin.includes("localhost")
-        ? "https://agatike.rw"
-        : window.location.origin;
+      const origin = window.location.origin;
       const badgeLink =
         attendee.qrcode_number && selectedBadgeId
           ? `${origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}`
