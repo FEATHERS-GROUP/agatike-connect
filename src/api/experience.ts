@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
+import { deleteFiles } from "./storage";
 
 // ─── STORIES ──────────────────────────────────────────────────────────────────
 
@@ -55,11 +56,20 @@ export const getEventStories = createServerFn({ method: "POST" }).handler(async 
   const cleanupMutation = `
     mutation CleanupStories($now: timestamptz!) {
       delete_event_stories(where: { expires_at: { _lte: $now } }) {
-        affected_rows
+        returning {
+          media_url
+        }
       }
     }
   `;
-  hasuraRequest(cleanupMutation, { now }).catch(console.error);
+  hasuraRequest<{ delete_event_stories: any }>(cleanupMutation, { now })
+    .then(async (res) => {
+      const deletedUrls = res.delete_event_stories?.returning?.map((r: any) => r.media_url).filter(Boolean);
+      if (deletedUrls && deletedUrls.length > 0) {
+        await deleteFiles({ data: { urls: deletedUrls } } as any);
+      }
+    })
+    .catch(console.error);
   const query = `
     query GetEventStories($event_id: uuid!, $now: timestamptz!) {
       event_stories(
@@ -106,6 +116,23 @@ export const deleteEventStory = createServerFn({ method: "POST" }).handler(async
   if (!session || !session.sub) throw new Error("unauthenticated");
 
   const { id } = ctx.data as unknown as { id: string };
+
+  const getStoryQuery = `
+    query GetStoryForDelete($id: uuid!) {
+      event_stories_by_pk(id: $id) {
+        media_url
+      }
+    }
+  `;
+  const storyData = await hasuraRequest<{ event_stories_by_pk: any }>(getStoryQuery, { id });
+  
+  if (storyData.event_stories_by_pk?.media_url) {
+    try {
+      await deleteFiles({ data: { urls: [storyData.event_stories_by_pk.media_url] } } as any);
+    } catch (e) {
+      console.error("Failed to delete story media from storage", e);
+    }
+  }
 
   const mutation = `
     mutation DeleteEventStory($id: uuid!) {
@@ -222,6 +249,34 @@ export const deleteEventPost = createServerFn({ method: "POST" }).handler(async 
   if (!session || !session.sub) throw new Error("unauthenticated");
 
   const { id } = ctx.data as unknown as { id: string };
+
+  // First fetch the post to get the media URLs
+  const getPostQuery = `
+    query GetPostForDelete($id: uuid!) {
+      event_posts_by_pk(id: $id) {
+        media_urls
+      }
+    }
+  `;
+  const postData = await hasuraRequest<{ event_posts_by_pk: any }>(getPostQuery, { id });
+  
+  if (postData.event_posts_by_pk?.media_urls) {
+    try {
+      let urls: string[] = [];
+      const rawUrls = postData.event_posts_by_pk.media_urls;
+      if (typeof rawUrls === "string") {
+        urls = JSON.parse(rawUrls);
+      } else if (Array.isArray(rawUrls)) {
+        urls = rawUrls;
+      }
+      
+      if (urls.length > 0) {
+        await deleteFiles({ data: { urls } } as any);
+      }
+    } catch (e) {
+      console.error("Failed to delete post media from storage", e);
+    }
+  }
 
   const mutation = `
     mutation DeleteEventPost($id: uuid!) {

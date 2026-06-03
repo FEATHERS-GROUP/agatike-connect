@@ -40,7 +40,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/
 });
 
 // ── Inline address autocomplete ───────────────────────────────────────────────
-function AddressInput({
+export function AddressInput({
   value,
   onChange,
   onSelectCoords,
