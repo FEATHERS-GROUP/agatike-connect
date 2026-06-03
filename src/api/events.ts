@@ -16,27 +16,65 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
 
 const GET_PUBLIC_EVENTS = `
   query GetPublicEvents {
-    events(order_by: { created_at: desc }) {
+    events(where: { allowed_public: { _eq: true } }, order_by: { created_at: desc }) {
+      allowed_public
+      category
+      cover
+      created_at
+      deleted
+      description
+      event_requency
       id
       title
-      category
-      description
-      cover
       tour_stops
+      updated_at
       vipPerks
-      created_at
+      workspace_id
+      event_tickets {
+        cost
+        created_at
+        deleted
+        event_id
+        id
+        is_consumable
+        remaining
+        sold
+        sale_ends_at
+        tour_stop_idx
+        type
+        updated_at
+      }
+      ticket_projects {
+        coverImage
+        id
+        name
+        tier
+      }
+      merchandises {
+        id
+        image_url
+        name
+        price
+      }
       workspaces {
+        city
         name
         orgnizer_id
+        organizer {
+          active
+          bio
+          business
+          handle
+          id
+          image
+          name
+          followers
+        }
+        type
+        updated_at
         wallet {
           currency
         }
-      }
-      event_tickets(limit: 1, order_by: { cost: asc }) {
-        type
-        cost
-        remaining
-        tour_stop_idx
       }
     }
   }
@@ -78,23 +116,64 @@ export const getWorkspaceEvents = createServerFn({ method: "POST" }).handler(asy
 const GET_EVENT_BY_ID = `
   query GetEventById($id: uuid!) {
     events_by_pk(id: $id) {
+      allowed_public
+      category
+      cover
+      created_at
+      deleted
+      description
+      event_requency
       id
       title
-      category
-      description
-      cover
       tour_stops
+      updated_at
       vipPerks
-      event_requency
       workspace_id
       event_tickets {
-        id
-        type
         cost
+        created_at
+        deleted
+        event_id
+        id
+        is_consumable
         remaining
         sold
         sale_ends_at
         tour_stop_idx
+        type
+        updated_at
+      }
+      ticket_projects {
+        coverImage
+        id
+        name
+        tier
+      }
+      merchandises {
+        id
+        image_url
+        name
+        price
+      }
+      workspaces {
+        city
+        name
+        orgnizer_id
+        organizer {
+          active
+          bio
+          business
+          handle
+          id
+          image
+          name
+          followers
+        }
+        type
+        updated_at
+        wallet {
+          currency
+        }
       }
     }
   }

@@ -1,14 +1,14 @@
-import e1 from "@/assets/event-1.jpg";
-import e2 from "@/assets/event-2.jpg";
-import e3 from "@/assets/event-3.jpg";
-import e4 from "@/assets/event-4.jpg";
-import e5 from "@/assets/event-5.jpg";
-import e6 from "@/assets/event-6.jpg";
-import expHiking from "@/assets/exp-hiking.jpg";
-import expRunning from "@/assets/exp-running.jpg";
-import expSurf from "@/assets/exp-surf.jpg";
-import movie1 from "@/assets/movie-1.jpg";
-import movie2 from "@/assets/movie-2.jpg";
+const e1 = "https://images.unsplash.com/photo-1540039155732-611425887258?auto=format&fit=crop&w=800&q=80";
+const e2 = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80";
+const e3 = "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80";
+const e4 = "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=800&q=80";
+const e5 = "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80";
+const e6 = "https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&w=800&q=80";
+const expHiking = "https://images.unsplash.com/photo-1522199755839-a2bacb67c546?auto=format&fit=crop&w=800&q=80";
+const expRunning = "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=800&q=80";
+const expSurf = "https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=800&q=80";
+const movie1 = "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80";
+const movie2 = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80";
 
 export const eventImages = [e1, e2, e3, e4, e5, e6];
 

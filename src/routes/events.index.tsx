@@ -7,7 +7,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { categories } from "@/lib/mock-data";
+import { categories, events as mockEvents } from "@/lib/mock-data";
 import { getPublicEvents } from "@/api/events";
 
 export const Route = createFileRoute("/events/")({
@@ -47,11 +47,16 @@ function getCurrencySymbol(currency?: string) {
   return map[currency || ""] || "$";
 }
 
-function DbEventCard({ event }: { event: any }) {
-  const firstStop = Array.isArray(event.tour_stops) ? event.tour_stops[0] : null;
-  const lowestTicket = event.event_tickets?.[0];
-  const currency = getCurrencySymbol(event.workspace?.wallet?.currency);
-  const price = lowestTicket ? parseFloat(lowestTicket.cost) : 0;
+function EventCard({ event }: { event: any }) {
+  // Support both DB and mock data shapes
+  const isMock = !!event.organizer || !!event.host || !!event.cinema;
+  
+  const date = isMock ? event.date : (Array.isArray(event.tour_stops) ? event.tour_stops[0]?.date : "TBD");
+  const time = isMock ? event.time || event.duration : (Array.isArray(event.tour_stops) ? event.tour_stops[0]?.time : "");
+  const venue = isMock ? event.venue || event.cinema : (Array.isArray(event.tour_stops) ? event.tour_stops[0]?.venue : "");
+  const city = isMock ? event.city : (Array.isArray(event.tour_stops) ? event.tour_stops[0]?.city : "");
+  const tourStopsCount = isMock ? 1 : (event.tour_stops?.length || 1);
+  const organizerName = isMock ? event.organizer || event.host || event.cinema : (event.workspaces?.organizer?.name || event.workspaces?.name || "Organizer");
 
   return (
     <Link
@@ -76,37 +81,29 @@ function DbEventCard({ event }: { event: any }) {
             {event.category}
           </span>
         </div>
-        {event.tour_stops?.length > 1 && (
+        {tourStopsCount > 1 && (
           <div className="absolute top-3 right-3 rounded-full bg-primary/90 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
-            {event.tour_stops.length} stops
+            {tourStopsCount} stops
           </div>
         )}
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-          {firstStop && (
-            <p className="text-xs uppercase tracking-wider opacity-80 flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {firstStop.date || "TBD"} · {firstStop.time || ""}
-            </p>
-          )}
+          <p className="text-xs uppercase tracking-wider opacity-80 flex items-center gap-1">
+            <Calendar className="h-3 w-3" />
+            {date || "TBD"} {time ? `· ${time}` : ""}
+          </p>
           <h3 className="mt-1 text-lg font-semibold leading-tight line-clamp-2">{event.title}</h3>
-          {firstStop && (
+          {(venue || city) && (
             <div className="mt-2 flex items-center gap-1 text-xs opacity-90">
               <MapPin className="h-3 w-3" />
-              {firstStop.venue ? `${firstStop.venue}, ` : ""}
-              {firstStop.city || ""}
+              {venue ? `${venue}, ` : ""}
+              {city}
             </div>
           )}
         </div>
       </div>
-      <div className="flex items-center justify-between px-4 py-3">
+      <div className="px-4 py-3">
         <div className="text-xs text-muted-foreground">
-          by{" "}
-          <span className="text-foreground font-medium">
-            {event.workspace?.name || "Organizer"}
-          </span>
-        </div>
-        <div className="text-sm font-semibold">
-          {price === 0 ? "Free" : `from ${currency}${price.toLocaleString()}`}
+          by <span className="text-foreground font-medium">{organizerName}</span>
         </div>
       </div>
     </Link>
@@ -117,22 +114,27 @@ function EventsBrowse() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string | null>(null);
 
-  const { data: events = [], isLoading } = useQuery({
+  const { data: dbEvents = [], isLoading } = useQuery({
     queryKey: ["public-events"],
     queryFn: () => getPublicEvents(),
   });
 
+  const allEvents = useMemo(() => {
+    return [...dbEvents, ...mockEvents];
+  }, [dbEvents]);
+
   const filtered = useMemo(() => {
-    return events.filter((e: any) => {
-      const firstStop = Array.isArray(e.tour_stops) ? e.tour_stops[0] : null;
-      const city = firstStop?.city || "";
+    return allEvents.filter((e: any) => {
+      const isMock = !!e.organizer || !!e.host || !!e.cinema;
+      const city = isMock ? e.city : (Array.isArray(e.tour_stops) ? e.tour_stops[0]?.city : "");
+      const organizerName = isMock ? e.organizer || e.host || e.cinema : (e.workspaces?.organizer?.name || e.workspaces?.name || "");
       const matchesQ =
         !q ||
-        `${e.title} ${e.workspace?.name || ""} ${city}`.toLowerCase().includes(q.toLowerCase());
+        `${e.title} ${organizerName} ${city}`.toLowerCase().includes(q.toLowerCase());
       const matchesCat = !cat || e.category === cat;
       return matchesQ && matchesCat;
     });
-  }, [q, cat, events]);
+  }, [q, cat, allEvents]);
 
   const router = useRouter();
 
@@ -223,7 +225,7 @@ function EventsBrowse() {
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {filtered.map((e: any) => (
-              <DbEventCard key={e.id} event={e} />
+              <EventCard key={e.id} event={e} />
             ))}
           </div>
         )}
