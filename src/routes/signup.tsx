@@ -96,7 +96,7 @@ function SignUp() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent lg:from-black/85 lg:via-black/30" />
           <div className="absolute bottom-8 left-6 right-6 lg:bottom-0 lg:left-0 lg:right-0 lg:p-10 lg:text-white">
             <p className="text-xs font-medium text-white/90 lg:text-sm lg:opacity-80">
-              Africa's premium platform
+              The premium platform
             </p>
             <h2 className="mt-1 text-2xl font-semibold leading-tight text-white lg:mt-2 lg:text-3xl">
               Join the movement.
@@ -118,7 +118,7 @@ function SignUp() {
             </div>
             <h1 className="text-2xl font-semibold tracking-tight lg:mt-6 lg:text-center">Create your account</h1>
             <p className="mt-1 text-sm text-muted-foreground lg:text-center">
-              Join thousands discovering events across Africa.
+              Join thousands discovering events worldwide.
             </p>
 
             <div className="mt-6 grid grid-cols-2 gap-3">
