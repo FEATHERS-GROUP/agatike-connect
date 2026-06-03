@@ -11,11 +11,16 @@ import {
   Crown,
   Loader2,
   Check,
+  Users,
+  Instagram,
+  Camera,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { categories } from "@/lib/mock-data";
 import { getEventById, updateEvent } from "@/api/events";
 import { getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
@@ -123,6 +128,7 @@ function EditEventPage() {
     vipPerks: "",
     locations: [] as any[],
     coverPreview: "",
+    allowed_public: false,
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
 
@@ -150,6 +156,7 @@ function EditEventPage() {
               },
             ],
       coverPreview: event.cover || "",
+      allowed_public: !!event.allowed_public,
     });
   }, [event]);
 
@@ -171,6 +178,7 @@ function EditEventPage() {
           tour_stops: form.locations,
           vipPerks: form.vipPerks,
           event_requency: event?.event_requency || {},
+          allowed_public: form.allowed_public,
         },
       } as any);
     },
@@ -279,7 +287,20 @@ function EditEventPage() {
 
       {/* Basic Details */}
       <div className="rounded-[2rem] border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] space-y-5">
-        <h2 className="font-semibold text-lg">Basic Details</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-lg">Basic Details</h2>
+          <div className="flex items-center gap-3">
+            <Globe className="h-5 w-5 text-muted-foreground" />
+            <div className="flex flex-col">
+              <Label className="text-sm font-semibold">Public Event</Label>
+              <p className="text-xs text-muted-foreground">List on explore page</p>
+            </div>
+            <Switch
+              checked={form.allowed_public}
+              onCheckedChange={(checked) => updateField("allowed_public", checked)}
+            />
+          </div>
+        </div>
         <div>
           <Label>Event Title</Label>
           <Input

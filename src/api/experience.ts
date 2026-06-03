@@ -16,8 +16,8 @@ export const createEventStory = createServerFn({ method: "POST" }).handler(async
     caption?: string;
   };
 
-  // Stories expire after 48 hours
-  const expires_at = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+  // Stories expire after 24 hours
+  const expires_at = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
   const mutation = `
     mutation CreateEventStory($object: event_stories_insert_input!) {
@@ -50,6 +50,16 @@ export const getEventStories = createServerFn({ method: "POST" }).handler(async 
   const { event_id } = ctx.data as unknown as { event_id: string };
 
   const now = new Date().toISOString();
+
+  // Lazily clean up expired stories to ensure they are physically deleted from Supabase
+  const cleanupMutation = `
+    mutation CleanupStories($now: timestamptz!) {
+      delete_event_stories(where: { expires_at: { _lte: $now } }) {
+        affected_rows
+      }
+    }
+  `;
+  hasuraRequest(cleanupMutation, { now }).catch(console.error);
   const query = `
     query GetEventStories($event_id: uuid!, $now: timestamptz!) {
       event_stories(

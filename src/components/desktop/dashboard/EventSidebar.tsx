@@ -10,6 +10,7 @@ import {
   ShoppingBag,
   Sparkles,
   Check,
+  Mic,
 } from "lucide-react";
 
 const steps = ["Details", "Tickets", "Venue", "Media", "Products", "VIP", "Publish"] as const;
@@ -59,6 +60,11 @@ export function EventSidebar() {
       label: "Products & Add-ons",
       href: `/dashboard/${workspaceSlug}/events/${eventId}/products&add-ons`,
       icon: ShoppingBag,
+    },
+    {
+      label: "Lineup & Speakers",
+      href: `/dashboard/${workspaceSlug}/events/${eventId}/lineup`,
+      icon: Mic,
     },
     {
       label: "Experience",

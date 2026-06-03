@@ -10,6 +10,7 @@ import {
   Plus,
   Minus,
   Shield,
+  Instagram,
 } from "lucide-react";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { Navbar } from "@/components/site/Navbar";
@@ -65,6 +66,13 @@ export function EventDetailsDesktop({ eventId, event: initialEvent }: { eventId:
   const description = ev.description || ev.synopsis || "";
   const category = ev.category || ev.genre || "Event";
   const attendeesCount = isMock ? (ev.attendees || ev.spots || 0) : (ev.event_tickets?.reduce((acc: number, t: any) => acc + (parseInt(t.sold) || 0), 0) || 0);
+  
+  const lineup = Array.isArray(ev.lineup) && ev.lineup.length > 0 ? ev.lineup : (isMock ? [
+    { id: '1', name: "DJ Nala", role: "Main DJ", instagram: "djnala" },
+    { id: '2', name: "Burna Sound", role: "Guest Artist" },
+    { id: '3', name: "Amapiano Live", role: "Set", instagram: "amapianolive" },
+    { id: '4', name: "Surprise Guest", role: "Special Appearance" }
+  ] : []);
   
   const allTicketTiers = isMock 
     ? ticketTiers 
@@ -183,23 +191,44 @@ export function EventDetailsDesktop({ eventId, event: initialEvent }: { eventId:
             </p>
           </div>
 
-          <div>
-            <h2 className="text-xl font-semibold">Lineup</h2>
-            <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-              {["DJ Nala", "Burna Sound", "Amapiano Live", "Surprise Guest"].map((n) => (
-                <div
-                  key={n}
-                  className="rounded-2xl border border-border/60 bg-card p-4 text-center"
-                >
+          {lineup.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold">Lineup & Speakers</h2>
+              <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                {lineup.map((member: any) => (
                   <div
-                    className="mx-auto h-14 w-14 rounded-full"
-                    style={{ background: "var(--gradient-primary)" }}
-                  />
-                  <p className="mt-3 text-sm font-medium">{n}</p>
-                </div>
-              ))}
+                    key={member.id || member.name}
+                    className="group rounded-2xl border border-border/60 bg-card p-4 text-center transition-transform hover:-translate-y-1 hover:shadow-[var(--shadow-card)]"
+                  >
+                    {member.avatarUrl ? (
+                      <img
+                        src={member.avatarUrl}
+                        alt={member.name}
+                        className="mx-auto h-16 w-16 rounded-full object-cover shadow-sm ring-2 ring-primary/20"
+                      />
+                    ) : (
+                      <div
+                        className="mx-auto h-16 w-16 rounded-full shadow-sm ring-2 ring-primary/20"
+                        style={{ background: "var(--gradient-primary)" }}
+                      />
+                    )}
+                    <p className="mt-3 text-sm font-semibold truncate">{member.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{member.role || "Artist"}</p>
+                    {member.instagram && (
+                      <a 
+                        href={`https://instagram.com/${member.instagram.replace('@', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 mx-auto flex items-center justify-center h-8 w-8 rounded-full bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                      >
+                        <Instagram className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div>
             <h2 className="text-xl font-semibold">

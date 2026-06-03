@@ -26,6 +26,7 @@ const GET_PUBLIC_EVENTS = `
       event_requency
       id
       title
+      lineup
       tour_stops
       updated_at
       vipPerks
@@ -94,6 +95,8 @@ const GET_WORKSPACE_EVENTS = `
       description
       cover
       tour_stops
+      lineup
+      allowed_public
       created_at
       event_tickets {
         id
@@ -125,6 +128,7 @@ const GET_EVENT_BY_ID = `
       event_requency
       id
       title
+      lineup
       tour_stops
       updated_at
       vipPerks
@@ -194,7 +198,9 @@ const UPDATE_EVENT = `
     $cover: String,
     $tour_stops: jsonb,
     $vipPerks: String,
-    $event_requency: jsonb
+    $event_requency: jsonb,
+    $lineup: jsonb,
+    $allowed_public: Boolean
   ) {
     update_events_by_pk(
       pk_columns: { id: $id },
@@ -205,7 +211,9 @@ const UPDATE_EVENT = `
         cover: $cover,
         tour_stops: $tour_stops,
         vipPerks: $vipPerks,
-        event_requency: $event_requency
+        event_requency: $event_requency,
+        lineup: $lineup,
+        allowed_public: $allowed_public
       }
     ) {
       id

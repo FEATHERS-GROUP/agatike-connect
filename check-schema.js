@@ -26,22 +26,9 @@ async function run() {
 
   const json = await response.json();
   const types = json.data.__schema.types;
-  const pageType = types.find((t) => t.name.includes("page"));
-  console.log("Page Type Found:", pageType?.name);
-  if (pageType && pageType.fields) {
-    console.log(
-      "Fields:",
-      pageType.fields.map((f) => f.name),
-    );
-  } else {
-    console.log("Looking for workspace_pages specifically...");
-    const wp = types.find((t) => t.name === "workspace_pages");
-    if (wp) {
-      console.log("Found workspace_pages");
-    } else {
-      console.log("Not found.");
-    }
-  }
+  const tableTypes = types.filter((t) => !t.name.startsWith("__") && !t.name.includes("_aggregate") && !t.name.includes("_mutation") && !t.name.includes("_input") && !t.name.includes("_response") && !t.name.includes("Query") && !t.name.includes("Mutation") && !t.name.includes("Subscription") && !t.name.endsWith("_enum"));
+  console.log("Tables/Types available:");
+  tableTypes.forEach(t => console.log(`- ${t.name}`));
 }
 
 run();
