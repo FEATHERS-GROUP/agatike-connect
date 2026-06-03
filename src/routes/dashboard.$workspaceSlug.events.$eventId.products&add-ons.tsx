@@ -67,9 +67,11 @@ function ProductModal({
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [step, setStep] = useState(1);
 
   useEffect(() => {
     if (editingProduct && open) {
+      setStep(2);
       setFormData({
         type: editingProduct.type || "physical",
         name: editingProduct.name || "",
@@ -93,6 +95,7 @@ function ProductModal({
         reward_description: "",
       });
       setImagePreview("");
+      setStep(1);
     }
   }, [editingProduct, open]);
 
@@ -170,14 +173,64 @@ function ProductModal({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{editingProduct ? "Edit Product" : "Create New Product"}</DialogTitle>
+          <DialogTitle>
+            {editingProduct 
+              ? "Edit Product" 
+              : step === 1 
+                ? "Select Item Type" 
+                : "Enter Item Details"}
+          </DialogTitle>
           <DialogDescription>
-            {editingProduct ? "Update details for this item." : "Add a new item, voucher, or card to your event."}
+            {editingProduct 
+              ? "Update details for this item." 
+              : step === 1 
+                ? "Choose what kind of item you want to create." 
+                : "Fill in the specific details for your new item."}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          {/* Image Upload */}
+        {step === 1 && !editingProduct ? (
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            {[
+              { id: "physical", label: "Physical Merch", icon: ShoppingBag, desc: "T-shirts, posters, physical goods" },
+              { id: "voucher", label: "Digital Voucher", icon: Ticket, desc: "Pre-paid digital wallets" },
+              { id: "punch_card", label: "Punch Card", icon: QrCode, desc: "Pre-paid quantity of items" },
+              { id: "loyalty_card", label: "Loyalty Card", icon: Check, desc: "Free card to earn rewards" },
+            ].map((typeOption) => {
+              const Icon = typeOption.icon;
+              return (
+                <div
+                  key={typeOption.id}
+                  onClick={() => {
+                    setFormData({ ...formData, type: typeOption.id });
+                    setStep(2);
+                  }}
+                  className="cursor-pointer rounded-2xl border border-border/60 bg-card p-5 transition-all hover:bg-secondary/50 hover:border-primary hover:-translate-y-1 shadow-sm"
+                >
+                  <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground mb-4">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-1">{typeOption.label}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{typeOption.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4 animate-in fade-in slide-in-from-right-4">
+            {!editingProduct && (
+              <div className="flex justify-between items-center bg-secondary/30 p-3 rounded-xl border border-border/60 mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Creating:</span>
+                  <span className="text-sm font-semibold capitalize">{formData.type.replace('_', ' ')}</span>
+                </div>
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setStep(1)}>
+                  Change
+                </Button>
+              </div>
+            )}
+
+            {/* Image Upload */}
           {formData.type === "physical" && (
             <div className="flex flex-col items-center gap-2 mb-2 animate-in fade-in slide-in-from-top-2">
               <label className="relative flex h-24 w-24 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-secondary/40 transition hover:border-primary">
@@ -205,24 +258,6 @@ function ProductModal({
               <p className="text-xs text-muted-foreground">Product Image (Optional)</p>
             </div>
           )}
-
-          <div className="space-y-2">
-            <Label>Product Type</Label>
-            <Select
-              value={formData.type}
-              onValueChange={(val) => setFormData({ ...formData, type: val })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="physical">Physical Merchandise</SelectItem>
-                <SelectItem value="voucher">Consumable Wallet / Voucher</SelectItem>
-                <SelectItem value="punch_card">Pre-paid Punch Card</SelectItem>
-                <SelectItem value="loyalty_card">Earned Loyalty Card</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
           <div className="space-y-2">
             <Label>
@@ -333,7 +368,8 @@ function ProductModal({
             </Button>
           </div>
         </form>
-      </DialogContent>
+      )}
+    </DialogContent>
     </Dialog>
   );
 }
