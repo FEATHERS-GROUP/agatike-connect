@@ -176,3 +176,35 @@ export const getSponsoredVouchers = createServerFn({ method: "POST" }).handler(a
   
   return vouchers;
 });
+
+const GET_SPONSORED_VOUCHER_BATCHES = `
+  query GetSponsoredVoucherBatches($event_id: uuid!) {
+    sponsored_voucher_batches(where: { event_id: { _eq: $event_id } }, order_by: { created_at: desc }) {
+      id
+      name
+      value_per_voucher
+      generation_type
+      value_type
+      linked_ticket_ids
+      vouchers {
+        id
+        current_balance
+        is_active
+        voucher_transactions_aggregate {
+          aggregate {
+            sum {
+              amount
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const getSponsoredVoucherBatches = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { event_id } = ctx.data as unknown as { event_id: string };
+  const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(GET_SPONSORED_VOUCHER_BATCHES, { event_id }).catch(() => ({ sponsored_voucher_batches: [] }));
+  return data.sponsored_voucher_batches || [];
+});
+

@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventVendors, createEventVendor, deleteEventVendor, getVendorTransactions } from "@/api/vendors";
 import { getAgatikeBooks, createAgatikeBook, createAgatikeBookRecord, deleteAgatikeBook, deleteAgatikeBookRecord } from "@/api/book";
-import { batchGenerateSponsoredVouchers, getSponsoredVouchers } from "@/api/vouchers";
+import { batchGenerateSponsoredVouchers, getSponsoredVouchers, getSponsoredVoucherBatches } from "@/api/vouchers";
 import { getEventById } from "@/api/events";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useState } from "react";
@@ -903,9 +903,9 @@ function OverviewTab({ eventId }: { eventId: string }) {
     queryFn: () => getEventVendors({ data: { event_id: eventId } } as any),
   });
 
-  const { data: vouchers = [], isLoading: loadingVouchers } = useQuery({
-    queryKey: ["sponsored-vouchers", eventId],
-    queryFn: () => getSponsoredVouchers({ data: { event_id: eventId } } as any),
+  const { data: voucherBatches = [], isLoading: loadingVouchers } = useQuery({
+    queryKey: ["sponsored-voucher-batches", eventId],
+    queryFn: () => getSponsoredVoucherBatches({ data: { event_id: eventId } } as any),
   });
 
   const { data: books = [], isLoading: loadingBooks } = useQuery({
@@ -931,22 +931,25 @@ function OverviewTab({ eventId }: { eventId: string }) {
   let totalVoucherSpent = 0;
   const voucherBreakdown: { name: string, type: string, totalCount: number, provisioned: number, spent: number }[] = [];
   
-  vouchers.forEach((batch: any) => {
+  voucherBatches.forEach((batch: any) => {
     let batchProvisioned = 0;
     let batchSpent = 0;
-    batch.vouchers?.forEach((v: any) => {
+    const batchVouchers: any[] = batch.vouchers || [];
+    
+    batchVouchers.forEach((v: any) => {
       const spent = Number(v.voucher_transactions_aggregate?.aggregate?.sum?.amount || 0);
       const prov = Number(v.current_balance || 0) + spent;
       batchSpent += spent;
       batchProvisioned += prov;
     });
+
     totalVoucherSpent += batchSpent;
     totalVoucherProvisioned += batchProvisioned;
     
     voucherBreakdown.push({
       name: batch.name || 'Unnamed Batch',
-      type: batch.type || 'Standard',
-      totalCount: batch.vouchers?.length || 0,
+      type: batch.value_type || batch.generation_type || 'Standard',
+      totalCount: batchVouchers.length,
       provisioned: batchProvisioned,
       spent: batchSpent
     });
