@@ -891,6 +891,8 @@ function AgatikeBookTab({ eventId }: { eventId: string }) {
 }
 
 function OverviewTab({ eventId }: { eventId: string }) {
+  const [showAllVouchers, setShowAllVouchers] = useState(false);
+  
   const { data: event, isLoading: loadingEvent } = useQuery({
     queryKey: ["event", eventId],
     queryFn: () => getEventById({ data: { id: eventId } } as any),
@@ -1043,7 +1045,7 @@ function OverviewTab({ eventId }: { eventId: string }) {
                 {voucherBreakdown.length === 0 && (
                   <tr><td colSpan={4} className="p-8 text-center text-muted-foreground">No voucher campaigns created yet.</td></tr>
                 )}
-                {voucherBreakdown.map((batch, idx) => (
+                {voucherBreakdown.slice(0, 6).map((batch, idx) => (
                   <tr key={idx} className="hover:bg-secondary/10 transition-colors">
                     <td className="px-6 py-4">
                       <p className="font-semibold text-foreground">{batch.name}</p>
@@ -1060,6 +1062,13 @@ function OverviewTab({ eventId }: { eventId: string }) {
               </tbody>
             </table>
           </div>
+          {voucherBreakdown.length > 6 && (
+            <div className="p-4 border-t border-border/50 bg-secondary/10 text-center">
+              <Button variant="outline" size="sm" onClick={() => setShowAllVouchers(true)}>
+                View All {voucherBreakdown.length} Campaigns
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-6">
@@ -1098,6 +1107,43 @@ function OverviewTab({ eventId }: { eventId: string }) {
           </div>
         </div>
       </div>
+
+      <Dialog open={showAllVouchers} onOpenChange={setShowAllVouchers}>
+        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>All Voucher Campaigns</DialogTitle>
+            <DialogDescription>Full financial breakdown of every voucher campaign in this event.</DialogDescription>
+          </DialogHeader>
+          <div className="overflow-auto mt-4 rounded-xl border border-border/60">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-secondary/30 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-6 py-3 font-medium">Campaign / Type</th>
+                  <th className="px-6 py-3 font-medium text-center">Quantity</th>
+                  <th className="px-6 py-3 font-medium text-right">Value (RWF)</th>
+                  <th className="px-6 py-3 font-medium text-right">Spent</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {voucherBreakdown.map((batch, idx) => (
+                  <tr key={idx} className="hover:bg-secondary/10 transition-colors">
+                    <td className="px-6 py-4">
+                      <p className="font-semibold text-foreground">{batch.name}</p>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground mt-1 inline-block uppercase tracking-wider">{batch.type}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center font-medium">{batch.totalCount}</td>
+                    <td className="px-6 py-4 text-right font-semibold">{batch.provisioned.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-right">
+                      <p className="font-semibold text-orange-500">{batch.spent.toLocaleString()}</p>
+                      <p className="text-[10px] text-muted-foreground">{batch.provisioned > 0 ? Math.round((batch.spent / batch.provisioned) * 100) : 0}% used</p>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
