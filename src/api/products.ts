@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
+import { getSession } from "./auth";
 
 const CREATE_PRODUCT = `
   mutation CreateProduct($object: products_insert_input!) {
@@ -12,8 +13,32 @@ const CREATE_PRODUCT = `
 `;
 
 export const createProduct = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+
   const productData = ctx.data as any;
+  productData.organizer_id = session.sub;
+  
   return hasuraRequest(CREATE_PRODUCT, { object: productData });
+});
+
+const UPDATE_PRODUCT = `
+  mutation UpdateProduct($id: uuid!, $set: products_set_input!) {
+    update_products_by_pk(pk_columns: { id: $id }, _set: $set) {
+      id
+      name
+      type
+    }
+  }
+`;
+
+export const updateProduct = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+
+  const { id, ...setData } = ctx.data as any;
+  
+  return hasuraRequest(UPDATE_PRODUCT, { id, set: setData });
 });
 
 const GET_WORKSPACE_PRODUCTS = `

@@ -1,5 +1,5 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { Plus, ShoppingBag, Ticket, QrCode, Upload, Loader2, Check } from "lucide-react";
+import { Plus, ShoppingBag, Ticket, QrCode, Upload, Loader2, Check, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -29,15 +29,28 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createProduct } from "@/api/products";
+import { createProduct, getEventProducts, updateProduct } from "@/api/products";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/products&add-ons")({
   component: ProductsAndAddonsView,
 });
 
-function AddProductModal({ eventId }: { eventId?: string }) {
+function ProductModal({ 
+  eventId, 
+  editingProduct, 
+  onClose,
+  trigger
+}: { 
+  eventId?: string;
+  editingProduct?: any;
+  onClose?: () => void;
+  trigger?: React.ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
@@ -52,40 +65,82 @@ function AddProductModal({ eventId }: { eventId?: string }) {
     punch_count: "",
     reward_description: "",
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+
+  useEffect(() => {
+    if (editingProduct && open) {
+      setFormData({
+        type: editingProduct.type || "physical",
+        name: editingProduct.name || "",
+        description: editingProduct.description || "",
+        price: editingProduct.price || "",
+        stock_limit: editingProduct.stock_limit || "",
+        value_amount: editingProduct.value_amount || "",
+        punch_count: editingProduct.punch_count || "",
+        reward_description: editingProduct.reward_description || "",
+      });
+      setImagePreview(editingProduct.image_url || "");
+    } else if (open && !editingProduct) {
+      setFormData({
+        type: "physical",
+        name: "",
+        description: "",
+        price: "",
+        stock_limit: "",
+        value_amount: "",
+        punch_count: "",
+        reward_description: "",
+      });
+      setImagePreview("");
+    }
+  }, [editingProduct, open]);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const payload = {
-        workspace_id: activeWorkspace?.id,
-        event_id: eventId || null,
+      const payload: any = {
         type: formData.type,
         name: formData.name,
         description: formData.description,
-        price: formData.type === "loyalty_card" ? 0 : Number(formData.price) || 0,
-        stock_limit: formData.stock_limit ? Number(formData.stock_limit) : null,
+        price: formData.type === "loyalty_card" ? "0" : (formData.price || "0"),
+        stock_limit: formData.stock_limit ? String(formData.stock_limit) : null,
         value_amount:
           formData.type === "voucher" && formData.value_amount
-            ? Number(formData.value_amount)
+            ? String(formData.value_amount)
             : null,
         punch_count:
           (formData.type === "punch_card" || formData.type === "loyalty_card") &&
           formData.punch_count
-            ? Number(formData.punch_count)
+            ? String(formData.punch_count)
             : null,
         reward_description: formData.type === "loyalty_card" ? formData.reward_description : null,
-        sold_count: 0,
         is_active: true,
       };
-      return await createProduct({ data: payload } as any);
+      
+      if (imageFile) {
+        payload.image_url = await uploadFileToStorage(imageFile, "events/products");
+      }
+
+      if (editingProduct) {
+        payload.id = editingProduct.id;
+        return await updateProduct({ data: payload } as any);
+      } else {
+        payload.workspace_id = activeWorkspace?.id;
+        payload.event_id = eventId || null;
+        payload.sold_count = "0";
+        if (!payload.image_url) payload.image_url = null;
+        return await createProduct({ data: payload } as any);
+      }
     },
     onSuccess: () => {
-      toast.success("Product created successfully!");
+      toast.success(editingProduct ? "Product updated successfully!" : "Product created successfully!");
       setOpen(false);
-      // Invalidate queries here when we wire up real data
-      // queryClient.invalidateQueries({ queryKey: ['products'] });
+      setImageFile(null);
+      if (onClose) onClose();
+      queryClient.invalidateQueries({ queryKey: ["event-products", eventId] });
     },
     onError: (err: any) => {
-      toast.error(err.message || "Failed to create product");
+      toast.error(err.message || (editingProduct ? "Failed to update product" : "Failed to create product"));
     },
   });
 
@@ -99,22 +154,58 @@ function AddProductModal({ eventId }: { eventId?: string }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(val) => {
+      setOpen(val);
+      if (!val && onClose) onClose();
+    }}>
       <DialogTrigger asChild>
-        <Button
-          className="rounded-full shadow-[var(--shadow-glow)]"
-          style={{ background: "var(--gradient-primary)" }}
-        >
-          <Plus className="mr-1 h-4 w-4" /> Add Item
-        </Button>
+        {trigger || (
+          <Button
+            className="rounded-full shadow-[var(--shadow-glow)]"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            <Plus className="mr-1 h-4 w-4" /> Add Item
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create New Product</DialogTitle>
-          <DialogDescription>Add a new item, voucher, or card to your event.</DialogDescription>
+          <DialogTitle>{editingProduct ? "Edit Product" : "Create New Product"}</DialogTitle>
+          <DialogDescription>
+            {editingProduct ? "Update details for this item." : "Add a new item, voucher, or card to your event."}
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          {/* Image Upload */}
+          {formData.type === "physical" && (
+            <div className="flex flex-col items-center gap-2 mb-2 animate-in fade-in slide-in-from-top-2">
+              <label className="relative flex h-24 w-24 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-secondary/40 transition hover:border-primary">
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
+                ) : (
+                  <ImageIcon className="h-6 w-6 text-muted-foreground opacity-50" />
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    if (f.size > 5 * 1024 * 1024) {
+                      toast.error("Image must be smaller than 5MB");
+                      return;
+                    }
+                    setImageFile(f);
+                    setImagePreview(URL.createObjectURL(f));
+                  }}
+                />
+              </label>
+              <p className="text-xs text-muted-foreground">Product Image (Optional)</p>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label>Product Type</Label>
             <Select
@@ -238,7 +329,7 @@ function AddProductModal({ eventId }: { eventId?: string }) {
               style={{ background: "var(--gradient-primary)" }}
             >
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Item
+              {editingProduct ? "Save Changes" : "Create Item"}
             </Button>
           </div>
         </form>
@@ -253,103 +344,57 @@ function ProductsAndAddonsView() {
 
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
-  // Temporary mock data until we fetch from DB
-  const merchandise = [
-    {
-      id: 1,
-      name: "Tour T-Shirt",
-      price: "$25",
-      stock: 150,
-      sold: 45,
-      type: "physical",
-      description: "Premium cotton tour t-shirt.",
-    },
-    { id: 2, name: "VIP Hoodie", price: "$65", stock: 50, sold: 12, type: "physical" },
-    { id: 3, name: "Event Poster", price: "$15", stock: 300, sold: 110, type: "physical" },
-  ];
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ["event-products", eventId],
+    queryFn: () => getEventProducts({ data: { event_id: eventId } } as any),
+  });
 
-  const vouchers = [
-    {
-      id: 4,
-      name: "$60 Food & Drink Voucher",
-      price: "$50",
-      stock: 500,
-      sold: 210,
-      type: "voucher",
-      value_amount: 60,
-    },
-    { id: 5, name: "VIP Afterparty Access", price: "$100", stock: 100, sold: 98, type: "voucher" },
-  ];
+  const merchandise = products.filter((p: any) => p.type === "physical");
+  const vouchers = products.filter((p: any) => p.type === "voucher");
+  const punchCards = products.filter((p: any) => p.type === "punch_card" || p.type === "loyalty_card");
 
-  const punchCards = [
-    {
-      id: 6,
-      name: "5x Free Drinks",
-      price: "$40",
-      stock: 200,
-      sold: 150,
-      type: "punch_card",
-      punch_count: 5,
-      description: "Redeemable for 5 standard drinks at any bar inside the venue.",
-    },
-    {
-      id: 7,
-      name: "Weekend Meal Pass (6 Meals)",
-      price: "$75",
-      stock: 150,
-      sold: 45,
-      type: "punch_card",
-      punch_count: 6,
-    },
-  ];
-
-  const renderTable = (items: any[], icon: any) => (
-    <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)]">
-      <table className="w-full text-sm text-left">
-        <thead className="bg-secondary/30 text-muted-foreground text-xs uppercase tracking-wider">
-          <tr>
-            <th className="px-6 py-4 font-medium">Item Name</th>
-            <th className="px-6 py-4 font-medium">Price</th>
-            <th className="px-6 py-4 font-medium">Stock Remaining</th>
-            <th className="px-6 py-4 font-medium">Sold</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border/60">
-          {items.map((m) => {
-            const Icon = icon;
-            return (
-              <tr
-                key={m.id}
-                className="hover:bg-secondary/40 transition-colors cursor-pointer group"
-                onClick={() => setSelectedItem(m)}
-              >
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <p className="font-semibold text-foreground">{m.name}</p>
-                  </div>
-                </td>
-                <td className="px-6 py-4 font-medium">{m.price}</td>
-                <td className="px-6 py-4">
-                  <span className={`font-medium ${m.stock < 100 ? "text-orange-500" : ""}`}>
-                    {m.stock}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-green-500 font-medium">{m.sold}</td>
-              </tr>
-            );
-          })}
-          {items.length === 0 && (
-            <tr>
-              <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
-                No items found. Create one to get started.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+  const renderCards = (items: any[], icon: any) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {items.length === 0 && (
+        <div className="col-span-full py-12 text-center text-muted-foreground bg-card rounded-2xl border border-border/60 shadow-[var(--shadow-card)]">
+          No items found. Create one to get started.
+        </div>
+      )}
+      {items.map((m) => {
+        const Icon = icon;
+        return (
+          <div
+            key={m.id}
+            onClick={() => setSelectedItem(m)}
+            className="group cursor-pointer rounded-2xl border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)] hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col"
+          >
+            <div className="aspect-square bg-secondary/50 flex items-center justify-center overflow-hidden relative">
+              {m.image_url ? (
+                <img src={m.image_url} alt={m.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              ) : (
+                <Icon className="h-16 w-16 text-muted-foreground/30 group-hover:scale-110 transition-transform duration-500" />
+              )}
+              {m.stock_limit !== null && Number(m.stock_limit) < 10 && (
+                <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-md px-2 py-1 rounded-full border border-orange-500/30 text-[10px] font-bold text-orange-500 uppercase tracking-wider shadow-sm">
+                  Low Stock
+                </div>
+              )}
+            </div>
+            <div className="p-5 flex flex-col flex-1">
+              <h3 className="font-semibold text-lg line-clamp-1 mb-1">{m.name}</h3>
+              <p className="text-xs text-muted-foreground line-clamp-1 mb-4">
+                {m.description || "No description provided."}
+              </p>
+              <div className="mt-auto pt-4 border-t border-border/50 flex items-center justify-between">
+                <span className="font-bold text-lg text-foreground">${m.price}</span>
+                <span className="text-xs font-medium bg-green-500/10 text-green-500 px-2 py-1 rounded-md">
+                  {m.sold_count} Sold
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 
@@ -362,7 +407,7 @@ function ProductsAndAddonsView() {
             Manage merchandise, vouchers, and punch cards for this event.
           </p>
         </div>
-        <AddProductModal eventId={eventId} />
+        <ProductModal eventId={eventId} />
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -386,9 +431,9 @@ function ProductsAndAddonsView() {
           <TabsTrigger value="vouchers">Vouchers</TabsTrigger>
           <TabsTrigger value="punchcards">Punch Cards</TabsTrigger>
         </TabsList>
-        <TabsContent value="merch">{renderTable(merchandise, ShoppingBag)}</TabsContent>
-        <TabsContent value="vouchers">{renderTable(vouchers, Ticket)}</TabsContent>
-        <TabsContent value="punchcards">{renderTable(punchCards, QrCode)}</TabsContent>
+        <TabsContent value="merch">{renderCards(merchandise, ShoppingBag)}</TabsContent>
+        <TabsContent value="vouchers">{renderCards(vouchers, Ticket)}</TabsContent>
+        <TabsContent value="punchcards">{renderCards(punchCards, QrCode)}</TabsContent>
       </Tabs>
 
       <Sheet open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
@@ -476,8 +521,14 @@ function ProductsAndAddonsView() {
 
               {selectedItem.type === "physical" && (
                 <div className="aspect-square w-full rounded-[2rem] bg-secondary/50 border border-border/60 flex items-center justify-center p-8 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5"></div>
-                  <ShoppingBag className="h-32 w-32 text-muted-foreground/30 drop-shadow-sm" />
+                  {selectedItem.image_url ? (
+                    <img src={selectedItem.image_url} alt={selectedItem.name} className="absolute inset-0 h-full w-full object-cover" />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5"></div>
+                      <ShoppingBag className="h-32 w-32 text-muted-foreground/30 drop-shadow-sm" />
+                    </>
+                  )}
                   <div className="absolute bottom-6 left-6 right-6 bg-background/80 backdrop-blur-md p-4 rounded-xl border border-border/50 text-center shadow-lg">
                     <p className="font-semibold text-lg">{selectedItem.name}</p>
                   </div>
@@ -499,31 +550,38 @@ function ProductsAndAddonsView() {
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                       Price
                     </p>
-                    <p className="text-xl font-semibold">{selectedItem.price}</p>
+                    <p className="text-xl font-semibold">${selectedItem.price}</p>
                   </div>
                   <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm">
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                       Sales
                     </p>
-                    <p className="text-xl font-semibold text-green-500">{selectedItem.sold}</p>
+                    <p className="text-xl font-semibold text-green-500">{selectedItem.sold_count}</p>
                   </div>
                   <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm">
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                       Inventory
                     </p>
                     <p
-                      className={`text-xl font-semibold ${selectedItem.stock < 100 ? "text-orange-500" : ""}`}
+                      className={`text-xl font-semibold ${selectedItem.stock_limit && selectedItem.stock_limit < 100 ? "text-orange-500" : ""}`}
                     >
-                      {selectedItem.stock}
+                      {selectedItem.stock_limit !== null ? selectedItem.stock_limit : "Unlimited"}
                     </p>
                   </div>
                   <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm flex flex-col justify-center">
-                    <Button
-                      variant="outline"
-                      className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
-                    >
-                      Edit Item
-                    </Button>
+                    <ProductModal 
+                      eventId={eventId} 
+                      editingProduct={selectedItem} 
+                      onClose={() => setSelectedItem(null)}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
+                        >
+                          Edit Item
+                        </Button>
+                      } 
+                    />
                   </div>
                 </div>
               </div>
