@@ -82,7 +82,7 @@ export const getSectionInventory = (sectionId: string): SectionInventory => {
   const rows = ["A", "B", "C", "D", "E"].map((rowName) => {
     const seats = Array.from({ length: 15 }).map((_, i) => ({
       number: `${i + 1}`,
-      status: Math.random() > 0.7 ? "sold" : "available" as const,
+      status: (Math.random() > 0.7 ? "sold" : "available") as SeatStatus,
       price: mockSectionMetadata[sectionId]?.priceMin || 50,
     }));
     return { row: rowName, seats };

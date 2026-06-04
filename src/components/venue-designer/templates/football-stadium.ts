@@ -1,6 +1,13 @@
 import { Trophy } from "lucide-react";
 import { VenueTemplate } from "../types";
 
+const defaultProps = {
+  capacity: 0,
+  type: "reserved" as const,
+  priceZone: "",
+  visible: false,
+};
+
 export const footballStadium: VenueTemplate = {
   id: "stadium",
   label: "Football Stadium",
@@ -17,21 +24,21 @@ export const footballStadium: VenueTemplate = {
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
     {
       id: "e2", name: "East VIP", color: "#dc2626", rows: 8, cols: 30, shape: "arc", x: 0, y: 0, rotation: 0, innerRadius: 225, outerRadius: 275, startAngle: 60, endAngle: 120,
       capacity: 0,
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
     {
       id: "e3", name: "East Upper", color: "#4ade80", rows: 15, cols: 50, shape: "arc", x: 0, y: 0, rotation: 0, innerRadius: 280, outerRadius: 340, startAngle: 60, endAngle: 120,
       capacity: 0,
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
 
     // --- WEST STAND (Left) ---
     {
@@ -40,21 +47,21 @@ export const footballStadium: VenueTemplate = {
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
     {
       id: "w2", name: "West VIP", color: "#dc2626", rows: 8, cols: 30, shape: "arc", x: 0, y: 0, rotation: 0, innerRadius: 225, outerRadius: 275, startAngle: 240, endAngle: 300,
       capacity: 0,
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
     {
       id: "w3", name: "West Upper", color: "#3b82f6", rows: 15, cols: 50, shape: "arc", x: 0, y: 0, rotation: 0, innerRadius: 280, outerRadius: 340, startAngle: 240, endAngle: 300,
       capacity: 0,
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
 
     // --- NORTH STAND (Top) ---
     {
@@ -63,14 +70,14 @@ export const footballStadium: VenueTemplate = {
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
     {
       id: "n2", name: "North Upper", color: "#fbbf24", rows: 20, cols: 40, shape: "arc", x: 0, y: 0, rotation: 0, innerRadius: 225, outerRadius: 320, startAngle: -35, endAngle: 35,
       capacity: 0,
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
 
     // --- SOUTH STAND (Bottom) ---
     {
@@ -79,14 +86,14 @@ export const footballStadium: VenueTemplate = {
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
     {
       id: "s2", name: "South Upper", color: "#fbbf24", rows: 20, cols: 40, shape: "arc", x: 0, y: 0, rotation: 0, innerRadius: 225, outerRadius: 320, startAngle: 145, endAngle: 215,
       capacity: 0,
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
 
     // --- CORNERS ---
     {
@@ -95,27 +102,27 @@ export const footballStadium: VenueTemplate = {
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
     {
       id: "nw", name: "NW Corner", color: "#14b8a6", rows: 15, cols: 15, shape: "arc", x: 0, y: 0, rotation: 0, innerRadius: 180, outerRadius: 280, startAngle: 303, endAngle: 322,
       capacity: 0,
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
     {
       id: "se", name: "SE Corner", color: "#14b8a6", rows: 15, cols: 15, shape: "arc", x: 0, y: 0, rotation: 0, innerRadius: 180, outerRadius: 280, startAngle: 123, endAngle: 142,
       capacity: 0,
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
     {
       id: "sw", name: "SW Corner", color: "#14b8a6", rows: 15, cols: 15, shape: "arc", x: 0, y: 0, rotation: 0, innerRadius: 180, outerRadius: 280, startAngle: 218, endAngle: 237,
       capacity: 0,
       type: "reserved",
       priceZone: "",
       visible: false
-    },
+   , ...defaultProps },
   ],
 };

@@ -63,18 +63,8 @@ function VenueDesignerPage() {
   // Load project or initialize from template
   useEffect(() => {
     if (currentProject) {
-      if (currentProject.venue_project_sections && currentProject.venue_project_sections.length > 0) {
-        setSections(currentProject.venue_project_sections.map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          type: s.type,
-          shape: s.shape,
-          color: s.color,
-          rows: s.capacity_config?.rows,
-          cols: s.capacity_config?.cols,
-          capacity: s.capacity_config?.capacity,
-          ...s.geometry
-        })));
+      if (currentProject.sections_data && currentProject.sections_data.length > 0) {
+        setSections(currentProject.sections_data);
       } else if (search.template && search.template !== "blank") {
         setSections(getTemplate(search.template).sections);
       } else if (search.template === "blank" && search.pitchType && search.pitchType !== "none") {

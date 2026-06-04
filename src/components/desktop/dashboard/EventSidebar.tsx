@@ -11,6 +11,7 @@ import {
   Sparkles,
   Check,
   Mic,
+  Layers,
 } from "lucide-react";
 
 const steps = ["Details", "Tickets", "Venue", "Media", "Products", "VIP", "Publish"] as const;
@@ -50,6 +51,11 @@ export function EventSidebar() {
       label: "Staff Members",
       href: `/dashboard/${workspaceSlug}/events/${eventId}/staff`,
       icon: UserCheck,
+    },
+    {
+      label: "Event Sections",
+      href: `/dashboard/${workspaceSlug}/events/${eventId}/sections`,
+      icon: Layers,
     },
     {
       label: "Venue Details",

@@ -89,6 +89,10 @@ function VenueDesignerIndex() {
   const [modalStep, setModalStep] = useState<1 | 2>(1);
   const [newProjectName, setNewProjectName] = useState("Untitled Venue");
   const [selectedEventId, setSelectedEventId] = useState("");
+  const [selectedTourStopIdx, setSelectedTourStopIdx] = useState(0);
+
+  const activeEvent = events.find((e: any) => e.id === selectedEventId);
+  const hasMultipleStops = activeEvent && Array.isArray(activeEvent.tour_stops) && activeEvent.tour_stops.length > 1;
 
   // Blank Canvas specific
   const [boundaryShape, setBoundaryShape] = useState<"rect" | "circle" | "oval" | "d_shape" | "horseshoe" | "diamond" | "hexagon" | "octagon">("rect");
@@ -103,6 +107,7 @@ function VenueDesignerIndex() {
           workspace_id: activeWorkspace?.id,
           name: newProjectName,
           event_id: selectedEventId,
+          tour_stop_idx: hasMultipleStops ? selectedTourStopIdx : 0,
           boundary: {
             shape: boundaryShape,
             width: 800,
@@ -149,6 +154,7 @@ function VenueDesignerIndex() {
     setSelectedTemplate(templateId);
     setNewProjectName("Untitled Venue");
     setSelectedEventId("");
+    setSelectedTourStopIdx(0);
     setModalStep(1);
     setBoundaryShape("rect");
     setPitchType("none");
@@ -227,7 +233,10 @@ function VenueDesignerIndex() {
                     <select
                       id="eventSelect"
                       value={selectedEventId}
-                      onChange={(e) => setSelectedEventId(e.target.value)}
+                      onChange={(e) => {
+                        setSelectedEventId(e.target.value);
+                        setSelectedTourStopIdx(0);
+                      }}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       required
                     >
@@ -239,6 +248,25 @@ function VenueDesignerIndex() {
                       ))}
                     </select>
                   </div>
+
+                  {hasMultipleStops && (
+                    <div className="space-y-2">
+                      <Label htmlFor="tourStopSelect">Select Location / Tour Stop *</Label>
+                      <select
+                        id="tourStopSelect"
+                        value={selectedTourStopIdx}
+                        onChange={(e) => setSelectedTourStopIdx(Number(e.target.value))}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        required
+                      >
+                        {activeEvent.tour_stops.map((stop: any, idx: number) => (
+                          <option key={idx} value={idx}>
+                            {stop.venue || stop.city || `Location ${idx + 1}`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
@@ -331,6 +359,14 @@ function VenueDesignerIndex() {
               dbProjects.map((proj: any) => {
                 const eventObj = events.find((e: any) => e.id === proj.event_id);
                 const displayTitle = proj.name || "Untitled Venue";
+                const stopIdx = proj.tour_stop_idx || 0;
+                const venueImage = Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > stopIdx 
+                  ? eventObj.tour_stops[stopIdx].venue_image_url 
+                  : null;
+                
+                const locationName = Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > 1
+                  ? ` - ${eventObj.tour_stops[stopIdx].venue || eventObj.tour_stops[stopIdx].city || `Location ${stopIdx + 1}`}`
+                  : '';
 
                 return (
                   <Link
@@ -341,16 +377,16 @@ function VenueDesignerIndex() {
                     className="group block rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
                   >
                     <div className="h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-secondary/50">
-                      {eventObj?.cover && (
+                      {venueImage && (
                         <img 
-                          src={eventObj.cover} 
+                          src={venueImage} 
                           alt="" 
                           className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay group-hover:scale-105 transition-transform duration-500"
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                       <div className="relative z-10 text-white drop-shadow-md">
-                        <p className="text-xs opacity-80 uppercase tracking-wider">{eventObj?.title || "No event linked"}</p>
+                        <p className="text-xs opacity-80 uppercase tracking-wider line-clamp-1">{eventObj?.title || "No event linked"}{locationName}</p>
                         <h3 className="text-xl font-bold leading-tight mt-1 drop-shadow-lg">{displayTitle}</h3>
                       </div>
                     </div>

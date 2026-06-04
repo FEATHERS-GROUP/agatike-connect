@@ -10,7 +10,7 @@ const CREATE_VENUE_PROJECT = `
 `;
 
 const UPDATE_VENUE_PROJECT = `
-  mutation UpdateVenueProject($id: uuid!, $name: String, $event_id: uuid, $canvas_bg: String, $boundary_shape: String, $boundary_width: Int, $boundary_height: Int, $boundary_rx: Int) {
+  mutation UpdateVenueProject($id: uuid!, $name: String, $event_id: uuid, $canvas_bg: String, $boundary_shape: String, $boundary_width: Int, $boundary_height: Int, $boundary_rx: Int, $sections_data: jsonb) {
     update_venue_projects_by_pk(
       pk_columns: { id: $id },
       _set: {
@@ -20,7 +20,8 @@ const UPDATE_VENUE_PROJECT = `
         boundary_shape: $boundary_shape,
         boundary_width: $boundary_width,
         boundary_height: $boundary_height,
-        boundary_rx: $boundary_rx
+        boundary_rx: $boundary_rx,
+        sections_data: $sections_data
       }
     ) {
       id
@@ -28,21 +29,7 @@ const UPDATE_VENUE_PROJECT = `
   }
 `;
 
-const DELETE_VENUE_PROJECT_SECTIONS = `
-  mutation DeleteVenueProjectSections($venue_project_id: uuid!) {
-    delete_venue_project_sections(where: { venue_project_id: { _eq: $venue_project_id } }) {
-      affected_rows
-    }
-  }
-`;
 
-const INSERT_VENUE_PROJECT_SECTIONS = `
-  mutation InsertVenueProjectSections($objects: [venue_project_sections_insert_input!]!) {
-    insert_venue_project_sections(objects: $objects) {
-      affected_rows
-    }
-  }
-`;
 
 const UPDATE_EVENT_SECTION_VENUE = `
   mutation UpdateEventSectionVenue($event_section_id: uuid!, $venue_project_id: uuid!) {
@@ -56,12 +43,13 @@ const UPDATE_EVENT_SECTION_VENUE = `
 `;
 
 export const createVenueProject = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { workspace_id, name, event_id, boundary } = ctx.data as any;
+  const { workspace_id, name, event_id, tour_stop_idx = 0, boundary } = ctx.data as any;
   const res = await hasuraRequest<{ insert_venue_projects_one: { id: string } }>(CREATE_VENUE_PROJECT, {
     object: {
       workspace_id,
       name,
       event_id,
+      tour_stop_idx,
       boundary_shape: boundary?.shape || "rect",
       boundary_width: boundary?.width || 800,
       boundary_height: boundary?.height || 600,
@@ -84,6 +72,7 @@ export const saveVenueProject = createServerFn({ method: "POST" }).handler(async
         name,
         event_id,
         canvas_bg,
+        sections_data: sections || [],
         boundary_shape: boundary?.shape,
         boundary_width: boundary?.width,
         boundary_height: boundary?.height,
@@ -97,46 +86,12 @@ export const saveVenueProject = createServerFn({ method: "POST" }).handler(async
       name,
       event_id,
       canvas_bg,
+      sections_data: sections || [],
       boundary_shape: boundary?.shape,
       boundary_width: boundary?.width,
       boundary_height: boundary?.height,
       boundary_rx: boundary?.rx,
     });
-    // Delete existing sections to fully replace them
-    await hasuraRequest(DELETE_VENUE_PROJECT_SECTIONS, { venue_project_id: projectId });
-  }
-
-  // 2. Insert the shapes
-  if (sections && sections.length > 0) {
-    const sectionObjects = sections.map((s: any) => ({
-      venue_project_id: projectId,
-      name: s.name,
-      type: s.type,
-      shape: s.shape,
-      color: s.color,
-      geometry: {
-        x: s.x,
-        y: s.y,
-        rotation: s.rotation,
-        scaleX: s.scaleX,
-        scaleY: s.scaleY,
-        width: s.width,
-        height: s.height,
-        innerRadius: s.innerRadius,
-        outerRadius: s.outerRadius,
-        startAngle: s.startAngle,
-        endAngle: s.endAngle,
-        points: s.points,
-        pathData: s.pathData,
-        pitchType: s.pitchType
-      },
-      capacity_config: {
-        rows: s.rows,
-        cols: s.cols,
-        capacity: s.capacity
-      }
-    }));
-    await hasuraRequest(INSERT_VENUE_PROJECT_SECTIONS, { objects: sectionObjects });
   }
 
   // 3. Link to Event Section if provided
@@ -161,15 +116,8 @@ const GET_WORKSPACE_VENUE_PROJECTS = `
       boundary_width
       boundary_height
       boundary_rx
-      venue_project_sections {
-        id
-        name
-        type
-        shape
-        color
-        geometry
-        capacity_config
-      }
+      tour_stop_idx
+      sections_data
     }
   }
 `;

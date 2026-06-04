@@ -47,79 +47,6 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/
   component: StaffView,
 });
 
-function AddSectionModal({ eventId }: { eventId: string }) {
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: async () => {
-      return await createEventSection({
-        data: {
-          event_id: eventId,
-          name,
-          description,
-        },
-      } as any);
-    },
-    onSuccess: () => {
-      toast.success("Section created successfully");
-      setOpen(false);
-      setName("");
-      setDescription("");
-      queryClient.invalidateQueries({ queryKey: ["event-sections", eventId] });
-    },
-    onError: () => toast.error("Failed to create section"),
-  });
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="shadow-sm">
-          <MapPin className="mr-2 h-4 w-4" /> Add Section
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create Event Section</DialogTitle>
-          <DialogDescription>
-            Define an area (e.g. VIP Lounge, Main Gate) to assign staff to.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>Section Name</Label>
-            <Input
-              placeholder="e.g. Backstage"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Input
-              placeholder="Optional details..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-          <Button
-            className="w-full"
-            onClick={() => {
-              if (!name) return toast.error("Name required");
-              mutation.mutate();
-            }}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Section
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function GenerateVendorFormModal({
   eventId,
@@ -656,7 +583,6 @@ function StaffView() {
           </p>
         </div>
         <div className="flex gap-3">
-          <AddSectionModal eventId={eventId} />
           <AddStaffModal eventId={eventId} sections={sections} />
         </div>
       </header>
@@ -694,7 +620,6 @@ function StaffView() {
       <Tabs defaultValue="staff" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="staff">Staff Directory</TabsTrigger>
-          <TabsTrigger value="sections">Event Sections</TabsTrigger>
           <TabsTrigger value="vendors">Vendor Forms</TabsTrigger>
         </TabsList>
 
@@ -812,34 +737,6 @@ function StaffView() {
           </div>
         </TabsContent>
 
-        <TabsContent value="sections">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {sections.map((s: any) => (
-              <div
-                key={s.id}
-                className="rounded-xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-md transition-all"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
-                    <MapPin className="h-5 w-5" />
-                  </div>
-                </div>
-                <h3 className="font-semibold text-lg">{s.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                  {s.description || "No specific details provided for this section."}
-                </p>
-                <div className="mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground flex justify-between">
-                  <span>ID: {s.id.substring(0, 8)}</span>
-                </div>
-              </div>
-            ))}
-            {sections.length === 0 && (
-              <div className="col-span-full p-8 text-center border border-dashed rounded-xl text-muted-foreground">
-                No sections defined. Create a section to restrict staff access.
-              </div>
-            )}
-          </div>
-        </TabsContent>
 
         <TabsContent value="vendors">
           <div className="rounded-2xl border border-border/60 bg-card p-8 text-center shadow-[var(--shadow-card)]">
