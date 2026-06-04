@@ -279,7 +279,7 @@ function DashboardIndex() {
                         <Users className="h-3 w-3" /> {ev.sold.toLocaleString()}
                       </span>
                       <span className="flex items-center gap-1 text-orange-500 font-medium">
-                        <Star className="h-3 w-3 fill-orange-500" /> {ev.avgRating ? ev.avgRating.toFixed(1) : "N/A"}
+                        <Star className="h-3 w-3 fill-orange-500" /> {ev.avgRating ? ev.avgRating.toFixed(1) : "0.0"}
                       </span>
                     </div>
                   </div>
