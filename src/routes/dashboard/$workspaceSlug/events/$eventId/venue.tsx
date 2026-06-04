@@ -318,7 +318,9 @@ function VenueView() {
                       )}
                     </label>
                     <input
-                      ref={(el) => { venueImageRefs.current[stopId] = el; }}
+                      ref={(el) => {
+                        venueImageRefs.current[stopId] = el;
+                      }}
                       type="file"
                       accept="image/*"
                       hidden

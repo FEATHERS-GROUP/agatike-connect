@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Crown, Square, Users, Layers, Settings2, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Crown,
+  Square,
+  Users,
+  Layers,
+  Settings2,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Section } from "./types";
@@ -23,17 +32,19 @@ function Panel({
     <div className="rounded-2xl border border-border/60 bg-card shadow-sm mb-5 overflow-hidden transition-all duration-200">
       <div
         className="flex items-center justify-between px-4 py-3 cursor-pointer select-none hover:bg-secondary/20 transition-colors"
-        onClick={() => setOpen(o => !o)}
+        onClick={() => setOpen((o) => !o)}
       >
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-primary" />
           <p className="text-sm font-semibold">{title}</p>
         </div>
         <div className="flex items-center gap-2">
-          {action && <div onClick={e => e.stopPropagation()}>{action}</div>}
-          {open
-            ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
-            : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+          {action && <div onClick={(e) => e.stopPropagation()}>{action}</div>}
+          {open ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
         </div>
       </div>
       {open && <div className="px-4 pb-4">{children}</div>}
@@ -72,11 +83,11 @@ function NumericInput({
   suffix?: string;
   placeholder?: string;
 }) {
-  const [draft, setDraft] = useState<string>(value != null ? String(value) : '');
+  const [draft, setDraft] = useState<string>(value != null ? String(value) : "");
 
   // Sync draft when the external value changes (e.g. from canvas drag)
-  const strValue = value != null ? String(value) : '';
-  if (draft !== strValue && document.activeElement?.getAttribute('data-numericinput') !== 'true') {
+  const strValue = value != null ? String(value) : "";
+  if (draft !== strValue && document.activeElement?.getAttribute("data-numericinput") !== "true") {
     // Only sync if the field isn't focused (user isn't actively typing)
   }
 
@@ -86,7 +97,7 @@ function NumericInput({
       onChange(parsed);
     } else {
       // Reset draft to last known good value
-      setDraft(value != null ? String(value) : '');
+      setDraft(value != null ? String(value) : "");
     }
   };
 
@@ -100,12 +111,21 @@ function NumericInput({
         step={step}
         value={draft}
         placeholder={placeholder}
-        className={suffix ? `pr-8 ${className ?? ''}` : className}
+        className={suffix ? `pr-8 ${className ?? ""}` : className}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
-        onKeyDown={(e) => { if (e.key === 'Enter') { commit(); (e.target as HTMLInputElement).blur(); } }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            commit();
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
       />
-      {suffix && <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">{suffix}</span>}
+      {suffix && (
+        <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">
+          {suffix}
+        </span>
+      )}
     </div>
   );
 }
@@ -133,7 +153,13 @@ export function VenueProperties({
   activeSection: string | null;
   sections: Section[];
   updateSection: (id: string, patch: Partial<Section>) => void;
-  addSection: (shape: "rect" | "arc" | "polygon" | "path" | "pitch", type?: "reserved" | "general_admission" | "vip", customPoints?: string, customPathData?: string, pitchType?: any) => void;
+  addSection: (
+    shape: "rect" | "arc" | "polygon" | "path" | "pitch",
+    type?: "reserved" | "general_admission" | "vip",
+    customPoints?: string,
+    customPathData?: string,
+    pitchType?: any,
+  ) => void;
   removeSection: (id: string) => void;
   canvasBg: string;
   setCanvasBg: (color: string) => void;
@@ -159,33 +185,47 @@ export function VenueProperties({
     { id: "speaker_panel", label: "Speaker Panel" },
     { id: "podium_classic", label: "Classic Lectern" },
     { id: "podium_glass", label: "Glass Podium" },
-    { id: "panel_table", label: "Panel Table" }
+    { id: "panel_table", label: "Panel Table" },
   ];
 
   return (
     <aside className="h-[calc(100vh-80px)] overflow-y-auto pb-20 pr-2 custom-scrollbar">
       <Panel title="Stages & Podiums" icon={Crown}>
         <div className="space-y-3">
-          <p className="text-xs text-muted-foreground">Add a new focal point to your venue. You can move and rotate it later.</p>
+          <p className="text-xs text-muted-foreground">
+            Add a new focal point to your venue. You can move and rotate it later.
+          </p>
           <div className="flex gap-2">
-            <select 
+            <select
               id="new-pitch-select"
               className="flex-1 h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              {pitchOptions.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+              {pitchOptions.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
             </select>
-            <Button size="sm" onClick={() => {
-              const sel = document.getElementById('new-pitch-select') as HTMLSelectElement;
-              addSection("pitch", "reserved", undefined, undefined, sel.value as any);
-            }}>Add</Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                const sel = document.getElementById("new-pitch-select") as HTMLSelectElement;
+                addSection("pitch", "reserved", undefined, undefined, sel.value as any);
+              }}
+            >
+              Add
+            </Button>
           </div>
         </div>
       </Panel>
 
       <Panel title="Venue Capacity" icon={Users}>
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <Stat label="Total capacity" value={sections.reduce((acc, s) => acc + (s.capacity || 0), 0).toLocaleString()} />
-          <Stat label="Sections" value={sections.filter(s => s.shape !== 'pitch').length} />
+          <Stat
+            label="Total capacity"
+            value={sections.reduce((acc, s) => acc + (s.capacity || 0), 0).toLocaleString()}
+          />
+          <Stat label="Sections" value={sections.filter((s) => s.shape !== "pitch").length} />
         </div>
       </Panel>
 
@@ -200,7 +240,11 @@ export function VenueProperties({
                   onChange={(e) => setCanvasBg(e.target.value)}
                   className="h-9 w-12 cursor-pointer rounded-lg border border-border/60 bg-transparent p-1"
                 />
-                <Input value={canvasBg} onChange={(e) => setCanvasBg(e.target.value)} className="font-mono text-xs text-muted-foreground" />
+                <Input
+                  value={canvasBg}
+                  onChange={(e) => setCanvasBg(e.target.value)}
+                  className="font-mono text-xs text-muted-foreground"
+                />
               </div>
             </Field>
           </div>
@@ -218,7 +262,7 @@ export function VenueProperties({
                 />
               </Field>
 
-              {sec.shape !== 'pitch' && (
+              {sec.shape !== "pitch" && (
                 <div className="rounded-xl border border-border/60 bg-secondary/10 p-4 space-y-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Users className="h-4 w-4 text-primary" />
@@ -226,25 +270,25 @@ export function VenueProperties({
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Number of Rows">
-                      <Input 
-                        type="number" 
-                        value={sec.rows || 0} 
+                      <Input
+                        type="number"
+                        value={sec.rows || 0}
                         onChange={(e) => {
                           const rows = +e.target.value;
                           const cols = sec.cols || 0;
                           updateSection(sec.id, { rows, capacity: rows * cols });
-                        }} 
+                        }}
                       />
                     </Field>
                     <Field label="Seats per row">
-                      <Input 
-                        type="number" 
-                        value={sec.cols || 0} 
+                      <Input
+                        type="number"
+                        value={sec.cols || 0}
                         onChange={(e) => {
                           const cols = +e.target.value;
                           const rows = sec.rows || 0;
                           updateSection(sec.id, { cols, capacity: rows * cols });
-                        }} 
+                        }}
                       />
                     </Field>
                   </div>
@@ -259,10 +303,10 @@ export function VenueProperties({
                 </div>
               )}
 
-              {sec.shape !== 'pitch' && (
+              {sec.shape !== "pitch" && (
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Type">
-                    <select 
+                    <select
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                       value={sec.type || "reserved"}
                       onChange={(e) => updateSection(sec.id, { type: e.target.value as any })}
@@ -273,7 +317,7 @@ export function VenueProperties({
                     </select>
                   </Field>
                   <Field label="Price Zone">
-                    <select 
+                    <select
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                       value={sec.priceZone || "A"}
                       onChange={(e) => updateSection(sec.id, { priceZone: e.target.value })}
@@ -287,14 +331,18 @@ export function VenueProperties({
                 </div>
               )}
 
-              {sec.shape === 'pitch' ? (
+              {sec.shape === "pitch" ? (
                 <Field label="Stage / Pitch Type">
-                  <select 
+                  <select
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     value={sec.pitchType || "none"}
                     onChange={(e) => updateSection(sec.id, { pitchType: e.target.value as any })}
                   >
-                    {pitchOptions.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                    {pitchOptions.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.label}
+                      </option>
+                    ))}
                   </select>
                 </Field>
               ) : (
@@ -306,12 +354,16 @@ export function VenueProperties({
                       onChange={(e) => updateSection(sec.id, { color: e.target.value })}
                       className="h-9 w-12 cursor-pointer rounded-lg border border-border/60 bg-transparent p-1"
                     />
-                    <Input value={sec.color} readOnly className="font-mono text-xs text-muted-foreground" />
+                    <Input
+                      value={sec.color}
+                      readOnly
+                      className="font-mono text-xs text-muted-foreground"
+                    />
                   </div>
                 </Field>
               )}
 
-              {sec.shape !== 'pitch' && (
+              {sec.shape !== "pitch" && (
                 <div className="pt-2">
                   <Button className="w-full" variant="outline">
                     <Layers className="w-4 h-4 mr-2" />
@@ -321,12 +373,12 @@ export function VenueProperties({
               )}
 
               <div className="pt-4 mt-4 border-t border-border/50">
-                <Button 
-                  className="w-full text-destructive hover:text-destructive hover:bg-destructive/10" 
+                <Button
+                  className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
                   variant="ghost"
                   onClick={() => removeSection(sec.id)}
                 >
-                  Delete {sec.shape === 'pitch' ? 'Stage' : 'Section'}
+                  Delete {sec.shape === "pitch" ? "Stage" : "Section"}
                 </Button>
               </div>
             </div>
@@ -334,24 +386,36 @@ export function VenueProperties({
 
           <Panel title="Vector Geometry" icon={Square} defaultOpen={false}>
             <div className="space-y-4">
-              {sec.shape !== 'pitch' && (
+              {sec.shape !== "pitch" && (
                 <Field label="Shape Type">
                   <div className="flex gap-2 p-1 bg-secondary rounded-lg">
                     <button
-                      onClick={() => updateSection(sec.id, { shape: "rect", width: 150, height: 80 })}
-                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === 'rect' ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'}`}
+                      onClick={() =>
+                        updateSection(sec.id, { shape: "rect", width: 150, height: 80 })
+                      }
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === "rect" ? "bg-background shadow" : "text-muted-foreground hover:text-foreground"}`}
                     >
                       Rectangle
                     </button>
                     <button
-                      onClick={() => updateSection(sec.id, { shape: "arc", innerRadius: 150, outerRadius: 220, startAngle: 0, endAngle: 90 })}
-                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === 'arc' ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'}`}
+                      onClick={() =>
+                        updateSection(sec.id, {
+                          shape: "arc",
+                          innerRadius: 150,
+                          outerRadius: 220,
+                          startAngle: 0,
+                          endAngle: 90,
+                        })
+                      }
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === "arc" ? "bg-background shadow" : "text-muted-foreground hover:text-foreground"}`}
                     >
                       Curved Arc
                     </button>
                     <button
-                      onClick={() => updateSection(sec.id, { shape: "polygon", points: "0,0 100,0 80,80 20,80" })}
-                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === 'polygon' || sec.shape === 'path' ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'}`}
+                      onClick={() =>
+                        updateSection(sec.id, { shape: "polygon", points: "0,0 100,0 80,80 20,80" })
+                      }
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === "polygon" || sec.shape === "path" ? "bg-background shadow" : "text-muted-foreground hover:text-foreground"}`}
                     >
                       Custom
                     </button>
@@ -360,66 +424,113 @@ export function VenueProperties({
               )}
 
               <div className="rounded-xl border border-border p-3 space-y-3 bg-secondary/5">
-                
-                {sec.shape === 'arc' ? (
+                {sec.shape === "arc" ? (
                   <>
                     <div className="grid grid-cols-2 gap-3">
                       <Field label="Inner Radius">
-                        <Input type="number" value={sec.innerRadius || 100} onChange={(e) => updateSection(sec.id, { innerRadius: +e.target.value })} />
+                        <Input
+                          type="number"
+                          value={sec.innerRadius || 100}
+                          onChange={(e) => updateSection(sec.id, { innerRadius: +e.target.value })}
+                        />
                       </Field>
                       <Field label="Outer Radius">
-                        <Input type="number" value={sec.outerRadius || 150} onChange={(e) => updateSection(sec.id, { outerRadius: +e.target.value })} />
+                        <Input
+                          type="number"
+                          value={sec.outerRadius || 150}
+                          onChange={(e) => updateSection(sec.id, { outerRadius: +e.target.value })}
+                        />
                       </Field>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <Field label={`Start Angle (${sec.startAngle || 0}°)`}>
-                        <Input type="number" value={sec.startAngle || 0} onChange={(e) => updateSection(sec.id, { startAngle: +e.target.value })} />
+                        <Input
+                          type="number"
+                          value={sec.startAngle || 0}
+                          onChange={(e) => updateSection(sec.id, { startAngle: +e.target.value })}
+                        />
                       </Field>
                       <Field label={`End Angle (${sec.endAngle || 90}°)`}>
-                        <Input type="number" value={sec.endAngle || 90} onChange={(e) => updateSection(sec.id, { endAngle: +e.target.value })} />
+                        <Input
+                          type="number"
+                          value={sec.endAngle || 90}
+                          onChange={(e) => updateSection(sec.id, { endAngle: +e.target.value })}
+                        />
                       </Field>
                     </div>
                   </>
-                ) : sec.shape === 'polygon' ? (
+                ) : sec.shape === "polygon" ? (
                   <Field label="Points (x,y pairs)">
-                    <Input 
-                      value={sec.points || ""} 
-                      onChange={(e) => updateSection(sec.id, { points: e.target.value })} 
+                    <Input
+                      value={sec.points || ""}
+                      onChange={(e) => updateSection(sec.id, { points: e.target.value })}
                       placeholder="e.g. 0,0 100,0 100,100"
                     />
                   </Field>
-                ) : sec.shape === 'path' ? (
+                ) : sec.shape === "path" ? (
                   <Field label="Path Data">
-                    <Input 
-                      value={sec.pathData || ""} 
-                      onChange={(e) => updateSection(sec.id, { pathData: e.target.value })} 
+                    <Input
+                      value={sec.pathData || ""}
+                      onChange={(e) => updateSection(sec.id, { pathData: e.target.value })}
                       placeholder="e.g. M 0,0 L 100,0 Z"
                     />
                   </Field>
-                ) : sec.shape === 'rect' ? (
+                ) : sec.shape === "rect" ? (
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Width (px)">
-                      <NumericInput value={sec.width} onChange={(v) => updateSection(sec.id, { width: v })} min={1} placeholder="e.g. 150" />
+                      <NumericInput
+                        value={sec.width}
+                        onChange={(v) => updateSection(sec.id, { width: v })}
+                        min={1}
+                        placeholder="e.g. 150"
+                      />
                     </Field>
                     <Field label="Height (px)">
-                      <NumericInput value={sec.height} onChange={(v) => updateSection(sec.id, { height: v })} min={1} placeholder="e.g. 80" />
+                      <NumericInput
+                        value={sec.height}
+                        onChange={(v) => updateSection(sec.id, { height: v })}
+                        min={1}
+                        placeholder="e.g. 80"
+                      />
                     </Field>
                   </div>
                 ) : null}
 
                 <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/50">
                   <Field label="X Axis">
-                    <NumericInput value={sec.x} onChange={(v) => updateSection(sec.id, { x: v })} placeholder="0" />
+                    <NumericInput
+                      value={sec.x}
+                      onChange={(v) => updateSection(sec.id, { x: v })}
+                      placeholder="0"
+                    />
                   </Field>
                   <Field label="Y Axis">
-                    <NumericInput value={sec.y} onChange={(v) => updateSection(sec.id, { y: v })} placeholder="0" />
+                    <NumericInput
+                      value={sec.y}
+                      onChange={(v) => updateSection(sec.id, { y: v })}
+                      placeholder="0"
+                    />
                   </Field>
                 </div>
 
                 <Field label="Rotation (°)">
                   <div className="flex items-center gap-2">
-                    <input type="range" min={0} max={360} value={sec.rotation || 0} onChange={(e) => updateSection(sec.id, { rotation: +e.target.value })} className="w-full accent-primary" />
-                    <NumericInput value={sec.rotation} onChange={(v) => updateSection(sec.id, { rotation: v })} min={0} max={360} className="w-20" placeholder="0" />
+                    <input
+                      type="range"
+                      min={0}
+                      max={360}
+                      value={sec.rotation || 0}
+                      onChange={(e) => updateSection(sec.id, { rotation: +e.target.value })}
+                      className="w-full accent-primary"
+                    />
+                    <NumericInput
+                      value={sec.rotation}
+                      onChange={(v) => updateSection(sec.id, { rotation: v })}
+                      min={0}
+                      max={360}
+                      className="w-20"
+                      placeholder="0"
+                    />
                   </div>
                 </Field>
 

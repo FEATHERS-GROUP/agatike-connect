@@ -6,11 +6,11 @@ async function run() {
   const getQuery = {
     type: "run_sql",
     args: {
-      sql: "SELECT column_name FROM information_schema.columns WHERE table_name = 'venue_projects';"
-    }
+      sql: "SELECT column_name FROM information_schema.columns WHERE table_name = 'venue_projects';",
+    },
   };
 
-  const getRes = await fetch(process.env.HASURA_ADMIN_API.replace('/v1/graphql', '/v2/query'), {
+  const getRes = await fetch(process.env.HASURA_ADMIN_API.replace("/v1/graphql", "/v2/query"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -25,11 +25,11 @@ async function run() {
   const dropQuery = {
     type: "run_sql",
     args: {
-      sql: "ALTER TABLE venue_projects DROP COLUMN IF EXISTS image_url; ALTER TABLE venue_projects DROP COLUMN IF EXISTS venue_image_url;"
-    }
+      sql: "ALTER TABLE venue_projects DROP COLUMN IF EXISTS image_url; ALTER TABLE venue_projects DROP COLUMN IF EXISTS venue_image_url;",
+    },
   };
 
-  const dropRes = await fetch(process.env.HASURA_ADMIN_API.replace('/v1/graphql', '/v2/query'), {
+  const dropRes = await fetch(process.env.HASURA_ADMIN_API.replace("/v1/graphql", "/v2/query"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -42,7 +42,7 @@ async function run() {
 
   // Then reload metadata
   const metaQuery = { type: "reload_metadata", args: {} };
-  await fetch(process.env.HASURA_ADMIN_API.replace('/v1/graphql', '/v1/metadata'), {
+  await fetch(process.env.HASURA_ADMIN_API.replace("/v1/graphql", "/v1/metadata"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

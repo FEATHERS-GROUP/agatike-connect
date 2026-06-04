@@ -52,7 +52,9 @@ function DashboardLayout() {
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
   const search = location.search as any;
-  const isDesigningVenue = location.pathname.match(/^\/dashboard\/[^/]+\/venue-designer/) && search.step === "DESIGN_CANVAS";
+  const isDesigningVenue =
+    location.pathname.match(/^\/dashboard\/[^/]+\/venue-designer/) &&
+    search.step === "DESIGN_CANVAS";
 
   const hideSidebar =
     location.pathname === "/dashboard/login" ||
@@ -61,8 +63,9 @@ function DashboardLayout() {
     location.pathname === "/dashboard/settings" ||
     isDesigningVenue ||
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/);
-    
-  const isDesigner = isDesigningVenue || location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/);
+
+  const isDesigner =
+    isDesigningVenue || location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/);
 
   useEffect(() => {
     if (!isLoaded) return;

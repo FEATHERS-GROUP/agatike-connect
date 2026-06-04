@@ -80,7 +80,8 @@ function VenueDesignerIndex() {
     refetch,
   } = useQuery({
     queryKey: ["venue-projects", activeWorkspace?.id],
-    queryFn: () => getWorkspaceVenueProjects({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    queryFn: () =>
+      getWorkspaceVenueProjects({ data: { workspace_id: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
 
@@ -92,10 +93,13 @@ function VenueDesignerIndex() {
   const [selectedTourStopIdx, setSelectedTourStopIdx] = useState(0);
 
   const activeEvent = events.find((e: any) => e.id === selectedEventId);
-  const hasMultipleStops = activeEvent && Array.isArray(activeEvent.tour_stops) && activeEvent.tour_stops.length > 1;
+  const hasMultipleStops =
+    activeEvent && Array.isArray(activeEvent.tour_stops) && activeEvent.tour_stops.length > 1;
 
   // Blank Canvas specific
-  const [boundaryShape, setBoundaryShape] = useState<"rect" | "circle" | "oval" | "d_shape" | "horseshoe" | "diamond" | "hexagon" | "octagon">("rect");
+  const [boundaryShape, setBoundaryShape] = useState<
+    "rect" | "circle" | "oval" | "d_shape" | "horseshoe" | "diamond" | "hexagon" | "octagon"
+  >("rect");
   const [pitchType, setPitchType] = useState<PitchType>("none");
 
   const createMutation = useMutation({
@@ -112,9 +116,9 @@ function VenueDesignerIndex() {
             shape: boundaryShape,
             width: 800,
             height: 600,
-            rx: 0
-          }
-        }
+            rx: 0,
+          },
+        },
       } as any);
 
       return newProject.id;
@@ -126,7 +130,7 @@ function VenueDesignerIndex() {
       navigate({
         to: "/dashboard/$workspaceSlug/venue-designer/$projectId",
         params: { workspaceSlug, projectId: newId },
-        search: { template: selectedTemplate as TemplateId, pitchType }
+        search: { template: selectedTemplate as TemplateId, pitchType },
       });
     },
     onError: (err: any) => {
@@ -212,7 +216,9 @@ function VenueDesignerIndex() {
             <DialogHeader>
               <DialogTitle>Setup Venue Project</DialogTitle>
               <DialogDescription>
-                {modalStep === 1 ? "Link this venue map to an existing event." : "Configure your custom blank canvas boundaries."}
+                {modalStep === 1
+                  ? "Link this venue map to an existing event."
+                  : "Configure your custom blank canvas boundaries."}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleNext} className="space-y-4 py-4">
@@ -275,14 +281,23 @@ function VenueDesignerIndex() {
                     <div className="space-y-2">
                       <Label>Canvas Boundary Shape</Label>
                       <div className="grid grid-cols-4 gap-2">
-                        {['rect', 'circle', 'oval', 'horseshoe', 'diamond', 'hexagon', 'octagon', 'd_shape'].map((shape) => (
+                        {[
+                          "rect",
+                          "circle",
+                          "oval",
+                          "horseshoe",
+                          "diamond",
+                          "hexagon",
+                          "octagon",
+                          "d_shape",
+                        ].map((shape) => (
                           <button
                             key={shape}
                             type="button"
                             onClick={() => setBoundaryShape(shape as any)}
-                            className={`p-2 rounded-lg border text-xs capitalize text-center ${boundaryShape === shape ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-border hover:bg-secondary'}`}
+                            className={`p-2 rounded-lg border text-xs capitalize text-center ${boundaryShape === shape ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:bg-secondary"}`}
                           >
-                            {shape.replace('_', ' ')}
+                            {shape.replace("_", " ")}
                           </button>
                         ))}
                       </div>
@@ -292,16 +307,16 @@ function VenueDesignerIndex() {
                       <Label>Focal Point (Pitch/Stage)</Label>
                       <div className="grid grid-cols-4 gap-2">
                         {[
-                          { id: 'none', label: 'Empty' },
-                          { id: 'basketball', label: 'Basketball' },
-                          { id: 'football', label: 'Football' },
-                          { id: 'tennis', label: 'Tennis' },
+                          { id: "none", label: "Empty" },
+                          { id: "basketball", label: "Basketball" },
+                          { id: "football", label: "Football" },
+                          { id: "tennis", label: "Tennis" },
                         ].map((p) => (
                           <button
                             key={p.id}
                             type="button"
                             onClick={() => setPitchType(p.id as any)}
-                            className={`p-2 rounded-lg border text-xs capitalize text-center ${pitchType === p.id ? 'border-primary bg-primary/10 text-primary font-medium' : 'border-border hover:bg-secondary'}`}
+                            className={`p-2 rounded-lg border text-xs capitalize text-center ${pitchType === p.id ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:bg-secondary"}`}
                           >
                             {p.label}
                           </button>
@@ -314,7 +329,12 @@ function VenueDesignerIndex() {
 
               <DialogFooter className="pt-4">
                 {modalStep === 2 && (
-                  <Button type="button" variant="outline" onClick={() => setModalStep(1)} className="mr-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setModalStep(1)}
+                    className="mr-auto"
+                  >
                     Back
                   </Button>
                 )}
@@ -325,7 +345,7 @@ function VenueDesignerIndex() {
                   {createMutation.isPending ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : null}
-                  {(selectedTemplate === "blank" && modalStep === 1) ? "Next" : "Start Designing"}
+                  {selectedTemplate === "blank" && modalStep === 1 ? "Next" : "Start Designing"}
                 </Button>
               </DialogFooter>
             </form>
@@ -362,14 +382,17 @@ function VenueDesignerIndex() {
                 const displayTitle = proj.name || "Untitled Venue";
                 const stopIdx = proj.tour_stop_idx ?? 0;
                 let venueImage = null;
-                let locationName = '';
+                let locationName = "";
 
                 if (stopIdx === -1) {
                   venueImage = eventObj?.cover || null;
                   if (Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > 1) {
-                    locationName = ' - All Locations';
+                    locationName = " - All Locations";
                   }
-                } else if (Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > stopIdx) {
+                } else if (
+                  Array.isArray(eventObj?.tour_stops) &&
+                  eventObj.tour_stops.length > stopIdx
+                ) {
                   venueImage = eventObj.tour_stops[stopIdx].venue_image_url;
                   if (eventObj.tour_stops.length > 1) {
                     locationName = ` - ${eventObj.tour_stops[stopIdx].venue || eventObj.tour_stops[stopIdx].city || `Location ${stopIdx + 1}`}`;
@@ -386,16 +409,21 @@ function VenueDesignerIndex() {
                   >
                     <div className="h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-secondary/50">
                       {venueImage && (
-                        <img 
-                          src={venueImage} 
-                          alt="" 
+                        <img
+                          src={venueImage}
+                          alt=""
                           className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay group-hover:scale-105 transition-transform duration-500"
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                       <div className="relative z-10 text-white drop-shadow-md">
-                        <p className="text-xs opacity-80 uppercase tracking-wider line-clamp-1">{eventObj?.title || "No event linked"}{locationName}</p>
-                        <h3 className="text-xl font-bold leading-tight mt-1 drop-shadow-lg">{displayTitle}</h3>
+                        <p className="text-xs opacity-80 uppercase tracking-wider line-clamp-1">
+                          {eventObj?.title || "No event linked"}
+                          {locationName}
+                        </p>
+                        <h3 className="text-xl font-bold leading-tight mt-1 drop-shadow-lg">
+                          {displayTitle}
+                        </h3>
                       </div>
                     </div>
                     <div className="px-5 py-3 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors">

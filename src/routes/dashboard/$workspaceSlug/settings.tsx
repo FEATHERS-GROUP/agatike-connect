@@ -8,7 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
-import { Save, AlertTriangle, Building2, Trash2, Image as ImageIcon, Pencil, X, Dices } from "lucide-react";
+import {
+  Save,
+  AlertTriangle,
+  Building2,
+  Trash2,
+  Image as ImageIcon,
+  Pencil,
+  X,
+  Dices,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +41,7 @@ function WorkspaceSettings() {
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deleteAgreed, setDeleteAgreed] = useState(false);
-  
+
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("bottts");
   const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
@@ -49,7 +58,7 @@ function WorkspaceSettings() {
     { id: "lorelei", label: "Cute" },
     { id: "pixel-art", label: "8-Bit" },
     { id: "initials", label: "Initials" },
-    { id: "rings", label: "Rings" }
+    { id: "rings", label: "Rings" },
   ];
 
   const generateAvatarsForCategory = (category: string) => {
@@ -156,7 +165,8 @@ function WorkspaceSettings() {
                   className="rounded-full gap-2 shadow-[var(--shadow-glow)]"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  <Save className="h-4 w-4" /> {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                  <Save className="h-4 w-4" />{" "}
+                  {updateMutation.isPending ? "Saving..." : "Save Changes"}
                 </Button>
               </>
             )}
@@ -170,14 +180,13 @@ function WorkspaceSettings() {
               <h3 className="font-semibold text-lg mb-4">Workspace Logo</h3>
               <div className="flex flex-col items-center gap-4">
                 <div className="h-32 w-32 shrink-0 rounded-2xl border-2 border-border/60 overflow-hidden bg-secondary/30 flex items-center justify-center">
-                  {formState.icon?.startsWith("data:image") || formState.icon?.startsWith("http") ? (
+                  {formState.icon?.startsWith("data:image") ||
+                  formState.icon?.startsWith("http") ? (
                     <img src={formState.icon} alt="Logo" className="h-full w-full object-cover" />
+                  ) : formState.icon ? (
+                    <span className="text-4xl">{formState.icon}</span>
                   ) : (
-                    formState.icon ? (
-                      <span className="text-4xl">{formState.icon}</span>
-                    ) : (
-                      <ImageIcon className="h-10 w-10 text-muted-foreground" />
-                    )
+                    <ImageIcon className="h-10 w-10 text-muted-foreground" />
                   )}
                 </div>
                 {isEditing && (
@@ -191,7 +200,8 @@ function WorkspaceSettings() {
                           const file = e.target.files?.[0];
                           if (file) {
                             const reader = new FileReader();
-                            reader.onload = (e) => setFormState({ ...formState, icon: e.target?.result as string });
+                            reader.onload = (e) =>
+                              setFormState({ ...formState, icon: e.target?.result as string });
                             reader.readAsDataURL(file);
                           }
                         }}
@@ -216,7 +226,8 @@ function WorkspaceSettings() {
             <div className="rounded-3xl border border-destructive/20 bg-destructive/5 p-6 shadow-sm">
               <h3 className="font-semibold text-lg text-destructive mb-2">Danger Zone</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Once you disable a workspace, there is no going back from the dashboard. Please be certain.
+                Once you disable a workspace, there is no going back from the dashboard. Please be
+                certain.
               </p>
               <Button
                 variant="destructive"
@@ -234,7 +245,7 @@ function WorkspaceSettings() {
               <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-primary" /> Workspace Details
               </h3>
-              
+
               <div className="grid gap-6">
                 <div className="space-y-2">
                   <Label>Workspace Name</Label>
@@ -245,10 +256,12 @@ function WorkspaceSettings() {
                       onChange={(e) => setFormState({ ...formState, name: e.target.value })}
                     />
                   ) : (
-                    <p className="p-3 bg-secondary/30 rounded-xl text-sm">{formState.name || "-"}</p>
+                    <p className="p-3 bg-secondary/30 rounded-xl text-sm">
+                      {formState.name || "-"}
+                    </p>
                   )}
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Type</Label>
@@ -260,7 +273,9 @@ function WorkspaceSettings() {
                         onChange={(e) => setFormState({ ...formState, type: e.target.value })}
                       />
                     ) : (
-                      <p className="p-3 bg-secondary/30 rounded-xl text-sm">{formState.type || "-"}</p>
+                      <p className="p-3 bg-secondary/30 rounded-xl text-sm">
+                        {formState.type || "-"}
+                      </p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -272,7 +287,9 @@ function WorkspaceSettings() {
                         onChange={(e) => setFormState({ ...formState, city: e.target.value })}
                       />
                     ) : (
-                      <p className="p-3 bg-secondary/30 rounded-xl text-sm">{formState.city || "-"}</p>
+                      <p className="p-3 bg-secondary/30 rounded-xl text-sm">
+                        {formState.city || "-"}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -286,7 +303,9 @@ function WorkspaceSettings() {
                       onChange={(e) => setFormState({ ...formState, country: e.target.value })}
                     />
                   ) : (
-                    <p className="p-3 bg-secondary/30 rounded-xl text-sm">{formState.country || "-"}</p>
+                    <p className="p-3 bg-secondary/30 rounded-xl text-sm">
+                      {formState.country || "-"}
+                    </p>
                   )}
                 </div>
 
@@ -299,7 +318,9 @@ function WorkspaceSettings() {
                       onChange={(e) => setFormState({ ...formState, address: e.target.value })}
                     />
                   ) : (
-                    <p className="p-3 bg-secondary/30 rounded-xl text-sm">{formState.address || "-"}</p>
+                    <p className="p-3 bg-secondary/30 rounded-xl text-sm">
+                      {formState.address || "-"}
+                    </p>
                   )}
                 </div>
               </div>
@@ -336,7 +357,9 @@ function WorkspaceSettings() {
           </DialogHeader>
           <div className="pt-2 space-y-4">
             <div className="space-y-2">
-              <Label>Type workspace name (<strong>{disableConfirmWorkspace?.name}</strong>)</Label>
+              <Label>
+                Type workspace name (<strong>{disableConfirmWorkspace?.name}</strong>)
+              </Label>
               <Input
                 value={deleteConfirmName}
                 onChange={(e) => setDeleteConfirmName(e.target.value)}
@@ -354,14 +377,15 @@ function WorkspaceSettings() {
               />
             </div>
             <label className="flex items-start gap-3 mt-4 cursor-pointer p-3 rounded-xl border border-border bg-secondary/20 hover:bg-secondary/30 transition-colors">
-              <input 
-                type="checkbox" 
-                className="mt-0.5 h-4 w-4 rounded border-border shrink-0" 
-                checked={deleteAgreed} 
-                onChange={(e) => setDeleteAgreed(e.target.checked)} 
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 rounded border-border shrink-0"
+                checked={deleteAgreed}
+                onChange={(e) => setDeleteAgreed(e.target.checked)}
               />
               <span className="text-sm text-muted-foreground leading-tight">
-                I understand that once deleted, this workspace and all its data will be hard to recover.
+                I understand that once deleted, this workspace and all its data will be hard to
+                recover.
               </span>
             </label>
           </div>

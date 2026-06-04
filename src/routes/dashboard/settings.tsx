@@ -117,7 +117,7 @@ function OrganizerSettings() {
     { id: "lorelei", label: "Cute" },
     { id: "pixel-art", label: "8-Bit" },
     { id: "initials", label: "Initials" },
-    { id: "rings", label: "Rings" }
+    { id: "rings", label: "Rings" },
   ];
 
   const generateAvatarsForCategory = (category: string) => {
@@ -268,8 +268,6 @@ function OrganizerSettings() {
       );
     },
   });
-
-
 
   if (isLoading) {
     return (
@@ -541,8 +539,6 @@ function OrganizerSettings() {
                         key={w.id}
                         className="flex flex-col rounded-3xl border bg-card p-5 shadow-sm transition-all border-border/60 hover:border-primary/50 relative group"
                       >
-
-
                         <div className="flex items-start gap-4 mb-4 pr-20">
                           <div className="grid h-12 w-12 place-items-center rounded-2xl text-xl shrink-0 overflow-hidden bg-secondary text-secondary-foreground">
                             {w.icon?.startsWith("http") || w.icon?.startsWith("data:") ? (
@@ -855,8 +851,6 @@ function OrganizerSettings() {
           )}
         </DialogContent>
       </Dialog>
-
-
 
       {/* Avatar Selection Modal */}
       <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>

@@ -246,5 +246,5 @@ export const CATEGORIES = [
   { id: "lorelei", label: "Cute" },
   { id: "pixel-art", label: "8-Bit" },
   { id: "initials", label: "Initials" },
-  { id: "rings", label: "Rings" }
+  { id: "rings", label: "Rings" },
 ];

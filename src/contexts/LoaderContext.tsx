@@ -36,7 +36,9 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
 
   const isDashboard = pathname.startsWith("/dashboard");
   const showPageLoader =
-    isPageLoading || (isDashboard && isWorkspaceLoading) || (isDashboard && pendingQueriesCount > 0);
+    isPageLoading ||
+    (isDashboard && isWorkspaceLoading) ||
+    (isDashboard && pendingQueriesCount > 0);
 
   useEffect(() => {
     if (isLoading || showPageLoader || isRouterPending) {

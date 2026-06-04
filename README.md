@@ -977,13 +977,13 @@ flowchart TD
 
 ## 19. Venue Designer Canvas
 
-**Route:** `/dashboard/$workspaceSlug/venue-designer`  
+**Route:** `/dashboard/$workspaceSlug/venue-designer`
 
 The Venue Designer is an interactive canvas tool that allows organizers to build and map physical layouts of their venues (Stadiums, Concert Halls, Conference Rooms).
 
 ### Logic & Storage Optimization
 
-- **Template Initialization:** Organizers start by choosing a base template (e.g., Football Stadium) or a blank canvas. 
+- **Template Initialization:** Organizers start by choosing a base template (e.g., Football Stadium) or a blank canvas.
 - **Location Mapping:** For multi-stop tour events, the organizer can map the venue design to a specific `tour_stop_idx` (Location 1, Location 2) or choose `-1` to apply the same design across all locations.
 - **Canvas Rendering:** The designer allows creating dynamic shapes (rectangles, circles, polygons) representing specific sections (e.g., VIP Left, General Admission).
 - **Optimized JSON Storage:** To prevent the database from being flooded with hundreds of rows per venue (one for every visual shape or arc), the entire canvas state is serialized into a single `sections_data` JSONB column on the `venue_projects` table.

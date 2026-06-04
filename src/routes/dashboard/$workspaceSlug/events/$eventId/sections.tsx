@@ -117,7 +117,8 @@ function EventSectionsView() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Event Sections</h1>
           <p className="text-sm text-muted-foreground">
-            Manage your physical event areas. Link them to the venue map, ticket types, and staff badges.
+            Manage your physical event areas. Link them to the venue map, ticket types, and staff
+            badges.
           </p>
         </div>
         <AddSectionModal eventId={eventId} />

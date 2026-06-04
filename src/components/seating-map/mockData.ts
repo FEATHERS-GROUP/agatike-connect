@@ -69,12 +69,12 @@ export const mockSectionMetadata: Record<string, SectionMetadata> = {
     name: "Section 201",
     capacity: 400,
     availableSeats: 320,
-    priceMin: 45.00,
-    priceMax: 65.00,
+    priceMin: 45.0,
+    priceMax: 65.0,
     status: "available",
     isAccessible: false,
     isVIP: false,
-  }
+  },
 };
 
 // Generates fake seat data for a section when clicked

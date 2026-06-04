@@ -28,14 +28,21 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
   const [icon, setIcon] = useState("");
   const [modules, setModules] = useState<string[]>([]);
   const [created, setCreated] = useState(false);
-  
+
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("bottts");
   const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
 
   const generateAvatarsForCategory = (category: string) => {
     const BACKGROUND_COLORS = [
-      "b6e3f4", "c0aede", "ffdfbf", "ffd5dc", "d1d4f9", "c0aede", "b6e3f4", "ffdfbf",
+      "b6e3f4",
+      "c0aede",
+      "ffdfbf",
+      "ffd5dc",
+      "d1d4f9",
+      "c0aede",
+      "b6e3f4",
+      "ffdfbf",
     ];
     return Array.from({ length: 12 }).map(() => {
       const bg = BACKGROUND_COLORS[Math.floor(Math.random() * BACKGROUND_COLORS.length)];

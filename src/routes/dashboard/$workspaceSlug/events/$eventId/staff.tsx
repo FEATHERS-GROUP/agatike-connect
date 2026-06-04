@@ -47,7 +47,6 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/
   component: StaffView,
 });
 
-
 function GenerateVendorFormModal({
   eventId,
   activeWorkspace,
@@ -736,7 +735,6 @@ function StaffView() {
             </table>
           </div>
         </TabsContent>
-
 
         <TabsContent value="vendors">
           <div className="rounded-2xl border border-border/60 bg-card p-8 text-center shadow-[var(--shadow-card)]">

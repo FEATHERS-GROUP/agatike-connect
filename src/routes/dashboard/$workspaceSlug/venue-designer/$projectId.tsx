@@ -1,6 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Save, Plus, LayoutTemplate, Circle, Square, LayoutDashboard, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Plus,
+  LayoutTemplate,
+  Circle,
+  Square,
+  LayoutDashboard,
+  Loader2,
+} from "lucide-react";
 
 import { VenueCanvas } from "@/components/venue-designer/VenueCanvas";
 import { VenueSidebar } from "@/components/venue-designer/VenueSidebar";
@@ -42,7 +51,8 @@ function VenueDesignerPage() {
 
   const { data: dbProjects = [] } = useQuery({
     queryKey: ["venue-projects", activeWorkspace?.id],
-    queryFn: () => getWorkspaceVenueProjects({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    queryFn: () =>
+      getWorkspaceVenueProjects({ data: { workspace_id: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
 
@@ -68,22 +78,24 @@ function VenueDesignerPage() {
       } else if (search.template && search.template !== "blank") {
         setSections(getTemplate(search.template).sections);
       } else if (search.template === "blank" && search.pitchType && search.pitchType !== "none") {
-        setSections([{
-          id: `sec-pitch-${Date.now()}`,
-          name: "Stage/Pitch",
-          color: "transparent",
-          rows: 0,
-          cols: 0,
-          capacity: 0,
-          type: "reserved",
-          priceZone: "A",
-          visible: true,
-          shape: "pitch",
-          pitchType: search.pitchType,
-          x: 0,
-          y: 0,
-          rotation: 0
-        }]);
+        setSections([
+          {
+            id: `sec-pitch-${Date.now()}`,
+            name: "Stage/Pitch",
+            color: "transparent",
+            rows: 0,
+            cols: 0,
+            capacity: 0,
+            type: "reserved",
+            priceZone: "A",
+            visible: true,
+            shape: "pitch",
+            pitchType: search.pitchType,
+            x: 0,
+            y: 0,
+            rotation: 0,
+          },
+        ]);
       }
       setCanvasBg(currentProject.canvas_bg || "#ffffff");
 
@@ -97,16 +109,17 @@ function VenueDesignerPage() {
   }, [currentProject, search.template, search.pitchType]);
 
   const [past, setPast] = useState<Section[][]>([]);
-  
+
   const saveHistory = useCallback((currentSections: Section[]) => {
-    setPast(p => {
-      if (p.length > 0 && JSON.stringify(p[p.length - 1]) === JSON.stringify(currentSections)) return p;
+    setPast((p) => {
+      if (p.length > 0 && JSON.stringify(p[p.length - 1]) === JSON.stringify(currentSections))
+        return p;
       return [...p, currentSections].slice(-50);
     });
   }, []);
 
   const undo = useCallback(() => {
-    setPast(p => {
+    setPast((p) => {
       if (p.length === 0) return p;
       const newPast = [...p];
       const previous = newPast.pop()!;
@@ -117,9 +130,14 @@ function VenueDesignerPage() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      )
+        return;
 
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
         e.preventDefault();
         undo();
         return;
@@ -127,45 +145,46 @@ function VenueDesignerPage() {
 
       if (!activeSection) return;
 
-      if (e.key === 'Backspace' || e.key === 'Delete') {
+      if (e.key === "Backspace" || e.key === "Delete") {
         e.preventDefault();
-        setSections(prev => {
+        setSections((prev) => {
           saveHistory(prev);
-          return prev.filter(s => s.id !== activeSection);
+          return prev.filter((s) => s.id !== activeSection);
         });
         setActiveSection(null);
         return;
       }
 
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
         e.preventDefault();
-        setSections(prev => {
+        setSections((prev) => {
           saveHistory(prev);
-          return prev.map(s => {
+          return prev.map((s) => {
             if (s.id !== activeSection) return s;
             const step = e.shiftKey ? 10 : 1;
-            let dx = 0, dy = 0;
-            if (e.key === 'ArrowUp') dy = -step;
-            if (e.key === 'ArrowDown') dy = step;
-            if (e.key === 'ArrowLeft') dx = -step;
-            if (e.key === 'ArrowRight') dx = step;
+            let dx = 0,
+              dy = 0;
+            if (e.key === "ArrowUp") dy = -step;
+            if (e.key === "ArrowDown") dy = step;
+            if (e.key === "ArrowLeft") dx = -step;
+            if (e.key === "ArrowRight") dx = step;
             return { ...s, x: s.x + dx, y: s.y + dy };
           });
         });
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeSection, saveHistory, undo]);
 
   // (loadTemplate and startDesign removed since they belong to setup phase)
 
   const updateSection = (id: string, patch: Partial<Section>) => {
-    setSections(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s));
+    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   };
 
   const duplicateSection = (id: string) => {
-    const original = sections.find(s => s.id === id);
+    const original = sections.find((s) => s.id === id);
     if (!original) return;
     saveHistory(sections);
     const clone: Section = {
@@ -175,11 +194,18 @@ function VenueDesignerPage() {
       x: (original.x ?? 0) + 30,
       y: (original.y ?? 0) + 30,
     };
-    setSections(prev => [...prev, clone]);
+    setSections((prev) => [...prev, clone]);
     setActiveSection(clone.id);
   };
 
-  const addSection = (shape: "rect" | "arc" | "polygon" | "path" | "pitch", type: "reserved" | "general_admission" | "vip" = "reserved", customPoints?: string, customPathData?: string, pitchType?: PitchType, config?: Partial<Section>) => {
+  const addSection = (
+    shape: "rect" | "arc" | "polygon" | "path" | "pitch",
+    type: "reserved" | "general_admission" | "vip" = "reserved",
+    customPoints?: string,
+    customPathData?: string,
+    pitchType?: PitchType,
+    config?: Partial<Section>,
+  ) => {
     const newSec: Section = {
       id: `sec-${Date.now()}`,
       name: shape === "pitch" ? "Stage/Pitch" : `New Section ${sections.length + 1}`,
@@ -202,10 +228,10 @@ function VenueDesignerPage() {
       outerRadius: shape === "arc" ? 180 : undefined,
       startAngle: shape === "arc" ? -30 : undefined,
       endAngle: shape === "arc" ? 30 : undefined,
-      points: shape === "polygon" ? (customPoints || "-40,-40 40,-40 40,40 -40,40") : undefined,
+      points: shape === "polygon" ? customPoints || "-40,-40 40,-40 40,40 -40,40" : undefined,
       pathData: shape === "path" ? customPathData : undefined,
       pitchType: shape === "pitch" ? pitchType : undefined,
-      ...config
+      ...config,
     };
     saveHistory(sections);
     setSections([...sections, newSec]);
@@ -213,28 +239,29 @@ function VenueDesignerPage() {
   };
 
   const saveMutation = useMutation({
-    mutationFn: () => saveVenueProject({
-      data: {
-        venue_project_id: projectId,
-        workspace_id: activeWorkspace?.id,
-        name: currentProject?.name,
-        event_id: currentProject?.event_id,
-        canvas_bg: canvasBg,
-        boundary: {
-          shape: template.boundaryShape,
-          width: template.boundaryWidth,
-          height: template.boundaryHeight,
-          rx: template.boundaryRx
+    mutationFn: () =>
+      saveVenueProject({
+        data: {
+          venue_project_id: projectId,
+          workspace_id: activeWorkspace?.id,
+          name: currentProject?.name,
+          event_id: currentProject?.event_id,
+          canvas_bg: canvasBg,
+          boundary: {
+            shape: template.boundaryShape,
+            width: template.boundaryWidth,
+            height: template.boundaryHeight,
+            rx: template.boundaryRx,
+          },
+          sections,
         },
-        sections,
-      }
-    } as any),
+      } as any),
     onSuccess: () => {
       toast.success("Venue project saved successfully!");
     },
     onError: () => {
       toast.error("Failed to save venue project.");
-    }
+    },
   });
 
   const handleSave = () => {
@@ -244,7 +271,7 @@ function VenueDesignerPage() {
   // Mock stats
   const stats = {
     total: sections.reduce((acc, s) => acc + (s.capacity || 0), 0),
-    vip: sections.filter(s => s.type === 'vip').reduce((acc, s) => acc + (s.capacity || 0), 0),
+    vip: sections.filter((s) => s.type === "vip").reduce((acc, s) => acc + (s.capacity || 0), 0),
     acc: 0,
     blocked: 0,
     revenue: sections.reduce((acc, s) => acc + (s.capacity || 0) * 100, 0),
@@ -254,12 +281,18 @@ function VenueDesignerPage() {
     <div className="h-screen bg-background overflow-hidden flex flex-col">
       <header className="flex-none flex items-center justify-between gap-3 border-b border-border/60 bg-background/80 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <Link to="/dashboard/$workspaceSlug/venue-designer" params={{ workspaceSlug }} className="rounded-full hover:bg-secondary transition-colors p-2">
+          <Link
+            to="/dashboard/$workspaceSlug/venue-designer"
+            params={{ workspaceSlug }}
+            className="rounded-full hover:bg-secondary transition-colors p-2"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
             <p className="text-xs text-muted-foreground">Dashboard / Ticketing</p>
-            <h1 className="text-lg font-semibold tracking-tight">{currentProject?.name || "Venue Builder"}</h1>
+            <h1 className="text-lg font-semibold tracking-tight">
+              {currentProject?.name || "Venue Builder"}
+            </h1>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -267,8 +300,17 @@ function VenueDesignerPage() {
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
             Auto-saving
           </div>
-          <Button variant="default" size="sm" onClick={handleSave} disabled={saveMutation.isPending}>
-            {saveMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleSave}
+            disabled={saveMutation.isPending}
+          >
+            {saveMutation.isPending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
             Save Template
           </Button>
         </div>
@@ -280,7 +322,9 @@ function VenueDesignerPage() {
           <VenueSidebar
             venueName={currentProject?.name || "Untitled"}
             setVenueName={() => {}}
-            eventName={events.find(e => e.id === currentProject?.event_id)?.title || "Unknown Event"}
+            eventName={
+              events.find((e) => e.id === currentProject?.event_id)?.title || "Unknown Event"
+            }
             setEventName={() => {}}
             templateId={search.template || "blank"}
             applyTemplate={() => {}}
@@ -290,7 +334,7 @@ function VenueDesignerPage() {
             addSection={addSection}
             removeSection={(id) => {
               saveHistory(sections);
-              setSections(prev => prev.filter(s => s.id !== id));
+              setSections((prev) => prev.filter((s) => s.id !== id));
             }}
           />
         </div>
@@ -299,7 +343,9 @@ function VenueDesignerPage() {
         <div className="flex-1 p-6 bg-secondary/5">
           <VenueCanvas
             venueName={currentProject?.name || "Untitled"}
-            eventName={events.find(e => e.id === currentProject?.event_id)?.title || "Unknown Event"}
+            eventName={
+              events.find((e) => e.id === currentProject?.event_id)?.title || "Unknown Event"
+            }
             template={template}
             sections={sections}
             seats={[]}
@@ -311,7 +357,7 @@ function VenueDesignerPage() {
             canvasBg={canvasBg}
             removeSection={(id) => {
               saveHistory(sections);
-              setSections(prev => prev.filter(s => s.id !== id));
+              setSections((prev) => prev.filter((s) => s.id !== id));
               setActiveSection(null);
             }}
             duplicateSection={duplicateSection}
@@ -320,15 +366,15 @@ function VenueDesignerPage() {
 
         {/* Right Sidebar: Properties */}
         <div className="w-80 border-l bg-card/30 p-4">
-          <VenueProperties 
-            stats={stats} 
-            activeSection={activeSection} 
+          <VenueProperties
+            stats={stats}
+            activeSection={activeSection}
             sections={sections}
             updateSection={updateSection}
             addSection={addSection}
             removeSection={(id) => {
               saveHistory(sections);
-              setSections(prev => prev.filter(s => s.id !== id));
+              setSections((prev) => prev.filter((s) => s.id !== id));
               setActiveSection(null);
             }}
             canvasBg={canvasBg}

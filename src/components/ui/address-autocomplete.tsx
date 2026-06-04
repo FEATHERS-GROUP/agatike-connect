@@ -5,7 +5,12 @@ interface AddressAutocompleteProps extends React.InputHTMLAttributes<HTMLInputEl
   onAddressSelect?: (address: string) => void;
 }
 
-export function AddressAutocomplete({ onAddressSelect, value, onChange, ...props }: AddressAutocompleteProps) {
+export function AddressAutocomplete({
+  onAddressSelect,
+  value,
+  onChange,
+  ...props
+}: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
@@ -60,7 +65,7 @@ export function AddressAutocomplete({ onAddressSelect, value, onChange, ...props
         } else if (onChange) {
           // Simulate a change event
           const event = {
-            target: { value: place.formatted_address }
+            target: { value: place.formatted_address },
           } as React.ChangeEvent<HTMLInputElement>;
           onChange(event);
         }
@@ -74,12 +79,5 @@ export function AddressAutocomplete({ onAddressSelect, value, onChange, ...props
     };
   }, [isScriptLoaded, onAddressSelect, onChange]);
 
-  return (
-    <Input
-      ref={inputRef}
-      value={value}
-      onChange={onChange}
-      {...props}
-    />
-  );
+  return <Input ref={inputRef} value={value} onChange={onChange} {...props} />;
 }

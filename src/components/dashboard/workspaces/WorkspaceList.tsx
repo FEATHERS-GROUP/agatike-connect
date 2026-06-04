@@ -19,8 +19,8 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Workspaces</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Each venue, cinema or organizer brand gets its own workspace with separate analytics
-            and payouts.
+            Each venue, cinema or organizer brand gets its own workspace with separate analytics and
+            payouts.
           </p>
         </div>
         <Button

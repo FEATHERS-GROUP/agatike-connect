@@ -8,11 +8,11 @@ async function run() {
       sql: `
         ALTER TABLE venue_projects ADD COLUMN IF NOT EXISTS event_id uuid REFERENCES events(id) ON DELETE SET NULL;
       `,
-      cascade: false
-    }
+      cascade: false,
+    },
   };
 
-  const res = await fetch(process.env.HASURA_ADMIN_API.replace('/v1/graphql', '/v2/query'), {
+  const res = await fetch(process.env.HASURA_ADMIN_API.replace("/v1/graphql", "/v2/query"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

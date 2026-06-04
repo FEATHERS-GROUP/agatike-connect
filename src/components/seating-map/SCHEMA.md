@@ -3,6 +3,7 @@
 To support a commercial ticketing platform with a Canva-style venue builder, the architecture must decouple the **Venue Geometry (Template)** from the **Event Inventory (Tickets)**.
 
 ## Core Architecture
+
 1. **Venue Designer Canvas**: Organizers use a React-based SVG builder to drag, resize, and rotate sections. This generates a **Venue Template JSON**.
 2. **Dynamic Seat Generation**: Instead of saving 20,000 individual `<circle>` elements in the SVG, the SVG only stores Section boundaries. The actual seats are generated dynamically based on `rows` and `seatsPerRow` metadata when an event is created.
 3. **Event Instantiation**: When an organizer creates an event, they select a Venue Template. The system generates the actual database rows for the tickets based on the template's capacity settings.
@@ -12,7 +13,9 @@ To support a commercial ticketing platform with a Canva-style venue builder, the
 ## JSON Configuration Models
 
 ### 1. Venue Template JSON
+
 This is the output of the Venue Designer. It represents the pure vector geometry and section definitions.
+
 ```json
 {
   "venueId": "v-101",
@@ -27,13 +30,13 @@ This is the output of the Venue Designer. It represents the pure vector geometry
       "color": "#f97316",
       "priceZone": "A",
       "visible": true,
-      
+
       // Dynamic Seat Generation
       "rows": 20,
       "seatsPerRow": 25,
       "capacity": 500,
       "seatPattern": "curved", // curved, linear
-      
+
       // Geometry (SVG)
       "shape": "arc",
       "x": 0,
@@ -49,7 +52,9 @@ This is the output of the Venue Designer. It represents the pure vector geometry
 ```
 
 ### 2. Section Metadata JSON (Event Level)
+
 When an event is published, the template sections map to real inventory.
+
 ```json
 {
   "eventId": "evt-001",
@@ -101,6 +106,7 @@ CREATE TABLE event_seats (
 ```
 
 ## Designer Interactions Implementation
+
 - **Drag & Drop**: Use React state to track `x` and `y`. Apply `onPointerDown`, `onPointerMove`, and `onPointerUp` to the SVG `<g>` elements. Update the `x` and `y` properties in real-time.
 - **Selection**: Track `activeSectionId`. Apply stroke/glow filters to the selected `<g>` element.
 - **Seat Generation**: Run a deterministic function `generateSeats(rows, seatsPerRow, pattern)` that spits out the grid coordinate layout when the user clicks "Edit Seats".
