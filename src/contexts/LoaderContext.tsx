@@ -3,6 +3,7 @@ import nProgress from "nprogress";
 import "nprogress/nprogress.css";
 import { useRouterState } from "@tanstack/react-router";
 import { useWorkspace } from "./WorkspaceContext";
+import { useIsFetching } from "@tanstack/react-query";
 
 // Configure nProgress
 nProgress.configure({ showSpinner: false });
@@ -28,8 +29,14 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
   // Also show loader when workspaces are being initially fetched for the dashboard
   const { isLoading: isWorkspaceLoading } = useWorkspace();
 
+  // Check if any queries are currently in their initial 'pending' (fetching) state
+  const pendingQueriesCount = useIsFetching({
+    predicate: (query) => query.state.status === "pending",
+  });
+
   const isDashboard = pathname.startsWith("/dashboard");
-  const showPageLoader = isPageLoading || (isDashboard && isWorkspaceLoading);
+  const showPageLoader =
+    isPageLoading || (isDashboard && isWorkspaceLoading) || (isDashboard && pendingQueriesCount > 0);
 
   useEffect(() => {
     if (isLoading || showPageLoader || isRouterPending) {
