@@ -154,7 +154,7 @@ function VenueDesignerIndex() {
     setSelectedTemplate(templateId);
     setNewProjectName("Untitled Venue");
     setSelectedEventId("");
-    setSelectedTourStopIdx(0);
+    setSelectedTourStopIdx(-1);
     setModalStep(1);
     setBoundaryShape("rect");
     setPitchType("none");
@@ -235,7 +235,7 @@ function VenueDesignerIndex() {
                       value={selectedEventId}
                       onChange={(e) => {
                         setSelectedEventId(e.target.value);
-                        setSelectedTourStopIdx(0);
+                        setSelectedTourStopIdx(-1);
                       }}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       required
@@ -259,6 +259,7 @@ function VenueDesignerIndex() {
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         required
                       >
+                        <option value={-1}>All Locations (Same Design)</option>
                         {activeEvent.tour_stops.map((stop: any, idx: number) => (
                           <option key={idx} value={idx}>
                             {stop.venue || stop.city || `Location ${idx + 1}`}
@@ -359,14 +360,21 @@ function VenueDesignerIndex() {
               dbProjects.map((proj: any) => {
                 const eventObj = events.find((e: any) => e.id === proj.event_id);
                 const displayTitle = proj.name || "Untitled Venue";
-                const stopIdx = proj.tour_stop_idx || 0;
-                const venueImage = Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > stopIdx 
-                  ? eventObj.tour_stops[stopIdx].venue_image_url 
-                  : null;
-                
-                const locationName = Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > 1
-                  ? ` - ${eventObj.tour_stops[stopIdx].venue || eventObj.tour_stops[stopIdx].city || `Location ${stopIdx + 1}`}`
-                  : '';
+                const stopIdx = proj.tour_stop_idx ?? 0;
+                let venueImage = null;
+                let locationName = '';
+
+                if (stopIdx === -1) {
+                  venueImage = eventObj?.cover || null;
+                  if (Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > 1) {
+                    locationName = ' - All Locations';
+                  }
+                } else if (Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > stopIdx) {
+                  venueImage = eventObj.tour_stops[stopIdx].venue_image_url;
+                  if (eventObj.tour_stops.length > 1) {
+                    locationName = ` - ${eventObj.tour_stops[stopIdx].venue || eventObj.tour_stops[stopIdx].city || `Location ${stopIdx + 1}`}`;
+                  }
+                }
 
                 return (
                   <Link
