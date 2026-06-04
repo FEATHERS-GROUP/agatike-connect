@@ -250,7 +250,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
         </div>
         <div className="flex justify-between items-end mb-8">
           <div>
-            <p className="font-bold text-lg">{ticket.city || "Kigali"}</p>
+            <p className="font-bold text-lg">{ticket.venue || ticket.city || "Kigali"}</p>
             <p className="text-gray-500 text-xs font-medium mt-1 truncate max-w-[120px]">
               {ticket.venue || "Kigali Arena"}
             </p>
@@ -320,7 +320,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
       <div className="flex justify-between items-end mb-8">
         <div>
           <p className="font-bold text-lg max-w-[140px] leading-tight truncate">
-            {ticket.city || ticket.venue || "Kigali"}
+            {ticket.venue || ticket.city || "Kigali"}
           </p>
           <p className="text-gray-500 text-xs font-medium mt-1">Location</p>
         </div>

@@ -832,7 +832,7 @@ function TicketEditor({
               onClick={() => setActiveTourStopIdx(idx)}
               className={`whitespace-nowrap px-4 py-1.5 text-sm font-semibold rounded-full transition-all ${activeTourStopIdx === idx ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-secondary"}`}
             >
-              {loc.city || `Location ${idx + 1}`}
+              {loc.venue || loc.city || `Location ${idx + 1}`}
             </button>
           ))}
         </div>

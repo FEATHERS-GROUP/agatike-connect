@@ -71,7 +71,7 @@ export function EventDetailsDesktop({
   const date = isMock ? ev.date : currentStop.date || "TBD";
   const time = isMock ? ev.time || ev.duration : currentStop.time || "";
   const venue = isMock ? ev.venue || ev.cinema : currentStop.venue || "";
-  const city = isMock ? ev.city : currentStop.city || "";
+  const city = isMock ? ev.city : currentStop.venue || currentStop.city || "";
 
   const rawLat = isMock ? ev.lat : currentStop.latitude || currentStop.lat;
   const rawLng = isMock ? ev.lng : currentStop.longitude || currentStop.lng;

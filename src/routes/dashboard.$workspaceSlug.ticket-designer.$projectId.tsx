@@ -577,7 +577,7 @@ function TicketDesignerPage() {
                   onClick={() => setActiveTourStopIdx(idx)}
                   className={`whitespace-nowrap px-4 py-1.5 text-sm font-semibold rounded-full transition-all ${activeTourStopIdx === idx ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground hover:bg-secondary"}`}
                 >
-                  {stop.city || `Location ${idx + 1}`}
+                  {stop.venue || stop.city || `Location ${idx + 1}`}
                 </button>
               ))}
             </div>
@@ -642,7 +642,7 @@ function TicketDesignerPage() {
                         <option value={-1}>All Locations (Base Preview)</option>
                         {tourStops.map((stop: any, i: number) => (
                           <option key={i} value={i}>
-                            {stop.city || "TBD"} - {stop.date || "TBD"}
+                            {stop.venue || stop.city || "TBD"} - {stop.date || "TBD"}
                           </option>
                         ))}
                       </select>
