@@ -234,6 +234,12 @@ function DashboardIndex() {
               style={{ height: "100%" }}
               views={["month", "agenda"]}
               className="text-sm font-sans"
+              eventPropGetter={() => ({
+                style: {
+                  background: "var(--gradient-primary)",
+                  color: "#fff",
+                },
+              })}
             />
           </div>
         </section>
