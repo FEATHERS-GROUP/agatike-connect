@@ -10,7 +10,7 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react";
-import { upcomingTickets } from "./profile";
+import { upcomingTickets } from "../profile";
 import { useState } from "react";
 import * as htmlToImage from "html-to-image";
 import { jsPDF } from "jspdf";

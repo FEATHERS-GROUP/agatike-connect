@@ -17,7 +17,7 @@ import { getEventById, updateEvent } from "@/api/events";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { AddressInput } from "./dashboard.$workspaceSlug.events.$eventId.edit";
+import { AddressInput } from "./edit";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/venue")({
   component: VenueView,
@@ -173,14 +173,14 @@ function VenueView() {
                       </label>
                       <AddressInput
                         value={stop.address || stop.city || ""}
-                        onChange={(val) => {
+                        onChange={(val: string) => {
                           const newStops = [...tourStops];
                           newStops[idx].address = val;
                           // If there's no city, set city to the address initially
                           if (!newStops[idx].city) newStops[idx].city = val;
                           setTourStops(newStops);
                         }}
-                        onSelectCoords={(lat, lng) => {
+                        onSelectCoords={(lat: string, lng: string) => {
                           const newStops = [...tourStops];
                           newStops[idx].latitude = lat;
                           newStops[idx].longitude = lng;
@@ -318,7 +318,7 @@ function VenueView() {
                       )}
                     </label>
                     <input
-                      ref={(el) => (venueImageRefs.current[stopId] = el)}
+                      ref={(el) => { venueImageRefs.current[stopId] = el; }}
                       type="file"
                       accept="image/*"
                       hidden
