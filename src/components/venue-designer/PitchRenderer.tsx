@@ -193,6 +193,89 @@ export function PitchRenderer({ type }: { type: PitchType }) {
           <rect x="20" y="148" width="460" height="8" rx="2" fill="#f59e0b" opacity=".6"/>
         </g>
       );
+    case "dj_booth":
+      return (
+        <g transform="translate(-75, -40)">
+          <rect x="0" y="0" width="150" height="80" rx="6" fill="#1f2937" stroke="#374151" strokeWidth="3"/>
+          <rect x="10" y="10" width="130" height="60" rx="4" fill="#111827"/>
+          <circle cx="40" cy="40" r="20" fill="#374151" stroke="#4b5563" strokeWidth="2"/>
+          <circle cx="110" cy="40" r="20" fill="#374151" stroke="#4b5563" strokeWidth="2"/>
+          <rect x="65" y="15" width="20" height="50" rx="2" fill="#4b5563"/>
+        </g>
+      );
+    case "speaker_panel":
+      return (
+        <g transform="translate(-30, -80)">
+          <rect x="0" y="0" width="60" height="160" rx="8" fill="#111" stroke="#333" strokeWidth="4"/>
+          <circle cx="30" cy="30" r="20" fill="#222" stroke="#444" strokeWidth="2"/>
+          <circle cx="30" cy="80" r="20" fill="#222" stroke="#444" strokeWidth="2"/>
+          <circle cx="30" cy="130" r="20" fill="#222" stroke="#444" strokeWidth="2"/>
+          <circle cx="30" cy="30" r="6" fill="#111"/>
+          <circle cx="30" cy="80" r="6" fill="#111"/>
+          <circle cx="30" cy="130" r="6" fill="#111"/>
+        </g>
+      );
+    case "choral_risers":
+      return (
+        <g transform="translate(-150, -60)">
+          <path d="M 0,100 Q 150,-20 300,100" fill="none" stroke="#4b5563" strokeWidth="24"/>
+          <path d="M 0,70 Q 150,-50 300,70" fill="none" stroke="#374151" strokeWidth="24"/>
+          <path d="M 0,40 Q 150,-80 300,40" fill="none" stroke="#1f2937" strokeWidth="24"/>
+        </g>
+      );
+    case "orchestra_pit":
+      return (
+        <g transform="translate(-200, -100)">
+          <path d="M 0,0 L 400,0 A 200 200 0 0 1 0,0 Z" fill="#1f1f1f" stroke="#4b5563" strokeWidth="4"/>
+          <path d="M 20,10 L 380,10 A 180 180 0 0 1 20,10 Z" fill="#292929"/>
+          {/* Conductor podium */}
+          <circle cx="200" cy="30" r="15" fill="#f59e0b" stroke="#b45309" strokeWidth="2"/>
+        </g>
+      );
+    case "tennis_court":
+      return (
+        <g transform="translate(-200, -100)">
+          <rect x="0" y="0" width="400" height="200" fill="#1e3a8a" stroke="#fff" strokeWidth="3"/>
+          <rect x="40" y="20" width="320" height="160" fill="#2563eb" stroke="#fff" strokeWidth="2"/>
+          {/* Net */}
+          <line x1="200" y1="0" x2="200" y2="200" stroke="#fff" strokeWidth="4" strokeDasharray="4 2"/>
+          {/* Service boxes */}
+          <line x1="110" y1="20" x2="110" y2="180" stroke="#fff" strokeWidth="2"/>
+          <line x1="290" y1="20" x2="290" y2="180" stroke="#fff" strokeWidth="2"/>
+          <line x1="110" y1="100" x2="290" y2="100" stroke="#fff" strokeWidth="2"/>
+          <line x1="40" y1="100" x2="45" y2="100" stroke="#fff" strokeWidth="2"/>
+          <line x1="355" y1="100" x2="360" y2="100" stroke="#fff" strokeWidth="2"/>
+        </g>
+      );
+    case "ice_rink":
+      return (
+        <g transform="translate(-250, -125)">
+          <rect x="0" y="0" width="500" height="250" rx="60" fill="#f8fafc" stroke="#3b82f6" strokeWidth="4"/>
+          <line x1="250" y1="0" x2="250" y2="250" stroke="#ef4444" strokeWidth="4"/>
+          <circle cx="250" cy="125" r="30" fill="none" stroke="#3b82f6" strokeWidth="2"/>
+          <circle cx="250" cy="125" r="4" fill="#3b82f6"/>
+          {/* Blue lines */}
+          <line x1="160" y1="0" x2="160" y2="250" stroke="#3b82f6" strokeWidth="4"/>
+          <line x1="340" y1="0" x2="340" y2="250" stroke="#3b82f6" strokeWidth="4"/>
+          {/* Faceoff circles */}
+          <circle cx="80" cy="60" r="20" fill="none" stroke="#ef4444" strokeWidth="2"/>
+          <circle cx="80" cy="190" r="20" fill="none" stroke="#ef4444" strokeWidth="2"/>
+          <circle cx="420" cy="60" r="20" fill="none" stroke="#ef4444" strokeWidth="2"/>
+          <circle cx="420" cy="190" r="20" fill="none" stroke="#ef4444" strokeWidth="2"/>
+          {/* Goal creases */}
+          <path d="M 20,110 A 15 15 0 0 1 20,140 Z" fill="#bfdbfe" stroke="#ef4444" strokeWidth="2"/>
+          <path d="M 480,110 A 15 15 0 0 0 480,140 Z" fill="#bfdbfe" stroke="#ef4444" strokeWidth="2"/>
+        </g>
+      );
+    case "wrestling_mat":
+      return (
+        <g transform="translate(-150, -150)">
+          <rect x="0" y="0" width="300" height="300" fill="#ef4444" stroke="#991b1b" strokeWidth="4"/>
+          <circle cx="150" cy="150" r="130" fill="#fde047" stroke="#eab308" strokeWidth="4"/>
+          <circle cx="150" cy="150" r="10" fill="#ef4444"/>
+          <circle cx="150" cy="150" r="100" fill="none" stroke="#eab308" strokeWidth="2"/>
+        </g>
+      );
     default:
       return null;
   }

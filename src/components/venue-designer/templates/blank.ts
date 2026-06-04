@@ -6,8 +6,5 @@ export const blankCanvas: VenueTemplate = {
   label: "Blank Canvas",
   description: "Start from scratch",
   icon: LayoutGrid,
-  stageLabel: "STAGE",
-  stageWidth: 300,
-  stageHeight: 120,
   sections: [],
 };

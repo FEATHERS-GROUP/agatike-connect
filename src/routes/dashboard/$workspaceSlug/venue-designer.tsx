@@ -1,15 +1,20 @@
-import { useState } from "react";
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { useState, useEffect, useCallback } from "react";
+import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Save, Plus, LayoutTemplate, Circle, Square, LayoutDashboard } from "lucide-react";
 
 import { VenueCanvas } from "@/components/venue-designer/VenueCanvas";
 import { VenueSidebar } from "@/components/venue-designer/VenueSidebar";
 import { VenueProperties } from "@/components/venue-designer/VenueProperties";
-import { Section, TemplateId, VenueTemplate } from "@/components/venue-designer/types";
+import { Section, TemplateId, VenueTemplate, PitchType } from "@/components/venue-designer/types";
 import { templates, getTemplate } from "@/components/venue-designer/templates";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venue-designer")({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      step: search.step as string | undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Venue Seating & Ticketing — Agatike" },
@@ -26,11 +31,16 @@ type SetupStep = "SELECT_TEMPLATE" | "CONFIGURE_BLANK" | "DESIGN_CANVAS";
 
 function VenueDesignerPage() {
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/venue-designer" });
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.id });
 
-  const [setupStep, setSetupStep] = useState<SetupStep>("SELECT_TEMPLATE");
+  const setupStep = (search.step as SetupStep) || "SELECT_TEMPLATE";
+  const setSetupStep = (newStep: SetupStep) => {
+    navigate({ search: { step: newStep }, replace: true });
+  };
   
   const [activeTemplate, setActiveTemplate] = useState<TemplateId>("blank");
-  const [customBoundaryShape, setCustomBoundaryShape] = useState<"rect" | "circle" | "oval">("rect");
+  const [customBoundaryShape, setCustomBoundaryShape] = useState<"rect" | "circle" | "oval" | "d_shape" | "horseshoe" | "diamond" | "hexagon" | "octagon">("rect");
 
   const [customPitchType, setCustomPitchType] = useState<PitchType>("none");
 
@@ -38,6 +48,69 @@ function VenueDesignerPage() {
   const [template, setTemplate] = useState<VenueTemplate>(getTemplate("blank"));
   const [sections, setSections] = useState<Section[]>([]);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [canvasBg, setCanvasBg] = useState<string>("#ffffff");
+
+  const [past, setPast] = useState<Section[][]>([]);
+  
+  const saveHistory = useCallback((currentSections: Section[]) => {
+    setPast(p => {
+      if (p.length > 0 && JSON.stringify(p[p.length - 1]) === JSON.stringify(currentSections)) return p;
+      return [...p, currentSections].slice(-50);
+    });
+  }, []);
+
+  const undo = useCallback(() => {
+    setPast(p => {
+      if (p.length === 0) return p;
+      const newPast = [...p];
+      const previous = newPast.pop()!;
+      setSections(previous);
+      return newPast;
+    });
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault();
+        undo();
+        return;
+      }
+
+      if (!activeSection) return;
+
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault();
+        setSections(prev => {
+          saveHistory(prev);
+          return prev.filter(s => s.id !== activeSection);
+        });
+        setActiveSection(null);
+        return;
+      }
+
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        setSections(prev => {
+          saveHistory(prev);
+          return prev.map(s => {
+            if (s.id !== activeSection) return s;
+            const step = e.shiftKey ? 10 : 1;
+            let dx = 0, dy = 0;
+            if (e.key === 'ArrowUp') dy = -step;
+            if (e.key === 'ArrowDown') dy = step;
+            if (e.key === 'ArrowLeft') dx = -step;
+            if (e.key === 'ArrowRight') dx = step;
+            return { ...s, x: s.x + dx, y: s.y + dy };
+          });
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeSection, saveHistory, undo]);
 
   const loadTemplate = (id: TemplateId) => {
     const t = getTemplate(id);
@@ -63,7 +136,26 @@ function VenueDesignerPage() {
       blankTemplate.boundaryHeight = 900;
     }
     setTemplate(blankTemplate);
-    setSections([]);
+    if (customPitchType !== "none") {
+      setSections([{
+        id: `sec-pitch-${Date.now()}`,
+        name: "Stage/Pitch",
+        color: "transparent",
+        rows: 0,
+        cols: 0,
+        capacity: 0,
+        type: "reserved",
+        priceZone: "A",
+        visible: true,
+        shape: "pitch",
+        pitchType: customPitchType,
+        x: 0,
+        y: 0,
+        rotation: 0
+      }]);
+    } else {
+      setSections([]);
+    }
     setActiveSection(null);
     setSetupStep("DESIGN_CANVAS");
   };
@@ -74,14 +166,14 @@ function VenueDesignerPage() {
     );
   };
 
-  const addSection = (shape: "rect" | "arc" | "polygon" | "path", type: "reserved" | "general_admission" | "vip" = "reserved", customPoints?: string, customPathData?: string) => {
+  const addSection = (shape: "rect" | "arc" | "polygon" | "path" | "pitch", type: "reserved" | "general_admission" | "vip" = "reserved", customPoints?: string, customPathData?: string, pitchType?: PitchType, config?: Partial<Section>) => {
     const newSec: Section = {
       id: `sec-${Date.now()}`,
-      name: `New Section ${sections.length + 1}`,
-      color: type === "vip" ? "#f59e0b" : "#0ea5e9",
-      rows: 10,
-      cols: 20,
-      capacity: 200,
+      name: shape === "pitch" ? "Stage/Pitch" : `New Section ${sections.length + 1}`,
+      color: type === "vip" ? "#f59e0b" : shape === "pitch" ? "transparent" : "#0ea5e9",
+      rows: shape === "pitch" ? 0 : 10,
+      cols: shape === "pitch" ? 0 : 20,
+      capacity: shape === "pitch" ? 0 : 200,
       type: type,
       priceZone: "A",
       visible: true,
@@ -89,6 +181,8 @@ function VenueDesignerPage() {
       x: 0,
       y: 0,
       rotation: 0,
+      scaleX: 1,
+      scaleY: 1,
       width: shape === "rect" ? 100 : undefined,
       height: shape === "rect" ? 80 : undefined,
       innerRadius: shape === "arc" ? 100 : undefined,
@@ -97,7 +191,10 @@ function VenueDesignerPage() {
       endAngle: shape === "arc" ? 30 : undefined,
       points: shape === "polygon" ? (customPoints || "-40,-40 40,-40 40,40 -40,40") : undefined,
       pathData: shape === "path" ? customPathData : undefined,
+      pitchType: shape === "pitch" ? pitchType : undefined,
+      ...config
     };
+    saveHistory(sections);
     setSections([...sections, newSec]);
     setActiveSection(newSec.id);
   };
@@ -113,7 +210,7 @@ function VenueDesignerPage() {
 
   if (setupStep === "SELECT_TEMPLATE") {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8">
+      <div className="w-full flex flex-col items-center justify-center py-12">
         <h1 className="text-4xl font-bold mb-4 tracking-tight">Create a Venue</h1>
         <p className="text-muted-foreground mb-12 max-w-lg text-center">
           Choose a pre-built template to get started instantly, or start with a blank canvas to design a custom venue from scratch.
@@ -170,8 +267,8 @@ function VenueDesignerPage() {
     ];
 
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 py-20">
-        <Button variant="ghost" className="absolute top-8 left-8" onClick={() => setSetupStep("SELECT_TEMPLATE")}>
+      <div className="w-full flex flex-col items-center justify-center py-12 relative">
+        <Button variant="ghost" className="absolute top-0 left-0" onClick={() => setSetupStep("SELECT_TEMPLATE")}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Templates
         </Button>
         
@@ -182,27 +279,62 @@ function VenueDesignerPage() {
           {/* Step 1: Boundary */}
           <div>
             <h2 className="text-lg font-semibold mb-4 text-center">1. Venue Boundary</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
               <div 
-                className={`rounded-2xl border-2 p-6 flex flex-col items-center gap-3 cursor-pointer transition-all ${customBoundaryShape === 'rect' ? 'border-primary bg-primary/5' : 'border-border/60 hover:border-primary/50'}`}
+                className={`rounded-2xl border-2 p-4 flex flex-col items-center gap-2 cursor-pointer transition-all ${customBoundaryShape === 'rect' ? 'border-primary bg-primary/5' : 'border-border/60 hover:border-primary/50'}`}
                 onClick={() => setCustomBoundaryShape('rect')}
               >
-                <Square className="h-12 w-12 text-muted-foreground" />
-                <h3 className="font-medium">Rectangle</h3>
+                <Square className="h-8 w-8 text-muted-foreground" />
+                <h3 className="font-medium text-sm">Rectangle</h3>
               </div>
               <div 
-                className={`rounded-2xl border-2 p-6 flex flex-col items-center gap-3 cursor-pointer transition-all ${customBoundaryShape === 'circle' ? 'border-primary bg-primary/5' : 'border-border/60 hover:border-primary/50'}`}
+                className={`rounded-2xl border-2 p-4 flex flex-col items-center gap-2 cursor-pointer transition-all ${customBoundaryShape === 'circle' ? 'border-primary bg-primary/5' : 'border-border/60 hover:border-primary/50'}`}
                 onClick={() => setCustomBoundaryShape('circle')}
               >
-                <Circle className="h-12 w-12 text-muted-foreground" />
-                <h3 className="font-medium">Circle</h3>
+                <Circle className="h-8 w-8 text-muted-foreground" />
+                <h3 className="font-medium text-sm">Circle</h3>
               </div>
               <div 
-                className={`rounded-2xl border-2 p-6 flex flex-col items-center gap-3 cursor-pointer transition-all ${customBoundaryShape === 'oval' ? 'border-primary bg-primary/5' : 'border-border/60 hover:border-primary/50'}`}
+                className={`rounded-2xl border-2 p-4 flex flex-col items-center gap-2 cursor-pointer transition-all ${customBoundaryShape === 'oval' ? 'border-primary bg-primary/5' : 'border-border/60 hover:border-primary/50'}`}
                 onClick={() => setCustomBoundaryShape('oval')}
               >
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><ellipse cx="12" cy="12" rx="10" ry="6"/></svg>
-                <h3 className="font-medium">Oval</h3>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><ellipse cx="12" cy="12" rx="10" ry="6"/></svg>
+                <h3 className="font-medium text-sm">Oval</h3>
+              </div>
+              <div 
+                className={`rounded-2xl border-2 p-4 flex flex-col items-center gap-2 cursor-pointer transition-all ${customBoundaryShape === 'd_shape' ? 'border-primary bg-primary/5' : 'border-border/60 hover:border-primary/50'}`}
+                onClick={() => setCustomBoundaryShape('d_shape')}
+              >
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M 4 20 L 20 20 L 20 12 A 8 8 0 0 0 4 12 Z"/></svg>
+                <h3 className="font-medium text-sm">Stadium (D)</h3>
+              </div>
+              <div 
+                className={`rounded-2xl border-2 p-4 flex flex-col items-center gap-2 cursor-pointer transition-all ${customBoundaryShape === 'horseshoe' ? 'border-primary bg-primary/5' : 'border-border/60 hover:border-primary/50'}`}
+                onClick={() => setCustomBoundaryShape('horseshoe')}
+              >
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M 6 20 L 6 12 A 6 6 0 0 1 18 12 L 18 20"/></svg>
+                <h3 className="font-medium text-sm">Horseshoe</h3>
+              </div>
+              <div 
+                className={`rounded-2xl border-2 p-4 flex flex-col items-center gap-2 cursor-pointer transition-all ${customBoundaryShape === 'diamond' ? 'border-primary bg-primary/5' : 'border-border/60 hover:border-primary/50'}`}
+                onClick={() => setCustomBoundaryShape('diamond')}
+              >
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M 12 2 L 22 12 L 12 22 L 2 12 Z"/></svg>
+                <h3 className="font-medium text-sm">Diamond</h3>
+              </div>
+              <div 
+                className={`rounded-2xl border-2 p-4 flex flex-col items-center gap-2 cursor-pointer transition-all ${customBoundaryShape === 'hexagon' ? 'border-primary bg-primary/5' : 'border-border/60 hover:border-primary/50'}`}
+                onClick={() => setCustomBoundaryShape('hexagon')}
+              >
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M 21 16 L 21 8 L 12 2 L 3 8 L 3 16 L 12 22 Z"/></svg>
+                <h3 className="font-medium text-sm">Hexagon</h3>
+              </div>
+              <div 
+                className={`rounded-2xl border-2 p-4 flex flex-col items-center gap-2 cursor-pointer transition-all ${customBoundaryShape === 'octagon' ? 'border-primary bg-primary/5' : 'border-border/60 hover:border-primary/50'}`}
+                onClick={() => setCustomBoundaryShape('octagon')}
+              >
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M 7.7 2 L 16.3 2 L 22 7.7 L 22 16.3 L 16.3 22 L 7.7 22 L 2 16.3 L 2 7.7 Z"/></svg>
+                <h3 className="font-medium text-sm">Octagon</h3>
               </div>
             </div>
           </div>
@@ -271,7 +403,10 @@ function VenueDesignerPage() {
             activeSection={activeSection}
             setActiveSection={setActiveSection}
             addSection={addSection}
-            removeSection={(id) => setSections(prev => prev.filter(s => s.id !== id))}
+            removeSection={(id) => {
+              saveHistory(sections);
+              setSections(prev => prev.filter(s => s.id !== id));
+            }}
           />
         </div>
 
@@ -287,16 +422,26 @@ function VenueDesignerPage() {
             activeSection={activeSection}
             setActiveSection={setActiveSection}
             updateSection={updateSection}
+            saveHistory={() => saveHistory(sections)}
+            canvasBg={canvasBg}
           />
         </div>
 
         {/* Right Sidebar: Properties */}
         <div className="w-80 border-l bg-card/30 p-4">
-          <VenueProperties
-            stats={stats}
-            activeSection={activeSection}
+          <VenueProperties 
+            stats={stats} 
+            activeSection={activeSection} 
             sections={sections}
             updateSection={updateSection}
+            addSection={addSection}
+            removeSection={(id) => {
+              saveHistory(sections);
+              setSections(prev => prev.filter(s => s.id !== id));
+              setActiveSection(null);
+            }}
+            canvasBg={canvasBg}
+            setCanvasBg={setCanvasBg}
           />
         </div>
       </div>

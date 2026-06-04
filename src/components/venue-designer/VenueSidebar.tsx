@@ -60,7 +60,7 @@ export function VenueSidebar({
   sections: Section[];
   activeSection: string | null;
   setActiveSection: (id: string | null) => void;
-  addSection: (shape: "rect" | "arc" | "polygon" | "path", type?: "reserved" | "general_admission" | "vip", customPoints?: string, customPathData?: string) => void;
+  addSection: (shape: "rect" | "arc" | "polygon" | "path" | "pitch", type?: "reserved" | "general_admission" | "vip", customPoints?: string, customPathData?: string, pitchType?: any, config?: Partial<Section>) => void;
   removeSection: (id: string) => void;
 }) {
   const [activeTab, setActiveTab] = useState<'elements' | 'sections' | 'settings'>('elements');
@@ -138,6 +138,39 @@ export function VenueSidebar({
                 >
                   <div className="w-2 h-6 border-2 border-muted-foreground rounded-sm"></div>
                   <span className="text-xs font-medium">Connector Tab</span>
+                </button>
+              </div>
+            </Panel>
+
+            <Panel title="Drawing Blocks" icon={Plus}>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => addSection('path', 'general_admission', undefined, "M 0,-40 A 40 40 0 1 1 0,40 A 40 40 0 1 1 0,-40 Z", undefined, { name: 'Circle Block' })}
+                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border/60 bg-secondary/20 p-3 text-center transition hover:border-primary/50 hover:bg-secondary/50"
+                >
+                  <CircleDashed className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-xs font-medium">Circle</span>
+                </button>
+                <button
+                  onClick={() => addSection('polygon', 'general_admission', "0,-40 40,40 -40,40", undefined, undefined, { name: 'Triangle Block' })}
+                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border/60 bg-secondary/20 p-3 text-center transition hover:border-primary/50 hover:bg-secondary/50"
+                >
+                  <svg width="24" height="24" viewBox="-50 -50 100 100" fill="currentColor" className="text-muted-foreground"><polygon points="0,-40 40,40 -40,40"/></svg>
+                  <span className="text-xs font-medium">Triangle</span>
+                </button>
+                <button
+                  onClick={() => addSection('polygon', 'general_admission', "0,-40 40,0 0,40 -40,0", undefined, undefined, { name: 'Diamond Block' })}
+                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border/60 bg-secondary/20 p-3 text-center transition hover:border-primary/50 hover:bg-secondary/50"
+                >
+                  <svg width="24" height="24" viewBox="-50 -50 100 100" fill="currentColor" className="text-muted-foreground"><polygon points="0,-40 40,0 0,40 -40,0"/></svg>
+                  <span className="text-xs font-medium">Diamond</span>
+                </button>
+                <button
+                  onClick={() => addSection('rect', 'general_admission', undefined, undefined, undefined, { name: 'Divider Line', height: 8, capacity: 0, rows: 0, cols: 0, width: 200, color: '#444444' })}
+                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border/60 bg-secondary/20 p-3 text-center transition hover:border-primary/50 hover:bg-secondary/50"
+                >
+                  <div className="w-10 h-1 bg-muted-foreground rounded-full"></div>
+                  <span className="text-xs font-medium">Divider Line</span>
                 </button>
               </div>
             </Panel>

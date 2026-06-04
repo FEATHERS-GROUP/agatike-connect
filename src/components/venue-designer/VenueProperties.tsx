@@ -52,24 +52,90 @@ export function VenueProperties({
   activeSection,
   sections,
   updateSection,
+  addSection,
+  removeSection,
+  canvasBg,
+  setCanvasBg,
 }: {
   stats: { total: number; vip: number; acc: number; blocked: number; revenue: number };
   activeSection: string | null;
   sections: Section[];
   updateSection: (id: string, patch: Partial<Section>) => void;
+  addSection: (shape: "rect" | "arc" | "polygon" | "path" | "pitch", type?: "reserved" | "general_admission" | "vip", customPoints?: string, customPathData?: string, pitchType?: any) => void;
+  removeSection: (id: string) => void;
+  canvasBg: string;
+  setCanvasBg: (color: string) => void;
 }) {
   const sec = activeSection ? sections.find((s) => s.id === activeSection) : null;
 
+  const pitchOptions = [
+    { id: "basketball", label: "Basketball Court" },
+    { id: "football", label: "Football Pitch" },
+    { id: "handball", label: "Handball Court" },
+    { id: "volleyball", label: "Volleyball Court" },
+    { id: "tennis_court", label: "Tennis Court" },
+    { id: "ice_rink", label: "Ice Rink" },
+    { id: "ring_boxing", label: "Boxing Ring" },
+    { id: "wrestling_mat", label: "Wrestling Mat" },
+    { id: "stage_concert", label: "Concert Stage" },
+    { id: "stage_thrust", label: "Thrust Stage" },
+    { id: "stage_round", label: "360° Stage" },
+    { id: "runway", label: "Fashion Runway" },
+    { id: "orchestra_pit", label: "Orchestra Pit" },
+    { id: "choral_risers", label: "Choral Risers" },
+    { id: "dj_booth", label: "DJ Booth" },
+    { id: "speaker_panel", label: "Speaker Panel" },
+    { id: "podium_classic", label: "Classic Lectern" },
+    { id: "podium_glass", label: "Glass Podium" },
+    { id: "panel_table", label: "Panel Table" }
+  ];
+
   return (
     <aside className="h-[calc(100vh-80px)] overflow-y-auto pb-20 pr-2 custom-scrollbar">
-      <Panel title="Venue Capacity" icon={Users}>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <Stat label="Total capacity" value={sections.reduce((acc, s) => acc + (s.capacity || 0), 0).toLocaleString()} />
-          <Stat label="Sections" value={sections.length} />
+      <Panel title="Stages & Podiums" icon={Crown}>
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">Add a new focal point to your venue. You can move and rotate it later.</p>
+          <div className="flex gap-2">
+            <select 
+              id="new-pitch-select"
+              className="flex-1 h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              {pitchOptions.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+            </select>
+            <Button size="sm" onClick={() => {
+              const sel = document.getElementById('new-pitch-select') as HTMLSelectElement;
+              addSection("pitch", "reserved", undefined, undefined, sel.value as any);
+            }}>Add</Button>
+          </div>
         </div>
       </Panel>
 
-      {sec ? (
+      <Panel title="Venue Capacity" icon={Users}>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <Stat label="Total capacity" value={sections.reduce((acc, s) => acc + (s.capacity || 0), 0).toLocaleString()} />
+          <Stat label="Sections" value={sections.filter(s => s.shape !== 'pitch').length} />
+        </div>
+      </Panel>
+
+      {!activeSection && (
+        <Panel title="Canvas Settings" icon={Crown}>
+          <div className="space-y-4">
+            <Field label="Background Color">
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={canvasBg}
+                  onChange={(e) => setCanvasBg(e.target.value)}
+                  className="h-9 w-12 cursor-pointer rounded-lg border border-border/60 bg-transparent p-1"
+                />
+                <Input value={canvasBg} onChange={(e) => setCanvasBg(e.target.value)} className="font-mono text-xs text-muted-foreground" />
+              </div>
+            </Field>
+          </div>
+        </Panel>
+      )}
+
+      {activeSection && sec && (
         <>
           <Panel title="Metadata & Inventory" icon={Settings2}>
             <div className="space-y-4">
@@ -80,87 +146,115 @@ export function VenueProperties({
                 />
               </Field>
 
-              <div className="rounded-xl border border-border/60 bg-secondary/10 p-4 space-y-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Users className="h-4 w-4 text-primary" />
-                  <p className="text-sm font-semibold">Seating Capacity</p>
+              {sec.shape !== 'pitch' && (
+                <div className="rounded-xl border border-border/60 bg-secondary/10 p-4 space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    <p className="text-sm font-semibold">Seating Capacity</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Number of Rows">
+                      <Input 
+                        type="number" 
+                        value={sec.rows || 0} 
+                        onChange={(e) => {
+                          const rows = +e.target.value;
+                          const cols = sec.cols || 0;
+                          updateSection(sec.id, { rows, capacity: rows * cols });
+                        }} 
+                      />
+                    </Field>
+                    <Field label="Seats per row">
+                      <Input 
+                        type="number" 
+                        value={sec.cols || 0} 
+                        onChange={(e) => {
+                          const cols = +e.target.value;
+                          const rows = sec.rows || 0;
+                          updateSection(sec.id, { cols, capacity: rows * cols });
+                        }} 
+                      />
+                    </Field>
+                  </div>
+                  <div className="pt-2 border-t border-border/50">
+                    <Field label="Total Calculated Seats">
+                      <div className="flex items-center justify-between p-2 bg-primary/10 border border-primary/20 rounded-lg text-lg font-bold text-primary">
+                        <span>{sec.capacity || 0}</span>
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      </div>
+                    </Field>
+                  </div>
                 </div>
+              )}
+
+              {sec.shape !== 'pitch' && (
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Number of Rows">
-                    <Input 
-                      type="number" 
-                      value={sec.rows || 0} 
-                      onChange={(e) => {
-                        const rows = +e.target.value;
-                        const cols = sec.cols || 0;
-                        updateSection(sec.id, { rows, capacity: rows * cols });
-                      }} 
-                    />
+                  <Field label="Type">
+                    <select 
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      value={sec.type || "reserved"}
+                      onChange={(e) => updateSection(sec.id, { type: e.target.value as any })}
+                    >
+                      <option value="reserved">Reserved</option>
+                      <option value="general_admission">General Adm.</option>
+                      <option value="vip">VIP</option>
+                    </select>
                   </Field>
-                  <Field label="Seats per row">
-                    <Input 
-                      type="number" 
-                      value={sec.cols || 0} 
-                      onChange={(e) => {
-                        const cols = +e.target.value;
-                        const rows = sec.rows || 0;
-                        updateSection(sec.id, { cols, capacity: rows * cols });
-                      }} 
-                    />
-                  </Field>
-                </div>
-                <div className="pt-2 border-t border-border/50">
-                  <Field label="Total Calculated Seats">
-                    <div className="flex items-center justify-between p-2 bg-primary/10 border border-primary/20 rounded-lg text-lg font-bold text-primary">
-                      <span>{sec.capacity || 0}</span>
-                      <CheckCircle2 className="w-5 h-5 text-green-500" />
-                    </div>
+                  <Field label="Price Zone">
+                    <select 
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      value={sec.priceZone || "A"}
+                      onChange={(e) => updateSection(sec.id, { priceZone: e.target.value })}
+                    >
+                      <option value="A">Zone A</option>
+                      <option value="B">Zone B</option>
+                      <option value="C">Zone C</option>
+                      <option value="D">Zone D</option>
+                    </select>
                   </Field>
                 </div>
-              </div>
+              )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Type">
+              {sec.shape === 'pitch' ? (
+                <Field label="Stage / Pitch Type">
                   <select 
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    value={sec.type || "reserved"}
-                    onChange={(e) => updateSection(sec.id, { type: e.target.value as any })}
+                    value={sec.pitchType || "none"}
+                    onChange={(e) => updateSection(sec.id, { pitchType: e.target.value as any })}
                   >
-                    <option value="reserved">Reserved</option>
-                    <option value="general_admission">General Adm.</option>
-                    <option value="vip">VIP</option>
+                    {pitchOptions.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
                   </select>
                 </Field>
-                <Field label="Price Zone">
-                  <select 
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    value={sec.priceZone || "A"}
-                    onChange={(e) => updateSection(sec.id, { priceZone: e.target.value })}
-                  >
-                    <option value="A">Zone A</option>
-                    <option value="B">Zone B</option>
-                    <option value="C">Zone C</option>
-                    <option value="D">Zone D</option>
-                  </select>
+              ) : (
+                <Field label="Color">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={sec.color}
+                      onChange={(e) => updateSection(sec.id, { color: e.target.value })}
+                      className="h-9 w-12 cursor-pointer rounded-lg border border-border/60 bg-transparent p-1"
+                    />
+                    <Input value={sec.color} readOnly className="font-mono text-xs text-muted-foreground" />
+                  </div>
                 </Field>
-              </div>
+              )}
 
-              <Field label="Color">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={sec.color}
-                    onChange={(e) => updateSection(sec.id, { color: e.target.value })}
-                    className="h-9 w-12 cursor-pointer rounded-lg border border-border/60 bg-transparent p-1"
-                  />
-                  <Input value={sec.color} readOnly className="font-mono text-xs text-muted-foreground" />
+              {sec.shape !== 'pitch' && (
+                <div className="pt-2">
+                  <Button className="w-full" variant="outline">
+                    <Layers className="w-4 h-4 mr-2" />
+                    Preview Seat Grid
+                  </Button>
                 </div>
-              </Field>
+              )}
 
-              <div className="pt-2">
-                <Button className="w-full" variant="outline">
-                  <Layers className="w-4 h-4 mr-2" />
-                  Preview Seat Grid
+              <div className="pt-4 mt-4 border-t border-border/50">
+                <Button 
+                  className="w-full text-destructive hover:text-destructive hover:bg-destructive/10" 
+                  variant="ghost"
+                  onClick={() => removeSection(sec.id)}
+                >
+                  Delete {sec.shape === 'pitch' ? 'Stage' : 'Section'}
                 </Button>
               </div>
             </div>
@@ -168,28 +262,30 @@ export function VenueProperties({
 
           <Panel title="Vector Geometry" icon={Square}>
             <div className="space-y-4">
-              <Field label="Shape Type">
-                <div className="flex gap-2 p-1 bg-secondary rounded-lg">
-                  <button
-                    onClick={() => updateSection(sec.id, { shape: "rect", width: 150, height: 80 })}
-                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === 'rect' ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'}`}
-                  >
-                    Rectangle
-                  </button>
-                  <button
-                    onClick={() => updateSection(sec.id, { shape: "arc", innerRadius: 150, outerRadius: 220, startAngle: 0, endAngle: 90 })}
-                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === 'arc' ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'}`}
-                  >
-                    Curved Arc
-                  </button>
-                  <button
-                    onClick={() => updateSection(sec.id, { shape: "polygon", points: "0,0 100,0 80,80 20,80" })}
-                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === 'polygon' ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'}`}
-                  >
-                    Custom
-                  </button>
-                </div>
-              </Field>
+              {sec.shape !== 'pitch' && (
+                <Field label="Shape Type">
+                  <div className="flex gap-2 p-1 bg-secondary rounded-lg">
+                    <button
+                      onClick={() => updateSection(sec.id, { shape: "rect", width: 150, height: 80 })}
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === 'rect' ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                      Rectangle
+                    </button>
+                    <button
+                      onClick={() => updateSection(sec.id, { shape: "arc", innerRadius: 150, outerRadius: 220, startAngle: 0, endAngle: 90 })}
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === 'arc' ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                      Curved Arc
+                    </button>
+                    <button
+                      onClick={() => updateSection(sec.id, { shape: "polygon", points: "0,0 100,0 80,80 20,80" })}
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${sec.shape === 'polygon' || sec.shape === 'path' ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                      Custom
+                    </button>
+                  </div>
+                </Field>
+              )}
 
               <div className="rounded-xl border border-border p-3 space-y-3 bg-secondary/5">
                 
@@ -220,7 +316,15 @@ export function VenueProperties({
                       placeholder="e.g. 0,0 100,0 100,100"
                     />
                   </Field>
-                ) : (
+                ) : sec.shape === 'path' ? (
+                  <Field label="Path Data">
+                    <Input 
+                      value={sec.pathData || ""} 
+                      onChange={(e) => updateSection(sec.id, { pathData: e.target.value })} 
+                      placeholder="e.g. M 0,0 L 100,0 Z"
+                    />
+                  </Field>
+                ) : sec.shape === 'rect' ? (
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Width">
                       <Input type="number" value={sec.width || 100} onChange={(e) => updateSection(sec.id, { width: +e.target.value })} />
@@ -229,7 +333,7 @@ export function VenueProperties({
                       <Input type="number" value={sec.height || 50} onChange={(e) => updateSection(sec.id, { height: +e.target.value })} />
                     </Field>
                   </div>
-                )}
+                ) : null}
 
                 <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/50">
                   <Field label={`X Axis (${sec.x || 0})`}>
@@ -240,17 +344,34 @@ export function VenueProperties({
                   </Field>
                 </div>
 
-                <Field label={`Rotation · ${sec.rotation || 0}°`}>
+                <Field label="Rotation (°)">
                   <div className="flex items-center gap-2">
                     <input type="range" min={0} max={360} value={sec.rotation || 0} onChange={(e) => updateSection(sec.id, { rotation: +e.target.value })} className="w-full accent-primary" />
-                    <span className="text-xs text-muted-foreground w-8">{sec.rotation || 0}°</span>
+                    <Input type="number" value={sec.rotation || 0} onChange={(e) => updateSection(sec.id, { rotation: +e.target.value })} className="w-20 h-9" />
                   </div>
                 </Field>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Width Scale (%)">
+                    <div className="relative">
+                      <Input type="number" min={1} max={2000} value={Math.round((sec.scaleX ?? 1) * 100)} onChange={(e) => updateSection(sec.id, { scaleX: (+e.target.value || 100) / 100 })} className="pr-8" />
+                      <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">%</span>
+                    </div>
+                  </Field>
+                  <Field label="Height Scale (%)">
+                    <div className="relative">
+                      <Input type="number" min={1} max={2000} value={Math.round((sec.scaleY ?? 1) * 100)} onChange={(e) => updateSection(sec.id, { scaleY: (+e.target.value || 100) / 100 })} className="pr-8" />
+                      <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">%</span>
+                    </div>
+                  </Field>
+                </div>
               </div>
             </div>
           </Panel>
         </>
-      ) : (
+      )}
+
+      {!activeSection && (
         <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed rounded-xl border-border/50 bg-secondary/10">
           <Square className="w-8 h-8 text-muted-foreground mb-3 opacity-50" />
           <p className="text-sm font-medium">No Section Selected</p>

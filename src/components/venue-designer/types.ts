@@ -23,10 +23,12 @@ export type Section = {
   visible: boolean;
 
   // Geometry configuration
-  shape: "rect" | "arc" | "polygon" | "path";
+  shape: "rect" | "arc" | "polygon" | "path" | "pitch";
   x: number;
   y: number;
   rotation: number;
+  scaleX?: number;
+  scaleY?: number;
   
   // Rect specifics
   width?: number;
@@ -43,6 +45,9 @@ export type Section = {
 
   // Custom Path specifics
   pathData?: string; // e.g., "-50,-50 50,-50 40,50 -40,50"
+  
+  // Pitch specifics
+  pitchType?: PitchType;
 };
 
 export type TemplateId = "arena" | "stadium" | "concert" | "conference" | "blank";
@@ -60,7 +65,14 @@ export type PitchType =
   | "runway" 
   | "podium_classic" 
   | "podium_glass" 
-  | "panel_table";
+  | "panel_table"
+  | "dj_booth"
+  | "speaker_panel"
+  | "choral_risers"
+  | "orchestra_pit"
+  | "tennis_court"
+  | "ice_rink"
+  | "wrestling_mat";
 
 export interface VenueTemplate {
   id: TemplateId;
@@ -78,7 +90,7 @@ export interface VenueTemplate {
   pitchType?: PitchType;
   
   // Arena boundary wall
-  boundaryShape?: "rect" | "circle" | "oval";
+  boundaryShape?: "rect" | "circle" | "oval" | "d_shape" | "horseshoe" | "diamond" | "hexagon" | "octagon";
   boundaryWidth?: number;
   boundaryHeight?: number;
   boundaryRx?: number; // corner radius

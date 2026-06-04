@@ -27,6 +27,36 @@ function describeArc(x: number, y: number, innerRadius: number, outerRadius: num
   ].join(" ");
 }
 
+function getBoundaryPath(shape: string, w: number, h: number, rx: number) {
+  const hw = w / 2;
+  const hh = h / 2;
+  
+  if (shape === 'circle' || shape === 'oval') {
+    return `M ${-hw} 0 A ${hw} ${hh} 0 1 0 ${hw} 0 A ${hw} ${hh} 0 1 0 ${-hw} 0 Z`;
+  }
+  if (shape === 'diamond') {
+    return `M 0 ${-hh} L ${hw} 0 L 0 ${hh} L ${-hw} 0 Z`;
+  }
+  if (shape === 'hexagon') {
+    const q = hw * 0.5;
+    return `M ${-q} ${-hh} L ${q} ${-hh} L ${hw} 0 L ${q} ${hh} L ${-q} ${hh} L ${-hw} 0 Z`;
+  }
+  if (shape === 'octagon') {
+    const qx = hw * 0.4;
+    const qy = hh * 0.4;
+    return `M ${-qx} ${-hh} L ${qx} ${-hh} L ${hw} ${-qy} L ${hw} ${qy} L ${qx} ${hh} L ${-qx} ${hh} L ${-hw} ${qy} L ${-hw} ${-qy} Z`;
+  }
+  if (shape === 'd_shape') {
+    return `M ${-hw} ${hh} L ${hw} ${hh} L ${hw} 0 A ${hw} ${hh} 0 0 0 ${-hw} 0 Z`;
+  }
+  if (shape === 'horseshoe') {
+    return `M ${-hw} ${-hh} L ${-hw} 0 A ${hw} ${hh} 0 0 0 ${hw} 0 L ${hw} ${-hh} Z`;
+  }
+  
+  // Default: rounded rect
+  return `M ${-hw+rx} ${-hh} L ${hw-rx} ${-hh} Q ${hw} ${-hh} ${hw} ${-hh+rx} L ${hw} ${hh-rx} Q ${hw} ${hh} ${hw-rx} ${hh} L ${-hw+rx} ${hh} Q ${-hw} ${hh} ${-hw} ${hh-rx} L ${-hw} ${-hh+rx} Q ${-hw} ${-hh} ${-hw+rx} ${-hh} Z`;
+}
+
 export function VenueCanvas({
   venueName,
   eventName,
@@ -35,6 +65,8 @@ export function VenueCanvas({
   activeSection,
   setActiveSection,
   updateSection,
+  saveHistory,
+  canvasBg,
 }: {
   venueName: string;
   eventName: string;
@@ -45,6 +77,8 @@ export function VenueCanvas({
   activeSection: string | null;
   setActiveSection: (id: string | null) => void;
   updateSection: (id: string, patch: Partial<Section>) => void;
+  saveHistory: () => void;
+  canvasBg: string;
 }) {
   const stageWidth = template.stageWidth || 200;
   const stageHeight = template.stageHeight || 100;
@@ -67,6 +101,7 @@ export function VenueCanvas({
 
   const handlePointerDown = (e: React.PointerEvent<SVGGElement>, section: Section) => {
     e.stopPropagation();
+    saveHistory(); // Save history before drag starts
     setActiveSection(section.id);
     const coords = getSvgCoordinates(e as any);
     setDraggingSectionId(section.id);
@@ -116,39 +151,34 @@ export function VenueCanvas({
       </div>
 
       {/* SVG Canvas Area */}
-      <div className="relative mt-12 w-full flex-1 overflow-hidden bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px] rounded-xl border border-white/5">
+      <div 
+        className="relative mt-12 w-full flex-1 overflow-hidden bg-[linear-gradient(to_right,rgba(128,128,128,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(128,128,128,0.15)_1px,transparent_1px)] bg-[size:40px_40px] rounded-xl border border-border"
+        style={{ backgroundColor: canvasBg }}
+      >
         
         <svg 
           ref={svgRef}
           viewBox="-560 -480 1120 960" 
           className="w-full h-full cursor-crosshair select-none touch-none"
           preserveAspectRatio="xMidYMid meet"
+          onPointerDown={() => setActiveSection(null)}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
-          onClick={() => setActiveSection(null)}
         >
           {/* Arena Outer Boundary Wall */}
           {template.boundaryWidth && template.boundaryHeight && (
             <>
               {/* Outer shadow/glow */}
-              <rect
-                x={-template.boundaryWidth / 2 - 4}
-                y={-template.boundaryHeight / 2 - 4}
-                width={template.boundaryWidth + 8}
-                height={template.boundaryHeight + 8}
-                rx={(template.boundaryRx || 60) + 4}
+              <path
+                d={getBoundaryPath(template.boundaryShape || 'rect', template.boundaryWidth + 8, template.boundaryHeight + 8, (template.boundaryRx || 60) + 4)}
                 fill="none"
                 stroke="rgba(100,120,150,0.15)"
                 strokeWidth="12"
               />
               {/* Main boundary wall */}
-              <rect
-                x={-template.boundaryWidth / 2}
-                y={-template.boundaryHeight / 2}
-                width={template.boundaryWidth}
-                height={template.boundaryHeight}
-                rx={template.boundaryRx || 60}
+              <path
+                d={getBoundaryPath(template.boundaryShape || 'rect', template.boundaryWidth, template.boundaryHeight, template.boundaryRx || 60)}
                 fill="rgba(255,255,255,0.02)"
                 stroke="rgba(150,170,200,0.5)"
                 strokeWidth="3"
@@ -156,35 +186,7 @@ export function VenueCanvas({
             </>
           )}
 
-          {/* Stage / Court / Focal Point */}
-          {template.pitchType && template.pitchType !== "none" ? (
-            <PitchRenderer type={template.pitchType} />
-          ) : template.stageWidth && template.stageHeight ? (
-            <g>
-              <rect
-                x={-template.stageWidth / 2}
-                y={-template.stageHeight / 2}
-                width={template.stageWidth}
-                height={template.stageHeight}
-                rx={template.stageWidth > 200 ? 12 : 8}
-                fill="#1a7a4a"
-                stroke="rgba(255,255,255,0.4)"
-                strokeWidth="3"
-              />
-              <line x1={0} y1={-template.stageHeight/2 + 8} x2={0} y2={template.stageHeight/2 - 8} stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
-              <circle cx={0} cy={0} r={28} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
-              <text
-                x="0"
-                y="0"
-                fill="rgba(255,255,255,0.0)"
-                fontSize="1"
-                textAnchor="middle"
-                pointerEvents="none"
-              >
-                {template.stageLabel}
-              </text>
-            </g>
-          ) : null}
+          {/* Background Stage Fallback removed per user request */}
 
           {/* Sections */}
           {sections.map((sec) => {
@@ -237,33 +239,39 @@ export function VenueCanvas({
                 key={sec.id}
                 id={sec.id}
                 className="venue-section"
-                transform={`translate(${sec.x}, ${sec.y}) rotate(${sec.rotation || 0})`}
+                transform={`translate(${sec.x}, ${sec.y}) rotate(${sec.rotation || 0}) scale(${sec.scaleX ?? 1}, ${sec.scaleY ?? 1})`}
                 onPointerDown={(e) => handlePointerDown(e, sec)}
                 style={{
                   transformOrigin: `0px 0px`,
                   cursor: isDragging ? 'grabbing' : 'grab'
                 }}
               >
-                {/* Glow effect for active section */}
+                {/* Canva-style Selection Box */}
                 {isActive && (
-                  <path
-                    d={d}
-                    fill="none"
-                    stroke={sec.color}
-                    strokeWidth="8"
-                    opacity="0.5"
-                    filter="blur(4px)"
-                  />
+                  <g pointerEvents="none">
+                    <path
+                      d={d}
+                      fill="none"
+                      stroke="#3b82f6"
+                      strokeWidth="4"
+                      strokeDasharray="8 6"
+                      className="animate-pulse"
+                    />
+                  </g>
                 )}
                 
                 {/* Main Shape */}
-                <path
-                  d={d}
-                  fill={sec.color}
-                  stroke={isActive ? "#ffffff" : "rgba(255,255,255,0.15)"}
-                  strokeWidth={isActive ? "3" : "1"}
-                  className={`transition-all duration-100 ${isActive ? 'brightness-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]' : 'hover:brightness-125 opacity-90'}`}
-                />
+                {sec.shape === 'pitch' ? (
+                  <PitchRenderer type={sec.pitchType || "none"} />
+                ) : (
+                  <path
+                    d={d}
+                    fill={sec.color}
+                    stroke={isActive ? "#ffffff" : "rgba(255,255,255,0.15)"}
+                    strokeWidth={isActive ? "3" : "1"}
+                    className={`transition-all duration-100 ${isActive ? 'brightness-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]' : 'hover:brightness-125 opacity-90'}`}
+                  />
+                )}
                 
                 {/* Section Name Text */}
                 <text
