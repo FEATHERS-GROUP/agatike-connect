@@ -341,10 +341,17 @@ function VenueDesignerIndex() {
                     className="group block rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
                   >
                     <div className="h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-secondary/50">
-                      <div className="absolute inset-0 bg-white/5 backdrop-blur-md pointer-events-none" />
-                      <div className="relative z-10 text-foreground">
-                        <p className="text-xs text-muted-foreground">{eventObj?.title || "No event linked"}</p>
-                        <h3 className="text-xl font-bold leading-tight mt-1">{displayTitle}</h3>
+                      {eventObj?.cover && (
+                        <img 
+                          src={eventObj.cover} 
+                          alt="" 
+                          className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay group-hover:scale-105 transition-transform duration-500"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                      <div className="relative z-10 text-white drop-shadow-md">
+                        <p className="text-xs opacity-80 uppercase tracking-wider">{eventObj?.title || "No event linked"}</p>
+                        <h3 className="text-xl font-bold leading-tight mt-1 drop-shadow-lg">{displayTitle}</h3>
                       </div>
                     </div>
                     <div className="px-5 py-3 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors">
