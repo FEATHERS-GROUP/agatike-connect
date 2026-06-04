@@ -28,6 +28,7 @@ const CANONICAL_ORDER: string[] = [
   "Venue Listings",
   "Venue Designer",
   "Badge Designer",
+  "Page Builder",
   "Experiences",
   "Analytics",
   "Withdrawals",
