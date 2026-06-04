@@ -286,6 +286,7 @@ const COUNTRIES = [
 function Workspaces() {
   const { workspaces, activeWorkspace, setActiveWorkspace, createWorkspace, isLoading } =
     useWorkspace();
+  const { data: platformModules = [], isLoading: isLoadingModules } = usePlatformModules();
   const navigate = useNavigate();
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [step, setStep] = useState(1);
