@@ -102,10 +102,11 @@ export function DesktopSidebar() {
           Branded pages, marketing & advanced analytics.
         </p>
         <Button
+          asChild
           className="mt-3 w-full rounded-full text-xs h-8"
           style={{ background: "var(--gradient-primary)" }}
         >
-          Upgrade
+          <Link to="/dashboard/pricing">Upgrade</Link>
         </Button>
       </div>
     </aside>

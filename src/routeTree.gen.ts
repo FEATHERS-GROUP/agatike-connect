@@ -35,6 +35,7 @@ import { Route as FFormIdRouteImport } from './routes/f.$formId'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 import { Route as DashboardWorkspacesRouteImport } from './routes/dashboard.workspaces'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
+import { Route as DashboardPricingRouteImport } from './routes/dashboard.pricing'
 import { Route as DashboardLoginRouteImport } from './routes/dashboard.login'
 import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard.create-organizer'
 import { Route as CommunityPostIdRouteImport } from './routes/community.$postId'
@@ -205,6 +206,11 @@ const DashboardWorkspacesRoute = DashboardWorkspacesRouteImport.update({
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardPricingRoute = DashboardPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardLoginRoute = DashboardLoginRouteImport.update({
@@ -469,6 +475,7 @@ export interface FileRoutesByFullPath {
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
+  '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
@@ -538,6 +545,7 @@ export interface FileRoutesByTo {
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
+  '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
@@ -608,6 +616,7 @@ export interface FileRoutesById {
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
+  '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
@@ -679,6 +688,7 @@ export interface FileRouteTypes {
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
+    | '/dashboard/pricing'
     | '/dashboard/settings'
     | '/dashboard/workspaces'
     | '/events/$eventId'
@@ -748,6 +758,7 @@ export interface FileRouteTypes {
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
+    | '/dashboard/pricing'
     | '/dashboard/settings'
     | '/dashboard/workspaces'
     | '/events/$eventId'
@@ -817,6 +828,7 @@ export interface FileRouteTypes {
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
+    | '/dashboard/pricing'
     | '/dashboard/settings'
     | '/dashboard/workspaces'
     | '/events/$eventId'
@@ -1080,6 +1092,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/dashboard/settings'
       preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/pricing': {
+      id: '/dashboard/pricing'
+      path: '/pricing'
+      fullPath: '/dashboard/pricing'
+      preLoaderRoute: typeof DashboardPricingRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/login': {
@@ -1396,6 +1415,7 @@ const DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren =
 interface DashboardRouteChildren {
   DashboardCreateOrganizerRoute: typeof DashboardCreateOrganizerRoute
   DashboardLoginRoute: typeof DashboardLoginRoute
+  DashboardPricingRoute: typeof DashboardPricingRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardWorkspacesRoute: typeof DashboardWorkspacesRoute
   DashboardWorkspaceSlugPageBuilderRoute: typeof DashboardWorkspaceSlugPageBuilderRoute
@@ -1430,6 +1450,7 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCreateOrganizerRoute: DashboardCreateOrganizerRoute,
   DashboardLoginRoute: DashboardLoginRoute,
+  DashboardPricingRoute: DashboardPricingRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardWorkspacesRoute: DashboardWorkspacesRoute,
   DashboardWorkspaceSlugPageBuilderRoute:
