@@ -1,0 +1,117 @@
+import { Trophy } from "lucide-react";
+import { VenueTemplate } from "../types";
+
+// Coordinate system: SVG viewBox "-560 -460 1120 920"
+// Canvas center = (0,0). Court center = (0,0), size 320×160.
+// Boundary wall: 980w × 760h, rx=60.
+// All x/y = CENTER of each rect.
+
+export const basketballArena: VenueTemplate = {
+  id: "arena",
+  label: "Basketball Arena",
+  description: "Court center · Grid layout",
+  icon: Trophy,
+  stageLabel: "COURT",
+  stageWidth: 320,
+  stageHeight: 160,
+  boundaryWidth: 980,
+  boundaryHeight: 760,
+  boundaryRx: 60,
+  sections: [
+
+    // =====================================================
+    // 100 LEVEL — inner ring, tight to the court
+    // Court spans: -160 to 160 (X), -80 to 80 (Y)
+    // =====================================================
+
+    // --- WEST (Left) ---
+    { id: "102", name: "102", color: "#b0b8c6", rows: 10, cols: 20, capacity: 200, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 72, height: 68, x: -250, y: -44, rotation: 0 },
+    { id: "101", name: "101", color: "#b0b8c6", rows: 10, cols: 20, capacity: 200, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 72, height: 68, x: -250, y:  44, rotation: 0 },
+    { id: "P3", name: "P3", color: "#f59e0b", rows: 2, cols: 10, capacity: 20, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 36, height: 68, x: -204, y: -44, rotation: 0 },
+    { id: "P2", name: "P2", color: "#f59e0b", rows: 2, cols: 10, capacity: 20, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 36, height: 68, x: -204, y:  44, rotation: 0 },
+
+    // --- EAST (Right) ---
+    { id: "112", name: "112", color: "#b0b8c6", rows: 10, cols: 20, capacity: 200, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 120, height: 68, x: 260, y: -44, rotation: 0 },
+    { id: "113", name: "113", color: "#b0b8c6", rows: 10, cols: 20, capacity: 200, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 120, height: 68, x: 260, y:  44, rotation: 0 },
+
+    // --- NORTH (Top) inner sections — 5 blocks between corners ---
+    { id: "P6L", name: "P6", color: "#f59e0b", rows: 2, cols: 10, capacity: 20, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 68, height: 34, x: -82, y: -172, rotation: 0 },
+    { id: "106", name: "106", color: "#b0b8c6", rows: 10, cols: 20, capacity: 200, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 68, height: 68, x: -82, y: -130, rotation: 0 },
+    { id: "107", name: "107", color: "#b0b8c6", rows: 10, cols: 20, capacity: 200, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 68, height: 100, x: 0, y: -146, rotation: 0 },
+    { id: "P6R", name: "P6", color: "#f59e0b", rows: 2, cols: 10, capacity: 20, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 68, height: 34, x: 82, y: -172, rotation: 0 },
+    { id: "108", name: "108", color: "#b0b8c6", rows: 10, cols: 20, capacity: 200, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 68, height: 68, x: 82, y: -130, rotation: 0 },
+    { id: "105", name: "105", color: "#b0b8c6", rows: 10, cols: 20, capacity: 200, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 68, height: 110, x: -158, y: -151, rotation: 0 },
+    { id: "109", name: "109", color: "#b0b8c6", rows: 10, cols: 20, capacity: 200, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 68, height: 110, x: 158, y: -151, rotation: 0 },
+
+    // --- NW Corner (103/104/P4) ---
+    { id: "P4",  name: "P4",  color: "#f59e0b", rows: 2,  cols: 5,  capacity: 10, type: "vip",      priceZone: "VIP", visible: true, shape: "rect", width: 34, height: 45, x: -265, y: -150, rotation: 0 },
+    { id: "104", name: "104", color: "#b0b8c6", rows: 8,  cols: 14, capacity: 112, type: "reserved", priceZone: "A",  visible: true, shape: "rect", width: 68, height: 72, x: -228, y: -169, rotation: 0 },
+    { id: "103", name: "103", color: "#b0b8c6", rows: 5,  cols: 10, capacity: 50,  type: "reserved", priceZone: "A",  visible: true, shape: "rect", width: 52, height: 55, x: -220, y: -104, rotation: 0 },
+
+    // --- NE Corner (110/111) ---
+    { id: "110", name: "110", color: "#b0b8c6", rows: 8,  cols: 14, capacity: 112, type: "reserved", priceZone: "A",  visible: true, shape: "rect", width: 68, height: 72, x: 228, y: -169, rotation: 0 },
+    { id: "111", name: "111", color: "#b0b8c6", rows: 5,  cols: 10, capacity: 50,  type: "reserved", priceZone: "A",  visible: true, shape: "rect", width: 52, height: 55, x: 218, y: -104, rotation: 0 },
+
+    // --- SOUTH (Bottom) inner sections ---
+    { id: "120", name: "120", color: "#b0b8c6", rows: 15, cols: 20, capacity: 300, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 68, height: 108, x: -158, y: 150, rotation: 0 },
+    { id: "119", name: "119", color: "#b0b8c6", rows: 15, cols: 20, capacity: 300, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 68, height: 108, x:  -82, y: 150, rotation: 0 },
+    { id: "118", name: "118", color: "#b0b8c6", rows: 15, cols: 20, capacity: 300, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 68, height: 108, x:    0, y: 150, rotation: 0 },
+    { id: "117", name: "117", color: "#b0b8c6", rows: 15, cols: 20, capacity: 300, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 68, height: 108, x:   82, y: 150, rotation: 0 },
+    { id: "116", name: "116", color: "#b0b8c6", rows: 15, cols: 20, capacity: 300, type: "reserved", priceZone: "A", visible: true, shape: "rect", width: 68, height: 108, x:  158, y: 150, rotation: 0 },
+
+    // --- SW Corner (121/122/P1) ---
+    { id: "122", name: "122", color: "#b0b8c6", rows: 5,  cols: 10, capacity: 50,  type: "reserved", priceZone: "A",  visible: true, shape: "rect", width: 52, height: 55, x: -220, y: 102, rotation: 0 },
+    { id: "121", name: "121", color: "#b0b8c6", rows: 8,  cols: 14, capacity: 112, type: "reserved", priceZone: "A",  visible: true, shape: "rect", width: 68, height: 72, x: -228, y: 166, rotation: 0 },
+    { id: "P1",  name: "P1",  color: "#f59e0b", rows: 2,  cols: 5,  capacity: 10,  type: "vip",      priceZone: "VIP", visible: true, shape: "rect", width: 34, height: 72, x: -280, y: 166, rotation: 0 },
+
+    // --- SE Corner (114/115) ---
+    { id: "115", name: "115", color: "#b0b8c6", rows: 5,  cols: 10, capacity: 50,  type: "reserved", priceZone: "A",  visible: true, shape: "rect", width: 52, height: 55, x: 218, y: 102, rotation: 0 },
+    { id: "114", name: "114", color: "#b0b8c6", rows: 8,  cols: 14, capacity: 112, type: "reserved", priceZone: "A",  visible: true, shape: "rect", width: 68, height: 72, x: 228, y: 166, rotation: 0 },
+
+    // --- VIP Strip (bottom center) ---
+    { id: "VIP10", name: "VIP10", color: "#f59e0b", rows: 2, cols: 5, capacity: 10, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 42, height: 34, x: -196, y: 232, rotation: 0 },
+    { id: "VIP9",  name: "VIP9",  color: "#f59e0b", rows: 2, cols: 5, capacity: 10, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 42, height: 34, x: -153, y: 232, rotation: 0 },
+    { id: "VIP8",  name: "VIP8",  color: "#f59e0b", rows: 2, cols: 5, capacity: 10, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 42, height: 34, x: -110, y: 232, rotation: 0 },
+    { id: "VIP7",  name: "VIP7",  color: "#f59e0b", rows: 2, cols: 5, capacity: 10, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 42, height: 34, x:  -67, y: 232, rotation: 0 },
+    { id: "VIP6",  name: "VIP6",  color: "#f59e0b", rows: 2, cols: 5, capacity: 10, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 42, height: 34, x:  -24, y: 232, rotation: 0 },
+    { id: "VIP5",  name: "VIP5",  color: "#f59e0b", rows: 2, cols: 5, capacity: 10, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 42, height: 34, x:   19, y: 232, rotation: 0 },
+    { id: "VIP4",  name: "VIP4",  color: "#f59e0b", rows: 2, cols: 5, capacity: 10, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 42, height: 34, x:   62, y: 232, rotation: 0 },
+    { id: "VIP3",  name: "VIP3",  color: "#f59e0b", rows: 2, cols: 5, capacity: 10, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 42, height: 34, x:  105, y: 232, rotation: 0 },
+    { id: "VIP2",  name: "VIP2",  color: "#f59e0b", rows: 2, cols: 5, capacity: 10, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 42, height: 34, x:  148, y: 232, rotation: 0 },
+    { id: "VIP1",  name: "VIP1",  color: "#f59e0b", rows: 2, cols: 5, capacity: 10, type: "vip", priceZone: "VIP", visible: true, shape: "rect", width: 42, height: 34, x:  191, y: 232, rotation: 0 },
+
+    // =====================================================
+    // 200 LEVEL — outer ring
+    // =====================================================
+
+    // --- WEST ---
+    { id: "204", name: "204", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 100, height: 110, x: -398, y: -240, rotation: 0 },
+    { id: "203", name: "203", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 100, height: 95,  x: -398, y: -118, rotation: 0 },
+    { id: "202", name: "202", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 100, height: 95,  x: -398, y:    0, rotation: 0 },
+    { id: "201", name: "201", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 100, height: 110, x: -398, y:  140, rotation: 0 },
+
+    // --- EAST ---
+    { id: "212", name: "212", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 100, height: 110, x: 418, y: -240, rotation: 0 },
+    { id: "213", name: "213", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 100, height: 95,  x: 418, y: -118, rotation: 0 },
+    { id: "214", name: "214", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 100, height: 95,  x: 418, y:    0, rotation: 0 },
+    { id: "215", name: "215", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 100, height: 110, x: 418, y:  140, rotation: 0 },
+
+    // --- NORTH ---
+    { id: "205", name: "205", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 120, height: 100, x: -207, y: -320, rotation: 0 },
+    { id: "206", name: "206", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 60,  height: 100, x: -100, y: -320, rotation: 0 },
+    { id: "207", name: "207", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 60,  height: 100, x:  -33, y: -320, rotation: 0 },
+    { id: "208", name: "208", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 60,  height: 100, x:   34, y: -320, rotation: 0 },
+    { id: "209", name: "209", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 60,  height: 100, x:  101, y: -320, rotation: 0 },
+    { id: "210", name: "210", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 60,  height: 100, x:  168, y: -320, rotation: 0 },
+    { id: "211", name: "211", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 120, height: 100, x:  316, y: -320, rotation: 0 },
+
+    // --- SOUTH ---
+    { id: "222", name: "222", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 130, height: 100, x: -210, y: 375, rotation: 0 },
+    { id: "221", name: "221", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 60,  height: 100, x:  -99, y: 375, rotation: 0 },
+    { id: "220", name: "220", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 60,  height: 100, x:  -32, y: 375, rotation: 0 },
+    { id: "219", name: "219", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 75,  height: 65,  x:   52, y: 350, rotation: 0 },
+    { id: "218", name: "218", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 60,  height: 100, x:  148, y: 375, rotation: 0 },
+    { id: "217", name: "217", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 60,  height: 100, x:  215, y: 375, rotation: 0 },
+    { id: "216", name: "216", color: "#b0b8c6", rows: 15, cols: 30, capacity: 450, type: "reserved", priceZone: "B", visible: true, shape: "rect", width: 120, height: 100, x:  330, y: 375, rotation: 0 },
+  ],
+};
