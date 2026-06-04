@@ -136,25 +136,10 @@ export function VenueCanvas({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-[#0a0a0a] p-6 shadow-2xl h-full flex flex-col">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,theme(colors.accent.DEFAULT/15),transparent_60%)] pointer-events-none" />
-
-      {/* Header */}
-      <div className="absolute top-6 left-6 right-6 z-10 flex items-center justify-between pointer-events-none">
-        <div>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
-            {venueName}
-          </p>
-          <h3 className="text-xl font-bold text-white shadow-black drop-shadow-md">{eventName}</h3>
-        </div>
-      </div>
-
-      {/* SVG Canvas Area */}
-      <div 
-        className="relative mt-12 w-full flex-1 overflow-hidden bg-[linear-gradient(to_right,rgba(128,128,128,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(128,128,128,0.15)_1px,transparent_1px)] bg-[size:40px_40px] rounded-xl border border-border"
-        style={{ backgroundColor: canvasBg }}
-      >
+    <div 
+      className="relative w-full h-full overflow-hidden bg-[linear-gradient(to_right,rgba(128,128,128,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(128,128,128,0.15)_1px,transparent_1px)] bg-[size:40px_40px] rounded-2xl border border-border shadow-sm"
+      style={{ backgroundColor: canvasBg }}
+    >
         
         <svg 
           ref={svgRef}
@@ -304,7 +289,6 @@ export function VenueCanvas({
             );
           })}
         </svg>
-      </div>
     </div>
   );
 }

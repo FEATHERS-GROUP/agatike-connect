@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Grid3x3, LayoutGrid, Plus, Trash2, Square, CircleDashed, Star, Hexagon, Settings, Layers } from "lucide-react";
+import { Grid3x3, LayoutGrid, Plus, Trash2, Square, CircleDashed, Star, Hexagon, Settings, Layers, ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Section, TemplateId, VenueTemplate } from "./types";
@@ -9,22 +9,33 @@ function Panel({
   icon: Icon,
   children,
   action,
+  defaultOpen = true,
 }: {
   title: string;
   icon: any;
   children: React.ReactNode;
   action?: React.ReactNode;
+  defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm mb-4">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-2xl border border-border/60 bg-card shadow-sm mb-4 overflow-hidden transition-all duration-200">
+      <div
+        className="flex items-center justify-between px-4 py-3 cursor-pointer select-none hover:bg-secondary/20 transition-colors"
+        onClick={() => setOpen(o => !o)}
+      >
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-primary" />
           <p className="text-sm font-semibold">{title}</p>
         </div>
-        {action}
+        <div className="flex items-center gap-2">
+          {action && <div onClick={e => e.stopPropagation()}>{action}</div>}
+          {open
+            ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+        </div>
       </div>
-      {children}
+      {open && <div className="px-4 pb-4">{children}</div>}
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import { Crown, Square, Users, Layers, Settings2, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { Crown, Square, Users, Layers, Settings2, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Section } from "./types";
@@ -9,22 +10,33 @@ function Panel({
   icon: Icon,
   children,
   action,
+  defaultOpen = true,
 }: {
   title: string;
   icon: any;
   children: React.ReactNode;
   action?: React.ReactNode;
+  defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm mb-5">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-2xl border border-border/60 bg-card shadow-sm mb-5 overflow-hidden transition-all duration-200">
+      <div
+        className="flex items-center justify-between px-4 py-3 cursor-pointer select-none hover:bg-secondary/20 transition-colors"
+        onClick={() => setOpen(o => !o)}
+      >
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-primary" />
           <p className="text-sm font-semibold">{title}</p>
         </div>
-        {action}
+        <div className="flex items-center gap-2">
+          {action && <div onClick={e => e.stopPropagation()}>{action}</div>}
+          {open
+            ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+        </div>
       </div>
-      {children}
+      {open && <div className="px-4 pb-4">{children}</div>}
     </div>
   );
 }
