@@ -50,6 +50,66 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+/** A numeric input that lets users freely clear the field and type a new value.
+ *  The actual section state is only updated when the user leaves the field (blur)
+ *  or presses Enter — not on every keystroke, so empty strings never trigger a reset. */
+function NumericInput({
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  className,
+  suffix,
+  placeholder,
+}: {
+  value: number | undefined;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  className?: string;
+  suffix?: string;
+  placeholder?: string;
+}) {
+  const [draft, setDraft] = useState<string>(value != null ? String(value) : '');
+
+  // Sync draft when the external value changes (e.g. from canvas drag)
+  const strValue = value != null ? String(value) : '';
+  if (draft !== strValue && document.activeElement?.getAttribute('data-numericinput') !== 'true') {
+    // Only sync if the field isn't focused (user isn't actively typing)
+  }
+
+  const commit = () => {
+    const parsed = parseFloat(draft);
+    if (!isNaN(parsed)) {
+      onChange(parsed);
+    } else {
+      // Reset draft to last known good value
+      setDraft(value != null ? String(value) : '');
+    }
+  };
+
+  return (
+    <div className="relative">
+      <Input
+        data-numericinput="true"
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={draft}
+        placeholder={placeholder}
+        className={suffix ? `pr-8 ${className ?? ''}` : className}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === 'Enter') { commit(); (e.target as HTMLInputElement).blur(); } }}
+      />
+      {suffix && <span className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">{suffix}</span>}
+    </div>
+  );
+}
+
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded-xl border border-border/60 p-3 bg-secondary/20">
@@ -130,7 +190,7 @@ export function VenueProperties({
       </Panel>
 
       {!activeSection && (
-        <Panel title="Canvas Settings" icon={Crown}>
+        <Panel title="Canvas Settings" icon={Crown} defaultOpen={false}>
           <div className="space-y-4">
             <Field label="Background Color">
               <div className="flex items-center gap-2">
@@ -272,7 +332,7 @@ export function VenueProperties({
             </div>
           </Panel>
 
-          <Panel title="Vector Geometry" icon={Square}>
+          <Panel title="Vector Geometry" icon={Square} defaultOpen={false}>
             <div className="space-y-4">
               {sec.shape !== 'pitch' && (
                 <Field label="Shape Type">
@@ -338,43 +398,51 @@ export function VenueProperties({
                   </Field>
                 ) : sec.shape === 'rect' ? (
                   <div className="grid grid-cols-2 gap-3">
-                    <Field label="Width">
-                      <Input type="number" value={sec.width || 100} onChange={(e) => updateSection(sec.id, { width: +e.target.value })} />
+                    <Field label="Width (px)">
+                      <NumericInput value={sec.width} onChange={(v) => updateSection(sec.id, { width: v })} min={1} placeholder="e.g. 150" />
                     </Field>
-                    <Field label="Height">
-                      <Input type="number" value={sec.height || 50} onChange={(e) => updateSection(sec.id, { height: +e.target.value })} />
+                    <Field label="Height (px)">
+                      <NumericInput value={sec.height} onChange={(v) => updateSection(sec.id, { height: v })} min={1} placeholder="e.g. 80" />
                     </Field>
                   </div>
                 ) : null}
 
                 <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/50">
-                  <Field label={`X Axis (${sec.x || 0})`}>
-                    <Input type="number" value={sec.x || 0} onChange={(e) => updateSection(sec.id, { x: +e.target.value || 0 })} />
+                  <Field label="X Axis">
+                    <NumericInput value={sec.x} onChange={(v) => updateSection(sec.id, { x: v })} placeholder="0" />
                   </Field>
-                  <Field label={`Y Axis (${sec.y || 0})`}>
-                    <Input type="number" value={sec.y || 0} onChange={(e) => updateSection(sec.id, { y: +e.target.value || 0 })} />
+                  <Field label="Y Axis">
+                    <NumericInput value={sec.y} onChange={(v) => updateSection(sec.id, { y: v })} placeholder="0" />
                   </Field>
                 </div>
 
                 <Field label="Rotation (°)">
                   <div className="flex items-center gap-2">
                     <input type="range" min={0} max={360} value={sec.rotation || 0} onChange={(e) => updateSection(sec.id, { rotation: +e.target.value })} className="w-full accent-primary" />
-                    <Input type="number" value={sec.rotation || 0} onChange={(e) => updateSection(sec.id, { rotation: +e.target.value })} className="w-20 h-9" />
+                    <NumericInput value={sec.rotation} onChange={(v) => updateSection(sec.id, { rotation: v })} min={0} max={360} className="w-20" placeholder="0" />
                   </div>
                 </Field>
 
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Width Scale (%)">
-                    <div className="relative">
-                      <Input type="number" min={1} max={2000} value={Math.round((sec.scaleX ?? 1) * 100)} onChange={(e) => updateSection(sec.id, { scaleX: (+e.target.value || 100) / 100 })} className="pr-8" />
-                      <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">%</span>
-                    </div>
+                    <NumericInput
+                      value={Math.round((sec.scaleX ?? 1) * 100)}
+                      onChange={(v) => updateSection(sec.id, { scaleX: v / 100 })}
+                      min={1}
+                      max={2000}
+                      suffix="%"
+                      placeholder="100"
+                    />
                   </Field>
                   <Field label="Height Scale (%)">
-                    <div className="relative">
-                      <Input type="number" min={1} max={2000} value={Math.round((sec.scaleY ?? 1) * 100)} onChange={(e) => updateSection(sec.id, { scaleY: (+e.target.value || 100) / 100 })} className="pr-8" />
-                      <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">%</span>
-                    </div>
+                    <NumericInput
+                      value={Math.round((sec.scaleY ?? 1) * 100)}
+                      onChange={(v) => updateSection(sec.id, { scaleY: v / 100 })}
+                      min={1}
+                      max={2000}
+                      suffix="%"
+                      placeholder="100"
+                    />
                   </Field>
                 </div>
               </div>

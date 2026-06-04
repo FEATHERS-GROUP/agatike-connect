@@ -153,7 +153,7 @@ export function VenueSidebar({
               </div>
             </Panel>
 
-            <Panel title="Drawing Blocks" icon={Plus}>
+            <Panel title="Drawing Blocks" icon={Plus} defaultOpen={false}>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => addSection('path', 'general_admission', undefined, "M 0,-40 A 40 40 0 1 1 0,40 A 40 40 0 1 1 0,-40 Z", undefined, { name: 'Circle Block' })}
@@ -186,7 +186,7 @@ export function VenueSidebar({
               </div>
             </Panel>
 
-            <Panel title="Angles & Notches" icon={LayoutGrid}>
+            <Panel title="Angles & Notches" icon={LayoutGrid} defaultOpen={false}>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => addSection('polygon', 'reserved', "-63,-22 -63,22 3,-12 63,-12 63,-22")}
@@ -219,7 +219,7 @@ export function VenueSidebar({
               </div>
             </Panel>
 
-            <Panel title="Wedges" icon={LayoutGrid}>
+            <Panel title="Wedges" icon={LayoutGrid} defaultOpen={false}>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => addSection('polygon', 'reserved', "-70,85 -70,-15 0,-85 70,-85 30,85")}
@@ -252,7 +252,7 @@ export function VenueSidebar({
               </div>
             </Panel>
 
-            <Panel title="Trapezoids & Diagonals" icon={LayoutGrid}>
+            <Panel title="Trapezoids & Diagonals" icon={LayoutGrid} defaultOpen={false}>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => addSection('polygon', 'reserved', "-37,-19 37,-19 29,19 -29,19")}
