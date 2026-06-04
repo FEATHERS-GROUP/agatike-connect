@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import { Seat, Section, VenueTemplate } from "./types";
 import { PitchRenderer } from "./PitchRenderer";
 
@@ -67,6 +67,8 @@ export function VenueCanvas({
   updateSection,
   saveHistory,
   canvasBg,
+  removeSection,
+  duplicateSection,
 }: {
   venueName: string;
   eventName: string;
@@ -79,6 +81,8 @@ export function VenueCanvas({
   updateSection: (id: string, patch: Partial<Section>) => void;
   saveHistory: () => void;
   canvasBg: string;
+  removeSection: (id: string) => void;
+  duplicateSection: (id: string) => void;
 }) {
   const stageWidth = template.stageWidth || 200;
   const stageHeight = template.stageHeight || 100;
@@ -87,6 +91,16 @@ export function VenueCanvas({
   const [draggingSectionId, setDraggingSectionId] = useState<string | null>(null);
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [initialSectionPos, setInitialSectionPos] = useState({ x: 0, y: 0 });
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; sectionId: string } | null>(null);
+  const [renaming, setRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
+
+  // Close context menu on outside click
+  useEffect(() => {
+    const close = () => setContextMenu(null);
+    window.addEventListener('pointerdown', close);
+    return () => window.removeEventListener('pointerdown', close);
+  }, []);
 
   // Convert screen coordinates to SVG viewBox coordinates
   const getSvgCoordinates = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -226,6 +240,12 @@ export function VenueCanvas({
                 className="venue-section"
                 transform={`translate(${sec.x}, ${sec.y}) rotate(${sec.rotation || 0}) scale(${sec.scaleX ?? 1}, ${sec.scaleY ?? 1})`}
                 onPointerDown={(e) => handlePointerDown(e, sec)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActiveSection(sec.id);
+                  setContextMenu({ x: e.clientX, y: e.clientY, sectionId: sec.id });
+                }}
                 style={{
                   transformOrigin: `0px 0px`,
                   cursor: isDragging ? 'grabbing' : 'grab'
@@ -289,6 +309,90 @@ export function VenueCanvas({
             );
           })}
         </svg>
+
+      {/* Right-click Context Menu */}
+      {contextMenu && (
+        <div
+          className="fixed z-50 min-w-[180px] rounded-xl border border-border/60 bg-card shadow-2xl overflow-hidden"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          {/* Header: section name or rename input */}
+          {renaming ? (
+            <div className="px-3 py-2 border-b border-border/40">
+              <input
+                autoFocus
+                className="w-full rounded-md border border-border/60 bg-background px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-primary"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    if (renameValue.trim()) updateSection(contextMenu.sectionId, { name: renameValue.trim() });
+                    setRenaming(false);
+                    setContextMenu(null);
+                  }
+                  if (e.key === 'Escape') { setRenaming(false); }
+                }}
+              />
+              <div className="flex gap-1 mt-1.5">
+                <button
+                  className="flex-1 rounded-md bg-primary text-primary-foreground text-xs py-1 hover:opacity-90"
+                  onClick={() => {
+                    if (renameValue.trim()) updateSection(contextMenu.sectionId, { name: renameValue.trim() });
+                    setRenaming(false);
+                    setContextMenu(null);
+                  }}
+                >Save</button>
+                <button
+                  className="flex-1 rounded-md border border-border/60 text-xs py-1 hover:bg-secondary/60"
+                  onClick={() => setRenaming(false)}
+                >Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div className="px-3 py-2 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold border-b border-border/40 truncate">
+              {sections.find(s => s.id === contextMenu.sectionId)?.name || 'Section'}
+            </div>
+          )}
+
+          {!renaming && (
+            <>
+              <button
+                className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-secondary/60 transition-colors"
+                onClick={() => {
+                  const sec = sections.find(s => s.id === contextMenu.sectionId);
+                  setRenameValue(sec?.name || '');
+                  setRenaming(true);
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Rename
+              </button>
+              <button
+                className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-secondary/60 transition-colors"
+                onClick={() => {
+                  duplicateSection(contextMenu.sectionId);
+                  setContextMenu(null);
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Duplicate
+              </button>
+              <div className="border-t border-border/40 my-0.5" />
+              <button
+                className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
+                onClick={() => {
+                  removeSection(contextMenu.sectionId);
+                  setContextMenu(null);
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                Delete
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -161,9 +161,28 @@ function VenueDesignerPage() {
   };
 
   const updateSection = (id: string, patch: Partial<Section>) => {
-    setSections((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, ...patch } : s))
-    );
+    setSections(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s));
+  };
+
+  const removeSection = (id: string) => {
+    saveHistory(sections);
+    setSections(prev => prev.filter(s => s.id !== id));
+    setActiveSection(null);
+  };
+
+  const duplicateSection = (id: string) => {
+    const original = sections.find(s => s.id === id);
+    if (!original) return;
+    saveHistory(sections);
+    const clone: Section = {
+      ...original,
+      id: `sec-${Date.now()}`,
+      name: `${original.name} (copy)`,
+      x: (original.x ?? 0) + 30,
+      y: (original.y ?? 0) + 30,
+    };
+    setSections(prev => [...prev, clone]);
+    setActiveSection(clone.id);
   };
 
   const addSection = (shape: "rect" | "arc" | "polygon" | "path" | "pitch", type: "reserved" | "general_admission" | "vip" = "reserved", customPoints?: string, customPathData?: string, pitchType?: PitchType, config?: Partial<Section>) => {
@@ -424,6 +443,12 @@ function VenueDesignerPage() {
             updateSection={updateSection}
             saveHistory={() => saveHistory(sections)}
             canvasBg={canvasBg}
+            removeSection={(id) => {
+              saveHistory(sections);
+              setSections(prev => prev.filter(s => s.id !== id));
+              setActiveSection(null);
+            }}
+            duplicateSection={duplicateSection}
           />
         </div>
 
