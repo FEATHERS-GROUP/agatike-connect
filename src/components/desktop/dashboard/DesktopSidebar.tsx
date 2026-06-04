@@ -44,8 +44,6 @@ export function DesktopSidebar() {
     return legacyId && userModuleIds.includes(legacyId);
   });
 
-
-
   const workspacePrefix = activeWorkspace ? `/dashboard/${activeWorkspace.slug}` : "/dashboard";
 
   return (

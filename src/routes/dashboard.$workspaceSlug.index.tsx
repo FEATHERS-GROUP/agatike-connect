@@ -210,7 +210,9 @@ function DashboardIndex() {
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {kpis.map((kpi, idx) => (
           <div key={idx} className="rounded-3xl border border-border/60 bg-card p-5 shadow-sm">
-            <div className={`w-10 h-10 rounded-2xl ${kpi.bg} flex items-center justify-center mb-4`}>
+            <div
+              className={`w-10 h-10 rounded-2xl ${kpi.bg} flex items-center justify-center mb-4`}
+            >
               <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
             </div>
             <p className="text-sm font-medium text-muted-foreground">{kpi.label}</p>
@@ -249,7 +251,7 @@ function DashboardIndex() {
           <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
             <Star className="h-5 w-5 text-primary fill-primary" /> Top Events
           </h2>
-          
+
           {stats.topEvents.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground p-8 border border-dashed border-border/60 rounded-2xl">
               <Star className="h-10 w-10 text-muted-foreground/50 mb-3" />
@@ -259,10 +261,11 @@ function DashboardIndex() {
           ) : (
             <div className="flex flex-col gap-4">
               {stats.topEvents.map((ev: any, idx: number) => (
-                <div key={ev.id} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-secondary/30 transition-colors border border-transparent hover:border-border/60">
-                  <div className="w-8 text-center font-bold text-muted-foreground">
-                    #{idx + 1}
-                  </div>
+                <div
+                  key={ev.id}
+                  className="flex items-center gap-4 p-3 rounded-2xl hover:bg-secondary/30 transition-colors border border-transparent hover:border-border/60"
+                >
+                  <div className="w-8 text-center font-bold text-muted-foreground">#{idx + 1}</div>
                   <div className="w-12 h-12 rounded-xl bg-secondary overflow-hidden shrink-0">
                     {ev.cover ? (
                       <img src={ev.cover} alt={ev.title} className="w-full h-full object-cover" />
@@ -279,12 +282,15 @@ function DashboardIndex() {
                         <Users className="h-3 w-3" /> {ev.sold.toLocaleString()}
                       </span>
                       <span className="flex items-center gap-1 text-orange-500 font-medium">
-                        <Star className="h-3 w-3 fill-orange-500" /> {ev.avgRating ? ev.avgRating.toFixed(1) : "0.0"}
+                        <Star className="h-3 w-3 fill-orange-500" />{" "}
+                        {ev.avgRating ? ev.avgRating.toFixed(1) : "0.0"}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold">{ev.rev > 0 ? `${(ev.rev / 1000).toFixed(1)}k` : "0"}</p>
+                    <p className="text-sm font-bold">
+                      {ev.rev > 0 ? `${(ev.rev / 1000).toFixed(1)}k` : "0"}
+                    </p>
                     <p className="text-[10px] text-muted-foreground">RWF</p>
                   </div>
                 </div>

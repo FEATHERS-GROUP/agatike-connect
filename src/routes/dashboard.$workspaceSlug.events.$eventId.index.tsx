@@ -41,11 +41,9 @@ import {
 } from "recharts";
 import { useState, useMemo, useEffect, Fragment } from "react";
 
-export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/")(
-  {
-    component: DashboardEventDetails,
-  },
-);
+export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/")({
+  component: DashboardEventDetails,
+});
 
 function getCurrencySymbol(currency?: string) {
   const map: Record<string, string> = {
@@ -108,7 +106,15 @@ function IconStar({ className }: { className?: string }) {
 }
 function IconCamera({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
       <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
       <circle cx="12" cy="13" r="4" />
     </svg>
@@ -116,7 +122,15 @@ function IconCamera({ className }: { className?: string }) {
 }
 function IconBubble({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   );
@@ -177,107 +191,113 @@ function DashboardEventDetails() {
   const currencySymbol = getCurrencySymbol(activeWorkspace?.wallet?.currency);
 
   // ── Computed: ticket metrics ───────────────────────────────────────────────
-  const { stats, ticketBreakdown, chartData, sortedByRevenue, soldVsUnsold, ticketsByStop } = useMemo(() => {
-    if (!event?.event_tickets) {
-      return {
-        stats: { totalSold: 0, totalCapacity: 0, salesPct: 0, revenue: 0 },
-        ticketBreakdown: [],
-        chartData: [],
-        sortedByRevenue: [],
-        soldVsUnsold: [],
-        ticketsByStop: [],
-      };
-    }
-    const tickets = event.event_tickets as any[];
-    const totalSold = tickets.reduce((acc, t) => acc + Number(t.sold || 0), 0);
-    const totalRemaining = tickets.reduce((acc, t) => acc + Number(t.remaining || 0), 0);
-    const totalCapacity = totalSold + totalRemaining;
-    const salesPct = totalCapacity > 0 ? Math.round((totalSold / totalCapacity) * 100) : 0;
-    const revenue = tickets.reduce(
-      (acc, t) => acc + Number(t.sold || 0) * Number(t.cost || 0),
-      0,
-    );
-
-    // Sorted by sold desc (best sellers first)
-    const sorted = [...tickets]
-      .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0))
-      .map((t, idx) => ({
-        ...t,
-        color: PALETTE[idx % PALETTE.length],
-        capacity: Number(t.sold || 0) + Number(t.remaining || 0),
-        revenue: Number(t.sold || 0) * Number(t.cost || 0),
-      }));
-
-    // Pie breakdown (sold segments)
-    const breakdown = sorted
-      .filter((t) => Number(t.sold || 0) > 0)
-      .map((t, idx) => ({
-        id: t.id,
-        name: t.type,
-        stopIdx: t.tour_stop_idx,
-        value: Number(t.sold || 0),
-        color: PALETTE[idx % PALETTE.length],
-      }));
-    const displayBreakdown =
-      breakdown.length > 0
-        ? breakdown
-        : sorted.map((t, idx) => ({
-            id: t.id,
-            name: t.type,
-            stopIdx: t.tour_stop_idx,
-            value: Number(t.remaining || 0),
-            color: PALETTE[idx % PALETTE.length],
-          }));
-
-    // Revenue by ticket type sorted desc
-    const sortedByRevenue = [...tickets]
-      .map((t) => ({
-        name: t.type,
-        revenue: Number(t.sold || 0) * Number(t.cost || 0),
-        sold: Number(t.sold || 0),
-      }))
-      .sort((a, b) => b.revenue - a.revenue);
-
-    // Sold vs unsold donut
-    const soldVsUnsold = [
-      { name: "Sold", value: totalSold, color: "#f97316" },
-      { name: "Remaining", value: totalRemaining, color: "var(--color-secondary)" },
-    ];
-
-    // Group tickets by tour stop for the classification table
-    const stops: any[] = Array.isArray(event.tour_stops) ? event.tour_stops : [];
-    // Collect unique stop indices from tickets (including null/undefined → "All Locations")
-    const stopGroups: { label: string; stopIdx: number | null; tickets: any[] }[] = [];
-    const seenIdx = new Set<number | null>();
-    // First pass: stops in order
-    stops.forEach((stop: any, idx: number) => {
-      const stopTickets = sorted.filter((t: any) => t.tour_stop_idx === idx);
-      if (stopTickets.length > 0) {
-        seenIdx.add(idx);
-        stopGroups.push({
-          label: stop.venue || stop.city || `Stop ${idx + 1}`,
-          stopIdx: idx,
-          tickets: stopTickets,
-        });
+  const { stats, ticketBreakdown, chartData, sortedByRevenue, soldVsUnsold, ticketsByStop } =
+    useMemo(() => {
+      if (!event?.event_tickets) {
+        return {
+          stats: { totalSold: 0, totalCapacity: 0, salesPct: 0, revenue: 0 },
+          ticketBreakdown: [],
+          chartData: [],
+          sortedByRevenue: [],
+          soldVsUnsold: [],
+          ticketsByStop: [],
+        };
       }
-    });
-    // Second pass: tickets not assigned to any stop
-    const globalTickets = sorted.filter((t: any) => t.tour_stop_idx == null && !seenIdx.has(t.tour_stop_idx));
-    if (globalTickets.length > 0) {
-      stopGroups.push({ label: "All Locations", stopIdx: null, tickets: globalTickets });
-    }
-    // If no grouping possible (single venue, all null), just put everything in one group
-    const ticketsByStop = stopGroups.length > 0 ? stopGroups : [{ label: "All Locations", stopIdx: null, tickets: sorted }];
+      const tickets = event.event_tickets as any[];
+      const totalSold = tickets.reduce((acc, t) => acc + Number(t.sold || 0), 0);
+      const totalRemaining = tickets.reduce((acc, t) => acc + Number(t.remaining || 0), 0);
+      const totalCapacity = totalSold + totalRemaining;
+      const salesPct = totalCapacity > 0 ? Math.round((totalSold / totalCapacity) * 100) : 0;
+      const revenue = tickets.reduce(
+        (acc, t) => acc + Number(t.sold || 0) * Number(t.cost || 0),
+        0,
+      );
 
-    return {
-      stats: { totalSold, totalCapacity, salesPct, revenue },
-      ticketBreakdown: displayBreakdown,
-      chartData: sorted,
-      sortedByRevenue,
-      soldVsUnsold,
-      ticketsByStop,
-    };
-  }, [event]);
+      // Sorted by sold desc (best sellers first)
+      const sorted = [...tickets]
+        .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0))
+        .map((t, idx) => ({
+          ...t,
+          color: PALETTE[idx % PALETTE.length],
+          capacity: Number(t.sold || 0) + Number(t.remaining || 0),
+          revenue: Number(t.sold || 0) * Number(t.cost || 0),
+        }));
+
+      // Pie breakdown (sold segments)
+      const breakdown = sorted
+        .filter((t) => Number(t.sold || 0) > 0)
+        .map((t, idx) => ({
+          id: t.id,
+          name: t.type,
+          stopIdx: t.tour_stop_idx,
+          value: Number(t.sold || 0),
+          color: PALETTE[idx % PALETTE.length],
+        }));
+      const displayBreakdown =
+        breakdown.length > 0
+          ? breakdown
+          : sorted.map((t, idx) => ({
+              id: t.id,
+              name: t.type,
+              stopIdx: t.tour_stop_idx,
+              value: Number(t.remaining || 0),
+              color: PALETTE[idx % PALETTE.length],
+            }));
+
+      // Revenue by ticket type sorted desc
+      const sortedByRevenue = [...tickets]
+        .map((t) => ({
+          name: t.type,
+          revenue: Number(t.sold || 0) * Number(t.cost || 0),
+          sold: Number(t.sold || 0),
+        }))
+        .sort((a, b) => b.revenue - a.revenue);
+
+      // Sold vs unsold donut
+      const soldVsUnsold = [
+        { name: "Sold", value: totalSold, color: "#f97316" },
+        { name: "Remaining", value: totalRemaining, color: "var(--color-secondary)" },
+      ];
+
+      // Group tickets by tour stop for the classification table
+      const stops: any[] = Array.isArray(event.tour_stops) ? event.tour_stops : [];
+      // Collect unique stop indices from tickets (including null/undefined → "All Locations")
+      const stopGroups: { label: string; stopIdx: number | null; tickets: any[] }[] = [];
+      const seenIdx = new Set<number | null>();
+      // First pass: stops in order
+      stops.forEach((stop: any, idx: number) => {
+        const stopTickets = sorted.filter((t: any) => t.tour_stop_idx === idx);
+        if (stopTickets.length > 0) {
+          seenIdx.add(idx);
+          stopGroups.push({
+            label: stop.venue || stop.city || `Stop ${idx + 1}`,
+            stopIdx: idx,
+            tickets: stopTickets,
+          });
+        }
+      });
+      // Second pass: tickets not assigned to any stop
+      const globalTickets = sorted.filter(
+        (t: any) => t.tour_stop_idx == null && !seenIdx.has(t.tour_stop_idx),
+      );
+      if (globalTickets.length > 0) {
+        stopGroups.push({ label: "All Locations", stopIdx: null, tickets: globalTickets });
+      }
+      // If no grouping possible (single venue, all null), just put everything in one group
+      const ticketsByStop =
+        stopGroups.length > 0
+          ? stopGroups
+          : [{ label: "All Locations", stopIdx: null, tickets: sorted }];
+
+      return {
+        stats: { totalSold, totalCapacity, salesPct, revenue },
+        ticketBreakdown: displayBreakdown,
+        chartData: sorted,
+        sortedByRevenue,
+        soldVsUnsold,
+        ticketsByStop,
+      };
+    }, [event]);
 
   // ── Computed: per-stop breakdown ───────────────────────────────────────────
   const stopBreakdown = useMemo(() => {
@@ -318,7 +338,10 @@ function DashboardEventDetails() {
     ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1)
     : "—";
   const totalReviews = feedbackData?.aggregate?.count || 0;
-  const totalLikes = (posts as any[]).reduce((a: number, p: any) => a + Number(p.likes_count || 0), 0);
+  const totalLikes = (posts as any[]).reduce(
+    (a: number, p: any) => a + Number(p.likes_count || 0),
+    0,
+  );
   const totalComments = (posts as any[]).reduce(
     (a: number, p: any) => a + Number(p.comments_count || 0),
     0,
@@ -327,10 +350,26 @@ function DashboardEventDetails() {
 
   // ── Simulated week-on-week progression ────────────────────────────────────
   const attendanceProgressData = [
-    { name: "Wk 1", target: Math.round(stats.totalCapacity * 0.2), attended: Math.round(stats.totalSold * 0.15) },
-    { name: "Wk 2", target: Math.round(stats.totalCapacity * 0.4), attended: Math.round(stats.totalSold * 0.35) },
-    { name: "Wk 3", target: Math.round(stats.totalCapacity * 0.6), attended: Math.round(stats.totalSold * 0.55) },
-    { name: "Wk 4", target: Math.round(stats.totalCapacity * 0.8), attended: Math.round(stats.totalSold * 0.75) },
+    {
+      name: "Wk 1",
+      target: Math.round(stats.totalCapacity * 0.2),
+      attended: Math.round(stats.totalSold * 0.15),
+    },
+    {
+      name: "Wk 2",
+      target: Math.round(stats.totalCapacity * 0.4),
+      attended: Math.round(stats.totalSold * 0.35),
+    },
+    {
+      name: "Wk 3",
+      target: Math.round(stats.totalCapacity * 0.6),
+      attended: Math.round(stats.totalSold * 0.55),
+    },
+    {
+      name: "Wk 4",
+      target: Math.round(stats.totalCapacity * 0.8),
+      attended: Math.round(stats.totalSold * 0.75),
+    },
     { name: "Now", target: stats.totalCapacity, attended: stats.totalSold },
   ];
 
@@ -417,7 +456,8 @@ function DashboardEventDetails() {
             <DollarSign className="h-4 w-4 text-green-500" />
           </div>
           <p className="text-2xl font-bold text-green-500">
-            {currencySymbol}{stats.revenue.toLocaleString()}
+            {currencySymbol}
+            {stats.revenue.toLocaleString()}
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">from ticket sales</p>
         </div>
@@ -430,7 +470,10 @@ function DashboardEventDetails() {
           </div>
           <p className="text-2xl font-bold">
             {stats.totalSold}
-            <span className="text-sm font-normal text-muted-foreground"> / {stats.totalCapacity}</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              {" "}
+              / {stats.totalCapacity}
+            </span>
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">total tickets</p>
         </div>
@@ -484,7 +527,6 @@ function DashboardEventDetails() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT: Analytics Column ─────────────────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
-
           {/* ── SECTION 2: Sold vs Unsold + Best Sellers ─────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Sold vs Unsold Donut */}
@@ -509,9 +551,7 @@ function DashboardEventDetails() {
                         <Cell key={i} fill={entry.color} />
                       ))}
                     </Pie>
-                    <RechartsTooltip
-                      content={<ChartTooltip currencySymbol={currencySymbol} />}
-                    />
+                    <RechartsTooltip content={<ChartTooltip currencySymbol={currencySymbol} />} />
                   </PieChart>
                 </ResponsiveContainer>
                 {/* Center label */}
@@ -550,7 +590,13 @@ function DashboardEventDetails() {
                       horizontal={false}
                       stroke="var(--color-border)"
                     />
-                    <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={10} tickLine={false} axisLine={false} />
+                    <XAxis
+                      type="number"
+                      stroke="var(--color-muted-foreground)"
+                      fontSize={10}
+                      tickLine={false}
+                      axisLine={false}
+                    />
                     <YAxis
                       type="category"
                       dataKey="type"
@@ -591,7 +637,11 @@ function DashboardEventDetails() {
                     barCategoryGap="30%"
                     barGap={4}
                   >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="var(--color-border)"
+                    />
                     <XAxis
                       dataKey="name"
                       stroke="var(--color-muted-foreground)"
@@ -641,10 +691,15 @@ function DashboardEventDetails() {
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{stop.venue}</td>
                         <td className="px-4 py-3 text-muted-foreground">{stop.date}</td>
-                        <td className="px-4 py-3 text-right font-medium">{stop.sold.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-right text-muted-foreground">{stop.capacity.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right font-medium">
+                          {stop.sold.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-right text-muted-foreground">
+                          {stop.capacity.toLocaleString()}
+                        </td>
                         <td className="px-4 py-3 text-right font-medium text-green-500">
-                          {currencySymbol}{stop.revenue.toLocaleString()}
+                          {currencySymbol}
+                          {stop.revenue.toLocaleString()}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -679,7 +734,11 @@ function DashboardEventDetails() {
                   data={sortedByRevenue}
                   margin={{ top: 8, right: 8, left: -10, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="var(--color-border)"
+                  />
                   <XAxis
                     dataKey="name"
                     stroke="var(--color-muted-foreground)"
@@ -708,14 +767,20 @@ function DashboardEventDetails() {
           {/* ── SECTION 5: Sales Progression (existing) ──────────────── */}
           <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
             <h3 className="font-semibold mb-1">Sales Progression</h3>
-            <p className="text-xs text-muted-foreground mb-5">Anticipated capacity vs actual tickets sold</p>
+            <p className="text-xs text-muted-foreground mb-5">
+              Anticipated capacity vs actual tickets sold
+            </p>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={attendanceProgressData}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="var(--color-border)"
+                  />
                   <XAxis
                     dataKey="name"
                     stroke="var(--color-muted-foreground)"
@@ -753,7 +818,9 @@ function DashboardEventDetails() {
             <div className="p-6 border-b border-border/60 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold">All Ticket Classifications</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Grouped by tour stop · location and status</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Grouped by tour stop · location and status
+                </p>
               </div>
               <BarChart3 className="h-5 w-5 text-muted-foreground" />
             </div>
@@ -786,7 +853,8 @@ function DashboardEventDetails() {
                             {group.label}
                           </span>
                           <span className="ml-auto text-[11px] text-muted-foreground">
-                            {group.tickets.length} ticket type{group.tickets.length !== 1 ? "s" : ""}
+                            {group.tickets.length} ticket type
+                            {group.tickets.length !== 1 ? "s" : ""}
                           </span>
                         </div>
                       </td>
@@ -809,9 +877,14 @@ function DashboardEventDetails() {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-green-500 font-medium">
-                            {Number(tier.cost) === 0
-                              ? <span className="text-muted-foreground">Free</span>
-                              : <>{currencySymbol}{parseFloat(tier.cost).toLocaleString()}</>}
+                            {Number(tier.cost) === 0 ? (
+                              <span className="text-muted-foreground">Free</span>
+                            ) : (
+                              <>
+                                {currencySymbol}
+                                {parseFloat(tier.cost).toLocaleString()}
+                              </>
+                            )}
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
@@ -831,7 +904,8 @@ function DashboardEventDetails() {
                             </div>
                           </td>
                           <td className="px-6 py-4 font-medium text-green-500">
-                            {currencySymbol}{tier.revenue.toLocaleString()}
+                            {currencySymbol}
+                            {tier.revenue.toLocaleString()}
                           </td>
                           <td className="px-6 py-4">
                             <span
@@ -887,7 +961,12 @@ function DashboardEventDetails() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-muted-foreground">Average Rating</p>
-                  <p className="font-bold text-amber-500">{avgRating} <span className="text-xs font-normal text-muted-foreground">/ 5 · {totalReviews} reviews</span></p>
+                  <p className="font-bold text-amber-500">
+                    {avgRating}{" "}
+                    <span className="text-xs font-normal text-muted-foreground">
+                      / 5 · {totalReviews} reviews
+                    </span>
+                  </p>
                 </div>
               </div>
 
@@ -898,7 +977,10 @@ function DashboardEventDetails() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-muted-foreground">Stories Posted</p>
-                  <p className="font-bold">{stories.length} <span className="text-xs font-normal text-muted-foreground">active</span></p>
+                  <p className="font-bold">
+                    {stories.length}{" "}
+                    <span className="text-xs font-normal text-muted-foreground">active</span>
+                  </p>
                 </div>
               </div>
 
@@ -909,7 +991,12 @@ function DashboardEventDetails() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-muted-foreground">Posts Published</p>
-                  <p className="font-bold">{posts.length} <span className="text-xs font-normal text-muted-foreground">{pinnedPosts} pinned</span></p>
+                  <p className="font-bold">
+                    {posts.length}{" "}
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {pinnedPosts} pinned
+                    </span>
+                  </p>
                 </div>
               </div>
 
@@ -920,7 +1007,12 @@ function DashboardEventDetails() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-muted-foreground">Engagements</p>
-                  <p className="font-bold">{(totalLikes + totalComments).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{totalLikes} likes · {totalComments} comments</span></p>
+                  <p className="font-bold">
+                    {(totalLikes + totalComments).toLocaleString()}{" "}
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {totalLikes} likes · {totalComments} comments
+                    </span>
+                  </p>
                 </div>
               </div>
 
@@ -931,7 +1023,12 @@ function DashboardEventDetails() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-muted-foreground">Tour Stops</p>
-                  <p className="font-bold">{(event.tour_stops as any[] || []).length} <span className="text-xs font-normal text-muted-foreground">location{(event.tour_stops as any[] || []).length !== 1 ? "s" : ""}</span></p>
+                  <p className="font-bold">
+                    {((event.tour_stops as any[]) || []).length}{" "}
+                    <span className="text-xs font-normal text-muted-foreground">
+                      location{((event.tour_stops as any[]) || []).length !== 1 ? "s" : ""}
+                    </span>
+                  </p>
                 </div>
               </div>
             </div>
@@ -1018,21 +1115,31 @@ function DashboardEventDetails() {
                       groups.push({ label: stop.venue || stop.city || `Stop ${idx + 1}`, items });
                     }
                   });
-                  const global = ticketBreakdown.filter((e: any) => e.stopIdx == null || !seen.has(e.stopIdx));
+                  const global = ticketBreakdown.filter(
+                    (e: any) => e.stopIdx == null || !seen.has(e.stopIdx),
+                  );
                   if (global.length > 0) groups.push({ label: "All Locations", items: global });
-                  const finalGroups = groups.length > 0 ? groups : [{ label: "", items: ticketBreakdown }];
+                  const finalGroups =
+                    groups.length > 0 ? groups : [{ label: "", items: ticketBreakdown }];
                   return finalGroups.map((group, gi) => (
                     <div key={gi}>
                       {group.label && (
                         <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/70 mb-1.5 flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />{group.label}
+                          <MapPin className="h-3 w-3" />
+                          {group.label}
                         </p>
                       )}
                       <div className="space-y-1.5">
                         {group.items.map((entry: any, index: number) => (
-                          <div key={entry.id || index} className="flex items-center justify-between">
+                          <div
+                            key={entry.id || index}
+                            className="flex items-center justify-between"
+                          >
                             <div className="flex items-center gap-2">
-                              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
+                              <div
+                                className="h-2.5 w-2.5 rounded-full"
+                                style={{ backgroundColor: entry.color }}
+                              />
                               <span className="text-muted-foreground text-xs">{entry.name}</span>
                             </div>
                             <span className="font-semibold text-xs">
