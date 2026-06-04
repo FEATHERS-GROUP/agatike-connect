@@ -14,10 +14,12 @@ import {
   X,
   LogOut,
   User,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkspace, WorkspaceType } from "@/contexts/WorkspaceContext";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
@@ -285,8 +287,6 @@ function Workspaces() {
   const { workspaces, activeWorkspace, setActiveWorkspace, createWorkspace, isLoading } =
     useWorkspace();
   const navigate = useNavigate();
-  const { data: platformModules = [], isLoading: isLoadingModules } = usePlatformModules();
-
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [step, setStep] = useState(1);
 
@@ -312,6 +312,12 @@ function Workspaces() {
     { id: "adventurer", label: "Characters" },
     { id: "fun-emoji", label: "Emojis" },
     { id: "micah", label: "Stylized" },
+    { id: "avataaars", label: "People" },
+    { id: "big-smile", label: "Smiles" },
+    { id: "lorelei", label: "Cute" },
+    { id: "pixel-art", label: "8-Bit" },
+    { id: "initials", label: "Initials" },
+    { id: "rings", label: "Rings" }
   ];
 
   const generateAvatarsForCategory = (category: string) => {
@@ -427,11 +433,24 @@ function Workspaces() {
               return (
                 <div
                   key={w.id}
-                  className={`flex flex-col rounded-3xl border bg-card p-6 shadow-sm transition-all ${
+                  className={`flex flex-col rounded-3xl border bg-card p-6 shadow-sm transition-all relative group ${
                     isActive ? "border-primary ring-1 ring-primary" : "border-border/60"
                   }`}
                 >
-                  <div className="flex items-center gap-4 mb-6">
+                  <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate({ to: `/dashboard/${w.slug}/settings` });
+                      }}
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-4 mb-6 pr-10">
                     <div
                       className={`grid h-12 w-12 place-items-center rounded-2xl text-xl shrink-0 overflow-hidden`}
                       style={{
@@ -667,7 +686,7 @@ function Workspaces() {
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <Label className="text-base font-semibold">Full Address</Label>
-                      <Input
+                      <AddressAutocomplete
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         placeholder="123 Event Street"

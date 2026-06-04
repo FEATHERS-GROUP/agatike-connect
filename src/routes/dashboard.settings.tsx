@@ -112,6 +112,12 @@ function OrganizerSettings() {
     { id: "adventurer", label: "Characters" },
     { id: "fun-emoji", label: "Emojis" },
     { id: "micah", label: "Stylized" },
+    { id: "avataaars", label: "People" },
+    { id: "big-smile", label: "Smiles" },
+    { id: "lorelei", label: "Cute" },
+    { id: "pixel-art", label: "8-Bit" },
+    { id: "initials", label: "Initials" },
+    { id: "rings", label: "Rings" }
   ];
 
   const generateAvatarsForCategory = (category: string) => {
@@ -263,25 +269,7 @@ function OrganizerSettings() {
     },
   });
 
-  const updateWorkspaceMutation = useMutation({
-    mutationFn: async (data: any) => await updateDatabaseWorkspace({ data }),
-    onSuccess: () => {
-      toast.success("Workspace updated successfully!");
-      setEditingWorkspace(null);
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-    },
-    onError: (error) => toast.error(error.message || "Failed to update workspace."),
-  });
 
-  const disableWorkspaceMutation = useMutation({
-    mutationFn: async (id: string) => await disableDatabaseWorkspace({ data: { id } } as any),
-    onSuccess: () => {
-      toast.success("Workspace disabled successfully!");
-      setDisableConfirmWorkspace(null);
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-    },
-    onError: (error) => toast.error(error.message || "Failed to disable workspace."),
-  });
 
   if (isLoading) {
     return (
@@ -553,25 +541,7 @@ function OrganizerSettings() {
                         key={w.id}
                         className="flex flex-col rounded-3xl border bg-card p-5 shadow-sm transition-all border-border/60 hover:border-primary/50 relative group"
                       >
-                        {/* Action Overlay */}
-                        <div className="absolute top-4 right-4 flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                          <Button
-                            size="icon"
-                            variant="secondary"
-                            className="h-8 w-8 rounded-full bg-secondary/80 hover:bg-primary hover:text-primary-foreground"
-                            onClick={() => setEditingWorkspace(w)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="secondary"
-                            className="h-8 w-8 rounded-full bg-secondary/80 hover:bg-destructive hover:text-destructive-foreground"
-                            onClick={() => setDisableConfirmWorkspace(w)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+
 
                         <div className="flex items-start gap-4 mb-4 pr-20">
                           <div className="grid h-12 w-12 place-items-center rounded-2xl text-xl shrink-0 overflow-hidden bg-secondary text-secondary-foreground">
@@ -886,190 +856,7 @@ function OrganizerSettings() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Workspace Modal */}
-      <Dialog open={!!editingWorkspace} onOpenChange={(open) => !open && setEditingWorkspace(null)}>
-        <DialogContent className="sm:max-w-4xl w-[95vw] rounded-3xl bg-card border-border/60 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Workspace</DialogTitle>
-            <DialogDescription>
-              Update the core details and active modules for this workspace.
-            </DialogDescription>
-          </DialogHeader>
-          {editingWorkspace && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-              {/* Left Column: Basic Details */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-2">
-                  Workspace Details
-                </h3>
-                <div className="space-y-2">
-                  <Label>Workspace Name</Label>
-                  <Input
-                    defaultValue={editingWorkspace.name}
-                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                    onChange={(e) =>
-                      setEditingWorkspace({ ...editingWorkspace, name: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Type</Label>
-                  <Input
-                    defaultValue={editingWorkspace.type}
-                    placeholder="e.g. Venue, Club, Agency"
-                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                    onChange={(e) =>
-                      setEditingWorkspace({ ...editingWorkspace, type: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>City</Label>
-                    <Input
-                      defaultValue={editingWorkspace.city}
-                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                      onChange={(e) =>
-                        setEditingWorkspace({ ...editingWorkspace, city: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Country</Label>
-                    <Input
-                      defaultValue={editingWorkspace.country}
-                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                      onChange={(e) =>
-                        setEditingWorkspace({ ...editingWorkspace, country: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Full Address</Label>
-                  <Input
-                    defaultValue={editingWorkspace.address}
-                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                    onChange={(e) =>
-                      setEditingWorkspace({ ...editingWorkspace, address: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
 
-              {/* Right Column: Platform Modules */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-2">
-                  Active Modules
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
-                  {platformModules.map((mod) => {
-                    const currentModules = editingWorkspace.moduls || [];
-                    const isSelected = currentModules.includes(mod.id);
-                    const isMandatory = mod.mandatory;
-                    return (
-                      <div
-                        key={mod.id}
-                        onClick={() => {
-                          if (isMandatory) return;
-                          if (isSelected) {
-                            setEditingWorkspace({
-                              ...editingWorkspace,
-                              moduls: currentModules.filter((m: string) => m !== mod.id),
-                            });
-                          } else {
-                            setEditingWorkspace({
-                              ...editingWorkspace,
-                              moduls: [...currentModules, mod.id],
-                            });
-                          }
-                        }}
-                        className={`flex items-start gap-3 p-3 rounded-2xl border transition-all ${isMandatory ? "opacity-70 cursor-not-allowed bg-secondary/30" : "cursor-pointer hover:border-primary/50"} ${isSelected ? "border-primary bg-primary/5" : "border-border/60 bg-card"}`}
-                      >
-                        <div
-                          className={`mt-0.5 rounded-xl p-2 ${isSelected ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
-                        >
-                          <mod.icon className="h-4 w-4" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-sm leading-tight flex items-center gap-2">
-                            {mod.label}
-                            {isMandatory && (
-                              <span className="text-[10px] uppercase tracking-wider bg-secondary px-1.5 py-0.5 rounded text-muted-foreground">
-                                Req
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {mod.desc}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Action Buttons span full width */}
-              <div className="col-span-full pt-6 flex gap-3 border-t border-border/40">
-                <Button
-                  variant="outline"
-                  className="flex-1 rounded-xl"
-                  onClick={() => setEditingWorkspace(null)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="flex-1 rounded-xl bg-primary text-primary-foreground"
-                  disabled={updateWorkspaceMutation.isPending}
-                  onClick={() => updateWorkspaceMutation.mutate(editingWorkspace)}
-                >
-                  {updateWorkspaceMutation.isPending ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Disable Workspace Confirmation Modal */}
-      <Dialog
-        open={!!disableConfirmWorkspace}
-        onOpenChange={(open) => !open && setDisableConfirmWorkspace(null)}
-      >
-        <DialogContent className="sm:max-w-[425px] rounded-3xl bg-card border-border/60">
-          <DialogHeader>
-            <div className="flex items-center gap-3 text-destructive mb-2">
-              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5" />
-              </div>
-              <DialogTitle className="text-xl">Disable Workspace?</DialogTitle>
-            </div>
-            <DialogDescription className="text-base pt-2">
-              Are you sure you want to disable <strong>{disableConfirmWorkspace?.name}</strong>?
-              This will remove your access and hide it from the platform. This action cannot be
-              undone from the dashboard.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="pt-6 flex gap-3">
-            <Button
-              variant="outline"
-              className="flex-1 rounded-xl h-11"
-              onClick={() => setDisableConfirmWorkspace(null)}
-            >
-              Keep Workspace
-            </Button>
-            <Button
-              variant="destructive"
-              className="flex-1 rounded-xl h-11"
-              disabled={disableWorkspaceMutation.isPending}
-              onClick={() => disableWorkspaceMutation.mutate(disableConfirmWorkspace.id)}
-            >
-              {disableWorkspaceMutation.isPending ? "Disabling..." : "Yes, Disable it"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Avatar Selection Modal */}
       <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>

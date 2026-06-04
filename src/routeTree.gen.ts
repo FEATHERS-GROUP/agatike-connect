@@ -51,6 +51,7 @@ import { Route as FEventIdReviewRouteImport } from './routes/f.$eventId.review'
 import { Route as DashboardWorkspaceSlugWithdrawalsRouteImport } from './routes/dashboard.$workspaceSlug.withdrawals'
 import { Route as DashboardWorkspaceSlugVenueRentRouteImport } from './routes/dashboard.$workspaceSlug.venue-rent'
 import { Route as DashboardWorkspaceSlugVenueDesignerRouteImport } from './routes/dashboard.$workspaceSlug.venue-designer'
+import { Route as DashboardWorkspaceSlugSettingsRouteImport } from './routes/dashboard.$workspaceSlug.settings'
 import { Route as DashboardWorkspaceSlugScannerRouteImport } from './routes/dashboard.$workspaceSlug.scanner'
 import { Route as DashboardWorkspaceSlugProductsChar38addOnsRouteImport } from './routes/dashboard.$workspaceSlug.products&add-ons'
 import { Route as DashboardWorkspaceSlugPageBuilderRouteImport } from './routes/dashboard.$workspaceSlug.page-builder'
@@ -293,6 +294,12 @@ const DashboardWorkspaceSlugVenueDesignerRoute =
     path: '/$workspaceSlug/venue-designer',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugSettingsRoute =
+  DashboardWorkspaceSlugSettingsRouteImport.update({
+    id: '/$workspaceSlug/settings',
+    path: '/$workspaceSlug/settings',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugScannerRoute =
   DashboardWorkspaceSlugScannerRouteImport.update({
     id: '/$workspaceSlug/scanner',
@@ -489,6 +496,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/page-builder': typeof DashboardWorkspaceSlugPageBuilderRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
+  '/dashboard/$workspaceSlug/settings': typeof DashboardWorkspaceSlugSettingsRoute
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
@@ -559,6 +567,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/page-builder': typeof DashboardWorkspaceSlugPageBuilderRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
+  '/dashboard/$workspaceSlug/settings': typeof DashboardWorkspaceSlugSettingsRoute
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
@@ -630,6 +639,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/page-builder': typeof DashboardWorkspaceSlugPageBuilderRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
+  '/dashboard/$workspaceSlug/settings': typeof DashboardWorkspaceSlugSettingsRoute
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
@@ -702,6 +712,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/page-builder'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
+    | '/dashboard/$workspaceSlug/settings'
     | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/withdrawals'
@@ -772,6 +783,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/page-builder'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
+    | '/dashboard/$workspaceSlug/settings'
     | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/withdrawals'
@@ -842,6 +854,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/page-builder'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
+    | '/dashboard/$workspaceSlug/settings'
     | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/withdrawals'
@@ -1206,6 +1219,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugVenueDesignerRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/settings': {
+      id: '/dashboard/$workspaceSlug/settings'
+      path: '/$workspaceSlug/settings'
+      fullPath: '/dashboard/$workspaceSlug/settings'
+      preLoaderRoute: typeof DashboardWorkspaceSlugSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/scanner': {
       id: '/dashboard/$workspaceSlug/scanner'
       path: '/$workspaceSlug/scanner'
@@ -1421,6 +1441,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugPageBuilderRoute: typeof DashboardWorkspaceSlugPageBuilderRoute
   DashboardWorkspaceSlugProductsChar38addOnsRoute: typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   DashboardWorkspaceSlugScannerRoute: typeof DashboardWorkspaceSlugScannerRoute
+  DashboardWorkspaceSlugSettingsRoute: typeof DashboardWorkspaceSlugSettingsRoute
   DashboardWorkspaceSlugVenueDesignerRoute: typeof DashboardWorkspaceSlugVenueDesignerRoute
   DashboardWorkspaceSlugVenueRentRoute: typeof DashboardWorkspaceSlugVenueRentRoute
   DashboardWorkspaceSlugWithdrawalsRoute: typeof DashboardWorkspaceSlugWithdrawalsRoute
@@ -1458,6 +1479,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardWorkspaceSlugProductsChar38addOnsRoute:
     DashboardWorkspaceSlugProductsChar38addOnsRoute,
   DashboardWorkspaceSlugScannerRoute: DashboardWorkspaceSlugScannerRoute,
+  DashboardWorkspaceSlugSettingsRoute: DashboardWorkspaceSlugSettingsRoute,
   DashboardWorkspaceSlugVenueDesignerRoute:
     DashboardWorkspaceSlugVenueDesignerRoute,
   DashboardWorkspaceSlugVenueRentRoute: DashboardWorkspaceSlugVenueRentRoute,

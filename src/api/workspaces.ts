@@ -137,6 +137,7 @@ export const updateDatabaseWorkspace = createServerFn({ method: "POST" }).handle
         $name: String, 
         $type: String, 
         $moduls: jsonb,
+        $logo: String,
         $updated_at: String!
       ) {
         update_workspaces_by_pk(
@@ -148,6 +149,7 @@ export const updateDatabaseWorkspace = createServerFn({ method: "POST" }).handle
             name: $name, 
             type: $type, 
             moduls: $moduls,
+            logo: $logo,
             updated_at: $updated_at
           }
         ) {
@@ -158,7 +160,13 @@ export const updateDatabaseWorkspace = createServerFn({ method: "POST" }).handle
 
   const variables = {
     id,
-    ...updateFields,
+    address: updateFields.address,
+    city: updateFields.city,
+    country: updateFields.country,
+    name: updateFields.name,
+    type: updateFields.type,
+    moduls: updateFields.moduls,
+    logo: updateFields.icon,
     updated_at: new Date().toISOString(),
   };
 
