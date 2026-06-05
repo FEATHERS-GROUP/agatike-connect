@@ -1,6 +1,7 @@
 import { Search, MapPin, Ticket, Star, ChevronLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
+import { formatCurrency } from "@/lib/currency";
 import { mockVenues } from "@/lib/mock-venue-data";
 import { useState } from "react";
 import { MobileNav } from "@/components/mobile/MobileNav";
@@ -101,7 +102,7 @@ export function VenuesMobile() {
                         Entry Fee
                       </span>
                       <span className="text-sm font-bold text-foreground">
-                        {venue.price > 0 ? `${venue.currency} ${venue.price}` : "Free"}
+                        {venue.price > 0 ? formatCurrency(venue.price, venue.currency) : "Free"}
                       </span>
                     </div>
                     <div

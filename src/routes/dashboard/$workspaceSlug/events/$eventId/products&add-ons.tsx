@@ -9,6 +9,7 @@ import {
   Check,
   Image as ImageIcon,
 } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -419,6 +420,7 @@ function ProductModal({
 function ProductsAndAddonsView() {
   const params = useParams({ strict: false });
   const eventId = params.eventId as string;
+  const { activeWorkspace } = useWorkspace();
 
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
@@ -470,7 +472,7 @@ function ProductsAndAddonsView() {
                 {m.description || "No description provided."}
               </p>
               <div className="mt-auto pt-4 border-t border-border/50 flex items-center justify-between">
-                <span className="font-bold text-lg text-foreground">${m.price}</span>
+                <span className="font-bold text-lg text-foreground">{formatCurrency(m.price, activeWorkspace?.currency)}</span>
                 <span className="text-xs font-medium bg-green-500/10 text-green-500 px-2 py-1 rounded-md">
                   {m.sold_count} Sold
                 </span>
@@ -497,7 +499,7 @@ function ProductsAndAddonsView() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Revenue</p>
-          <p className="text-2xl font-semibold mt-1">$27,055</p>
+          <p className="text-2xl font-semibold mt-1">{formatCurrency(27055, activeWorkspace?.currency)}</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Items Sold</p>
@@ -596,7 +598,7 @@ function ProductsAndAddonsView() {
                     <div className="mt-8 bg-white/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/30 inline-flex items-center gap-2">
                       <span className="text-white/80 text-sm">Value:</span>
                       <span className="text-white font-bold text-xl">
-                        ${selectedItem.value_amount || "N/A"}
+                        {formatCurrency(selectedItem.value_amount || 0, activeWorkspace?.currency)}
                       </span>
                     </div>
                   </div>
@@ -638,7 +640,7 @@ function ProductsAndAddonsView() {
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                       Price
                     </p>
-                    <p className="text-xl font-semibold">${selectedItem.price}</p>
+                    <p className="text-xl font-semibold">{formatCurrency(selectedItem.price, activeWorkspace?.currency)}</p>
                   </div>
                   <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm">
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">

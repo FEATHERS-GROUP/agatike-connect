@@ -61,6 +61,7 @@ const GET_PUBLIC_EVENTS = `
         city
         name
         orgnizer_id
+        currency
         organizer {
           active
           bio
@@ -163,6 +164,7 @@ const GET_EVENT_BY_ID = `
         city
         name
         orgnizer_id
+        currency
         organizer {
           active
           bio

@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { mockBusTrips } from "@/lib/mock-bus-data";
+import { formatCurrency } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/buses/mobile")({
@@ -132,7 +133,7 @@ function BusMobile() {
                       </div>
                       <div className="text-right space-y-1">
                         <p className="text-lg font-bold text-muted-foreground">
-                          {trip.currency} {trip.price.toLocaleString()}
+                          {formatCurrency(trip.price, trip.currency)}
                         </p>
                         <p className="text-[13px] text-muted-foreground font-medium">Direct</p>
                       </div>
@@ -164,7 +165,7 @@ function BusMobile() {
                       </div>
                       <div className="text-right space-y-1">
                         <p className="text-lg font-bold text-primary">
-                          {trip.currency} {trip.price.toLocaleString()}
+                          {formatCurrency(trip.price, trip.currency)}
                         </p>
                         <p className="text-[13px] text-muted-foreground font-medium">Direct</p>
                       </div>
@@ -336,7 +337,7 @@ function BusMobile() {
                       </div>
                       <div className="text-right space-y-0.5">
                         <p className="text-base font-bold text-muted-foreground">
-                          {trip.currency} {trip.price.toLocaleString()}
+                          {formatCurrency(trip.price, trip.currency)}
                         </p>
                         <p className="text-[12px] text-muted-foreground font-medium">Direct</p>
                       </div>
@@ -368,7 +369,7 @@ function BusMobile() {
                       </div>
                       <div className="text-right space-y-0.5">
                         <p className="text-base font-bold text-primary">
-                          {trip.currency} {trip.price.toLocaleString()}
+                          {formatCurrency(trip.price, trip.currency)}
                         </p>
                         <p className="text-[12px] text-muted-foreground font-medium">Direct</p>
                       </div>

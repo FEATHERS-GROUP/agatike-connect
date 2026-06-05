@@ -22,6 +22,7 @@ import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import { formatCurrency } from "@/lib/currency";
 
 // Configure Calendar Localizer
 const locales = {
@@ -160,7 +161,7 @@ function DashboardIndex() {
   const kpis = [
     {
       label: "Wallet Balance",
-      value: `${wallet?.amount?.toLocaleString() || 0} ${wallet?.currency || "RWF"}`,
+      value: formatCurrency(wallet?.amount || 0, activeWorkspace?.currency),
       icon: Wallet,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
@@ -289,9 +290,8 @@ function DashboardIndex() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold">
-                      {ev.rev > 0 ? `${(ev.rev / 1000).toFixed(1)}k` : "0"}
+                      {formatCurrency(ev.rev, activeWorkspace?.currency)}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">RWF</p>
                   </div>
                 </div>
               ))}

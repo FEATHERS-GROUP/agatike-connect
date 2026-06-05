@@ -18,26 +18,7 @@ import { events, experiences, movies, ticketTiers, merch } from "@/lib/mock-data
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 import { checkUserAttendance } from "@/api/attendees";
-
-function getCurrencySymbol(currency?: string) {
-  const map: Record<string, string> = {
-    RWF: "RWF ",
-    USD: "$",
-    EUR: "€",
-    GBP: "£",
-    KES: "KES ",
-    UGX: "UGX ",
-    TZS: "TZS ",
-    NGN: "₦",
-    GHS: "GH₵",
-    XOF: "CFA ",
-    ZAR: "R",
-    MAD: "MAD ",
-    ETB: "Br ",
-    dollars: "$",
-  };
-  return map[currency || ""] || currency || "$";
-}
+import { formatCurrency } from "@/lib/currency";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 
@@ -82,7 +63,7 @@ export function EventDetailsMobile({
     ? ev.organizer || ev.host || ev.cinema
     : ev.workspaces?.organizer?.name || ev.workspaces?.name || "Organizer";
   const organizerHandle = isMock ? ev.organizerHandle : ev.workspaces?.organizer?.handle || "host";
-  const currency = getCurrencySymbol(isMock ? ev.currency : ev.workspaces?.wallet?.currency);
+  const currencyCode = isMock ? ev.currency : ev.workspaces?.currency;
   const description = ev.description || ev.synopsis || "";
   const category = ev.category || ev.genre || "Event";
   const attendeesCount = isMock
@@ -404,8 +385,7 @@ export function EventDetailsMobile({
                 <div className="flex items-center justify-between mb-1">
                   <p className="font-bold text-base">{t.name}</p>
                   <p className="font-bold text-lg text-primary">
-                    {currency}
-                    {t.price}
+                    {formatCurrency(t.price, currencyCode)}
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">{t.perks.join(" · ")}</p>
@@ -446,8 +426,7 @@ export function EventDetailsMobile({
         <div className="flex items-center justify-between mb-3 px-2">
           <span className="text-sm font-medium text-muted-foreground">Total</span>
           <span className="text-xl font-bold">
-            {currency}
-            {total}
+            {formatCurrency(total, currencyCode)}
           </span>
         </div>
         <Button

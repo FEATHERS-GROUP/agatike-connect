@@ -17,7 +17,12 @@ import {
   Music2,
   Mic2,
   Presentation,
+  Paintbrush,
+  MapPin,
+  Loader2,
+  Info,
 } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -528,7 +533,7 @@ function VenueDesignerPage() {
                         {sec.name}
                       </span>
                       <span className="text-muted-foreground">
-                        {sec.tier} · ${sec.price} · {sec.rows * sec.cols} seats
+                        {sec.tier} · {formatCurrency(sec.price, activeWorkspace?.currency)} · {sec.rows * sec.cols} seats
                       </span>
                     </div>
                     <div

@@ -1,5 +1,4 @@
-const e1 =
-  "https://images.unsplash.com/photo-1540039155732-611425887258?auto=format&fit=crop&w=800&q=80";
+const e1 = "/afrobeats_night.png";
 const e2 =
   "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80";
 const e3 =

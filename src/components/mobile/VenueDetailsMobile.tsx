@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, MapPin, Clock, Star, Heart, Share2, Users } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 
 export function VenueDetailsMobile({ venue }: { venue: any }) {
   if (!venue) return null;
@@ -80,7 +81,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
               Entry Fee
             </span>
             <span className="text-xl font-bold text-foreground">
-              {venue.price > 0 ? `${venue.currency} ${venue.price}` : "Free"}
+              {venue.price > 0 ? formatCurrency(venue.price, venue.currency) : "Free"}
             </span>
           </div>
           <Link to="/venues/checkout/$venueId" params={{ venueId: venue.id }} className="flex-1">

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { formatCurrency } from "@/lib/currency";
 import { useState } from "react";
 import {
   Search,
@@ -224,9 +225,9 @@ function BusesIndex() {
                         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
                           From
                         </p>
-                        <span className="text-2xl font-bold text-primary">
-                          {trip.currency} {trip.price.toLocaleString()}
-                        </span>
+                        <p className="text-xl font-bold text-primary">
+                          {formatCurrency(trip.price, trip.currency)}
+                        </p>
                       </div>
                       <Link
                         to="/buses/$tripId"

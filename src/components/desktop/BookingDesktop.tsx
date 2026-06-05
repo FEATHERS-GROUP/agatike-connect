@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, CreditCard, Shield, Smartphone, Wallet, Lock } from "lucide-react";
 import { useState } from "react";
+import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -181,21 +182,19 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                 <div className="flex justify-between items-center">
                   <span>1x General Admission</span>
                   <span className="font-medium">
-                    {event.currency || "$"}
-                    {event.price || 25}
+                    {formatCurrency(event.price || 25, event.currency)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-muted-foreground">
                   <span>Service Fee</span>
-                  <span>$2.50</span>
+                  <span>{formatCurrency(2.50, event.currency)}</span>
                 </div>
               </div>
 
               <div className="flex justify-between items-end mb-8">
                 <span className="font-semibold">Total</span>
                 <span className="text-2xl font-bold">
-                  {event.currency || "$"}
-                  {(event.price || 25) + 2.5}
+                  {formatCurrency((event.price || 25) + 2.5, event.currency)}
                 </span>
               </div>
 
@@ -207,7 +206,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
               >
                 {processing
                   ? "Processing..."
-                  : `Pay ${event.currency || "$"}${(event.price || 25) + 2.5}`}
+                  : `Pay ${formatCurrency((event.price || 25) + 2.5, event.currency)}`}
               </Button>
 
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">

@@ -28,24 +28,7 @@ export const Route = createFileRoute("/events/")({
   component: EventsBrowse,
 });
 
-function getCurrencySymbol(currency?: string) {
-  const map: Record<string, string> = {
-    RWF: "RWF ",
-    USD: "$",
-    EUR: "€",
-    GBP: "£",
-    KES: "KES ",
-    UGX: "UGX ",
-    TZS: "TZS ",
-    NGN: "₦",
-    GHS: "GH₵",
-    XOF: "CFA ",
-    ZAR: "R",
-    MAD: "MAD ",
-    ETB: "Br ",
-  };
-  return map[currency || ""] || "$";
-}
+
 
 function EventCard({ event }: { event: any }) {
   // Support both DB and mock data shapes

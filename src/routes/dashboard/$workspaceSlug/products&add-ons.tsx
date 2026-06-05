@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, ShoppingBag, Ticket, QrCode, Loader2, Check } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -255,20 +256,20 @@ function WorkspaceProductsView() {
     {
       id: 1,
       name: "Brand Hoodie",
-      price: "$45",
+      price: 45,
       stock: 100,
       sold: 20,
       type: "physical",
       description: "High quality premium brand hoodie.",
     },
-    { id: 2, name: "Premium Tote Bag", price: "$15", stock: 300, sold: 150, type: "physical" },
+    { id: 2, name: "Premium Tote Bag", price: 15, stock: 300, sold: 150, type: "physical" },
   ];
 
   const vouchers = [
     {
       id: 4,
-      name: "General Gift Card ($50)",
-      price: "$50",
+      name: `General Gift Card (${formatCurrency(50, activeWorkspace?.currency)})`,
+      price: 50,
       stock: 500,
       sold: 45,
       type: "voucher",
@@ -281,7 +282,7 @@ function WorkspaceProductsView() {
     {
       id: 6,
       name: "Monthly Coffee Pass",
-      price: "$30",
+      price: 30,
       stock: 100,
       sold: 85,
       type: "punch_card",
@@ -291,7 +292,7 @@ function WorkspaceProductsView() {
     {
       id: 7,
       name: "10x Entry Pass",
-      price: "$100",
+      price: 100,
       stock: 50,
       sold: 12,
       type: "punch_card",
@@ -327,7 +328,7 @@ function WorkspaceProductsView() {
                     <p className="font-semibold text-foreground">{m.name}</p>
                   </div>
                 </td>
-                <td className="px-6 py-4 font-medium">{m.price}</td>
+                <td className="px-6 py-4 font-medium">{formatCurrency(m.price, activeWorkspace?.currency)}</td>
                 <td className="px-6 py-4">
                   <span className={`font-medium ${m.stock < 100 ? "text-orange-500" : ""}`}>
                     {m.stock}
@@ -364,7 +365,7 @@ function WorkspaceProductsView() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Sales</p>
-          <p className="text-2xl font-semibold mt-1">$7,650</p>
+          <p className="text-2xl font-semibold mt-1">{formatCurrency(7650, activeWorkspace?.currency)}</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Active Campaigns</p>
@@ -463,7 +464,7 @@ function WorkspaceProductsView() {
                     <div className="mt-8 bg-white/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/30 inline-flex items-center gap-2">
                       <span className="text-white/80 text-sm">Value:</span>
                       <span className="text-white font-bold text-xl">
-                        ${selectedItem.value_amount || "N/A"}
+                        {formatCurrency(selectedItem.value_amount || 0, activeWorkspace?.currency)}
                       </span>
                     </div>
                   </div>
@@ -495,7 +496,7 @@ function WorkspaceProductsView() {
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                       Price
                     </p>
-                    <p className="text-xl font-semibold">{selectedItem.price}</p>
+                    <p className="text-xl font-semibold">{formatCurrency(selectedItem.price, activeWorkspace?.currency)}</p>
                   </div>
                   <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm">
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, MapPin, Clock, Star, Users, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/currency";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 
@@ -80,8 +81,8 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
 
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-border/40">
                 <span className="text-muted-foreground font-medium">Standard Entry</span>
-                <span className="text-3xl font-bold text-primary">
-                  {venue.price > 0 ? `${venue.currency} ${venue.price}` : "Free"}
+                <span className="text-2xl font-bold">
+                  {venue.price > 0 ? formatCurrency(venue.price, venue.currency) : "Free"}
                 </span>
               </div>
 

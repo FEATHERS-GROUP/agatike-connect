@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { formatCurrency } from "@/lib/currency";
 import { Search, Map as MapIcon, SlidersHorizontal, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { categories, events, experiences, movies, organizers } from "@/lib/mock-data";
@@ -155,8 +156,7 @@ function ExplorePage() {
                 <div className="aspect-[4/3] relative">
                   <img src={event.cover} alt={event.title} className="w-full h-full object-cover" />
                   <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm">
-                    {event.currency || "$"}
-                    {event.price}
+                    {formatCurrency(event.price || 25, event.currency)}
                   </div>
                 </div>
                 <div className="p-3">
@@ -188,8 +188,7 @@ function ExplorePage() {
                 <div className="aspect-video relative">
                   <img src={x.cover} alt={x.title} className="w-full h-full object-cover" />
                   <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-medium">
-                    {x.currency || "$"}
-                    {x.price}
+                    {formatCurrency(x.price || 50, x.currency)}
                   </div>
                 </div>
                 <div className="p-4">

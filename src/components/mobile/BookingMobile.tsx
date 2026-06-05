@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, CreditCard, Shield, Smartphone, Wallet } from "lucide-react";
 import { useState } from "react";
+import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { events, experiences } from "@/lib/mock-data";
 
@@ -42,9 +43,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               </p>
               <div className="flex justify-between items-end mt-2">
                 <span className="text-sm font-medium">1x General Admission</span>
-                <span className="font-bold">
-                  {event.currency || "$"}
-                  {event.price || 25}
+                <span className="font-medium">
+                  {formatCurrency(event.price || 25, event.currency)}
                 </span>
               </div>
             </div>
@@ -135,8 +135,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         <div className="flex items-center justify-between mb-3 px-2">
           <span className="text-sm font-medium text-muted-foreground">Total to pay</span>
           <span className="text-xl font-bold">
-            {event.currency || "$"}
-            {event.price || 25}
+            {formatCurrency((event.price || 25) + 2.5, event.currency)}
           </span>
         </div>
         <Button
@@ -145,7 +144,9 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           className="w-full h-14 rounded-full text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
           style={{ background: "var(--gradient-primary)" }}
         >
-          {processing ? "Processing..." : `Pay ${event.currency || "$"}${event.price || 25}`}
+          {processing
+            ? "Processing..."
+            : `Pay ${formatCurrency((event.price || 25) + 2.5, event.currency)}`}
         </Button>
         <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
           <Shield className="h-3.5 w-3.5" /> Secure encrypted checkout

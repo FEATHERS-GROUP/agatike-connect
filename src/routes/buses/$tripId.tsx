@@ -20,6 +20,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatCurrency } from "@/lib/currency";
 import { Label } from "@/components/ui/label";
 import { mockBusTrips } from "@/lib/mock-bus-data";
 
@@ -693,7 +694,7 @@ function BusTripDetails() {
                 >
                   {processing
                     ? "Processing…"
-                    : `Pay ${trip.currency} ${totalPrice.toLocaleString()}`}
+                    : `Pay ${formatCurrency(totalPrice, trip.currency)}`}
                 </Button>
                 <p className="text-center text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1">
                   <Shield className="h-3 w-3" /> Secure encrypted checkout
@@ -746,7 +747,7 @@ function BusTripDetails() {
                   </span>
                   <span>•</span>
                   <span className="text-primary font-bold">
-                    {trip.currency} {trip.price.toLocaleString()} / seat
+                    {formatCurrency(trip.price, trip.currency)} / seat
                   </span>
                 </div>
               </div>
@@ -861,7 +862,7 @@ function BusTripDetails() {
                   >
                     {processing
                       ? "Processing…"
-                      : `Pay ${trip.currency} ${totalPrice.toLocaleString()}`}
+                      : `Pay ${formatCurrency(totalPrice, trip.currency)}`}
                   </Button>
                 )}
                 <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">

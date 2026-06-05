@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { updateDatabaseWorkspace, disableDatabaseWorkspace } from "@/api/workspaces";
+import { GLOBAL_CURRENCIES } from "@/lib/currency";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -318,12 +319,11 @@ function WorkspaceSettings() {
                       className="w-full rounded-xl bg-secondary/50 border-transparent focus:border-primary px-3 py-2 text-sm"
                       onChange={(e) => setFormState({ ...formState, currency: e.target.value })}
                     >
-                      <option value="RWF">RWF - Rwandan Franc</option>
-                      <option value="USD">USD - US Dollar</option>
-                      <option value="KES">KES - Kenyan Shilling</option>
-                      <option value="EUR">EUR - Euro</option>
-                      <option value="GBP">GBP - British Pound</option>
-                      <option value="UGX">UGX - Ugandan Shilling</option>
+                      {GLOBAL_CURRENCIES.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.code} - {c.name} ({c.symbol})
+                        </option>
+                      ))}
                     </select>
                   ) : (
                     <p className="p-3 bg-secondary/30 rounded-xl text-sm uppercase font-semibold">

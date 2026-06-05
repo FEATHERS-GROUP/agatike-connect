@@ -20,26 +20,7 @@ import { events, experiences, movies, ticketTiers, merch } from "@/lib/mock-data
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 import { checkUserAttendance } from "@/api/attendees";
-
-function getCurrencySymbol(currency?: string) {
-  const map: Record<string, string> = {
-    RWF: "RWF ",
-    USD: "$",
-    EUR: "€",
-    GBP: "£",
-    KES: "KES ",
-    UGX: "UGX ",
-    TZS: "TZS ",
-    NGN: "₦",
-    GHS: "GH₵",
-    XOF: "CFA ",
-    ZAR: "R",
-    MAD: "MAD ",
-    ETB: "Br ",
-    dollars: "$",
-  };
-  return map[currency || ""] || currency || "$";
-}
+import { formatCurrency } from "@/lib/currency";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 
@@ -84,7 +65,7 @@ export function EventDetailsDesktop({
     ? ev.organizer || ev.host || ev.cinema
     : ev.workspaces?.organizer?.name || ev.workspaces?.name || "Organizer";
   const organizerHandle = isMock ? ev.organizerHandle : ev.workspaces?.organizer?.handle || "host";
-  const currency = getCurrencySymbol(isMock ? ev.currency : ev.workspaces?.wallet?.currency);
+  const currencyCode = isMock ? ev.currency : ev.workspaces?.currency;
   const description = ev.description || ev.synopsis || "";
   const category = ev.category || ev.genre || "Event";
   const attendeesCount = isMock
@@ -305,8 +286,7 @@ export function EventDetailsDesktop({
                     <p className="text-sm font-medium">{m.name}</p>
                     <div className="mt-2 flex items-center justify-between">
                       <span className="text-sm font-semibold">
-                        {currency}
-                        {m.price}
+                        {formatCurrency(m.price, currencyCode)}
                       </span>
                       <Button size="sm" variant="outline" className="rounded-full">
                         Add
@@ -395,8 +375,7 @@ export function EventDetailsDesktop({
             <div className="flex items-baseline justify-between">
               <p className="text-sm text-muted-foreground">Starting from</p>
               <p className="text-2xl font-semibold">
-                {currency}
-                {activeTicketTiers[0]?.price || 0}
+                {formatCurrency(activeTicketTiers[0]?.price || 0, currencyCode)}
               </p>
             </div>
 
@@ -431,8 +410,7 @@ export function EventDetailsDesktop({
                   <div className="flex items-center justify-between">
                     <p className="font-medium">{t.name}</p>
                     <p className="font-semibold">
-                      {currency}
-                      {t.price}
+                      {formatCurrency(t.price, currencyCode)}
                     </p>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">{t.perks.join(" · ")}</p>
@@ -457,8 +435,7 @@ export function EventDetailsDesktop({
             <div className="mt-5 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Total</span>
               <span className="text-lg font-semibold">
-                {currency}
-                {total}
+                {formatCurrency(total, currencyCode)}
               </span>
             </div>
 

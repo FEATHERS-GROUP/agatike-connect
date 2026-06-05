@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/currency";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export function DesktopSalesChart({ liveEvent }: { liveEvent?: any }) {
+  const { activeWorkspace } = useWorkspace();
   const firstStop = liveEvent?.tour_stops?.[0];
   const location = firstStop
     ? `${firstStop.venue ? firstStop.venue + " · " : ""}${firstStop.city || ""}`
@@ -35,7 +38,7 @@ export function DesktopSalesChart({ liveEvent }: { liveEvent?: any }) {
         </p>
         <div className="mt-4 space-y-3">
           <Stat label="Checked in" value="0 / 0" pct={0} />
-          <Stat label="Bar revenue" value="$0" pct={0} />
+          <Stat label="Bar revenue" value={formatCurrency(0, activeWorkspace?.currency)} pct={0} />
           <Stat label="Merch sold" value="0" pct={0} />
         </div>
         <Button variant="outline" className="mt-5 w-full rounded-full" disabled={!liveEvent}>

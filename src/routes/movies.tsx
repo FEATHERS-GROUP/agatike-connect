@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Clock, MapPin, Film, Ticket, ArrowLeft } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
+import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { cinemas, movies } from "@/lib/mock-data";
 
@@ -92,8 +93,7 @@ function Movies() {
                 style={{ background: "var(--gradient-primary)" }}
               >
                 <Link to="/book/$eventId" params={{ eventId: activeMovie.id }}>
-                  <Ticket className="mr-2 h-4 w-4" /> Reserve seat — {activeMovie.currency || "$"}
-                  {activeMovie.price}
+                  <Ticket className="mr-2 h-4 w-4" /> Reserve seat — {formatCurrency(activeMovie.price || 8, activeMovie.currency)}
                 </Link>
               </Button>
               <Button variant="outline" className="rounded-full w-full md:w-auto mt-2 md:mt-0">
