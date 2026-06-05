@@ -13,8 +13,6 @@ import {
   TrendingUp,
   Star,
   Camera,
-  MessageSquare,
-  Heart,
   ExternalLink,
   BarChart3,
 } from "lucide-react";
@@ -220,12 +218,12 @@ function DashboardEventDetails() {
         breakdown.length > 0
           ? breakdown
           : sorted.map((t, idx) => ({
-              id: t.id,
-              name: t.type,
-              stopIdx: t.tour_stop_idx,
-              value: Number(t.remaining || 0),
-              color: PALETTE[idx % PALETTE.length],
-            }));
+            id: t.id,
+            name: t.type,
+            stopIdx: t.tour_stop_idx,
+            value: Number(t.remaining || 0),
+            color: PALETTE[idx % PALETTE.length],
+          }));
 
       // Revenue by ticket type sorted desc
       const sortedByRevenue = [...tickets]
@@ -886,11 +884,10 @@ function DashboardEventDetails() {
                           </td>
                           <td className="px-6 py-4">
                             <span
-                              className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                                isSoldOut
+                              className={`px-2.5 py-1 rounded-full text-xs font-medium ${isSoldOut
                                   ? "bg-red-500/10 text-red-500"
                                   : "bg-green-500/10 text-green-500"
-                              }`}
+                                }`}
                             >
                               {isSoldOut ? "Sold Out" : "Available"}
                             </span>
