@@ -28,8 +28,6 @@ export const Route = createFileRoute("/events/")({
   component: EventsBrowse,
 });
 
-
-
 function EventCard({ event }: { event: any }) {
   // Support both DB and mock data shapes
   const isMock = !!event.organizer || !!event.host || !!event.cinema;

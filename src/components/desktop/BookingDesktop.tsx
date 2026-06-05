@@ -187,7 +187,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                 </div>
                 <div className="flex justify-between items-center text-muted-foreground">
                   <span>Service Fee</span>
-                  <span>{formatCurrency(2.50, event.currency)}</span>
+                  <span>{formatCurrency(2.5, event.currency)}</span>
                 </div>
               </div>
 

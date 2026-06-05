@@ -328,7 +328,9 @@ function WorkspaceProductsView() {
                     <p className="font-semibold text-foreground">{m.name}</p>
                   </div>
                 </td>
-                <td className="px-6 py-4 font-medium">{formatCurrency(m.price, activeWorkspace?.currency)}</td>
+                <td className="px-6 py-4 font-medium">
+                  {formatCurrency(m.price, activeWorkspace?.currency)}
+                </td>
                 <td className="px-6 py-4">
                   <span className={`font-medium ${m.stock < 100 ? "text-orange-500" : ""}`}>
                     {m.stock}
@@ -365,7 +367,9 @@ function WorkspaceProductsView() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Sales</p>
-          <p className="text-2xl font-semibold mt-1">{formatCurrency(7650, activeWorkspace?.currency)}</p>
+          <p className="text-2xl font-semibold mt-1">
+            {formatCurrency(7650, activeWorkspace?.currency)}
+          </p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Active Campaigns</p>
@@ -496,7 +500,9 @@ function WorkspaceProductsView() {
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                       Price
                     </p>
-                    <p className="text-xl font-semibold">{formatCurrency(selectedItem.price, activeWorkspace?.currency)}</p>
+                    <p className="text-xl font-semibold">
+                      {formatCurrency(selectedItem.price, activeWorkspace?.currency)}
+                    </p>
                   </div>
                   <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm">
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">

@@ -409,9 +409,7 @@ export function EventDetailsDesktop({
                 >
                   <div className="flex items-center justify-between">
                     <p className="font-medium">{t.name}</p>
-                    <p className="font-semibold">
-                      {formatCurrency(t.price, currencyCode)}
-                    </p>
+                    <p className="font-semibold">{formatCurrency(t.price, currencyCode)}</p>
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">{t.perks.join(" · ")}</p>
                   <p className="mt-1 text-xs text-primary">{t.remaining} left</p>
@@ -434,9 +432,7 @@ export function EventDetailsDesktop({
 
             <div className="mt-5 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Total</span>
-              <span className="text-lg font-semibold">
-                {formatCurrency(total, currencyCode)}
-              </span>
+              <span className="text-lg font-semibold">{formatCurrency(total, currencyCode)}</span>
             </div>
 
             <Button

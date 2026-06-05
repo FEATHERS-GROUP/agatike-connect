@@ -692,9 +692,7 @@ function BusTripDetails() {
                   disabled={processing}
                   onClick={handlePay}
                 >
-                  {processing
-                    ? "Processing…"
-                    : `Pay ${formatCurrency(totalPrice, trip.currency)}`}
+                  {processing ? "Processing…" : `Pay ${formatCurrency(totalPrice, trip.currency)}`}
                 </Button>
                 <p className="text-center text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1">
                   <Shield className="h-3 w-3" /> Secure encrypted checkout

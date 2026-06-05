@@ -533,7 +533,8 @@ function VenueDesignerPage() {
                         {sec.name}
                       </span>
                       <span className="text-muted-foreground">
-                        {sec.tier} · {formatCurrency(sec.price, activeWorkspace?.currency)} · {sec.rows * sec.cols} seats
+                        {sec.tier} · {formatCurrency(sec.price, activeWorkspace?.currency)} ·{" "}
+                        {sec.rows * sec.cols} seats
                       </span>
                     </div>
                     <div

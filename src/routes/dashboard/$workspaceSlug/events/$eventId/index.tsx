@@ -861,9 +861,7 @@ function DashboardEventDetails() {
                             {Number(tier.cost) === 0 ? (
                               <span className="text-muted-foreground">Free</span>
                             ) : (
-                              <>
-                                {formatCurrency(tier.cost, currency)}
-                              </>
+                              <>{formatCurrency(tier.cost, currency)}</>
                             )}
                           </td>
                           <td className="px-6 py-4">

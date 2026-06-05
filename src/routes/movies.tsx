@@ -93,7 +93,8 @@ function Movies() {
                 style={{ background: "var(--gradient-primary)" }}
               >
                 <Link to="/book/$eventId" params={{ eventId: activeMovie.id }}>
-                  <Ticket className="mr-2 h-4 w-4" /> Reserve seat — {formatCurrency(activeMovie.price || 8, activeMovie.currency)}
+                  <Ticket className="mr-2 h-4 w-4" /> Reserve seat —{" "}
+                  {formatCurrency(activeMovie.price || 8, activeMovie.currency)}
                 </Link>
               </Button>
               <Button variant="outline" className="rounded-full w-full md:w-auto mt-2 md:mt-0">

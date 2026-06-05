@@ -472,7 +472,9 @@ function ProductsAndAddonsView() {
                 {m.description || "No description provided."}
               </p>
               <div className="mt-auto pt-4 border-t border-border/50 flex items-center justify-between">
-                <span className="font-bold text-lg text-foreground">{formatCurrency(m.price, activeWorkspace?.currency)}</span>
+                <span className="font-bold text-lg text-foreground">
+                  {formatCurrency(m.price, activeWorkspace?.currency)}
+                </span>
                 <span className="text-xs font-medium bg-green-500/10 text-green-500 px-2 py-1 rounded-md">
                   {m.sold_count} Sold
                 </span>
@@ -499,7 +501,9 @@ function ProductsAndAddonsView() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Revenue</p>
-          <p className="text-2xl font-semibold mt-1">{formatCurrency(27055, activeWorkspace?.currency)}</p>
+          <p className="text-2xl font-semibold mt-1">
+            {formatCurrency(27055, activeWorkspace?.currency)}
+          </p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Items Sold</p>
@@ -640,7 +644,9 @@ function ProductsAndAddonsView() {
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                       Price
                     </p>
-                    <p className="text-xl font-semibold">{formatCurrency(selectedItem.price, activeWorkspace?.currency)}</p>
+                    <p className="text-xl font-semibold">
+                      {formatCurrency(selectedItem.price, activeWorkspace?.currency)}
+                    </p>
                   </div>
                   <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm">
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">

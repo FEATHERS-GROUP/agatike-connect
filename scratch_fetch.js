@@ -16,10 +16,10 @@ async function checkSchema() {
   `;
 
   // We need x-hasura-admin-secret. I will read it from .env
-  const fs = await import('fs/promises');
-  const envFile = await fs.readFile('.env', 'utf-8');
+  const fs = await import("fs/promises");
+  const envFile = await fs.readFile(".env", "utf-8");
   const match = envFile.match(/HASURA_GRAPHQL_ADMIN_SECRET=([^\n]+)/);
-  const secret = match ? match[1] : '';
+  const secret = match ? match[1] : "";
 
   const response = await fetch(HASURA_URL, {
     method: "POST",
@@ -31,7 +31,13 @@ async function checkSchema() {
   });
 
   const json = await response.json();
-  console.log(JSON.stringify(json.data.__type.fields.map(f => f.name), null, 2));
+  console.log(
+    JSON.stringify(
+      json.data.__type.fields.map((f) => f.name),
+      null,
+      2,
+    ),
+  );
 }
 
 checkSchema().catch(console.error);

@@ -15,7 +15,7 @@ interface WorkspaceListProps {
 export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
   const { workspaces, activeWorkspace, setActiveWorkspace, isLoading } = useWorkspace();
   const navigate = useNavigate();
-  
+
   const [modulesModalWorkspace, setModulesModalWorkspace] = useState<Workspace | null>(null);
 
   return (
@@ -161,7 +161,7 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
         </Button>
       </div>
 
-      <WorkspaceModulesModal 
+      <WorkspaceModulesModal
         workspace={modulesModalWorkspace}
         isOpen={!!modulesModalWorkspace}
         onClose={() => setModulesModalWorkspace(null)}

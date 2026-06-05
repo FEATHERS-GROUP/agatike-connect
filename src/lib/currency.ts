@@ -28,7 +28,7 @@ export function getCurrencySymbol(currencyCode?: string): string {
   const upperCode = currencyCode.toUpperCase();
   const found = GLOBAL_CURRENCIES.find((c) => c.code === upperCode);
   if (found) return found.symbol;
-  
+
   // Fallback if not strictly mapped but passed natively
   try {
     const formatter = new Intl.NumberFormat("en-US", {
@@ -55,7 +55,7 @@ export function formatCurrency(amount: number | string, currencyCode: string = "
       currency: upperCode,
       maximumFractionDigits: 2,
       // Use narrow symbol so we get "$" instead of "US$" where possible
-      currencyDisplay: "narrowSymbol", 
+      currencyDisplay: "narrowSymbol",
     }).format(numAmount);
   } catch (e) {
     // Fallback for weird currencies Intl doesn't support well

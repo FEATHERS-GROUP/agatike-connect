@@ -425,9 +425,7 @@ export function EventDetailsMobile({
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 z-40 pb-safe">
         <div className="flex items-center justify-between mb-3 px-2">
           <span className="text-sm font-medium text-muted-foreground">Total</span>
-          <span className="text-xl font-bold">
-            {formatCurrency(total, currencyCode)}
-          </span>
+          <span className="text-xl font-bold">{formatCurrency(total, currencyCode)}</span>
         </div>
         <Button
           asChild

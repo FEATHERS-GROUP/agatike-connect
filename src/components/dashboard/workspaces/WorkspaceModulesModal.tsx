@@ -1,4 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -58,10 +64,11 @@ export function WorkspaceModulesModal({ workspace, isOpen, onClose }: WorkspaceM
         <DialogHeader className="p-6 pb-4 border-b border-border/60">
           <DialogTitle className="text-xl">Manage Workspace Modules</DialogTitle>
           <DialogDescription>
-            Select the features you want active in <strong>{workspace?.name}</strong>. You can change this at any time.
+            Select the features you want active in <strong>{workspace?.name}</strong>. You can
+            change this at any time.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="overflow-y-auto p-6 flex-1 bg-secondary/10">
           {isLoadingModules ? (
             <div className="flex justify-center items-center py-12">
@@ -84,7 +91,9 @@ export function WorkspaceModulesModal({ workspace, isOpen, onClose }: WorkspaceM
                         : "border-border/60 bg-card hover:border-primary/50"
                     } ${isMandatory ? "opacity-75 cursor-not-allowed" : ""}`}
                   >
-                    <div className={`mt-0.5 shrink-0 h-10 w-10 rounded-xl flex items-center justify-center ${isSelected ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"}`}>
+                    <div
+                      className={`mt-0.5 shrink-0 h-10 w-10 rounded-xl flex items-center justify-center ${isSelected ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"}`}
+                    >
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1">
@@ -95,9 +104,7 @@ export function WorkspaceModulesModal({ workspace, isOpen, onClose }: WorkspaceM
                             Required
                           </span>
                         )}
-                        {!isMandatory && isSelected && (
-                          <Check className="h-4 w-4 text-primary" />
-                        )}
+                        {!isMandatory && isSelected && <Check className="h-4 w-4 text-primary" />}
                       </div>
                       <p className="text-xs text-muted-foreground leading-snug">{mod.desc}</p>
                     </div>

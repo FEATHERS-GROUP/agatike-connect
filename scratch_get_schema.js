@@ -37,7 +37,9 @@ async function run() {
   const venueProjects = await fetchTable("venue_projects");
   const venueProjectSections = await fetchTable("venue_project_sections");
 
-  console.log(JSON.stringify({ events, tickets, sections, venueProjects, venueProjectSections }, null, 2));
+  console.log(
+    JSON.stringify({ events, tickets, sections, venueProjects, venueProjectSections }, null, 2),
+  );
 }
 
 run();

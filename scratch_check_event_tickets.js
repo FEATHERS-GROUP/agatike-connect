@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+const fetch = require("node-fetch");
 
 const QUERY = `
   query {
@@ -24,12 +24,18 @@ async function main() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-hasura-admin-secret": "d2e67df1076b170d6eb3b8117db34e2c"
+      "x-hasura-admin-secret": "d2e67df1076b170d6eb3b8117db34e2c",
     },
-    body: JSON.stringify({ query: QUERY })
+    body: JSON.stringify({ query: QUERY }),
   });
   const data = await res.json();
-  console.log(JSON.stringify(data.data.__type.fields.map(f => f.name), null, 2));
+  console.log(
+    JSON.stringify(
+      data.data.__type.fields.map((f) => f.name),
+      null,
+      2,
+    ),
+  );
 }
 
 main().catch(console.error);
