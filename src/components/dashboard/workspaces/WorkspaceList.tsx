@@ -6,6 +6,7 @@ import { logout } from "@/api/auth";
 import { useState } from "react";
 import { WorkspaceModulesModal } from "./WorkspaceModulesModal";
 import { Workspace } from "@/contexts/WorkspaceContext";
+import { types } from "./constants";
 
 interface WorkspaceListProps {
   onOpenWizard: () => void;
