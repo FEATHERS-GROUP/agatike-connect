@@ -63,6 +63,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
             ? w.moduls
             : Object.keys(w.moduls)
           : ["dashboard", "settings"],
+        currency: w.currency || "RWF",
       })) as Workspace[];
     },
     retry: false,
@@ -110,6 +111,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         address: workspaceData.address || "",
         logo: workspaceData.icon || "", // mapping UI icon to DB logo
         moduls: workspaceData.modules || ["dashboard", "settings"],
+        currency: workspaceData.currency || "RWF",
       };
 
       const newWorkspace = await createDatabaseWorkspace({ data: payload } as any);
@@ -125,6 +127,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
             ? newWorkspace.moduls
             : Object.keys(newWorkspace.moduls)
           : ["dashboard", "settings"],
+        currency: newWorkspace.currency || "RWF",
       } as Workspace;
     },
     onSuccess: (newWorkspace) => {

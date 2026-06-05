@@ -96,6 +96,7 @@ function WorkspaceSettings() {
         address: activeWorkspace.address || "",
         moduls: activeWorkspace.moduls || [],
         icon: activeWorkspace.icon || "",
+        currency: activeWorkspace.currency || "RWF",
       });
     }
   }, [activeWorkspace]);
@@ -305,6 +306,28 @@ function WorkspaceSettings() {
                   ) : (
                     <p className="p-3 bg-secondary/30 rounded-xl text-sm">
                       {formState.country || "-"}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Currency</Label>
+                  {isEditing ? (
+                    <select
+                      value={formState.currency || "RWF"}
+                      className="w-full rounded-xl bg-secondary/50 border-transparent focus:border-primary px-3 py-2 text-sm"
+                      onChange={(e) => setFormState({ ...formState, currency: e.target.value })}
+                    >
+                      <option value="RWF">RWF - Rwandan Franc</option>
+                      <option value="USD">USD - US Dollar</option>
+                      <option value="KES">KES - Kenyan Shilling</option>
+                      <option value="EUR">EUR - Euro</option>
+                      <option value="GBP">GBP - British Pound</option>
+                      <option value="UGX">UGX - Ugandan Shilling</option>
+                    </select>
+                  ) : (
+                    <p className="p-3 bg-secondary/30 rounded-xl text-sm uppercase font-semibold">
+                      {formState.currency || "RWF"}
                     </p>
                   )}
                 </div>

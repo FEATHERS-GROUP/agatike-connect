@@ -1,9 +1,11 @@
-import { Building2, Plus, ArrowRight, LogOut, User, Settings } from "lucide-react";
+import { Building2, Plus, ArrowRight, LogOut, User, Settings, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useNavigate } from "@tanstack/react-router";
 import { logout } from "@/api/auth";
-import { types } from "./constants";
+import { useState } from "react";
+import { WorkspaceModulesModal } from "./WorkspaceModulesModal";
+import { Workspace } from "@/contexts/WorkspaceContext";
 
 interface WorkspaceListProps {
   onOpenWizard: () => void;
@@ -12,6 +14,8 @@ interface WorkspaceListProps {
 export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
   const { workspaces, activeWorkspace, setActiveWorkspace, isLoading } = useWorkspace();
   const navigate = useNavigate();
+  
+  const [modulesModalWorkspace, setModulesModalWorkspace] = useState<Workspace | null>(null);
 
   return (
     <div className="space-y-8 pb-24 px-4 md:px-8 max-w-7xl mx-auto pt-8">
@@ -65,10 +69,23 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                   isActive ? "border-primary ring-1 ring-primary" : "border-border/60"
                 }`}
               >
-                <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center gap-1">
                   <Button
                     variant="ghost"
                     size="icon"
+                    title="Manage Modules"
+                    className="h-8 w-8 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setModulesModalWorkspace(w);
+                    }}
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Workspace Settings"
                     className="h-8 w-8 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -142,6 +159,12 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
           <User className="h-4 w-4" /> Organizer Profile
         </Button>
       </div>
+
+      <WorkspaceModulesModal 
+        workspace={modulesModalWorkspace}
+        isOpen={!!modulesModalWorkspace}
+        onClose={() => setModulesModalWorkspace(null)}
+      />
     </div>
   );
 }

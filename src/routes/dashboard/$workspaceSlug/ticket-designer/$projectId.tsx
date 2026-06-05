@@ -391,7 +391,7 @@ function TicketDesignerPage() {
     price: activeTier?.cost?.toString() || "0",
     tierName: activeTier?.type || "General",
     seat: "General Admission",
-    currency: getCurrencySymbol(activeWorkspace?.wallet?.currency as string),
+    currency: getCurrencySymbol(activeWorkspace?.currency || activeWorkspace?.wallet?.currency),
     brand: activeWorkspace?.name?.toUpperCase() || "AGATIKE",
   };
 

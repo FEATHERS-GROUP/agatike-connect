@@ -13,6 +13,7 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
           city
           country
           created_at
+          currency
           id
           logo
           moduls
@@ -39,6 +40,7 @@ export const createDatabaseWorkspace = createServerFn({ method: "POST" }).handle
         $address: String = "", 
         $city: String = "", 
         $country: String = "", 
+        $currency: String = "",
         $logo: String = "", 
         $moduls: jsonb = "", 
         $name: String = "", 
@@ -50,6 +52,7 @@ export const createDatabaseWorkspace = createServerFn({ method: "POST" }).handle
           address: $address, 
           city: $city, 
           country: $country, 
+          currency: $currency,
           logo: $logo, 
           moduls: $moduls, 
           name: $name, 
@@ -63,6 +66,7 @@ export const createDatabaseWorkspace = createServerFn({ method: "POST" }).handle
             city
             country
             created_at
+            currency
             id
             logo
             moduls
@@ -79,6 +83,7 @@ export const createDatabaseWorkspace = createServerFn({ method: "POST" }).handle
     address: input.address || "",
     city: input.city || "",
     country: input.country || "",
+    currency: input.currency || "RWF",
     logo: input.logo || "",
     moduls: input.moduls || "",
     name: input.name || "",
@@ -134,6 +139,7 @@ export const updateDatabaseWorkspace = createServerFn({ method: "POST" }).handle
         $address: String, 
         $city: String, 
         $country: String, 
+        $currency: String,
         $name: String, 
         $type: String, 
         $moduls: jsonb,
@@ -146,6 +152,7 @@ export const updateDatabaseWorkspace = createServerFn({ method: "POST" }).handle
             address: $address, 
             city: $city, 
             country: $country, 
+            currency: $currency,
             name: $name, 
             type: $type, 
             moduls: $moduls,
@@ -163,6 +170,7 @@ export const updateDatabaseWorkspace = createServerFn({ method: "POST" }).handle
     address: updateFields.address,
     city: updateFields.city,
     country: updateFields.country,
+    currency: updateFields.currency,
     name: updateFields.name,
     type: updateFields.type,
     moduls: updateFields.moduls,

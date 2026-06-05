@@ -16,11 +16,9 @@ export function DesktopHeader() {
         <Button variant="outline" className="rounded-full">
           Export
         </Button>
-        <Link to="/dashboard/workspaces">
-          <Button variant="outline" className="rounded-full">
-            Workspaces
-          </Button>
-        </Link>
+        <Button asChild variant="outline" className="rounded-full">
+          <Link to="/dashboard/workspaces">Workspaces</Link>
+        </Button>
         <Link
           to="/dashboard/$workspaceSlug/events/create-event"
           params={{ workspaceSlug: activeWorkspace?.slug || "" }}
