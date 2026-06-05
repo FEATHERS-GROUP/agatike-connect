@@ -26,6 +26,11 @@ flowchart TD
   style WS fill:#f9f,stroke:#333,stroke-width:2px
 ```
 
+### Currency & Localization
+- **Base Currency:** Each Workspace requires an organizer to select a base currency (e.g., `USD`, `RWF`, `EUR`) during setup.
+- **Global `formatCurrency` Utility:** All features—including ticket sales, venue entry fees, movie tickets, and bus bookings—derive their pricing format dynamically using the workspace's assigned currency code.
+- **Implementation:** The `src/lib/currency.ts` module uses `Intl.NumberFormat` to handle standard localization and precise narrow symbol rendering universally across the platform.
+
 ---
 
 ## 2. Event Creation & Management

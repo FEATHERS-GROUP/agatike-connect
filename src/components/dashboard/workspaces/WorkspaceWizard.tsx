@@ -8,6 +8,7 @@ import { useWorkspace, WorkspaceType } from "@/contexts/WorkspaceContext";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
 import { useNavigate } from "@tanstack/react-router";
 import { types, COUNTRIES, CATEGORIES } from "./constants";
+import { GLOBAL_CURRENCIES } from "@/lib/currency";
 
 interface WorkspaceWizardProps {
   onClose: () => void;
@@ -24,7 +25,7 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("Rwanda");
   const [address, setAddress] = useState("");
-  const [currency, setCurrency] = useState("rwf");
+  const [currency, setCurrency] = useState("RWF");
   const [icon, setIcon] = useState("");
   const [modules, setModules] = useState<string[]>([]);
   const [created, setCreated] = useState(false);
@@ -229,30 +230,11 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
                         onChange={(e) => setCurrency(e.target.value)}
                         className="flex h-12 w-full rounded-xl border border-input bg-secondary/50 px-3 py-2 text-lg ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <optgroup label="Global">
-                          <option value="dollars">US Dollars ($)</option>
-                          <option value="euros">Euros (€)</option>
-                          <option value="pounds">British Pounds (£)</option>
-                        </optgroup>
-                        <optgroup label="East Africa">
-                          <option value="rwf">Rwandan Francs (RWF)</option>
-                          <option value="kes">Kenyan Shillings (KES)</option>
-                          <option value="ugx">Ugandan Shillings (UGX)</option>
-                          <option value="tzs">Tanzanian Shillings (TZS)</option>
-                          <option value="bif">Burundian Francs (BIF)</option>
-                        </optgroup>
-                        <optgroup label="West & South Africa">
-                          <option value="ngn">Nigerian Naira (₦)</option>
-                          <option value="ghs">Ghanaian Cedi (GH₵)</option>
-                          <option value="zar">South African Rand (R)</option>
-                          <option value="cfa">CFA Franc (CFA)</option>
-                        </optgroup>
-                        <optgroup label="Other">
-                          <option value="cad">Canadian Dollars (CAD)</option>
-                          <option value="aud">Australian Dollars (AUD)</option>
-                          <option value="inr">Indian Rupee (₹)</option>
-                          <option value="aed">UAE Dirham (AED)</option>
-                        </optgroup>
+                        {GLOBAL_CURRENCIES.map((c) => (
+                          <option key={c.code} value={c.code}>
+                            {c.name} ({c.code}) - {c.symbol}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div className="space-y-2 md:col-span-2">
