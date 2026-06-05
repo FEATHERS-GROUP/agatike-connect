@@ -134,48 +134,28 @@ export const updateDatabaseWorkspace = createServerFn({ method: "POST" }).handle
   if (!id) throw new Error("Workspace ID is required");
 
   const mutation = `
-      mutation UpdateWorkspace(
-        $id: uuid!,
-        $address: String, 
-        $city: String, 
-        $country: String, 
-        $currency: String,
-        $name: String, 
-        $type: String, 
-        $moduls: jsonb,
-        $logo: String,
-        $updated_at: String!
-      ) {
-        update_workspaces_by_pk(
-          pk_columns: { id: $id },
-          _set: {
-            address: $address, 
-            city: $city, 
-            country: $country, 
-            currency: $currency,
-            name: $name, 
-            type: $type, 
-            moduls: $moduls,
-            logo: $logo,
-            updated_at: $updated_at
-          }
-        ) {
+      mutation UpdateWorkspace($id: uuid!, $_set: workspaces_set_input!) {
+        update_workspaces_by_pk(pk_columns: { id: $id }, _set: $_set) {
           id
         }
       }
     `;
 
+  const _set: any = {};
+  if (updateFields.address !== undefined) _set.address = updateFields.address;
+  if (updateFields.city !== undefined) _set.city = updateFields.city;
+  if (updateFields.country !== undefined) _set.country = updateFields.country;
+  if (updateFields.currency !== undefined) _set.currency = updateFields.currency;
+  if (updateFields.name !== undefined) _set.name = updateFields.name;
+  if (updateFields.type !== undefined) _set.type = updateFields.type;
+  if (updateFields.moduls !== undefined) _set.moduls = updateFields.moduls;
+  if (updateFields.logo !== undefined) _set.logo = updateFields.logo;
+  else if (updateFields.icon !== undefined) _set.logo = updateFields.icon; // fallback for potential typo
+  _set.updated_at = new Date().toISOString();
+
   const variables = {
     id,
-    address: updateFields.address,
-    city: updateFields.city,
-    country: updateFields.country,
-    currency: updateFields.currency,
-    name: updateFields.name,
-    type: updateFields.type,
-    moduls: updateFields.moduls,
-    logo: updateFields.icon,
-    updated_at: new Date().toISOString(),
+    _set,
   };
 
   const data = await hasuraRequest<{ update_workspaces_by_pk: { id: string } }>(
