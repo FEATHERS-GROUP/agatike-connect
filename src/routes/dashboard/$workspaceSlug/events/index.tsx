@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceEvents } from "@/api/events";
+import { formatCurrency } from "@/lib/currency";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -234,9 +235,9 @@ function DashboardEvents() {
                           <Ticket className="h-3.5 w-3.5 mr-1.5 text-primary" />
                           <span>{event.salesPct}% sold</span>
                         </div>
-                        <div className="flex items-center font-medium text-green-500">
-                          <DollarSign className="h-3.5 w-3.5 mr-1.5" />
-                          <span>{event.revenue.toLocaleString()}</span>
+                        <div className="flex items-center gap-1.5 min-w-[120px]">
+                          <DollarSign className="h-4 w-4 text-muted-foreground" />
+                          <span>{formatCurrency(event.revenue, activeWorkspace?.currency)}</span>
                         </div>
                       </div>
                     </td>

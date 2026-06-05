@@ -45,24 +45,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/
   component: DashboardEventDetails,
 });
 
-function getCurrencySymbol(currency?: string) {
-  const map: Record<string, string> = {
-    RWF: "RWF ",
-    USD: "$",
-    EUR: "€",
-    GBP: "£",
-    KES: "KES ",
-    UGX: "UGX ",
-    TZS: "TZS ",
-    NGN: "₦",
-    GHS: "GH₵",
-    XOF: "CFA ",
-    ZAR: "R",
-    MAD: "MAD ",
-    ETB: "Br ",
-  };
-  return map[currency || ""] || "$";
-}
+import { formatCurrency } from "@/lib/currency";
 
 // ── Colour helpers ─────────────────────────────────────────────────────────────
 const PALETTE = [
@@ -74,7 +57,7 @@ const PALETTE = [
 ];
 
 // ── Custom Tooltip ─────────────────────────────────────────────────────────────
-function ChartTooltip({ active, payload, label, currencySymbol }: any) {
+function ChartTooltip({ active, payload, label, currency }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-card border border-border/60 rounded-xl shadow-lg p-3 text-xs space-y-1 min-w-[140px]">
@@ -87,7 +70,7 @@ function ChartTooltip({ active, payload, label, currencySymbol }: any) {
           </span>
           <span className="font-medium text-foreground">
             {p.name?.toLowerCase().includes("revenue")
-              ? `${currencySymbol}${Number(p.value).toLocaleString()}`
+              ? formatCurrency(p.value, currency)
               : p.value}
           </span>
         </div>
@@ -188,7 +171,7 @@ function DashboardEventDetails() {
     enabled: !!eventId,
   });
 
-  const currencySymbol = getCurrencySymbol(activeWorkspace?.wallet?.currency);
+  const currency = activeWorkspace?.currency;
 
   // ── Computed: ticket metrics ───────────────────────────────────────────────
   const { stats, ticketBreakdown, chartData, sortedByRevenue, soldVsUnsold, ticketsByStop } =
@@ -456,8 +439,7 @@ function DashboardEventDetails() {
             <DollarSign className="h-4 w-4 text-green-500" />
           </div>
           <p className="text-2xl font-bold text-green-500">
-            {currencySymbol}
-            {stats.revenue.toLocaleString()}
+            {formatCurrency(stats.revenue, currency)}
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">from ticket sales</p>
         </div>
@@ -551,7 +533,7 @@ function DashboardEventDetails() {
                         <Cell key={i} fill={entry.color} />
                       ))}
                     </Pie>
-                    <RechartsTooltip content={<ChartTooltip currencySymbol={currencySymbol} />} />
+                    <RechartsTooltip content={<ChartTooltip currency={currency} />} />
                   </PieChart>
                 </ResponsiveContainer>
                 {/* Center label */}
@@ -606,7 +588,7 @@ function DashboardEventDetails() {
                       axisLine={false}
                       width={72}
                     />
-                    <RechartsTooltip content={<ChartTooltip currencySymbol={currencySymbol} />} />
+                    <RechartsTooltip content={<ChartTooltip currency={currency} />} />
                     <Bar dataKey="sold" name="Sold" radius={[0, 4, 4, 0]}>
                       {chartData.map((entry: any, i: number) => (
                         <Cell key={i} fill={entry.color} />
@@ -655,7 +637,7 @@ function DashboardEventDetails() {
                       tickLine={false}
                       axisLine={false}
                     />
-                    <RechartsTooltip content={<ChartTooltip currencySymbol={currencySymbol} />} />
+                    <RechartsTooltip content={<ChartTooltip currency={currency} />} />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
                     <Bar dataKey="capacity" name="Capacity" fill="#fed7aa" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="sold" name="Sold" fill="#f97316" radius={[4, 4, 0, 0]} />
@@ -698,8 +680,7 @@ function DashboardEventDetails() {
                           {stop.capacity.toLocaleString()}
                         </td>
                         <td className="px-4 py-3 text-right font-medium text-green-500">
-                          {currencySymbol}
-                          {stop.revenue.toLocaleString()}
+                          {formatCurrency(stop.revenue, currency)}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -751,9 +732,9 @@ function DashboardEventDetails() {
                     fontSize={11}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(v) => `${currencySymbol}${Number(v).toLocaleString()}`}
+                    tickFormatter={(v) => formatCurrency(v, currency)}
                   />
-                  <RechartsTooltip content={<ChartTooltip currencySymbol={currencySymbol} />} />
+                  <RechartsTooltip content={<ChartTooltip currency={currency} />} />
                   <Bar dataKey="revenue" name="Revenue" radius={[6, 6, 0, 0]}>
                     {sortedByRevenue.map((_, i) => (
                       <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
@@ -794,7 +775,7 @@ function DashboardEventDetails() {
                     tickLine={false}
                     axisLine={false}
                   />
-                  <RechartsTooltip content={<ChartTooltip currencySymbol={currencySymbol} />} />
+                  <RechartsTooltip content={<ChartTooltip currency={currency} />} />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
                   <Bar
                     dataKey="target"
@@ -881,8 +862,7 @@ function DashboardEventDetails() {
                               <span className="text-muted-foreground">Free</span>
                             ) : (
                               <>
-                                {currencySymbol}
-                                {parseFloat(tier.cost).toLocaleString()}
+                                {formatCurrency(tier.cost, currency)}
                               </>
                             )}
                           </td>
@@ -904,8 +884,7 @@ function DashboardEventDetails() {
                             </div>
                           </td>
                           <td className="px-6 py-4 font-medium text-green-500">
-                            {currencySymbol}
-                            {tier.revenue.toLocaleString()}
+                            {formatCurrency(tier.revenue, currency)}
                           </td>
                           <td className="px-6 py-4">
                             <span
