@@ -22,6 +22,7 @@ export function getServerConfig() {
     hasuraAdminSecret: process.env.HASURA_ADMIN_SECRETE,
     hasuraAdminApi: process.env.HASURA_ADMIN_API,
     googleApiKey:
+      process.env.VITE_GOOGLE_MAP_API ||
       process.env.NEXT_PUBLIC_GOOGLE_MAP_API ||
       process.env.GOOGLE_MAPS_API_KEY ||
       process.env.GOOGLE_SECRET,

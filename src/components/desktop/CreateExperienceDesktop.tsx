@@ -15,12 +15,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { experienceCategories } from "@/lib/mock-data";
+import { COUNTRIES } from "@/lib/countries";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 import { CategorySelectStep } from "./CreateExperience/CategorySelectStep";
 import { ExperienceVenueStep } from "./CreateExperience/ExperienceVenueStep";
 import { ExperienceItineraryStep } from "./CreateExperience/ExperienceItineraryStep";
+import { ExperienceDurationStep } from "./CreateExperience/ExperienceDurationStep";
 
 function generateId() {
   if (typeof window !== "undefined" && window.crypto && window.crypto.randomUUID) {
@@ -48,6 +50,7 @@ export function CreateExperienceDesktop({
 
   const [data, setData] = useState({
     title: initialData?.title || "",
+    country: initialData?.country || "Rwanda",
     city: initialData?.city || "",
     category: initialData?.category || experienceCategories[0],
     description: initialData?.description || "",
@@ -59,9 +62,10 @@ export function CreateExperienceDesktop({
     latitude: initialData?.latitude || null,
     longitude: initialData?.longitude || null,
     routeDistance: initialData?.routeDistance || null,
+    numberOfDays: initialData?.numberOfDays || 1,
     itinerary: initialData?.itinerary?.length > 0 ? initialData.itinerary : [
-      { id: generateId(), title: "Starting Point", address: "", time: "08:00", lat: null, lng: null },
-      { id: generateId(), title: "Stopping Point", address: "", time: "16:00", lat: null, lng: null },
+      { id: generateId(), day: 1, title: "Starting Point", address: "", time: "08:00", lat: null, lng: null },
+      { id: generateId(), day: 1, title: "Stopping Point", address: "", time: "16:00", lat: null, lng: null },
     ],
     tickets: initialData?.tickets?.length > 0 ? initialData.tickets : [
       { id: generateId(), name: "General Admission", price: 45, quantity: 20 },
@@ -72,7 +76,9 @@ export function CreateExperienceDesktop({
 
   const isRouteBased = ROUTE_CATEGORIES.includes(data.category);
   const locationStepName = isRouteBased ? "Itinerary" : "Venue";
-  const steps = ["Category", "Details", locationStepName, "Tickets", "Media", "Publish"] as const;
+  const steps = isRouteBased 
+    ? ["Category", "Details", "Duration", locationStepName, "Tickets", "Media", "Publish"] as const
+    : ["Category", "Details", locationStepName, "Tickets", "Media", "Publish"] as const;
 
   const setStep = (newStep: number) => {
     navigate({ search: { step: newStep } as any, replace: true });
@@ -170,6 +176,32 @@ export function CreateExperienceDesktop({
               />
             </div>
 
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label>Country</Label>
+                <select
+                  value={data.country}
+                  onChange={(e) => updateField("country", e.target.value)}
+                  className="mt-1 flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 hover:border-border/80 md:text-sm"
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label>City / Region</Label>
+                <Input
+                  value={data.city}
+                  onChange={(e) => updateField("city", e.target.value)}
+                  placeholder="e.g. Kigali, Musanze"
+                  className="mt-1 h-12"
+                />
+              </div>
+            </div>
+
             <div>
               <Label>Description</Label>
               <Textarea
@@ -183,7 +215,14 @@ export function CreateExperienceDesktop({
           </div>
         )}
 
-        {/* STEP 2: Location (Dynamic) */}
+        {/* STEP: Duration (Dynamic for Route-based only) */}
+        {steps[step] === "Duration" && (
+          <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+            <ExperienceDurationStep data={data} updateField={updateField} />
+          </div>
+        )}
+
+        {/* STEP: Location (Dynamic) */}
         {steps[step] === "Itinerary" && (
           <div className="animate-in fade-in slide-in-from-right-4 duration-300">
             <ExperienceItineraryStep data={data} updateField={updateField} />
@@ -298,24 +337,30 @@ export function CreateExperienceDesktop({
               </div>
               <div className="p-6">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6 pb-6 border-b border-border/60">
-                  <span className="inline-flex items-center gap-1.5 font-medium"><MapPin className="h-4 w-4" /> {data.city || "No City"}</span>
+                  <span className="inline-flex items-center gap-1.5 font-medium"><MapPin className="h-4 w-4" /> {data.city ? `${data.city}, ${data.country}` : data.country}</span>
                   <span className="inline-flex items-center gap-1.5 font-medium"><Clock className="h-4 w-4" /> {data.date || "No Date"}</span>
                 </div>
                 
                 <h4 className="font-semibold mb-3">Highlights</h4>
                 <div className="space-y-3">
-                  {isRouteBased ? data.itinerary.map((stop: any, i: number) => (
-                    <div key={i} className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-3 h-3 rounded-full bg-primary mt-1 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></div>
-                        {i < data.itinerary.length - 1 && <div className="w-0.5 h-full bg-border mt-2"></div>}
-                      </div>
-                      <div className="pb-4">
-                        <p className="font-medium">{stop.title || `Stop ${i+1}`}</p>
-                        <p className="text-sm text-muted-foreground">{stop.time} • {stop.address}</p>
-                      </div>
+                  {isRouteBased ? (
+                    <div>
+                      <p className="text-sm font-medium mb-2">{data.numberOfDays} Day{data.numberOfDays > 1 ? 's' : ''} Itinerary</p>
+                      {data.itinerary.map((stop: any, i: number) => (
+                        <div key={i} className="flex gap-4">
+                          <div className="flex flex-col items-center">
+                            <div className="w-3 h-3 rounded-full bg-primary mt-1 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></div>
+                            {i < data.itinerary.length - 1 && <div className="w-0.5 h-full bg-border mt-2"></div>}
+                          </div>
+                          <div className="pb-4">
+                            <p className="font-medium text-xs text-primary mb-0.5">Day {stop.day || 1}</p>
+                            <p className="font-medium">{stop.title || `Stop ${i+1}`}</p>
+                            <p className="text-sm text-muted-foreground">{stop.time} • {stop.address}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  )) : (
+                  ) : (
                     <div className="flex gap-4">
                       <div className="flex flex-col items-center">
                         <div className="w-3 h-3 rounded-full bg-primary mt-1 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></div>

@@ -2,7 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { getServerConfig } from "../lib/config.server";
 
 export const getCoordinates = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const address = ctx.data as unknown as string;
+  const payload = ctx.data as any;
+  console.log("PAYLOAD RECEIVED:", JSON.stringify(payload));
+  const address = payload?.data || payload;
   const config = getServerConfig();
   const apiKey = config.googleApiKey;
 
@@ -31,7 +33,8 @@ export const getCoordinates = createServerFn({ method: "POST" }).handler(async (
 });
 
 export const getPlacesAutocomplete = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const query = ctx.data as unknown as string;
+  const payload = ctx.data as any;
+  const query = payload?.data || payload;
   const config = getServerConfig();
   const apiKey = config.googleApiKey;
 
@@ -52,7 +55,9 @@ export const getPlacesAutocomplete = createServerFn({ method: "POST" }).handler(
 });
 
 export const getPlaceDetails = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const placeId = ctx.data as unknown as string;
+  const payload = ctx.data as any;
+  console.log("PAYLOAD RECEIVED:", JSON.stringify(payload));
+  const placeId = payload?.data || payload;
   const config = getServerConfig();
   const apiKey = config.googleApiKey;
 
@@ -74,7 +79,9 @@ export const getPlaceDetails = createServerFn({ method: "POST" }).handler(async 
 });
 
 export const getRouteDistance = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { origin, destination, waypoints } = ctx.data as unknown as { origin: string, destination: string, waypoints?: string[] };
+  const payload = ctx.data as any;
+  console.log("PAYLOAD RECEIVED:", JSON.stringify(payload));
+  const { origin, destination, waypoints } = payload?.data || payload;
   const config = getServerConfig();
   const apiKey = config.googleApiKey;
 
