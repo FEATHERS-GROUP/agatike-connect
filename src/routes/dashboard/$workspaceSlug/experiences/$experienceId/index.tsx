@@ -84,7 +84,7 @@ function DashboardExperienceDetails() {
     let spots = 0;
     if (e.event_tickets && e.event_tickets.length > 0) {
       price = Math.min(...e.event_tickets.map((t: any) => Number(t.cost || 0)));
-      spots = e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.remaining || 0), 0);
+      spots = e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.remaining || 0) + Number(t.sold || 0), 0);
     }
 
     const dateStr = fr.date || ts.date || "";
@@ -132,12 +132,20 @@ function DashboardExperienceDetails() {
       rating: "4.8",
       itinerary: ts.itinerary || [],
       requirements: [],
-      schedules: (e.schedules || []).map((s: any) => ({
-        id: s.id,
-        date: s.start_date,
-        totalSpots: s.total_spots,
-        spotsFilled: s.spots_filled
-      })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+      schedules: [
+        ...(dateStr ? [{
+          id: e.id,
+          date: dateStr,
+          totalSpots: spots,
+          spotsFilled: e.event_tickets ? e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.sold || 0), 0) : 0,
+        }] : []),
+        ...(e.schedules || []).map((s: any) => ({
+          id: s.id,
+          date: s.start_date,
+          totalSpots: s.total_spots,
+          spotsFilled: s.spots_filled
+        }))
+      ].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()),
       addons: e.merchandises || [],
       team: []
     };
