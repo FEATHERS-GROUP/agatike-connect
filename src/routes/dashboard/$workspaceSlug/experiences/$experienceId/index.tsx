@@ -22,9 +22,14 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useMemo, useState, useEffect, lazy, Suspense } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getEventById } from "@/api/events";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getEventById, createEventSchedule } from "@/api/events";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { Plus } from "lucide-react";
 
 const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
 
@@ -53,7 +58,10 @@ function DashboardExperienceDetails() {
   const { experienceId, workspaceSlug } = Route.useParams();
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
+  const queryClient = useQueryClient();
   const [isMounted, setIsMounted] = useState(false);
+  const [newScheduleDate, setNewScheduleDate] = useState("");
+  const [isAddScheduleOpen, setIsAddScheduleOpen] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -124,7 +132,12 @@ function DashboardExperienceDetails() {
       rating: "4.8",
       itinerary: ts.itinerary || [],
       requirements: [],
-      schedules: [],
+      schedules: (e.schedules || []).map((s: any) => ({
+        id: s.id,
+        date: s.start_date,
+        totalSpots: s.total_spots,
+        spotsFilled: s.spots_filled
+      })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()),
       addons: e.merchandises || [],
       team: []
     };
@@ -137,6 +150,34 @@ function DashboardExperienceDetails() {
     }
     return { totalBookings: booked, maxCapacity: experience?.spots || 0 };
   }, [rawEvent, experience]);
+
+  const addScheduleMutation = useMutation({
+    mutationFn: async () => {
+      if (!newScheduleDate) return;
+      const d = new Date(newScheduleDate);
+      const numDays = rawEvent?.event_requency?.numberOfDays || 1;
+      d.setDate(d.getDate() + Math.max(1, numDays) - 1);
+      const endDateStr = d.toISOString().split("T")[0];
+      
+      const payload = {
+        event_id: experienceId,
+        start_date: newScheduleDate,
+        end_date: endDateStr,
+        total_spots: maxCapacity
+      };
+      
+      return await createEventSchedule({ data: payload } as any);
+    },
+    onSuccess: () => {
+      toast.success("Schedule added successfully!");
+      setIsAddScheduleOpen(false);
+      setNewScheduleDate("");
+      queryClient.invalidateQueries({ queryKey: ["event", experienceId] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to add schedule");
+    }
+  });
 
   const { totalDistance, mapCenter, polylinePositions, bounds } = useMemo(() => {
     let distance = 0;
@@ -349,7 +390,7 @@ function DashboardExperienceDetails() {
                 )}
               </div>
               
-              <div className={polylinePositions.length > 0 ? "grid grid-cols-1 lg:grid-cols-2 gap-8" : "block"}>
+              <div className="flex flex-col gap-8 w-full">
                 {/* Visual Map */}
                 {polylinePositions.length > 0 && (
                   <div className="rounded-2xl overflow-hidden border border-border/60 h-[400px] z-10 relative mb-8 lg:mb-0">
@@ -404,11 +445,46 @@ function DashboardExperienceDetails() {
             {/* UPCOMING SCHEDULES */}
             {experience.schedules && experience.schedules.length > 0 ? (
               <div className="rounded-[2rem] border border-border/60 bg-card p-6 md:p-8 shadow-[var(--shadow-card)]">
-                <h3 className="text-xl font-semibold mb-1">Upcoming Schedules</h3>
-                <p className="text-sm text-muted-foreground mb-6">Manage bookings for your upcoming scheduled dates.</p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                  <div>
+                    <h3 className="text-xl font-semibold mb-1">Upcoming Schedules</h3>
+                    <p className="text-sm text-muted-foreground">Manage bookings for your upcoming scheduled dates.</p>
+                  </div>
+                  <Dialog open={isAddScheduleOpen} onOpenChange={setIsAddScheduleOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="rounded-full shadow-sm" style={{ background: "var(--gradient-primary)" }}>
+                        <Plus className="mr-2 h-4 w-4" /> Add Schedule
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="rounded-[2rem] border-border/60">
+                      <DialogHeader>
+                        <DialogTitle className="text-xl font-semibold">Add Upcoming Schedule</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label>Start Date</Label>
+                          <Input 
+                            type="date" 
+                            className="rounded-xl h-11" 
+                            value={newScheduleDate}
+                            onChange={(e) => setNewScheduleDate(e.target.value)}
+                          />
+                        </div>
+                        <Button 
+                          className="w-full rounded-xl h-11" 
+                          disabled={!newScheduleDate || addScheduleMutation.isPending}
+                          onClick={() => addScheduleMutation.mutate()}
+                        >
+                          {addScheduleMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                          Add Schedule
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
                 
                 <div className="space-y-4">
-                  {experience.schedules.map((schedule) => {
+                  {experience.schedules.map((schedule: any) => {
                     const percentage = Math.round((schedule.spotsFilled / schedule.totalSpots) * 100);
                     const isFull = schedule.spotsFilled >= schedule.totalSpots;
                     return (
@@ -449,8 +525,40 @@ function DashboardExperienceDetails() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-[2rem] border border-border/60 bg-card p-12 text-center shadow-[var(--shadow-card)]">
-                <p className="text-muted-foreground">No upcoming schedules found.</p>
+              <div className="rounded-[2rem] border border-border/60 bg-card p-12 text-center shadow-[var(--shadow-card)] flex flex-col items-center justify-center">
+                <Calendar className="h-8 w-8 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <p className="text-muted-foreground font-medium mb-4">No upcoming schedules found.</p>
+                <Dialog open={isAddScheduleOpen} onOpenChange={setIsAddScheduleOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="rounded-full shadow-sm" style={{ background: "var(--gradient-primary)" }}>
+                      <Plus className="mr-2 h-4 w-4" /> Add First Schedule
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="rounded-[2rem] border-border/60">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-semibold">Add Upcoming Schedule</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Start Date</Label>
+                        <Input 
+                          type="date" 
+                          className="rounded-xl h-11" 
+                          value={newScheduleDate}
+                          onChange={(e) => setNewScheduleDate(e.target.value)}
+                        />
+                      </div>
+                      <Button 
+                        className="w-full rounded-xl h-11" 
+                        disabled={!newScheduleDate || addScheduleMutation.isPending}
+                        onClick={() => addScheduleMutation.mutate()}
+                      >
+                        {addScheduleMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        Add Schedule
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
           </TabsContent>

@@ -4,9 +4,16 @@ config();
 async function run() {
   const query = `
     query {
-      __type(name: "events_insert_input") {
-        fields: inputFields {
+      __type(name: "event_attendees") {
+        fields {
           name
+          type { name kind ofType { name kind } }
+        }
+      }
+      ticketsType: __type(name: "event_tickets") {
+        fields {
+          name
+          type { name kind ofType { name kind } }
         }
       }
     }

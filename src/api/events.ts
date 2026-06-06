@@ -14,6 +14,27 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
   return hasuraRequest(CREATE_EVENT, { object: eventData });
 });
 
+
+
+const CREATE_EVENT_SCHEDULE = `
+  mutation CreateEventSchedule($data: event_schedules_insert_input!) {
+    insert_event_schedules_one(object: $data) {
+      id
+      start_date
+      end_date
+      total_spots
+      spots_filled
+      event_id
+    }
+  }
+`;
+
+export const createEventSchedule = createServerFn({ method: "POST" }).handler(async (ctx: any) => {
+  const { data } = ctx.data as unknown as { data: any };
+  return hasuraRequest<any>(CREATE_EVENT_SCHEDULE, { data });
+});
+
+
 const GET_PUBLIC_EVENTS = `
   query GetPublicEvents {
     events(where: { allowed_public: { _eq: true } }, order_by: { created_at: desc }) {
@@ -140,6 +161,14 @@ const GET_EVENT_BY_ID = `
       updated_at
       vipPerks
       workspace_id
+      schedules {
+        id
+        start_date
+        end_date
+        total_spots
+        spots_filled
+        created_at
+      }
       event_tickets {
         cost
         created_at

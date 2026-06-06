@@ -203,6 +203,20 @@ export function CreateExperienceDesktop({
             form_id: t.form_id || null,
           })),
         },
+        schedules: {
+          data: [
+            {
+              start_date: data.date,
+              end_date: (() => {
+                if (!data.date) return data.date;
+                const d = new Date(data.date);
+                d.setDate(d.getDate() + Math.max(1, (data.numberOfDays || 1)) - 1);
+                return d.toISOString().split("T")[0];
+              })(),
+              total_spots: data.tickets.reduce((sum: number, t: any) => sum + parseInt(t.quantity || 0), 0)
+            }
+          ]
+        }
       };
 
       if (isEdit && initialData?.id) {
