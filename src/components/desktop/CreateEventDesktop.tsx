@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { categories } from "@/lib/mock-data";
+import { eventCategories } from "@/lib/mock-data";
 import { createEvent } from "@/api/events";
 import { getCoordinates, getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { toast } from "sonner";
@@ -222,7 +222,7 @@ export function CreateEventDesktop() {
 
   const [data, setData] = useState({
     title: "",
-    category: categories[0],
+    category: eventCategories[0],
     description: "",
     locations: [
       {
@@ -427,7 +427,7 @@ export function CreateEventDesktop() {
                   onChange={(e) => updateField("category", e.target.value)}
                   className="mt-1 flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 hover:border-border/80 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 >
-                  {categories.map((c) => (
+                  {eventCategories.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
                 </select>

@@ -74,7 +74,7 @@ export const events: Event[] = [
     venue: "The Alchemist Rooftop",
     date: "Fri, Jun 20",
     time: "17:30",
-    category: "Experiences",
+    category: "Trips",
     price: 22,
     cover: e2,
     attendees: 540,
@@ -209,7 +209,7 @@ export const events: Event[] = [
     venue: "Ngaparou Beach",
     date: "Fri, Nov 06",
     time: "10:00",
-    category: "Experiences",
+    category: "Trips",
     price: 95,
     cover: expSurf,
     attendees: 120,
@@ -228,7 +228,7 @@ export const events: Event[] = [
     venue: "Mount Meru Base Camp",
     date: "Sat, Dec 12",
     time: "04:00",
-    category: "Experiences",
+    category: "Trips",
     price: 45,
     cover: expHiking,
     attendees: 45,
@@ -261,16 +261,33 @@ export const events: Event[] = [
   },
 ];
 
-export const categories = [
+export const eventCategories = [
   "Music",
   "Sports",
   "Cinema",
   "Conferences",
   "Nightlife",
   "Festivals",
-  "Tourism",
-  "Experiences",
+  "Comedy",
+  "Workshop",
 ];
+
+export const experienceCategories = [
+  "Hiking",
+  "Running",
+  "Surf",
+  "Wellness",
+  "Drawing",
+  "Art",
+  "Trips",
+  "Bike Rides",
+  "Yoga",
+  "Book Clubs",
+  "Tourism",
+];
+
+// For backwards compatibility where just `categories` is imported
+export const categories = [...eventCategories, ...experienceCategories];
 
 export type Organizer = {
   id: string;
@@ -404,7 +421,7 @@ export type Experience = {
   title: string;
   host: string;
   city: string;
-  category: "Hiking" | "Running" | "Surf" | "Wellness" | "Food";
+  category: "Hiking" | "Running" | "Surf" | "Wellness" | "Food" | "Drawing" | "Trips" | "Art";
   duration: string;
   date: string;
   currency?: string;
@@ -413,6 +430,12 @@ export type Experience = {
   rating: number;
   spots: number;
   description: string;
+  requirements?: string[];
+  included?: string[];
+  team?: { role: string; name: string; avatar?: string }[];
+  addons?: { id: string; name: string; price: number; image?: string; description?: string }[];
+  schedules?: { id: string; date: string; spotsFilled: number; totalSpots: number }[];
+  itinerary?: { id: string; title: string; time: string; address: string; lat?: number; lng?: number }[];
 };
 
 export const experiences: Experience[] = [
@@ -431,6 +454,74 @@ export const experiences: Experience[] = [
     spots: 12,
     description:
       "Pre-dawn hike to catch the sunrise over Mount Meru. Guides, breakfast and shuttle included.",
+    requirements: [
+      "Sturdy hiking boots with ankle support",
+      "Warm layered clothing (it gets freezing at the peak!)",
+      "Headlamp with extra batteries",
+      "At least 2 liters of drinking water",
+      "High energy snacks (e.g. protein bars)",
+      "Valid ID or Passport"
+    ],
+    included: [
+      "Park Entrance Fees",
+      "Professional English-speaking Guide",
+      "Armed Ranger",
+      "Packed Breakfast & Hot Drinks",
+      "Hotel pick-up & drop-off"
+    ],
+    team: [
+      { role: "Lead Guide", name: "Juma Kipara" },
+      { role: "Armed Ranger", name: "Godfrey Swai" },
+      { role: "First Aid & Porter", name: "Emanuel" }
+    ],
+    addons: [
+      { id: "a1", name: "Walking Poles Rental", price: 15, description: "Pair of sturdy telescopic walking poles." },
+      { id: "a2", name: "Extra Warm Jacket", price: 20, description: "Insulated down jacket for the chilly summit." },
+      { id: "a3", name: "Meru Summit T-Shirt", price: 25, description: "Commemorative t-shirt (Size M/L/XL)." }
+    ],
+    schedules: [
+      { id: "s1", date: "Nov 12, 2024", spotsFilled: 12, totalSpots: 12 },
+      { id: "s2", date: "Nov 19, 2024", spotsFilled: 8, totalSpots: 12 },
+      { id: "s3", date: "Nov 26, 2024", spotsFilled: 3, totalSpots: 12 },
+      { id: "s4", date: "Dec 05, 2024", spotsFilled: 0, totalSpots: 12 },
+    ],
+    itinerary: [
+      { id: "i1", title: "Take-off Point / Briefing", time: "04:00", address: "Arusha City Center Plaza", lat: -3.3723, lng: 36.6823 },
+      { id: "i2", title: "Arrive at Base Camp", time: "05:00", address: "Mount Meru Base Camp", lat: -3.2847, lng: 36.7865 },
+      { id: "i3", title: "Sunrise at the Peak", time: "06:30", address: "Mount Meru Peak", lat: -3.2452, lng: 36.7584 },
+      { id: "i4", title: "Breakfast & Descent", time: "08:00", address: "Miriakamba Hut", lat: -3.2654, lng: 36.7901 },
+    ],
+  },
+  {
+    id: "kigali-sip-paint",
+    title: "Sunset Sip & Paint Kigali",
+    host: "Artisan Hub",
+    city: "Kigali, RW",
+    category: "Art",
+    duration: "3 hours",
+    date: "Every Friday",
+    price: 35,
+    cover: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?q=80&w=2500&auto=format&fit=crop",
+    rating: 4.9,
+    spots: 20,
+    description: "Unwind with a glass of wine and step-by-step canvas painting. All art supplies and your first drink are included. Perfect for beginners and groups!",
+    schedules: [
+      { id: "s1", date: "Nov 15, 2024 • 17:00 - 20:00", spotsFilled: 20, totalSpots: 20 },
+      { id: "s2", date: "Nov 22, 2024 • 17:00 - 20:00", spotsFilled: 14, totalSpots: 20 },
+    ],
+    included: [
+      "Blank Canvas & Easel",
+      "Paints & Brushes",
+      "Professional Art Instructor",
+      "One Complimentary Drink (Wine/Juice)"
+    ],
+    itinerary: [
+      { id: "i1", title: "Arrival & Drink Selection", time: "17:00", address: "Inzora Rooftop Cafe" },
+      { id: "i2", title: "Painting Basics Briefing", time: "17:30", address: "Inzora Rooftop Cafe" },
+      { id: "i3", title: "Guided Painting Session", time: "17:45", address: "Inzora Rooftop Cafe" },
+      { id: "i4", title: "Sunset Photo Ops & Mingling", time: "19:30", address: "Inzora Rooftop Cafe" },
+      { id: "i5", title: "Event Wraps Up", time: "20:00", address: "Inzora Rooftop Cafe" },
+    ]
   },
   {
     id: "lagos-run-club",
@@ -445,6 +536,17 @@ export const experiences: Experience[] = [
     rating: 4.8,
     spots: 80,
     description: "Weekly 10K social run along Lekki. All paces welcome — pacers up to 7:30/km.",
+    schedules: [
+      { id: "s1", date: "Nov 17, 2024", spotsFilled: 65, totalSpots: 80 },
+      { id: "s2", date: "Nov 24, 2024", spotsFilled: 30, totalSpots: 80 },
+    ],
+    itinerary: [
+      { id: "i1", title: "Warm-up & Bag Drop", time: "06:30", address: "Lekki Leisure Lake", lat: 6.4253, lng: 3.4862 },
+      { id: "i2", title: "Run Start Line", time: "07:00", address: "Lekki-Ikoyi Link Bridge Toll", lat: 6.4520, lng: 3.4688 },
+      { id: "i3", title: "Midpoint Water Station", time: "07:45", address: "Ikoyi Club Entrance", lat: 6.4485, lng: 3.4350 },
+      { id: "i4", title: "Finish Line", time: "08:30", address: "Lekki Leisure Lake", lat: 6.4253, lng: 3.4862 },
+      { id: "i5", title: "Post-Run Stretch & Breakfast", time: "08:45", address: "Lekki Beach Club", lat: 6.4248, lng: 3.4885 },
+    ]
   },
   {
     id: "dakar-kite-camp",
@@ -502,6 +604,21 @@ export const experiences: Experience[] = [
     rating: 4.7,
     spots: 20,
     description: "Beachfront vinyasa flow at sunrise, with fresh juice after class.",
+  },
+  {
+    id: "kigali-canvas-drinks",
+    title: "Canvas & Cocktails: Figure Drawing",
+    host: "Art Hub Kigali",
+    city: "Kigali, RW",
+    category: "Drawing",
+    duration: "2.5h",
+    date: "Every Fri",
+    currency: "Frws",
+    price: 15000,
+    cover: e2, // Using existing e2 as a placeholder
+    rating: 4.8,
+    spots: 25,
+    description: "A guided figure drawing session with a live model. All art materials and your first cocktail are included.",
   },
 ];
 

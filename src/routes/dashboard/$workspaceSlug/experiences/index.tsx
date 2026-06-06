@@ -1,0 +1,184 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Plus, MapPin, Clock, Users, Calendar, Eye, Activity, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/currency";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { getWorkspaceEvents } from "@/api/events";
+import { experienceCategories } from "@/lib/mock-data";
+
+export const Route = createFileRoute("/dashboard/$workspaceSlug/experiences/")({
+  component: DashboardExperiences,
+});
+
+function DashboardExperiences() {
+  const { activeWorkspace } = useWorkspace();
+  const navigate = useNavigate();
+
+  const { data: rawEvents = [], isLoading } = useQuery({
+    queryKey: ["workspace-events", activeWorkspace?.id],
+    queryFn: () => getWorkspaceEvents({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
+  const expList = useMemo(() => {
+    return rawEvents
+      .filter((e: any) => experienceCategories.includes(e.category))
+      .map((e: any) => {
+        const firstStop = Array.isArray(e.tour_stops) && e.tour_stops.length > 0 ? e.tour_stops[0] : null;
+        
+        let price = 0;
+        let spots = 0;
+        if (e.event_tickets && e.event_tickets.length > 0) {
+          price = Math.min(...e.event_tickets.map((t: any) => Number(t.cost || 0)));
+          spots = e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.remaining || 0), 0);
+        }
+
+        // Try to find duration from event_requency or tour stops if available
+        let duration = "2-4 hours"; // Fallback
+        
+        return {
+          id: e.id,
+          title: e.title || "Untitled Experience",
+          description: e.description || "No description provided.",
+          cover: e.cover || "https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&q=80",
+          category: e.category,
+          date: firstStop?.date || "TBD",
+          city: firstStop?.city || firstStop?.venue || "TBD",
+          price,
+          currency: activeWorkspace?.currency || "USD",
+          duration,
+          spots
+        };
+      });
+  }, [rawEvents, activeWorkspace]);
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto w-full">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Experiences</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your guided tours, activities, and special experiences.
+          </p>
+        </div>
+        <Link to="/dashboard/$workspaceSlug/experiences/create-experience" params={{ workspaceSlug: activeWorkspace?.slug || "workspace" }}>
+          <Button
+            className="rounded-full shadow-[var(--shadow-glow)]"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            <Plus className="mr-1 h-4 w-4" /> Create Experience
+          </Button>
+        </Link>
+      </header>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
+          <div className="flex items-center justify-between mb-2 text-muted-foreground">
+            <span className="text-xs font-medium uppercase tracking-wider">Total Active</span>
+            <Activity className="h-4 w-4 text-primary" />
+          </div>
+          <p className="text-2xl font-semibold mt-1">{expList.length}</p>
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
+          <div className="flex items-center justify-between mb-2 text-muted-foreground">
+            <span className="text-xs font-medium uppercase tracking-wider">Total Bookings</span>
+            <Users className="h-4 w-4 text-blue-500" />
+          </div>
+          <p className="text-2xl font-semibold mt-1">
+            {expList.reduce((acc, curr) => acc + curr.spots, 0)}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">Available capacity</p>
+        </div>
+      </div>
+
+      {/* Experience List Grid */}
+      {isLoading ? (
+        <div className="flex justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {expList.map((exp) => (
+            <div
+              key={exp.id}
+              className="group rounded-3xl border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)] hover:shadow-lg transition-all flex flex-col"
+            >
+              <div className="relative aspect-[4/3] w-full overflow-hidden">
+                <img
+                  src={exp.cover}
+                  alt={exp.title}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute top-3 left-3">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-background/90 backdrop-blur text-foreground shadow-sm">
+                    {exp.category}
+                  </span>
+                </div>
+                <div className="absolute top-3 right-3">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-primary/90 backdrop-blur text-primary-foreground shadow-sm">
+                    {exp.price === 0 ? "Free" : formatCurrency(exp.price, exp.currency)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-5 flex flex-col flex-1">
+                <h3 className="font-semibold text-lg leading-tight mb-1 group-hover:text-primary transition-colors line-clamp-1">
+                  {exp.title}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                  {exp.description}
+                </p>
+
+                <div className="mt-auto space-y-2.5">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{exp.city}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{exp.date}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/60">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>{exp.duration}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Users className="h-3.5 w-3.5" />
+                      <span>{exp.spots} spots</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-2">
+                  <Button variant="outline" className="w-full h-9 text-xs rounded-xl" onClick={() => navigate({ to: "/dashboard/$workspaceSlug/experiences/$experienceId/edit", params: { workspaceSlug: activeWorkspace?.slug || "workspace", experienceId: exp.id }})}>
+                    Edit
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    className="w-full h-9 text-xs rounded-xl"
+                    onClick={() => navigate({
+                      to: "/dashboard/$workspaceSlug/experiences/$experienceId",
+                      params: { workspaceSlug: activeWorkspace?.slug || "workspace", experienceId: exp.id }
+                    })}
+                  >
+                    <Eye className="mr-1.5 h-3 w-3" /> View
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {expList.length === 0 && (
+            <div className="col-span-full py-20 text-center text-muted-foreground bg-secondary/20 rounded-3xl border border-dashed border-border/60">
+              <p className="text-lg font-medium text-foreground mb-1">No experiences yet</p>
+              <p className="text-sm">Create your first experience to get started.</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

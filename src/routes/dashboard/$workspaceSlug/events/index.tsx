@@ -58,8 +58,12 @@ function DashboardEvents() {
     enabled: !!activeWorkspace?.id,
   });
 
+  const experienceCategories = ["Hiking", "Running", "Surf", "Wellness", "Drawing", "Art", "Trips", "Experience"];
+
   const events = useMemo(() => {
-    return rawEvents.map((e: any) => {
+    return rawEvents
+      .filter((e: any) => !experienceCategories.includes(e.category))
+      .map((e: any) => {
       const firstStop = Array.isArray(e.tour_stops) ? e.tour_stops[0] : null;
       const { salesPct, revenue } = computeStats(e.event_tickets || []);
       return {

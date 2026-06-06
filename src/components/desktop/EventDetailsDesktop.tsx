@@ -11,18 +11,20 @@ import {
   Minus,
   Shield,
   Instagram,
+  CheckCircle2,
 } from "lucide-react";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
-import { events, experiences, movies, ticketTiers, merch } from "@/lib/mock-data";
+import { events, experiences, movies, ticketTiers, merch, experienceCategories } from "@/lib/mock-data";
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 import { checkUserAttendance } from "@/api/attendees";
 import { formatCurrency } from "@/lib/currency";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
+const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
 
 export function EventDetailsDesktop({
   eventId,
@@ -72,6 +74,8 @@ export function EventDetailsDesktop({
     ? ev.attendees || ev.spots || 0
     : ev.event_tickets?.reduce((acc: number, t: any) => acc + (parseInt(t.sold) || 0), 0) || 0;
 
+  const isExperience = experienceCategories.includes(category);
+
   const lineup =
     Array.isArray(ev.lineup) && ev.lineup.length > 0
       ? ev.lineup
@@ -84,6 +88,26 @@ export function EventDetailsDesktop({
           ]
         : [];
 
+  const itinerary = isExperience && Array.isArray(ev.itinerary) && ev.itinerary.length > 0 ? ev.itinerary : [];
+  const included = isExperience && Array.isArray(ev.included) && ev.included.length > 0 ? ev.included : [];
+  
+  const polylinePositions: [number, number][] = itinerary
+    .filter((stop: any) => stop.lat && stop.lng)
+    .map((stop: any) => [stop.lat, stop.lng] as [number, number]);
+
+  let mapCenter: [number, number] = polylinePositions.length > 0 ? polylinePositions[0] : [lat, lng];
+  let bounds: any = undefined;
+  if (polylinePositions.length > 1) {
+    const lats = polylinePositions.map((p: any) => p[0]);
+    const lngs = polylinePositions.map((p: any) => p[1]);
+    bounds = [
+      [Math.min(...lats), Math.min(...lngs)],
+      [Math.max(...lats), Math.max(...lngs)],
+    ];
+  }
+
+  const schedules = isExperience && Array.isArray(ev.schedules) && ev.schedules.length > 0 ? ev.schedules : [];
+  
   const allTicketTiers = isMock
     ? ticketTiers
     : (ev.event_tickets?.length
@@ -99,7 +123,7 @@ export function EventDetailsDesktop({
       }));
 
   const activeTicketTiers = allTicketTiers.filter(
-    (t: any) => t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1,
+    (t: any) => isExperience ? true : (t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1),
   );
 
   const activeMerch = isMock
@@ -207,7 +231,7 @@ export function EventDetailsDesktop({
 
           {lineup.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold">Lineup & Speakers</h2>
+              <h2 className="text-xl font-semibold">{isExperience ? "Meet the Team" : "Lineup & Speakers"}</h2>
               <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
                 {lineup.map((member: any) => (
                   <div
@@ -298,26 +322,81 @@ export function EventDetailsDesktop({
             </div>
           </div>
 
-          <div>
-            <h2 className="text-xl font-semibold">Venue</h2>
-            <div className="mt-4 aspect-[16/9] overflow-hidden rounded-2xl border border-border/60 bg-secondary relative z-0">
-              {isClient ? (
-                <Suspense
-                  fallback={
-                    <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground">
-                      Loading map...
+          {isExperience && included.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold">What's Included</h2>
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {included.map((item: any, idx: number) => (
+                  <div key={idx} className="flex items-start gap-3 rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-500 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-sm">{item.title}</p>
+                      {item.description && (
+                        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{item.description}</p>
+                      )}
                     </div>
-                  }
-                >
-                  <VenueMap lat={lat} lng={lng} venue={venue} city={city} />
-                </Suspense>
-              ) : (
-                <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground">
-                  <MapPin className="mr-2 h-5 w-5" /> {venue ? `${venue}, ` : ""}
-                  {city}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
             </div>
+          )}
+
+          <div>
+            <h2 className="text-xl font-semibold">{isExperience ? "Route & Schedule" : "Venue"}</h2>
+            
+            {isExperience && itinerary.length > 0 ? (
+              <div className={polylinePositions.length > 0 ? "mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8" : "mt-4 block"}>
+                {polylinePositions.length > 0 && (
+                  <div className="rounded-2xl overflow-hidden border border-border/60 h-[400px] z-10 relative mb-8 lg:mb-0">
+                    {isClient ? (
+                      <Suspense fallback={<div className="h-full w-full bg-secondary flex items-center justify-center">Loading map...</div>}>
+                        <ExperienceMap itinerary={itinerary} bounds={bounds} mapCenter={mapCenter} polylinePositions={polylinePositions} />
+                      </Suspense>
+                    ) : (
+                      <div className="h-full w-full bg-secondary flex items-center justify-center">Loading map...</div>
+                    )}
+                  </div>
+                )}
+                <div className="space-y-0 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent pt-2">
+                  {itinerary.map((stop: any) => (
+                    <div key={stop.id} className="relative flex items-start group py-4">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-primary shadow-sm shrink-0 relative z-10">
+                        <div className="w-2 h-2 rounded-full bg-white"></div>
+                      </div>
+                      <div className="ml-4 bg-secondary/30 w-full p-4 rounded-2xl border border-border/60 shadow-sm">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="font-bold">{stop.title}</h4>
+                          <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">{stop.time}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
+                          <MapPin className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{stop.address}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 aspect-[16/9] overflow-hidden rounded-2xl border border-border/60 bg-secondary relative z-0">
+                {isClient ? (
+                  <Suspense
+                    fallback={
+                      <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground">
+                        Loading map...
+                      </div>
+                    }
+                  >
+                    <VenueMap lat={lat} lng={lng} venue={venue} city={city} />
+                  </Suspense>
+                ) : (
+                  <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground">
+                    <MapPin className="mr-2 h-5 w-5" /> {venue ? `${venue}, ` : ""}
+                    {city}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div>
@@ -379,25 +458,65 @@ export function EventDetailsDesktop({
               </p>
             </div>
 
-            {tourStops.length > 1 && (
-              <div className="mt-5">
-                <p className="text-sm font-medium mb-2 text-muted-foreground">Select Tour Stop</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {tourStops.map((stop: any, idx: number) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setSelectedStopIdx(idx);
-                        setTier(allTicketTiers.find((t: any) => t.tour_stop_idx === idx)?.id);
-                      }}
-                      className={`w-full px-2 py-2 rounded-xl text-[11px] leading-tight font-semibold border transition-all ${selectedStopIdx === idx ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border hover:bg-secondary"}`}
-                    >
-                      <span className="block truncate">{stop.city}</span>
-                      <span className="block opacity-80 mt-0.5">{stop.date}</span>
-                    </button>
-                  ))}
+            {isExperience ? (
+              schedules.length > 0 && (
+                <div className="mt-5">
+                  <p className="text-sm font-medium mb-2 text-muted-foreground">Select Schedule</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {schedules.map((schedule: any, idx: number) => {
+                      const isFull = schedule.spotsFilled >= schedule.totalSpots;
+                      return (
+                        <button
+                          key={schedule.id || idx}
+                          onClick={() => {
+                            if (!isFull) {
+                              setSelectedStopIdx(idx);
+                            }
+                          }}
+                          disabled={isFull}
+                          className={`w-full px-3 py-2.5 rounded-xl text-left border transition-all ${
+                            selectedStopIdx === idx 
+                              ? "bg-primary/10 border-primary text-foreground" 
+                              : isFull
+                                ? "bg-secondary/30 border-border/40 opacity-60 cursor-not-allowed"
+                                : "bg-background border-border hover:bg-secondary"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-[13px]">{schedule.date}</span>
+                            {isFull ? (
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">Sold Out</span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">{schedule.totalSpots - (schedule.spotsFilled || 0)} spots</span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )
+            ) : (
+              tourStops.length > 1 && (
+                <div className="mt-5">
+                  <p className="text-sm font-medium mb-2 text-muted-foreground">Select Tour Stop</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {tourStops.map((stop: any, idx: number) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setSelectedStopIdx(idx);
+                          setTier(allTicketTiers.find((t: any) => t.tour_stop_idx === idx)?.id);
+                        }}
+                        className={`w-full px-2 py-2 rounded-xl text-[11px] leading-tight font-semibold border transition-all ${selectedStopIdx === idx ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border hover:bg-secondary"}`}
+                      >
+                        <span className="block truncate">{stop.city}</span>
+                        <span className="block opacity-80 mt-0.5">{stop.date}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )
             )}
 
             <div className="mt-5 space-y-2">
@@ -438,10 +557,10 @@ export function EventDetailsDesktop({
             <Button
               asChild
               className="mt-4 h-12 w-full rounded-2xl text-base shadow-[var(--shadow-glow)]"
-              style={{ background: "var(--gradient-primary)" }}
+              style={{ background: selected?.price === 0 ? "var(--foreground)" : "var(--gradient-primary)" }}
             >
               <Link to="/book/$eventId" params={{ eventId: ev.id }} className="w-full block">
-                Get Tickets
+                {selected?.price === 0 ? "Register for Free" : "Get Tickets"}
               </Link>
             </Button>
 

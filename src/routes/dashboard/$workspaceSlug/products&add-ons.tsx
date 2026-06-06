@@ -251,6 +251,7 @@ function AddCampaignModal() {
 
 function WorkspaceProductsView() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
+  const { activeWorkspace } = useWorkspace();
 
   const merchandise = [
     {

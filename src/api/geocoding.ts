@@ -72,3 +72,32 @@ export const getPlaceDetails = createServerFn({ method: "POST" }).handler(async 
   }
   return { lat: null, lng: null };
 });
+
+export const getRouteDistance = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { origin, destination, waypoints } = ctx.data as unknown as { origin: string, destination: string, waypoints?: string[] };
+  const config = getServerConfig();
+  const apiKey = config.googleApiKey;
+
+  if (!apiKey || !origin || !destination) return null;
+
+  try {
+    let url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${apiKey}`;
+    if (waypoints && waypoints.length > 0) {
+      url += `&waypoints=${waypoints.join("|")}`;
+    }
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.routes && data.routes.length > 0) {
+      let totalMeters = 0;
+      const legs = data.routes[0].legs;
+      for (const leg of legs) {
+        totalMeters += leg.distance.value;
+      }
+      return { kilometers: (totalMeters / 1000).toFixed(1) };
+    }
+  } catch (error) {
+    console.error("Error fetching directions:", error);
+  }
+  return null;
+});
