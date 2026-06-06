@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { getWorkspaceForms } from "@/api/rsvps";
 import {
   ArrowLeft,
   ArrowRight,
@@ -123,6 +124,7 @@ type Ticket = {
   sale_ends_at?: string;
   tour_stop_idx?: number | null;
   includes?: string[];
+  form_id?: string;
 };
 type Merch = { id: string; name: string; price: number; image?: string };
 
@@ -215,6 +217,12 @@ export function CreateEventDesktop() {
   const step = urlStep || 0;
   const { activeWorkspace } = useWorkspace();
   const currencySymbol = getCurrencySymbol(activeWorkspace?.wallet?.currency);
+
+  const { data: forms = [] } = useQuery({
+    queryKey: ["workspace_forms", activeWorkspace?.id],
+    queryFn: () => getWorkspaceForms({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
 
   const dashboardUrl = workspaceSlug ? `/dashboard/${workspaceSlug}` : "/dashboard";
 
@@ -995,6 +1003,23 @@ function TicketEditor({
                 <Plus className="mr-1 h-3.5 w-3.5" /> Add included item
               </Button>
             </div>
+            {(t.price === 0 || t.type === "free") && forms.length > 0 && (
+              <div className="md:col-span-full">
+                <Label className="text-xs text-muted-foreground mb-1 block">Attach Registration Form (Optional)</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  value={t.form_id || ""}
+                  onChange={(e) => update(t.id, { form_id: e.target.value })}
+                >
+                  <option value="">No form (Standard checkout)</option>
+                  {forms.map((f: any) => (
+                    <option key={f.id} value={f.id}>
+                      {f.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <Button
               variant="ghost"
               size="icon"

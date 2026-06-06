@@ -24,6 +24,7 @@ const GET_PUBLIC_EVENTS = `
       deleted
       description
       event_requency
+      event_type
       id
       title
       lineup
@@ -44,6 +45,7 @@ const GET_PUBLIC_EVENTS = `
         tour_stop_idx
         type
         updated_at
+        form_id
       }
       ticket_projects {
         coverImage
@@ -97,6 +99,7 @@ const GET_WORKSPACE_EVENTS = `
       cover
       tour_stops
       lineup
+      event_type
       allowed_public
       created_at
       event_tickets {
@@ -106,6 +109,7 @@ const GET_WORKSPACE_EVENTS = `
         remaining
         sold
         tour_stop_idx
+        form_id
       }
     }
   }
@@ -127,6 +131,7 @@ const GET_EVENT_BY_ID = `
       deleted
       description
       event_requency
+      event_type
       id
       title
       lineup
@@ -202,6 +207,7 @@ const UPDATE_EVENT = `
     $vipPerks: String,
     $event_requency: jsonb,
     $lineup: jsonb,
+    $event_type: String,
     $allowed_public: Boolean
   ) {
     update_events_by_pk(
@@ -215,6 +221,7 @@ const UPDATE_EVENT = `
         vipPerks: $vipPerks,
         event_requency: $event_requency,
         lineup: $lineup,
+        event_type: $event_type,
         allowed_public: $allowed_public
       }
     ) {
@@ -318,6 +325,7 @@ const GET_WORKSPACE_TICKET_PROJECTS = `
         deleted
         description
         event_requency
+        event_type
         id
         title
         tour_stops
@@ -336,6 +344,7 @@ const GET_WORKSPACE_TICKET_PROJECTS = `
           type
           updated_at
           tour_stop_idx
+          form_id
         }
       }
       created_at

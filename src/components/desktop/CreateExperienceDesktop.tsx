@@ -1,6 +1,9 @@
 import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { getWorkspaceForms } from "@/api/rsvps";
+import { uploadFile } from "@/api/storage";
+import { createEvent, updateEvent } from "@/api/events";
 import {
   ArrowLeft,
   ArrowRight,
@@ -69,13 +72,21 @@ export function CreateExperienceDesktop({
       { id: generateId(), day: 1, title: "Stopping Point", address: "", time: "16:00", lat: null, lng: null },
     ],
     tickets: initialData?.tickets?.length > 0 ? initialData.tickets : [
-      { id: generateId(), name: "General Admission", price: 45, quantity: 20, includes: [""] },
+      { id: generateId(), name: "General Admission", price: 45, quantity: 20, includes: [""], form_id: "" },
     ],
     coverPreview: initialData?.cover || "",
     published: false,
   };
 
   const [data, setData] = useState(defaultData);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverError, setCoverError] = useState("");
+
+  const { data: forms = [] } = useQuery({
+    queryKey: ["workspace_forms", activeWorkspace?.id],
+    queryFn: () => getWorkspaceForms({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
 
   useEffect(() => {
     if (initialData) return; // Don't load draft if editing an existing experience
@@ -120,11 +131,42 @@ export function CreateExperienceDesktop({
       [k]: typeof v === 'function' ? v(prev[k as keyof typeof prev]) : v
     }));
 
-  const onCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    const url = URL.createObjectURL(f);
-    updateField("coverPreview", url);
+
+    // 5 MB guard
+    if (f.size > 5 * 1024 * 1024) {
+      setCoverError("Image must be smaller than 5 MB.");
+      return;
+    }
+    setCoverError("");
+    setCoverUploading(true);
+
+    // Show local preview immediately
+    const previewUrl = URL.createObjectURL(f);
+    updateField("coverPreview", previewUrl);
+
+    try {
+      const ext = f.name.split(".").pop() || "jpg";
+      const base64 = await new Promise<string>((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res((reader.result as string).split(",")[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(f);
+      });
+      const { url } = await uploadFile({
+        data: { base64, contentType: f.type, folder: "experiences", ext },
+      } as any);
+      updateField("coverPreview", url);
+      updateField("coverUrl", url);
+    } catch (err: any) {
+      setCoverError(err.message || "Upload failed. Please try again.");
+      updateField("coverPreview", "");
+      updateField("coverUrl", "");
+    } finally {
+      setCoverUploading(false);
+    }
   };
 
   const next = () => setStep(Math.min(steps.length - 1, step + 1));
@@ -132,11 +174,53 @@ export function CreateExperienceDesktop({
 
   const publishMutation = useMutation({
     mutationFn: async () => {
-      // Simulate API call to publish the experience
-      return new Promise((resolve) => setTimeout(resolve, 1500));
+      const payload = {
+        title: data.title,
+        category: data.category,
+        description: data.description,
+        cover: data.coverUrl || "",
+        workspace_id: activeWorkspace?.id,
+        event_type: "experience",
+        tour_stops: {
+          country: data.country,
+          city: data.city,
+          venueName: data.venueName,
+          venueAddress: data.venueAddress,
+          venueCoordinates: { lat: data.venueLat, lng: data.venueLng },
+          routeDistance: data.routeDistance,
+          itinerary: data.itinerary,
+        },
+        event_requency: {
+          date: data.date,
+          numberOfDays: data.numberOfDays,
+        },
+        event_tickets: {
+          data: data.tickets.map((t: any) => ({
+            type: t.name,
+            cost: t.price.toString(),
+            remaining: t.quantity.toString(),
+            sold: "0",
+            form_id: t.form_id || null,
+          })),
+        },
+      };
+
+      if (isEdit && initialData?.id) {
+        return await updateEvent({ id: initialData.id, ...payload } as any);
+      } else {
+        return await createEvent({ data: payload } as any);
+      }
     },
     onSuccess: () => {
-      updateField("published", true);
+      toast.success(isEdit ? "Experience updated successfully!" : "Experience created successfully!");
+      localStorage.removeItem("create_experience_draft");
+      
+      setTimeout(() => {
+        navigate({
+          to: "/dashboard/$workspaceSlug/experiences",
+          params: { workspaceSlug: workspaceSlug || "" },
+        });
+      }, 1500);
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to create experience");
@@ -235,6 +319,33 @@ export function CreateExperienceDesktop({
               </div>
             </div>
 
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label>Start Date</Label>
+                <Input
+                  type="date"
+                  value={data.date || ""}
+                  onChange={(e) => updateField("date", e.target.value)}
+                  className="mt-1 h-12"
+                />
+              </div>
+              <div>
+                <Label>End Date <span className="text-xs text-muted-foreground font-normal">(auto-calculated)</span></Label>
+                <Input
+                  type="date"
+                  readOnly
+                  value={(() => {
+                    if (!data.date) return "";
+                    const d = new Date(data.date);
+                    d.setDate(d.getDate() + Math.max(1, (data.numberOfDays || 1)) - 1);
+                    return d.toISOString().split("T")[0];
+                  })()}
+                  className="mt-1 h-12 cursor-default opacity-70 bg-secondary/40"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Based on trip duration ({data.numberOfDays || 1} day{(data.numberOfDays || 1) !== 1 ? "s" : ""})</p>
+              </div>
+            </div>
+
             <div>
               <Label>Description</Label>
               <Textarea
@@ -314,6 +425,27 @@ export function CreateExperienceDesktop({
                         }}
                       />
                     </div>
+                    {ticket.price === 0 && forms.length > 0 && (
+                      <div className="col-span-full space-y-2 mt-2">
+                        <Label>Attach Registration Form (Optional)</Label>
+                        <select
+                          className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          value={ticket.form_id || ""}
+                          onChange={(e) => {
+                            const newTix = [...data.tickets];
+                            newTix[idx].form_id = e.target.value;
+                            updateField("tickets", newTix);
+                          }}
+                        >
+                          <option value="">No form (Standard checkout)</option>
+                          {forms.map((f: any) => (
+                            <option key={f.id} value={f.id}>
+                              {f.title}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     <div className="col-span-full space-y-2 mt-2">
                       <Label>What's Included</Label>
                       <div className="space-y-2">
@@ -371,7 +503,7 @@ export function CreateExperienceDesktop({
               onClick={() => {
                 updateField("tickets", [
                   ...data.tickets,
-                  { id: generateId(), name: "", price: 0, quantity: 0, includes: [""] },
+                  { id: generateId(), name: "", price: 0, quantity: 0, includes: [""], form_id: "" },
                 ]);
               }}
             >
@@ -385,29 +517,50 @@ export function CreateExperienceDesktop({
           <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
             <Label className="text-base font-semibold">Experience Cover Image</Label>
             <p className="text-sm text-muted-foreground mb-4">
-              Upload a beautiful cover image that showcases the experience. This will be the first thing people see.
+              Upload a beautiful cover image that showcases the experience. Max file size: <strong>5 MB</strong>.
             </p>
-            <label className="block aspect-[21/9] cursor-pointer overflow-hidden rounded-[2rem] border-2 border-dashed border-border/60 bg-secondary/30 transition-all hover:border-primary hover:bg-secondary/50 relative group">
+            <label className={`block aspect-[21/9] cursor-pointer overflow-hidden rounded-[2rem] border-2 border-dashed transition-all relative group ${
+              coverUploading ? "border-primary/60 bg-primary/5" : "border-border/60 bg-secondary/30 hover:border-primary hover:bg-secondary/50"
+            }`}>
               {data.coverPreview ? (
                 <>
-                  <img src={data.coverPreview} alt="cover" className="h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <p className="text-white font-medium flex items-center"><Upload className="mr-2 h-4 w-4" /> Change Image</p>
-                  </div>
+                  <img src={data.coverPreview} alt="cover" className={`h-full w-full object-cover transition-opacity ${coverUploading ? "opacity-50" : "opacity-100"}`} />
+                  {coverUploading ? (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex flex-col items-center gap-2 text-primary">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <p className="text-sm font-medium">Uploading…</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <p className="text-white font-medium flex items-center"><Upload className="mr-2 h-4 w-4" /> Change Image</p>
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="grid h-full place-items-center text-sm text-muted-foreground">
-                  <div className="text-center">
-                    <div className="h-16 w-16 rounded-full bg-background shadow-sm border border-border/60 flex items-center justify-center mx-auto mb-4 text-primary">
-                      <Upload className="h-6 w-6" />
+                  {coverUploading ? (
+                    <div className="flex flex-col items-center gap-2 text-primary">
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                      <p className="text-sm font-medium">Uploading…</p>
                     </div>
-                    <p className="font-medium text-foreground">Click or drag image to upload</p>
-                    <p className="mt-1 text-xs text-muted-foreground">High resolution, minimal text recommended.</p>
-                  </div>
+                  ) : (
+                    <div className="text-center">
+                      <div className="h-16 w-16 rounded-full bg-background shadow-sm border border-border/60 flex items-center justify-center mx-auto mb-4 text-primary">
+                        <Upload className="h-6 w-6" />
+                      </div>
+                      <p className="font-medium text-foreground">Click or drag image to upload</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Max 5 MB · JPG, PNG, or WebP recommended</p>
+                    </div>
+                  )}
                 </div>
               )}
-              <input type="file" accept="image/*" hidden onChange={onCoverUpload} />
+              <input type="file" accept="image/*" hidden onChange={onCoverUpload} disabled={coverUploading} />
             </label>
+            {coverError && (
+              <p className="text-sm text-red-500 font-medium">{coverError}</p>
+            )}
           </div>
         )}
 
@@ -471,17 +624,6 @@ export function CreateExperienceDesktop({
                 </div>
               </div>
             </div>
-            
-            <Button
-              size="lg"
-              className="w-full rounded-full h-14 text-base shadow-[var(--shadow-glow)]"
-              style={{ background: "var(--gradient-primary)" }}
-              onClick={handlePublish}
-              disabled={publishMutation.isPending}
-            >
-              {publishMutation.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              {isEdit ? "Save Changes" : "Publish Experience"}
-            </Button>
           </div>
         )}
 
