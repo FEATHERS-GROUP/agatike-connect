@@ -15,13 +15,15 @@ import {
   CheckCircle,
   PackagePlus,
   ShoppingBag,
-  User
+  User,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { experiences } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/currency";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useMemo, useState, useEffect, lazy, Suspense } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getEventById } from "@/api/events";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
@@ -57,16 +59,84 @@ function DashboardExperienceDetails() {
     setIsMounted(true);
   }, []);
 
-  const experience = experiences.find((e) => e.id === experienceId) || experiences[0];
+  const { data: rawEvent, isLoading } = useQuery({
+    queryKey: ["event", experienceId],
+    queryFn: () => getEventById({ data: { id: experienceId } } as any),
+    enabled: !!experienceId,
+  });
+
+  const experience = useMemo(() => {
+    if (!rawEvent) return null;
+    
+    const e = rawEvent;
+    const ts = e.tour_stops || {};
+    const fr = e.event_requency || {};
+    
+    let price = 0;
+    let spots = 0;
+    if (e.event_tickets && e.event_tickets.length > 0) {
+      price = Math.min(...e.event_tickets.map((t: any) => Number(t.cost || 0)));
+      spots = e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.remaining || 0), 0);
+    }
+
+    const dateStr = fr.date || ts.date || "";
+    const numDays = fr.numberOfDays || 1;
+    
+    let durationStr = "Not specified";
+    let endDateStr = dateStr;
+    
+    if (numDays > 1) {
+      durationStr = `${numDays} Days`;
+      if (dateStr) {
+        const d = new Date(dateStr);
+        d.setDate(d.getDate() + numDays - 1);
+        endDateStr = d.toISOString().split("T")[0];
+      }
+    } else {
+       const itin = ts.itinerary || [];
+       if (itin.length >= 2) {
+         const firstTime = itin[0].time;
+         const lastTime = itin[itin.length - 1].time;
+         if (firstTime && lastTime) {
+           const [h1, m1] = firstTime.split(':').map(Number);
+           const [h2, m2] = lastTime.split(':').map(Number);
+           const diff = (h2 + m2/60) - (h1 + m1/60);
+           durationStr = diff > 0 ? `${Math.round(diff * 10) / 10} hours` : "Not specified";
+         }
+       }
+    }
+    
+    const displayDate = numDays > 1 && dateStr ? `${dateStr} to ${endDateStr}` : (dateStr || "Not scheduled");
+    const city = ts.city || ts.venueName || "Location not set";
+
+    return {
+      id: e.id,
+      title: e.title || "Untitled Experience",
+      description: e.description || "No description provided.",
+      cover: e.cover || "https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&q=80",
+      category: e.category || "experience",
+      date: displayDate,
+      city: city,
+      price,
+      currency: activeWorkspace?.currency || "USD",
+      duration: durationStr,
+      spots,
+      rating: "4.8",
+      itinerary: ts.itinerary || [],
+      requirements: [],
+      schedules: [],
+      addons: e.merchandises || [],
+      team: []
+    };
+  }, [rawEvent, activeWorkspace]);
 
   const { totalBookings, maxCapacity } = useMemo(() => {
-    if (experience?.schedules) {
-      const bookings = experience.schedules.reduce((acc, curr) => acc + curr.spotsFilled, 0);
-      const capacity = experience.schedules.reduce((acc, curr) => acc + curr.totalSpots, 0);
-      return { totalBookings: bookings, maxCapacity: capacity };
+    let booked = 0;
+    if (rawEvent?.event_tickets) {
+      booked = rawEvent.event_tickets.reduce((acc: number, t: any) => acc + Number(t.sold || 0), 0);
     }
-    return { totalBookings: 8, maxCapacity: experience?.spots || 12 };
-  }, [experience]);
+    return { totalBookings: booked, maxCapacity: experience?.spots || 0 };
+  }, [rawEvent, experience]);
 
   const { totalDistance, mapCenter, polylinePositions, bounds } = useMemo(() => {
     let distance = 0;
@@ -75,17 +145,17 @@ function DashboardExperienceDetails() {
     let lngs: number[] = [];
 
     if (experience?.itinerary) {
-      const validStops = experience.itinerary.filter(stop => stop.lat && stop.lng);
-      validStops.forEach((stop, i) => {
-        const lat = stop.lat!;
-        const lng = stop.lng!;
+      const validStops = experience.itinerary.filter((stop: any) => stop.lat != null && stop.lng != null && !isNaN(Number(stop.lat)) && !isNaN(Number(stop.lng)));
+      validStops.forEach((stop: any, i: number) => {
+        const lat = Number(stop.lat);
+        const lng = Number(stop.lng);
         positions.push([lat, lng]);
         lats.push(lat);
         lngs.push(lng);
 
         if (i > 0) {
           const prev = validStops[i - 1];
-          distance += getDistanceFromLatLonInKm(prev.lat!, prev.lng!, lat, lng);
+          distance += getDistanceFromLatLonInKm(Number(prev.lat), Number(prev.lng), lat, lng);
         }
       });
     }
@@ -111,6 +181,14 @@ function DashboardExperienceDetails() {
       bounds: bnds
     };
   }, [experience]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!experience) {
     return (

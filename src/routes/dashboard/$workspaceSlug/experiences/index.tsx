@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, MapPin, Clock, Users, Calendar, Eye, Activity, Loader2 } from "lucide-react";
+import { Plus, MapPin, Clock, Users, Calendar, Eye, Activity, Loader2, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -22,11 +22,25 @@ function DashboardExperiences() {
     enabled: !!activeWorkspace?.id,
   });
 
+  const [draft, setDraft] = useState<any>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("create_experience_draft");
+      if (saved) {
+        setDraft(JSON.parse(saved));
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
   const expList = useMemo(() => {
     return rawEvents
-      .filter((e: any) => experienceCategories.includes(e.category))
+      .filter((e: any) => e.event_type === "experience" || experienceCategories.includes(e.category))
       .map((e: any) => {
-        const firstStop = Array.isArray(e.tour_stops) && e.tour_stops.length > 0 ? e.tour_stops[0] : null;
+        const ts = e.tour_stops || {};
+        const fr = e.event_requency || {};
         
         let price = 0;
         let spots = 0;
@@ -35,8 +49,39 @@ function DashboardExperiences() {
           spots = e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.remaining || 0), 0);
         }
 
-        // Try to find duration from event_requency or tour stops if available
-        let duration = "2-4 hours"; // Fallback
+        const dateStr = fr.date || ts.date || "";
+        const numDays = fr.numberOfDays || 1;
+        
+        let durationStr = "Not specified";
+        let endDateStr = dateStr;
+        
+        if (numDays > 1) {
+          durationStr = `${numDays} Days`;
+          if (dateStr) {
+            const d = new Date(dateStr);
+            d.setDate(d.getDate() + numDays - 1);
+            endDateStr = d.toISOString().split("T")[0];
+          }
+        } else {
+           const itin = ts.itinerary || [];
+           if (itin.length >= 2) {
+             const firstTime = itin[0].time;
+             const lastTime = itin[itin.length - 1].time;
+             if (firstTime && lastTime) {
+               const [h1, m1] = firstTime.split(':').map(Number);
+               const [h2, m2] = lastTime.split(':').map(Number);
+               const diff = (h2 + m2/60) - (h1 + m1/60);
+               durationStr = diff > 0 ? `${Math.round(diff * 10) / 10} hours` : "Not specified";
+             } else {
+               durationStr = "Not specified";
+             }
+           } else {
+             durationStr = "Not specified";
+           }
+        }
+        
+        const displayDate = numDays > 1 && dateStr ? `${dateStr} to ${endDateStr}` : (dateStr || "Not scheduled");
+        const city = ts.city || ts.venueName || "Location not set";
         
         return {
           id: e.id,
@@ -44,11 +89,11 @@ function DashboardExperiences() {
           description: e.description || "No description provided.",
           cover: e.cover || "https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&q=80",
           category: e.category,
-          date: firstStop?.date || "TBD",
-          city: firstStop?.city || firstStop?.venue || "TBD",
+          date: displayDate,
+          city: city,
           price,
           currency: activeWorkspace?.currency || "USD",
-          duration,
+          duration: durationStr,
           spots
         };
       });
@@ -101,6 +146,20 @@ function DashboardExperiences() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {/* Draft Card */}
+          {draft && (
+            <div className="group rounded-3xl border-2 border-dashed border-primary/50 bg-primary/5 overflow-hidden flex flex-col items-center justify-center p-6 text-center hover:bg-primary/10 transition-colors">
+              <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 text-primary shadow-sm">
+                <Edit3 className="h-6 w-6" />
+              </div>
+              <h3 className="font-semibold text-lg text-foreground mb-1 line-clamp-1">{draft.title || "Unpublished Draft"}</h3>
+              <p className="text-sm text-muted-foreground mb-6">You have an unsaved experience draft. Click to resume editing.</p>
+              <Button onClick={() => navigate({ to: "/dashboard/$workspaceSlug/experiences/create-experience", params: { workspaceSlug: activeWorkspace?.slug || "workspace" }})} className="rounded-full shadow-sm">
+                Resume Editing
+              </Button>
+            </div>
+          )}
+          
           {expList.map((exp) => (
             <div
               key={exp.id}
@@ -171,7 +230,7 @@ function DashboardExperiences() {
               </div>
             </div>
           ))}
-          {expList.length === 0 && (
+          {expList.length === 0 && !draft && (
             <div className="col-span-full py-20 text-center text-muted-foreground bg-secondary/20 rounded-3xl border border-dashed border-border/60">
               <p className="text-lg font-medium text-foreground mb-1">No experiences yet</p>
               <p className="text-sm">Create your first experience to get started.</p>

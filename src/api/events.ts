@@ -98,6 +98,7 @@ const GET_WORKSPACE_EVENTS = `
       description
       cover
       tour_stops
+      event_requency
       lineup
       event_type
       allowed_public
