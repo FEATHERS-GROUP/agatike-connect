@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -14,6 +14,7 @@ import {
   MapPin,
   Sparkles,
   Loader2,
+  Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -220,7 +221,7 @@ export function CreateEventDesktop() {
     navigate({ search: { step: newStep } as any, replace: true });
   };
 
-  const [data, setData] = useState({
+  const defaultData = {
     title: "",
     category: eventCategories[0],
     description: "",
@@ -242,11 +243,9 @@ export function CreateEventDesktop() {
     isRecurring: false,
     recurrenceType: "weekly",
     recurrenceCount: 4,
-  });
-  const [sameTicketsForAllLocations, setSameTicketsForAllLocations] = useState(true);
-  const [activeTourStopIdx, setActiveTourStopIdx] = useState(0);
+  };
 
-  const [tickets, setTickets] = useState<Ticket[]>([
+  const defaultTickets: Ticket[] = [
     {
       id: "1",
       name: "General Admission",
@@ -255,10 +254,53 @@ export function CreateEventDesktop() {
       type: "paid",
       tour_stop_idx: null,
     },
-  ]);
+  ];
+
+  const [data, setData] = useState(defaultData);
+  const [sameTicketsForAllLocations, setSameTicketsForAllLocations] = useState(true);
+  const [activeTourStopIdx, setActiveTourStopIdx] = useState(0);
+
+  const [tickets, setTickets] = useState<Ticket[]>(defaultTickets);
   const [merch, setMerch] = useState<Merch[]>([{ id: "m1", name: "Event Tee", price: 20 }]);
 
   const [coverFile, setCoverFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    const draft = localStorage.getItem('create_event_draft');
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        if (parsed.data) setData(parsed.data);
+        if (parsed.tickets) setTickets(parsed.tickets);
+        if (parsed.merch) setMerch(parsed.merch);
+        if (parsed.sameTickets !== undefined) setSameTicketsForAllLocations(parsed.sameTickets);
+        toast.info("Restored your event draft from your last session.");
+      } catch (e) {
+        console.error("Failed to parse event draft", e);
+      }
+    }
+  }, []);
+
+  const saveDraft = () => {
+    const draftState = {
+      data,
+      tickets,
+      merch,
+      sameTickets: sameTicketsForAllLocations,
+    };
+    localStorage.setItem('create_event_draft', JSON.stringify(draftState));
+    toast.success("Draft saved! You can safely leave and come back later.");
+  };
+
+  const clearDraft = () => {
+    localStorage.removeItem('create_event_draft');
+    setData(defaultData);
+    setTickets(defaultTickets);
+    setMerch([{ id: "m1", name: "Event Tee", price: 20 }]);
+    setSameTicketsForAllLocations(true);
+    setStep(0);
+    toast.success("Draft cleared. Starting fresh.");
+  };
 
   const updateField = <K extends keyof typeof data>(k: K, v: (typeof data)[K]) =>
     setData({ ...data, [k]: v });
@@ -715,26 +757,39 @@ export function CreateEventDesktop() {
         )}
 
         <div className="mt-8 flex items-center justify-between border-t border-border/60 pt-6">
-          <Button variant="outline" onClick={prev} disabled={step === 0} className="rounded-full">
-            <ArrowLeft className="mr-1 h-4 w-4" /> Back
-          </Button>
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => navigate({ to: dashboardUrl })}
-              className="rounded-full"
-            >
-              Save & exit
+            <Button variant="ghost" className="rounded-full shadow-none text-muted-foreground hover:text-red-500 hover:bg-red-500/10" onClick={clearDraft}>
+              <Trash2 className="mr-1.5 h-4 w-4" /> Start fresh
             </Button>
+            <Button variant="outline" className="rounded-full shadow-sm" onClick={saveDraft}>
+              <Save className="mr-1.5 h-4 w-4" /> Save for later
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            {step > 0 && (
+              <Button variant="outline" onClick={prev} className="rounded-full">
+                <ArrowLeft className="mr-1 h-4 w-4" /> Back
+              </Button>
+            )}
             {step < steps.length - 1 ? (
               <Button
                 onClick={next}
-                className="rounded-full"
+                className="rounded-full px-8"
                 style={{ background: "var(--gradient-primary)" }}
               >
                 Continue <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
-            ) : null}
+            ) : (
+              <Button
+                onClick={handlePublish}
+                disabled={publishMutation.isPending}
+                className="rounded-full px-8 shadow-[var(--shadow-glow)]"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                {publishMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Publish Event
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -1116,21 +1171,6 @@ function PublishReview({
           </ul>
         </div>
       </div>
-
-      <Button
-        onClick={onPublish}
-        disabled={isPending}
-        className="w-full h-12 rounded-2xl shadow-[var(--shadow-glow)]"
-        style={{ background: "var(--gradient-primary)" }}
-      >
-        {isPending ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Publishing...
-          </>
-        ) : (
-          "Publish event"
-        )}
-      </Button>
     </div>
   );
 }

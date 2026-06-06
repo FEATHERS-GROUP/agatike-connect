@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 
@@ -18,13 +18,25 @@ export function LocationSearchInput({
   const [predictions, setPredictions] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <div className="relative">
+    <div ref={wrapperRef} className="relative">
       <Input
         value={value}
         onChange={async (e) => {
           const val = e.target.value;
+          console.log("Input onChange fired with value:", val);
           onChange(val);
           if (!val.trim()) {
             setPredictions([]);
@@ -42,8 +54,7 @@ export function LocationSearchInput({
             setIsLoading(false);
           }
         }}
-        onFocus={() => value.trim() && setIsOpen(true)}
-        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+        onFocus={() => value?.trim() && setIsOpen(true)}
         placeholder={placeholder}
         className={className}
       />
@@ -57,10 +68,14 @@ export function LocationSearchInput({
               <div
                 key={p.place_id}
                 className="relative flex cursor-pointer select-none flex-col rounded-sm px-4 py-3 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
-                onClick={async () => {
+                onMouseDown={async (e) => {
+                  e.preventDefault();
+                  console.log("Dropdown item onMouseDown fired for:", p.description);
                   onChange(p.description);
                   setIsOpen(false);
+                  console.log("Fetching details for:", p.place_id);
                   const coords = await getPlaceDetails({ data: p.place_id } as any);
+                  console.log("Coords received:", coords);
                   if (coords && coords.lat && coords.lng) {
                     onSelectCoordinates(coords.lat, coords.lng);
                   }

@@ -3,7 +3,6 @@ import { getServerConfig } from "../lib/config.server";
 
 export const getCoordinates = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const payload = ctx.data as any;
-  console.log("PAYLOAD RECEIVED:", JSON.stringify(payload));
   const address = payload?.data || payload;
   const config = getServerConfig();
   const apiKey = config.googleApiKey;
@@ -56,7 +55,6 @@ export const getPlacesAutocomplete = createServerFn({ method: "POST" }).handler(
 
 export const getPlaceDetails = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const payload = ctx.data as any;
-  console.log("PAYLOAD RECEIVED:", JSON.stringify(payload));
   const placeId = payload?.data || payload;
   const config = getServerConfig();
   const apiKey = config.googleApiKey;
@@ -80,7 +78,6 @@ export const getPlaceDetails = createServerFn({ method: "POST" }).handler(async 
 
 export const getRouteDistance = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const payload = ctx.data as any;
-  console.log("PAYLOAD RECEIVED:", JSON.stringify(payload));
   const { origin, destination, waypoints } = payload?.data || payload;
   const config = getServerConfig();
   const apiKey = config.googleApiKey;

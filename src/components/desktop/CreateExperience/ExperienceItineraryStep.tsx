@@ -62,8 +62,8 @@ export function ExperienceItineraryStep({
   };
 
   const addStop = () => {
-    updateField("itinerary", [
-      ...data.itinerary,
+    updateField("itinerary", (prev: any[]) => [
+      ...prev,
       { id: generateId(), day: activeDay, title: "", address: "", time: "", lat: null, lng: null },
     ]);
   };
@@ -71,14 +71,14 @@ export function ExperienceItineraryStep({
   const removeStop = (id: string) => {
     updateField(
       "itinerary",
-      data.itinerary.filter((s: any) => s.id !== id)
+      (prev: any[]) => prev.filter((s: any) => s.id !== id)
     );
   };
 
   const updateStop = (id: string, updates: any) => {
     updateField(
       "itinerary",
-      data.itinerary.map((s: any) => (s.id === id ? { ...s, ...updates } : s))
+      (prevItinerary: any[]) => prevItinerary.map((s: any) => (s.id === id ? { ...s, ...updates } : s))
     );
   };
 

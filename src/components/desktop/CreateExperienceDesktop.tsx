@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -23,6 +23,7 @@ import { CategorySelectStep } from "./CreateExperience/CategorySelectStep";
 import { ExperienceVenueStep } from "./CreateExperience/ExperienceVenueStep";
 import { ExperienceItineraryStep } from "./CreateExperience/ExperienceItineraryStep";
 import { ExperienceDurationStep } from "./CreateExperience/ExperienceDurationStep";
+import { Save, Trash2 } from "lucide-react";
 
 function generateId() {
   if (typeof window !== "undefined" && window.crypto && window.crypto.randomUUID) {
@@ -48,7 +49,7 @@ export function CreateExperienceDesktop({
 
   const dashboardUrl = workspaceSlug ? `/dashboard/${workspaceSlug}` : "/dashboard";
 
-  const [data, setData] = useState({
+  const defaultData = {
     title: initialData?.title || "",
     country: initialData?.country || "Rwanda",
     city: initialData?.city || "",
@@ -72,7 +73,36 @@ export function CreateExperienceDesktop({
     ],
     coverPreview: initialData?.cover || "",
     published: false,
-  });
+  };
+
+  const [data, setData] = useState(defaultData);
+
+  useEffect(() => {
+    if (initialData) return; // Don't load draft if editing an existing experience
+    const draft = localStorage.getItem('create_experience_draft');
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        if (parsed.data) setData(parsed.data);
+        toast.info("Restored your experience draft from your last session.");
+      } catch (e) {
+        console.error("Failed to parse experience draft", e);
+      }
+    }
+  }, [initialData]);
+
+  const saveDraft = () => {
+    const draftState = { data };
+    localStorage.setItem('create_experience_draft', JSON.stringify(draftState));
+    toast.success("Draft saved! You can safely leave and come back later.");
+  };
+
+  const clearDraft = () => {
+    localStorage.removeItem('create_experience_draft');
+    setData(defaultData);
+    setStep(0);
+    toast.success("Draft cleared. Starting fresh.");
+  };
 
   const isRouteBased = ROUTE_CATEGORIES.includes(data.category);
   const locationStepName = isRouteBased ? "Itinerary" : "Venue";
@@ -85,7 +115,10 @@ export function CreateExperienceDesktop({
   };
 
   const updateField = (k: string, v: any) =>
-    setData({ ...data, [k]: v });
+    setData((prev) => ({
+      ...prev,
+      [k]: typeof v === 'function' ? v(prev[k as keyof typeof prev]) : v
+    }));
 
   const onCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -393,27 +426,44 @@ export function CreateExperienceDesktop({
           </div>
         )}
 
-        <div className="mt-10 flex items-center justify-between border-t border-border/60 pt-6">
-          <Button variant="outline" onClick={prev} disabled={step === 0 || publishMutation.isPending} className="rounded-full shadow-sm hover:bg-secondary">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
-          </Button>
-          <div className="flex gap-3">
-            <Button
-              variant="ghost"
-              onClick={() => navigate({ to: dashboardUrl })}
-              className="rounded-full hover:bg-secondary"
-            >
-              Cancel
-            </Button>
+        <div className="mt-8 flex items-center justify-between border-t border-border/60 pt-6">
+          <div className="flex gap-2">
+            {!initialData && (
+              <>
+                <Button variant="ghost" className="rounded-full shadow-none text-muted-foreground hover:text-red-500 hover:bg-red-500/10" onClick={clearDraft}>
+                  <Trash2 className="mr-1.5 h-4 w-4" /> Start fresh
+                </Button>
+                <Button variant="outline" className="rounded-full shadow-sm" onClick={saveDraft}>
+                  <Save className="mr-1.5 h-4 w-4" /> Save for later
+                </Button>
+              </>
+            )}
+          </div>
+          <div className="flex gap-2">
+            {step > 0 && (
+              <Button variant="outline" onClick={prev} className="rounded-full">
+                <ArrowLeft className="mr-1 h-4 w-4" /> Back
+              </Button>
+            )}
             {step < steps.length - 1 ? (
               <Button
                 onClick={next}
-                className="rounded-full shadow-[var(--shadow-glow)] hover:shadow-lg transition-all"
+                className="rounded-full px-8"
                 style={{ background: "var(--gradient-primary)" }}
               >
-                Continue <ArrowRight className="ml-2 h-4 w-4" />
+                Continue <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
-            ) : null}
+            ) : (
+              <Button
+                onClick={handlePublish}
+                disabled={publishMutation.isPending}
+                className="rounded-full px-8 shadow-[var(--shadow-glow)]"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                {publishMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isEdit ? "Update Experience" : "Publish Experience"}
+              </Button>
+            )}
           </div>
         </div>
       </div>
