@@ -36,7 +36,6 @@ export function LocationSearchInput({
         value={value}
         onChange={async (e) => {
           const val = e.target.value;
-          console.log("Input onChange fired with value:", val);
           onChange(val);
           if (!val.trim()) {
             setPredictions([]);
@@ -70,12 +69,9 @@ export function LocationSearchInput({
                 className="relative flex cursor-pointer select-none flex-col rounded-sm px-4 py-3 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
                 onMouseDown={async (e) => {
                   e.preventDefault();
-                  console.log("Dropdown item onMouseDown fired for:", p.description);
                   onChange(p.description);
                   setIsOpen(false);
-                  console.log("Fetching details for:", p.place_id);
                   const coords = await getPlaceDetails({ data: p.place_id } as any);
-                  console.log("Coords received:", coords);
                   if (coords && coords.lat && coords.lng) {
                     onSelectCoordinates(coords.lat, coords.lng);
                   }
