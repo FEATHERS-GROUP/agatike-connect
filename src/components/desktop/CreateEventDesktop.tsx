@@ -122,6 +122,7 @@ type Ticket = {
   type: "free" | "paid" | "vip" | "early";
   sale_ends_at?: string;
   tour_stop_idx?: number | null;
+  includes?: string[];
 };
 type Merch = { id: string; name: string; price: number; image?: string };
 
@@ -954,6 +955,46 @@ function TicketEditor({
                 />
               </div>
             )}
+            <div className="md:col-span-full">
+              <Label className="text-xs text-muted-foreground mb-1 block">What's Included</Label>
+              <div className="space-y-2">
+                {(t.includes || [""]).map((inc: string, incIdx: number) => (
+                  <div key={incIdx} className="flex items-center gap-2">
+                    <Input
+                      value={inc}
+                      onChange={(e) => {
+                        const newIncludes = [...(t.includes || [""])];
+                        newIncludes[incIdx] = e.target.value;
+                        update(t.id, { includes: newIncludes });
+                      }}
+                      placeholder="e.g. Backstage access"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                      onClick={() => {
+                        const newIncludes = [...(t.includes || [""])];
+                        newIncludes.splice(incIdx, 1);
+                        update(t.id, { includes: newIncludes });
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-1 text-primary hover:text-primary/80"
+                onClick={() => {
+                  update(t.id, { includes: [...(t.includes || []), ""] });
+                }}
+              >
+                <Plus className="mr-1 h-3.5 w-3.5" /> Add included item
+              </Button>
+            </div>
             <Button
               variant="ghost"
               size="icon"

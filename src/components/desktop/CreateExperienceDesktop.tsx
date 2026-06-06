@@ -23,7 +23,7 @@ import { CategorySelectStep } from "./CreateExperience/CategorySelectStep";
 import { ExperienceVenueStep } from "./CreateExperience/ExperienceVenueStep";
 import { ExperienceItineraryStep } from "./CreateExperience/ExperienceItineraryStep";
 import { ExperienceDurationStep } from "./CreateExperience/ExperienceDurationStep";
-import { Save, Trash2 } from "lucide-react";
+import { Save, Trash2, Plus } from "lucide-react";
 
 function generateId() {
   if (typeof window !== "undefined" && window.crypto && window.crypto.randomUUID) {
@@ -69,7 +69,7 @@ export function CreateExperienceDesktop({
       { id: generateId(), day: 1, title: "Stopping Point", address: "", time: "16:00", lat: null, lng: null },
     ],
     tickets: initialData?.tickets?.length > 0 ? initialData.tickets : [
-      { id: generateId(), name: "General Admission", price: 45, quantity: 20 },
+      { id: generateId(), name: "General Admission", price: 45, quantity: 20, includes: [""] },
     ],
     coverPreview: initialData?.cover || "",
     published: false,
@@ -314,10 +314,69 @@ export function CreateExperienceDesktop({
                         }}
                       />
                     </div>
+                    <div className="col-span-full space-y-2 mt-2">
+                      <Label>What's Included</Label>
+                      <div className="space-y-2">
+                        {(ticket.includes || [""]).map((inc: string, incIdx: number) => (
+                          <div key={incIdx} className="flex items-center gap-2">
+                            <Input
+                              value={inc}
+                              onChange={(e) => {
+                                const newTix = [...data.tickets];
+                                const newIncludes = [...(newTix[idx].includes || [""])];
+                                newIncludes[incIdx] = e.target.value;
+                                newTix[idx].includes = newIncludes;
+                                updateField("tickets", newTix);
+                              }}
+                              placeholder="e.g. Bottled water"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="shrink-0 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                              onClick={() => {
+                                const newTix = [...data.tickets];
+                                const newIncludes = [...(newTix[idx].includes || [""])];
+                                newIncludes.splice(incIdx, 1);
+                                newTix[idx].includes = newIncludes;
+                                updateField("tickets", newTix);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="mt-1 text-primary hover:text-primary/80"
+                        onClick={() => {
+                          const newTix = [...data.tickets];
+                          newTix[idx].includes = [...(newTix[idx].includes || []), ""];
+                          updateField("tickets", newTix);
+                        }}
+                      >
+                        <Plus className="mr-1 h-3.5 w-3.5" /> Add included item
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4 rounded-full"
+              onClick={() => {
+                updateField("tickets", [
+                  ...data.tickets,
+                  { id: generateId(), name: "", price: 0, quantity: 0, includes: [""] },
+                ]);
+              }}
+            >
+              + Add another ticket type
+            </Button>
           </div>
         )}
 
