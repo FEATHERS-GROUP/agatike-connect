@@ -18,7 +18,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/experiences/$exp
 });
 
 function EditExperienceRoute() {
-  const { experienceId } = useParams({ strict: false }) as { experienceId: string };
+  const { experienceId: eventId } = useParams({ strict: false }) as { experienceId: string };
 
   const { data: experience, isLoading } = useQuery({
     queryKey: ["event", experienceId],

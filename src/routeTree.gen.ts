@@ -73,7 +73,12 @@ import { Route as DashboardWorkspaceSlugEventsEventIdIndexRouteImport } from './
 import { Route as DashboardWorkspaceSlugVenuesVenueIdSettingsRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/settings'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdOverviewRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/overview'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdBookingsRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/bookings'
+import { Route as DashboardWorkspaceSlugExperiencesExperienceIdStaffRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+import { Route as DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
+import { Route as DashboardWorkspaceSlugExperiencesExperienceIdPlanningRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/planning'
+import { Route as DashboardWorkspaceSlugExperiencesExperienceIdExperienceRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/experience'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdEditRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/edit'
+import { Route as DashboardWorkspaceSlugExperiencesExperienceIdAttendeesRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/attendees'
 import { Route as DashboardWorkspaceSlugEventsEventIdVenueRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/venue'
 import { Route as DashboardWorkspaceSlugEventsEventIdStaffRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/staff'
 import { Route as DashboardWorkspaceSlugEventsEventIdSectionsRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/sections'
@@ -432,10 +437,42 @@ const DashboardWorkspaceSlugVenuesVenueIdBookingsRoute =
     path: '/bookings',
     getParentRoute: () => DashboardWorkspaceSlugVenuesVenueIdRoute,
   } as any)
+const DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute =
+  DashboardWorkspaceSlugExperiencesExperienceIdStaffRouteImport.update({
+    id: '/$workspaceSlug/experiences/$experienceId/staff',
+    path: '/$workspaceSlug/experiences/$experienceId/staff',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute =
+  DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRouteImport.update(
+    {
+      id: '/$workspaceSlug/experiences/$experienceId/products&add-ons',
+      path: '/$workspaceSlug/experiences/$experienceId/products&add-ons',
+      getParentRoute: () => DashboardRoute,
+    } as any,
+  )
+const DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute =
+  DashboardWorkspaceSlugExperiencesExperienceIdPlanningRouteImport.update({
+    id: '/$workspaceSlug/experiences/$experienceId/planning',
+    path: '/$workspaceSlug/experiences/$experienceId/planning',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugExperiencesExperienceIdExperienceRoute =
+  DashboardWorkspaceSlugExperiencesExperienceIdExperienceRouteImport.update({
+    id: '/$workspaceSlug/experiences/$experienceId/experience',
+    path: '/$workspaceSlug/experiences/$experienceId/experience',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugExperiencesExperienceIdEditRoute =
   DashboardWorkspaceSlugExperiencesExperienceIdEditRouteImport.update({
     id: '/$workspaceSlug/experiences/$experienceId/edit',
     path: '/$workspaceSlug/experiences/$experienceId/edit',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugExperiencesExperienceIdAttendeesRoute =
+  DashboardWorkspaceSlugExperiencesExperienceIdAttendeesRouteImport.update({
+    id: '/$workspaceSlug/experiences/$experienceId/attendees',
+    path: '/$workspaceSlug/experiences/$experienceId/attendees',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardWorkspaceSlugEventsEventIdVenueRoute =
@@ -569,7 +606,12 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/events/$eventId/sections': typeof DashboardWorkspaceSlugEventsEventIdSectionsRoute
   '/dashboard/$workspaceSlug/events/$eventId/staff': typeof DashboardWorkspaceSlugEventsEventIdStaffRoute
   '/dashboard/$workspaceSlug/events/$eventId/venue': typeof DashboardWorkspaceSlugEventsEventIdVenueRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/attendees': typeof DashboardWorkspaceSlugExperiencesExperienceIdAttendeesRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/edit': typeof DashboardWorkspaceSlugExperiencesExperienceIdEditRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/experience': typeof DashboardWorkspaceSlugExperiencesExperienceIdExperienceRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
   '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
   '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
@@ -646,7 +688,12 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/events/$eventId/sections': typeof DashboardWorkspaceSlugEventsEventIdSectionsRoute
   '/dashboard/$workspaceSlug/events/$eventId/staff': typeof DashboardWorkspaceSlugEventsEventIdStaffRoute
   '/dashboard/$workspaceSlug/events/$eventId/venue': typeof DashboardWorkspaceSlugEventsEventIdVenueRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/attendees': typeof DashboardWorkspaceSlugExperiencesExperienceIdAttendeesRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/edit': typeof DashboardWorkspaceSlugExperiencesExperienceIdEditRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/experience': typeof DashboardWorkspaceSlugExperiencesExperienceIdExperienceRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
   '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
   '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
@@ -724,7 +771,12 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/events/$eventId/sections': typeof DashboardWorkspaceSlugEventsEventIdSectionsRoute
   '/dashboard/$workspaceSlug/events/$eventId/staff': typeof DashboardWorkspaceSlugEventsEventIdStaffRoute
   '/dashboard/$workspaceSlug/events/$eventId/venue': typeof DashboardWorkspaceSlugEventsEventIdVenueRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/attendees': typeof DashboardWorkspaceSlugExperiencesExperienceIdAttendeesRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/edit': typeof DashboardWorkspaceSlugExperiencesExperienceIdEditRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/experience': typeof DashboardWorkspaceSlugExperiencesExperienceIdExperienceRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
+  '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
   '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
   '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
@@ -803,7 +855,12 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events/$eventId/sections'
     | '/dashboard/$workspaceSlug/events/$eventId/staff'
     | '/dashboard/$workspaceSlug/events/$eventId/venue'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/attendees'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/edit'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/experience'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
     | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
     | '/dashboard/$workspaceSlug/venues/$venueId/overview'
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
@@ -880,7 +937,12 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events/$eventId/sections'
     | '/dashboard/$workspaceSlug/events/$eventId/staff'
     | '/dashboard/$workspaceSlug/events/$eventId/venue'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/attendees'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/edit'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/experience'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
     | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
     | '/dashboard/$workspaceSlug/venues/$venueId/overview'
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
@@ -957,7 +1019,12 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events/$eventId/sections'
     | '/dashboard/$workspaceSlug/events/$eventId/staff'
     | '/dashboard/$workspaceSlug/events/$eventId/venue'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/attendees'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/edit'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/experience'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
+    | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
     | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
     | '/dashboard/$workspaceSlug/venues/$venueId/overview'
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
@@ -1451,11 +1518,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRouteImport
       parentRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRoute
     }
+    '/dashboard/$workspaceSlug/experiences/$experienceId/staff': {
+      id: '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+      path: '/$workspaceSlug/experiences/$experienceId/staff'
+      fullPath: '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+      preLoaderRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': {
+      id: '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
+      path: '/$workspaceSlug/experiences/$experienceId/products&add-ons'
+      fullPath: '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
+      preLoaderRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/experiences/$experienceId/planning': {
+      id: '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
+      path: '/$workspaceSlug/experiences/$experienceId/planning'
+      fullPath: '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
+      preLoaderRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/experiences/$experienceId/experience': {
+      id: '/dashboard/$workspaceSlug/experiences/$experienceId/experience'
+      path: '/$workspaceSlug/experiences/$experienceId/experience'
+      fullPath: '/dashboard/$workspaceSlug/experiences/$experienceId/experience'
+      preLoaderRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdExperienceRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/experiences/$experienceId/edit': {
       id: '/dashboard/$workspaceSlug/experiences/$experienceId/edit'
       path: '/$workspaceSlug/experiences/$experienceId/edit'
       fullPath: '/dashboard/$workspaceSlug/experiences/$experienceId/edit'
       preLoaderRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdEditRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/experiences/$experienceId/attendees': {
+      id: '/dashboard/$workspaceSlug/experiences/$experienceId/attendees'
+      path: '/$workspaceSlug/experiences/$experienceId/attendees'
+      fullPath: '/dashboard/$workspaceSlug/experiences/$experienceId/attendees'
+      preLoaderRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdAttendeesRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/$workspaceSlug/events/$eventId/venue': {
@@ -1589,7 +1691,12 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugEventsEventIdSectionsRoute: typeof DashboardWorkspaceSlugEventsEventIdSectionsRoute
   DashboardWorkspaceSlugEventsEventIdStaffRoute: typeof DashboardWorkspaceSlugEventsEventIdStaffRoute
   DashboardWorkspaceSlugEventsEventIdVenueRoute: typeof DashboardWorkspaceSlugEventsEventIdVenueRoute
+  DashboardWorkspaceSlugExperiencesExperienceIdAttendeesRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdAttendeesRoute
   DashboardWorkspaceSlugExperiencesExperienceIdEditRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdEditRoute
+  DashboardWorkspaceSlugExperiencesExperienceIdExperienceRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdExperienceRoute
+  DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
+  DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
+  DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
   DashboardWorkspaceSlugEventsEventIdIndexRoute: typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
   DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute
 }
@@ -1657,8 +1764,18 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugEventsEventIdStaffRoute,
   DashboardWorkspaceSlugEventsEventIdVenueRoute:
     DashboardWorkspaceSlugEventsEventIdVenueRoute,
+  DashboardWorkspaceSlugExperiencesExperienceIdAttendeesRoute:
+    DashboardWorkspaceSlugExperiencesExperienceIdAttendeesRoute,
   DashboardWorkspaceSlugExperiencesExperienceIdEditRoute:
     DashboardWorkspaceSlugExperiencesExperienceIdEditRoute,
+  DashboardWorkspaceSlugExperiencesExperienceIdExperienceRoute:
+    DashboardWorkspaceSlugExperiencesExperienceIdExperienceRoute,
+  DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute:
+    DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute,
+  DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute:
+    DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute,
+  DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute:
+    DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute,
   DashboardWorkspaceSlugEventsEventIdIndexRoute:
     DashboardWorkspaceSlugEventsEventIdIndexRoute,
   DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute:

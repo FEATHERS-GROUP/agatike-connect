@@ -147,7 +147,7 @@ function DashboardExperienceDetails() {
         }))
       ].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()),
       addons: e.merchandises || [],
-      team: []
+      team: [] as any[]
     };
   }, [rawEvent, activeWorkspace]);
 

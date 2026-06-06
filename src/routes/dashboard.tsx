@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { DesktopSidebar } from "@/components/desktop/dashboard/DesktopSidebar";
 import { EventSidebar } from "@/components/desktop/dashboard/EventSidebar";
+import { ExperienceSidebar } from "@/components/desktop/dashboard/ExperienceSidebar";
 import { VenueSidebar } from "@/components/desktop/dashboard/VenueSidebar";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useEffect } from "react";
@@ -50,6 +51,7 @@ function DashboardLayout() {
   const { workspaces, activeWorkspace, isLoaded } = useWorkspace();
 
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
+  const isExperienceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/experiences\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
   const search = location.search as any;
   const isDesigningVenue =
@@ -133,6 +135,8 @@ function DashboardLayout() {
           {!hideSidebar &&
             (isEventWorkspace ? (
               <EventSidebar />
+            ) : isExperienceWorkspace ? (
+              <ExperienceSidebar />
             ) : isVenueWorkspace ? (
               <VenueSidebar />
             ) : (
