@@ -149,6 +149,7 @@ function DashboardExperienceDetails() {
       rating: feedbackData?.aggregate?.avg?.rating ? Number(feedbackData.aggregate.avg.rating).toFixed(1) : "N/A",
       itinerary: ts.itinerary || [],
       requirements: [],
+      included: ts.included || [],
       schedules: [
         ...(dateStr ? [{
           id: e.id,
@@ -313,7 +314,14 @@ function DashboardExperienceDetails() {
           <Button variant="outline" className="rounded-full shadow-sm hidden md:flex">
             <Share2 className="mr-2 h-4 w-4" /> Share
           </Button>
-          <Button className="rounded-full shadow-sm" style={{ background: "var(--gradient-primary)" }}>
+          <Button 
+            className="rounded-full shadow-sm" 
+            style={{ background: "var(--gradient-primary)" }}
+            onClick={() => navigate({
+              to: "/dashboard/$workspaceSlug/experiences/$experienceId/edit",
+              params: { workspaceSlug: workspaceSlug || "workspace", experienceId }
+            })}
+          >
             <Edit2 className="mr-2 h-4 w-4" /> Edit Experience
           </Button>
         </div>
@@ -653,8 +661,8 @@ function DashboardExperienceDetails() {
       </div>
 
       {/* RIGHT COLUMN (Sidebar) */}
-        <div className="space-y-6">
-          <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] sticky top-6">
+        <div className="space-y-6 lg:sticky lg:top-6">
+          <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
             <h3 className="font-semibold text-lg mb-4">People to Help</h3>
             {experience.team && experience.team.length > 0 ? (
               <div className="space-y-4 mb-6">
@@ -687,6 +695,23 @@ function DashboardExperienceDetails() {
               </div>
             </div>
           </div>
+
+          {experience.included && experience.included.length > 0 && (
+            <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] animate-in fade-in duration-300">
+              <h3 className="font-semibold text-lg mb-4">What's Included</h3>
+              <div className="space-y-3">
+                {experience.included.map((item: any, idx: number) => {
+                  const title = typeof item === "string" ? item : item.title;
+                  return (
+                    <div key={idx} className="flex items-start gap-2.5">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-500 shrink-0" />
+                      <span className="text-sm text-foreground/90 leading-relaxed">{title}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

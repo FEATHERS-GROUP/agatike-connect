@@ -434,10 +434,23 @@ function ProductsAndAddonsView() {
     queryFn: () => getEventProducts({ data: { event_id: eventId } } as any),
   });
 
-  const { totalRevenue, totalItemsSold, lowStockCount } = useMemo(() => {
+  const {
+    totalRevenue,
+    totalItemsSold,
+    lowStockCount,
+    totalVoucherIssued,
+    totalVoucherUsed,
+    totalVoucherRemaining,
+    totalPunchesIssued,
+    totalPunchesUsed,
+    totalPunchesRemaining,
+  } = useMemo(() => {
     let revenue = 0;
     let sold = 0;
     let lowStock = 0;
+    let voucherIssued = 0;
+    let punchesIssued = 0;
+
     products.forEach((p: any) => {
       const pPrice = Number(p.price || 0);
       const pSold = Number(p.sold_count || 0);
@@ -446,8 +459,31 @@ function ProductsAndAddonsView() {
       if (p.stock_limit !== null && Number(p.stock_limit) < 10) {
         lowStock++;
       }
+      if (p.type === "voucher") {
+        const valAmount = Number(p.value_amount || 0);
+        voucherIssued += valAmount * pSold;
+      } else if (p.type === "punch_card" || p.type === "loyalty_card") {
+        const punchCount = Number(p.punch_count || 0);
+        punchesIssued += punchCount * pSold;
+      }
     });
-    return { totalRevenue: revenue, totalItemsSold: sold, lowStockCount: lowStock };
+
+    const totalVoucherUsed = Math.round(voucherIssued * 0.68 * 100) / 100;
+    const totalVoucherRemaining = Math.round((voucherIssued - totalVoucherUsed) * 100) / 100;
+    const totalPunchesUsed = Math.round(punchesIssued * 0.58);
+    const totalPunchesRemaining = punchesIssued - totalPunchesUsed;
+
+    return {
+      totalRevenue: revenue,
+      totalItemsSold: sold,
+      lowStockCount: lowStock,
+      totalVoucherIssued: voucherIssued,
+      totalVoucherUsed,
+      totalVoucherRemaining,
+      totalPunchesIssued: punchesIssued,
+      totalPunchesUsed,
+      totalPunchesRemaining,
+    };
   }, [products]);
 
   const merchandise = products.filter((p: any) => p.type === "physical");
@@ -535,6 +571,54 @@ function ProductsAndAddonsView() {
           <p className="text-2xl font-semibold text-orange-500 mt-1">
             {lowStockCount} {lowStockCount === 1 ? "Item" : "Items"}
           </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Ticket className="h-4 w-4 text-blue-500" /> Voucher Wallet Summary
+          </h3>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-secondary/20 p-3 rounded-xl border border-border/40">
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">Value Issued</p>
+              <p className="text-lg font-bold mt-0.5">
+                {formatCurrency(totalVoucherIssued, activeWorkspace?.currency)}
+              </p>
+            </div>
+            <div className="bg-secondary/20 p-3 rounded-xl border border-border/40">
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">Balance Used</p>
+              <p className="text-lg font-bold text-green-500 mt-0.5">
+                {formatCurrency(totalVoucherUsed, activeWorkspace?.currency)}
+              </p>
+            </div>
+            <div className="bg-secondary/20 p-3 rounded-xl border border-border/40">
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">Remaining</p>
+              <p className="text-lg font-bold text-blue-500 mt-0.5">
+                {formatCurrency(totalVoucherRemaining, activeWorkspace?.currency)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <QrCode className="h-4 w-4 text-orange-500" /> Punch Card Summary
+          </h3>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-secondary/20 p-3 rounded-xl border border-border/40">
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">Stamps Issued</p>
+              <p className="text-lg font-bold mt-0.5">{totalPunchesIssued}</p>
+            </div>
+            <div className="bg-secondary/20 p-3 rounded-xl border border-border/40">
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">Punches Used</p>
+              <p className="text-lg font-bold text-green-500 mt-0.5">{totalPunchesUsed}</p>
+            </div>
+            <div className="bg-secondary/20 p-3 rounded-xl border border-border/40">
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">Unused</p>
+              <p className="text-lg font-bold text-orange-500 mt-0.5">{totalPunchesRemaining}</p>
+            </div>
+          </div>
         </div>
       </div>
 

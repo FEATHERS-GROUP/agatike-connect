@@ -261,11 +261,199 @@ const UPDATE_EVENT = `
 `;
 
 export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const variables = ctx.data as any;
+  const payload = ctx.data as any;
+  const { id, event_tickets, schedules, workspace_id, ...eventUpdateVars } = payload;
+
+  // Fetch the existing event to fallback on unchanged or empty fields
+  const existingEvent = await getEventById({ data: { id } } as any);
+  if (!existingEvent) {
+    throw new Error("Event not found");
+  }
+
+  // Merge payload with existing event data to prevent overwriting with blank values
+  const mergedVars = {
+    id,
+    title: eventUpdateVars.title !== undefined && eventUpdateVars.title !== "" ? eventUpdateVars.title : existingEvent.title,
+    category: eventUpdateVars.category !== undefined && eventUpdateVars.category !== "" ? eventUpdateVars.category : existingEvent.category,
+    description: eventUpdateVars.description !== undefined && eventUpdateVars.description !== "" ? eventUpdateVars.description : existingEvent.description,
+    cover: eventUpdateVars.cover !== undefined && eventUpdateVars.cover !== "" ? eventUpdateVars.cover : existingEvent.cover,
+    tour_stops: eventUpdateVars.tour_stops !== undefined ? eventUpdateVars.tour_stops : existingEvent.tour_stops,
+    vipPerks: eventUpdateVars.vipPerks !== undefined ? eventUpdateVars.vipPerks : existingEvent.vipPerks,
+    event_requency: eventUpdateVars.event_requency !== undefined ? eventUpdateVars.event_requency : existingEvent.event_requency,
+    lineup: eventUpdateVars.lineup !== undefined ? eventUpdateVars.lineup : existingEvent.lineup,
+    event_type: eventUpdateVars.event_type !== undefined ? eventUpdateVars.event_type : existingEvent.event_type,
+    allowed_public: eventUpdateVars.allowed_public !== undefined ? eventUpdateVars.allowed_public : existingEvent.allowed_public,
+  };
+
+  // 1. Update the event table basic info
   const data = await hasuraRequest<{ update_events_by_pk: { id: string } }>(
     UPDATE_EVENT,
-    variables,
+    mergedVars,
   );
+
+  // 2. Update/Upsert Tickets
+  if (event_tickets && event_tickets.data) {
+    const tickets = event_tickets.data;
+    
+    // Identify active tickets that have valid UUIDs
+    const isValidUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    
+    const activeTicketIds = tickets
+      .map((t: any) => t.id)
+      .filter((tid: any) => tid && isValidUUID(tid));
+
+    // Try deleting tickets that are not in the active list
+    if (activeTicketIds.length > 0) {
+      try {
+        await hasuraRequest(
+          `
+          mutation DeleteOldTickets($eventId: uuid!, $activeIds: [uuid!]!) {
+            delete_event_tickets(
+              where: { event_id: { _eq: $eventId }, id: { _nin: $activeIds } }
+            ) {
+              affected_rows
+            }
+          }
+          `,
+          { eventId: id, activeIds: activeTicketIds }
+        );
+      } catch (e) {
+        console.error("Failed to delete unused tickets:", e);
+      }
+    } else {
+      // If no active ticket IDs, try deleting all tickets for this event
+      try {
+        await hasuraRequest(
+          `
+          mutation DeleteAllTickets($eventId: uuid!) {
+            delete_event_tickets(
+              where: { event_id: { _eq: $eventId } }
+            ) {
+              affected_rows
+            }
+          }
+          `,
+          { eventId: id }
+        );
+      } catch (e) {
+        console.error("Failed to delete all tickets:", e);
+      }
+    }
+
+    // Upsert active tickets
+    const ticketsToInsert = tickets.map((t: any) => {
+      const ticketObj: any = {
+        event_id: id,
+        type: t.type,
+        cost: t.cost,
+        remaining: t.remaining,
+        sold: t.sold || "0",
+        form_id: t.form_id || null,
+      };
+      if (t.id && isValidUUID(t.id)) {
+        ticketObj.id = t.id;
+      }
+      return ticketObj;
+    });
+
+    if (ticketsToInsert.length > 0) {
+      try {
+        await hasuraRequest(
+          `
+          mutation UpsertTickets($objects: [event_tickets_insert_input!]!) {
+            insert_event_tickets(
+              objects: $objects,
+              on_conflict: {
+                constraint: event_tickets_pkey,
+                update_columns: [type, cost, remaining, form_id]
+              }
+            ) {
+              affected_rows
+            }
+          }
+          `,
+          { objects: ticketsToInsert }
+        );
+      } catch (e) {
+        console.error("Failed to upsert tickets:", e);
+      }
+    }
+  }
+
+  // 3. Update primary schedule
+  if (schedules && schedules.data && schedules.data.length > 0) {
+    const primarySchedule = schedules.data[0];
+    
+    // Fetch existing schedules for the event
+    try {
+      const schedulesResult = await hasuraRequest<{ event_schedules: any[] }>(
+        `
+        query GetEventSchedules($eventId: uuid!) {
+          event_schedules(where: { event_id: { _eq: $eventId } }) {
+            id
+          }
+        }
+        `,
+        { eventId: id }
+      );
+      
+      const existingSchedules = schedulesResult?.event_schedules || [];
+      if (existingSchedules.length > 0) {
+        // Update the first schedule
+        const firstScheduleId = existingSchedules[0].id;
+        await hasuraRequest(
+          `
+          mutation UpdatePrimarySchedule(
+            $id: uuid!,
+            $start_date: date!,
+            $end_date: date!,
+            $total_spots: Int!
+          ) {
+            update_event_schedules_by_pk(
+              pk_columns: { id: $id },
+              _set: {
+                start_date: $start_date,
+                end_date: $end_date,
+                total_spots: $total_spots
+              }
+            ) {
+              id
+            }
+          }
+          `,
+          {
+            id: firstScheduleId,
+            start_date: primarySchedule.start_date,
+            end_date: primarySchedule.end_date,
+            total_spots: parseInt(primarySchedule.total_spots || 0),
+          }
+        );
+      } else {
+        // Insert a new schedule if none exists
+        await hasuraRequest(
+          `
+          mutation InsertPrimarySchedule($object: event_schedules_insert_input!) {
+            insert_event_schedules_one(object: $object) {
+              id
+            }
+          }
+          `,
+          {
+            object: {
+              event_id: id,
+              start_date: primarySchedule.start_date,
+              end_date: primarySchedule.end_date,
+              total_spots: parseInt(primarySchedule.total_spots || 0),
+              spots_filled: 0,
+            }
+          }
+        );
+      }
+    } catch (e) {
+      console.error("Failed to update/create schedule:", e);
+    }
+  }
+
   return data.update_events_by_pk;
 });
 

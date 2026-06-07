@@ -21,9 +21,9 @@ function EditExperienceRoute() {
   const { experienceId: eventId } = useParams({ strict: false }) as { experienceId: string };
 
   const { data: experience, isLoading } = useQuery({
-    queryKey: ["event", experienceId],
-    queryFn: () => getEventById({ data: { id: experienceId } } as any),
-    enabled: !!experienceId,
+    queryKey: ["event", eventId],
+    queryFn: () => getEventById({ data: { id: eventId } } as any),
+    enabled: !!eventId,
   });
 
   if (isLoading) {
@@ -35,22 +35,33 @@ function EditExperienceRoute() {
   }
 
   // Parse tickets into the format expected by CreateExperienceDesktop
-  const initialTickets = experience?.event_tickets?.map((t: any) => ({
+  const initialTickets = experience?.event_tickets?.map((t: any, idx: number) => ({
     id: t.id,
     name: t.type || "General Admission",
     price: Number(t.cost || 0),
-    quantity: Number(t.remaining || 0) + Number(t.sold || 0)
+    quantity: Number(t.remaining || 0) + Number(t.sold || 0),
+    includes: idx === 0 ? (experience?.tour_stops?.included || [""]) : [""],
+    form_id: t.form_id || "",
   })) || [];
 
   const initialData = {
+    id: experience?.id || "",
     title: experience?.title || "",
     category: experience?.category || "",
     description: experience?.description || "",
     cover: experience?.cover || "",
-    // Fallbacks if not serialized in db yet
-    city: experience?.tour_stops?.[0]?.city || experience?.tour_stops?.[0]?.venue || "",
-    date: experience?.tour_stops?.[0]?.date || "",
-    itinerary: Array.isArray(experience?.lineup) ? experience.lineup : [], // Just reuse lineup for itinerary temporarily if we want
+    city: experience?.tour_stops?.city || "",
+    venueName: experience?.tour_stops?.venueName || "",
+    venueAddress: experience?.tour_stops?.venueAddress || "",
+    venueLat: experience?.tour_stops?.venueCoordinates?.lat || null,
+    venueLng: experience?.tour_stops?.venueCoordinates?.lng || null,
+    date: experience?.event_requency?.date || "",
+    duration: experience?.tour_stops?.duration || "",
+    startTime: experience?.tour_stops?.startTime || "",
+    endTime: experience?.tour_stops?.endTime || "",
+    routeDistance: experience?.tour_stops?.routeDistance || null,
+    numberOfDays: experience?.event_requency?.numberOfDays || 1,
+    itinerary: experience?.tour_stops?.itinerary || [],
     tickets: initialTickets,
   };
 

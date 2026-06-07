@@ -71,7 +71,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/experiences/$exp
 });
 
 function PlanningView() {
-  const { experienceId: eventId   } = useParams({ from: "/dashboard/$workspaceSlug/events/$eventId/planning" });
+  const { experienceId: eventId } = Route.useParams();
 
   return (
     <div className="space-y-6">
@@ -92,18 +92,7 @@ function PlanningView() {
           >
             <Wallet className="h-4 w-4 mr-2" /> Overview
           </TabsTrigger>
-          <TabsTrigger
-            value="vendors"
-            className="rounded-xl h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            <Store className="h-4 w-4 mr-2" /> Vendors
-          </TabsTrigger>
-          <TabsTrigger
-            value="vouchers"
-            className="rounded-xl h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            <CreditCard className="h-4 w-4 mr-2" /> Sponsored Vouchers
-          </TabsTrigger>
+
           <TabsTrigger
             value="book"
             className="rounded-xl h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm"
@@ -116,13 +105,7 @@ function PlanningView() {
           <OverviewTab eventId={eventId} />
         </TabsContent>
 
-        <TabsContent value="vendors" className="mt-0">
-          <VendorsTab eventId={eventId} />
-        </TabsContent>
 
-        <TabsContent value="vouchers" className="mt-0">
-          <VouchersTab eventId={eventId} />
-        </TabsContent>
 
         <TabsContent value="book" className="mt-0">
           <AgatikeBookTab eventId={eventId} />
@@ -1390,7 +1373,7 @@ function OverviewTab({ eventId }: { eventId: string }) {
     }
   });
 
-  const totalEventLiability = totalVendorRevenue + totalBookExpenses;
+  const totalEventLiability = totalBookExpenses;
   const projectedProfit = totalTicketRevenue - totalEventLiability;
 
   if (isLoading)
@@ -1403,7 +1386,7 @@ function OverviewTab({ eventId }: { eventId: string }) {
   return (
     <div className="space-y-6 mt-0">
       {/* Top Financial KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
@@ -1413,30 +1396,6 @@ function OverviewTab({ eventId }: { eventId: string }) {
           </div>
           <p className="text-2xl font-bold">{totalTicketRevenue.toLocaleString()} RWF</p>
           <p className="text-xs text-muted-foreground mt-2">{totalTicketsSold} tickets sold</p>
-        </div>
-        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-              Vouchers Prov.
-            </p>
-            <CreditCard className="h-4 w-4 text-orange-500" />
-          </div>
-          <p className="text-2xl font-bold text-orange-500">
-            {totalVoucherProvisioned.toLocaleString()} RWF
-          </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            {totalVoucherSpent.toLocaleString()} RWF spent
-          </p>
-        </div>
-        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-              Vendor Payouts
-            </p>
-            <Store className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <p className="text-2xl font-bold">{totalVendorRevenue.toLocaleString()} RWF</p>
-          <p className="text-xs text-muted-foreground mt-2">Owed to vendors</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <div className="flex items-center justify-between mb-2">
@@ -1458,115 +1417,48 @@ function OverviewTab({ eventId }: { eventId: string }) {
           <p className="text-2xl font-bold text-foreground">
             {projectedProfit.toLocaleString()} RWF
           </p>
-          <p className="text-xs text-muted-foreground mt-2">Sales - (Vendors + Books)</p>
+          <p className="text-xs text-muted-foreground mt-2">Sales - Book Expenses</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Voucher Portfolio */}
-        <div className="rounded-3xl border border-border/60 bg-card overflow-hidden flex flex-col">
-          <div className="p-6 border-b border-border/50">
-            <h3 className="font-semibold text-lg flex items-center">
-              <CreditCard className="h-5 w-5 mr-2 text-primary" /> Voucher Portfolio Breakdown
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Detailed view of all voucher types and their financial costs.
+        <div className="rounded-3xl border border-border/60 bg-card p-6">
+          <h3 className="font-semibold mb-4 text-lg flex items-center">
+            <BookOpen className="h-5 w-5 mr-2 text-primary" /> Agatike Book Breakdown
+          </h3>
+          {bookBreakdown.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              No values logged in custom books yet.
             </p>
-          </div>
-          <div className="p-0 overflow-auto flex-1">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-secondary/30 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-6 py-3 font-medium">Campaign / Type</th>
-                  <th className="px-6 py-3 font-medium text-center">Quantity</th>
-                  <th className="px-6 py-3 font-medium text-right">Value (RWF)</th>
-                  <th className="px-6 py-3 font-medium text-right">Spent</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {voucherBreakdown.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="p-8 text-center text-muted-foreground">
-                      No voucher campaigns created yet.
-                    </td>
-                  </tr>
-                )}
-                {voucherBreakdown.slice(0, 6).map((batch, idx) => (
-                  <tr key={idx} className="hover:bg-secondary/10 transition-colors">
-                    <td className="px-6 py-4">
-                      <p className="font-semibold text-foreground">{batch.name}</p>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground mt-1 inline-block uppercase tracking-wider">
-                        {batch.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center font-medium">{batch.totalCount}</td>
-                    <td className="px-6 py-4 text-right font-semibold">
-                      {batch.provisioned.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <p className="font-semibold text-orange-500">
-                        {batch.spent.toLocaleString()}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {batch.provisioned > 0
-                          ? Math.round((batch.spent / batch.provisioned) * 100)
-                          : 0}
-                        % used
-                      </p>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {voucherBreakdown.length > 6 && (
-            <div className="p-4 border-t border-border/50 bg-secondary/10 text-center">
-              <Button variant="outline" size="sm" onClick={() => setShowAllVouchers(true)}>
-                View All {voucherBreakdown.length} Campaigns
-              </Button>
+          ) : (
+            <div className="space-y-4">
+              {bookBreakdown.map((b, idx) => (
+                <div
+                  key={idx}
+                  className="flex justify-between items-center text-sm p-4 rounded-xl border border-border/50 bg-secondary/10 hover:bg-secondary/30 transition-colors"
+                >
+                  <span className="font-medium text-foreground">{b.name}</span>
+                  <span className="font-bold">{b.total.toLocaleString()} RWF</span>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="rounded-3xl border border-border/60 bg-card p-6">
-            <h3 className="font-semibold mb-4 text-lg flex items-center">
-              <BookOpen className="h-5 w-5 mr-2 text-primary" /> Agatike Book Breakdown
-            </h3>
-            {bookBreakdown.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                No values logged in custom books yet.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {bookBreakdown.map((b, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center text-sm p-4 rounded-xl border border-border/50 bg-secondary/10 hover:bg-secondary/30 transition-colors"
-                  >
-                    <span className="font-medium text-foreground">{b.name}</span>
-                    <span className="font-bold">{b.total.toLocaleString()} RWF</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="rounded-3xl border border-border/60 bg-card p-6">
-            <h3 className="font-semibold mb-4 text-lg">Financial Overview</h3>
-            <div className="space-y-4 text-sm">
-              <div className="flex justify-between p-3 rounded-xl bg-green-500/10 text-green-600 border border-green-500/20">
-                <span className="font-medium">Total Inflows (Ticket Sales)</span>
-                <span className="font-bold">+{totalTicketRevenue.toLocaleString()} RWF</span>
-              </div>
-              <div className="flex justify-between p-3 rounded-xl bg-destructive/10 text-destructive border border-destructive/20">
-                <span className="font-medium">Total Outflows (Vendors + Books)</span>
-                <span className="font-bold">-{totalEventLiability.toLocaleString()} RWF</span>
-              </div>
-              <div className="flex justify-between p-4 rounded-xl bg-primary/10 text-primary border border-primary/20 text-lg">
-                <span className="font-bold">Net Position</span>
-                <span className="font-black">{projectedProfit.toLocaleString()} RWF</span>
-              </div>
+        <div className="rounded-3xl border border-border/60 bg-card p-6">
+          <h3 className="font-semibold mb-4 text-lg">Financial Overview</h3>
+          <div className="space-y-4 text-sm">
+            <div className="flex justify-between p-3 rounded-xl bg-green-500/10 text-green-600 border border-green-500/20">
+              <span className="font-medium">Total Inflows (Ticket Sales)</span>
+              <span className="font-bold">+{totalTicketRevenue.toLocaleString()} RWF</span>
+            </div>
+            <div className="flex justify-between p-3 rounded-xl bg-destructive/10 text-destructive border border-destructive/20">
+              <span className="font-medium">Total Outflows (Logged Expenses)</span>
+              <span className="font-bold">-{totalEventLiability.toLocaleString()} RWF</span>
+            </div>
+            <div className="flex justify-between p-4 rounded-xl bg-primary/10 text-primary border border-primary/20 text-lg">
+              <span className="font-bold">Net Position</span>
+              <span className="font-bold">{projectedProfit.toLocaleString()} RWF</span>
             </div>
           </div>
         </div>

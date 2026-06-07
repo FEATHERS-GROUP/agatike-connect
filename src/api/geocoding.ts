@@ -76,32 +76,78 @@ export const getPlaceDetails = createServerFn({ method: "POST" }).handler(async 
   return { lat: null, lng: null };
 });
 
+function deg2rad(deg: number) {
+  return deg * (Math.PI / 180);
+}
+
+function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+}
+
 export const getRouteDistance = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const payload = ctx.data as any;
   const { origin, destination, waypoints } = payload?.data || payload;
+  
+  if (!origin || !destination) return null;
+
   const config = getServerConfig();
   const apiKey = config.googleApiKey;
 
-  if (!apiKey || !origin || !destination) return null;
-
-  try {
-    let url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${apiKey}`;
-    if (waypoints && waypoints.length > 0) {
-      url += `&waypoints=${waypoints.join("|")}`;
-    }
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data.routes && data.routes.length > 0) {
-      let totalMeters = 0;
-      const legs = data.routes[0].legs;
-      for (const leg of legs) {
-        totalMeters += leg.distance.value;
+  if (apiKey) {
+    try {
+      let url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${apiKey}`;
+      if (waypoints && waypoints.length > 0) {
+        url += `&waypoints=${waypoints.join("|")}`;
       }
-      return { kilometers: (totalMeters / 1000).toFixed(1) };
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.routes && data.routes.length > 0) {
+        let totalMeters = 0;
+        const legs = data.routes[0].legs;
+        for (const leg of legs) {
+          totalMeters += leg.distance.value;
+        }
+        return { kilometers: (totalMeters / 1000).toFixed(1) };
+      }
+    } catch (error) {
+      console.error("Error fetching directions:", error);
     }
-  } catch (error) {
-    console.error("Error fetching directions:", error);
   }
+
+  // Fallback: Haversine distance formula if API key is missing, directions API fails, or no routes found
+  try {
+    const parseLatLng = (str: string) => {
+      const [lat, lng] = str.split(",").map(Number);
+      return { lat, lng };
+    };
+
+    const originCoords = parseLatLng(origin);
+    const destCoords = parseLatLng(destination);
+    const waypointCoords = (waypoints || []).map(parseLatLng);
+
+    const allPoints = [originCoords, ...waypointCoords, destCoords];
+    let totalKm = 0;
+    for (let i = 0; i < allPoints.length - 1; i++) {
+      const p1 = allPoints[i];
+      const p2 = allPoints[i + 1];
+      if (!isNaN(p1.lat) && !isNaN(p1.lng) && !isNaN(p2.lat) && !isNaN(p2.lng)) {
+        totalKm += getDistanceFromLatLonInKm(p1.lat, p1.lng, p2.lat, p2.lng);
+      }
+    }
+    // Multiply straight-line distance by 1.2 to estimate trail winding
+    return { kilometers: (totalKm * 1.2).toFixed(1) };
+  } catch (err) {
+    console.error("Haversine fallback error:", err);
+  }
+
   return null;
 });

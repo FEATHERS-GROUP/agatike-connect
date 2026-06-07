@@ -75,6 +75,10 @@ export function CreateExperienceDesktop({
       { id: generateId(), name: "General Admission", price: 45, quantity: 20, includes: [""], form_id: "" },
     ],
     coverPreview: initialData?.cover || "",
+    coverUrl: initialData?.cover || "",
+    venueAddress: initialData?.venueAddress || "",
+    venueLat: initialData?.venueLat || null,
+    venueLng: initialData?.venueLng || null,
     published: false,
   };
 
@@ -189,6 +193,7 @@ export function CreateExperienceDesktop({
           venueCoordinates: { lat: data.venueLat, lng: data.venueLng },
           routeDistance: data.routeDistance,
           itinerary: data.itinerary,
+          included: data.tickets.flatMap((t: any) => t.includes || []).filter(Boolean),
         },
         event_requency: {
           date: data.date,
@@ -196,6 +201,7 @@ export function CreateExperienceDesktop({
         },
         event_tickets: {
           data: data.tickets.map((t: any) => ({
+            id: t.id,
             type: t.name,
             cost: t.price.toString(),
             remaining: t.quantity.toString(),
@@ -220,7 +226,7 @@ export function CreateExperienceDesktop({
       };
 
       if (isEdit && initialData?.id) {
-        return await updateEvent({ id: initialData.id, ...payload } as any);
+        return await updateEvent({ data: { id: initialData.id, ...payload } } as any);
       } else {
         return await createEvent({ data: payload } as any);
       }
