@@ -22,8 +22,10 @@ function VenueSettingsPage() {
 
   const [rentalType, setRentalType] = useState(venue?.rentalType || "Per Day");
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading venue...</div>;
-  if (!venue) return <div className="p-8 text-center text-red-500 font-semibold">Venue not found</div>;
+  if (isLoading)
+    return <div className="p-8 text-center text-muted-foreground">Loading venue...</div>;
+  if (!venue)
+    return <div className="p-8 text-center text-red-500 font-semibold">Venue not found</div>;
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -105,7 +107,7 @@ function VenueSettingsPage() {
                   <option value="Both">Both (Day & Hour)</option>
                 </select>
               </div>
-              
+
               {(rentalType === "Entrance Fee" || rentalType === "Multiple") && (
                 <div className="space-y-1.5">
                   <Label>Entrance Fee (Per Person)</Label>
@@ -121,8 +123,10 @@ function VenueSettingsPage() {
                   </div>
                 </div>
               )}
-              
-              {(rentalType === "Per Hour" || rentalType === "Both" || rentalType === "Multiple") && (
+
+              {(rentalType === "Per Hour" ||
+                rentalType === "Both" ||
+                rentalType === "Multiple") && (
                 <div className="space-y-1.5">
                   <Label>Price per Hour</Label>
                   <div className="relative">
@@ -137,7 +141,7 @@ function VenueSettingsPage() {
                   </div>
                 </div>
               )}
-              
+
               {(rentalType === "Per Day" || rentalType === "Both" || rentalType === "Multiple") && (
                 <div className="space-y-1.5">
                   <Label>Price per Day</Label>
@@ -153,7 +157,7 @@ function VenueSettingsPage() {
                   </div>
                 </div>
               )}
-              
+
               {(rentalType === "Per Week" || rentalType === "Multiple") && (
                 <div className="space-y-1.5">
                   <Label>Price per Week</Label>
@@ -169,7 +173,7 @@ function VenueSettingsPage() {
                   </div>
                 </div>
               )}
-              
+
               {(rentalType === "Annually" || rentalType === "Multiple") && (
                 <div className="space-y-1.5">
                   <Label>Price Annually</Label>

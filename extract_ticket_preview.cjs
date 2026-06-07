@@ -1,22 +1,24 @@
-const fs = require('fs');
+const fs = require("fs");
 
-const sourcePath = '/Users/apple/Desktop/agatike-connect/src/routes/dashboard/$workspaceSlug/ticket-designer/$projectId.tsx';
-const targetPath = '/Users/apple/Desktop/agatike-connect/src/components/desktop/dashboard/ticket-designer/TicketPreview.tsx';
+const sourcePath =
+  "/Users/apple/Desktop/agatike-connect/src/routes/dashboard/$workspaceSlug/ticket-designer/$projectId.tsx";
+const targetPath =
+  "/Users/apple/Desktop/agatike-connect/src/components/desktop/dashboard/ticket-designer/TicketPreview.tsx";
 
-const content = fs.readFileSync(sourcePath, 'utf8');
+const content = fs.readFileSync(sourcePath, "utf8");
 
 // We need the types: Template, TicketLayout, TicketBack
 const typesRegex = /type Template = [^;]+;[\s\S]*?type TicketBack = \{[\s\S]*?\};/m;
 const typesMatch = content.match(typesRegex);
 
 // We need the TicketPreview function
-const functionStart = content.indexOf('function TicketPreview(props: {');
-let functionEnd = content.indexOf('function Section', functionStart);
+const functionStart = content.indexOf("function TicketPreview(props: {");
+let functionEnd = content.indexOf("function Section", functionStart);
 if (functionEnd === -1) {
-  functionEnd = content.indexOf('export const Route', functionStart); // just in case
+  functionEnd = content.indexOf("export const Route", functionStart); // just in case
 }
 if (functionEnd === -1) {
-    functionEnd = content.length;
+  functionEnd = content.length;
 }
 
 const functionBody = content.substring(functionStart, functionEnd);
@@ -54,14 +56,22 @@ export type TicketBack = {
 };
 `;
 
-const fileContent = imports + '\n\n' + functionBody.replace('function TicketPreview', 'export function TicketPreview');
+const fileContent =
+  imports +
+  "\n\n" +
+  functionBody.replace("function TicketPreview", "export function TicketPreview");
 
-fs.mkdirSync('/Users/apple/Desktop/agatike-connect/src/components/desktop/dashboard/ticket-designer', { recursive: true });
+fs.mkdirSync(
+  "/Users/apple/Desktop/agatike-connect/src/components/desktop/dashboard/ticket-designer",
+  { recursive: true },
+);
 fs.writeFileSync(targetPath, fileContent);
 
 // Also remove it from $projectId.tsx and import it
 const newContent = content.substring(0, functionStart) + content.substring(functionEnd);
-const withImport = newContent.replace('import { Button } from "@/components/ui/button";', 'import { Button } from "@/components/ui/button";\nimport { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";');
+const withImport = newContent.replace(
+  'import { Button } from "@/components/ui/button";',
+  'import { Button } from "@/components/ui/button";\nimport { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";',
+);
 
 fs.writeFileSync(sourcePath, withImport);
-

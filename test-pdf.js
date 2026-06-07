@@ -1,15 +1,15 @@
-const { jsPDF } = require('jspdf');
+const { jsPDF } = require("jspdf");
 
 function generateTicketPDF(venueName, customerName, tier, otp) {
   const doc = new jsPDF({
     orientation: "landscape",
     unit: "mm",
-    format: [200, 80] // Ticket size
+    format: [200, 80], // Ticket size
   });
 
   doc.setFillColor(245, 245, 245);
-  doc.rect(0, 0, 200, 80, 'F');
-  
+  doc.rect(0, 0, 200, 80, "F");
+
   doc.setFontSize(22);
   doc.setTextColor(30, 30, 30);
   doc.text(venueName, 10, 20);
@@ -23,7 +23,7 @@ function generateTicketPDF(venueName, customerName, tier, otp) {
   doc.setTextColor(242, 87, 29); // Agatike orange
   doc.text(`OTP Verification: ${otp}`, 10, 70);
 
-  const b64 = doc.output('datauristring').split(',')[1];
+  const b64 = doc.output("datauristring").split(",")[1];
   console.log("Generated base64 of length:", b64.length);
   return b64;
 }

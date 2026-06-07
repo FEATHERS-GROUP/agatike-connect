@@ -39,7 +39,7 @@ async function run() {
   `;
 
   console.log("Creating venue_bookings table...");
-  const sqlRes = await fetch(HASURA_API.replace('/v1/graphql', '/v2/query'), {
+  const sqlRes = await fetch(HASURA_API.replace("/v1/graphql", "/v2/query"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -47,13 +47,13 @@ async function run() {
     },
     body: JSON.stringify({
       type: "run_sql",
-      args: { sql }
+      args: { sql },
     }),
   });
   console.log(await sqlRes.json());
-  
+
   console.log("Tracking table in Hasura...");
-  const trackRes = await fetch(HASURA_API.replace('/v1/graphql', '/v1/metadata'), {
+  const trackRes = await fetch(HASURA_API.replace("/v1/graphql", "/v1/metadata"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -63,8 +63,8 @@ async function run() {
       type: "pg_track_table",
       args: {
         source: "default",
-        table: "venue_bookings"
-      }
+        table: "venue_bookings",
+      },
     }),
   });
   console.log(await trackRes.json());

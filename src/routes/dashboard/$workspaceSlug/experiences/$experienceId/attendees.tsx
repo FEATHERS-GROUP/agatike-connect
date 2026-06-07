@@ -33,12 +33,14 @@ import { format } from "date-fns";
 
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
-export const Route = createFileRoute("/dashboard/$workspaceSlug/experiences/$experienceId/attendees")({
+export const Route = createFileRoute(
+  "/dashboard/$workspaceSlug/experiences/$experienceId/attendees",
+)({
   component: AttendeesView,
 });
 
 function AttendeesView() {
-  const { experienceId: eventId, workspaceSlug   } = useParams({ strict: false });
+  const { experienceId: eventId, workspaceSlug } = useParams({ strict: false });
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");

@@ -19,7 +19,7 @@ const CREATE_VENUE_BOOKING = `
 export const createVenueBooking = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
-    const { 
+    const {
       workspace_id,
       venue_id,
       customer_name,
@@ -36,7 +36,7 @@ export const createVenueBooking = createServerFn({ method: "POST" })
       attendees_info,
       internal_notes,
       venue_name, // Extracted here
-      venue_currency
+      venue_currency,
     } = ctx.data;
 
     let final_tickets_data = tickets_data;
@@ -66,44 +66,41 @@ export const createVenueBooking = createServerFn({ method: "POST" })
         const t = ticketsToGenerate[i];
         const otp = Math.random().toString(36).substring(2, 8).toUpperCase();
         const ticketId = `TKT-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-        
+
         issuedTickets.push({
           id: ticketId,
           tier: t.tier,
           attendee_name: t.name,
           otp,
-          used: false
+          used: false,
         });
       }
 
       final_tickets_data = {
         summary: tickets_data,
-        issued: issuedTickets
+        issued: issuedTickets,
       };
     }
 
-    const res = await hasuraRequest<{ insert_venue_bookings_one: any }>(
-      CREATE_VENUE_BOOKING,
-      {
-        object: {
-          workspace_id,
-          venue_id,
-          customer_name,
-          customer_email,
-          customer_phone,
-          customer_id_document,
-          start_time,
-          end_time,
-          status,
-          payment_status,
-          amount,
-          number_of_attendees,
-          tickets_data: final_tickets_data,
-          attendees_info,
-          internal_notes
-        },
+    const res = await hasuraRequest<{ insert_venue_bookings_one: any }>(CREATE_VENUE_BOOKING, {
+      object: {
+        workspace_id,
+        venue_id,
+        customer_name,
+        customer_email,
+        customer_phone,
+        customer_id_document,
+        start_time,
+        end_time,
+        status,
+        payment_status,
+        amount,
+        number_of_attendees,
+        tickets_data: final_tickets_data,
+        attendees_info,
+        internal_notes,
       },
-    );
+    });
 
     return res.insert_venue_bookings_one;
   });
@@ -134,9 +131,6 @@ export const getVenueBookings = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { venue_id } = ctx.data;
     if (!venue_id) throw new Error("venue_id is required");
-    const res = await hasuraRequest<{ venue_bookings: any[] }>(
-      GET_VENUE_BOOKINGS,
-      { venue_id }
-    );
+    const res = await hasuraRequest<{ venue_bookings: any[] }>(GET_VENUE_BOOKINGS, { venue_id });
     return res.venue_bookings;
   });

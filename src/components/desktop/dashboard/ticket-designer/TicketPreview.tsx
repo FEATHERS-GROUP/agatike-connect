@@ -30,7 +30,6 @@ export type TicketBack = {
   backImageOpacity: number;
 };
 
-
 export function TicketPreview(props: {
   template: Template;
   palette: { from: string; to: string; name: string };

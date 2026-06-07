@@ -11,7 +11,7 @@ const orangeIcon = L.divIcon({
   </svg>`,
   iconSize: [28, 40],
   iconAnchor: [14, 40],
-  popupAnchor: [0, -40]
+  popupAnchor: [0, -40],
 });
 
 interface Stop {
@@ -30,7 +30,12 @@ interface ExperienceMapProps {
   polylinePositions: [number, number][];
 }
 
-export default function ExperienceMap({ itinerary, bounds, mapCenter, polylinePositions }: ExperienceMapProps) {
+export default function ExperienceMap({
+  itinerary,
+  bounds,
+  mapCenter,
+  polylinePositions,
+}: ExperienceMapProps) {
   if (polylinePositions.length === 0) {
     return (
       <div className="h-full w-full flex items-center justify-center bg-secondary/50">
@@ -43,28 +48,35 @@ export default function ExperienceMap({ itinerary, bounds, mapCenter, polylinePo
   }
 
   return (
-    <MapContainer 
-      bounds={bounds} 
-      center={mapCenter} 
-      zoom={11} 
-      scrollWheelZoom={false} 
+    <MapContainer
+      bounds={bounds}
+      center={mapCenter}
+      zoom={11}
+      scrollWheelZoom={false}
       className="h-full w-full"
     >
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />
-      {itinerary.map((stop) => (
-        stop.lat && stop.lng && (
-          <Marker key={stop.id} position={[stop.lat, stop.lng]} icon={orangeIcon}>
-            <Popup className="rounded-xl">
-              <p className="font-semibold">{stop.title}</p>
-              <p className="text-xs text-muted-foreground">{stop.time}</p>
-            </Popup>
-          </Marker>
-        )
-      ))}
-      <Polyline positions={polylinePositions} color="var(--primary)" weight={4} dashArray="10, 10" />
+      {itinerary.map(
+        (stop) =>
+          stop.lat &&
+          stop.lng && (
+            <Marker key={stop.id} position={[stop.lat, stop.lng]} icon={orangeIcon}>
+              <Popup className="rounded-xl">
+                <p className="font-semibold">{stop.title}</p>
+                <p className="text-xs text-muted-foreground">{stop.time}</p>
+              </Popup>
+            </Marker>
+          ),
+      )}
+      <Polyline
+        positions={polylinePositions}
+        color="var(--primary)"
+        weight={4}
+        dashArray="10, 10"
+      />
     </MapContainer>
   );
 }

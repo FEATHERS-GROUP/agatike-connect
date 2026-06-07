@@ -8,12 +8,12 @@ import { createVenueBooking } from "@/api/venue_bookings";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
-export function BlockDateDialog({ 
-  open, 
-  onOpenChange, 
-  venue 
-}: { 
-  open: boolean; 
+export function BlockDateDialog({
+  open,
+  onOpenChange,
+  venue,
+}: {
+  open: boolean;
   onOpenChange: (o: boolean) => void;
   venue: any;
 }) {
@@ -25,7 +25,7 @@ export function BlockDateDialog({
     start_time: "00:00",
     end_date: "",
     end_time: "23:59",
-    internal_notes: ""
+    internal_notes: "",
   });
 
   const { mutate, isPending } = useMutation({
@@ -54,8 +54,8 @@ export function BlockDateDialog({
           number_of_attendees: 0,
           tickets_data: null,
           attendees_info: null,
-          internal_notes: formData.internal_notes
-        }
+          internal_notes: formData.internal_notes,
+        },
       });
     },
     onSuccess: () => {
@@ -63,12 +63,16 @@ export function BlockDateDialog({
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venue.id] });
       onOpenChange(false);
       setFormData({
-        start_date: "", start_time: "00:00", end_date: "", end_time: "23:59", internal_notes: ""
+        start_date: "",
+        start_time: "00:00",
+        end_date: "",
+        end_time: "23:59",
+        internal_notes: "",
       });
     },
     onError: (e: any) => {
       toast.error(e.message || "Failed to block dates");
-    }
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -92,7 +96,7 @@ export function BlockDateDialog({
             <Input
               required
               value={formData.internal_notes}
-              onChange={e => setFormData(p => ({...p, internal_notes: e.target.value}))}
+              onChange={(e) => setFormData((p) => ({ ...p, internal_notes: e.target.value }))}
               placeholder="e.g. Maintenance, Private Event, Emergency Closure"
               className="h-10 rounded-xl bg-secondary/50"
             />
@@ -101,30 +105,64 @@ export function BlockDateDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Start Date</Label>
-              <Input type="date" required value={formData.start_date} onChange={e => setFormData(p => ({...p, start_date: e.target.value}))} className="h-10 rounded-xl bg-secondary/50" />
+              <Input
+                type="date"
+                required
+                value={formData.start_date}
+                onChange={(e) => setFormData((p) => ({ ...p, start_date: e.target.value }))}
+                className="h-10 rounded-xl bg-secondary/50"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>End Date</Label>
-              <Input type="date" required value={formData.end_date} onChange={e => setFormData(p => ({...p, end_date: e.target.value}))} className="h-10 rounded-xl bg-secondary/50" />
+              <Input
+                type="date"
+                required
+                value={formData.end_date}
+                onChange={(e) => setFormData((p) => ({ ...p, end_date: e.target.value }))}
+                className="h-10 rounded-xl bg-secondary/50"
+              />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Start Time</Label>
-              <Input type="time" required value={formData.start_time} onChange={e => setFormData(p => ({...p, start_time: e.target.value}))} className="h-10 rounded-xl bg-secondary/50" />
+              <Input
+                type="time"
+                required
+                value={formData.start_time}
+                onChange={(e) => setFormData((p) => ({ ...p, start_time: e.target.value }))}
+                className="h-10 rounded-xl bg-secondary/50"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>End Time</Label>
-              <Input type="time" required value={formData.end_time} onChange={e => setFormData(p => ({...p, end_time: e.target.value}))} className="h-10 rounded-xl bg-secondary/50" />
+              <Input
+                type="time"
+                required
+                value={formData.end_time}
+                onChange={(e) => setFormData((p) => ({ ...p, end_time: e.target.value }))}
+                className="h-10 rounded-xl bg-secondary/50"
+              />
             </div>
           </div>
 
           <div className="mt-8 flex gap-3 pt-6 border-t border-border/60">
-            <Button type="button" variant="outline" className="flex-1 rounded-xl" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 rounded-xl"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button disabled={isPending} type="submit" variant="destructive" className="flex-1 rounded-xl">
+            <Button
+              disabled={isPending}
+              type="submit"
+              variant="destructive"
+              className="flex-1 rounded-xl"
+            >
               {isPending ? "Blocking..." : "Block Dates"}
             </Button>
           </div>

@@ -28,14 +28,16 @@ export function ExperienceItineraryStep({
   const daysArray = Array.from({ length: data.numberOfDays || 1 }, (_, i) => i + 1);
   const currentDayItinerary = useMemo(
     () => data.itinerary.filter((stop: any) => (stop.day || 1) === activeDay),
-    [data.itinerary, activeDay]
+    [data.itinerary, activeDay],
   );
 
   const calculateDayRoute = async () => {
     // Only calculate for stops that have both lat and lng
     const validStops = currentDayItinerary.filter((s: any) => s.lat && s.lng);
     if (validStops.length < 2) {
-      toast.error(`Please add at least 2 locations with Google Maps coordinates on Day ${activeDay} to calculate a route.`);
+      toast.error(
+        `Please add at least 2 locations with Google Maps coordinates on Day ${activeDay} to calculate a route.`,
+      );
       return;
     }
 
@@ -69,16 +71,12 @@ export function ExperienceItineraryStep({
   };
 
   const removeStop = (id: string) => {
-    updateField(
-      "itinerary",
-      (prev: any[]) => prev.filter((s: any) => s.id !== id)
-    );
+    updateField("itinerary", (prev: any[]) => prev.filter((s: any) => s.id !== id));
   };
 
   const updateStop = (id: string, updates: any) => {
-    updateField(
-      "itinerary",
-      (prevItinerary: any[]) => prevItinerary.map((s: any) => (s.id === id ? { ...s, ...updates } : s))
+    updateField("itinerary", (prevItinerary: any[]) =>
+      prevItinerary.map((s: any) => (s.id === id ? { ...s, ...updates } : s)),
     );
   };
 
@@ -109,8 +107,12 @@ export function ExperienceItineraryStep({
             <Map className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-medium">Itinerary Planner {data.numberOfDays > 1 ? `- Day ${activeDay}` : ""}</h3>
-            <p className="text-xs text-muted-foreground">Add points like take-off, checkpoints, and stops.</p>
+            <h3 className="font-medium">
+              Itinerary Planner {data.numberOfDays > 1 ? `- Day ${activeDay}` : ""}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Add points like take-off, checkpoints, and stops.
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -130,7 +132,12 @@ export function ExperienceItineraryStep({
               Calc Route
             </Button>
           )}
-          <Button variant="outline" size="sm" className="rounded-full shadow-sm bg-background" onClick={addStop}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full shadow-sm bg-background"
+            onClick={addStop}
+          >
             <Plus className="mr-1 h-3.5 w-3.5" /> Add Stop
           </Button>
         </div>
@@ -146,7 +153,9 @@ export function ExperienceItineraryStep({
       {currentDayItinerary.length === 0 ? (
         <div className="text-center py-10 border-2 border-dashed border-border/60 rounded-2xl">
           <p className="text-muted-foreground">No stops planned for Day {activeDay} yet.</p>
-          <Button variant="link" onClick={addStop}>Add your first stop</Button>
+          <Button variant="link" onClick={addStop}>
+            Add your first stop
+          </Button>
         </div>
       ) : (
         <div className="space-y-5">

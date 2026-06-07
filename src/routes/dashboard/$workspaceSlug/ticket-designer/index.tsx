@@ -77,7 +77,6 @@ function TicketDesignerIndex() {
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/ticket-designer/" });
   const { activeWorkspace } = useWorkspace();
 
-  
   const { data: venues = [] } = useQuery({
     queryKey: ["rentable_venues", activeWorkspace?.id],
     queryFn: () => getRentableVenues({ data: { workspace_id: activeWorkspace?.id! } } as any),
@@ -123,7 +122,6 @@ function TicketDesignerIndex() {
     },
   });
 
-  
   const handleCreateNew = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTemplate || !selectedAssignment) {
@@ -145,7 +143,6 @@ function TicketDesignerIndex() {
       updated_on: new Date().toISOString(),
     });
   };
-
 
   const openSetupModal = (templateId: string) => {
     setSelectedTemplate(templateId);
@@ -220,7 +217,6 @@ function TicketDesignerIndex() {
                 />
               </div>
 
-              
               <div className="space-y-2">
                 <Label htmlFor="eventSelect">Assign to Event or Venue *</Label>
                 <select
@@ -251,7 +247,6 @@ function TicketDesignerIndex() {
                   )}
                 </select>
               </div>
-
 
               <DialogFooter className="pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
@@ -293,12 +288,18 @@ function TicketDesignerIndex() {
             ) : (
               dbProjects.map((proj: any) => {
                 const eventObj = proj.events || events.find((e: any) => e.id === proj.eventId);
-                const venueObj = proj.rentable_venues || venues.find((v: any) => v.id === proj.venueId);
-                const displayTitle = eventObj?.title || venueObj?.name || proj.name || "Untitled Design";
+                const venueObj =
+                  proj.rentable_venues || venues.find((v: any) => v.id === proj.venueId);
+                const displayTitle =
+                  eventObj?.title || venueObj?.name || proj.name || "Untitled Design";
                 const displaySubtitle = eventObj?.category || venueObj?.type || "Ticket Design";
                 const palette = proj.palette || { from: "#f97316", to: "#db2777", name: "Sunset" };
                 const updatedAt = proj.updated_on || new Date().toISOString();
-                const coverUrl = proj.coverImage || eventObj?.cover || venueObj?.cover_url || venueObj?.images?.[0];
+                const coverUrl =
+                  proj.coverImage ||
+                  eventObj?.cover ||
+                  venueObj?.cover_url ||
+                  venueObj?.images?.[0];
 
                 return (
                   <Link

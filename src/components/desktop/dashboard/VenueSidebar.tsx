@@ -12,7 +12,7 @@ const steps = [
   "Pricing",
   "Amenities & Rules",
   "Sections",
-  "Images & Publish"
+  "Images & Publish",
 ];
 
 export function VenueSidebar() {
@@ -77,7 +77,11 @@ export function VenueSidebar() {
         <div className="mb-4 flex items-center gap-3">
           <div className="h-9 w-9 overflow-hidden rounded-lg bg-secondary shrink-0">
             {(venue?.cover_url || venue?.images?.[0]) && (
-              <img src={venue.cover_url || venue.images?.[0]} alt={venue.name} className="h-full w-full object-cover" />
+              <img
+                src={venue.cover_url || venue.images?.[0]}
+                alt={venue.name}
+                className="h-full w-full object-cover"
+              />
             )}
           </div>
           <div className="min-w-0">
@@ -94,60 +98,58 @@ export function VenueSidebar() {
       )}
 
       <nav className="space-y-0.5 text-sm flex-1">
-        {isCreateVenue ? (
-          steps.map((s, i) => {
-            const isCompleted = i < currentStep;
-            const isCurrent = i === currentStep;
-            return (
-              <button
-                key={s}
-                onClick={() => navigate({ to: location.pathname, search: { step: i } })}
-                disabled={i > currentStep && !isCompleted}
-                className={cn(
-                  "w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm font-medium transition-all",
-                  isCurrent
-                    ? "bg-primary/10 text-primary ring-1 ring-primary/20"
-                    : isCompleted
-                      ? "text-foreground hover:bg-secondary/80"
-                      : "text-muted-foreground opacity-50 cursor-not-allowed"
-                )}
-              >
-                <div
+        {isCreateVenue
+          ? steps.map((s, i) => {
+              const isCompleted = i < currentStep;
+              const isCurrent = i === currentStep;
+              return (
+                <button
+                  key={s}
+                  onClick={() => navigate({ to: location.pathname, search: { step: i } })}
+                  disabled={i > currentStep && !isCompleted}
                   className={cn(
-                    "h-6 w-6 rounded-full flex items-center justify-center text-xs shrink-0 transition-colors",
+                    "w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm font-medium transition-all",
                     isCurrent
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-primary/10 text-primary ring-1 ring-primary/20"
                       : isCompleted
-                        ? "bg-foreground text-background"
-                        : "bg-secondary text-muted-foreground border border-border"
+                        ? "text-foreground hover:bg-secondary/80"
+                        : "text-muted-foreground opacity-50 cursor-not-allowed",
                   )}
                 >
-                  {isCompleted ? <Check className="h-3 w-3" /> : i + 1}
-                </div>
-                <span className="truncate">{s}</span>
-              </button>
-            );
-          })
-        ) : (
-          nav.map((n) => {
-            const isActive = location.pathname.includes(n.href);
-            return (
-              <Link
-                key={n.label}
-                to={n.href}
-                className={cn(
-                  "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors",
-                  isActive
-                    ? "bg-accent text-accent-foreground font-medium"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                )}
-              >
-                <n.icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{n.label}</span>
-              </Link>
-            );
-          })
-        )}
+                  <div
+                    className={cn(
+                      "h-6 w-6 rounded-full flex items-center justify-center text-xs shrink-0 transition-colors",
+                      isCurrent
+                        ? "bg-primary text-primary-foreground"
+                        : isCompleted
+                          ? "bg-foreground text-background"
+                          : "bg-secondary text-muted-foreground border border-border",
+                    )}
+                  >
+                    {isCompleted ? <Check className="h-3 w-3" /> : i + 1}
+                  </div>
+                  <span className="truncate">{s}</span>
+                </button>
+              );
+            })
+          : nav.map((n) => {
+              const isActive = location.pathname.includes(n.href);
+              return (
+                <Link
+                  key={n.label}
+                  to={n.href}
+                  className={cn(
+                    "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors",
+                    isActive
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                  )}
+                >
+                  <n.icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{n.label}</span>
+                </Link>
+              );
+            })}
       </nav>
     </aside>
   );

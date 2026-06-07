@@ -37,7 +37,9 @@ function DashboardExperiences() {
 
   const expList = useMemo(() => {
     return rawEvents
-      .filter((e: any) => e.event_type === "experience" || experienceCategories.includes(e.category))
+      .filter(
+        (e: any) => e.event_type === "experience" || experienceCategories.includes(e.category),
+      )
       .map((e: any) => {
         const ts = e.tour_stops || {};
         const fr = e.event_requency || {};
@@ -48,8 +50,14 @@ function DashboardExperiences() {
         let ticketRemaining = 0;
         if (e.event_tickets && e.event_tickets.length > 0) {
           price = Math.min(...e.event_tickets.map((t: any) => Number(t.cost || 0)));
-          ticketSold = e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.sold || 0), 0);
-          ticketRemaining = e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.remaining || 0), 0);
+          ticketSold = e.event_tickets.reduce(
+            (acc: number, t: any) => acc + Number(t.sold || 0),
+            0,
+          );
+          ticketRemaining = e.event_tickets.reduce(
+            (acc: number, t: any) => acc + Number(t.remaining || 0),
+            0,
+          );
         }
 
         // ── Schedules ────────────────────────────────────
@@ -61,11 +69,17 @@ function DashboardExperiences() {
         // Total count: 1 for the primary event date + each additional DB schedule
         // Total sold: ticket sold (primary) + sum of DB schedule spots_filled
         // Total capacity: ticket spots (primary) + sum of DB schedule total_spots
-        const dbScheduleSold = dbSchedules.reduce((acc: number, s: any) => acc + Number(s.spots_filled || 0), 0);
-        const dbScheduleCapacity = dbSchedules.reduce((acc: number, s: any) => acc + Number(s.total_spots || 0), 0);
+        const dbScheduleSold = dbSchedules.reduce(
+          (acc: number, s: any) => acc + Number(s.spots_filled || 0),
+          0,
+        );
+        const dbScheduleCapacity = dbSchedules.reduce(
+          (acc: number, s: any) => acc + Number(s.total_spots || 0),
+          0,
+        );
 
         const totalSold = ticketSold + dbScheduleSold;
-        const totalCapacity = (ticketSold + ticketRemaining) + dbScheduleCapacity;
+        const totalCapacity = ticketSold + ticketRemaining + dbScheduleCapacity;
         const available = Math.max(0, totalCapacity - totalSold);
 
         // ── Duration & Dates ─────────────────────────────
@@ -88,9 +102,9 @@ function DashboardExperiences() {
             const firstTime = itin[0].time;
             const lastTime = itin[itin.length - 1].time;
             if (firstTime && lastTime) {
-              const [h1, m1] = firstTime.split(':').map(Number);
-              const [h2, m2] = lastTime.split(':').map(Number);
-              const diff = (h2 + m2/60) - (h1 + m1/60);
+              const [h1, m1] = firstTime.split(":").map(Number);
+              const [h2, m2] = lastTime.split(":").map(Number);
+              const diff = h2 + m2 / 60 - (h1 + m1 / 60);
               durationStr = diff > 0 ? `${Math.round(diff * 10) / 10} hours` : "Not specified";
             } else {
               durationStr = "Not specified";
@@ -103,15 +117,17 @@ function DashboardExperiences() {
         // Total schedules = 1 primary (if event has a date) + additional DB schedule rows
         const schedulesCount = (primaryExists ? 1 : 0) + dbSchedules.length;
 
-
-        const displayDate = numDays > 1 && dateStr ? `${dateStr} to ${endDateStr}` : (dateStr || "Not scheduled");
+        const displayDate =
+          numDays > 1 && dateStr ? `${dateStr} to ${endDateStr}` : dateStr || "Not scheduled";
         const city = ts.city || ts.venueName || "Location not set";
 
         return {
           id: e.id,
           title: e.title || "Untitled Experience",
           description: e.description || "No description provided.",
-          cover: e.cover || "https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&q=80",
+          cover:
+            e.cover ||
+            "https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&q=80",
           category: e.category,
           date: displayDate,
           city: city,
@@ -126,7 +142,6 @@ function DashboardExperiences() {
       });
   }, [rawEvents, activeWorkspace]);
 
-
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full">
       <header className="flex flex-wrap items-center justify-between gap-4">
@@ -136,7 +151,10 @@ function DashboardExperiences() {
             Manage your guided tours, activities, and special experiences.
           </p>
         </div>
-        <Link to="/dashboard/$workspaceSlug/experiences/create-experience" params={{ workspaceSlug: activeWorkspace?.slug || "workspace" }}>
+        <Link
+          to="/dashboard/$workspaceSlug/experiences/create-experience"
+          params={{ workspaceSlug: activeWorkspace?.slug || "workspace" }}
+        >
           <Button
             className="rounded-full shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
@@ -201,14 +219,26 @@ function DashboardExperiences() {
               <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 text-primary shadow-sm">
                 <Edit3 className="h-6 w-6" />
               </div>
-              <h3 className="font-semibold text-lg text-foreground mb-1 line-clamp-1">{draft.title || "Unpublished Draft"}</h3>
-              <p className="text-sm text-muted-foreground mb-6">You have an unsaved experience draft. Click to resume editing.</p>
-              <Button onClick={() => navigate({ to: "/dashboard/$workspaceSlug/experiences/create-experience", params: { workspaceSlug: activeWorkspace?.slug || "workspace" }})} className="rounded-full shadow-sm">
+              <h3 className="font-semibold text-lg text-foreground mb-1 line-clamp-1">
+                {draft.title || "Unpublished Draft"}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                You have an unsaved experience draft. Click to resume editing.
+              </p>
+              <Button
+                onClick={() =>
+                  navigate({
+                    to: "/dashboard/$workspaceSlug/experiences/create-experience",
+                    params: { workspaceSlug: activeWorkspace?.slug || "workspace" },
+                  })
+                }
+                className="rounded-full shadow-sm"
+              >
                 Resume Editing
               </Button>
             </div>
           )}
-          
+
           {expList.map((exp) => (
             <div
               key={exp.id}
@@ -236,9 +266,7 @@ function DashboardExperiences() {
                 <h3 className="font-semibold text-lg leading-tight mb-1 group-hover:text-primary transition-colors line-clamp-1">
                   {exp.title}
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                  {exp.description}
-                </p>
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{exp.description}</p>
 
                 <div className="mt-auto space-y-2.5">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -262,16 +290,33 @@ function DashboardExperiences() {
                 </div>
 
                 <div className="mt-5 grid grid-cols-2 gap-2">
-                  <Button variant="outline" className="w-full h-9 text-xs rounded-xl" onClick={() => navigate({ to: "/dashboard/$workspaceSlug/experiences/$experienceId/edit", params: { workspaceSlug: activeWorkspace?.slug || "workspace", experienceId: exp.id }})}>
+                  <Button
+                    variant="outline"
+                    className="w-full h-9 text-xs rounded-xl"
+                    onClick={() =>
+                      navigate({
+                        to: "/dashboard/$workspaceSlug/experiences/$experienceId/edit",
+                        params: {
+                          workspaceSlug: activeWorkspace?.slug || "workspace",
+                          experienceId: exp.id,
+                        },
+                      })
+                    }
+                  >
                     Edit
                   </Button>
-                  <Button 
-                    variant="secondary" 
+                  <Button
+                    variant="secondary"
                     className="w-full h-9 text-xs rounded-xl"
-                    onClick={() => navigate({
-                      to: "/dashboard/$workspaceSlug/experiences/$experienceId",
-                      params: { workspaceSlug: activeWorkspace?.slug || "workspace", experienceId: exp.id }
-                    })}
+                    onClick={() =>
+                      navigate({
+                        to: "/dashboard/$workspaceSlug/experiences/$experienceId",
+                        params: {
+                          workspaceSlug: activeWorkspace?.slug || "workspace",
+                          experienceId: exp.id,
+                        },
+                      })
+                    }
                   >
                     <Eye className="mr-1.5 h-3 w-3" /> View
                   </Button>

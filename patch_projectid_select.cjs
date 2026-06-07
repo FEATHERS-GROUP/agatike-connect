@@ -1,7 +1,8 @@
-const fs = require('fs');
+const fs = require("fs");
 
-const path = '/Users/apple/Desktop/agatike-connect/src/routes/dashboard/$workspaceSlug/ticket-designer/$projectId.tsx';
-let content = fs.readFileSync(path, 'utf8');
+const path =
+  "/Users/apple/Desktop/agatike-connect/src/routes/dashboard/$workspaceSlug/ticket-designer/$projectId.tsx";
+let content = fs.readFileSync(path, "utf8");
 
 // Replace the Assignment Section
 const newAssignmentSection = `
@@ -56,6 +57,9 @@ const newAssignmentSection = `
 `;
 
 // Replace the old assignment section block.
-content = content.replace(/<Section title="Assignment" icon=\{Calendar\}>[\s\S]*?<\/Section>/m, newAssignmentSection.trim());
+content = content.replace(
+  /<Section title="Assignment" icon=\{Calendar\}>[\s\S]*?<\/Section>/m,
+  newAssignmentSection.trim(),
+);
 
 fs.writeFileSync(path, content);

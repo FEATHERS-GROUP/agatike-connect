@@ -46,12 +46,9 @@ export function GlobalNotificationListener() {
     const organizerId = activeWorkspace.id;
     // For the dashboard, the "current user" acting is the organizer itself (workspaceId)
     // Wait, the organizer sends messages as the workspace.
-    const currentUserId = activeWorkspace.id; 
+    const currentUserId = activeWorkspace.id;
 
-    const q = query(
-      collection(db, "agatike_channels"),
-      where("organizerId", "==", organizerId)
-    );
+    const q = query(collection(db, "agatike_channels"), where("organizerId", "==", organizerId));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       // If it's the very first snapshot of the mount, we ignore it to avoid duplicate blasts
@@ -75,7 +72,7 @@ export function GlobalNotificationListener() {
           // Deduplication: check localStorage
           const storageKey = `notified_msg_${channelId}`;
           const lastNotifiedTime = parseInt(localStorage.getItem(storageKey) || "0", 10);
-          
+
           if (rawTimeMillis <= lastNotifiedTime) {
             // Already notified (perhaps by another tab or earlier)
             return;
@@ -96,7 +93,9 @@ export function GlobalNotificationListener() {
               const profiles = await getUsersByIds({ data: { ids: [data.userId] } });
               const profile = profiles[0];
               if (profile) {
-                const handleOrName = profile.handle ? `@${profile.handle}` : (profile.username || profile.profile?.first_name || "User");
+                const handleOrName = profile.handle
+                  ? `@${profile.handle}`
+                  : profile.username || profile.profile?.first_name || "User";
                 const flag = getCountryFlag(profile.country);
                 title = `New message from ${handleOrName} ${flag}`;
               }
@@ -110,7 +109,7 @@ export function GlobalNotificationListener() {
             const notif = new Notification(title, {
               body,
               icon: avatar || "/icon.svg",
-              tag: `msg-${channelId}` // Helps prevent duplicates at OS level
+              tag: `msg-${channelId}`, // Helps prevent duplicates at OS level
             });
             notif.onclick = () => {
               window.focus();

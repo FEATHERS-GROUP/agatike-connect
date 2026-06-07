@@ -275,7 +275,7 @@ export function CreateEventDesktop() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
 
   useEffect(() => {
-    const draft = localStorage.getItem('create_event_draft');
+    const draft = localStorage.getItem("create_event_draft");
     if (draft) {
       try {
         const parsed = JSON.parse(draft);
@@ -297,12 +297,12 @@ export function CreateEventDesktop() {
       merch,
       sameTickets: sameTicketsForAllLocations,
     };
-    localStorage.setItem('create_event_draft', JSON.stringify(draftState));
+    localStorage.setItem("create_event_draft", JSON.stringify(draftState));
     toast.success("Draft saved! You can safely leave and come back later.");
   };
 
   const clearDraft = () => {
-    localStorage.removeItem('create_event_draft');
+    localStorage.removeItem("create_event_draft");
     setData(defaultData);
     setTickets(defaultTickets);
     setMerch([{ id: "m1", name: "Event Tee", price: 20 }]);
@@ -767,7 +767,11 @@ export function CreateEventDesktop() {
 
         <div className="mt-8 flex items-center justify-between border-t border-border/60 pt-6">
           <div className="flex gap-2">
-            <Button variant="ghost" className="rounded-full shadow-none text-muted-foreground hover:text-red-500 hover:bg-red-500/10" onClick={clearDraft}>
+            <Button
+              variant="ghost"
+              className="rounded-full shadow-none text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+              onClick={clearDraft}
+            >
               <Trash2 className="mr-1.5 h-4 w-4" /> Start fresh
             </Button>
             <Button variant="outline" className="rounded-full shadow-sm" onClick={saveDraft}>
@@ -1005,7 +1009,9 @@ function TicketEditor({
             </div>
             {(t.price === 0 || t.type === "free") && forms.length > 0 && (
               <div className="md:col-span-full">
-                <Label className="text-xs text-muted-foreground mb-1 block">Attach Registration Form (Optional)</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">
+                  Attach Registration Form (Optional)
+                </Label>
                 <select
                   className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   value={t.form_id || ""}

@@ -3,8 +3,8 @@ config();
 
 async function run() {
   // Replace /v1/graphql with /v2/query for schema operations
-  const url = process.env.HASURA_ADMIN_API.replace('/v1/graphql', '/v2/query');
-  
+  const url = process.env.HASURA_ADMIN_API.replace("/v1/graphql", "/v2/query");
+
   const payload = {
     type: "bulk",
     args: [
@@ -20,10 +20,10 @@ async function run() {
               created_at TIMESTAMPTZ DEFAULT NOW(),
               UNIQUE(organizer_id, user_id)
             );
-          `
-        }
-      }
-    ]
+          `,
+        },
+      },
+    ],
   };
 
   const res = await fetch(url, {
@@ -34,7 +34,7 @@ async function run() {
     },
     body: JSON.stringify(payload),
   });
-  
+
   console.log(JSON.stringify(await res.json(), null, 2));
 }
 

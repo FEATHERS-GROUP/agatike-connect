@@ -10,9 +10,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/experiences/$exp
     step: z.number().catch(0),
   }),
   head: () => ({
-    meta: [
-      { title: "Edit Experience — Agatike" },
-    ],
+    meta: [{ title: "Edit Experience — Agatike" }],
   }),
   component: EditExperienceRoute,
 });
@@ -35,14 +33,15 @@ function EditExperienceRoute() {
   }
 
   // Parse tickets into the format expected by CreateExperienceDesktop
-  const initialTickets = experience?.event_tickets?.map((t: any, idx: number) => ({
-    id: t.id,
-    name: t.type || "General Admission",
-    price: Number(t.cost || 0),
-    quantity: Number(t.remaining || 0) + Number(t.sold || 0),
-    includes: idx === 0 ? (experience?.tour_stops?.included || [""]) : [""],
-    form_id: t.form_id || "",
-  })) || [];
+  const initialTickets =
+    experience?.event_tickets?.map((t: any, idx: number) => ({
+      id: t.id,
+      name: t.type || "General Admission",
+      price: Number(t.cost || 0),
+      quantity: Number(t.remaining || 0) + Number(t.sold || 0),
+      includes: idx === 0 ? experience?.tour_stops?.included || [""] : [""],
+      form_id: t.form_id || "",
+    })) || [];
 
   const initialData = {
     id: experience?.id || "",

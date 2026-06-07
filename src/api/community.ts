@@ -18,10 +18,10 @@ import { deleteChannelMessages } from "@/lib/firebase";
 export const getCommunityChannels = createServerFn({ method: "POST" })
   .inputValidator((d: { organizerId: string }) => d)
   .handler(async (ctx) => {
-  const data = ctx.data;
-  if (!data.organizerId) return [];
+    const data = ctx.data;
+    if (!data.organizerId) return [];
 
-  const query = `
+    const query = `
     query GetCommunityChannels($orgId: uuid!) {
       community_channels(where: {organizer_id: {_eq: $orgId}}, order_by: {created_at: asc}) {
         id
@@ -37,13 +37,15 @@ export const getCommunityChannels = createServerFn({ method: "POST" })
     }
   `;
 
-  const result = await hasuraRequest<{ community_channels: CommunityChannel[] }>(query, { orgId: data.organizerId });
-  let channels = result.community_channels || [];
+    const result = await hasuraRequest<{ community_channels: CommunityChannel[] }>(query, {
+      orgId: data.organizerId,
+    });
+    let channels = result.community_channels || [];
 
-  const eventIds = [...new Set(channels.filter(c => c.event_id).map(c => c.event_id!))];
-  
-  if (eventIds.length > 0) {
-    const eventsQuery = `
+    const eventIds = [...new Set(channels.filter((c) => c.event_id).map((c) => c.event_id!))];
+
+    if (eventIds.length > 0) {
+      const eventsQuery = `
       query GetEventsForChannels($ids: [uuid!]!) {
         events(where: {id: {_in: $ids}}) {
           id
@@ -56,85 +58,90 @@ export const getCommunityChannels = createServerFn({ method: "POST" })
         }
       }
     `;
-    const eventsResult = await hasuraRequest<{ events: any[] }>(eventsQuery, { ids: eventIds });
-    const events = eventsResult.events || [];
+      const eventsResult = await hasuraRequest<{ events: any[] }>(eventsQuery, { ids: eventIds });
+      const events = eventsResult.events || [];
 
-    const now = new Date();
-    const validChannels: CommunityChannel[] = [];
+      const now = new Date();
+      const validChannels: CommunityChannel[] = [];
 
-    for (const channel of channels) {
-      if (!channel.event_id) {
-        validChannels.push(channel);
-        continue;
-      }
-
-      const event = events.find(e => e.id === channel.event_id);
-      if (!event) {
-        validChannels.push(channel);
-        continue;
-      }
-
-      let endDate: Date | null = null;
-
-      if (channel.schedule_id) {
-        const schedule = event.schedules?.find((s: any) => s.id === channel.schedule_id);
-        if (schedule) {
-          endDate = new Date(schedule.end_date || schedule.start_date);
+      for (const channel of channels) {
+        if (!channel.event_id) {
+          validChannels.push(channel);
+          continue;
         }
-      } else if (channel.tour_stop_idx !== null && channel.tour_stop_idx !== undefined) {
-        const tourStop = event.tour_stops?.[channel.tour_stop_idx];
-        if (tourStop) {
-          endDate = new Date(tourStop.date);
+
+        const event = events.find((e) => e.id === channel.event_id);
+        if (!event) {
+          validChannels.push(channel);
+          continue;
         }
-      } else {
-        validChannels.push(channel);
-        continue;
-      }
 
-      if (endDate) {
-        const expirationDate = new Date(endDate);
-        expirationDate.setDate(expirationDate.getDate() + 5);
+        let endDate: Date | null = null;
 
-        if (now > expirationDate) {
-          // Expired, delete it asynchronously
-          console.log(`Deleting expired channel ${channel.id}`);
-          
-          hasuraRequest(`
+        if (channel.schedule_id) {
+          const schedule = event.schedules?.find((s: any) => s.id === channel.schedule_id);
+          if (schedule) {
+            endDate = new Date(schedule.end_date || schedule.start_date);
+          }
+        } else if (channel.tour_stop_idx !== null && channel.tour_stop_idx !== undefined) {
+          const tourStop = event.tour_stops?.[channel.tour_stop_idx];
+          if (tourStop) {
+            endDate = new Date(tourStop.date);
+          }
+        } else {
+          validChannels.push(channel);
+          continue;
+        }
+
+        if (endDate) {
+          const expirationDate = new Date(endDate);
+          expirationDate.setDate(expirationDate.getDate() + 5);
+
+          if (now > expirationDate) {
+            // Expired, delete it asynchronously
+            console.log(`Deleting expired channel ${channel.id}`);
+
+            hasuraRequest(
+              `
             mutation DeleteChannel($id: uuid!) {
               delete_community_channels_by_pk(id: $id) { id }
             }
-          `, { id: channel.id }).catch(console.error);
+          `,
+              { id: channel.id },
+            ).catch(console.error);
 
-          deleteChannelMessages(channel.id).catch(console.error);
-          
-          continue; // skip pushing to validChannels
+            deleteChannelMessages(channel.id).catch(console.error);
+
+            continue; // skip pushing to validChannels
+          }
         }
+
+        validChannels.push(channel);
       }
-
-      validChannels.push(channel);
+      channels = validChannels;
     }
-    channels = validChannels;
-  }
 
-  return channels;
-});
+    return channels;
+  });
 
 export const createCommunityChannel = createServerFn({ method: "POST" })
-  .inputValidator((d: { 
-    organizerId: string; 
-    name: string; 
-    coverUrl?: string; 
-    isMain?: boolean; 
-    eventId?: string;
-    scheduleId?: string;
-    tourStopIdx?: number;
-  }) => d)
+  .inputValidator(
+    (d: {
+      organizerId: string;
+      name: string;
+      coverUrl?: string;
+      isMain?: boolean;
+      eventId?: string;
+      scheduleId?: string;
+      tourStopIdx?: number;
+    }) => d,
+  )
   .handler(async (ctx) => {
-  const data = ctx.data;
-  
-  if (!data.organizerId || !data.name) throw new Error("Missing required fields");
+    const data = ctx.data;
 
-  const mutation = `
+    if (!data.organizerId || !data.name) throw new Error("Missing required fields");
+
+    const mutation = `
     mutation CreateCommunityChannel($orgId: uuid!, $name: String!, $cover: String, $isMain: Boolean, $eventId: uuid, $scheduleId: uuid, $tourStopIdx: Int) {
       insert_community_channels_one(object: {
         organizer_id: $orgId, 
@@ -158,31 +165,30 @@ export const createCommunityChannel = createServerFn({ method: "POST" })
     }
   `;
 
-  const result = await hasuraRequest<{ insert_community_channels_one: CommunityChannel }>(mutation, {
-    orgId: data.organizerId,
-    name: data.name,
-    cover: data.coverUrl || "",
-    isMain: data.isMain || false,
-    eventId: data.eventId || null,
-    scheduleId: data.scheduleId || null,
-    tourStopIdx: data.tourStopIdx !== undefined ? data.tourStopIdx : null
+    const result = await hasuraRequest<{ insert_community_channels_one: CommunityChannel }>(
+      mutation,
+      {
+        orgId: data.organizerId,
+        name: data.name,
+        cover: data.coverUrl || "",
+        isMain: data.isMain || false,
+        eventId: data.eventId || null,
+        scheduleId: data.scheduleId || null,
+        tourStopIdx: data.tourStopIdx !== undefined ? data.tourStopIdx : null,
+      },
+    );
+
+    return result.insert_community_channels_one;
   });
 
-  return result.insert_community_channels_one;
-});
-
 export const updateCommunityChannel = createServerFn({ method: "POST" })
-  .inputValidator((d: { 
-    channelId: string; 
-    name?: string; 
-    coverUrl?: string; 
-  }) => d)
+  .inputValidator((d: { channelId: string; name?: string; coverUrl?: string }) => d)
   .handler(async (ctx) => {
-  const data = ctx.data;
-  
-  if (!data.channelId) throw new Error("Missing channel id");
+    const data = ctx.data;
 
-  const mutation = `
+    if (!data.channelId) throw new Error("Missing channel id");
+
+    const mutation = `
     mutation UpdateCommunityChannel($id: uuid!, $name: String, $coverUrl: String) {
       update_community_channels_by_pk(
         pk_columns: {id: $id},
@@ -198,11 +204,14 @@ export const updateCommunityChannel = createServerFn({ method: "POST" })
     }
   `;
 
-  const result = await hasuraRequest<{ update_community_channels_by_pk: CommunityChannel }>(mutation, {
-    id: data.channelId,
-    name: data.name,
-    coverUrl: data.coverUrl
-  });
+    const result = await hasuraRequest<{ update_community_channels_by_pk: CommunityChannel }>(
+      mutation,
+      {
+        id: data.channelId,
+        name: data.name,
+        coverUrl: data.coverUrl,
+      },
+    );
 
-  return result.update_community_channels_by_pk;
-});
+    return result.update_community_channels_by_pk;
+  });

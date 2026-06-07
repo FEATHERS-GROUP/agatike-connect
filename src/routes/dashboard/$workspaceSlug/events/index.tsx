@@ -58,25 +58,34 @@ function DashboardEvents() {
     enabled: !!activeWorkspace?.id,
   });
 
-  const experienceCategories = ["Hiking", "Running", "Surf", "Wellness", "Drawing", "Art", "Trips", "Experience"];
+  const experienceCategories = [
+    "Hiking",
+    "Running",
+    "Surf",
+    "Wellness",
+    "Drawing",
+    "Art",
+    "Trips",
+    "Experience",
+  ];
 
   const events = useMemo(() => {
     return rawEvents
       .filter((e: any) => !experienceCategories.includes(e.category))
       .map((e: any) => {
-      const firstStop = Array.isArray(e.tour_stops) ? e.tour_stops[0] : null;
-      const { salesPct, revenue } = computeStats(e.event_tickets || []);
-      return {
-        ...e,
-        date: firstStop?.date || "TBD",
-        city: firstStop
-          ? `${firstStop.venue ? firstStop.venue + ", " : ""}${firstStop.city || ""}`
-          : "TBD",
-        status: getEventStatus(e.created_at),
-        salesPct,
-        revenue,
-      };
-    });
+        const firstStop = Array.isArray(e.tour_stops) ? e.tour_stops[0] : null;
+        const { salesPct, revenue } = computeStats(e.event_tickets || []);
+        return {
+          ...e,
+          date: firstStop?.date || "TBD",
+          city: firstStop
+            ? `${firstStop.venue ? firstStop.venue + ", " : ""}${firstStop.city || ""}`
+            : "TBD",
+          status: getEventStatus(e.created_at),
+          salesPct,
+          revenue,
+        };
+      });
   }, [rawEvents]);
 
   const filteredEvents = useMemo(() => {

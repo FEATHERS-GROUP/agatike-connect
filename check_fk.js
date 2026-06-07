@@ -21,7 +21,7 @@ async function run() {
           AND ccu.table_schema = tc.table_schema
     WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='ticket_projects';
   `;
-  const res = await fetch(HASURA_API.replace('/v1/graphql', '/v2/query'), {
+  const res = await fetch(HASURA_API.replace("/v1/graphql", "/v2/query"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

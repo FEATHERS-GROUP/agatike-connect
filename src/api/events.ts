@@ -15,19 +15,19 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
 });
 
 export const getEventAttendeesCount = createServerFn({ method: "POST" })
-  .inputValidator((d: { eventId?: string, scheduleId?: string }) => d)
+  .inputValidator((d: { eventId?: string; scheduleId?: string }) => d)
   .handler(async (ctx) => {
-  const data = ctx.data;
-  if (!data.eventId && !data.scheduleId) return 0;
+    const data = ctx.data;
+    if (!data.eventId && !data.scheduleId) return 0;
 
-  let where = "";
-  if (data.scheduleId) {
-    where = `where: {schedule_id: {_eq: "${data.scheduleId}"}}`;
-  } else if (data.eventId) {
-    where = `where: {event_id: {_eq: "${data.eventId}"}}`;
-  }
+    let where = "";
+    if (data.scheduleId) {
+      where = `where: {schedule_id: {_eq: "${data.scheduleId}"}}`;
+    } else if (data.eventId) {
+      where = `where: {event_id: {_eq: "${data.eventId}"}}`;
+    }
 
-  const query = `
+    const query = `
     query GetAttendeesCount {
       event_attendees_aggregate(${where}) {
         aggregate {
@@ -36,9 +36,9 @@ export const getEventAttendeesCount = createServerFn({ method: "POST" })
       }
     }
   `;
-  const result = await hasuraRequest<any>(query);
-  return result?.event_attendees_aggregate?.aggregate?.count || 0;
-});
+    const result = await hasuraRequest<any>(query);
+    return result?.event_attendees_aggregate?.aggregate?.count || 0;
+  });
 
 const CREATE_EVENT_SCHEDULE = `
   mutation CreateEventSchedule($data: event_schedules_insert_input!) {
@@ -57,7 +57,6 @@ export const createEventSchedule = createServerFn({ method: "POST" }).handler(as
   const scheduleData = ctx.data as any;
   return hasuraRequest<any>(CREATE_EVENT_SCHEDULE, { data: scheduleData });
 });
-
 
 const GET_PUBLIC_EVENTS = `
   query GetPublicEvents {
@@ -171,10 +170,10 @@ const GET_WORKSPACE_EVENTS = `
 export const getWorkspaceEvents = createServerFn({ method: "POST" })
   .inputValidator((d: { workspace_id: string }) => d)
   .handler(async (ctx) => {
-  const { workspace_id } = ctx.data;
-  const data = await hasuraRequest<{ events: any[] }>(GET_WORKSPACE_EVENTS, { workspace_id });
-  return data.events || [];
-});
+    const { workspace_id } = ctx.data;
+    const data = await hasuraRequest<{ events: any[] }>(GET_WORKSPACE_EVENTS, { workspace_id });
+    return data.events || [];
+  });
 
 const GET_EVENT_BY_ID = `
   query GetEventById($id: uuid!) {
@@ -306,16 +305,41 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
   // Merge payload with existing event data to prevent overwriting with blank values
   const mergedVars = {
     id,
-    title: eventUpdateVars.title !== undefined && eventUpdateVars.title !== "" ? eventUpdateVars.title : existingEvent.title,
-    category: eventUpdateVars.category !== undefined && eventUpdateVars.category !== "" ? eventUpdateVars.category : existingEvent.category,
-    description: eventUpdateVars.description !== undefined && eventUpdateVars.description !== "" ? eventUpdateVars.description : existingEvent.description,
-    cover: eventUpdateVars.cover !== undefined && eventUpdateVars.cover !== "" ? eventUpdateVars.cover : existingEvent.cover,
-    tour_stops: eventUpdateVars.tour_stops !== undefined ? eventUpdateVars.tour_stops : existingEvent.tour_stops,
-    vipPerks: eventUpdateVars.vipPerks !== undefined ? eventUpdateVars.vipPerks : existingEvent.vipPerks,
-    event_requency: eventUpdateVars.event_requency !== undefined ? eventUpdateVars.event_requency : existingEvent.event_requency,
+    title:
+      eventUpdateVars.title !== undefined && eventUpdateVars.title !== ""
+        ? eventUpdateVars.title
+        : existingEvent.title,
+    category:
+      eventUpdateVars.category !== undefined && eventUpdateVars.category !== ""
+        ? eventUpdateVars.category
+        : existingEvent.category,
+    description:
+      eventUpdateVars.description !== undefined && eventUpdateVars.description !== ""
+        ? eventUpdateVars.description
+        : existingEvent.description,
+    cover:
+      eventUpdateVars.cover !== undefined && eventUpdateVars.cover !== ""
+        ? eventUpdateVars.cover
+        : existingEvent.cover,
+    tour_stops:
+      eventUpdateVars.tour_stops !== undefined
+        ? eventUpdateVars.tour_stops
+        : existingEvent.tour_stops,
+    vipPerks:
+      eventUpdateVars.vipPerks !== undefined ? eventUpdateVars.vipPerks : existingEvent.vipPerks,
+    event_requency:
+      eventUpdateVars.event_requency !== undefined
+        ? eventUpdateVars.event_requency
+        : existingEvent.event_requency,
     lineup: eventUpdateVars.lineup !== undefined ? eventUpdateVars.lineup : existingEvent.lineup,
-    event_type: eventUpdateVars.event_type !== undefined ? eventUpdateVars.event_type : existingEvent.event_type,
-    allowed_public: eventUpdateVars.allowed_public !== undefined ? eventUpdateVars.allowed_public : existingEvent.allowed_public,
+    event_type:
+      eventUpdateVars.event_type !== undefined
+        ? eventUpdateVars.event_type
+        : existingEvent.event_type,
+    allowed_public:
+      eventUpdateVars.allowed_public !== undefined
+        ? eventUpdateVars.allowed_public
+        : existingEvent.allowed_public,
   };
 
   // 1. Update the event table basic info
@@ -327,10 +351,11 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
   // 2. Update/Upsert Tickets
   if (event_tickets && event_tickets.data) {
     const tickets = event_tickets.data;
-    
+
     // Identify active tickets that have valid UUIDs
-    const isValidUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-    
+    const isValidUUID = (str: string) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
     const activeTicketIds = tickets
       .map((t: any) => t.id)
       .filter((tid: any) => tid && isValidUUID(tid));
@@ -348,7 +373,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
             }
           }
           `,
-          { eventId: id, activeIds: activeTicketIds }
+          { eventId: id, activeIds: activeTicketIds },
         );
       } catch (e) {
         console.error("Failed to delete unused tickets:", e);
@@ -366,7 +391,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
             }
           }
           `,
-          { eventId: id }
+          { eventId: id },
         );
       } catch (e) {
         console.error("Failed to delete all tickets:", e);
@@ -405,7 +430,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
             }
           }
           `,
-          { objects: ticketsToInsert }
+          { objects: ticketsToInsert },
         );
       } catch (e) {
         console.error("Failed to upsert tickets:", e);
@@ -416,7 +441,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
   // 3. Update primary schedule
   if (schedules && schedules.data && schedules.data.length > 0) {
     const primarySchedule = schedules.data[0];
-    
+
     // Fetch existing schedules for the event
     try {
       const schedulesResult = await hasuraRequest<{ event_schedules: any[] }>(
@@ -427,9 +452,9 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
           }
         }
         `,
-        { eventId: id }
+        { eventId: id },
       );
-      
+
       const existingSchedules = schedulesResult?.event_schedules || [];
       if (existingSchedules.length > 0) {
         // Update the first schedule
@@ -459,7 +484,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
             start_date: primarySchedule.start_date,
             end_date: primarySchedule.end_date,
             total_spots: parseInt(primarySchedule.total_spots || 0),
-          }
+          },
         );
       } else {
         // Insert a new schedule if none exists
@@ -478,8 +503,8 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
               end_date: primarySchedule.end_date,
               total_spots: parseInt(primarySchedule.total_spots || 0),
               spots_filled: 0,
-            }
-          }
+            },
+          },
         );
       }
     } catch (e) {

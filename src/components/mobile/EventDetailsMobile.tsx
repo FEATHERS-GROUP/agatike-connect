@@ -15,7 +15,14 @@ import {
 } from "lucide-react";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
-import { events, experiences, movies, ticketTiers, merch, experienceCategories } from "@/lib/mock-data";
+import {
+  events,
+  experiences,
+  movies,
+  ticketTiers,
+  merch,
+  experienceCategories,
+} from "@/lib/mock-data";
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 import { checkUserAttendance } from "@/api/attendees";
@@ -69,9 +76,9 @@ export function EventDetailsMobile({
   const category = ev.category || ev.genre || "Event";
   const isExperience = ev.event_type === "experience" || experienceCategories.includes(category);
   const included = isExperience
-    ? (Array.isArray(ev.included) && ev.included.length > 0
-        ? ev.included
-        : (ev.tour_stops?.included || []))
+    ? Array.isArray(ev.included) && ev.included.length > 0
+      ? ev.included
+      : ev.tour_stops?.included || []
     : [];
   const attendeesCount = isMock
     ? ev.attendees || ev.spots || 0
@@ -248,12 +255,17 @@ export function EventDetailsMobile({
                 const title = typeof item === "string" ? item : item.title;
                 const description = typeof item === "string" ? null : item.description;
                 return (
-                  <div key={idx} className="flex items-start gap-3 rounded-3xl border border-border/40 bg-card/60 p-4 backdrop-blur">
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 rounded-3xl border border-border/40 bg-card/60 p-4 backdrop-blur"
+                  >
                     <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary shrink-0" />
                     <div>
                       <p className="font-bold text-sm">{title}</p>
                       {description && (
-                        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{description}</p>
+                        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                          {description}
+                        </p>
                       )}
                     </div>
                   </div>

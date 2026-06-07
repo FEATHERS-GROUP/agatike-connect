@@ -17,7 +17,7 @@ async function run() {
   `;
 
   console.log("Altering table...");
-  const sqlRes = await fetch(HASURA_API.replace('/v1/graphql', '/v2/query'), {
+  const sqlRes = await fetch(HASURA_API.replace("/v1/graphql", "/v2/query"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -25,14 +25,14 @@ async function run() {
     },
     body: JSON.stringify({
       type: "run_sql",
-      args: { sql }
+      args: { sql },
     }),
   });
   console.log(await sqlRes.json());
-  
+
   // Reload metadata to track the new columns
   console.log("Reloading metadata...");
-  const reloadRes = await fetch(HASURA_API.replace('/v1/graphql', '/v1/metadata'), {
+  const reloadRes = await fetch(HASURA_API.replace("/v1/graphql", "/v1/metadata"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -40,7 +40,7 @@ async function run() {
     },
     body: JSON.stringify({
       type: "reload_metadata",
-      args: {}
+      args: {},
     }),
   });
   console.log(await reloadRes.json());

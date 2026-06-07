@@ -25,8 +25,10 @@ function VenueBookingsPage() {
     enabled: !!venueId,
   });
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading venue...</div>;
-  if (!venue) return <div className="p-8 text-center text-red-500 font-semibold">Venue not found</div>;
+  if (isLoading)
+    return <div className="p-8 text-center text-muted-foreground">Loading venue...</div>;
+  if (!venue)
+    return <div className="p-8 text-center text-red-500 font-semibold">Venue not found</div>;
 
   return (
     <div className="space-y-6">
@@ -74,13 +76,19 @@ function VenueBookingsPage() {
                       <p>{b.customer_email || "N/A"}</p>
                       <p className="text-xs">{b.customer_phone}</p>
                     </td>
-                    <td className="px-6 py-4 font-medium">
-                      {b.number_of_attendees || 1}
-                    </td>
+                    <td className="px-6 py-4 font-medium">{b.number_of_attendees || 1}</td>
                     <td className="px-6 py-4">
                       <p>{new Date(b.start_time).toLocaleDateString()}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(b.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(b.start_time).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        -{" "}
+                        {new Date(b.end_time).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </p>
                     </td>
                     <td className="px-6 py-4 font-medium">

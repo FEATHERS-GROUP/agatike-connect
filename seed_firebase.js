@@ -17,7 +17,7 @@ const db = getFirestore(app);
 
 async function run() {
   const organizerId = "0fa59d30-9e09-43e6-82d3-0ff0c7a883aa";
-  
+
   try {
     // 1. Create General Channel
     const genDoc = await addDoc(collection(db, "channels"), {
@@ -30,7 +30,7 @@ async function run() {
       unreadCount: 0,
       online: true,
       avatar: "https://i.pravatar.cc/150?u=general",
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
     });
     console.log("Created General Channel:", genDoc.id);
 
@@ -38,7 +38,7 @@ async function run() {
       channelId: genDoc.id,
       senderId: organizerId,
       text: "Welcome to the official community! We will post all major updates here.",
-      timestamp: serverTimestamp()
+      timestamp: serverTimestamp(),
     });
 
     // 2. Create an Event Channel
@@ -52,7 +52,7 @@ async function run() {
       unreadCount: 2,
       online: true,
       avatar: "https://i.pravatar.cc/150?u=festival",
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
     });
     console.log("Created Event Channel:", eventDoc.id);
 
@@ -60,9 +60,9 @@ async function run() {
       channelId: eventDoc.id,
       senderId: "1620aa9e-2273-4777-beb7-7bdebd0e1f06",
       text: "Are there VIP passes left?",
-      timestamp: serverTimestamp()
+      timestamp: serverTimestamp(),
     });
-    
+
     // 3. Create a 1-on-1 User Support Channel
     const userDoc = await addDoc(collection(db, "channels"), {
       organizerId,
@@ -74,7 +74,7 @@ async function run() {
       unreadCount: 1,
       online: false,
       avatar: "https://i.pravatar.cc/150?u=john",
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
     });
     console.log("Created User Channel:", userDoc.id);
 
@@ -82,7 +82,7 @@ async function run() {
       channelId: userDoc.id,
       senderId: "c1a2dbcd-e9f5-47ad-a9c2-b2b784e9b648",
       text: "I need help with my ticket.",
-      timestamp: serverTimestamp()
+      timestamp: serverTimestamp(),
     });
 
     console.log("Firestore Seeding Complete!");

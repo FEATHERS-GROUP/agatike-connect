@@ -1,17 +1,20 @@
-const fs = require('fs');
+const fs = require("fs");
 
-let content = fs.readFileSync('src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx', 'utf-8');
+let content = fs.readFileSync(
+  "src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx",
+  "utf-8",
+);
 
 // 1. Add imports
 content = content.replace(
   `import { useWorkspace } from "@/contexts/WorkspaceContext";`,
-  `import { useWorkspace } from "@/contexts/WorkspaceContext";\nimport { COUNTRIES } from "@/lib/countries";\nimport { getCoordinates } from "@/api/geocoding";\nimport { Switch } from "@/components/ui/switch";`
+  `import { useWorkspace } from "@/contexts/WorkspaceContext";\nimport { COUNTRIES } from "@/lib/countries";\nimport { getCoordinates } from "@/api/geocoding";\nimport { Switch } from "@/components/ui/switch";`,
 );
 
 // 2. Add to formData
 content = content.replace(
   `city: "",`,
-  `city: "",\n    country: "RW",\n    address: "",\n    is_venue_private: false,`
+  `city: "",\n    country: "RW",\n    address: "",\n    is_venue_private: false,`,
 );
 
 // 3. Update createVenue mutationFn
@@ -32,19 +35,19 @@ const mutationReplaceStr = `
 
 content = content.replace(
   /mutationFn: async \(\) => \{\s+const workspace_id = activeWorkspace\?\.id;\s+if \(!workspace_id\) throw new Error\("No active workspace found"\);\s+return createRentableVenue\(\{\s+data: \{/,
-  mutationReplaceStr.trim()
+  mutationReplaceStr.trim(),
 );
 
 // Add the fields into the data object
 content = content.replace(
   `city: formData.city,`,
-  `city: formData.city,\n          country: formData.country,\n          address: formData.address,\n          latitude,\n          longitude,\n          is_venue_private: formData.is_venue_private,`
+  `city: formData.city,\n          country: formData.country,\n          address: formData.address,\n          latitude,\n          longitude,\n          is_venue_private: formData.is_venue_private,`,
 );
 
 // 4. Validation
 content = content.replace(
   `if (step === 2 && (!formData.name || !formData.city)) return toast.error("Name and City are required");`,
-  `if (step === 2 && (!formData.name || !formData.city || !formData.address)) return toast.error("Name, City, and Address are required");`
+  `if (step === 2 && (!formData.name || !formData.city || !formData.address)) return toast.error("Name, City, and Address are required");`,
 );
 
 // 5. UI Updates for Step 2
@@ -92,7 +95,7 @@ const uiReplaceStr = `
 
 content = content.replace(
   /<div className="space-y-2">\s+<Label className="text-base">Venue Name <span className="text-red-500">\*<\/span><\/Label>\s+<Input className="h-12 text-lg rounded-xl" value=\{formData.name\} onChange=\{e => setFormData\(p => \(\{\.\.\.p, name: e.target.value\}\)\)\} placeholder="e\.g\. Grand Kigali Arena" \/>\s+<\/div>\s+<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">\s+<div className="space-y-2">\s+<Label className="text-base">City \/ Location <span className="text-red-500">\*<\/span><\/Label>\s+<Input className="h-12 text-lg rounded-xl" value=\{formData.city\} onChange=\{e => setFormData\(p => \(\{\.\.\.p, city: e.target.value\}\)\)\} placeholder="e\.g\. Kigali, Rwanda" \/>\s+<\/div>\s+<div className="space-y-2">\s+<Label className="text-base">Maximum Capacity<\/Label>\s+<Input type="number" className="h-12 text-lg rounded-xl" value=\{formData.capacity\} onChange=\{e => setFormData\(p => \(\{\.\.\.p, capacity: e.target.value\}\)\)\} placeholder="e\.g\. 5000" \/>\s+<\/div>\s+<\/div>/,
-  uiReplaceStr.trim()
+  uiReplaceStr.trim(),
 );
 
-fs.writeFileSync('src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx', content);
+fs.writeFileSync("src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx", content);

@@ -4,15 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { getWorkspaceForms } from "@/api/rsvps";
 import { uploadFile } from "@/api/storage";
 import { createEvent, updateEvent } from "@/api/events";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Upload,
-  MapPin,
-  Clock,
-  Loader2,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Upload, MapPin, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,13 +59,42 @@ export function CreateExperienceDesktop({
     longitude: initialData?.longitude || null,
     routeDistance: initialData?.routeDistance || null,
     numberOfDays: initialData?.numberOfDays || 1,
-    itinerary: initialData?.itinerary?.length > 0 ? initialData.itinerary : [
-      { id: generateId(), day: 1, title: "Starting Point", address: "", time: "08:00", lat: null, lng: null },
-      { id: generateId(), day: 1, title: "Stopping Point", address: "", time: "16:00", lat: null, lng: null },
-    ],
-    tickets: initialData?.tickets?.length > 0 ? initialData.tickets : [
-      { id: generateId(), name: "General Admission", price: 45, quantity: 20, includes: [""], form_id: "" },
-    ],
+    itinerary:
+      initialData?.itinerary?.length > 0
+        ? initialData.itinerary
+        : [
+            {
+              id: generateId(),
+              day: 1,
+              title: "Starting Point",
+              address: "",
+              time: "08:00",
+              lat: null,
+              lng: null,
+            },
+            {
+              id: generateId(),
+              day: 1,
+              title: "Stopping Point",
+              address: "",
+              time: "16:00",
+              lat: null,
+              lng: null,
+            },
+          ],
+    tickets:
+      initialData?.tickets?.length > 0
+        ? initialData.tickets
+        : [
+            {
+              id: generateId(),
+              name: "General Admission",
+              price: 45,
+              quantity: 20,
+              includes: [""],
+              form_id: "",
+            },
+          ],
     coverPreview: initialData?.cover || "",
     coverUrl: initialData?.cover || "",
     venueAddress: initialData?.venueAddress || "",
@@ -94,7 +115,7 @@ export function CreateExperienceDesktop({
 
   useEffect(() => {
     if (initialData) return; // Don't load draft if editing an existing experience
-    const draft = localStorage.getItem('create_experience_draft');
+    const draft = localStorage.getItem("create_experience_draft");
     if (draft) {
       try {
         const parsed = JSON.parse(draft);
@@ -108,12 +129,12 @@ export function CreateExperienceDesktop({
 
   const saveDraft = () => {
     const draftState = { data };
-    localStorage.setItem('create_experience_draft', JSON.stringify(draftState));
+    localStorage.setItem("create_experience_draft", JSON.stringify(draftState));
     toast.success("Draft saved! You can safely leave and come back later.");
   };
 
   const clearDraft = () => {
-    localStorage.removeItem('create_experience_draft');
+    localStorage.removeItem("create_experience_draft");
     setData(defaultData);
     setStep(0);
     toast.success("Draft cleared. Starting fresh.");
@@ -121,9 +142,17 @@ export function CreateExperienceDesktop({
 
   const isRouteBased = ROUTE_CATEGORIES.includes(data.category);
   const locationStepName = isRouteBased ? "Itinerary" : "Venue";
-  const steps = isRouteBased 
-    ? ["Category", "Details", "Duration", locationStepName, "Tickets", "Media", "Publish"] as const
-    : ["Category", "Details", locationStepName, "Tickets", "Media", "Publish"] as const;
+  const steps = isRouteBased
+    ? ([
+        "Category",
+        "Details",
+        "Duration",
+        locationStepName,
+        "Tickets",
+        "Media",
+        "Publish",
+      ] as const)
+    : (["Category", "Details", locationStepName, "Tickets", "Media", "Publish"] as const);
 
   const setStep = (newStep: number) => {
     navigate({ search: { step: newStep } as any, replace: true });
@@ -132,7 +161,7 @@ export function CreateExperienceDesktop({
   const updateField = (k: string, v: any) =>
     setData((prev) => ({
       ...prev,
-      [k]: typeof v === 'function' ? v(prev[k as keyof typeof prev]) : v
+      [k]: typeof v === "function" ? v(prev[k as keyof typeof prev]) : v,
     }));
 
   const onCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -216,13 +245,16 @@ export function CreateExperienceDesktop({
               end_date: (() => {
                 if (!data.date) return data.date;
                 const d = new Date(data.date);
-                d.setDate(d.getDate() + Math.max(1, (data.numberOfDays || 1)) - 1);
+                d.setDate(d.getDate() + Math.max(1, data.numberOfDays || 1) - 1);
                 return d.toISOString().split("T")[0];
               })(),
-              total_spots: data.tickets.reduce((sum: number, t: any) => sum + parseInt(t.quantity || 0), 0)
-            }
-          ]
-        }
+              total_spots: data.tickets.reduce(
+                (sum: number, t: any) => sum + parseInt(t.quantity || 0),
+                0,
+              ),
+            },
+          ],
+        },
       };
 
       if (isEdit && initialData?.id) {
@@ -232,9 +264,11 @@ export function CreateExperienceDesktop({
       }
     },
     onSuccess: () => {
-      toast.success(isEdit ? "Experience updated successfully!" : "Experience created successfully!");
+      toast.success(
+        isEdit ? "Experience updated successfully!" : "Experience created successfully!",
+      );
       localStorage.removeItem("create_experience_draft");
-      
+
       setTimeout(() => {
         navigate({
           to: "/dashboard/$workspaceSlug/experiences",
@@ -272,8 +306,14 @@ export function CreateExperienceDesktop({
               Back to dashboard
             </Button>
           </Link>
-          <Link to="/dashboard/$workspaceSlug/experiences" params={{ workspaceSlug: workspaceSlug || "workspace" }}>
-            <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+          <Link
+            to="/dashboard/$workspaceSlug/experiences"
+            params={{ workspaceSlug: workspaceSlug || "workspace" }}
+          >
+            <Button
+              className="rounded-full shadow-[var(--shadow-glow)]"
+              style={{ background: "var(--gradient-primary)" }}
+            >
               View Experiences
             </Button>
           </Link>
@@ -286,7 +326,9 @@ export function CreateExperienceDesktop({
     <div className="mx-auto max-w-6xl w-full">
       <div className="rounded-[2rem] border border-border/60 bg-card p-6 sm:p-10 shadow-[var(--shadow-card)]">
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold">{isEdit ? "Edit" : "Create"} - {steps[step]}</h2>
+          <h2 className="text-2xl font-semibold">
+            {isEdit ? "Edit" : "Create"} - {steps[step]}
+          </h2>
           <p className="text-sm text-muted-foreground mt-1">
             Step {step + 1} of {steps.length}
           </p>
@@ -350,19 +392,27 @@ export function CreateExperienceDesktop({
                 />
               </div>
               <div>
-                <Label>End Date <span className="text-xs text-muted-foreground font-normal">(auto-calculated)</span></Label>
+                <Label>
+                  End Date{" "}
+                  <span className="text-xs text-muted-foreground font-normal">
+                    (auto-calculated)
+                  </span>
+                </Label>
                 <Input
                   type="date"
                   readOnly
                   value={(() => {
                     if (!data.date) return "";
                     const d = new Date(data.date);
-                    d.setDate(d.getDate() + Math.max(1, (data.numberOfDays || 1)) - 1);
+                    d.setDate(d.getDate() + Math.max(1, data.numberOfDays || 1) - 1);
                     return d.toISOString().split("T")[0];
                   })()}
                   className="mt-1 h-12 cursor-default opacity-70 bg-secondary/40"
                 />
-                <p className="text-xs text-muted-foreground mt-1">Based on trip duration ({data.numberOfDays || 1} day{(data.numberOfDays || 1) !== 1 ? "s" : ""})</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Based on trip duration ({data.numberOfDays || 1} day
+                  {(data.numberOfDays || 1) !== 1 ? "s" : ""})
+                </p>
               </div>
             </div>
 
@@ -403,12 +453,17 @@ export function CreateExperienceDesktop({
           <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
             <div>
               <h3 className="text-lg font-semibold mb-1">Pricing & Capacity</h3>
-              <p className="text-sm text-muted-foreground">Set how much it costs and how many spots are available.</p>
+              <p className="text-sm text-muted-foreground">
+                Set how much it costs and how many spots are available.
+              </p>
             </div>
 
             <div className="space-y-4">
               {data.tickets.map((ticket: any, idx: number) => (
-                <div key={ticket.id} className="rounded-2xl border border-border/60 p-5 bg-card shadow-sm">
+                <div
+                  key={ticket.id}
+                  className="rounded-2xl border border-border/60 p-5 bg-card shadow-sm"
+                >
                   <div className="grid gap-5 md:grid-cols-3">
                     <div className="space-y-2">
                       <Label>Ticket Name</Label>
@@ -523,7 +578,14 @@ export function CreateExperienceDesktop({
               onClick={() => {
                 updateField("tickets", [
                   ...data.tickets,
-                  { id: generateId(), name: "", price: 0, quantity: 0, includes: [""], form_id: "" },
+                  {
+                    id: generateId(),
+                    name: "",
+                    price: 0,
+                    quantity: 0,
+                    includes: [""],
+                    form_id: "",
+                  },
                 ]);
               }}
             >
@@ -537,14 +599,23 @@ export function CreateExperienceDesktop({
           <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
             <Label className="text-base font-semibold">Experience Cover Image</Label>
             <p className="text-sm text-muted-foreground mb-4">
-              Upload a beautiful cover image that showcases the experience. Max file size: <strong>5 MB</strong>.
+              Upload a beautiful cover image that showcases the experience. Max file size:{" "}
+              <strong>5 MB</strong>.
             </p>
-            <label className={`block aspect-[21/9] cursor-pointer overflow-hidden rounded-[2rem] border-2 border-dashed transition-all relative group ${
-              coverUploading ? "border-primary/60 bg-primary/5" : "border-border/60 bg-secondary/30 hover:border-primary hover:bg-secondary/50"
-            }`}>
+            <label
+              className={`block aspect-[21/9] cursor-pointer overflow-hidden rounded-[2rem] border-2 border-dashed transition-all relative group ${
+                coverUploading
+                  ? "border-primary/60 bg-primary/5"
+                  : "border-border/60 bg-secondary/30 hover:border-primary hover:bg-secondary/50"
+              }`}
+            >
               {data.coverPreview ? (
                 <>
-                  <img src={data.coverPreview} alt="cover" className={`h-full w-full object-cover transition-opacity ${coverUploading ? "opacity-50" : "opacity-100"}`} />
+                  <img
+                    src={data.coverPreview}
+                    alt="cover"
+                    className={`h-full w-full object-cover transition-opacity ${coverUploading ? "opacity-50" : "opacity-100"}`}
+                  />
                   {coverUploading ? (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="flex flex-col items-center gap-2 text-primary">
@@ -554,7 +625,9 @@ export function CreateExperienceDesktop({
                     </div>
                   ) : (
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <p className="text-white font-medium flex items-center"><Upload className="mr-2 h-4 w-4" /> Change Image</p>
+                      <p className="text-white font-medium flex items-center">
+                        <Upload className="mr-2 h-4 w-4" /> Change Image
+                      </p>
                     </div>
                   )}
                 </>
@@ -571,16 +644,22 @@ export function CreateExperienceDesktop({
                         <Upload className="h-6 w-6" />
                       </div>
                       <p className="font-medium text-foreground">Click or drag image to upload</p>
-                      <p className="mt-1 text-xs text-muted-foreground">Max 5 MB · JPG, PNG, or WebP recommended</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Max 5 MB · JPG, PNG, or WebP recommended
+                      </p>
                     </div>
                   )}
                 </div>
               )}
-              <input type="file" accept="image/*" hidden onChange={onCoverUpload} disabled={coverUploading} />
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={onCoverUpload}
+                disabled={coverUploading}
+              />
             </label>
-            {coverError && (
-              <p className="text-sm text-red-500 font-medium">{coverError}</p>
-            )}
+            {coverError && <p className="text-sm text-red-500 font-medium">{coverError}</p>}
           </div>
         )}
 
@@ -597,30 +676,45 @@ export function CreateExperienceDesktop({
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-6">
-                  <h3 className="text-3xl font-bold text-white drop-shadow-md">{data.title || "Untitled Experience"}</h3>
+                  <h3 className="text-3xl font-bold text-white drop-shadow-md">
+                    {data.title || "Untitled Experience"}
+                  </h3>
                 </div>
               </div>
               <div className="p-6">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6 pb-6 border-b border-border/60">
-                  <span className="inline-flex items-center gap-1.5 font-medium"><MapPin className="h-4 w-4" /> {data.city ? `${data.city}, ${data.country}` : data.country}</span>
-                  <span className="inline-flex items-center gap-1.5 font-medium"><Clock className="h-4 w-4" /> {data.date || "No Date"}</span>
+                  <span className="inline-flex items-center gap-1.5 font-medium">
+                    <MapPin className="h-4 w-4" />{" "}
+                    {data.city ? `${data.city}, ${data.country}` : data.country}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 font-medium">
+                    <Clock className="h-4 w-4" /> {data.date || "No Date"}
+                  </span>
                 </div>
-                
+
                 <h4 className="font-semibold mb-3">Highlights</h4>
                 <div className="space-y-3">
                   {isRouteBased ? (
                     <div>
-                      <p className="text-sm font-medium mb-2">{data.numberOfDays} Day{data.numberOfDays > 1 ? 's' : ''} Itinerary</p>
+                      <p className="text-sm font-medium mb-2">
+                        {data.numberOfDays} Day{data.numberOfDays > 1 ? "s" : ""} Itinerary
+                      </p>
                       {data.itinerary.map((stop: any, i: number) => (
                         <div key={i} className="flex gap-4">
                           <div className="flex flex-col items-center">
                             <div className="w-3 h-3 rounded-full bg-primary mt-1 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></div>
-                            {i < data.itinerary.length - 1 && <div className="w-0.5 h-full bg-border mt-2"></div>}
+                            {i < data.itinerary.length - 1 && (
+                              <div className="w-0.5 h-full bg-border mt-2"></div>
+                            )}
                           </div>
                           <div className="pb-4">
-                            <p className="font-medium text-xs text-primary mb-0.5">Day {stop.day || 1}</p>
-                            <p className="font-medium">{stop.title || `Stop ${i+1}`}</p>
-                            <p className="text-sm text-muted-foreground">{stop.time} • {stop.address}</p>
+                            <p className="font-medium text-xs text-primary mb-0.5">
+                              Day {stop.day || 1}
+                            </p>
+                            <p className="font-medium">{stop.title || `Stop ${i + 1}`}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {stop.time} • {stop.address}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -632,7 +726,9 @@ export function CreateExperienceDesktop({
                       </div>
                       <div className="pb-4">
                         <p className="font-medium">{data.venueName || "Venue"}</p>
-                        <p className="text-sm text-muted-foreground">{data.startTime} - {data.endTime}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {data.startTime} - {data.endTime}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -651,7 +747,11 @@ export function CreateExperienceDesktop({
           <div className="flex gap-2">
             {!initialData && (
               <>
-                <Button variant="ghost" className="rounded-full shadow-none text-muted-foreground hover:text-red-500 hover:bg-red-500/10" onClick={clearDraft}>
+                <Button
+                  variant="ghost"
+                  className="rounded-full shadow-none text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                  onClick={clearDraft}
+                >
                   <Trash2 className="mr-1.5 h-4 w-4" /> Start fresh
                 </Button>
                 <Button variant="outline" className="rounded-full shadow-sm" onClick={saveDraft}>

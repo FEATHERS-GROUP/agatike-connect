@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import { 
-  collection, 
-  query, 
-  where, 
-  onSnapshot, 
-  addDoc, 
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  addDoc,
   serverTimestamp,
   updateDoc,
   doc,
-  setDoc
+  setDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getUsersByIds } from "@/api/users";
@@ -51,21 +51,20 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
   useEffect(() => {
     if (!workspaceId) return;
 
-    const q = query(
-      collection(db, "agatike_channels"),
-      where("organizerId", "==", workspaceId)
-    );
+    const q = query(collection(db, "agatike_channels"), where("organizerId", "==", workspaceId));
 
     const unsubscribeChannels = onSnapshot(q, async (snapshot) => {
-      let fetchedChannels: any[] = snapshot.docs.map(doc => {
+      let fetchedChannels: any[] = snapshot.docs.map((doc) => {
         const data = doc.data();
         const rawTime = data.lastMessageTime;
         return {
           id: doc.id,
           name: data.name || "Unknown Channel",
-          avatar: (data.avatar && !data.avatar.includes("pravatar.cc")) ? data.avatar : "",
+          avatar: data.avatar && !data.avatar.includes("pravatar.cc") ? data.avatar : "",
           lastMessage: data.lastMessage || "",
-          time: rawTime?.toDate?.()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time:
+            rawTime?.toDate?.()?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) ||
+            new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           rawTimeMillis: rawTime?.toMillis?.() || Date.now(),
           unread: data.unreadCount || 0,
           online: data.online || false,
@@ -73,29 +72,34 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
           entityType: data.entityType,
           messages: [],
           organizerId: data.organizerId,
-          userId: data.userId
+          userId: data.userId,
         };
       });
 
-      // Note: Auto-creation of General Announcements is removed. 
+      // Note: Auto-creation of General Announcements is removed.
       // Channels are now created explicitly via Hasura and synced.
 
       // Fetch Real User Profiles for direct messages
-      const userIds = fetchedChannels.filter(c => c.type === "user" && c.userId).map(c => c.userId!);
+      const userIds = fetchedChannels
+        .filter((c) => c.type === "user" && c.userId)
+        .map((c) => c.userId!);
       if (userIds.length > 0) {
         try {
           // @ts-ignore - The tanstack createServerFn types here default to undefined but the handler accepts it
           const profiles = await getUsersByIds({ data: { ids: userIds } });
-          fetchedChannels = fetchedChannels.map(ch => {
+          fetchedChannels = fetchedChannels.map((ch) => {
             if (ch.type === "user" && ch.userId) {
               const profile = profiles.find((p: any) => p.id === ch.userId);
               if (profile) {
                 return {
                   ...ch,
-                  name: (profile.handle ? `@${profile.handle}` : profile.username) || profile.profile?.first_name || ch.name,
+                  name:
+                    (profile.handle ? `@${profile.handle}` : profile.username) ||
+                    profile.profile?.first_name ||
+                    ch.name,
                   avatar: profile.profile || ch.avatar,
                   country: profile.country,
-                  handle: profile.handle
+                  handle: profile.handle,
                 };
               }
             }
@@ -108,11 +112,11 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
 
       // Sort by latest message
       fetchedChannels.sort((a, b) => b.rawTimeMillis - a.rawTimeMillis);
-      
-      setChannels(prev => {
+
+      setChannels((prev) => {
         // Merge messages if they exist in prev state
-        let updatedChannels = fetchedChannels.map(fc => {
-          const existing = prev.find(p => p.id === fc.id);
+        let updatedChannels = fetchedChannels.map((fc) => {
+          const existing = prev.find((p) => p.id === fc.id);
           const { rawTimeMillis, ...cleanFc } = fc; // Remove temporary sorting prop
           return { ...cleanFc, messages: existing ? existing.messages : [] } as ChatChannel;
         });
@@ -124,7 +128,7 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
         return updatedChannels;
       });
 
-      setActiveChatId(prev => {
+      setActiveChatId((prev) => {
         if (!prev && fetchedChannels.length > 0) return fetchedChannels[0].id;
         return prev;
       });
@@ -138,13 +142,10 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
   useEffect(() => {
     if (!activeChatId) return;
 
-    const q = query(
-      collection(db, "agatike_messages"),
-      where("channelId", "==", activeChatId)
-    );
+    const q = query(collection(db, "agatike_messages"), where("channelId", "==", activeChatId));
 
     const unsubscribeMessages = onSnapshot(q, (snapshot) => {
-      const messages: Message[] = snapshot.docs.map(doc => {
+      const messages: Message[] = snapshot.docs.map((doc) => {
         const data = doc.data();
         const rawTime = data.timestamp;
         return {
@@ -152,11 +153,13 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
           senderId: data.senderId,
           text: data.text,
           timestamp: rawTime, // Keep raw timestamp for sorting
-          timeFormatted: rawTime?.toDate?.()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          timeFormatted:
+            rawTime?.toDate?.()?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) ||
+            new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           isMe: data.senderId === currentUserId || data.senderId === workspaceId, // Include workspaceId for DMs
           channelId: data.channelId,
           mediaUrl: data.mediaUrl,
-          isPending: !rawTime
+          isPending: !rawTime,
         };
       });
 
@@ -168,11 +171,11 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
       });
 
       // Replace raw timestamp with formatted string for the UI
-      const finalMessages = messages.map(m => ({ ...m, timestamp: m.timeFormatted }));
+      const finalMessages = messages.map((m) => ({ ...m, timestamp: m.timeFormatted }));
 
-      setChannels(prev => prev.map(ch => 
-        ch.id === activeChatId ? { ...ch, messages: finalMessages } : ch
-      ));
+      setChannels((prev) =>
+        prev.map((ch) => (ch.id === activeChatId ? { ...ch, messages: finalMessages } : ch)),
+      );
     });
 
     return () => unsubscribeMessages();
@@ -195,19 +198,23 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
       receiverId,
       text,
       mediaUrl: mediaUrl || null,
-      timestamp: serverTimestamp()
+      timestamp: serverTimestamp(),
     });
 
     const channelRef = doc(db, "agatike_channels", activeChatId);
     await updateDoc(channelRef, {
       lastMessage: text || "Sent an attachment",
       lastMessageTime: serverTimestamp(),
-      lastMessageSenderId: senderId
+      lastMessageSenderId: senderId,
     });
   };
 
-  const createDirectMessageChannel = async (userId: string, userName: string, userAvatar: string) => {
-    const existing = channels.find(c => c.type === "user" && c.userId === userId);
+  const createDirectMessageChannel = async (
+    userId: string,
+    userName: string,
+    userAvatar: string,
+  ) => {
+    const existing = channels.find((c) => c.type === "user" && c.userId === userId);
     if (existing) {
       setActiveChatId(existing.id);
       return;
@@ -224,28 +231,45 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
       online: false,
       avatar: userAvatar,
       userId: userId,
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
     });
-    
+
     setActiveChatId(newDoc.id);
   };
 
-  const createFirebaseGroupChannel = async (channelId: string, name: string, avatar: string, entityType: string = "GROUP") => {
+  const createFirebaseGroupChannel = async (
+    channelId: string,
+    name: string,
+    avatar: string,
+    entityType: string = "GROUP",
+  ) => {
     const channelRef = doc(db, "agatike_channels", channelId);
-    await setDoc(channelRef, {
-      organizerId: workspaceId,
-      name,
-      type: "group",
-      entityType,
-      lastMessage: "Channel created",
-      lastMessageTime: serverTimestamp(),
-      unreadCount: 0,
-      online: true,
-      avatar,
-      createdAt: serverTimestamp()
-    }, { merge: true }); // use merge so we don't overwrite if it exists
+    await setDoc(
+      channelRef,
+      {
+        organizerId: workspaceId,
+        name,
+        type: "group",
+        entityType,
+        lastMessage: "Channel created",
+        lastMessageTime: serverTimestamp(),
+        unreadCount: 0,
+        online: true,
+        avatar,
+        createdAt: serverTimestamp(),
+      },
+      { merge: true },
+    ); // use merge so we don't overwrite if it exists
     setActiveChatId(channelId);
   };
 
-  return { channels, activeChatId, setActiveChatId, sendMessage, loading, createDirectMessageChannel, createFirebaseGroupChannel };
+  return {
+    channels,
+    activeChatId,
+    setActiveChatId,
+    sendMessage,
+    loading,
+    createDirectMessageChannel,
+    createFirebaseGroupChannel,
+  };
 }

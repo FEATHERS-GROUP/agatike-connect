@@ -55,7 +55,7 @@ export function usePlatformModules() {
       });
 
       // Inject Community module if it doesn't exist
-      if (!mapped.find(m => m.label === "Community")) {
+      if (!mapped.find((m) => m.label === "Community")) {
         mapped.push({
           id: "community",
           label: "Community",

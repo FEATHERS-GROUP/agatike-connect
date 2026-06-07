@@ -1,7 +1,8 @@
-const fs = require('fs');
+const fs = require("fs");
 
-const path = '/Users/apple/Desktop/agatike-connect/src/components/desktop/dashboard/ManualBookingDialog.tsx';
-let content = fs.readFileSync(path, 'utf8');
+const path =
+  "/Users/apple/Desktop/agatike-connect/src/components/desktop/dashboard/ManualBookingDialog.tsx";
+let content = fs.readFileSync(path, "utf8");
 
 const imports = `import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -10,7 +11,10 @@ import { sendTicketsEmail } from "@/api/email";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 `;
 
-content = content.replace('import { cn } from "@/lib/utils";', 'import { cn } from "@/lib/utils";\n' + imports);
+content = content.replace(
+  'import { cn } from "@/lib/utils";',
+  'import { cn } from "@/lib/utils";\n' + imports,
+);
 
 // Add the query for ticket projects
 const queryCode = `
@@ -26,7 +30,10 @@ const queryCode = `
   const [bookingRes, setBookingRes] = useState<any>(null);
 `;
 
-content = content.replace('const [step, setStep] = useState(1);', queryCode + '\n  const [step, setStep] = useState(1);');
+content = content.replace(
+  "const [step, setStep] = useState(1);",
+  queryCode + "\n  const [step, setStep] = useState(1);",
+);
 
 // Update mutate success
 const successCode = `
@@ -100,10 +107,16 @@ const genEffectCode = `
   }, [isGenerating, issuedTickets]);
 `;
 
-content = content.replace('const handleClose = () => {', genEffectCode + '\n  const handleClose = () => {');
+content = content.replace(
+  "const handleClose = () => {",
+  genEffectCode + "\n  const handleClose = () => {",
+);
 
 // Update close logic to reset state
-content = content.replace('setTicketsData({});', 'setTicketsData({});\n      setIsGenerating(false);\n      setIssuedTickets([]);');
+content = content.replace(
+  "setTicketsData({});",
+  "setTicketsData({});\n      setIsGenerating(false);\n      setIssuedTickets([]);",
+);
 
 // Add hidden ticket rendering at the bottom of the DialogContent
 const rendererCode = `
@@ -143,16 +156,16 @@ const rendererCode = `
         )}
 `;
 
-content = content.replace('</DialogContent>', rendererCode + '\n      </DialogContent>');
+content = content.replace("</DialogContent>", rendererCode + "\n      </DialogContent>");
 
 // Add a spinner state to the button
 content = content.replace(
   '{isPending ? "Confirming..." : "Confirm & Pay"}',
-  '{isPending ? "Confirming..." : isGenerating ? "Generating Tickets..." : "Confirm & Pay"}'
+  '{isPending ? "Confirming..." : isGenerating ? "Generating Tickets..." : "Confirm & Pay"}',
 );
 content = content.replace(
-  'disabled={isPending || !formData.status}',
-  'disabled={isPending || isGenerating || !formData.status}'
+  "disabled={isPending || !formData.status}",
+  "disabled={isPending || isGenerating || !formData.status}",
 );
 
 fs.writeFileSync(path, content);

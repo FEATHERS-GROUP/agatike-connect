@@ -11,11 +11,11 @@ async function run() {
   const sqlReq = {
     type: "run_sql",
     args: {
-      sql: sql
-    }
+      sql: sql,
+    },
   };
 
-  const res1 = await fetch(process.env.HASURA_ADMIN_API.replace('v1/graphql', 'v2/query'), {
+  const res1 = await fetch(process.env.HASURA_ADMIN_API.replace("v1/graphql", "v2/query"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -31,11 +31,11 @@ async function run() {
     args: {
       source: "default",
       schema: "public",
-      name: "community_channels"
-    }
+      name: "community_channels",
+    },
   };
 
-  const res2 = await fetch(process.env.HASURA_ADMIN_API.replace('v1/graphql', 'v1/metadata'), {
+  const res2 = await fetch(process.env.HASURA_ADMIN_API.replace("v1/graphql", "v1/metadata"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

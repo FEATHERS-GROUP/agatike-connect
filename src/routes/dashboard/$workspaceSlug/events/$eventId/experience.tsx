@@ -248,7 +248,9 @@ function ExperienceDashboard() {
       );
       setPostMedia((prev) => [...prev, ...urls]);
       if (toUpload.length < files.length) {
-        toast.info(`Only ${toUpload.length} of ${files.length} photos added (max ${MAX_POST_IMAGES}).`);
+        toast.info(
+          `Only ${toUpload.length} of ${files.length} photos added (max ${MAX_POST_IMAGES}).`,
+        );
       }
     } catch {
       toast.error("Failed to upload image(s).");
@@ -697,7 +699,9 @@ function ExperienceDashboard() {
                     ) : (
                       <>
                         <Camera className="h-5 w-5 mb-1" />
-                        <span className="text-[10px] font-medium">{postMedia.length}/{MAX_POST_IMAGES}</span>
+                        <span className="text-[10px] font-medium">
+                          {postMedia.length}/{MAX_POST_IMAGES}
+                        </span>
                       </>
                     )}
                   </div>

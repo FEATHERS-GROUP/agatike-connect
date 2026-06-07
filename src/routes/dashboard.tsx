@@ -67,7 +67,7 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/);
 
   const isDesigner =
-    isDesigningVenue || 
+    isDesigningVenue ||
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/community/i);
 

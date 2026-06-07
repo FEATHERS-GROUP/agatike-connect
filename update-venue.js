@@ -1,6 +1,9 @@
-const fs = require('fs');
+const fs = require("fs");
 
-let content = fs.readFileSync('src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx', 'utf-8');
+let content = fs.readFileSync(
+  "src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx",
+  "utf-8",
+);
 
 const VENUE_TYPES = `const VENUE_TYPES = [
   {
@@ -88,6 +91,9 @@ const newGrid = `<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
                 })}
               </div>`;
 
-content = content.replace(/<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-8">[\s\S]*?<\/div>\s*<\/div>\s*\)}/, newGrid + '\n            </div>\n          )}');
+content = content.replace(
+  /<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-8">[\s\S]*?<\/div>\s*<\/div>\s*\)}/,
+  newGrid + "\n            </div>\n          )}",
+);
 
-fs.writeFileSync('src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx', content);
+fs.writeFileSync("src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx", content);

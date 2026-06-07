@@ -10,7 +10,7 @@ const firebaseConfig = {
   projectId: process.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID
+  appId: process.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
@@ -19,7 +19,7 @@ const db = getFirestore(app);
 async function testAddDoc() {
   try {
     const newDoc = await addDoc(collection(db, "agatike_channels"), {
-      test: true
+      test: true,
     });
     console.log("Successfully added doc:", newDoc.id);
   } catch (error) {

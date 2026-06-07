@@ -18,7 +18,9 @@ export function ExperienceVenueStep({
         </div>
         <div>
           <h3 className="font-medium">Venue Details</h3>
-          <p className="text-xs text-muted-foreground">Where and when is this experience happening?</p>
+          <p className="text-xs text-muted-foreground">
+            Where and when is this experience happening?
+          </p>
         </div>
       </div>
 

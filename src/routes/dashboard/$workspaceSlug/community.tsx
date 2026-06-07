@@ -15,7 +15,7 @@ import {
   Loader2,
   UploadCloud,
   X,
-  Sticker
+  Sticker,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,23 +59,23 @@ import { getWorkspaceEvents, getEventAttendeesCount } from "@/api/events";
 import { uploadFile } from "@/api/storage";
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  "Rwanda": "🇷🇼",
+  Rwanda: "🇷🇼",
   "United States": "🇺🇸",
   "United Kingdom": "🇬🇧",
-  "Canada": "🇨🇦",
-  "France": "🇫🇷",
-  "Germany": "🇩🇪",
-  "Kenya": "🇰🇪",
-  "Uganda": "🇺🇬",
-  "Tanzania": "🇹🇿",
-  "Burundi": "🇧🇮",
+  Canada: "🇨🇦",
+  France: "🇫🇷",
+  Germany: "🇩🇪",
+  Kenya: "🇰🇪",
+  Uganda: "🇺🇬",
+  Tanzania: "🇹🇿",
+  Burundi: "🇧🇮",
   "South Africa": "🇿🇦",
-  "Nigeria": "🇳🇬",
-  "India": "🇮🇳",
-  "China": "🇨🇳",
-  "Japan": "🇯🇵",
-  "Australia": "🇦🇺",
-  "Brazil": "🇧🇷",
+  Nigeria: "🇳🇬",
+  India: "🇮🇳",
+  China: "🇨🇳",
+  Japan: "🇯🇵",
+  Australia: "🇦🇺",
+  Brazil: "🇧🇷",
 };
 
 const getCountryFlag = (countryName?: string) => {
@@ -91,7 +91,15 @@ function CommunityPage() {
   const currentUserId = "me";
   const organizerId = activeWorkspace?.orgnizer_id || "";
 
-  const { channels, activeChatId, setActiveChatId, sendMessage, loading, createDirectMessageChannel, createFirebaseGroupChannel } = useFirestoreCommunity(organizerId, currentUserId);
+  const {
+    channels,
+    activeChatId,
+    setActiveChatId,
+    sendMessage,
+    loading,
+    createDirectMessageChannel,
+    createFirebaseGroupChannel,
+  } = useFirestoreCommunity(organizerId, currentUserId);
 
   const { data: followers = [] } = useQuery({
     queryKey: ["organizerFollowers", organizerId],
@@ -123,7 +131,9 @@ function CommunityPage() {
   const [messageInput, setMessageInput] = useState("");
 
   const activeChat = channels.find((c) => c.id === activeChatId);
-  const activeHasuraChannel = communityChannels.find((c: { id: string | null; }) => c.id === activeChatId);
+  const activeHasuraChannel = communityChannels.find(
+    (c: { id: string | null }) => c.id === activeChatId,
+  );
 
   const { data: attendeesCount = 0 } = useQuery({
     queryKey: ["attendeesCount", activeHasuraChannel?.event_id, activeHasuraChannel?.schedule_id],
@@ -132,8 +142,8 @@ function CommunityPage() {
       return await getEventAttendeesCount({
         data: {
           eventId: activeHasuraChannel.event_id || undefined,
-          scheduleId: activeHasuraChannel.schedule_id || undefined
-        }
+          scheduleId: activeHasuraChannel.schedule_id || undefined,
+        },
       });
     },
     enabled: !!(activeHasuraChannel?.event_id || activeHasuraChannel?.schedule_id),
@@ -172,9 +182,9 @@ function CommunityPage() {
   };
 
   const handleFollowerClick = async (follower: any) => {
-    const name = follower.handle ? `@${follower.handle}` : (follower.username || "Follower");
+    const name = follower.handle ? `@${follower.handle}` : follower.username || "Follower";
     const profileStr = typeof follower.profile === "string" ? follower.profile : "";
-    const avatar = (profileStr && !profileStr.includes("pravatar.cc")) ? profileStr : "";
+    const avatar = profileStr && !profileStr.includes("pravatar.cc") ? profileStr : "";
     await createDirectMessageChannel(follower.id, name, avatar);
     setActiveTab("all");
   };
@@ -187,7 +197,16 @@ function CommunityPage() {
   const [filePreviewUrl, setFilePreviewUrl] = useState<string>("");
   const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
 
-  const BACKGROUND_COLORS = ["b6e3f4", "c0aede", "d1d4f9", "ffdfbf", "ffd5dc", "d1f4e0", "fce2c4", "f9d8e5"];
+  const BACKGROUND_COLORS = [
+    "b6e3f4",
+    "c0aede",
+    "d1d4f9",
+    "ffdfbf",
+    "ffd5dc",
+    "d1f4e0",
+    "fce2c4",
+    "f9d8e5",
+  ];
 
   useEffect(() => {
     if (isMainChannelModalOpen) {
@@ -241,7 +260,7 @@ function CommunityPage() {
             contentType: selectedFile.type,
             folder: "channels",
             ext,
-          } as any
+          } as any,
         });
 
         if (uploadRes && uploadRes.url) {
@@ -254,8 +273,8 @@ function CommunityPage() {
           organizerId,
           name: mainChannelName || "General Announcements",
           coverUrl: finalCoverUrl,
-          isMain: true
-        }
+          isMain: true,
+        },
       });
       await createFirebaseGroupChannel(ch.id, ch.name, ch.cover_url || "", "GLOBAL");
       refetchChannels();
@@ -280,8 +299,8 @@ function CommunityPage() {
           isMain: false,
           eventId: target.eventId,
           scheduleId: target.scheduleId,
-          tourStopIdx: target.tourStopIdx
-        }
+          tourStopIdx: target.tourStopIdx,
+        },
       });
       await createFirebaseGroupChannel(ch.id, ch.name, ch.cover_url || "", "EVENT");
       refetchChannels();
@@ -292,72 +311,94 @@ function CommunityPage() {
 
   const channelTargets = React.useMemo(() => {
     const targets: any[] = [];
-    events.forEach((event: { event_type: string; schedules: any[]; event_requency: { date: any; }; tour_stops: { date: any; length: number; forEach: (arg0: (stop: any, idx: number) => void) => void; }; id: any; title: any; cover: any; }) => {
-      const isExperience = event.event_type === "experience" || (event.schedules && event.schedules.length > 0);
+    events.forEach(
+      (event: {
+        event_type: string;
+        schedules: any[];
+        event_requency: { date: any };
+        tour_stops: {
+          date: any;
+          length: number;
+          forEach: (arg0: (stop: any, idx: number) => void) => void;
+        };
+        id: any;
+        title: any;
+        cover: any;
+      }) => {
+        const isExperience =
+          event.event_type === "experience" || (event.schedules && event.schedules.length > 0);
 
-      if (isExperience) {
-        const primaryDateStr = event.event_requency?.date || (!Array.isArray(event.tour_stops) ? event.tour_stops?.date : undefined);
+        if (isExperience) {
+          const primaryDateStr =
+            event.event_requency?.date ||
+            (!Array.isArray(event.tour_stops) ? event.tour_stops?.date : undefined);
 
-        targets.push({
-          type: "schedule",
-          id: `sched_primary_${event.id}`,
-          eventId: event.id,
-          scheduleId: null,
-          tourStopIdx: null,
-          title: `${event.title} - ${primaryDateStr || 'Primary Schedule'}`,
-          cover: event.cover
-        });
-
-        if (Array.isArray(event.schedules)) {
-          event.schedules.forEach((schedule: any) => {
-            targets.push({
-              type: "schedule",
-              id: `sched_${schedule.id}`,
-              eventId: event.id,
-              scheduleId: schedule.id,
-              tourStopIdx: null,
-              title: `${event.title} - ${schedule.start_date || 'Date TBD'}`,
-              cover: event.cover
-            });
-          });
-        }
-      } else if (Array.isArray(event.tour_stops) && event.tour_stops.length > 0) {
-        event.tour_stops.forEach((stop: any, idx: number) => {
-          const stopName = stop.city || stop.venue || `Stop ${idx + 1}`;
           targets.push({
-            type: "tour_stop",
-            id: `stop_${event.id}_${idx}`,
+            type: "schedule",
+            id: `sched_primary_${event.id}`,
             eventId: event.id,
             scheduleId: null,
-            tourStopIdx: idx,
-            title: `${event.title} - ${stopName}`,
-            cover: event.cover
+            tourStopIdx: null,
+            title: `${event.title} - ${primaryDateStr || "Primary Schedule"}`,
+            cover: event.cover,
           });
-        });
-      } else {
-        targets.push({
-          type: "event",
-          id: `ev_${event.id}`,
-          eventId: event.id,
-          scheduleId: null,
-          tourStopIdx: null,
-          title: event.title,
-          cover: event.cover
-        });
-      }
-    });
+
+          if (Array.isArray(event.schedules)) {
+            event.schedules.forEach((schedule: any) => {
+              targets.push({
+                type: "schedule",
+                id: `sched_${schedule.id}`,
+                eventId: event.id,
+                scheduleId: schedule.id,
+                tourStopIdx: null,
+                title: `${event.title} - ${schedule.start_date || "Date TBD"}`,
+                cover: event.cover,
+              });
+            });
+          }
+        } else if (Array.isArray(event.tour_stops) && event.tour_stops.length > 0) {
+          event.tour_stops.forEach((stop: any, idx: number) => {
+            const stopName = stop.city || stop.venue || `Stop ${idx + 1}`;
+            targets.push({
+              type: "tour_stop",
+              id: `stop_${event.id}_${idx}`,
+              eventId: event.id,
+              scheduleId: null,
+              tourStopIdx: idx,
+              title: `${event.title} - ${stopName}`,
+              cover: event.cover,
+            });
+          });
+        } else {
+          targets.push({
+            type: "event",
+            id: `ev_${event.id}`,
+            eventId: event.id,
+            scheduleId: null,
+            tourStopIdx: null,
+            title: event.title,
+            cover: event.cover,
+          });
+        }
+      },
+    );
     return targets;
   }, [events]);
 
   const handleOpenHasuraChannel = (channelId: string) => {
-    const hc = communityChannels.find((c: { id: string; }) => c.id === channelId);
+    const hc = communityChannels.find((c: { id: string }) => c.id === channelId);
     if (hc) {
-      createFirebaseGroupChannel(hc.id, hc.name, hc.cover_url || "", hc.is_main ? "GLOBAL" : "EVENT");
+      createFirebaseGroupChannel(
+        hc.id,
+        hc.name,
+        hc.cover_url || "",
+        hc.is_main ? "GLOBAL" : "EVENT",
+      );
     }
     setActiveChatId(channelId);
   };
 
-  const mainChannel = communityChannels.find((c: { is_main: any; }) => c.is_main);
+  const mainChannel = communityChannels.find((c: { is_main: any }) => c.is_main);
 
   if (loading) {
     return (
@@ -369,7 +410,6 @@ function CommunityPage() {
 
   return (
     <div className="flex h-screen bg-background border-none rounded-none shadow-none">
-
       {/* LEFT SIDEBAR - Chat List */}
       <div className="w-full md:w-[350px] lg:w-[400px] flex flex-col border-r border-border/60 bg-card/50">
         <div className="p-4 border-b border-border/60">
@@ -388,7 +428,11 @@ function CommunityPage() {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex-1 flex flex-col w-full"
+        >
           <div className="px-4 pt-2 border-b border-border/60">
             <TabsList className="w-full grid grid-cols-3 bg-transparent p-0">
               <TabsTrigger
@@ -415,47 +459,61 @@ function CommunityPage() {
           <TabsContent value="all" className="flex-1 m-0">
             <ScrollArea className="h-full">
               <div className="p-2 flex flex-col gap-1">
-                {channels.filter(c => !(c.type === "user" && !c.lastMessage)).map((chat) => (
-                  <button
-                    key={chat.id}
-                    onClick={() => setActiveChatId(chat.id)}
-                    className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${activeChatId === chat.id
-                        ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
-                        : "hover:bg-accent/50"
+                {channels
+                  .filter((c) => !(c.type === "user" && !c.lastMessage))
+                  .map((chat) => (
+                    <button
+                      key={chat.id}
+                      onClick={() => setActiveChatId(chat.id)}
+                      className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
+                        activeChatId === chat.id
+                          ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
+                          : "hover:bg-accent/50"
                       }`}
-                  >
-                    <div className="relative shrink-0">
-                      <Avatar className="h-12 w-12 border border-border/50">
-                        <AvatarImage src={chat.avatar} alt={chat.name} />
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          {chat.type === "group" ? <MessageCircle className="h-5 w-5" /> : chat.name.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      {chat.online && (
-                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-semibold text-sm truncate pr-2">
-                          {chat.name} {chat.country ? getCountryFlag(chat.country) : ""}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">{chat.time}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p className={`text-xs truncate pr-2 ${chat.unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                          {chat.lastMessage}
-                        </p>
-                        {chat.unread > 0 && (
-                          <Badge className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]" style={{ background: "var(--gradient-primary)" }}>
-                            {chat.unread}
-                          </Badge>
+                    >
+                      <div className="relative shrink-0">
+                        <Avatar className="h-12 w-12 border border-border/50">
+                          <AvatarImage src={chat.avatar} alt={chat.name} />
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {chat.type === "group" ? (
+                              <MessageCircle className="h-5 w-5" />
+                            ) : (
+                              chat.name.substring(0, 2).toUpperCase()
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
+                        {chat.online && (
+                          <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
                         )}
                       </div>
-                    </div>
-                  </button>
-                ))}
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-semibold text-sm truncate pr-2">
+                            {chat.name} {chat.country ? getCountryFlag(chat.country) : ""}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                            {chat.time}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p
+                            className={`text-xs truncate pr-2 ${chat.unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}
+                          >
+                            {chat.lastMessage}
+                          </p>
+                          {chat.unread > 0 && (
+                            <Badge
+                              className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
+                              style={{ background: "var(--gradient-primary)" }}
+                            >
+                              {chat.unread}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
               </div>
             </ScrollArea>
           </TabsContent>
@@ -469,9 +527,12 @@ function CommunityPage() {
                   </div>
                 )}
                 {followers.map((follower: any) => {
-                  const name = follower.handle ? `@${follower.handle}` : (follower.username || "Follower");
+                  const name = follower.handle
+                    ? `@${follower.handle}`
+                    : follower.username || "Follower";
                   const profileStr = typeof follower.profile === "string" ? follower.profile : "";
-                  const avatar = (profileStr && !profileStr.includes("pravatar.cc")) ? profileStr : "";
+                  const avatar =
+                    profileStr && !profileStr.includes("pravatar.cc") ? profileStr : "";
                   return (
                     <button
                       key={follower.id}
@@ -507,10 +568,11 @@ function CommunityPage() {
           <TabsContent value="channels" className="flex-1 m-0">
             <ScrollArea className="h-full">
               <div className="p-2 flex flex-col gap-1">
-
                 {/* Main Channel Section */}
                 <div className="mb-4">
-                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">Main Channel</h3>
+                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">
+                    Main Channel
+                  </h3>
                   {!mainChannel ? (
                     <div className="px-2">
                       <Button
@@ -527,37 +589,54 @@ function CommunityPage() {
                   ) : (
                     <button
                       onClick={() => handleOpenHasuraChannel(mainChannel.id)}
-                      className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${activeChatId === mainChannel.id
+                      className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
+                        activeChatId === mainChannel.id
                           ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
                           : "hover:bg-accent/50"
-                        }`}
+                      }`}
                     >
                       <div className="relative shrink-0">
                         <Avatar className="h-12 w-12 border border-border/50">
-                          <AvatarImage src={(mainChannel.cover_url && !mainChannel.cover_url.includes("pravatar.cc")) ? mainChannel.cover_url : undefined} alt={mainChannel.name} />
+                          <AvatarImage
+                            src={
+                              mainChannel.cover_url &&
+                              !mainChannel.cover_url.includes("pravatar.cc")
+                                ? mainChannel.cover_url
+                                : undefined
+                            }
+                            alt={mainChannel.name}
+                          />
                           <AvatarFallback className="bg-primary/10 text-primary">
                             <MessageCircle className="h-5 w-5" />
                           </AvatarFallback>
                         </Avatar>
-                        {channels.find(c => c.id === mainChannel.id)?.online && (
+                        {channels.find((c) => c.id === mainChannel.id)?.online && (
                           <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
                         )}
                       </div>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="font-semibold text-sm truncate pr-2">{mainChannel.name}</span>
+                          <span className="font-semibold text-sm truncate pr-2">
+                            {mainChannel.name}
+                          </span>
                           <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                            {channels.find(c => c.id === mainChannel.id)?.time || ""}
+                            {channels.find((c) => c.id === mainChannel.id)?.time || ""}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <p className={`text-xs truncate pr-2 ${channels.find(c => c.id === mainChannel.id)?.unread ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                            {channels.find(c => c.id === mainChannel.id)?.lastMessage || "Tap to chat"}
+                          <p
+                            className={`text-xs truncate pr-2 ${channels.find((c) => c.id === mainChannel.id)?.unread ? "text-foreground font-medium" : "text-muted-foreground"}`}
+                          >
+                            {channels.find((c) => c.id === mainChannel.id)?.lastMessage ||
+                              "Tap to chat"}
                           </p>
-                          {channels.find(c => c.id === mainChannel.id)?.unread ? (
-                            <Badge className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]" style={{ background: "var(--gradient-primary)" }}>
-                              {channels.find(c => c.id === mainChannel.id)?.unread}
+                          {channels.find((c) => c.id === mainChannel.id)?.unread ? (
+                            <Badge
+                              className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
+                              style={{ background: "var(--gradient-primary)" }}
+                            >
+                              {channels.find((c) => c.id === mainChannel.id)?.unread}
                             </Badge>
                           ) : null}
                         </div>
@@ -568,32 +647,47 @@ function CommunityPage() {
 
                 {/* Event Channels Section */}
                 <div>
-                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">Event Channels</h3>
+                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">
+                    Event Channels
+                  </h3>
                   {channelTargets.map((target) => {
-                    const eventChannel = communityChannels.find((c: { event_id: any; schedule_id: any; tour_stop_idx: null; }) => {
-                      if (c.event_id !== target.eventId) return false;
-                      if (target.type === "schedule") {
-                        if (target.scheduleId === null) return !c.schedule_id && c.tour_stop_idx === null;
-                        return c.schedule_id === target.scheduleId;
-                      }
-                      if (target.type === "tour_stop") return c.tour_stop_idx === target.tourStopIdx;
-                      return !c.schedule_id && c.tour_stop_idx === null;
-                    });
+                    const eventChannel = communityChannels.find(
+                      (c: { event_id: any; schedule_id: any; tour_stop_idx: null }) => {
+                        if (c.event_id !== target.eventId) return false;
+                        if (target.type === "schedule") {
+                          if (target.scheduleId === null)
+                            return !c.schedule_id && c.tour_stop_idx === null;
+                          return c.schedule_id === target.scheduleId;
+                        }
+                        if (target.type === "tour_stop")
+                          return c.tour_stop_idx === target.tourStopIdx;
+                        return !c.schedule_id && c.tour_stop_idx === null;
+                      },
+                    );
 
                     if (eventChannel) {
-                      const fc = channels.find(c => c.id === eventChannel.id);
+                      const fc = channels.find((c) => c.id === eventChannel.id);
                       return (
                         <button
                           key={eventChannel.id}
                           onClick={() => handleOpenHasuraChannel(eventChannel.id)}
-                          className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${activeChatId === eventChannel.id
+                          className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
+                            activeChatId === eventChannel.id
                               ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
                               : "hover:bg-accent/50"
-                            }`}
+                          }`}
                         >
                           <div className="relative shrink-0">
                             <Avatar className="h-12 w-12 border border-border/50">
-                              <AvatarImage src={(eventChannel.cover_url && !eventChannel.cover_url.includes("pravatar.cc")) ? eventChannel.cover_url : undefined} alt={eventChannel.name} />
+                              <AvatarImage
+                                src={
+                                  eventChannel.cover_url &&
+                                  !eventChannel.cover_url.includes("pravatar.cc")
+                                    ? eventChannel.cover_url
+                                    : undefined
+                                }
+                                alt={eventChannel.name}
+                              />
                               <AvatarFallback className="bg-primary/10 text-primary">
                                 <Users className="h-5 w-5" />
                               </AvatarFallback>
@@ -605,15 +699,24 @@ function CommunityPage() {
 
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-center mb-1">
-                              <span className="font-semibold text-sm truncate pr-2">{eventChannel.name}</span>
-                              <span className="text-[10px] text-muted-foreground whitespace-nowrap">{fc?.time || ""}</span>
+                              <span className="font-semibold text-sm truncate pr-2">
+                                {eventChannel.name}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                {fc?.time || ""}
+                              </span>
                             </div>
                             <div className="flex justify-between items-center">
-                              <p className={`text-xs truncate pr-2 ${fc?.unread ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                              <p
+                                className={`text-xs truncate pr-2 ${fc?.unread ? "text-foreground font-medium" : "text-muted-foreground"}`}
+                              >
                                 {fc?.lastMessage || "Tap to chat"}
                               </p>
                               {fc?.unread ? (
-                                <Badge className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]" style={{ background: "var(--gradient-primary)" }}>
+                                <Badge
+                                  className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
+                                  style={{ background: "var(--gradient-primary)" }}
+                                >
                                   {fc.unread}
                                 </Badge>
                               ) : null}
@@ -623,10 +726,20 @@ function CommunityPage() {
                       );
                     } else {
                       return (
-                        <div key={target.id} className="flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left hover:bg-accent/50">
+                        <div
+                          key={target.id}
+                          className="flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left hover:bg-accent/50"
+                        >
                           <div className="relative shrink-0">
                             <Avatar className="h-12 w-12 border border-border/50 opacity-50 grayscale">
-                              <AvatarImage src={(target.cover && !target.cover.includes("pravatar.cc")) ? target.cover : undefined} alt={target.title} />
+                              <AvatarImage
+                                src={
+                                  target.cover && !target.cover.includes("pravatar.cc")
+                                    ? target.cover
+                                    : undefined
+                                }
+                                alt={target.title}
+                              />
                               <AvatarFallback className="bg-muted">
                                 <Users className="h-5 w-5 text-muted-foreground" />
                               </AvatarFallback>
@@ -634,8 +747,12 @@ function CommunityPage() {
                           </div>
                           <div className="flex-1 min-w-0 flex items-center justify-between">
                             <div>
-                              <span className="font-semibold text-sm truncate block">{target.title}</span>
-                              <span className="text-[10px] text-muted-foreground">No channel active</span>
+                              <span className="font-semibold text-sm truncate block">
+                                {target.title}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                No channel active
+                              </span>
                             </div>
                             <Button
                               variant="outline"
@@ -653,11 +770,12 @@ function CommunityPage() {
                   })}
                   {channelTargets.length === 0 && (
                     <div className="px-2 text-center py-4">
-                      <p className="text-xs text-muted-foreground">No events found. Create an event to add a channel.</p>
+                      <p className="text-xs text-muted-foreground">
+                        No events found. Create an event to add a channel.
+                      </p>
                     </div>
                   )}
                 </div>
-
               </div>
             </ScrollArea>
           </TabsContent>
@@ -671,9 +789,20 @@ function CommunityPage() {
           <div className="h-16 px-6 border-b border-border/60 flex items-center justify-between bg-background/50 backdrop-blur-md z-10 shrink-0">
             <div className="flex items-center gap-4">
               <Avatar className="h-10 w-10 border border-border/50">
-                <AvatarImage src={(activeChat.avatar && !activeChat.avatar.includes("pravatar.cc")) ? activeChat.avatar : undefined} alt={activeChat.name} />
+                <AvatarImage
+                  src={
+                    activeChat.avatar && !activeChat.avatar.includes("pravatar.cc")
+                      ? activeChat.avatar
+                      : undefined
+                  }
+                  alt={activeChat.name}
+                />
                 <AvatarFallback className="bg-primary/10 text-primary">
-                  {activeChat.type === "group" ? <MessageCircle className="h-4 w-4" /> : activeChat.name.substring(0, 2).toUpperCase()}
+                  {activeChat.type === "group" ? (
+                    <MessageCircle className="h-4 w-4" />
+                  ) : (
+                    activeChat.name.substring(0, 2).toUpperCase()
+                  )}
                 </AvatarFallback>
               </Avatar>
               <div>
@@ -721,47 +850,81 @@ function CommunityPage() {
               </div>
 
               {activeChat.messages.map((msg, idx) => {
-                const showAvatar = !msg.isMe && (idx === 0 || activeChat.messages[idx - 1]?.senderId !== msg.senderId);
+                const showAvatar =
+                  !msg.isMe &&
+                  (idx === 0 || activeChat.messages[idx - 1]?.senderId !== msg.senderId);
 
                 return (
-                  <div key={msg.id} className={`flex gap-3 ${msg.isMe ? "justify-end" : "justify-start"}`}>
+                  <div
+                    key={msg.id}
+                    className={`flex gap-3 ${msg.isMe ? "justify-end" : "justify-start"}`}
+                  >
                     {!msg.isMe && (
                       <div className="w-8 shrink-0">
-                        {showAvatar && (() => {
-                          const senderProfile = followers.find((f: any) => f.id === msg.senderId);
-                          const profileStr = typeof senderProfile?.profile === "string" ? senderProfile.profile : "";
-                          const avatarSrc = (profileStr && !profileStr.includes("pravatar.cc")) ? profileStr : undefined;
-                          return (
-                            <Avatar className="h-8 w-8 border border-border/50">
-                              <AvatarImage src={avatarSrc} />
-                              <AvatarFallback>{(senderProfile?.handle || senderProfile?.username || "F")[0].toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                          );
-                        })()}
+                        {showAvatar &&
+                          (() => {
+                            const senderProfile = followers.find((f: any) => f.id === msg.senderId);
+                            const profileStr =
+                              typeof senderProfile?.profile === "string"
+                                ? senderProfile.profile
+                                : "";
+                            const avatarSrc =
+                              profileStr && !profileStr.includes("pravatar.cc")
+                                ? profileStr
+                                : undefined;
+                            return (
+                              <Avatar className="h-8 w-8 border border-border/50">
+                                <AvatarImage src={avatarSrc} />
+                                <AvatarFallback>
+                                  {(senderProfile?.handle ||
+                                    senderProfile?.username ||
+                                    "F")[0].toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                            );
+                          })()}
                       </div>
                     )}
 
-                    <div className={`flex flex-col ${msg.isMe ? "items-end" : "items-start"} max-w-[70%]`}>
-                      {!msg.isMe && activeChat.type === "group" && showAvatar && (() => {
-                        const senderProfile = followers.find((f: any) => f.id === msg.senderId);
-                        const senderName = senderProfile?.handle ? `@${senderProfile.handle}` : (senderProfile?.username || "Follower Member");
-                        const senderFlag = senderProfile?.country ? getCountryFlag(senderProfile.country) : "";
-                        return (
-                          <span className="text-[11px] text-muted-foreground mb-1 ml-1 font-medium">
-                            {senderName} {senderFlag}
-                          </span>
-                        );
-                      })()}
+                    <div
+                      className={`flex flex-col ${msg.isMe ? "items-end" : "items-start"} max-w-[70%]`}
+                    >
+                      {!msg.isMe &&
+                        activeChat.type === "group" &&
+                        showAvatar &&
+                        (() => {
+                          const senderProfile = followers.find((f: any) => f.id === msg.senderId);
+                          const senderName = senderProfile?.handle
+                            ? `@${senderProfile.handle}`
+                            : senderProfile?.username || "Follower Member";
+                          const senderFlag = senderProfile?.country
+                            ? getCountryFlag(senderProfile.country)
+                            : "";
+                          return (
+                            <span className="text-[11px] text-muted-foreground mb-1 ml-1 font-medium">
+                              {senderName} {senderFlag}
+                            </span>
+                          );
+                        })()}
 
                       <div
-                        className={`p-3.5 rounded-2xl shadow-sm text-sm ${msg.isMe && !msg.mediaUrl
+                        className={`p-3.5 rounded-2xl shadow-sm text-sm ${
+                          msg.isMe && !msg.mediaUrl
                             ? "bg-primary text-primary-foreground rounded-tr-sm"
-                            : (msg.mediaUrl && !msg.text) ? "p-0 bg-transparent shadow-none" : "bg-background border border-border/50 rounded-tl-sm"
-                          }`}
-                        style={msg.isMe && !msg.mediaUrl ? { background: "var(--gradient-primary)" } : {}}
+                            : msg.mediaUrl && !msg.text
+                              ? "p-0 bg-transparent shadow-none"
+                              : "bg-background border border-border/50 rounded-tl-sm"
+                        }`}
+                        style={
+                          msg.isMe && !msg.mediaUrl ? { background: "var(--gradient-primary)" } : {}
+                        }
                       >
                         {msg.mediaUrl && (
-                          <img src={msg.mediaUrl} alt="GIF" className="max-w-[200px] rounded-lg object-cover" />
+                          <img
+                            src={msg.mediaUrl}
+                            alt="GIF"
+                            className="max-w-[200px] rounded-lg object-cover"
+                          />
                         )}
                         {msg.text && <div className={msg.mediaUrl ? "mt-2" : ""}>{msg.text}</div>}
                       </div>
@@ -778,16 +941,28 @@ function CommunityPage() {
 
           {/* Input Area */}
           <div className="p-4 bg-background/50 backdrop-blur-md border-t border-border/60 shrink-0">
-            <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto relative flex items-center gap-2 bg-card border border-border/60 rounded-full p-1.5 shadow-sm">
+            <form
+              onSubmit={handleSendMessage}
+              className="max-w-4xl mx-auto relative flex items-center gap-2 bg-card border border-border/60 rounded-full p-1.5 shadow-sm"
+            >
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0"
+                  >
                     <Smile className="h-5 w-5" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent side="top" align="start" className="p-0 border-none shadow-xl bg-transparent mb-2">
+                <PopoverContent
+                  side="top"
+                  align="start"
+                  className="p-0 border-none shadow-xl bg-transparent mb-2"
+                >
                   <EmojiPicker
-                    onEmojiClick={(emojiData) => setMessageInput(prev => prev + emojiData.emoji)}
+                    onEmojiClick={(emojiData) => setMessageInput((prev) => prev + emojiData.emoji)}
                     theme="auto"
                   />
                 </PopoverContent>
@@ -804,7 +979,11 @@ function CommunityPage() {
                     <Sticker className="h-5 w-5" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent side="top" align="start" className="w-[300px] p-2 mb-2 shadow-xl rounded-xl">
+                <PopoverContent
+                  side="top"
+                  align="start"
+                  className="w-[300px] p-2 mb-2 shadow-xl rounded-xl"
+                >
                   <Input
                     placeholder="Search GIFs..."
                     value={gifSearch}
@@ -856,7 +1035,8 @@ function CommunityPage() {
           </div>
           <h3 className="text-xl font-bold mb-2">Your Community Hub</h3>
           <p className="text-muted-foreground max-w-md">
-            Engage with your followers, answer questions, and build lasting relationships with your event attendees.
+            Engage with your followers, answer questions, and build lasting relationships with your
+            event attendees.
           </p>
         </div>
       )}
@@ -885,8 +1065,12 @@ function CommunityPage() {
               <Label>Channel Image</Label>
               <div className="flex items-center gap-4">
                 <div className="h-16 w-16 shrink-0 rounded-full border border-border/50 overflow-hidden relative group bg-muted flex items-center justify-center">
-                  {(filePreviewUrl || selectedAvatarUrl) ? (
-                    <img src={filePreviewUrl || selectedAvatarUrl || undefined} alt="Preview" className="h-full w-full object-cover" />
+                  {filePreviewUrl || selectedAvatarUrl ? (
+                    <img
+                      src={filePreviewUrl || selectedAvatarUrl || undefined}
+                      alt="Preview"
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <MessageCircle className="h-6 w-6 text-muted-foreground" />
                   )}
@@ -918,22 +1102,29 @@ function CommunityPage() {
                     className="hidden"
                     onChange={handleFileChange}
                   />
-                  <p className="text-[10px] text-muted-foreground mt-1.5 text-center">Max 2MB. Jpeg, Png.</p>
+                  <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
+                    Max 2MB. Jpeg, Png.
+                  </p>
                 </div>
               </div>
             </div>
 
             {!filePreviewUrl && (
               <div className="space-y-3">
-                <Label className="text-xs text-muted-foreground uppercase tracking-wider">Or select an illustration</Label>
+                <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+                  Or select an illustration
+                </Label>
                 <div className="grid grid-cols-4 gap-2">
                   {avatarOptions.map((url, i) => (
                     <button
                       key={i}
                       type="button"
                       onClick={() => setSelectedAvatarUrl(url)}
-                      className={`h-12 w-12 rounded-full overflow-hidden border-2 transition-all ${selectedAvatarUrl === url ? "border-primary scale-110 shadow-sm" : "border-transparent hover:scale-105"
-                        }`}
+                      className={`h-12 w-12 rounded-full overflow-hidden border-2 transition-all ${
+                        selectedAvatarUrl === url
+                          ? "border-primary scale-110 shadow-sm"
+                          : "border-transparent hover:scale-105"
+                      }`}
                     >
                       <img src={url} alt={`Option ${i}`} className="h-full w-full" />
                     </button>
@@ -946,7 +1137,10 @@ function CommunityPage() {
             <Button variant="outline" onClick={() => setIsMainChannelModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateMainChannelSubmit} disabled={creating || !mainChannelName.trim()}>
+            <Button
+              onClick={handleCreateMainChannelSubmit}
+              disabled={creating || !mainChannelName.trim()}
+            >
               {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save & Create
             </Button>

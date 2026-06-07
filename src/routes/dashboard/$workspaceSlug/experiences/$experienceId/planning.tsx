@@ -71,7 +71,9 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import React from "react";
 
-export const Route = createFileRoute("/dashboard/$workspaceSlug/experiences/$experienceId/planning")({
+export const Route = createFileRoute(
+  "/dashboard/$workspaceSlug/experiences/$experienceId/planning",
+)({
   component: PlanningView,
 });
 
@@ -109,8 +111,6 @@ function PlanningView() {
         <TabsContent value="overview" className="mt-0">
           <OverviewTab eventId={eventId} />
         </TabsContent>
-
-
 
         <TabsContent value="book" className="mt-0">
           <AgatikeBookTab eventId={eventId} />

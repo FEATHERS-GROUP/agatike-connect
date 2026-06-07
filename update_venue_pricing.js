@@ -1,6 +1,9 @@
-const fs = require('fs');
+const fs = require("fs");
 
-let content = fs.readFileSync('src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx', 'utf-8');
+let content = fs.readFileSync(
+  "src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx",
+  "utf-8",
+);
 
 // Update formData initialization
 content = content.replace(
@@ -10,7 +13,7 @@ content = content.replace(
       price_annually: "",
       entrance_fee: "",
       currency: "$",`,
-  `pricing_tiers: [{ name: "", amount: "" }],`
+  `pricing_tiers: [{ name: "", amount: "" }],`,
 );
 
 // Add missing functions to the component
@@ -33,7 +36,7 @@ const helperFunctions = `
 
 content = content.replace(
   `const addSection = () => {`,
-  helperFunctions + `\n  const addSection = () => {`
+  helperFunctions + `\n  const addSection = () => {`,
 );
 
 // Update step 4 validation in nextStep
@@ -45,7 +48,7 @@ content = content.replace(
         if (!t.name || !t.amount) return toast.error("All pricing options must have a name and amount");
       }
     }
-    if (step === 2 && formData.rental_model === "ENTIRE_VENUE") {`
+    if (step === 2 && formData.rental_model === "ENTIRE_VENUE") {`,
 );
 
 // Replace Step 4 UI
@@ -121,7 +124,7 @@ const oldStep4Start = `{step === 4 && (`;
 const oldStep4End = `          {step === 5 && (`;
 
 const step4Regex = /\{step === 4 && \([\s\S]*?\{step === 5 && \(/;
-content = content.replace(step4Regex, step4UI.trim() + '\n\n          {step === 5 && (');
+content = content.replace(step4Regex, step4UI.trim() + "\n\n          {step === 5 && (");
 
 // Remove hardcoded currency passing to mutation
 content = content.replace(
@@ -139,7 +142,7 @@ content = content.replace(
           capacity: Number(formData.capacity) || 0,
           description: formData.description,
           rental_type: formData.rental_type,
-          pricing_tiers: formData.pricing_tiers,`
+          pricing_tiers: formData.pricing_tiers,`,
 );
 
-fs.writeFileSync('src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx', content);
+fs.writeFileSync("src/routes/dashboard/$workspaceSlug/venues/create-venue.tsx", content);

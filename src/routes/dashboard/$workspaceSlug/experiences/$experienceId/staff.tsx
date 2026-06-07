@@ -487,7 +487,7 @@ function EditAccessModal({ staff, sections }: { staff: any; sections: any[] }) {
 }
 
 function StaffView() {
-  const { experienceId: eventId, workspaceSlug   } = Route.useParams();
+  const { experienceId: eventId, workspaceSlug } = Route.useParams();
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();

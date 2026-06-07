@@ -18,7 +18,15 @@ export function ExperienceDurationStep({
       const singleDayItin = data.itinerary.filter((stop: any) => stop.day === 1);
       if (singleDayItin.length === 0) {
         updateField("itinerary", [
-          { id: Math.random().toString(36).substring(2), day: 1, title: "Start", address: "", time: "08:00", lat: null, lng: null },
+          {
+            id: Math.random().toString(36).substring(2),
+            day: 1,
+            title: "Start",
+            address: "",
+            time: "08:00",
+            lat: null,
+            lng: null,
+          },
         ]);
       } else {
         updateField("itinerary", singleDayItin);
@@ -79,7 +87,8 @@ export function ExperienceDurationStep({
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 mt-6 bg-accent/20 border border-border/60 rounded-2xl p-6">
           <Label className="text-base font-semibold">Total number of days</Label>
           <p className="text-sm text-muted-foreground mb-4">
-            How many days will this experience last? We'll create a separate itinerary tab for each day.
+            How many days will this experience last? We'll create a separate itinerary tab for each
+            day.
           </p>
           <div className="flex items-center gap-4 max-w-[200px]">
             <Input

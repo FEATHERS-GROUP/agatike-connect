@@ -582,13 +582,17 @@ function ProductsAndAddonsView() {
           </h3>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="bg-secondary/20 p-3 rounded-xl border border-border/40">
-              <p className="text-[10px] text-muted-foreground uppercase font-medium">Value Issued</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">
+                Value Issued
+              </p>
               <p className="text-lg font-bold mt-0.5">
                 {formatCurrency(totalVoucherIssued, activeWorkspace?.currency)}
               </p>
             </div>
             <div className="bg-secondary/20 p-3 rounded-xl border border-border/40">
-              <p className="text-[10px] text-muted-foreground uppercase font-medium">Balance Used</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">
+                Balance Used
+              </p>
               <p className="text-lg font-bold text-green-500 mt-0.5">
                 {formatCurrency(totalVoucherUsed, activeWorkspace?.currency)}
               </p>
@@ -608,11 +612,15 @@ function ProductsAndAddonsView() {
           </h3>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="bg-secondary/20 p-3 rounded-xl border border-border/40">
-              <p className="text-[10px] text-muted-foreground uppercase font-medium">Stamps Issued</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">
+                Stamps Issued
+              </p>
               <p className="text-lg font-bold mt-0.5">{totalPunchesIssued}</p>
             </div>
             <div className="bg-secondary/20 p-3 rounded-xl border border-border/40">
-              <p className="text-[10px] text-muted-foreground uppercase font-medium">Punches Used</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">
+                Punches Used
+              </p>
               <p className="text-lg font-bold text-green-500 mt-0.5">{totalPunchesUsed}</p>
             </div>
             <div className="bg-secondary/20 p-3 rounded-xl border border-border/40">

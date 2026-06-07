@@ -1,33 +1,46 @@
 import { experienceCategories } from "@/lib/mock-data";
-import { Mountain, Waves, Route, HeartPulse, Palette, Map as MapIcon, Bike, BookOpen, Utensils, Footprints } from "lucide-react";
+import {
+  Mountain,
+  Waves,
+  Route,
+  HeartPulse,
+  Palette,
+  Map as MapIcon,
+  Bike,
+  BookOpen,
+  Utensils,
+  Footprints,
+} from "lucide-react";
 
 const categoryIcons: Record<string, any> = {
-  "Hiking": Mountain,
-  "Running": Footprints,
-  "Surf": Waves,
-  "Wellness": HeartPulse,
-  "Drawing": Palette,
-  "Art": Palette,
-  "Trips": MapIcon,
-  "Tourism": MapIcon,
+  Hiking: Mountain,
+  Running: Footprints,
+  Surf: Waves,
+  Wellness: HeartPulse,
+  Drawing: Palette,
+  Art: Palette,
+  Trips: MapIcon,
+  Tourism: MapIcon,
   "Bike Rides": Bike,
-  "Yoga": HeartPulse,
+  Yoga: HeartPulse,
   "Book Clubs": BookOpen,
-  "Food": Utensils,
+  Food: Utensils,
 };
 
-export function CategorySelectStep({ 
-  selectedCategory, 
-  onSelectCategory 
-}: { 
-  selectedCategory: string, 
-  onSelectCategory: (category: string) => void 
+export function CategorySelectStep({
+  selectedCategory,
+  onSelectCategory,
+}: {
+  selectedCategory: string;
+  onSelectCategory: (category: string) => void;
 }) {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       <div>
         <h3 className="text-xl font-semibold mb-2">What kind of experience is this?</h3>
-        <p className="text-sm text-muted-foreground">Select the category that best fits your activity.</p>
+        <p className="text-sm text-muted-foreground">
+          Select the category that best fits your activity.
+        </p>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {experienceCategories.map((category) => {
@@ -44,10 +57,16 @@ export function CategorySelectStep({
                   : "border-border/60 bg-card hover:bg-secondary/40 hover:border-border hover:scale-[1.02]"
               }`}
             >
-              <div className={`p-3 rounded-2xl ${isSelected ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
+              <div
+                className={`p-3 rounded-2xl ${isSelected ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}
+              >
                 <Icon className="w-6 h-6" />
               </div>
-              <span className={`font-semibold text-sm ${isSelected ? "text-primary" : "text-foreground"}`}>{category}</span>
+              <span
+                className={`font-semibold text-sm ${isSelected ? "text-primary" : "text-foreground"}`}
+              >
+                {category}
+              </span>
             </button>
           );
         })}

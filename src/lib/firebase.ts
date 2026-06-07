@@ -1,5 +1,13 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,8 +22,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-
-
 // Initialize Firestore
 export const db = getFirestore(app);
 
@@ -24,9 +30,11 @@ export async function deleteChannelMessages(channelId: string) {
     // Delete all messages
     const q = query(collection(db, "agatike_messages"), where("channelId", "==", channelId));
     const snapshot = await getDocs(q);
-    const deletePromises = snapshot.docs.map(docSnapshot => deleteDoc(doc(db, "agatike_messages", docSnapshot.id)));
+    const deletePromises = snapshot.docs.map((docSnapshot) =>
+      deleteDoc(doc(db, "agatike_messages", docSnapshot.id)),
+    );
     await Promise.all(deletePromises);
-    
+
     // Delete the channel metadata
     await deleteDoc(doc(db, "agatike_channels", channelId));
     console.log(`Deleted Firestore data for channel ${channelId}`);

@@ -106,14 +106,22 @@ function VenueListingsPage() {
         <h2 className="text-lg font-semibold mb-4">Your Properties</h2>
 
         {isLoading ? (
-          <div className="flex justify-center items-center h-40 text-muted-foreground">Loading venues...</div>
+          <div className="flex justify-center items-center h-40 text-muted-foreground">
+            Loading venues...
+          </div>
         ) : venues.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 bg-secondary/20 rounded-2xl border border-dashed">
             <Store className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold mb-2">No venues listed</h3>
             <p className="text-muted-foreground mb-6">You haven't added any rentable venues yet.</p>
-            <Button asChild style={{ background: "var(--gradient-primary)" }} className="shadow-[var(--shadow-glow)]">
-              <Link to={`/dashboard/${workspaceSlug}/venues/create-venue`}>List Your First Venue</Link>
+            <Button
+              asChild
+              style={{ background: "var(--gradient-primary)" }}
+              className="shadow-[var(--shadow-glow)]"
+            >
+              <Link to={`/dashboard/${workspaceSlug}/venues/create-venue`}>
+                List Your First Venue
+              </Link>
             </Button>
           </div>
         ) : (
@@ -126,9 +134,16 @@ function VenueListingsPage() {
               >
                 {/* Image side */}
                 <div className="relative w-full sm:w-48 shrink-0 aspect-[4/3] sm:aspect-auto">
-                  <img src={venue.cover_url || "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800"} alt={venue.name} className="w-full h-full object-cover bg-secondary" />
+                  <img
+                    src={
+                      venue.cover_url ||
+                      "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800"
+                    }
+                    alt={venue.name}
+                    className="w-full h-full object-cover bg-secondary"
+                  />
                   <div className="absolute top-3 left-3 flex gap-2">
-                    <StatusBadge status={venue.status as any || "Active"} />
+                    <StatusBadge status={(venue.status as any) || "Active"} />
                   </div>
                 </div>
 
@@ -168,40 +183,45 @@ function VenueListingsPage() {
                       <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
                         {venue.rental_type}
                       </p>
-                      <p className="font-semibold text-foreground truncate max-w-[120px]" title={venue.pricing_tiers?.[0]?.name}>
+                      <p
+                        className="font-semibold text-foreground truncate max-w-[120px]"
+                        title={venue.pricing_tiers?.[0]?.name}
+                      >
                         {venue.currency}
-                        {venue.pricing_tiers?.[0]?.amount ? Number(venue.pricing_tiers[0].amount).toLocaleString() : "0"}
+                        {venue.pricing_tiers?.[0]?.amount
+                          ? Number(venue.pricing_tiers[0].amount).toLocaleString()
+                          : "0"}
                       </p>
                     </div>
                   </div>
 
-                {/* Actions */}
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 rounded-xl"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="flex-1 rounded-xl gap-2"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                  >
-                    <CalendarDays className="h-4 w-4" /> Calendar
-                  </Button>
+                  {/* Actions */}
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 rounded-xl"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1 rounded-xl gap-2"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <CalendarDays className="h-4 w-4" /> Calendar
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
             ))}
           </div>
         )}

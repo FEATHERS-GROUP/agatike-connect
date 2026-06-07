@@ -178,7 +178,6 @@ function TicketDesignerPage() {
     enabled: !!activeWorkspace?.id,
   });
 
-  
   const { data: venues = [] } = useQuery({
     queryKey: ["rentable_venues", activeWorkspace?.id],
     queryFn: () => getRentableVenues({ data: { workspace_id: activeWorkspace?.id! } } as any),
@@ -207,12 +206,21 @@ function TicketDesignerPage() {
   const [eventId, setEventId] = useState(existingProject?.eventId || initialEventId);
   const initialVenueId = searchParams.get("venueId") || "";
   const [venueId, setVenueId] = useState(existingProject?.venueId || initialVenueId);
-  const [assignmentType, setAssignmentType] = useState<"event" | "venue">((existingProject?.venueId || initialVenueId) ? "venue" : "event");
-  
+  const [assignmentType, setAssignmentType] = useState<"event" | "venue">(
+    existingProject?.venueId || initialVenueId ? "venue" : "event",
+  );
 
   const eventMatch = events.find((e: any) => e.id === eventId);
   const venueMatch = venues.find((v: any) => v.id === venueId);
-  const allTicketTiers = assignmentType === "event" ? (eventMatch?.event_tickets || []) : (venueMatch?.pricing_tiers?.map((t: any) => ({ ...t, id: t.name, type: t.name, cost: t.amount })) || []);
+  const allTicketTiers =
+    assignmentType === "event"
+      ? eventMatch?.event_tickets || []
+      : venueMatch?.pricing_tiers?.map((t: any) => ({
+          ...t,
+          id: t.name,
+          type: t.name,
+          cost: t.amount,
+        })) || [];
   const tourStops = Array.isArray(eventMatch?.tour_stops) ? eventMatch.tour_stops : [];
 
   const [activeTourStopIdx, setActiveTourStopIdx] = useState<number>(-1);
@@ -398,13 +406,21 @@ function TicketDesignerPage() {
     : ticketTiers[0] || null;
 
   const dynamicDefaults = {
-    title: assignmentType === "event" ? (eventMatch?.title || "Event Title") : (venueMatch?.name || "Venue Ticket"),
-    subtitle: assignmentType === "event" 
-      ? (activeStop?.venue ? `${activeStop.venue} · ${activeStop.city}${activeStop.address ? `\n${activeStop.address}` : ""}` : eventMatch?.category || "Event")
-      : (venueMatch?.address ? `${venueMatch.address}${venueMatch.city ? ` · ${venueMatch.city}` : ""}` : venueMatch?.type || "Location TBD"),
-    date: assignmentType === "event" ? (activeStop?.date || "TBD") : "Valid for 1 Day",
-    time: assignmentType === "event" ? (activeStop?.time || "TBD") : "Anytime during opening hours",
-    
+    title:
+      assignmentType === "event"
+        ? eventMatch?.title || "Event Title"
+        : venueMatch?.name || "Venue Ticket",
+    subtitle:
+      assignmentType === "event"
+        ? activeStop?.venue
+          ? `${activeStop.venue} · ${activeStop.city}${activeStop.address ? `\n${activeStop.address}` : ""}`
+          : eventMatch?.category || "Event"
+        : venueMatch?.address
+          ? `${venueMatch.address}${venueMatch.city ? ` · ${venueMatch.city}` : ""}`
+          : venueMatch?.type || "Location TBD",
+    date: assignmentType === "event" ? activeStop?.date || "TBD" : "Valid for 1 Day",
+    time: assignmentType === "event" ? activeStop?.time || "TBD" : "Anytime during opening hours",
+
     price: activeTier?.cost?.toString() || "0",
     tierName: activeTier?.type || "General",
     seat: "General Admission",
@@ -443,8 +459,8 @@ function TicketDesignerPage() {
         lastActiveTourStopIdx: activeTourStopIdx,
         sameDesignForLocations,
       },
-      eventId: assignmentType === "event" ? (eventId || null) : null,
-      venueId: assignmentType === "venue" ? (venueId || null) : null,
+      eventId: assignmentType === "event" ? eventId || null : null,
+      venueId: assignmentType === "venue" ? venueId || null : null,
       font: baseDesign.font,
       logoText: baseDesign.logoText,
       name: projectName,
@@ -624,7 +640,13 @@ function TicketDesignerPage() {
                 <div className="space-y-3">
                   <Field label="Assign to Event or Venue">
                     <select
-                      value={assignmentType === "event" && eventId ? `event:${eventId}` : assignmentType === "venue" && venueId ? `venue:${venueId}` : ""}
+                      value={
+                        assignmentType === "event" && eventId
+                          ? `event:${eventId}`
+                          : assignmentType === "venue" && venueId
+                            ? `venue:${venueId}`
+                            : ""
+                      }
                       onChange={(e) => {
                         const val = e.target.value;
                         if (!val) {
@@ -1257,7 +1279,13 @@ function TicketDesignerPage() {
                         seat={tDesign.seat || dynamicDefaults.seat}
                         price={tier.cost?.toString() || "0"}
                         currency={tDesign.currency || dynamicDefaults.currency}
-                        cover={tDesign.cover || (assignmentType === "venue" ? venueMatch?.cover_url || venueMatch?.images?.[0] : eventMatch?.cover) || ""}
+                        cover={
+                          tDesign.cover ||
+                          (assignmentType === "venue"
+                            ? venueMatch?.cover_url || venueMatch?.images?.[0]
+                            : eventMatch?.cover) ||
+                          ""
+                        }
                         logoText={tDesign.logoText || dynamicDefaults.brand}
                         logoImage={tDesign.logoImage}
                         logoScale={tDesign.logoScale || 24}
@@ -1290,7 +1318,13 @@ function TicketDesignerPage() {
                   seat={mergedDesign.seat || dynamicDefaults.seat}
                   price={mergedDesign.price || dynamicDefaults.price || ""}
                   currency={mergedDesign.currency || dynamicDefaults.currency}
-                  cover={mergedDesign.cover || (assignmentType === "venue" ? venueMatch?.cover_url || venueMatch?.images?.[0] : eventMatch?.cover) || ""}
+                  cover={
+                    mergedDesign.cover ||
+                    (assignmentType === "venue"
+                      ? venueMatch?.cover_url || venueMatch?.images?.[0]
+                      : eventMatch?.cover) ||
+                    ""
+                  }
                   logoText={mergedDesign.logoText || dynamicDefaults.brand}
                   logoImage={mergedDesign.logoImage}
                   logoScale={mergedDesign.logoScale || 24}
@@ -1359,4 +1393,3 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </div>
   );
 }
-

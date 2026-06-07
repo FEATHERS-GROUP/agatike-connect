@@ -1065,28 +1065,28 @@ flowchart TD
 
 #### KPI Cards
 
-| Card | Formula |
-|---|---|
-| Avg Rating | `parseFloat(aggregate.avg.rating).toFixed(1)` |
-| Total Reviews | `aggregate.count` |
-| Verified | `reviews.filter(r => r.is_verified).length` |
-| Featured | `reviews.filter(r => r.is_featured).length` |
+| Card          | Formula                                       |
+| ------------- | --------------------------------------------- |
+| Avg Rating    | `parseFloat(aggregate.avg.rating).toFixed(1)` |
+| Total Reviews | `aggregate.count`                             |
+| Verified      | `reviews.filter(r => r.is_verified).length`   |
+| Featured      | `reviews.filter(r => r.is_featured).length`   |
 
 #### Charts (rendered only when `reviews.length > 0`)
 
-| Chart | Library | Description |
-|---|---|---|
-| Rating Distribution | Custom bar (HTML `div`) | % fill bars per star level (1–5) |
-| Category Scores | Recharts `RadarChart` | Spider chart across 5 categories: Venue, Organization, Content, Catering, Networking |
+| Chart               | Library                 | Description                                                                          |
+| ------------------- | ----------------------- | ------------------------------------------------------------------------------------ |
+| Rating Distribution | Custom bar (HTML `div`) | % fill bars per star level (1–5)                                                     |
+| Category Scores     | Recharts `RadarChart`   | Spider chart across 5 categories: Venue, Organization, Content, Catering, Networking |
 
 #### Review Card — Organizer Actions
 
 Each review card renders two organizer-only action buttons:
 
-| Button | Action | Mutation |
-|---|---|---|
+| Button                 | Action                | Mutation                                        |
+| ---------------------- | --------------------- | ----------------------------------------------- |
 | ⭐ Feature / Unfeature | Toggles `is_featured` | `updateFeedback({ id, is_featured: !current })` |
-| 👁 Show / Hide | Toggles `is_public` | `updateFeedback({ id, is_public: !current })` |
+| 👁 Show / Hide         | Toggles `is_public`   | `updateFeedback({ id, is_public: !current })`   |
 
 Hidden reviews are shown at `opacity-50` in the organizer view; they are not visible to the public. Featured reviews are highlighted with an amber border and shown first.
 
@@ -1123,6 +1123,7 @@ flowchart TD
 ```
 
 **Upload constraints:**
+
 - `MAX_STORY_SIZE_MB = 6`
 - Accepted formats: `image/jpeg`, `image/png`, `image/webp`, `image/gif`
 - Video upload UI exists but is disabled (`coming soon`)
@@ -1132,13 +1133,13 @@ flowchart TD
 
 Stories are rendered in a responsive 9:16 aspect-ratio grid (portrait format matching the story format). Each card shows:
 
-| Element | Source |
-|---|---|
-| Media | `story.media_url` — renders `<img>` or `<video muted>` based on `media_type` |
-| Caption | `story.caption` — overlaid at bottom-left |
-| Time remaining | `Math.round((expires_at - Date.now()) / 3600000)` — shown as "Xh left" |
-| Views | `story.views_count` — shown top-right |
-| Delete button | Appears on hover — triggers `deleteEventStory` mutation |
+| Element        | Source                                                                       |
+| -------------- | ---------------------------------------------------------------------------- |
+| Media          | `story.media_url` — renders `<img>` or `<video muted>` based on `media_type` |
+| Caption        | `story.caption` — overlaid at bottom-left                                    |
+| Time remaining | `Math.round((expires_at - Date.now()) / 3600000)` — shown as "Xh left"       |
+| Views          | `story.views_count` — shown top-right                                        |
+| Delete button  | Appears on hover — triggers `deleteEventStory` mutation                      |
 
 ```mermaid
 flowchart LR
@@ -1157,11 +1158,11 @@ Posts are **permanent** and visible to followers in the activity feed indefinite
 
 #### Post Composer State
 
-| State | Type | Purpose |
-|---|---|---|
-| `postContent` | `string` | Text body of the post |
-| `postMedia` | `string[]` | Array of uploaded image URLs (max 4) |
-| `isUploadingPostMedia` | `boolean` | Upload spinner / disabled state |
+| State                  | Type       | Purpose                              |
+| ---------------------- | ---------- | ------------------------------------ |
+| `postContent`          | `string`   | Text body of the post                |
+| `postMedia`            | `string[]` | Array of uploaded image URLs (max 4) |
+| `isUploadingPostMedia` | `boolean`  | Upload spinner / disabled state      |
 
 #### Multi-Image Upload Flow
 
@@ -1185,6 +1186,7 @@ flowchart TD
 ```
 
 **Upload constraints:**
+
 - `MAX_POST_IMAGES = 4` (hard cap)
 - `MAX_POST_MEDIA_SIZE_MB = 5` per image
 - Accepted formats: `image/jpeg`, `image/png`, `image/webp`, `image/gif`
@@ -1233,7 +1235,9 @@ if (Array.isArray(post.media_urls)) {
   try {
     urls = JSON.parse(post.media_urls);
     if (!Array.isArray(urls)) urls = [];
-  } catch { urls = []; }
+  } catch {
+    urls = [];
+  }
 }
 ```
 
@@ -1241,10 +1245,10 @@ Images are displayed in a **responsive 2-column grid** (1 column if only one ima
 
 #### Post Feed — Organizer Actions
 
-| Action | Trigger | Mutation |
-|---|---|---|
-| 📌 Pin / Unpin | Pin icon button | `togglePinPost({ id, is_pinned: !current })` |
-| 🗑 Delete | Trash icon button | `deleteEventPost({ id })` |
+| Action         | Trigger           | Mutation                                     |
+| -------------- | ----------------- | -------------------------------------------- |
+| 📌 Pin / Unpin | Pin icon button   | `togglePinPost({ id, is_pinned: !current })` |
+| 🗑 Delete      | Trash icon button | `deleteEventPost({ id })`                    |
 
 Pinned posts render with a `border-primary/30 bg-primary/5` highlight and a "Pinned" badge. The social engagement counts (❤ likes, 💬 comments) are displayed read-only at the bottom of each post card — they are driven by public interaction and are not editable by the organizer.
 
@@ -1279,38 +1283,38 @@ flowchart TD
 
 ### API Functions Reference
 
-| Function | Module | Purpose |
-|---|---|---|
-| `getEventFeedback` | `api/feedback.ts` | Fetch reviews + aggregate stats for an event |
-| `updateFeedback` | `api/feedback.ts` | Toggle `is_featured` or `is_public` on a review |
-| `getEventStories` | `api/experience.ts` | Fetch all active stories for an event |
-| `createEventStory` | `api/experience.ts` | Create a new story with media URL |
-| `deleteEventStory` | `api/experience.ts` | Delete a story by ID |
-| `getEventPosts` | `api/experience.ts` | Fetch all posts for an event |
-| `createEventPost` | `api/experience.ts` | Publish a new post with content + media URLs |
-| `togglePinPost` | `api/experience.ts` | Pin or unpin a post |
-| `deleteEventPost` | `api/experience.ts` | Delete a post by ID |
-| `getEventHighlights` | `api/experience.ts` | Fetch event highlights (reserved for future use) |
-| `upsertEventHighlight` | `api/experience.ts` | Create or update an event highlight |
-| `deleteEventHighlight` | `api/experience.ts` | Delete a highlight by ID |
-| `uploadFileToStorage` | `lib/firebase-storage.ts` | Upload a File to Firebase/Supabase storage, returns URL |
+| Function               | Module                    | Purpose                                                 |
+| ---------------------- | ------------------------- | ------------------------------------------------------- |
+| `getEventFeedback`     | `api/feedback.ts`         | Fetch reviews + aggregate stats for an event            |
+| `updateFeedback`       | `api/feedback.ts`         | Toggle `is_featured` or `is_public` on a review         |
+| `getEventStories`      | `api/experience.ts`       | Fetch all active stories for an event                   |
+| `createEventStory`     | `api/experience.ts`       | Create a new story with media URL                       |
+| `deleteEventStory`     | `api/experience.ts`       | Delete a story by ID                                    |
+| `getEventPosts`        | `api/experience.ts`       | Fetch all posts for an event                            |
+| `createEventPost`      | `api/experience.ts`       | Publish a new post with content + media URLs            |
+| `togglePinPost`        | `api/experience.ts`       | Pin or unpin a post                                     |
+| `deleteEventPost`      | `api/experience.ts`       | Delete a post by ID                                     |
+| `getEventHighlights`   | `api/experience.ts`       | Fetch event highlights (reserved for future use)        |
+| `upsertEventHighlight` | `api/experience.ts`       | Create or update an event highlight                     |
+| `deleteEventHighlight` | `api/experience.ts`       | Delete a highlight by ID                                |
+| `uploadFileToStorage`  | `lib/firebase-storage.ts` | Upload a File to Firebase/Supabase storage, returns URL |
 
 ### Database Tables Reference
 
-| Table | Purpose |
-|---|---|
-| `event_feedback` / `reviews` | Attendee-submitted star ratings and written reviews |
-| `event_stories` | Ephemeral media posts — expire after 48 hours |
-| `event_posts` | Permanent organizer posts with text and photo attachments |
-| `event_highlights` | Curated highlight moments (reserved for future tab) |
+| Table                        | Purpose                                                   |
+| ---------------------------- | --------------------------------------------------------- |
+| `event_feedback` / `reviews` | Attendee-submitted star ratings and written reviews       |
+| `event_stories`              | Ephemeral media posts — expire after 48 hours             |
+| `event_posts`                | Permanent organizer posts with text and photo attachments |
+| `event_highlights`           | Curated highlight moments (reserved for future tab)       |
 
 ### Constants Reference
 
-| Constant | Value | Scope |
-|---|---|---|
-| `MAX_STORY_SIZE_MB` | `6` | Max story image file size |
-| `MAX_POST_MEDIA_SIZE_MB` | `5` | Max size per post image |
-| `MAX_POST_IMAGES` | `4` | Max images per post |
+| Constant                 | Value | Scope                     |
+| ------------------------ | ----- | ------------------------- |
+| `MAX_STORY_SIZE_MB`      | `6`   | Max story image file size |
+| `MAX_POST_MEDIA_SIZE_MB` | `5`   | Max size per post image   |
+| `MAX_POST_IMAGES`        | `4`   | Max images per post       |
 
 ---
 
@@ -1319,10 +1323,12 @@ flowchart TD
 **Route:** `/dashboard/$workspaceSlug/community`
 **File:** `src/routes/dashboard/$workspaceSlug/community.tsx`
 
-The Community Hub provides real-time chat functionality, allowing organizers to engage with their followers and ticket-holding attendees through dedicated channels. 
+The Community Hub provides real-time chat functionality, allowing organizers to engage with their followers and ticket-holding attendees through dedicated channels.
 
 ### Architecture: Hasura + Firestore
+
 The community system uses a hybrid database architecture:
+
 - **Hasura (Postgres):** Stores channel metadata, configurations, and user access (`community_channels`).
 - **Firebase (Firestore):** Powers the real-time messaging, typing indicators, and message timestamps (`agatike_messages`).
 
@@ -1336,7 +1342,7 @@ flowchart LR
 
 ### Channel Types & Audience
 
-1. **Main Channels:** 
+1. **Main Channels:**
    - Created manually by the organizer.
    - Used for general announcements and follower engagement.
    - **Audience:** All users who follow the organizer's profile.
@@ -1348,15 +1354,18 @@ flowchart LR
    - **Audience Restrictions:** Only users who **bought tickets** or **booked** the specific event/schedule are granted access. General followers cannot see these channels.
 
 ### Real-Time Messaging & Features
+
 - **Optimistic UI:** Messages are sent asynchronously using a fire-and-forget approach for instantaneous UI updates.
 - **GIF Integration:** Users can search and send GIFs using the Giphy API (`@giphy/react-components`). A loading spinner overlays the grid during searches.
 - **Privacy:** Handles and flags are displayed instead of raw usernames for privacy.
 - **Emojis:** Integrated emoji picker for expressive communication.
 
 ### Automatic Lazy Cleanup (Data Retention)
+
 To minimize Firestore costs and database bloat, the system implements a **Lazy Cleanup Strategy** for Event and Experience channels.
 
 **Logic:**
+
 1. Event/Experience channels remain active during the event.
 2. After the event's scheduled end date, a **5-day grace period** begins.
 3. Once the 5 days pass, the channel is considered "Expired".
@@ -1377,16 +1386,18 @@ flowchart TD
 ```
 
 ### Global Message Notifications
+
 To ensure organizers and attendees never miss an important message, the app features a globally mounted listener (`GlobalNotificationListener`) that runs in the background.
 
 **Logic & Deduplication:**
+
 1. **Metadata Synchronization:** Whenever a message is sent, `sendMessage` updates the `agatike_channels` collection with `lastMessage`, `lastMessageTime`, and crucially, `lastMessageSenderId`.
 2. **Background Listener:** The global listener watches `agatike_channels` for any changes. It triggers a notification only if `lastMessageSenderId` is NOT the current user.
 3. **Cross-Tab Deduplication:** It tracks the exact timestamp of the last notified message per channel using `localStorage`. This guarantees that if the user has three different dashboard tabs open, only **one** tab will fire the notification.
 4. **Display:**
    - **System Push Notifications:** Uses the browser's native `Notification` API. If the app is installed via PWA Manifest, the notification appears natively on macOS/Windows/Mobile.
    - **In-App Toasts:** A Sonner toast pops up gracefully in the corner of the app screen.
-5. **Direct Message Dynamic Formatting:** 
+5. **Direct Message Dynamic Formatting:**
    - If the incoming message is a DM (`type === "user"`), the listener intercepts the notification, fetches the sender's profile dynamically, and displays the exact Handle and Country Flag (e.g., "New message from @JohnDoe 🇷🇼").
    - Group Channels default to "New message in [Channel Name]".
 
@@ -1399,12 +1410,15 @@ To ensure organizers and attendees never miss an important message, the app feat
 The Venues system allows organizers to list physical locations for rent or for entrance-fee ticketing (like Parks). It includes a robust manual booking engine, PDF ticket generation, and a calendar management system.
 
 ### Venue Rental Models
+
 Organizers can configure venues using three distinct business models (`rental_model`):
+
 1. **ENTIRE_VENUE:** The customer rents the entire physical space (e.g., a wedding hall or meeting room) for a specific Date & Time period.
 2. **ENTRANCE_ONLY:** The customer buys an entrance ticket for a specific date (e.g., a Park or Museum). The ticket is valid from opening to closing time; no specific time-slot selection is required during booking.
 3. **HYBRID:** The venue supports both entire venue rentals and entrance tickets simultaneously.
 
 ### Booking & Ticketing Flow
+
 The system includes a sophisticated manual booking engine where an organizer can log an offline or manual reservation on behalf of a customer.
 
 ```mermaid
@@ -1418,33 +1432,38 @@ flowchart TD
     DateOnly --> Attendees
     Attendees --> Confirm[Confirm Booking & Payment Status]
     Confirm --> DB[Insert into venue_bookings]
-    
+
     DB --> GenerateOTPs[Backend: Generate 6-char OTP per Ticket]
     GenerateOTPs --> SaveOTP[Save OTPs in tickets_data JSONB]
     SaveOTP --> PDFEngine[jsPDF Engine (Node.js)]
-    
+
     PDFEngine -->|Draw Ticket| Ticket1[PDF Ticket: Attendee 1]
     PDFEngine -->|Draw Ticket| TicketN[PDF Ticket: Attendee N]
-    
+
     Ticket1 & TicketN --> Email[Resend API: sendTicketsEmail]
     Email --> Delivery[Customer Inbox: Email with PDF Attachments]
 ```
 
 #### Server-Side PDF Engine
-Instead of relying on third-party PDF services, the backend directly utilizes `jsPDF` within the TanStack Start server function. 
+
+Instead of relying on third-party PDF services, the backend directly utilizes `jsPDF` within the TanStack Start server function.
+
 - For every ticket purchased, it dynamically draws a beautiful, landscape-oriented PDF.
 - The PDF embeds the **Venue Name**, **Ticket Type**, **Attendee Name**, and the **Verification OTP**.
 - The generated PDFs are instantly encoded into base64 and passed directly to the Resend API as attachments.
 
 ### Calendar & Blocking
+
 The Venue Overview features a visual Calendar component (`react-day-picker`) that maps out all confirmed bookings.
+
 - Organizers can use the **Block Dates** feature to mark periods as "Unavailable" (e.g., for maintenance).
 - The system queries `getVenueBookings` and disables all booked/blocked dates on the date picker to prevent double-booking.
 
 ### Database Tables Reference
-| Table | Purpose |
-|---|---|
-| `rentable_venues` | Core venue profile, photos, location, pricing tiers, and rental model. |
-| `venue_bookings` | All reservations. Contains `tickets_data` (with OTPs), timestamps, and attendee info. |
+
+| Table             | Purpose                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| `rentable_venues` | Core venue profile, photos, location, pricing tiers, and rental model.                |
+| `venue_bookings`  | All reservations. Contains `tickets_data` (with OTPs), timestamps, and attendee info. |
 
 _Last updated: June 2026 — Agatike Connect_

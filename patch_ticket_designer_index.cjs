@@ -1,12 +1,13 @@
-const fs = require('fs');
+const fs = require("fs");
 
-const path = '/Users/apple/Desktop/agatike-connect/src/routes/dashboard/$workspaceSlug/ticket-designer/index.tsx';
-let content = fs.readFileSync(path, 'utf8');
+const path =
+  "/Users/apple/Desktop/agatike-connect/src/routes/dashboard/$workspaceSlug/ticket-designer/index.tsx";
+let content = fs.readFileSync(path, "utf8");
 
 // Add getRentableVenues import
 content = content.replace(
   'import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects } from "@/api/events";',
-  'import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects } from "@/api/events";\nimport { getRentableVenues } from "@/api/rentable_venues";'
+  'import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects } from "@/api/events";\nimport { getRentableVenues } from "@/api/rentable_venues";',
 );
 
 // Add venues query and state
@@ -19,13 +20,13 @@ const venueQueryCode = `
 `;
 
 content = content.replace(
-  'const { data: events = [] } = useQuery({',
-  venueQueryCode + '\n  const { data: events = [] } = useQuery({'
+  "const { data: events = [] } = useQuery({",
+  venueQueryCode + "\n  const { data: events = [] } = useQuery({",
 );
 
 content = content.replace(
   'const [selectedEventId, setSelectedEventId] = useState("");',
-  'const [selectedAssignment, setSelectedAssignment] = useState("");'
+  'const [selectedAssignment, setSelectedAssignment] = useState("");',
 );
 
 // Update handleCreateNew
@@ -56,10 +57,7 @@ const createNewCode = `
 content = content.replace(/const handleCreateNew = \([\s\S]*?\}\;/m, createNewCode);
 
 // Update openSetupModal
-content = content.replace(
-  'setSelectedEventId("");',
-  'setSelectedAssignment("");'
-);
+content = content.replace('setSelectedEventId("");', 'setSelectedAssignment("");');
 
 // Update the select UI
 const selectUI = `
@@ -95,6 +93,9 @@ const selectUI = `
               </div>
 `;
 
-content = content.replace(/<div className="space-y-2">[\s\n]*<Label htmlFor="eventSelect">Select Event \*<\/Label>[\s\S]*?<\/div>/m, selectUI);
+content = content.replace(
+  /<div className="space-y-2">[\s\n]*<Label htmlFor="eventSelect">Select Event \*<\/Label>[\s\S]*?<\/div>/m,
+  selectUI,
+);
 
 fs.writeFileSync(path, content);

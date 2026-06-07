@@ -29,13 +29,13 @@ async function run() {
     body: JSON.stringify({ query }),
   });
   const data = await res.json();
-  const fields = data.data.__type.fields.map(f => {
+  const fields = data.data.__type.fields.map((f) => {
     let typeName = f.type.name;
-    if (f.type.kind === 'NON_NULL') {
-      typeName = f.type.ofType.name + '!';
+    if (f.type.kind === "NON_NULL") {
+      typeName = f.type.ofType.name + "!";
     }
     return `${f.name}: ${typeName}`;
   });
-  console.log(fields.join('\n'));
+  console.log(fields.join("\n"));
 }
 run();

@@ -435,7 +435,14 @@ export type Experience = {
   team?: { role: string; name: string; avatar?: string }[];
   addons?: { id: string; name: string; price: number; image?: string; description?: string }[];
   schedules?: { id: string; date: string; spotsFilled: number; totalSpots: number }[];
-  itinerary?: { id: string; title: string; time: string; address: string; lat?: number; lng?: number }[];
+  itinerary?: {
+    id: string;
+    title: string;
+    time: string;
+    address: string;
+    lat?: number;
+    lng?: number;
+  }[];
 };
 
 export const experiences: Experience[] = [
@@ -460,24 +467,39 @@ export const experiences: Experience[] = [
       "Headlamp with extra batteries",
       "At least 2 liters of drinking water",
       "High energy snacks (e.g. protein bars)",
-      "Valid ID or Passport"
+      "Valid ID or Passport",
     ],
     included: [
       "Park Entrance Fees",
       "Professional English-speaking Guide",
       "Armed Ranger",
       "Packed Breakfast & Hot Drinks",
-      "Hotel pick-up & drop-off"
+      "Hotel pick-up & drop-off",
     ],
     team: [
       { role: "Lead Guide", name: "Juma Kipara" },
       { role: "Armed Ranger", name: "Godfrey Swai" },
-      { role: "First Aid & Porter", name: "Emanuel" }
+      { role: "First Aid & Porter", name: "Emanuel" },
     ],
     addons: [
-      { id: "a1", name: "Walking Poles Rental", price: 15, description: "Pair of sturdy telescopic walking poles." },
-      { id: "a2", name: "Extra Warm Jacket", price: 20, description: "Insulated down jacket for the chilly summit." },
-      { id: "a3", name: "Meru Summit T-Shirt", price: 25, description: "Commemorative t-shirt (Size M/L/XL)." }
+      {
+        id: "a1",
+        name: "Walking Poles Rental",
+        price: 15,
+        description: "Pair of sturdy telescopic walking poles.",
+      },
+      {
+        id: "a2",
+        name: "Extra Warm Jacket",
+        price: 20,
+        description: "Insulated down jacket for the chilly summit.",
+      },
+      {
+        id: "a3",
+        name: "Meru Summit T-Shirt",
+        price: 25,
+        description: "Commemorative t-shirt (Size M/L/XL).",
+      },
     ],
     schedules: [
       { id: "s1", date: "Nov 12, 2024", spotsFilled: 12, totalSpots: 12 },
@@ -486,10 +508,38 @@ export const experiences: Experience[] = [
       { id: "s4", date: "Dec 05, 2024", spotsFilled: 0, totalSpots: 12 },
     ],
     itinerary: [
-      { id: "i1", title: "Take-off Point / Briefing", time: "04:00", address: "Arusha City Center Plaza", lat: -3.3723, lng: 36.6823 },
-      { id: "i2", title: "Arrive at Base Camp", time: "05:00", address: "Mount Meru Base Camp", lat: -3.2847, lng: 36.7865 },
-      { id: "i3", title: "Sunrise at the Peak", time: "06:30", address: "Mount Meru Peak", lat: -3.2452, lng: 36.7584 },
-      { id: "i4", title: "Breakfast & Descent", time: "08:00", address: "Miriakamba Hut", lat: -3.2654, lng: 36.7901 },
+      {
+        id: "i1",
+        title: "Take-off Point / Briefing",
+        time: "04:00",
+        address: "Arusha City Center Plaza",
+        lat: -3.3723,
+        lng: 36.6823,
+      },
+      {
+        id: "i2",
+        title: "Arrive at Base Camp",
+        time: "05:00",
+        address: "Mount Meru Base Camp",
+        lat: -3.2847,
+        lng: 36.7865,
+      },
+      {
+        id: "i3",
+        title: "Sunrise at the Peak",
+        time: "06:30",
+        address: "Mount Meru Peak",
+        lat: -3.2452,
+        lng: 36.7584,
+      },
+      {
+        id: "i4",
+        title: "Breakfast & Descent",
+        time: "08:00",
+        address: "Miriakamba Hut",
+        lat: -3.2654,
+        lng: 36.7901,
+      },
     ],
   },
   {
@@ -501,10 +551,12 @@ export const experiences: Experience[] = [
     duration: "3 hours",
     date: "Every Friday",
     price: 35,
-    cover: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?q=80&w=2500&auto=format&fit=crop",
+    cover:
+      "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?q=80&w=2500&auto=format&fit=crop",
     rating: 4.9,
     spots: 20,
-    description: "Unwind with a glass of wine and step-by-step canvas painting. All art supplies and your first drink are included. Perfect for beginners and groups!",
+    description:
+      "Unwind with a glass of wine and step-by-step canvas painting. All art supplies and your first drink are included. Perfect for beginners and groups!",
     schedules: [
       { id: "s1", date: "Nov 15, 2024 • 17:00 - 20:00", spotsFilled: 20, totalSpots: 20 },
       { id: "s2", date: "Nov 22, 2024 • 17:00 - 20:00", spotsFilled: 14, totalSpots: 20 },
@@ -513,15 +565,30 @@ export const experiences: Experience[] = [
       "Blank Canvas & Easel",
       "Paints & Brushes",
       "Professional Art Instructor",
-      "One Complimentary Drink (Wine/Juice)"
+      "One Complimentary Drink (Wine/Juice)",
     ],
     itinerary: [
-      { id: "i1", title: "Arrival & Drink Selection", time: "17:00", address: "Inzora Rooftop Cafe" },
-      { id: "i2", title: "Painting Basics Briefing", time: "17:30", address: "Inzora Rooftop Cafe" },
+      {
+        id: "i1",
+        title: "Arrival & Drink Selection",
+        time: "17:00",
+        address: "Inzora Rooftop Cafe",
+      },
+      {
+        id: "i2",
+        title: "Painting Basics Briefing",
+        time: "17:30",
+        address: "Inzora Rooftop Cafe",
+      },
       { id: "i3", title: "Guided Painting Session", time: "17:45", address: "Inzora Rooftop Cafe" },
-      { id: "i4", title: "Sunset Photo Ops & Mingling", time: "19:30", address: "Inzora Rooftop Cafe" },
+      {
+        id: "i4",
+        title: "Sunset Photo Ops & Mingling",
+        time: "19:30",
+        address: "Inzora Rooftop Cafe",
+      },
       { id: "i5", title: "Event Wraps Up", time: "20:00", address: "Inzora Rooftop Cafe" },
-    ]
+    ],
   },
   {
     id: "lagos-run-club",
@@ -541,12 +608,47 @@ export const experiences: Experience[] = [
       { id: "s2", date: "Nov 24, 2024", spotsFilled: 30, totalSpots: 80 },
     ],
     itinerary: [
-      { id: "i1", title: "Warm-up & Bag Drop", time: "06:30", address: "Lekki Leisure Lake", lat: 6.4253, lng: 3.4862 },
-      { id: "i2", title: "Run Start Line", time: "07:00", address: "Lekki-Ikoyi Link Bridge Toll", lat: 6.4520, lng: 3.4688 },
-      { id: "i3", title: "Midpoint Water Station", time: "07:45", address: "Ikoyi Club Entrance", lat: 6.4485, lng: 3.4350 },
-      { id: "i4", title: "Finish Line", time: "08:30", address: "Lekki Leisure Lake", lat: 6.4253, lng: 3.4862 },
-      { id: "i5", title: "Post-Run Stretch & Breakfast", time: "08:45", address: "Lekki Beach Club", lat: 6.4248, lng: 3.4885 },
-    ]
+      {
+        id: "i1",
+        title: "Warm-up & Bag Drop",
+        time: "06:30",
+        address: "Lekki Leisure Lake",
+        lat: 6.4253,
+        lng: 3.4862,
+      },
+      {
+        id: "i2",
+        title: "Run Start Line",
+        time: "07:00",
+        address: "Lekki-Ikoyi Link Bridge Toll",
+        lat: 6.452,
+        lng: 3.4688,
+      },
+      {
+        id: "i3",
+        title: "Midpoint Water Station",
+        time: "07:45",
+        address: "Ikoyi Club Entrance",
+        lat: 6.4485,
+        lng: 3.435,
+      },
+      {
+        id: "i4",
+        title: "Finish Line",
+        time: "08:30",
+        address: "Lekki Leisure Lake",
+        lat: 6.4253,
+        lng: 3.4862,
+      },
+      {
+        id: "i5",
+        title: "Post-Run Stretch & Breakfast",
+        time: "08:45",
+        address: "Lekki Beach Club",
+        lat: 6.4248,
+        lng: 3.4885,
+      },
+    ],
   },
   {
     id: "dakar-kite-camp",
@@ -618,7 +720,8 @@ export const experiences: Experience[] = [
     cover: e2, // Using existing e2 as a placeholder
     rating: 4.8,
     spots: 25,
-    description: "A guided figure drawing session with a live model. All art materials and your first cocktail are included.",
+    description:
+      "A guided figure drawing session with a live model. All art materials and your first cocktail are included.",
   },
 ];
 

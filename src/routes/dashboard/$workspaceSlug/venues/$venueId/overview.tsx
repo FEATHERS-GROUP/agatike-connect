@@ -63,7 +63,7 @@ function VenueOverviewPage() {
       allDay: false, // Could compute this if needed
       data: {
         paymentStatus: b.payment_status,
-        status: b.status
+        status: b.status,
       },
     };
   });
@@ -98,8 +98,10 @@ function VenueOverviewPage() {
     );
   };
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading venue details...</div>;
-  if (!venue) return <div className="p-8 text-center text-red-500 font-semibold">Venue not found</div>;
+  if (isLoading)
+    return <div className="p-8 text-center text-muted-foreground">Loading venue details...</div>;
+  if (!venue)
+    return <div className="p-8 text-center text-red-500 font-semibold">Venue not found</div>;
 
   return (
     <div className="space-y-6">
@@ -394,7 +396,11 @@ function VenueOverviewPage() {
           )}
         </DialogContent>
       </Dialog>
-      <ManualBookingDialog open={isManualBookingOpen} onOpenChange={setIsManualBookingOpen} venue={venue} />
+      <ManualBookingDialog
+        open={isManualBookingOpen}
+        onOpenChange={setIsManualBookingOpen}
+        venue={venue}
+      />
       <BlockDateDialog open={isBlockDateOpen} onOpenChange={setIsBlockDateOpen} venue={venue} />
     </div>
   );
