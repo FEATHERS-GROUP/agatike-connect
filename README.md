@@ -1012,4 +1012,306 @@ While the visual representation lives in JSON, the actual ticketable zones are m
 
 **Database tables:** `venue_projects`
 
+---
+
+## 20. Event Experience Dashboard (`/experience`)
+
+**Route:** `/dashboard/$workspaceSlug/events/$eventId/experience`
+**File:** `src/routes/dashboard/$workspaceSlug/events/$eventId/experience.tsx`
+
+> The identical component also powers the **Experiences** sub-route at `/dashboard/$workspaceSlug/experiences/$experienceId/experience`. Both share the same file structure and logic; only the `eventId` / `experienceId` URL param differs.
+
+The Experience Dashboard is the **content & engagement hub** for an event or guided experience. Organizers use it to collect and manage attendee feedback, publish ephemeral stories, and create permanent posts — all visible to followers in their feed.
+
+### Page Structure
+
+```mermaid
+graph LR
+    ExperienceDashboard --> Header[Page Header + Share Feedback Link]
+    ExperienceDashboard --> Tabs[3-Tab Interface]
+    Tabs --> FB[Reviews Tab]
+    Tabs --> ST[Stories Tab]
+    Tabs --> PO[Posts Tab]
+```
+
+The page header contains a **"Share Feedback Link"** button that copies a public review URL (`/f/{eventId}/review`) to the clipboard using the `navigator.clipboard` API, allowing organizers to distribute a direct link to attendees.
+
+---
+
+### Tab 1 — Reviews (Feedback)
+
+**Data source:** `getEventFeedback` → `api/feedback.ts`
+**Query key:** `["event-feedback", eventId]`
+
+Fetches the full review dataset for the event, including aggregated statistics and individual reviews. Data is derived from the `feedbackData` object:
+
+```mermaid
+flowchart TD
+    A[Page mounts] --> B[getEventFeedback query]
+    B --> C[feedbackData.reviews array]
+    B --> D[feedbackData.aggregate: count + avg.rating]
+
+    C --> E[ratingDist: count per star 1-5]
+    C --> F[categoryAvgs: avg per category key]
+    D --> G[avgRating: string displayed as X.X / 5]
+
+    E --> H[Rating Distribution bar chart]
+    F --> I[Category Scores radar chart using Recharts]
+    G --> J[KPI Card: Avg Rating]
+    D --> K[KPI Card: Total Reviews]
+    C --> L[KPI Card: Verified count]
+    C --> M[KPI Card: Featured count]
+```
+
+#### KPI Cards
+
+| Card | Formula |
+|---|---|
+| Avg Rating | `parseFloat(aggregate.avg.rating).toFixed(1)` |
+| Total Reviews | `aggregate.count` |
+| Verified | `reviews.filter(r => r.is_verified).length` |
+| Featured | `reviews.filter(r => r.is_featured).length` |
+
+#### Charts (rendered only when `reviews.length > 0`)
+
+| Chart | Library | Description |
+|---|---|---|
+| Rating Distribution | Custom bar (HTML `div`) | % fill bars per star level (1–5) |
+| Category Scores | Recharts `RadarChart` | Spider chart across 5 categories: Venue, Organization, Content, Catering, Networking |
+
+#### Review Card — Organizer Actions
+
+Each review card renders two organizer-only action buttons:
+
+| Button | Action | Mutation |
+|---|---|---|
+| ⭐ Feature / Unfeature | Toggles `is_featured` | `updateFeedback({ id, is_featured: !current })` |
+| 👁 Show / Hide | Toggles `is_public` | `updateFeedback({ id, is_public: !current })` |
+
+Hidden reviews are shown at `opacity-50` in the organizer view; they are not visible to the public. Featured reviews are highlighted with an amber border and shown first.
+
+```mermaid
+flowchart TD
+    ToggleFeatured[Click ⭐] --> feedbackMutation[updateFeedback mutation]
+    feedbackMutation --> invalidate[invalidateQueries event-feedback]
+    invalidate --> rerender[Review re-renders with updated badge]
+```
+
+---
+
+### Tab 2 — Stories
+
+**Data source:** `getEventStories` → `api/experience.ts`
+**Query key:** `["event-stories", eventId]`
+
+Stories are **ephemeral** — they expire 48 hours after posting and appear in the event's live experience feed. They function similarly to Instagram Stories.
+
+#### Story Upload Flow
+
+```mermaid
+flowchart TD
+    A[Organizer selects photo file] --> B{File size > 6MB?}
+    B --> |Yes| C[toast.error: Image too large]
+    B --> |No| D[setIsUploadingStory true]
+    D --> E[uploadFileToStorage file to stories/{eventId}]
+    E --> F[Returns permanent storage URL]
+    F --> G[createEventStory mutation]
+    G --> H[Payload: event_id + workspace_id + media_url + media_type=photo + caption?]
+    H --> I[invalidateQueries event-stories]
+    I --> J[Story card appears in grid]
+    J --> K[setStoryCaption reset to empty]
+```
+
+**Upload constraints:**
+- `MAX_STORY_SIZE_MB = 6`
+- Accepted formats: `image/jpeg`, `image/png`, `image/webp`, `image/gif`
+- Video upload UI exists but is disabled (`coming soon`)
+- Storage path: `stories/{eventId}/{filename}`
+
+#### Story Grid Display
+
+Stories are rendered in a responsive 9:16 aspect-ratio grid (portrait format matching the story format). Each card shows:
+
+| Element | Source |
+|---|---|
+| Media | `story.media_url` — renders `<img>` or `<video muted>` based on `media_type` |
+| Caption | `story.caption` — overlaid at bottom-left |
+| Time remaining | `Math.round((expires_at - Date.now()) / 3600000)` — shown as "Xh left" |
+| Views | `story.views_count` — shown top-right |
+| Delete button | Appears on hover — triggers `deleteEventStory` mutation |
+
+```mermaid
+flowchart LR
+    story.expires_at --> hoursLeft["hoursLeft = floor((expires_at - now) / 3600000)"]
+    hoursLeft --> badge["⏱ Xh left badge"]
+```
+
+---
+
+### Tab 3 — Posts
+
+**Data source:** `getEventPosts` → `api/experience.ts`
+**Query key:** `["event-posts", eventId]`
+
+Posts are **permanent** and visible to followers in the activity feed indefinitely. Each post can contain rich text content plus up to **4 photo attachments**.
+
+#### Post Composer State
+
+| State | Type | Purpose |
+|---|---|---|
+| `postContent` | `string` | Text body of the post |
+| `postMedia` | `string[]` | Array of uploaded image URLs (max 4) |
+| `isUploadingPostMedia` | `boolean` | Upload spinner / disabled state |
+
+#### Multi-Image Upload Flow
+
+```mermaid
+flowchart TD
+    A[Organizer selects files via file input] --> B{files provided?}
+    B --> |No| Z[return early]
+    B --> |Yes| C[remaining = MAX_POST_IMAGES - postMedia.length]
+    C --> D{remaining <= 0?}
+    D --> |Yes| E[toast.error: Maximum 4 photos per post]
+    D --> |No| F[toUpload = Array.from files .slice 0 remaining]
+    F --> G{Any file > 5MB?}
+    G --> |Yes| H[toast.error: X image s too large]
+    G --> |No| I[setIsUploadingPostMedia true]
+    I --> J[Promise.all: uploadFileToStorage each file to posts/{eventId}]
+    J --> K[setPostMedia prev => [...prev, ...newUrls]]
+    K --> L{toUpload.length < files.length?}
+    L --> |Yes| M[toast.info: Only X of Y photos added]
+    L --> |No| N[done]
+    N --> O[setIsUploadingPostMedia false]
+```
+
+**Upload constraints:**
+- `MAX_POST_IMAGES = 4` (hard cap)
+- `MAX_POST_MEDIA_SIZE_MB = 5` per image
+- Accepted formats: `image/jpeg`, `image/png`, `image/webp`, `image/gif`
+- Files are uploaded **in parallel** via `Promise.all` — not sequentially
+- Storage path: `posts/{eventId}/{filename}`
+
+#### Composer UI — Adaptive Add Photo Button
+
+The photo button adapts based on how many images are already attached:
+
+```mermaid
+flowchart LR
+    A{postMedia.length} --> |0| B[Show full ghost button: Camera + Add Photos]
+    A --> |1-3| C[Show inline + tile in preview grid with X/4 count]
+    A --> |4| D[Hide add button — max reached]
+```
+
+- When images are attached, each thumbnail shows a ✕ delete button on hover
+- The `+` tile (dashed border) shows the current count (e.g., `2/4`) and opens the picker to add more
+- The `multiple` attribute on the file input allows selecting several files at once from the OS picker
+
+#### Publish Flow
+
+```mermaid
+flowchart TD
+    A[Organizer clicks Publish] --> B{postContent.trim() empty?}
+    B --> |Yes| C[Publish button disabled - no action]
+    B --> |No| D[createEventPost mutation]
+    D --> E[Payload: event_id + workspace_id + content + media_urls array]
+    E --> F[DB insert]
+    F --> G[invalidateQueries event-posts]
+    G --> H[Post appears in feed]
+    H --> I[Reset: postContent='' postMedia=[]]
+```
+
+#### Post Feed — Media Rendering
+
+Each published post normalizes its `media_urls` field defensively, handling both native arrays and serialized JSON strings (for DB-level discrepancies):
+
+```ts
+// Defensive media_urls normalization
+let urls: string[] = [];
+if (Array.isArray(post.media_urls)) {
+  urls = post.media_urls;
+} else if (typeof post.media_urls === "string") {
+  try {
+    urls = JSON.parse(post.media_urls);
+    if (!Array.isArray(urls)) urls = [];
+  } catch { urls = []; }
+}
+```
+
+Images are displayed in a **responsive 2-column grid** (1 column if only one image).
+
+#### Post Feed — Organizer Actions
+
+| Action | Trigger | Mutation |
+|---|---|---|
+| 📌 Pin / Unpin | Pin icon button | `togglePinPost({ id, is_pinned: !current })` |
+| 🗑 Delete | Trash icon button | `deleteEventPost({ id })` |
+
+Pinned posts render with a `border-primary/30 bg-primary/5` highlight and a "Pinned" badge. The social engagement counts (❤ likes, 💬 comments) are displayed read-only at the bottom of each post card — they are driven by public interaction and are not editable by the organizer.
+
+---
+
+### Data Flow Summary
+
+```mermaid
+flowchart TD
+    Route["Route: /events/$eventId/experience"] --> Params[useParams: eventId + workspaceSlug]
+    Params --> WS[useWorkspace: activeWorkspace.id]
+
+    Params --> Q1[getEventFeedback]
+    Params --> Q2[getEventStories]
+    Params --> Q3[getEventPosts]
+    Params --> Q4[getEventHighlights - loaded but reserved]
+
+    Q1 --> FeedbackTab[Reviews Tab]
+    Q2 --> StoriesTab[Stories Tab]
+    Q3 --> PostsTab[Posts Tab]
+
+    FeedbackTab --> M1[updateFeedback mutation]
+    StoriesTab --> M2[createEventStory mutation]
+    StoriesTab --> M3[deleteEventStory mutation]
+    PostsTab --> M4[createEventPost mutation]
+    PostsTab --> M5[togglePinPost mutation]
+    PostsTab --> M6[deleteEventPost mutation]
+
+    M1 & M2 & M3 & M4 & M5 & M6 --> QC[queryClient.invalidateQueries]
+    QC --> Refresh[UI re-renders with fresh data]
+```
+
+### API Functions Reference
+
+| Function | Module | Purpose |
+|---|---|---|
+| `getEventFeedback` | `api/feedback.ts` | Fetch reviews + aggregate stats for an event |
+| `updateFeedback` | `api/feedback.ts` | Toggle `is_featured` or `is_public` on a review |
+| `getEventStories` | `api/experience.ts` | Fetch all active stories for an event |
+| `createEventStory` | `api/experience.ts` | Create a new story with media URL |
+| `deleteEventStory` | `api/experience.ts` | Delete a story by ID |
+| `getEventPosts` | `api/experience.ts` | Fetch all posts for an event |
+| `createEventPost` | `api/experience.ts` | Publish a new post with content + media URLs |
+| `togglePinPost` | `api/experience.ts` | Pin or unpin a post |
+| `deleteEventPost` | `api/experience.ts` | Delete a post by ID |
+| `getEventHighlights` | `api/experience.ts` | Fetch event highlights (reserved for future use) |
+| `upsertEventHighlight` | `api/experience.ts` | Create or update an event highlight |
+| `deleteEventHighlight` | `api/experience.ts` | Delete a highlight by ID |
+| `uploadFileToStorage` | `lib/firebase-storage.ts` | Upload a File to Firebase/Supabase storage, returns URL |
+
+### Database Tables Reference
+
+| Table | Purpose |
+|---|---|
+| `event_feedback` / `reviews` | Attendee-submitted star ratings and written reviews |
+| `event_stories` | Ephemeral media posts — expire after 48 hours |
+| `event_posts` | Permanent organizer posts with text and photo attachments |
+| `event_highlights` | Curated highlight moments (reserved for future tab) |
+
+### Constants Reference
+
+| Constant | Value | Scope |
+|---|---|---|
+| `MAX_STORY_SIZE_MB` | `6` | Max story image file size |
+| `MAX_POST_MEDIA_SIZE_MB` | `5` | Max size per post image |
+| `MAX_POST_IMAGES` | `4` | Max images per post |
+
+---
+
 _Last updated: June 2026 — Agatike Connect_
