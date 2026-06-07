@@ -47,25 +47,30 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
     if (!workspaceId) return;
 
     const q = query(
-      collection(db, "channels"),
+      collection(db, "agatike_channels"),
       where("organizerId", "==", workspaceId)
     );
 
     const unsubscribeChannels = onSnapshot(q, async (snapshot) => {
-      let fetchedChannels: ChatChannel[] = snapshot.docs.map(doc => ({
-        id: doc.id,
-        name: doc.data().name || "Unknown Channel",
-        avatar: (doc.data().avatar && !doc.data().avatar.includes("pravatar.cc")) ? doc.data().avatar : "",
-        lastMessage: doc.data().lastMessage || "",
-        time: doc.data().lastMessageTime?.toDate()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "",
-        unread: doc.data().unreadCount || 0,
-        online: doc.data().online || false,
-        type: doc.data().type || "group",
-        entityType: doc.data().entityType,
-        messages: [],
-        organizerId: doc.data().organizerId,
-        userId: doc.data().userId
-      }));
+      let fetchedChannels: any[] = snapshot.docs.map(doc => {
+        const data = doc.data();
+        const rawTime = data.lastMessageTime;
+        return {
+          id: doc.id,
+          name: data.name || "Unknown Channel",
+          avatar: (data.avatar && !data.avatar.includes("pravatar.cc")) ? data.avatar : "",
+          lastMessage: data.lastMessage || "",
+          time: rawTime?.toDate?.()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          rawTimeMillis: rawTime?.toMillis?.() || Date.now(),
+          unread: data.unreadCount || 0,
+          online: data.online || false,
+          type: data.type || "group",
+          entityType: data.entityType,
+          messages: [],
+          organizerId: data.organizerId,
+          userId: data.userId
+        };
+      });
 
       // Note: Auto-creation of General Announcements is removed. 
       // Channels are now created explicitly via Hasura and synced.
@@ -94,19 +99,27 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
       }
 
       // Sort by latest message
-      fetchedChannels.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+      fetchedChannels.sort((a, b) => b.rawTimeMillis - a.rawTimeMillis);
       
       setChannels(prev => {
         // Merge messages if they exist in prev state
-        return fetchedChannels.map(fc => {
+        let updatedChannels = fetchedChannels.map(fc => {
           const existing = prev.find(p => p.id === fc.id);
-          return { ...fc, messages: existing ? existing.messages : [] };
+          const { rawTimeMillis, ...cleanFc } = fc; // Remove temporary sorting prop
+          return { ...cleanFc, messages: existing ? existing.messages : [] } as ChatChannel;
         });
+
+        // Filter out DMs that have NO messages yet (lastMessage is empty) so they don't clog "All"
+        // Wait, if we filter them out completely, they won't exist in channels state, so clicking a follower won't be able to find the channel!
+        // We shouldn't filter them out of `channels` state, but rather we should filter them in the UI's "All" tab!
+        // Let's just return updatedChannels here and handle the "All" tab filter in community.tsx
+        return updatedChannels;
       });
 
-      if (fetchedChannels.length > 0 && !activeChatId) {
-        setActiveChatId(fetchedChannels[0].id);
-      }
+      setActiveChatId(prev => {
+        if (!prev && fetchedChannels.length > 0) return fetchedChannels[0].id;
+        return prev;
+      });
       setLoading(false);
     });
 
@@ -118,28 +131,30 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
     if (!activeChatId) return;
 
     const q = query(
-      collection(db, "messages"),
+      collection(db, "agatike_messages"),
       where("channelId", "==", activeChatId)
     );
 
     const unsubscribeMessages = onSnapshot(q, (snapshot) => {
       const messages: Message[] = snapshot.docs.map(doc => {
         const data = doc.data();
+        const rawTime = data.timestamp;
         return {
           id: doc.id,
           senderId: data.senderId,
           text: data.text,
-          timestamp: data.timestamp, // Keep raw timestamp for sorting
-          timeFormatted: data.timestamp?.toDate()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "",
-          isMe: data.senderId === currentUserId,
-          channelId: data.channelId
+          timestamp: rawTime, // Keep raw timestamp for sorting
+          timeFormatted: rawTime?.toDate?.()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isMe: data.senderId === currentUserId || data.senderId === workspaceId, // Include workspaceId for DMs
+          channelId: data.channelId,
+          isPending: !rawTime
         };
       });
 
       // Sort in memory to bypass the Firebase composite index requirement
       messages.sort((a, b) => {
-        const timeA = a.timestamp?.toMillis?.() || 0;
-        const timeB = b.timestamp?.toMillis?.() || 0;
+        const timeA = a.timestamp?.toMillis?.() || Date.now();
+        const timeB = b.timestamp?.toMillis?.() || Date.now();
         return timeA - timeB;
       });
 
@@ -154,17 +169,26 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
     return () => unsubscribeMessages();
   }, [activeChatId, currentUserId]);
 
-  const sendMessage = async (text: string) => {
+  const sendMessage = async (text: string, activeChat: ChatChannel) => {
     if (!activeChatId) return;
 
-    await addDoc(collection(db, "messages"), {
+    let senderId = currentUserId;
+    let receiverId = null;
+
+    if (activeChat.type === "user") {
+      senderId = workspaceId; // Organizer is the sender
+      receiverId = activeChat.userId || null;
+    }
+
+    await addDoc(collection(db, "agatike_messages"), {
       channelId: activeChatId,
-      senderId: currentUserId,
+      senderId,
+      receiverId,
       text,
       timestamp: serverTimestamp()
     });
 
-    const channelRef = doc(db, "channels", activeChatId);
+    const channelRef = doc(db, "agatike_channels", activeChatId);
     await updateDoc(channelRef, {
       lastMessage: text,
       lastMessageTime: serverTimestamp()
@@ -178,7 +202,7 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
       return;
     }
 
-    const newDoc = await addDoc(collection(db, "channels"), {
+    const newDoc = await addDoc(collection(db, "agatike_channels"), {
       organizerId: workspaceId,
       name: userName,
       type: "user",
@@ -196,7 +220,7 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
   };
 
   const createFirebaseGroupChannel = async (channelId: string, name: string, avatar: string, entityType: string = "GROUP") => {
-    const channelRef = doc(db, "channels", channelId);
+    const channelRef = doc(db, "agatike_channels", channelId);
     await setDoc(channelRef, {
       organizerId: workspaceId,
       name,

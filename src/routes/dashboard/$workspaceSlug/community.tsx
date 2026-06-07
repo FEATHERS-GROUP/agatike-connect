@@ -91,18 +91,22 @@ function CommunityPage() {
 
   const activeChat = channels.find((c) => c.id === activeChatId);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageInput.trim() || !activeChat) return;
 
-    await sendMessage(messageInput);
+    sendMessage(messageInput, activeChat);
     setMessageInput("");
   };
 
+  const [activeTab, setActiveTab] = useState("all");
+
   const handleFollowerClick = async (follower: any) => {
     const name = follower.username || "Follower";
-    const avatar = (follower.profile && !follower.profile.includes("pravatar.cc")) ? follower.profile : "";
+    const profileStr = typeof follower.profile === "string" ? follower.profile : "";
+    const avatar = (profileStr && !profileStr.includes("pravatar.cc")) ? profileStr : "";
     await createDirectMessageChannel(follower.id, name, avatar);
+    setActiveTab("all");
   };
 
   const [creating, setCreating] = useState(false);
@@ -314,7 +318,7 @@ function CommunityPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="all" className="flex-1 flex flex-col w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full">
           <div className="px-4 pt-2 border-b border-border/60">
             <TabsList className="w-full grid grid-cols-3 bg-transparent p-0">
               <TabsTrigger 
@@ -341,7 +345,7 @@ function CommunityPage() {
           <TabsContent value="all" className="flex-1 m-0">
             <ScrollArea className="h-full">
               <div className="p-2 flex flex-col gap-1">
-                {channels.map((chat) => (
+                {channels.filter(c => !(c.type === "user" && !c.lastMessage)).map((chat) => (
                   <button
                     key={chat.id}
                     onClick={() => setActiveChatId(chat.id)}
@@ -395,7 +399,8 @@ function CommunityPage() {
                 )}
                 {followers.map((follower: any) => {
                   const name = follower.username || "Follower";
-                  const avatar = (follower.profile && !follower.profile.includes("pravatar.cc")) ? follower.profile : "";
+                  const profileStr = typeof follower.profile === "string" ? follower.profile : "";
+                  const avatar = (profileStr && !profileStr.includes("pravatar.cc")) ? profileStr : "";
                   return (
                     <button
                       key={follower.id}
@@ -457,7 +462,7 @@ function CommunityPage() {
                     >
                       <div className="relative shrink-0">
                         <Avatar className="h-12 w-12 border border-border/50">
-                          <AvatarImage src={(mainChannel.cover_url && !mainChannel.cover_url.includes("pravatar.cc")) ? mainChannel.cover_url : ""} alt={mainChannel.name} />
+                          <AvatarImage src={(mainChannel.cover_url && !mainChannel.cover_url.includes("pravatar.cc")) ? mainChannel.cover_url : undefined} alt={mainChannel.name} />
                           <AvatarFallback className="bg-primary/10 text-primary">
                             <MessageCircle className="h-5 w-5" />
                           </AvatarFallback>
@@ -517,7 +522,7 @@ function CommunityPage() {
                         >
                           <div className="relative shrink-0">
                             <Avatar className="h-12 w-12 border border-border/50">
-                              <AvatarImage src={(eventChannel.cover_url && !eventChannel.cover_url.includes("pravatar.cc")) ? eventChannel.cover_url : ""} alt={eventChannel.name} />
+                              <AvatarImage src={(eventChannel.cover_url && !eventChannel.cover_url.includes("pravatar.cc")) ? eventChannel.cover_url : undefined} alt={eventChannel.name} />
                               <AvatarFallback className="bg-primary/10 text-primary">
                                 <Users className="h-5 w-5" />
                               </AvatarFallback>
@@ -550,7 +555,7 @@ function CommunityPage() {
                         <div key={target.id} className="flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left hover:bg-accent/50">
                           <div className="relative shrink-0">
                             <Avatar className="h-12 w-12 border border-border/50 opacity-50 grayscale">
-                              <AvatarImage src={(target.cover && !target.cover.includes("pravatar.cc")) ? target.cover : ""} alt={target.title} />
+                              <AvatarImage src={(target.cover && !target.cover.includes("pravatar.cc")) ? target.cover : undefined} alt={target.title} />
                               <AvatarFallback className="bg-muted">
                                 <Users className="h-5 w-5 text-muted-foreground" />
                               </AvatarFallback>
@@ -595,7 +600,7 @@ function CommunityPage() {
           <div className="h-16 px-6 border-b border-border/60 flex items-center justify-between bg-background/50 backdrop-blur-md z-10 shrink-0">
             <div className="flex items-center gap-4">
               <Avatar className="h-10 w-10 border border-border/50">
-                <AvatarImage src={(activeChat.avatar && !activeChat.avatar.includes("pravatar.cc")) ? activeChat.avatar : ""} alt={activeChat.name} />
+                <AvatarImage src={(activeChat.avatar && !activeChat.avatar.includes("pravatar.cc")) ? activeChat.avatar : undefined} alt={activeChat.name} />
                 <AvatarFallback className="bg-primary/10 text-primary">
                   {activeChat.type === "group" ? <MessageCircle className="h-4 w-4" /> : activeChat.name.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
@@ -759,7 +764,7 @@ function CommunityPage() {
               <div className="flex items-center gap-4">
                 <div className="h-16 w-16 shrink-0 rounded-full border border-border/50 overflow-hidden relative group bg-muted flex items-center justify-center">
                   {(filePreviewUrl || selectedAvatarUrl) ? (
-                    <img src={filePreviewUrl || selectedAvatarUrl} alt="Preview" className="h-full w-full object-cover" />
+                    <img src={filePreviewUrl || selectedAvatarUrl || undefined} alt="Preview" className="h-full w-full object-cover" />
                   ) : (
                     <MessageCircle className="h-6 w-6 text-muted-foreground" />
                   )}
