@@ -21,6 +21,8 @@ export type Message = {
   isMe: boolean;
   channelId: string;
   mediaUrl?: string;
+  timeFormatted?: string;
+  isPending?: boolean;
 };
 
 export type ChatChannel = {
