@@ -1314,15 +1314,66 @@ flowchart TD
 
 ---
 
-## 19. Community Channels (`/community`)
+## 19. Community Hub (`/community`)
+
+**Route:** `/dashboard/$workspaceSlug/community`
+**File:** `src/routes/dashboard/$workspaceSlug/community.tsx`
+
+The Community Hub provides real-time chat functionality, allowing organizers to engage with their followers and ticket-holding attendees through dedicated channels. 
+
+### Architecture: Hasura + Firestore
+The community system uses a hybrid database architecture:
+- **Hasura (Postgres):** Stores channel metadata, configurations, and user access (`community_channels`).
+- **Firebase (Firestore):** Powers the real-time messaging, typing indicators, and message timestamps (`agatike_messages`).
+
+```mermaid
+flowchart LR
+    UI[Community UI] -->|Query Metadata| Hasura[Hasura GraphQL]
+    UI <-->|Real-time Sync| Firestore[Firebase Firestore]
+    Hasura --> ChannelDB[(Postgres:\ncommunity_channels)]
+    Firestore --> MsgDB[(Firestore:\nagatike_messages)]
+```
+
+### Channel Types & Audience
+
+1. **Main Channels:** 
+   - Created manually by the organizer.
+   - Used for general announcements and follower engagement.
+   - **Audience:** All users who follow the organizer's profile.
+
+2. **Event & Experience Channels:**
+   - Automatically generated for specific events or experience schedules.
+   - For multi-city tours: Channels are segmented by `tour_stop_idx`.
+   - For recurring experiences: Channels are segmented by `schedule_id`.
+   - **Audience Restrictions:** Only users who **bought tickets** or **booked** the specific event/schedule are granted access. General followers cannot see these channels.
+
+### Real-Time Messaging & Features
+- **Optimistic UI:** Messages are sent asynchronously using a fire-and-forget approach for instantaneous UI updates.
+- **GIF Integration:** Users can search and send GIFs using the Giphy API (`@giphy/react-components`). A loading spinner overlays the grid during searches.
+- **Privacy:** Handles and flags are displayed instead of raw usernames for privacy.
+- **Emojis:** Integrated emoji picker for expressive communication.
+
+### Automatic Lazy Cleanup (Data Retention)
+To minimize Firestore costs and database bloat, the system implements a **Lazy Cleanup Strategy** for Event and Experience channels.
 
 **Logic:**
-- Channels represent isolated group chats for event attendees, organizers, and staff.
-- A central feature is the dynamic unfolding of complex event occurrences to ensure attendees are placed in the correct context.
-- **For Events (multi-city tours):** Channels are generated per specific `tour_stop` using `tour_stop_idx` (e.g., Event Name - New York Stop, Event Name - LA Stop).
-- **For Experiences (multi-date schedules):** The UI dynamically creates channels per schedule occurrence using `schedule_id`. 
-  - **Crucial Note on Experience Schedules:** A "Primary Schedule" is derived directly from `event_requency.date` on the `events` row itself. Additional or future schedules are parsed from the related `event_schedules` array. Both the primary and secondary schedules are combined and listed in the UI so organizers can spin up distinct Firebase group chats for each exact date.
+1. Event/Experience channels remain active during the event.
+2. After the event's scheduled end date, a **5-day grace period** begins.
+3. Once the 5 days pass, the channel is considered "Expired".
+4. **Lazy Evaluation:** When the organizer loads the Community Hub, `getCommunityChannels` evaluates all channels. If it detects an expired channel:
+   - It is immediately filtered out of the UI payload.
+   - An asynchronous background job is fired to delete the channel from Hasura.
+   - A cascading delete is triggered in `src/lib/firebase.ts` (`deleteChannelMessages`) to wipe all associated Firestore messages, GIFs, and metadata.
 
----
+```mermaid
+flowchart TD
+    Load[Organizer Loads Community] --> Fetch[getCommunityChannels]
+    Fetch --> Eval{Is Event Date + 5 Days in the past?}
+    Eval -->|No| Keep[Return Channel to UI]
+    Eval -->|Yes| Filter[Hide from UI]
+    Filter --> AsyncDel[Trigger Background Deletion]
+    AsyncDel --> DelHasura[Delete from Hasura]
+    AsyncDel --> DelFirestore[Wipe Firestore Messages]
+```
 
 _Last updated: June 2026 — Agatike Connect_
