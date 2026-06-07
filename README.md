@@ -1376,4 +1376,18 @@ flowchart TD
     AsyncDel --> DelFirestore[Wipe Firestore Messages]
 ```
 
+### Global Message Notifications
+To ensure organizers and attendees never miss an important message, the app features a globally mounted listener (`GlobalNotificationListener`) that runs in the background.
+
+**Logic & Deduplication:**
+1. **Metadata Synchronization:** Whenever a message is sent, `sendMessage` updates the `agatike_channels` collection with `lastMessage`, `lastMessageTime`, and crucially, `lastMessageSenderId`.
+2. **Background Listener:** The global listener watches `agatike_channels` for any changes. It triggers a notification only if `lastMessageSenderId` is NOT the current user.
+3. **Cross-Tab Deduplication:** It tracks the exact timestamp of the last notified message per channel using `localStorage`. This guarantees that if the user has three different dashboard tabs open, only **one** tab will fire the notification.
+4. **Display:**
+   - **System Push Notifications:** Uses the browser's native `Notification` API. If the app is installed via PWA Manifest, the notification appears natively on macOS/Windows/Mobile.
+   - **In-App Toasts:** A Sonner toast pops up gracefully in the corner of the app screen.
+5. **Direct Message Dynamic Formatting:** 
+   - If the incoming message is a DM (`type === "user"`), the listener intercepts the notification, fetches the sender's profile dynamically, and displays the exact Handle and Country Flag (e.g., "New message from @JohnDoe 🇷🇼").
+   - Group Channels default to "New message in [Channel Name]".
+
 _Last updated: June 2026 — Agatike Connect_

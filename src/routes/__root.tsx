@@ -20,6 +20,7 @@ import { LoaderProvider } from "@/contexts/LoaderContext";
 import { SplashLoader } from "@/components/site/SplashLoader";
 import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { Toaster } from "@/components/ui/sonner";
+import { GlobalNotificationListener } from "@/components/providers/GlobalNotificationListener";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -155,6 +156,7 @@ function RootComponent() {
           <AuthRedirect />
           <WorkspaceProvider>
             <LoaderProvider>
+              <GlobalNotificationListener />
               {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
               <div className={`min-h-screen md:pb-0 ${hideNav ? "" : "pb-24"}`}>
                 <Outlet />

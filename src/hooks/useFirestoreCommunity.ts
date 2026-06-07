@@ -201,7 +201,8 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
     const channelRef = doc(db, "agatike_channels", activeChatId);
     await updateDoc(channelRef, {
       lastMessage: text || "Sent an attachment",
-      lastMessageTime: serverTimestamp()
+      lastMessageTime: serverTimestamp(),
+      lastMessageSenderId: senderId
     });
   };
 
