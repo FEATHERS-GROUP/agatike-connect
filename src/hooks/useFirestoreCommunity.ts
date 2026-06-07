@@ -84,6 +84,7 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
       const userIds = fetchedChannels.filter(c => c.type === "user" && c.userId).map(c => c.userId!);
       if (userIds.length > 0) {
         try {
+          // @ts-ignore - The tanstack createServerFn types here default to undefined but the handler accepts it
           const profiles = await getUsersByIds({ data: { ids: userIds } });
           fetchedChannels = fetchedChannels.map(ch => {
             if (ch.type === "user" && ch.userId) {

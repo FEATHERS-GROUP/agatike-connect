@@ -29,9 +29,7 @@ export const getUserByHandle = createServerFn({ method: "GET" }).handler(async (
   return result.users[0] || null;
 });
 
-export const getUsersByIds = createServerFn({ method: "POST" })
-  .validator((d: { ids: string[] }) => d)
-  .handler(async (ctx) => {
+export const getUsersByIds = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const data = ctx.data as { ids: string[] };
   if (!data.ids || data.ids.length === 0) return [];
 
