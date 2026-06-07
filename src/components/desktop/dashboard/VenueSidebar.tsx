@@ -1,6 +1,7 @@
 import { Link, useRouterState, useParams, useNavigate } from "@tanstack/react-router";
 import { CalendarDays, Users, Settings, ArrowLeft, Check, Sparkles } from "lucide-react";
-import { rentableVenues } from "@/lib/mock-data";
+import { useQuery } from "@tanstack/react-query";
+import { getRentableVenueById } from "@/api/rentable_venues";
 import { cn } from "@/lib/utils";
 
 const steps = [
@@ -30,7 +31,11 @@ export function VenueSidebar() {
 
   // We cannot easily access formData.rental_model here since it's local state in create-venue.tsx
   // But we can let them click the steps anyway, or disable clicking future steps
-  const venue = rentableVenues.find((v) => v.id === venueId);
+  const { data: venue } = useQuery({
+    queryKey: ["venue", venueId],
+    queryFn: () => getRentableVenueById({ data: { id: venueId } }),
+    enabled: !!venueId && !isCreateVenue,
+  });
 
   const nav = [
     {
@@ -71,8 +76,8 @@ export function VenueSidebar() {
       ) : (
         <div className="mb-4 flex items-center gap-3">
           <div className="h-9 w-9 overflow-hidden rounded-lg bg-secondary shrink-0">
-            {venue?.cover && (
-              <img src={venue.cover} alt={venue.name} className="h-full w-full object-cover" />
+            {(venue?.cover_url || venue?.images?.[0]) && (
+              <img src={venue.cover_url || venue.images?.[0]} alt={venue.name} className="h-full w-full object-cover" />
             )}
           </div>
           <div className="min-w-0">

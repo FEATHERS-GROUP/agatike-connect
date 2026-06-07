@@ -2,6 +2,8 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Search, Filter, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { getRentableVenueById } from "@/api/rentable_venues";
 import { venueBookings, rentableVenues } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/bookings")({
@@ -9,11 +11,17 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/
 });
 
 function VenueBookingsPage() {
-  const { venueId } = useParams({ strict: false });
-  const venue = rentableVenues.find((v) => v.id === venueId);
+  const { venueId } = useParams({ strict: false }) as any;
+  const { data: venue, isLoading } = useQuery({
+    queryKey: ["venue", venueId],
+    queryFn: () => getRentableVenueById({ data: { id: venueId } }),
+    enabled: !!venueId,
+  });
+
   const bookings = venueBookings.filter((b) => b.venueId === venueId);
 
-  if (!venue) return <div>Venue not found</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading venue...</div>;
+  if (!venue) return <div className="p-8 text-center text-red-500 font-semibold">Venue not found</div>;
 
   return (
     <div className="space-y-6">

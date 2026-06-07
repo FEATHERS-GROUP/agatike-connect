@@ -12,7 +12,9 @@ import {
   Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { rentableVenues, type RentableVenue } from "@/lib/mock-data";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useQuery } from "@tanstack/react-query";
+import { getRentableVenues } from "@/api/rentable_venues";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venue-rent")({
   head: () => ({
@@ -26,9 +28,17 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/venue-rent")({
 
 function VenueListingsPage() {
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/venue-rent" });
-  const totalVenues = rentableVenues.length;
-  const activeRentals = rentableVenues.reduce((acc, v) => acc + v.activeRentals, 0);
-  const pendingRequests = rentableVenues.reduce((acc, v) => acc + v.pendingRequests, 0);
+  const { activeWorkspace } = useWorkspace();
+
+  const { data: venues = [], isLoading } = useQuery({
+    queryKey: ["rentable_venues", activeWorkspace?.id],
+    queryFn: () => getRentableVenues({ data: { workspace_id: activeWorkspace?.id } }),
+    enabled: !!activeWorkspace?.id,
+  });
+
+  const totalVenues = venues.length;
+  const activeRentals = 0; // TODO: fetch real metrics
+  const pendingRequests = 0; // TODO: fetch real metrics
 
   return (
     <div className="space-y-8">
@@ -95,76 +105,75 @@ function VenueListingsPage() {
       <main className="mt-8">
         <h2 className="text-lg font-semibold mb-4">Your Properties</h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {rentableVenues.map((venue) => (
-            <Link
-              key={venue.id}
-              to={`/dashboard/${workspaceSlug}/venues/${venue.id}/overview`}
-              className="group flex flex-col sm:flex-row rounded-3xl bg-card border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-            >
-              {/* Image side */}
-              <div className="relative w-full sm:w-48 shrink-0 aspect-[4/3] sm:aspect-auto">
-                <img src={venue.cover} alt={venue.name} className="w-full h-full object-cover" />
-                <div className="absolute top-3 left-3 flex gap-2">
-                  <StatusBadge status={venue.status} />
-                </div>
-              </div>
-
-              {/* Content side */}
-              <div className="p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="font-semibold text-lg leading-tight">{venue.name}</h3>
-                    <button className="text-muted-foreground hover:text-foreground">
-                      <MoreHorizontal className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mb-4">
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="h-3.5 w-3.5" />
-                      {venue.city}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Users className="h-3.5 w-3.5" />
-                      {venue.capacity.toLocaleString()}
-                    </span>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-40 text-muted-foreground">Loading venues...</div>
+        ) : venues.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 bg-secondary/20 rounded-2xl border border-dashed">
+            <Store className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No venues listed</h3>
+            <p className="text-muted-foreground mb-6">You haven't added any rentable venues yet.</p>
+            <Button asChild style={{ background: "var(--gradient-primary)" }} className="shadow-[var(--shadow-glow)]">
+              <Link to={`/dashboard/${workspaceSlug}/venues/create-venue`}>List Your First Venue</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {venues.map((venue: any) => (
+              <Link
+                key={venue.id}
+                to={`/dashboard/${workspaceSlug}/venues/${venue.id}/overview`}
+                className="group flex flex-col sm:flex-row rounded-3xl bg-card border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+              >
+                {/* Image side */}
+                <div className="relative w-full sm:w-48 shrink-0 aspect-[4/3] sm:aspect-auto">
+                  <img src={venue.cover_url || "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800"} alt={venue.name} className="w-full h-full object-cover bg-secondary" />
+                  <div className="absolute top-3 left-3 flex gap-2">
+                    <StatusBadge status={venue.status as any || "Active"} />
                   </div>
                 </div>
 
-                {/* Management Details */}
-                <div className="mt-2 pt-4 border-t border-border/60 grid grid-cols-2 gap-4">
+                {/* Content side */}
+                <div className="p-5 flex-1 flex flex-col justify-between">
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-                      Requests
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{venue.pendingRequests}</span>
-                      {venue.pendingRequests > 0 && (
-                        <span className="flex items-center gap-1 text-[10px] bg-orange-500/10 text-orange-600 px-1.5 py-0.5 rounded font-medium">
-                          <AlertCircle className="h-3 w-3" /> New
-                        </span>
-                      )}
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h3 className="font-semibold text-lg leading-tight">{venue.name}</h3>
+                      <button className="text-muted-foreground hover:text-foreground">
+                        <MoreHorizontal className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mb-4">
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {venue.city}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Users className="h-3.5 w-3.5" />
+                        {venue.capacity?.toLocaleString() || "N/A"}
+                      </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-                      {venue.rentalType === "Entrance Fee" ? "Entrance Fee" 
-                        : venue.rentalType === "Per Hour" ? "Price / Hour"
-                        : venue.rentalType === "Per Week" ? "Price / Week"
-                        : venue.rentalType === "Annually" ? "Price / Year"
-                        : "Price / Day"}
-                    </p>
-                    <p className="font-semibold text-foreground">
-                      {venue.currency}
-                      {venue.rentalType === "Entrance Fee" ? venue.entranceFee?.toLocaleString()
-                        : venue.rentalType === "Per Hour" ? venue.pricePerHour?.toLocaleString()
-                        : venue.rentalType === "Per Week" ? venue.pricePerWeek?.toLocaleString()
-                        : venue.rentalType === "Annually" ? venue.priceAnnually?.toLocaleString()
-                        : venue.pricePerDay?.toLocaleString()}
-                    </p>
+
+                  {/* Management Details */}
+                  <div className="mt-2 pt-4 border-t border-border/60 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                        Requests
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-muted-foreground">0</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                        {venue.rental_type}
+                      </p>
+                      <p className="font-semibold text-foreground truncate max-w-[120px]" title={venue.pricing_tiers?.[0]?.name}>
+                        {venue.currency}
+                        {venue.pricing_tiers?.[0]?.amount ? Number(venue.pricing_tiers[0].amount).toLocaleString() : "0"}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
                 {/* Actions */}
                 <div className="mt-4 flex gap-2">
@@ -193,8 +202,9 @@ function VenueListingsPage() {
                 </div>
               </div>
             </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

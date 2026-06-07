@@ -20,11 +20,6 @@ export const createRentableVenue = createServerFn({ method: "POST" })
       city, 
       capacity, 
       rental_type, 
-      price_per_day, 
-      price_per_hour, 
-      price_per_week, 
-      price_annually, 
-      entrance_fee, 
       currency,
       cover_url,
       description,
@@ -38,7 +33,8 @@ export const createRentableVenue = createServerFn({ method: "POST" })
       country,
       latitude,
       longitude,
-      is_venue_private
+      is_venue_private,
+      pricing_tiers
     } = ctx.data;
 
     const res = await hasuraRequest<{ insert_rentable_venues_one: { id: string } }>(
@@ -52,11 +48,6 @@ export const createRentableVenue = createServerFn({ method: "POST" })
           city,
           capacity,
           rental_type,
-          price_per_day,
-          price_per_hour,
-          price_per_week,
-          price_annually,
-          entrance_fee,
           currency,
           cover_url,
           description,
@@ -70,9 +61,72 @@ export const createRentableVenue = createServerFn({ method: "POST" })
           country,
           latitude,
           longitude,
-          is_venue_private
+          is_venue_private,
+          pricing_tiers
         },
       },
     );
     return res.insert_rentable_venues_one;
+  });
+
+const GET_RENTABLE_VENUES = `
+  query GetRentableVenues($workspace_id: uuid!) {
+    rentable_venues(where: { workspace_id: { _eq: $workspace_id } }, order_by: { created_at: desc }) {
+      id
+      name
+      type
+      city
+      country
+      capacity
+      rental_type
+      currency
+      cover_url
+      status
+      pricing_tiers
+      created_at
+    }
+  }
+`;
+
+export const getRentableVenues = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { workspace_id } = ctx.data;
+    if (!workspace_id) throw new Error("workspace_id is required");
+    const res = await hasuraRequest<{ rentable_venues: any[] }>(
+      GET_RENTABLE_VENUES,
+      { workspace_id }
+    );
+    return res.rentable_venues;
+  });
+
+const GET_RENTABLE_VENUE_BY_ID = `
+  query GetRentableVenueById($id: uuid!) {
+    rentable_venues_by_pk(id: $id) {
+      id
+      name
+      type
+      city
+      country
+      capacity
+      rental_type
+      currency
+      cover_url
+      status
+      pricing_tiers
+      created_at
+    }
+  }
+`;
+
+export const getRentableVenueById = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { id } = ctx.data;
+    if (!id) throw new Error("id is required");
+    const res = await hasuraRequest<{ rentable_venues_by_pk: any }>(
+      GET_RENTABLE_VENUE_BY_ID,
+      { id }
+    );
+    return res.rentable_venues_by_pk;
   });

@@ -7,7 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { rentableVenues, venueBookings } from "@/lib/mock-data";
+import { rentableVenues } from "@/lib/mock-data";
+import { useQuery } from "@tanstack/react-query";
+import { getRentableVenueById } from "@/api/rentable_venues";
+import { getVenueBookings } from "@/api/venue_bookings";
+import { ManualBookingDialog } from "@/components/desktop/dashboard/ManualBookingDialog";
+import { BlockDateDialog } from "@/components/desktop/dashboard/BlockDateDialog";
 import { Calendar, dateFnsLocalizer, View } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
@@ -35,31 +40,31 @@ function VenueOverviewPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
-  const venue = rentableVenues.find((v) => v.id === venueId);
-  const bookings = venueBookings.filter((b) => b.venueId === venueId);
+  const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
+  const [isBlockDateOpen, setIsBlockDateOpen] = useState(false);
 
-  const myEvents = bookings.map((b) => {
-    const [startY, startM, startD] = b.date.split("-");
-    const [startHr, startMin] = b.timeStart.split(":");
-    const [endHr, endMin] = b.timeEnd.split(":");
+  const { data: venue, isLoading } = useQuery({
+    queryKey: ["venue", venueId],
+    queryFn: () => getRentableVenueById({ data: { id: venueId } }),
+    enabled: !!venueId,
+  });
+
+  const { data: bookings = [] } = useQuery({
+    queryKey: ["venue_bookings", venueId],
+    queryFn: () => getVenueBookings({ data: { venue_id: venueId } }),
+    enabled: !!venueId,
+  });
+
+  const myEvents = bookings.map((b: any) => {
     return {
-      title: b.customerName,
-      start: new Date(
-        Number(startY),
-        Number(startM) - 1,
-        Number(startD),
-        Number(startHr),
-        Number(startMin),
-      ),
-      end: new Date(
-        Number(startY),
-        Number(startM) - 1,
-        Number(startD),
-        Number(endHr),
-        Number(endMin),
-      ),
-      allDay: b.isAllDay,
-      data: b,
+      title: b.customer_name,
+      start: new Date(b.start_time),
+      end: new Date(b.end_time),
+      allDay: false, // Could compute this if needed
+      data: {
+        paymentStatus: b.payment_status,
+        status: b.status
+      },
     };
   });
 
@@ -93,7 +98,8 @@ function VenueOverviewPage() {
     );
   };
 
-  if (!venue) return <div>Venue not found</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading venue details...</div>;
+  if (!venue) return <div className="p-8 text-center text-red-500 font-semibold">Venue not found</div>;
 
   return (
     <div className="space-y-6">
@@ -104,164 +110,22 @@ function VenueOverviewPage() {
             Manage availability and upcoming reservations.
           </p>
         </div>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button
-              className="rounded-full gap-2 shadow-[var(--shadow-glow)]"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Plus className="h-4 w-4" /> Add Manual Booking
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="overflow-y-auto sm:max-w-md bg-card border-border/60">
-            <SheetHeader className="mb-6">
-              <SheetTitle>Manual Booking</SheetTitle>
-              <p className="text-sm text-muted-foreground">
-                Block out dates or manually add a customer's reservation.
-              </p>
-            </SheetHeader>
-            <Tabs defaultValue="customer" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="customer">Customer Booking</TabsTrigger>
-                <TabsTrigger value="block">Block Dates</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="customer">
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-1.5">
-                      <Label>Customer / Organization Name</Label>
-                      <Input
-                        placeholder="e.g. John Doe or Tech Summit"
-                        className="h-10 rounded-xl bg-secondary/50"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label>Email</Label>
-                        <Input
-                          type="email"
-                          placeholder="customer@example.com"
-                          className="h-10 rounded-xl bg-secondary/50"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>Phone</Label>
-                        <Input
-                          placeholder="+1 234 567 8900"
-                          className="h-10 rounded-xl bg-secondary/50"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 pt-4 border-t border-border/60">
-                    <div className="space-y-1.5">
-                      <Label>Booking Date</Label>
-                      <Input type="date" className="h-10 rounded-xl bg-secondary/50" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label>Start Time</Label>
-                        <Input type="time" className="h-10 rounded-xl bg-secondary/50" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>End Time</Label>
-                        <Input type="time" className="h-10 rounded-xl bg-secondary/50" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 pt-4 border-t border-border/60">
-                    <div className="space-y-1.5">
-                      <Label>Amount</Label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                          {venue.currency}
-                        </span>
-                        <Input
-                          type="number"
-                          placeholder="0.00"
-                          className="pl-8 h-10 rounded-xl bg-secondary/50"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label>Booking Status</Label>
-                        <select className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                          <option value="Confirmed">Confirmed</option>
-                          <option value="Pending">Pending</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>Payment Status</Label>
-                        <select className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                          <option value="Paid">Paid</option>
-                          <option value="Unpaid">Unpaid</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8 flex gap-3">
-                  <Button
-                    className="flex-1 rounded-xl"
-                    style={{ background: "var(--gradient-primary)" }}
-                  >
-                    Confirm Booking
-                  </Button>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="block">
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-1.5">
-                      <Label>Reason for Blocking</Label>
-                      <Input
-                        placeholder="e.g. Maintenance, Private Event, Emergency Closure"
-                        className="h-10 rounded-xl bg-secondary/50"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 pt-4 border-t border-border/60">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label>Start Date</Label>
-                        <Input type="date" className="h-10 rounded-xl bg-secondary/50" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>End Date</Label>
-                        <Input type="date" className="h-10 rounded-xl bg-secondary/50" />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label>Start Time</Label>
-                        <Input type="time" defaultValue="00:00" className="h-10 rounded-xl bg-secondary/50" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>End Time</Label>
-                        <Input type="time" defaultValue="23:59" className="h-10 rounded-xl bg-secondary/50" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8 flex gap-3">
-                  <Button
-                    className="flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white"
-                  >
-                    Block Dates
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </SheetContent>
-        </Sheet>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            className="rounded-full shadow-sm text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/20"
+            onClick={() => setIsBlockDateOpen(true)}
+          >
+            Block Dates
+          </Button>
+          <Button
+            className="rounded-full gap-2 shadow-[var(--shadow-glow)]"
+            style={{ background: "var(--gradient-primary)" }}
+            onClick={() => setIsManualBookingOpen(true)}
+          >
+            <Plus className="h-4 w-4" /> Add Manual Booking
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -530,6 +394,8 @@ function VenueOverviewPage() {
           )}
         </DialogContent>
       </Dialog>
+      <ManualBookingDialog open={isManualBookingOpen} onOpenChange={setIsManualBookingOpen} venue={venue} />
+      <BlockDateDialog open={isBlockDateOpen} onOpenChange={setIsBlockDateOpen} venue={venue} />
     </div>
   );
 }

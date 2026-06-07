@@ -13,8 +13,10 @@ import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { COUNTRIES } from "@/lib/countries";
-import { getCoordinates } from "@/api/geocoding";
+import { getCoordinates, getPlacesAutocomplete } from "@/api/geocoding";
 import { Switch } from "@/components/ui/switch";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/create-venue")({
   validateSearch: z.object({
@@ -81,7 +83,8 @@ const VENUE_TYPES = [
 ];
 
 const AMENITIES_LIST = [
-  "WiFi", "Parking", "Air Conditioning", "Heating", "Wheelchair Accessible", "Kitchen", "Bar", "Sound System", "Lighting System", "Projector", "Restrooms", "Security"
+  "WiFi", "Parking", "Air Conditioning", "Heating", "Wheelchair Accessible", "Kitchen", "Bar", "Sound System", "Lighting System", "Projector", "Restrooms", "Security",
+  "Catering", "Changing Rooms", "Lounge Area", "Stage", "Whiteboard", "TV Screens", "Microphones", "High-Speed Internet", "Elevator", "Outdoor Area", "Smoking Area", "VIP Section", "DJ Booth", "Dance Floor", "First Aid Kit", "Cloakroom", "Pool", "Gym"
 ];
 
 
@@ -92,42 +95,48 @@ function NewVenueWizard() {
   const { activeWorkspace } = useWorkspace();
 
   const [isUploading, setIsUploading] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
 
   const DRAFT_KEY = `venue_draft_${workspaceSlug}`;
+
+  const DEFAULT_FORM_DATA = {
+    name: "",
+    type: "",
+    rental_model: "",
+    city: "",
+    country: "RW",
+    address: "",
+    is_venue_private: false,
+    is_24_hours: false,
+    capacity: "",
+    description: "",
+    rental_type: "Per Day",
+    pricing_tiers: [{ name: "", amount: "" }],
+    opening_hours: "09:00",
+    closing_hours: "18:00",
+    instructions: "",
+    amenities: [] as string[],
+    sections: [] as { name: string; image_url: string }[],
+    images: [] as string[]
+  };
 
   const [formData, setFormData] = useState(() => {
     const saved = localStorage.getItem(DRAFT_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved).formData;
+        const parsed = JSON.parse(saved).formData;
+        return {
+          ...DEFAULT_FORM_DATA,
+          ...parsed,
+          pricing_tiers: parsed.pricing_tiers || DEFAULT_FORM_DATA.pricing_tiers
+        };
       } catch (e) {
         console.error("Failed to parse draft", e);
       }
     }
-    return {
-      name: "",
-      type: "",
-      rental_model: "",
-      city: "",
-      country: "RW",
-      address: "",
-      is_venue_private: false,
-      capacity: "",
-      description: "",
-      rental_type: "Per Day",
-      price_per_day: "",
-      price_per_hour: "",
-      price_per_week: "",
-      price_annually: "",
-      entrance_fee: "",
-      currency: "$",
-      opening_hours: "09:00",
-      closing_hours: "18:00",
-      instructions: "",
-      amenities: [] as string[],
-      sections: [] as { name: string; image_url: string }[],
-      images: [] as string[]
-    };
+    return DEFAULT_FORM_DATA;
   });
 
   useEffect(() => {
@@ -141,6 +150,27 @@ function NewVenueWizard() {
       } catch (e) {}
     }
   }, [workspaceSlug]); // Run once on mount
+
+  useEffect(() => {
+    if (!formData.address || !showAddressSuggestions) {
+      setAddressSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingAddress(true);
+      try {
+        const results = await getPlacesAutocomplete({ data: formData.address });
+        setAddressSuggestions(results || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSearchingAddress(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [formData.address, showAddressSuggestions]);
 
   useEffect(() => {
     localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, formData }));
@@ -172,12 +202,8 @@ function NewVenueWizard() {
           capacity: Number(formData.capacity) || 0,
           description: formData.description,
           rental_type: formData.rental_type,
-          price_per_day: formData.price_per_day ? Number(formData.price_per_day) : null,
-          price_per_hour: formData.price_per_hour ? Number(formData.price_per_hour) : null,
-          price_per_week: formData.price_per_week ? Number(formData.price_per_week) : null,
-          price_annually: formData.price_annually ? Number(formData.price_annually) : null,
-          entrance_fee: formData.entrance_fee ? Number(formData.entrance_fee) : null,
-          currency: formData.currency,
+          pricing_tiers: formData.pricing_tiers,
+          currency: activeWorkspace?.currency || "RWF",
           opening_hours: (formData.rental_model === "ENTRANCE_ONLY" || formData.rental_model === "HYBRID") ? formData.opening_hours : null,
           closing_hours: (formData.rental_model === "ENTRANCE_ONLY" || formData.rental_model === "HYBRID") ? formData.closing_hours : null,
           instructions: formData.instructions,
@@ -208,14 +234,16 @@ function NewVenueWizard() {
     if (step === 1 && !formData.rental_model) return toast.error("Please select a usage category");
     if (step === 2 && (!formData.name || !formData.city || !formData.address)) return toast.error("Name, City, and Address are required");
     
+    if (step === 4) {
+      if (!formData.pricing_tiers.length) return toast.error("Add at least one pricing option");
+      for (const t of formData.pricing_tiers) {
+        if (!t.name || !t.amount) return toast.error("All pricing options must have a name and amount");
+      }
+    }
+
     // Skip Step 3 (Hours) if ENTIRE_VENUE
     if (step === 2 && formData.rental_model === "ENTIRE_VENUE") {
       setStep(4);
-      return;
-    }
-    // Skip Step 6 (Sections) if ENTRANCE_ONLY
-    if (step === 5 && formData.rental_model === "ENTRANCE_ONLY") {
-      setStep(7);
       return;
     }
     setStep(Math.min(step + 1, 7));
@@ -224,10 +252,6 @@ function NewVenueWizard() {
   const prevStep = () => {
     if (step === 4 && formData.rental_model === "ENTIRE_VENUE") {
       setStep(2);
-      return;
-    }
-    if (step === 7 && formData.rental_model === "ENTRANCE_ONLY") {
-      setStep(5);
       return;
     }
     setStep(Math.max(step - 1, 0));
@@ -262,6 +286,24 @@ function NewVenueWizard() {
     setIsUploading(false);
   };
 
+  const handleSectionImageUpload = async (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File exceeds 5MB limit");
+      return;
+    }
+    setIsUploading(true);
+    try {
+      const url = await uploadFileToStorage(file, "venues");
+      updateSection(idx, 'image_url', url);
+    } catch (err) {
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const removeImage = (index: number) => {
     setFormData(p => ({ ...p, images: p.images.filter((_, i) => i !== index) }));
   };
@@ -288,6 +330,21 @@ function NewVenueWizard() {
 
   const removeSection = (idx: number) => {
     setFormData(p => ({ ...p, sections: p.sections.filter((_, i) => i !== idx) }));
+  };
+
+  const addPricingTier = () => {
+    setFormData(p => ({ ...p, pricing_tiers: [...p.pricing_tiers, { name: "", amount: "" }] }));
+  };
+
+  const updatePricingTier = (idx: number, field: string, val: string) => {
+    setFormData(p => ({
+      ...p,
+      pricing_tiers: p.pricing_tiers.map((t, i) => i === idx ? { ...t, [field]: val } : t)
+    }));
+  };
+
+  const removePricingTier = (idx: number) => {
+    setFormData(p => ({ ...p, pricing_tiers: p.pricing_tiers.filter((_, i) => i !== idx) }));
   };
 
   return (
@@ -413,9 +470,49 @@ function NewVenueWizard() {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative">
                     <Label className="text-base">Street Address <span className="text-red-500">*</span></Label>
-                    <Input className="h-12 text-lg rounded-xl" value={formData.address} onChange={e => setFormData(p => ({...p, address: e.target.value}))} placeholder="e.g. KG 11 Ave" />
+                    <Input 
+                      className="h-12 text-lg rounded-xl" 
+                      value={formData.address} 
+                      onChange={e => {
+                        setFormData(p => ({...p, address: e.target.value}));
+                        setShowAddressSuggestions(true);
+                      }} 
+                      onFocus={() => {
+                        if (formData.address) setShowAddressSuggestions(true);
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setShowAddressSuggestions(false), 200);
+                      }}
+                      placeholder="e.g. KG 11 Ave" 
+                    />
+                    
+                    {/* Autocomplete Dropdown */}
+                    {showAddressSuggestions && (addressSuggestions.length > 0 || isSearchingAddress) && (
+                      <div className="absolute z-50 w-full mt-1 bg-background border rounded-xl shadow-lg overflow-hidden flex flex-col top-full">
+                        {isSearchingAddress && addressSuggestions.length === 0 ? (
+                          <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center">
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" /> Searching...
+                          </div>
+                        ) : (
+                          <div className="max-h-60 overflow-y-auto">
+                            {addressSuggestions.map(s => (
+                              <button
+                                key={s.place_id}
+                                className="w-full text-left px-4 py-3 text-sm hover:bg-secondary/50 border-b last:border-0 transition-colors truncate"
+                                onClick={() => {
+                                  setFormData(p => ({...p, address: s.description}));
+                                  setShowAddressSuggestions(false);
+                                }}
+                              >
+                                {s.description}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label className="text-base">Maximum Capacity</Label>
@@ -450,18 +547,39 @@ function NewVenueWizard() {
               <div className="space-y-6 mt-8">
                 <div className="flex items-center justify-between p-6 bg-secondary/30 border border-border/60 rounded-2xl">
                   <div className="space-y-1">
-                    <Label className="text-lg">Opening Hour</Label>
-                    <p className="text-sm text-muted-foreground">When doors open</p>
+                    <Label className="text-lg">Open 24 Hours</Label>
+                    <p className="text-sm text-muted-foreground">The venue is always open.</p>
                   </div>
-                  <Input type="time" className="w-40 h-12 text-lg" value={formData.opening_hours} onChange={e => setFormData(p => ({...p, opening_hours: e.target.value}))} />
+                  <Switch 
+                    checked={formData.is_24_hours} 
+                    onCheckedChange={(v) => {
+                      setFormData(p => ({
+                        ...p, 
+                        is_24_hours: v,
+                        ...(v ? { opening_hours: "00:00", closing_hours: "23:59" } : { opening_hours: "09:00", closing_hours: "18:00" })
+                      }))
+                    }}
+                  />
                 </div>
-                <div className="flex items-center justify-between p-6 bg-secondary/30 border border-border/60 rounded-2xl">
-                  <div className="space-y-1">
-                    <Label className="text-lg">Closing Hour</Label>
-                    <p className="text-sm text-muted-foreground">When doors close</p>
-                  </div>
-                  <Input type="time" className="w-40 h-12 text-lg" value={formData.closing_hours} onChange={e => setFormData(p => ({...p, closing_hours: e.target.value}))} />
-                </div>
+
+                {!formData.is_24_hours && (
+                  <>
+                    <div className="flex items-center justify-between p-6 bg-secondary/30 border border-border/60 rounded-2xl">
+                      <div className="space-y-1">
+                        <Label className="text-lg">Opening Hour</Label>
+                        <p className="text-sm text-muted-foreground">When doors open</p>
+                      </div>
+                      <Input type="time" className="w-40 h-12 text-lg" value={formData.opening_hours} onChange={e => setFormData(p => ({...p, opening_hours: e.target.value}))} />
+                    </div>
+                    <div className="flex items-center justify-between p-6 bg-secondary/30 border border-border/60 rounded-2xl">
+                      <div className="space-y-1">
+                        <Label className="text-lg">Closing Hour</Label>
+                        <p className="text-sm text-muted-foreground">When doors close</p>
+                      </div>
+                      <Input type="time" className="w-40 h-12 text-lg" value={formData.closing_hours} onChange={e => setFormData(p => ({...p, closing_hours: e.target.value}))} />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -470,16 +588,15 @@ function NewVenueWizard() {
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div>
                 <h2 className="text-3xl font-bold">Set your pricing</h2>
-                <p className="text-muted-foreground mt-2 text-lg">Decide how you charge for this venue.</p>
+                <p className="text-muted-foreground mt-2 text-lg">Decide how you charge for this venue. Add multiple options if needed (e.g. Students, Adults).</p>
               </div>
               <div className="space-y-6 mt-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-base">Currency</Label>
-                    <select className="w-full h-12 rounded-xl bg-secondary/50 border border-input px-4 text-base" value={formData.currency} onChange={e => setFormData(p => ({...p, currency: e.target.value}))}>
-                      <option value="$">USD ($)</option>
-                      <option value="Frws">RWF (Frws)</option>
-                    </select>
+                    <Label className="text-base">Workspace Currency</Label>
+                    <div className="w-full h-12 rounded-xl bg-secondary/50 border border-input px-4 flex items-center text-base text-muted-foreground cursor-not-allowed">
+                      {activeWorkspace?.currency || "RWF"}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-base">Pricing Preference</Label>
@@ -502,36 +619,32 @@ function NewVenueWizard() {
                   </div>
                 </div>
 
-                <div className="space-y-6 p-6 bg-secondary/20 rounded-2xl border border-border/60">
-                  {(formData.rental_model === "ENTRANCE_ONLY" || formData.rental_model === "HYBRID" || formData.rental_type === "Entrance Fee" || formData.rental_type === "Multiple") && (
-                    <div className="space-y-2">
-                      <Label className="text-base">Entrance Fee (Per Person)</Label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">{formData.currency}</span>
-                        <Input type="number" className="h-12 pl-10 rounded-xl text-lg bg-background" value={formData.entrance_fee} onChange={e => setFormData(p => ({...p, entrance_fee: e.target.value}))} placeholder="0.00" />
+                <div className="space-y-4">
+                  <Label className="text-xl font-semibold">Pricing Options</Label>
+                  <div className="space-y-4">
+                    {formData.pricing_tiers.map((tier, idx) => (
+                      <div key={idx} className="flex gap-4 items-start p-6 bg-secondary/20 rounded-2xl border border-border/60 relative">
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-base">Option Name</Label>
+                            <Input className="h-12 bg-background rounded-xl" value={tier.name} onChange={e => updatePricingTier(idx, 'name', e.target.value)} placeholder={formData.rental_model === "ENTIRE_VENUE" ? "e.g. Full Day Rental" : "e.g. Student Entrance"} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-base">Amount ({activeWorkspace?.currency || "RWF"})</Label>
+                            <Input type="number" className="h-12 bg-background rounded-xl" value={tier.amount} onChange={e => updatePricingTier(idx, 'amount', e.target.value)} placeholder="0.00" />
+                          </div>
+                        </div>
+                        {formData.pricing_tiers.length > 1 && (
+                          <Button variant="ghost" size="icon" className="text-red-500 absolute top-4 right-4" onClick={() => removePricingTier(idx)}>
+                            <Trash2 className="h-5 w-5" />
+                          </Button>
+                        )}
                       </div>
-                    </div>
-                  )}
-
-                  {(formData.rental_type === "Per Day" || formData.rental_type === "Multiple") && (
-                    <div className="space-y-2">
-                      <Label className="text-base">Price per Day</Label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">{formData.currency}</span>
-                        <Input type="number" className="h-12 pl-10 rounded-xl text-lg bg-background" value={formData.price_per_day} onChange={e => setFormData(p => ({...p, price_per_day: e.target.value}))} placeholder="0.00" />
-                      </div>
-                    </div>
-                  )}
-
-                  {(formData.rental_type === "Per Hour" || formData.rental_type === "Multiple") && (
-                    <div className="space-y-2">
-                      <Label className="text-base">Price per Hour</Label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">{formData.currency}</span>
-                        <Input type="number" className="h-12 pl-10 rounded-xl text-lg bg-background" value={formData.price_per_hour} onChange={e => setFormData(p => ({...p, price_per_hour: e.target.value}))} placeholder="0.00" />
-                      </div>
-                    </div>
-                  )}
+                    ))}
+                    <Button variant="outline" className="w-full h-14 border-dashed rounded-xl" onClick={addPricingTier}>
+                      <Plus className="h-5 w-5 mr-2" /> Add Pricing Option
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -566,12 +679,15 @@ function NewVenueWizard() {
 
               <div className="space-y-4 pt-4">
                 <Label className="text-lg">Instructions / Rules</Label>
-                <Textarea 
-                  className="min-h-[140px] rounded-xl resize-none p-4 text-base" 
-                  value={formData.instructions} 
-                  onChange={e => setFormData(p => ({...p, instructions: e.target.value}))} 
-                  placeholder="e.g. No loud music after 10PM. Please ensure the kitchen is cleaned before leaving." 
-                />
+                <div className="bg-background rounded-xl overflow-hidden border border-input">
+                  <ReactQuill 
+                    theme="snow" 
+                    value={formData.instructions} 
+                    onChange={(val) => setFormData(p => ({...p, instructions: val}))}
+                    className="h-48 [&_.ql-editor]:text-base [&_.ql-container]:border-0 [&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b"
+                    placeholder="e.g. No loud music after 10PM. Please ensure the kitchen is cleaned before leaving."
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -592,8 +708,29 @@ function NewVenueWizard() {
                         <Input className="h-12 bg-background rounded-xl" value={section.name} onChange={e => updateSection(idx, 'name', e.target.value)} placeholder="e.g. VIP Lounge" />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-base">Image URL (Optional)</Label>
-                        <Input className="h-12 bg-background rounded-xl" value={section.image_url} onChange={e => updateSection(idx, 'image_url', e.target.value)} placeholder="https://..." />
+                        <Label className="text-base">Image (Optional)</Label>
+                        {section.image_url ? (
+                          <div className="relative w-full h-32 rounded-xl overflow-hidden border">
+                            <img src={section.image_url} alt={section.name} className="w-full h-full object-cover" />
+                            <button onClick={() => updateSection(idx, 'image_url', '')} className="absolute top-2 right-2 bg-black/60 text-white p-1.5 rounded-full hover:bg-red-500">
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center w-full h-12 bg-background rounded-xl border border-dashed relative hover:bg-secondary/30 transition-colors cursor-pointer">
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={(e) => handleSectionImageUpload(idx, e)} 
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              disabled={isUploading}
+                            />
+                            <div className="flex items-center text-muted-foreground text-sm">
+                              {isUploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UploadCloud className="h-4 w-4 mr-2" />}
+                              Upload Image
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" className="text-red-500 absolute top-4 right-4" onClick={() => removeSection(idx)}>

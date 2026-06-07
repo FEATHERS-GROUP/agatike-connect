@@ -899,7 +899,6 @@ export const rentableVenues: RentableVenue[] = [
     pendingRequests: 0,
     activeRentals: 0,
     rentalType: "Multiple",
-    pricePerDay: 1200,
     pricePerHour: 200,
     pricePerWeek: 5000,
   },
