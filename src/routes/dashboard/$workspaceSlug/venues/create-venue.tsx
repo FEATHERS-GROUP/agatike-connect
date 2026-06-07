@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useParams, Link, useSearch } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, ArrowRight, Save, MapPin, Loader2, CheckCircle2, UploadCloud, Plus, Trash2, X, Building2, Warehouse, Presentation, Flower2, Trees, Landmark, Castle, CircleDot } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, ArrowRight, Save, MapPin, Loader2, CheckCircle2, UploadCloud, Plus, Trash2, X, Building2, Warehouse, Presentation, Flower2, Trees, Landmark, Dumbbell, Music, Gamepad2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,9 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { COUNTRIES } from "@/lib/countries";
+import { getCoordinates } from "@/api/geocoding";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/create-venue")({
   validateSearch: z.object({
@@ -22,16 +25,10 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/create-ve
 
 const VENUE_TYPES = [
   {
-    id: "Stadium",
-    title: "Stadium",
-    description: "Large outdoor or indoor venue with tiered seating for sports or concerts.",
+    id: "Stadium & Arena",
+    title: "Stadium & Arena",
+    description: "Large venue with tiered seating for major events, sports, and concerts.",
     icon: "Building2"
-  },
-  {
-    id: "Arena",
-    title: "Arena",
-    description: "Enclosed indoor venue for major events, performances, and tournaments.",
-    icon: "Warehouse"
   },
   {
     id: "Conference Room",
@@ -58,16 +55,28 @@ const VENUE_TYPES = [
     icon: "Landmark"
   },
   {
-    id: "Playground",
-    title: "Playground",
-    description: "Recreational outdoor area specifically designed for children's activities.",
-    icon: "Castle"
+    id: "Sports Court & Playground",
+    title: "Sports Court & Playground",
+    description: "Indoor or outdoor area designed for sports events, tournaments, or children's activities.",
+    icon: "Dumbbell"
   },
   {
-    id: "Basketball Court",
-    title: "Basketball Court",
-    description: "Indoor or outdoor court designed for sports events and tournaments.",
-    icon: "CircleDot"
+    id: "Nightclub / Lounge",
+    title: "Nightclub / Lounge",
+    description: "Entertainment venue operating late into the night with music, dancing, and drinks.",
+    icon: "Music"
+  },
+  {
+    id: "Gaming Center",
+    title: "Gaming Center",
+    description: "Recreational space featuring video games, esports setups, or arcade machines.",
+    icon: "Gamepad2"
+  },
+  {
+    id: "Other",
+    title: "Other",
+    description: "Any other type of venue that doesn't fit the categories above.",
+    icon: "MapPin"
   }
 ];
 
@@ -84,32 +93,69 @@ function NewVenueWizard() {
 
   const [isUploading, setIsUploading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    type: "",
-    rental_model: "",
-    city: "",
-    capacity: "",
-    description: "",
-    rental_type: "Per Day",
-    price_per_day: "",
-    price_per_hour: "",
-    price_per_week: "",
-    price_annually: "",
-    entrance_fee: "",
-    currency: "$",
-    opening_hours: "09:00",
-    closing_hours: "18:00",
-    instructions: "",
-    amenities: [] as string[],
-    sections: [] as { name: string; image_url: string }[],
-    images: [] as string[]
+  const DRAFT_KEY = `venue_draft_${workspaceSlug}`;
+
+  const [formData, setFormData] = useState(() => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved).formData;
+      } catch (e) {
+        console.error("Failed to parse draft", e);
+      }
+    }
+    return {
+      name: "",
+      type: "",
+      rental_model: "",
+      city: "",
+      country: "RW",
+      address: "",
+      is_venue_private: false,
+      capacity: "",
+      description: "",
+      rental_type: "Per Day",
+      price_per_day: "",
+      price_per_hour: "",
+      price_per_week: "",
+      price_annually: "",
+      entrance_fee: "",
+      currency: "$",
+      opening_hours: "09:00",
+      closing_hours: "18:00",
+      instructions: "",
+      amenities: [] as string[],
+      sections: [] as { name: string; image_url: string }[],
+      images: [] as string[]
+    };
   });
+
+  useEffect(() => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved && step === 0) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.step && parsed.step > 0) {
+          navigate({ search: { step: parsed.step } as any, replace: true });
+        }
+      } catch (e) {}
+    }
+  }, [workspaceSlug]); // Run once on mount
+
+  useEffect(() => {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, formData }));
+  }, [step, formData, DRAFT_KEY]);
 
   const { mutate: createVenue, isPending } = useMutation({
     mutationFn: async () => {
       const workspace_id = activeWorkspace?.id;
       if (!workspace_id) throw new Error("No active workspace found");
+
+      // Fetch Geocoding
+      const addressString = `${formData.address}, ${formData.city}, ${COUNTRIES.find(c => c.code === formData.country)?.name || formData.country}`;
+      const coords = await getCoordinates({ data: addressString });
+      const latitude = coords?.lat ? parseFloat(coords.lat) : null;
+      const longitude = coords?.lng ? parseFloat(coords.lng) : null;
 
       return createRentableVenue({
         data: {
@@ -118,6 +164,11 @@ function NewVenueWizard() {
           type: formData.type,
           rental_model: formData.rental_model,
           city: formData.city,
+          country: formData.country,
+          address: formData.address,
+          latitude,
+          longitude,
+          is_venue_private: formData.is_venue_private,
           capacity: Number(formData.capacity) || 0,
           description: formData.description,
           rental_type: formData.rental_type,
@@ -139,6 +190,7 @@ function NewVenueWizard() {
     },
     onSuccess: () => {
       toast.success("Venue created successfully");
+      localStorage.removeItem(DRAFT_KEY);
       navigate({ to: `/dashboard/${workspaceSlug}/venue-rent` });
     },
     onError: (error) => {
@@ -154,7 +206,7 @@ function NewVenueWizard() {
   const nextStep = () => {
     if (step === 0 && !formData.type) return toast.error("Please select a venue type");
     if (step === 1 && !formData.rental_model) return toast.error("Please select a usage category");
-    if (step === 2 && (!formData.name || !formData.city)) return toast.error("Name and City are required");
+    if (step === 2 && (!formData.name || !formData.city || !formData.address)) return toast.error("Name, City, and Address are required");
     
     // Skip Step 3 (Hours) if ENTIRE_VENUE
     if (step === 2 && formData.rental_model === "ENTIRE_VENUE") {
@@ -253,7 +305,7 @@ function NewVenueWizard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
                 {VENUE_TYPES.map(vt => {
                   const iconsMap: Record<string, any> = {
-                    Building2, Warehouse, Presentation, Flower2, Trees, Landmark, Castle, CircleDot
+                    Building2, Warehouse, Presentation, Flower2, Trees, Landmark, Dumbbell, Music, Gamepad2, MapPin
                   };
                   const Icon = iconsMap[vt.icon];
                   
@@ -262,7 +314,7 @@ function NewVenueWizard() {
                       key={vt.id}
                       onClick={() => setFormData(p => ({ ...p, type: vt.id }))}
                       className={cn(
-                        "flex items-start text-left gap-4 p-6 rounded-2xl border-2 transition-all hover:border-orange-500/50",
+                        "flex items-start text-left gap-4 p-6 rounded-2xl border-2 transition-all hover:border-orange-500/50 cursor-pointer",
                         formData.type === vt.id ? "border-orange-500 bg-orange-500/5 shadow-sm" : "border-border/60 bg-secondary/20"
                       )}
                     >
@@ -293,7 +345,7 @@ function NewVenueWizard() {
                 <button
                   onClick={() => setFormData(p => ({ ...p, rental_model: "ENTIRE_VENUE", rental_type: "Per Day" }))}
                   className={cn(
-                    "flex flex-col text-left p-6 rounded-2xl border-2 transition-all hover:border-primary/50",
+                    "flex flex-col text-left p-6 rounded-2xl border-2 transition-all hover:border-primary/50 cursor-pointer",
                     formData.rental_model === "ENTIRE_VENUE" ? "border-primary bg-primary/5 shadow-sm" : "border-border/60 bg-secondary/20"
                   )}
                 >
@@ -307,7 +359,7 @@ function NewVenueWizard() {
                 <button
                   onClick={() => setFormData(p => ({ ...p, rental_model: "ENTRANCE_ONLY", rental_type: "Entrance Fee" }))}
                   className={cn(
-                    "flex flex-col text-left p-6 rounded-2xl border-2 transition-all hover:border-primary/50",
+                    "flex flex-col text-left p-6 rounded-2xl border-2 transition-all hover:border-primary/50 cursor-pointer",
                     formData.rental_model === "ENTRANCE_ONLY" ? "border-primary bg-primary/5 shadow-sm" : "border-border/60 bg-secondary/20"
                   )}
                 >
@@ -321,7 +373,7 @@ function NewVenueWizard() {
                 <button
                   onClick={() => setFormData(p => ({ ...p, rental_model: "HYBRID", rental_type: "Multiple" }))}
                   className={cn(
-                    "flex flex-col text-left p-6 rounded-2xl border-2 transition-all hover:border-primary/50 sm:col-span-2",
+                    "flex flex-col text-left p-6 rounded-2xl border-2 transition-all hover:border-primary/50 sm:col-span-2 cursor-pointer",
                     formData.rental_model === "HYBRID" ? "border-primary bg-primary/5 shadow-sm" : "border-border/60 bg-secondary/20"
                   )}
                 >
@@ -348,13 +400,38 @@ function NewVenueWizard() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
+                    <Label className="text-base">Country <span className="text-red-500">*</span></Label>
+                    <select className="w-full h-12 rounded-xl bg-secondary/50 border border-input px-4 text-base" value={formData.country} onChange={e => setFormData(p => ({...p, country: e.target.value}))}>
+                      {COUNTRIES.map(c => (
+                        <option key={c.code} value={c.code}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
                     <Label className="text-base">City / Location <span className="text-red-500">*</span></Label>
-                    <Input className="h-12 text-lg rounded-xl" value={formData.city} onChange={e => setFormData(p => ({...p, city: e.target.value}))} placeholder="e.g. Kigali, Rwanda" />
+                    <Input className="h-12 text-lg rounded-xl" value={formData.city} onChange={e => setFormData(p => ({...p, city: e.target.value}))} placeholder="e.g. Kigali" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-base">Street Address <span className="text-red-500">*</span></Label>
+                    <Input className="h-12 text-lg rounded-xl" value={formData.address} onChange={e => setFormData(p => ({...p, address: e.target.value}))} placeholder="e.g. KG 11 Ave" />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-base">Maximum Capacity</Label>
                     <Input type="number" className="h-12 text-lg rounded-xl" value={formData.capacity} onChange={e => setFormData(p => ({...p, capacity: e.target.value}))} placeholder="e.g. 5000" />
                   </div>
+                </div>
+                
+                <div className="flex items-center justify-between p-6 bg-secondary/30 border border-border/60 rounded-2xl">
+                  <div className="space-y-1">
+                    <Label className="text-lg">Private Venue Listing</Label>
+                    <p className="text-sm text-muted-foreground">If enabled, the venue will not be shown publicly and can only be accessed via direct link.</p>
+                  </div>
+                  <Switch 
+                    checked={formData.is_venue_private} 
+                    onCheckedChange={(v) => setFormData(p => ({...p, is_venue_private: v}))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-base">Description</Label>

@@ -33,7 +33,12 @@ export const createRentableVenue = createServerFn({ method: "POST" })
       closing_hours,
       instructions,
       amenities,
-      sections
+      sections,
+      address,
+      country,
+      latitude,
+      longitude,
+      is_venue_private
     } = ctx.data;
 
     const res = await hasuraRequest<{ insert_rentable_venues_one: { id: string } }>(
@@ -60,7 +65,12 @@ export const createRentableVenue = createServerFn({ method: "POST" })
           closing_hours,
           instructions,
           amenities,
-          sections
+          sections,
+          address,
+          country,
+          latitude,
+          longitude,
+          is_venue_private
         },
       },
     );
