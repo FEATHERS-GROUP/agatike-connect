@@ -95,7 +95,9 @@ export function ManualBookingDialog({
           number_of_attendees: totalAttendees,
           tickets_data: finalTicketsData,
           attendees_info: attendees.length > 0 ? attendees : null,
-          internal_notes: formData.internal_notes || null
+          internal_notes: formData.internal_notes || null,
+          venue_name: venue.name,
+          venue_currency: venue.currency
         }
       });
     },

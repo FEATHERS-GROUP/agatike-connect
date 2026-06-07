@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
-import { venueBookings, rentableVenues } from "@/lib/mock-data";
+import { rentableVenues } from "@/lib/mock-data";
+import { getVenueBookings } from "@/api/venue_bookings";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/bookings")({
   component: VenueBookingsPage,
@@ -18,7 +19,11 @@ function VenueBookingsPage() {
     enabled: !!venueId,
   });
 
-  const bookings = venueBookings.filter((b) => b.venueId === venueId);
+  const { data: bookings = [] } = useQuery({
+    queryKey: ["venue_bookings", venueId],
+    queryFn: () => getVenueBookings({ data: { venue_id: venueId } }),
+    enabled: !!venueId,
+  });
 
   if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading venue...</div>;
   if (!venue) return <div className="p-8 text-center text-red-500 font-semibold">Venue not found</div>;
@@ -53,6 +58,7 @@ function VenueBookingsPage() {
               <tr>
                 <th className="px-6 py-4">Customer</th>
                 <th className="px-6 py-4">Contact</th>
+                <th className="px-6 py-4">Attendees</th>
                 <th className="px-6 py-4">Date & Time</th>
                 <th className="px-6 py-4">Amount</th>
                 <th className="px-6 py-4">Status</th>
@@ -63,20 +69,23 @@ function VenueBookingsPage() {
               {bookings.length > 0 ? (
                 bookings.map((b) => (
                   <tr key={b.id} className="hover:bg-secondary/20 transition-colors">
-                    <td className="px-6 py-4 font-medium">{b.customerName}</td>
+                    <td className="px-6 py-4 font-medium">{b.customer_name}</td>
                     <td className="px-6 py-4 text-muted-foreground">
-                      <p>{b.customerEmail}</p>
-                      <p className="text-xs">{b.customerPhone}</p>
+                      <p>{b.customer_email || "N/A"}</p>
+                      <p className="text-xs">{b.customer_phone}</p>
+                    </td>
+                    <td className="px-6 py-4 font-medium">
+                      {b.number_of_attendees || 1}
                     </td>
                     <td className="px-6 py-4">
-                      <p>{b.date}</p>
+                      <p>{new Date(b.start_time).toLocaleDateString()}</p>
                       <p className="text-xs text-muted-foreground">
-                        {b.timeStart} - {b.timeEnd}
+                        {new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(b.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </td>
                     <td className="px-6 py-4 font-medium">
                       {venue.currency}
-                      {b.amount.toLocaleString()}
+                      {Number(b.amount).toLocaleString()}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
@@ -93,12 +102,12 @@ function VenueBookingsPage() {
                         </span>
                         <span
                           className={`inline-flex w-max items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                            b.paymentStatus === "Paid"
+                            b.payment_status === "Paid"
                               ? "bg-primary/10 text-primary"
                               : "bg-muted text-muted-foreground"
                           }`}
                         >
-                          {b.paymentStatus}
+                          {b.payment_status}
                         </span>
                       </div>
                     </td>
@@ -111,7 +120,7 @@ function VenueBookingsPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                     No bookings found for this venue.
                   </td>
                 </tr>

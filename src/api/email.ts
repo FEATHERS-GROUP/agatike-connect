@@ -139,3 +139,52 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
   }
   return data;
 });
+
+export const sendTicketsEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const {
+    to,
+    customerName,
+    venueName,
+    attachments, // Array of { filename: string, content: string (base64) }
+  } = ctx.data as any;
+
+  const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Your Tickets are Here!</h2>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">for ${venueName}</p>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
+        <p>Hi ${customerName},</p>
+        <p>Thank you for your booking! Your tickets are attached to this email as PDF documents.</p>
+        <p>Please keep them handy as you will need the OTP printed on them for verification upon entry.</p>
+        <br/>
+        <p>Enjoy your visit!</p>
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0;">Powered securely by <strong>Agatike Connect</strong></p>
+      </div>
+    </div>
+  `;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `Your Tickets for ${venueName}`,
+      html: html,
+      attachments: attachments,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to send tickets via Resend");
+  }
+  return data;
+});

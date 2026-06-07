@@ -1390,4 +1390,61 @@ To ensure organizers and attendees never miss an important message, the app feat
    - If the incoming message is a DM (`type === "user"`), the listener intercepts the notification, fetches the sender's profile dynamically, and displays the exact Handle and Country Flag (e.g., "New message from @JohnDoe 🇷🇼").
    - Group Channels default to "New message in [Channel Name]".
 
+---
+
+## 20. Venues & Venue Bookings
+
+**Route:** `/dashboard/$workspaceSlug/venues`
+
+The Venues system allows organizers to list physical locations for rent or for entrance-fee ticketing (like Parks). It includes a robust manual booking engine, PDF ticket generation, and a calendar management system.
+
+### Venue Rental Models
+Organizers can configure venues using three distinct business models (`rental_model`):
+1. **ENTIRE_VENUE:** The customer rents the entire physical space (e.g., a wedding hall or meeting room) for a specific Date & Time period.
+2. **ENTRANCE_ONLY:** The customer buys an entrance ticket for a specific date (e.g., a Park or Museum). The ticket is valid from opening to closing time; no specific time-slot selection is required during booking.
+3. **HYBRID:** The venue supports both entire venue rentals and entrance tickets simultaneously.
+
+### Booking & Ticketing Flow
+The system includes a sophisticated manual booking engine where an organizer can log an offline or manual reservation on behalf of a customer.
+
+```mermaid
+flowchart TD
+    Start[Organizer starts Manual Booking] --> Model{Rental Model}
+    Model -->|Entire Venue| SelectTier[Select Pricing Tier\n(e.g., Full Day)]
+    Model -->|Entrance Only| SelectQty[Select Ticket Quantities\n(e.g., 2 Adult, 1 Child)]
+    SelectTier --> DatePicker[Select Start & End Dates/Times]
+    SelectQty --> DateOnly[Select Date of Visit\n(Time hidden)]
+    DatePicker --> Attendees[Enter Primary Customer\n& Optional Additional Attendees]
+    DateOnly --> Attendees
+    Attendees --> Confirm[Confirm Booking & Payment Status]
+    Confirm --> DB[Insert into venue_bookings]
+    
+    DB --> GenerateOTPs[Backend: Generate 6-char OTP per Ticket]
+    GenerateOTPs --> SaveOTP[Save OTPs in tickets_data JSONB]
+    SaveOTP --> PDFEngine[jsPDF Engine (Node.js)]
+    
+    PDFEngine -->|Draw Ticket| Ticket1[PDF Ticket: Attendee 1]
+    PDFEngine -->|Draw Ticket| TicketN[PDF Ticket: Attendee N]
+    
+    Ticket1 & TicketN --> Email[Resend API: sendTicketsEmail]
+    Email --> Delivery[Customer Inbox: Email with PDF Attachments]
+```
+
+#### Server-Side PDF Engine
+Instead of relying on third-party PDF services, the backend directly utilizes `jsPDF` within the TanStack Start server function. 
+- For every ticket purchased, it dynamically draws a beautiful, landscape-oriented PDF.
+- The PDF embeds the **Venue Name**, **Ticket Type**, **Attendee Name**, and the **Verification OTP**.
+- The generated PDFs are instantly encoded into base64 and passed directly to the Resend API as attachments.
+
+### Calendar & Blocking
+The Venue Overview features a visual Calendar component (`react-day-picker`) that maps out all confirmed bookings.
+- Organizers can use the **Block Dates** feature to mark periods as "Unavailable" (e.g., for maintenance).
+- The system queries `getVenueBookings` and disables all booked/blocked dates on the date picker to prevent double-booking.
+
+### Database Tables Reference
+| Table | Purpose |
+|---|---|
+| `rentable_venues` | Core venue profile, photos, location, pricing tiers, and rental model. |
+| `venue_bookings` | All reservations. Contains `tickets_data` (with OTPs), timestamps, and attendee info. |
+
 _Last updated: June 2026 — Agatike Connect_
