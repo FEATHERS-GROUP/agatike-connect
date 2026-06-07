@@ -14,8 +14,10 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
   return hasuraRequest(CREATE_EVENT, { object: eventData });
 });
 
-export const getEventAttendeesCount = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const data = ctx.data as { eventId?: string, scheduleId?: string };
+export const getEventAttendeesCount = createServerFn({ method: "POST" })
+  .inputValidator((d: { eventId?: string, scheduleId?: string }) => d)
+  .handler(async (ctx) => {
+  const data = ctx.data;
   if (!data.eventId && !data.scheduleId) return 0;
 
   let where = "";
@@ -166,8 +168,10 @@ const GET_WORKSPACE_EVENTS = `
   }
 `;
 
-export const getWorkspaceEvents = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+export const getWorkspaceEvents = createServerFn({ method: "POST" })
+  .inputValidator((d: { workspace_id: string }) => d)
+  .handler(async (ctx) => {
+  const { workspace_id } = ctx.data;
   const data = await hasuraRequest<{ events: any[] }>(GET_WORKSPACE_EVENTS, { workspace_id });
   return data.events || [];
 });

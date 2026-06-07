@@ -8,8 +8,10 @@ export interface UserLookupResponse {
   email: string;
 }
 
-export const getUserByHandle = createServerFn({ method: "GET" }).handler(async (ctx) => {
-  const data = ctx.data as unknown as { handle: string };
+export const getUserByHandle = createServerFn({ method: "GET" })
+  .inputValidator((d: { handle: string }) => d)
+  .handler(async (ctx) => {
+  const data = ctx.data;
   if (!data.handle) return null;
 
   const query = `
@@ -29,8 +31,10 @@ export const getUserByHandle = createServerFn({ method: "GET" }).handler(async (
   return result.users[0] || null;
 });
 
-export const getUsersByIds = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const data = ctx.data as unknown as { ids: string[] };
+export const getUsersByIds = createServerFn({ method: "POST" })
+  .inputValidator((d: { ids: string[] }) => d)
+  .handler(async (ctx) => {
+  const data = ctx.data;
   if (!data.ids || data.ids.length === 0) return [];
 
   const query = `
@@ -51,8 +55,10 @@ export const getUsersByIds = createServerFn({ method: "POST" }).handler(async (c
   return result.users || [];
 });
 
-export const getOrganizerFollowersProfiles = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const data = ctx.data as unknown as { organizerId: string };
+export const getOrganizerFollowersProfiles = createServerFn({ method: "POST" })
+  .inputValidator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+  const data = ctx.data;
   if (!data.organizerId) return [];
 
   const followerQuery = `

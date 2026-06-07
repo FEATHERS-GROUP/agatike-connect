@@ -15,8 +15,10 @@ export interface CommunityChannel {
 
 import { deleteChannelMessages } from "@/lib/firebase";
 
-export const getCommunityChannels = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const data = ctx.data as { organizerId: string };
+export const getCommunityChannels = createServerFn({ method: "POST" })
+  .inputValidator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+  const data = ctx.data;
   if (!data.organizerId) return [];
 
   const query = `
@@ -117,8 +119,8 @@ export const getCommunityChannels = createServerFn({ method: "POST" }).handler(a
   return channels;
 });
 
-export const createCommunityChannel = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const data = ctx.data as { 
+export const createCommunityChannel = createServerFn({ method: "POST" })
+  .inputValidator((d: { 
     organizerId: string; 
     name: string; 
     coverUrl?: string; 
@@ -126,7 +128,9 @@ export const createCommunityChannel = createServerFn({ method: "POST" }).handler
     eventId?: string;
     scheduleId?: string;
     tourStopIdx?: number;
-  };
+  }) => d)
+  .handler(async (ctx) => {
+  const data = ctx.data;
   
   if (!data.organizerId || !data.name) throw new Error("Missing required fields");
 
@@ -167,12 +171,14 @@ export const createCommunityChannel = createServerFn({ method: "POST" }).handler
   return result.insert_community_channels_one;
 });
 
-export const updateCommunityChannel = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const data = ctx.data as { 
+export const updateCommunityChannel = createServerFn({ method: "POST" })
+  .inputValidator((d: { 
     channelId: string; 
     name?: string; 
     coverUrl?: string; 
-  };
+  }) => d)
+  .handler(async (ctx) => {
+  const data = ctx.data;
   
   if (!data.channelId) throw new Error("Missing channel id");
 

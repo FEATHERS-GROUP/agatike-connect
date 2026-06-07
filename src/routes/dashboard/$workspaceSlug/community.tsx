@@ -86,13 +86,13 @@ const getCountryFlag = (countryName?: string) => {
 function CommunityPage() {
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/community" });
   const { activeWorkspace } = useWorkspace();
-  
+
   // For demo, assume current user ID. Normally grabbed from auth context.
-  const currentUserId = "me"; 
+  const currentUserId = "me";
   const organizerId = activeWorkspace?.orgnizer_id || "";
 
   const { channels, activeChatId, setActiveChatId, sendMessage, loading, createDirectMessageChannel, createFirebaseGroupChannel } = useFirestoreCommunity(organizerId, currentUserId);
-  
+
   const { data: followers = [] } = useQuery({
     queryKey: ["organizerFollowers", organizerId],
     queryFn: async () => {
@@ -119,21 +119,21 @@ function CommunityPage() {
     },
     enabled: !!activeWorkspace?.id,
   });
-  
+
   const [messageInput, setMessageInput] = useState("");
 
   const activeChat = channels.find((c) => c.id === activeChatId);
-  const activeHasuraChannel = communityChannels.find((c) => c.id === activeChatId);
+  const activeHasuraChannel = communityChannels.find((c: { id: string | null; }) => c.id === activeChatId);
 
   const { data: attendeesCount = 0 } = useQuery({
     queryKey: ["attendeesCount", activeHasuraChannel?.event_id, activeHasuraChannel?.schedule_id],
     queryFn: async () => {
       if (!activeHasuraChannel?.event_id && !activeHasuraChannel?.schedule_id) return 0;
-      return await getEventAttendeesCount({ 
-        data: { 
-          eventId: activeHasuraChannel.event_id || undefined, 
-          scheduleId: activeHasuraChannel.schedule_id || undefined 
-        } 
+      return await getEventAttendeesCount({
+        data: {
+          eventId: activeHasuraChannel.event_id || undefined,
+          scheduleId: activeHasuraChannel.schedule_id || undefined
+        }
       });
     },
     enabled: !!(activeHasuraChannel?.event_id || activeHasuraChannel?.schedule_id),
@@ -216,7 +216,7 @@ function CommunityPage() {
 
     setSelectedFile(file);
     setFilePreviewUrl(URL.createObjectURL(file));
-    setSelectedAvatarUrl(""); 
+    setSelectedAvatarUrl("");
   };
 
   const handleCreateMainChannelSubmit = async () => {
@@ -234,7 +234,7 @@ function CommunityPage() {
         const base64 = await base64Promise;
 
         const ext = selectedFile.name.split(".").pop() || "png";
-        
+
         const uploadRes = await uploadFile({
           data: {
             base64,
@@ -243,19 +243,19 @@ function CommunityPage() {
             ext,
           } as any
         });
-        
+
         if (uploadRes && uploadRes.url) {
           finalCoverUrl = uploadRes.url;
         }
       }
 
-      const ch = await createCommunityChannel({ 
-        data: { 
-          organizerId, 
-          name: mainChannelName || "General Announcements", 
+      const ch = await createCommunityChannel({
+        data: {
+          organizerId,
+          name: mainChannelName || "General Announcements",
           coverUrl: finalCoverUrl,
-          isMain: true 
-        } 
+          isMain: true
+        }
       });
       await createFirebaseGroupChannel(ch.id, ch.name, ch.cover_url || "", "GLOBAL");
       refetchChannels();
@@ -272,16 +272,16 @@ function CommunityPage() {
     if (creating) return;
     setCreating(true);
     try {
-      const ch = await createCommunityChannel({ 
-        data: { 
-          organizerId, 
-          name: target.title, 
+      const ch = await createCommunityChannel({
+        data: {
+          organizerId,
+          name: target.title,
           coverUrl: target.cover || "",
           isMain: false,
           eventId: target.eventId,
           scheduleId: target.scheduleId,
           tourStopIdx: target.tourStopIdx
-        } 
+        }
       });
       await createFirebaseGroupChannel(ch.id, ch.name, ch.cover_url || "", "EVENT");
       refetchChannels();
@@ -292,12 +292,12 @@ function CommunityPage() {
 
   const channelTargets = React.useMemo(() => {
     const targets: any[] = [];
-    events.forEach(event => {
+    events.forEach((event: { event_type: string; schedules: any[]; event_requency: { date: any; }; tour_stops: { date: any; length: number; forEach: (arg0: (stop: any, idx: number) => void) => void; }; id: any; title: any; cover: any; }) => {
       const isExperience = event.event_type === "experience" || (event.schedules && event.schedules.length > 0);
-      
+
       if (isExperience) {
         const primaryDateStr = event.event_requency?.date || (!Array.isArray(event.tour_stops) ? event.tour_stops?.date : undefined);
-        
+
         targets.push({
           type: "schedule",
           id: `sched_primary_${event.id}`,
@@ -350,14 +350,14 @@ function CommunityPage() {
   }, [events]);
 
   const handleOpenHasuraChannel = (channelId: string) => {
-    const hc = communityChannels.find(c => c.id === channelId);
+    const hc = communityChannels.find((c: { id: string; }) => c.id === channelId);
     if (hc) {
       createFirebaseGroupChannel(hc.id, hc.name, hc.cover_url || "", hc.is_main ? "GLOBAL" : "EVENT");
     }
     setActiveChatId(channelId);
   };
 
-  const mainChannel = communityChannels.find(c => c.is_main);
+  const mainChannel = communityChannels.find((c: { is_main: any; }) => c.is_main);
 
   if (loading) {
     return (
@@ -369,7 +369,7 @@ function CommunityPage() {
 
   return (
     <div className="flex h-screen bg-background border-none rounded-none shadow-none">
-      
+
       {/* LEFT SIDEBAR - Chat List */}
       <div className="w-full md:w-[350px] lg:w-[400px] flex flex-col border-r border-border/60 bg-card/50">
         <div className="p-4 border-b border-border/60">
@@ -381,8 +381,8 @@ function CommunityPage() {
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search followers or groups..." 
+            <Input
+              placeholder="Search followers or groups..."
               className="pl-9 bg-background/50 border-border/60 rounded-xl"
             />
           </div>
@@ -391,19 +391,19 @@ function CommunityPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full">
           <div className="px-4 pt-2 border-b border-border/60">
             <TabsList className="w-full grid grid-cols-3 bg-transparent p-0">
-              <TabsTrigger 
-                value="all" 
+              <TabsTrigger
+                value="all"
                 className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-2 pb-2 pt-1"
               >
                 All
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="followers"
                 className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-2 pb-2 pt-1"
               >
                 Followers
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="channels"
                 className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-2 pb-2 pt-1"
               >
@@ -419,11 +419,10 @@ function CommunityPage() {
                   <button
                     key={chat.id}
                     onClick={() => setActiveChatId(chat.id)}
-                    className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
-                      activeChatId === chat.id 
-                        ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5" 
+                    className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${activeChatId === chat.id
+                        ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
                         : "hover:bg-accent/50"
-                    }`}
+                      }`}
                   >
                     <div className="relative shrink-0">
                       <Avatar className="h-12 w-12 border border-border/50">
@@ -436,7 +435,7 @@ function CommunityPage() {
                         <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
                       )}
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-1">
                         <span className="font-semibold text-sm truncate pr-2">
@@ -460,7 +459,7 @@ function CommunityPage() {
               </div>
             </ScrollArea>
           </TabsContent>
-          
+
           <TabsContent value="followers" className="flex-1 m-0">
             <ScrollArea className="h-full">
               <div className="p-2 flex flex-col gap-1">
@@ -485,7 +484,7 @@ function CommunityPage() {
                           <AvatarFallback>{name.substring(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center mb-1">
                           <span className="font-semibold text-sm truncate pr-2">
@@ -508,15 +507,15 @@ function CommunityPage() {
           <TabsContent value="channels" className="flex-1 m-0">
             <ScrollArea className="h-full">
               <div className="p-2 flex flex-col gap-1">
-                
+
                 {/* Main Channel Section */}
                 <div className="mb-4">
                   <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">Main Channel</h3>
                   {!mainChannel ? (
                     <div className="px-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="w-full justify-start text-muted-foreground border-dashed"
                         onClick={() => setIsMainChannelModalOpen(true)}
                         disabled={creating}
@@ -528,11 +527,10 @@ function CommunityPage() {
                   ) : (
                     <button
                       onClick={() => handleOpenHasuraChannel(mainChannel.id)}
-                      className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
-                        activeChatId === mainChannel.id 
-                          ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5" 
+                      className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${activeChatId === mainChannel.id
+                          ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
                           : "hover:bg-accent/50"
-                      }`}
+                        }`}
                     >
                       <div className="relative shrink-0">
                         <Avatar className="h-12 w-12 border border-border/50">
@@ -545,7 +543,7 @@ function CommunityPage() {
                           <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
                         )}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center mb-1">
                           <span className="font-semibold text-sm truncate pr-2">{mainChannel.name}</span>
@@ -572,7 +570,7 @@ function CommunityPage() {
                 <div>
                   <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">Event Channels</h3>
                   {channelTargets.map((target) => {
-                    const eventChannel = communityChannels.find(c => {
+                    const eventChannel = communityChannels.find((c: { event_id: any; schedule_id: any; tour_stop_idx: null; }) => {
                       if (c.event_id !== target.eventId) return false;
                       if (target.type === "schedule") {
                         if (target.scheduleId === null) return !c.schedule_id && c.tour_stop_idx === null;
@@ -581,18 +579,17 @@ function CommunityPage() {
                       if (target.type === "tour_stop") return c.tour_stop_idx === target.tourStopIdx;
                       return !c.schedule_id && c.tour_stop_idx === null;
                     });
-                    
+
                     if (eventChannel) {
                       const fc = channels.find(c => c.id === eventChannel.id);
                       return (
                         <button
                           key={eventChannel.id}
                           onClick={() => handleOpenHasuraChannel(eventChannel.id)}
-                          className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
-                            activeChatId === eventChannel.id 
-                              ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5" 
+                          className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${activeChatId === eventChannel.id
+                              ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
                               : "hover:bg-accent/50"
-                          }`}
+                            }`}
                         >
                           <div className="relative shrink-0">
                             <Avatar className="h-12 w-12 border border-border/50">
@@ -605,7 +602,7 @@ function CommunityPage() {
                               <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
                             )}
                           </div>
-                          
+
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-center mb-1">
                               <span className="font-semibold text-sm truncate pr-2">{eventChannel.name}</span>
@@ -640,9 +637,9 @@ function CommunityPage() {
                               <span className="font-semibold text-sm truncate block">{target.title}</span>
                               <span className="text-[10px] text-muted-foreground">No channel active</span>
                             </div>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
+                            <Button
+                              variant="outline"
+                              size="sm"
                               className="h-7 text-[10px] px-2 rounded-full"
                               onClick={() => handleCreateEventChannel(target)}
                               disabled={creating}
@@ -697,8 +694,8 @@ function CommunityPage() {
                     <>
                       <span className="w-1 h-1 rounded-full bg-border"></span>
                       <span>
-                        {activeChat.entityType === "GLOBAL" 
-                          ? `${followers.length} Members` 
+                        {activeChat.entityType === "GLOBAL"
+                          ? `${followers.length} Members`
                           : `${attendeesCount} Members`}
                       </span>
                     </>
@@ -725,7 +722,7 @@ function CommunityPage() {
 
               {activeChat.messages.map((msg, idx) => {
                 const showAvatar = !msg.isMe && (idx === 0 || activeChat.messages[idx - 1]?.senderId !== msg.senderId);
-                
+
                 return (
                   <div key={msg.id} className={`flex gap-3 ${msg.isMe ? "justify-end" : "justify-start"}`}>
                     {!msg.isMe && (
@@ -743,7 +740,7 @@ function CommunityPage() {
                         })()}
                       </div>
                     )}
-                    
+
                     <div className={`flex flex-col ${msg.isMe ? "items-end" : "items-start"} max-w-[70%]`}>
                       {!msg.isMe && activeChat.type === "group" && showAvatar && (() => {
                         const senderProfile = followers.find((f: any) => f.id === msg.senderId);
@@ -755,13 +752,12 @@ function CommunityPage() {
                           </span>
                         );
                       })()}
-                      
-                      <div 
-                        className={`p-3.5 rounded-2xl shadow-sm text-sm ${
-                          msg.isMe && !msg.mediaUrl
-                            ? "bg-primary text-primary-foreground rounded-tr-sm" 
+
+                      <div
+                        className={`p-3.5 rounded-2xl shadow-sm text-sm ${msg.isMe && !msg.mediaUrl
+                            ? "bg-primary text-primary-foreground rounded-tr-sm"
                             : (msg.mediaUrl && !msg.text) ? "p-0 bg-transparent shadow-none" : "bg-background border border-border/50 rounded-tl-sm"
-                        }`}
+                          }`}
                         style={msg.isMe && !msg.mediaUrl ? { background: "var(--gradient-primary)" } : {}}
                       >
                         {msg.mediaUrl && (
@@ -790,8 +786,8 @@ function CommunityPage() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent side="top" align="start" className="p-0 border-none shadow-xl bg-transparent mb-2">
-                  <EmojiPicker 
-                    onEmojiClick={(emojiData) => setMessageInput(prev => prev + emojiData.emoji)} 
+                  <EmojiPicker
+                    onEmojiClick={(emojiData) => setMessageInput(prev => prev + emojiData.emoji)}
                     theme="auto"
                   />
                 </PopoverContent>
@@ -799,18 +795,18 @@ function CommunityPage() {
 
               <Popover open={isGifPopoverOpen} onOpenChange={setIsGifPopoverOpen}>
                 <PopoverTrigger asChild>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
                     className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0 hidden sm:inline-flex"
                   >
                     <Sticker className="h-5 w-5" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent side="top" align="start" className="w-[300px] p-2 mb-2 shadow-xl rounded-xl">
-                  <Input 
-                    placeholder="Search GIFs..." 
+                  <Input
+                    placeholder="Search GIFs..."
                     value={gifSearch}
                     onChange={(e) => setGifSearch(e.target.value)}
                     className="mb-2 h-8 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -821,29 +817,29 @@ function CommunityPage() {
                         <Loader2 className="h-6 w-6 text-primary animate-spin" />
                       </div>
                     )}
-                    <Grid 
-                      key={gifSearch} 
-                      width={280} 
-                      columns={2} 
-                      fetchGifs={fetchGifs} 
-                      onGifClick={handleGifClick} 
+                    <Grid
+                      key={gifSearch}
+                      width={280}
+                      columns={2}
+                      fetchGifs={fetchGifs}
+                      onGifClick={handleGifClick}
                       noLink
                       hideAttribution
                     />
                   </div>
                 </PopoverContent>
               </Popover>
-              
-              <Input 
+
+              <Input
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
-                placeholder="Type a message..." 
+                placeholder="Type a message..."
                 className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-2 h-10 shadow-none text-sm"
               />
-              
-              <Button 
-                type="submit" 
-                size="icon" 
+
+              <Button
+                type="submit"
+                size="icon"
                 className="h-10 w-10 rounded-full shrink-0 shadow-[var(--shadow-glow)] transition-all"
                 style={{ background: "var(--gradient-primary)" }}
                 disabled={!messageInput.trim()}
@@ -884,7 +880,7 @@ function CommunityPage() {
                 placeholder="e.g. General Announcements"
               />
             </div>
-            
+
             <div className="space-y-3">
               <Label>Channel Image</Label>
               <div className="flex items-center gap-4">
@@ -895,7 +891,7 @@ function CommunityPage() {
                     <MessageCircle className="h-6 w-6 text-muted-foreground" />
                   )}
                   {filePreviewUrl && (
-                    <button 
+                    <button
                       onClick={() => {
                         setSelectedFile(null);
                         setFilePreviewUrl("");
@@ -908,8 +904,8 @@ function CommunityPage() {
                   )}
                 </div>
                 <div className="flex-1">
-                  <Label 
-                    htmlFor="file-upload" 
+                  <Label
+                    htmlFor="file-upload"
                     className="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full"
                   >
                     <UploadCloud className="h-4 w-4 mr-2" />
@@ -936,9 +932,8 @@ function CommunityPage() {
                       key={i}
                       type="button"
                       onClick={() => setSelectedAvatarUrl(url)}
-                      className={`h-12 w-12 rounded-full overflow-hidden border-2 transition-all ${
-                        selectedAvatarUrl === url ? "border-primary scale-110 shadow-sm" : "border-transparent hover:scale-105"
-                      }`}
+                      className={`h-12 w-12 rounded-full overflow-hidden border-2 transition-all ${selectedAvatarUrl === url ? "border-primary scale-110 shadow-sm" : "border-transparent hover:scale-105"
+                        }`}
                     >
                       <img src={url} alt={`Option ${i}`} className="h-full w-full" />
                     </button>
