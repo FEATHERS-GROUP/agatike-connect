@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { rentableVenues, venueBookings } from "@/lib/mock-data";
 import { Calendar, dateFnsLocalizer, View } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
@@ -64,6 +65,17 @@ function VenueOverviewPage() {
 
   const CustomEvent = ({ event }: any) => {
     const isPaid = event.data.paymentStatus === "Paid";
+    const isBlocked = event.data.status === "Blocked";
+
+    if (isBlocked) {
+      return (
+        <div className="flex flex-col justify-center h-full gap-0.5 p-1 bg-red-500/10 text-red-500 rounded-md border border-red-500/20">
+          <span className="font-bold text-xs leading-tight truncate">❌ Blocked</span>
+          <span className="text-[10px] truncate">{event.title}</span>
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col gap-0.5 p-0.5">
         <span className="font-semibold text-xs leading-tight truncate">{event.title}</span>
@@ -108,92 +120,146 @@ function VenueOverviewPage() {
                 Block out dates or manually add a customer's reservation.
               </p>
             </SheetHeader>
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label>Customer / Organization Name</Label>
-                  <Input
-                    placeholder="e.g. John Doe or Tech Summit"
-                    className="h-10 rounded-xl bg-secondary/50"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Email</Label>
-                    <Input
-                      type="email"
-                      placeholder="customer@example.com"
-                      className="h-10 rounded-xl bg-secondary/50"
-                    />
+            <Tabs defaultValue="customer" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="customer">Customer Booking</TabsTrigger>
+                <TabsTrigger value="block">Block Dates</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="customer">
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label>Customer / Organization Name</Label>
+                      <Input
+                        placeholder="e.g. John Doe or Tech Summit"
+                        className="h-10 rounded-xl bg-secondary/50"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label>Email</Label>
+                        <Input
+                          type="email"
+                          placeholder="customer@example.com"
+                          className="h-10 rounded-xl bg-secondary/50"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Phone</Label>
+                        <Input
+                          placeholder="+1 234 567 8900"
+                          className="h-10 rounded-xl bg-secondary/50"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label>Phone</Label>
-                    <Input
-                      placeholder="+1 234 567 8900"
-                      className="h-10 rounded-xl bg-secondary/50"
-                    />
-                  </div>
-                </div>
-              </div>
 
-              <div className="space-y-4 pt-4 border-t border-border/60">
-                <div className="space-y-1.5">
-                  <Label>Booking Date</Label>
-                  <Input type="date" className="h-10 rounded-xl bg-secondary/50" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Start Time</Label>
-                    <Input type="time" className="h-10 rounded-xl bg-secondary/50" />
+                  <div className="space-y-4 pt-4 border-t border-border/60">
+                    <div className="space-y-1.5">
+                      <Label>Booking Date</Label>
+                      <Input type="date" className="h-10 rounded-xl bg-secondary/50" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label>Start Time</Label>
+                        <Input type="time" className="h-10 rounded-xl bg-secondary/50" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>End Time</Label>
+                        <Input type="time" className="h-10 rounded-xl bg-secondary/50" />
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label>End Time</Label>
-                    <Input type="time" className="h-10 rounded-xl bg-secondary/50" />
-                  </div>
-                </div>
-              </div>
 
-              <div className="space-y-4 pt-4 border-t border-border/60">
-                <div className="space-y-1.5">
-                  <Label>Amount</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      {venue.currency}
-                    </span>
-                    <Input
-                      type="number"
-                      placeholder="0.00"
-                      className="pl-8 h-10 rounded-xl bg-secondary/50"
-                    />
+                  <div className="space-y-4 pt-4 border-t border-border/60">
+                    <div className="space-y-1.5">
+                      <Label>Amount</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                          {venue.currency}
+                        </span>
+                        <Input
+                          type="number"
+                          placeholder="0.00"
+                          className="pl-8 h-10 rounded-xl bg-secondary/50"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label>Booking Status</Label>
+                        <select className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                          <option value="Confirmed">Confirmed</option>
+                          <option value="Pending">Pending</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Payment Status</Label>
+                        <select className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                          <option value="Paid">Paid</option>
+                          <option value="Unpaid">Unpaid</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Booking Status</Label>
-                    <select className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                      <option value="Confirmed">Confirmed</option>
-                      <option value="Pending">Pending</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Payment Status</Label>
-                    <select className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
-                      <option value="Paid">Paid</option>
-                      <option value="Unpaid">Unpaid</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <div className="mt-8 flex gap-3">
-              <Button
-                className="flex-1 rounded-xl"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                Confirm Booking
-              </Button>
-            </div>
+                <div className="mt-8 flex gap-3">
+                  <Button
+                    className="flex-1 rounded-xl"
+                    style={{ background: "var(--gradient-primary)" }}
+                  >
+                    Confirm Booking
+                  </Button>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="block">
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label>Reason for Blocking</Label>
+                      <Input
+                        placeholder="e.g. Maintenance, Private Event, Emergency Closure"
+                        className="h-10 rounded-xl bg-secondary/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t border-border/60">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label>Start Date</Label>
+                        <Input type="date" className="h-10 rounded-xl bg-secondary/50" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>End Date</Label>
+                        <Input type="date" className="h-10 rounded-xl bg-secondary/50" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label>Start Time</Label>
+                        <Input type="time" defaultValue="00:00" className="h-10 rounded-xl bg-secondary/50" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>End Time</Label>
+                        <Input type="time" defaultValue="23:59" className="h-10 rounded-xl bg-secondary/50" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex gap-3">
+                  <Button
+                    className="flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white"
+                  >
+                    Block Dates
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
           </SheetContent>
         </Sheet>
       </div>

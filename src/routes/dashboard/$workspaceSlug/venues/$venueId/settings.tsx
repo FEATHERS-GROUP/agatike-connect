@@ -56,6 +56,9 @@ function VenueSettingsPage() {
                   <option value="Basketball Court">Basketball Court</option>
                   <option value="Football Pitch">Football Pitch</option>
                   <option value="Gaming Lounge">Gaming Lounge</option>
+                  <option value="Park">Park</option>
+                  <option value="Museum">Museum</option>
+                  <option value="Playground">Playground</option>
                 </select>
               </div>
               <div className="space-y-1.5">
@@ -87,25 +90,31 @@ function VenueSettingsPage() {
                 >
                   <option value="Per Day">Per Day Only</option>
                   <option value="Per Hour">Per Hour Only</option>
+                  <option value="Per Week">Per Week</option>
+                  <option value="Annually">Annually</option>
+                  <option value="Entrance Fee">Entrance Fee (Tickets)</option>
+                  <option value="Multiple">Multiple Options</option>
                   <option value="Both">Both (Day & Hour)</option>
                 </select>
               </div>
-              {(rentalType === "Per Day" || rentalType === "Both") && (
+              
+              {(rentalType === "Entrance Fee" || rentalType === "Multiple") && (
                 <div className="space-y-1.5">
-                  <Label>Price per Day</Label>
+                  <Label>Entrance Fee (Per Person)</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                       {venue.currency}
                     </span>
                     <Input
                       type="number"
-                      defaultValue={venue.pricePerDay}
+                      defaultValue={venue.entranceFee || 0}
                       className="pl-8 h-10 rounded-xl bg-secondary/50"
                     />
                   </div>
                 </div>
               )}
-              {(rentalType === "Per Hour" || rentalType === "Both") && (
+              
+              {(rentalType === "Per Hour" || rentalType === "Both" || rentalType === "Multiple") && (
                 <div className="space-y-1.5">
                   <Label>Price per Hour</Label>
                   <div className="relative">
@@ -115,6 +124,54 @@ function VenueSettingsPage() {
                     <Input
                       type="number"
                       defaultValue={venue.pricePerHour || 0}
+                      className="pl-8 h-10 rounded-xl bg-secondary/50"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {(rentalType === "Per Day" || rentalType === "Both" || rentalType === "Multiple") && (
+                <div className="space-y-1.5">
+                  <Label>Price per Day</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      {venue.currency}
+                    </span>
+                    <Input
+                      type="number"
+                      defaultValue={venue.pricePerDay || 0}
+                      className="pl-8 h-10 rounded-xl bg-secondary/50"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {(rentalType === "Per Week" || rentalType === "Multiple") && (
+                <div className="space-y-1.5">
+                  <Label>Price per Week</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      {venue.currency}
+                    </span>
+                    <Input
+                      type="number"
+                      defaultValue={venue.pricePerWeek || 0}
+                      className="pl-8 h-10 rounded-xl bg-secondary/50"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {(rentalType === "Annually" || rentalType === "Multiple") && (
+                <div className="space-y-1.5">
+                  <Label>Price Annually</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      {venue.currency}
+                    </span>
+                    <Input
+                      type="number"
+                      defaultValue={venue.priceAnnually || 0}
                       className="pl-8 h-10 rounded-xl bg-secondary/50"
                     />
                   </div>

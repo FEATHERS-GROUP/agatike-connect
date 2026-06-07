@@ -831,10 +831,12 @@ export type RentableVenue = {
     | "Club"
     | "Basketball Court"
     | "Football Pitch"
-    | "Gaming Lounge";
+    | "Gaming Lounge"
+    | "Park"
+    | "Museum";
   city: string;
   capacity: number;
-  pricePerDay: number;
+  pricePerDay?: number;
   currency: string;
   cover: string;
   rating: number;
@@ -842,8 +844,11 @@ export type RentableVenue = {
   status: "Active" | "Draft" | "Maintenance";
   pendingRequests: number;
   activeRentals: number;
-  rentalType?: "Per Day" | "Per Hour" | "Both";
+  rentalType?: "Per Day" | "Per Hour" | "Per Week" | "Annually" | "Entrance Fee" | "Multiple";
   pricePerHour?: number;
+  pricePerWeek?: number;
+  priceAnnually?: number;
+  entranceFee?: number;
 };
 
 export const rentableVenues: RentableVenue[] = [
@@ -893,6 +898,10 @@ export const rentableVenues: RentableVenue[] = [
     status: "Draft",
     pendingRequests: 0,
     activeRentals: 0,
+    rentalType: "Multiple",
+    pricePerDay: 1200,
+    pricePerHour: 200,
+    pricePerWeek: 5000,
   },
   {
     id: "national-stadium",
@@ -900,13 +909,13 @@ export const rentableVenues: RentableVenue[] = [
     type: "Stadium",
     city: "Uyo, NG",
     capacity: 30000,
-    pricePerDay: 12000,
+    pricePerDay: 15000,
     currency: "$",
     cover: e6,
     rating: 4.8,
-    amenities: ["Floodlights", "Locker Rooms", "Media Center", "VIP Boxes"],
+    amenities: ["Press Box", "Locker Rooms", "Floodlights", "VIP Suites"],
     status: "Maintenance",
-    pendingRequests: 1,
+    pendingRequests: 0,
     activeRentals: 0,
   },
   {

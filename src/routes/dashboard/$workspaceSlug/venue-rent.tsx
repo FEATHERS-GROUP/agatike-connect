@@ -45,8 +45,11 @@ function VenueListingsPage() {
             <Button
               className="shrink-0 gap-2 rounded-full h-10 px-5 shadow-[var(--shadow-glow)]"
               style={{ background: "var(--gradient-primary)" }}
+              asChild
             >
-              <Plus className="h-4 w-4" /> List New Venue
+              <Link to={`/dashboard/${workspaceSlug}/venues/create-venue`}>
+                <Plus className="h-4 w-4" /> List New Venue
+              </Link>
             </Button>
           </div>
 
@@ -146,11 +149,19 @@ function VenueListingsPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-                      Price / Day
+                      {venue.rentalType === "Entrance Fee" ? "Entrance Fee" 
+                        : venue.rentalType === "Per Hour" ? "Price / Hour"
+                        : venue.rentalType === "Per Week" ? "Price / Week"
+                        : venue.rentalType === "Annually" ? "Price / Year"
+                        : "Price / Day"}
                     </p>
                     <p className="font-semibold text-foreground">
                       {venue.currency}
-                      {venue.pricePerDay.toLocaleString()}
+                      {venue.rentalType === "Entrance Fee" ? venue.entranceFee?.toLocaleString()
+                        : venue.rentalType === "Per Hour" ? venue.pricePerHour?.toLocaleString()
+                        : venue.rentalType === "Per Week" ? venue.pricePerWeek?.toLocaleString()
+                        : venue.rentalType === "Annually" ? venue.priceAnnually?.toLocaleString()
+                        : venue.pricePerDay?.toLocaleString()}
                     </p>
                   </div>
                 </div>
