@@ -30,7 +30,7 @@ export const getUserByHandle = createServerFn({ method: "GET" }).handler(async (
 });
 
 export const getUsersByIds = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const data = ctx.data as { ids: string[] };
+  const data = ctx.data as unknown as { ids: string[] };
   if (!data.ids || data.ids.length === 0) return [];
 
   const query = `
@@ -52,7 +52,7 @@ export const getUsersByIds = createServerFn({ method: "POST" }).handler(async (c
 });
 
 export const getOrganizerFollowersProfiles = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const data = ctx.data as { organizerId: string };
+  const data = ctx.data as unknown as { organizerId: string };
   if (!data.organizerId) return [];
 
   const followerQuery = `
