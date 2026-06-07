@@ -9,6 +9,12 @@ import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { ArrowLeft, ArrowRight, Check, Plus, Trash, Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { getWorkspaceTicketProjects } from "@/api/events";
+import { sendTicketsEmail } from "@/api/email";
+import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
+
 
 export function ManualBookingDialog({ 
   open, 
@@ -21,6 +27,18 @@ export function ManualBookingDialog({
 }) {
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
+
+  
+  const { data: ticketProjects } = useQuery({
+    queryKey: ["workspace-ticket-projects", activeWorkspace?.id],
+    queryFn: () => getWorkspaceTicketProjects({ data: { workspaceId: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+  
+  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
+  const [bookingRes, setBookingRes] = useState<any>(null);
 
   const [step, setStep] = useState(1);
   const isEntranceOnly = venue?.rental_model === "ENTRANCE_ONLY" || venue?.rental_model === "HYBRID" || venue?.type?.toLowerCase() === "park";
@@ -101,15 +119,76 @@ export function ManualBookingDialog({
         }
       });
     },
-    onSuccess: () => {
-      toast.success("Booking created successfully");
+    
+    onSuccess: async (res) => {
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venue.id] });
-      handleClose();
+      
+      const ticketsData = res.tickets_data;
+      if (ticketsData?.issued && ticketsData.issued.length > 0 && formData.customer_email && venueProject) {
+        setIsGenerating(true);
+        setIssuedTickets(ticketsData.issued);
+        setBookingRes(res);
+        // Generation will happen in a useEffect once the DOM elements render
+      } else {
+        toast.success("Booking created successfully");
+        handleClose();
+      }
     },
+
     onError: (e: any) => {
       toast.error(e.message || "Failed to create booking");
     }
   });
+
+  
+  useEffect(() => {
+    if (isGenerating && issuedTickets.length > 0 && venueProject) {
+      const generatePDFs = async () => {
+        try {
+          const attachments = [];
+          for (const ticket of issuedTickets) {
+            const el = document.getElementById(`ticket-render-${ticket.id}`);
+            if (!el) continue;
+            
+            const canvas = await html2canvas(el, { scale: 2, useCORS: true, allowTaint: true });
+            const imgData = canvas.toDataURL("image/png");
+            
+            const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width / 2, canvas.height / 2] });
+            pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+            const base64 = pdf.output("datauristring").split(",")[1];
+            
+            attachments.push({
+              filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+              content: base64
+            });
+          }
+          
+          if (attachments.length > 0) {
+            await sendTicketsEmail({
+              data: {
+                to: formData.customer_email,
+                customerName: formData.customer_name,
+                venueName: venue.name || "the Venue",
+                attachments
+              } as any
+            });
+            toast.success("Booking created and tickets emailed!");
+          } else {
+            toast.success("Booking created!");
+          }
+        } catch (e: any) {
+          console.error(e);
+          toast.error("Booking created, but failed to email custom tickets.");
+        } finally {
+          setIsGenerating(false);
+          handleClose();
+        }
+      };
+      
+      // small delay to ensure DOM is fully rendered
+      setTimeout(generatePDFs, 1000);
+    }
+  }, [isGenerating, issuedTickets]);
 
   const handleClose = () => {
     onOpenChange(false);
@@ -120,6 +199,8 @@ export function ManualBookingDialog({
         start_date: "", start_time: "09:00", end_date: "", end_time: "18:00", status: "Confirmed", amount: "0", internal_notes: ""
       });
       setTicketsData({});
+      setIsGenerating(false);
+      setIssuedTickets([]);
       setSelectedPricingTier("");
       setAttendees([]);
     }, 300);
@@ -450,6 +531,42 @@ export function ManualBookingDialog({
             {step < 4 && <ArrowRight className="h-4 w-4" />}
           </Button>
         </div>
+      
+        {/* Hidden Renderer for PDFs */}
+        {isGenerating && (
+          <div className="absolute top-0 left-0 -z-50 opacity-0 pointer-events-none" style={{ left: '-9999px' }}>
+            {issuedTickets.map((t: any) => (
+              <div key={t.id} id={`ticket-render-${t.id}`} className="inline-block p-4 bg-background">
+                <TicketPreview
+                  template={venueProject.template}
+                  palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                  font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+                  tier={t.tier}
+                  title={venue.name}
+                  subtitle={venue.address || ""}
+                  date="Valid for 1 Day"
+                  time="Opening Hours"
+                  seat="General"
+                  price={formData.amount}
+                  currency={venue.currency}
+                  cover={venueProject.coverImage || ""}
+                  logoText={venueProject.logoText || ""}
+                  logoImage={venueProject.logoImage}
+                  logoScale={Number(venueProject.logoScale || 24)}
+                  logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+                  logoColorMode={venueProject.logoColorMode || "original"}
+                  orderId={t.otp}
+                  previewMode="Front"
+                  layout={venueProject.design_overrides?.layout || {
+                    titleSize: 30, subtitleSize: 14, metaSize: 11, titleAlign: "left", titleOffsetY: 0, subtitleOffsetY: 0, metaOffsetY: 0
+                  }}
+                  back={venueProject.design_overrides?.back || { backText: "", backImage: "", backImageOpacity: 0.3 }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
       </DialogContent>
     </Dialog>
   );

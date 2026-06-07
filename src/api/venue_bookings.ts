@@ -1,17 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
-import { jsPDF } from "jspdf";
-import { sendTicketsEmail } from "./email";
 
 const CREATE_VENUE_BOOKING = `
   mutation CreateVenueBooking($object: venue_bookings_insert_input!) {
     insert_venue_bookings_one(object: $object) {
       id
       customer_name
+      customer_email
       start_time
       end_time
       status
       payment_status
+      tickets_data
     }
   }
 `;
@@ -41,7 +41,6 @@ export const createVenueBooking = createServerFn({ method: "POST" })
 
     let final_tickets_data = tickets_data;
     let issuedTickets: any[] = [];
-    let attachments: any[] = [];
 
     if (payment_status === "Paid" && customer_email && tickets_data) {
       let ticketsToGenerate: any[] = [];
@@ -75,33 +74,6 @@ export const createVenueBooking = createServerFn({ method: "POST" })
           otp,
           used: false
         });
-
-        try {
-          const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: [200, 80] });
-          doc.setFillColor(248, 250, 252);
-          doc.rect(0, 0, 200, 80, 'F');
-          
-          doc.setFontSize(24);
-          doc.setTextColor(15, 23, 42);
-          doc.text(venue_name || "Venue Ticket", 10, 20);
-
-          doc.setFontSize(14);
-          doc.setTextColor(71, 85, 105);
-          doc.text(`Ticket Type: ${t.tier}`, 10, 40);
-          doc.text(`Admit: ${t.name}`, 10, 50);
-
-          doc.setFontSize(18);
-          doc.setTextColor(242, 87, 29);
-          doc.text(`Verification OTP: ${otp}`, 10, 70);
-
-          const base64 = doc.output('datauristring').split(',')[1];
-          attachments.push({
-            filename: `Ticket_${t.tier.replace(/\\s+/g, '_')}_${otp}.pdf`,
-            content: base64
-          });
-        } catch (err) {
-          console.error("PDF generation failed:", err);
-        }
       }
 
       final_tickets_data = {
@@ -132,21 +104,6 @@ export const createVenueBooking = createServerFn({ method: "POST" })
         },
       },
     );
-
-    if (attachments.length > 0) {
-      try {
-        await sendTicketsEmail({
-          data: {
-            to: customer_email,
-            customerName: customer_name,
-            venueName: venue_name || "the Venue",
-            attachments
-          }
-        });
-      } catch (e) {
-        console.error("Failed to send ticket email", e);
-      }
-    }
 
     return res.insert_venue_bookings_one;
   });

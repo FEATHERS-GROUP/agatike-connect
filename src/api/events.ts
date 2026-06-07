@@ -491,8 +491,8 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
 });
 
 const SAVE_TICKET_PROJECT = `
-  mutation SaveTicketProject($coverImage: String = "", $design_overrides: jsonb = "", $eventId: uuid = "", $font: json = "", $logoText: String = "", $name: String = "", $palette: json = "", $seat: String = "", $template: String = "", $tier: String = "", $updated_on: timestamptz = "", $workspaceId: uuid = "", $logoScale: String = "", $logoImage: String = "", $logoColorMode: String = "", $logoOpacity: String = "") {
-    insert_ticket_projects(objects: {coverImage: $coverImage, deleted: false, design_overrides: $design_overrides, eventId: $eventId, font: $font, logoText: $logoText, name: $name, palette: $palette, seat: $seat, template: $template, tier: $tier, updated_on: $updated_on, workspaceId: $workspaceId, logoScale: $logoScale, logoImage: $logoImage, logoColorMode: $logoColorMode, logoOpacity: $logoOpacity}) {
+  mutation SaveTicketProject($coverImage: String = "", $design_overrides: jsonb = "", $eventId: uuid, $venueId: uuid, $font: json = "", $logoText: String = "", $name: String = "", $palette: json = "", $seat: String = "", $template: String = "", $tier: String = "", $updated_on: timestamptz = "", $workspaceId: uuid = "", $logoScale: String = "", $logoImage: String = "", $logoColorMode: String = "", $logoOpacity: String = "") {
+    insert_ticket_projects(objects: {coverImage: $coverImage, deleted: false, design_overrides: $design_overrides, eventId: $eventId, venueId: $venueId, font: $font, logoText: $logoText, name: $name, palette: $palette, seat: $seat, template: $template, tier: $tier, updated_on: $updated_on, workspaceId: $workspaceId, logoScale: $logoScale, logoImage: $logoImage, logoColorMode: $logoColorMode, logoOpacity: $logoOpacity}) {
       returning {
         id
       }
@@ -511,6 +511,7 @@ const GET_TICKET_PROJECT_BY_ID = `
       id
       name
       eventId
+      venueId
       template
       coverImage
       design_overrides
@@ -537,8 +538,8 @@ export const getTicketProjectById = createServerFn({ method: "POST" }).handler(a
 });
 
 const UPDATE_TICKET_PROJECT = `
-  mutation UpdateTicketProject($id: uuid!, $coverImage: String, $design_overrides: jsonb, $eventId: uuid, $font: json, $logoText: String, $name: String, $palette: json, $seat: String, $template: String, $tier: String, $updated_on: timestamptz, $logoScale: String, $logoImage: String, $logoColorMode: String, $logoOpacity: String) {
-    update_ticket_projects_by_pk(pk_columns: {id: $id}, _set: {coverImage: $coverImage, design_overrides: $design_overrides, eventId: $eventId, font: $font, logoText: $logoText, name: $name, palette: $palette, seat: $seat, template: $template, tier: $tier, updated_on: $updated_on, logoScale: $logoScale, logoImage: $logoImage, logoColorMode: $logoColorMode, logoOpacity: $logoOpacity}) {
+  mutation UpdateTicketProject($id: uuid!, $coverImage: String, $design_overrides: jsonb, $eventId: uuid, $venueId: uuid, $font: json, $logoText: String, $name: String, $palette: json, $seat: String, $template: String, $tier: String, $updated_on: timestamptz, $logoScale: String, $logoImage: String, $logoColorMode: String, $logoOpacity: String) {
+    update_ticket_projects_by_pk(pk_columns: {id: $id}, _set: {coverImage: $coverImage, design_overrides: $design_overrides, eventId: $eventId, venueId: $venueId, font: $font, logoText: $logoText, name: $name, palette: $palette, seat: $seat, template: $template, tier: $tier, updated_on: $updated_on, logoScale: $logoScale, logoImage: $logoImage, logoColorMode: $logoColorMode, logoOpacity: $logoOpacity}) {
       id
     }
   }
@@ -555,6 +556,7 @@ const GET_WORKSPACE_TICKET_PROJECTS = `
       id
       name
       eventId
+      venueId
       template
       coverImage
       design_overrides

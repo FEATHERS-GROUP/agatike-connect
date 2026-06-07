@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { ticketProjects } from "@/lib/mock-data";
 import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects } from "@/api/events";
+import { getRentableVenues } from "@/api/rentable_venues";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
@@ -76,6 +77,13 @@ function TicketDesignerIndex() {
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/ticket-designer/" });
   const { activeWorkspace } = useWorkspace();
 
+  
+  const { data: venues = [] } = useQuery({
+    queryKey: ["rentable_venues", activeWorkspace?.id],
+    queryFn: () => getRentableVenues({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
   const { data: events = [] } = useQuery({
     queryKey: ["workspace-events", activeWorkspace?.id],
     queryFn: () => getWorkspaceEvents({ data: { workspace_id: activeWorkspace?.id! } } as any),
@@ -92,7 +100,7 @@ function TicketDesignerIndex() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("Untitled Project");
-  const [selectedEventId, setSelectedEventId] = useState("");
+  const [selectedAssignment, setSelectedAssignment] = useState("");
 
   const createMutation = useMutation({
     mutationFn: async (variables: any) => saveTicketProject({ data: variables } as any),
@@ -115,26 +123,34 @@ function TicketDesignerIndex() {
     },
   });
 
+  
   const handleCreateNew = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTemplate || !selectedEventId) {
-      toast.error("Please fill in all required fields.");
+    if (!selectedTemplate || !selectedAssignment) {
+      toast.error("Please select a template and an event or venue.");
       return;
     }
 
+    let eventId = null;
+    let venueId = null;
+    if (selectedAssignment.startsWith("event:")) eventId = selectedAssignment.replace("event:", "");
+    if (selectedAssignment.startsWith("venue:")) venueId = selectedAssignment.replace("venue:", "");
+
     createMutation.mutate({
       name: newProjectName,
-      eventId: selectedEventId || "",
+      eventId: eventId,
+      venueId: venueId,
       template: selectedTemplate,
       workspaceId: activeWorkspace?.id || "",
       updated_on: new Date().toISOString(),
     });
   };
 
+
   const openSetupModal = (templateId: string) => {
     setSelectedTemplate(templateId);
     setNewProjectName("Untitled Project");
-    setSelectedEventId("");
+    setSelectedAssignment("");
     setIsModalOpen(true);
   };
 
@@ -204,23 +220,38 @@ function TicketDesignerIndex() {
                 />
               </div>
 
+              
               <div className="space-y-2">
-                <Label htmlFor="eventSelect">Select Event *</Label>
+                <Label htmlFor="eventSelect">Assign to Event or Venue *</Label>
                 <select
                   id="eventSelect"
-                  value={selectedEventId}
-                  onChange={(e) => setSelectedEventId(e.target.value)}
+                  value={selectedAssignment}
+                  onChange={(e) => setSelectedAssignment(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   required
                 >
-                  <option value="">-- Select Event --</option>
-                  {events.map((ev: any) => (
-                    <option key={ev.id} value={ev.id}>
-                      {ev.title}
-                    </option>
-                  ))}
+                  <option value="">-- Select Event or Venue --</option>
+                  {events.length > 0 && (
+                    <optgroup label="Events">
+                      {events.map((ev: any) => (
+                        <option key={ev.id} value={`event:${ev.id}`}>
+                          {ev.title}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {venues.length > 0 && (
+                    <optgroup label="Venues">
+                      {venues.map((v: any) => (
+                        <option key={v.id} value={`venue:${v.id}`}>
+                          {v.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
+
 
               <DialogFooter className="pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
@@ -262,11 +293,12 @@ function TicketDesignerIndex() {
             ) : (
               dbProjects.map((proj: any) => {
                 const eventObj = proj.events || events.find((e: any) => e.id === proj.eventId);
-                const displayTitle = eventObj?.title || proj.name || "Untitled Design";
-                const displaySubtitle = eventObj?.category || "Ticket Design";
+                const venueObj = proj.rentable_venues || venues.find((v: any) => v.id === proj.venueId);
+                const displayTitle = eventObj?.title || venueObj?.name || proj.name || "Untitled Design";
+                const displaySubtitle = eventObj?.category || venueObj?.type || "Ticket Design";
                 const palette = proj.palette || { from: "#f97316", to: "#db2777", name: "Sunset" };
                 const updatedAt = proj.updated_on || new Date().toISOString();
-                const coverUrl = proj.coverImage || eventObj?.cover;
+                const coverUrl = proj.coverImage || eventObj?.cover || venueObj?.cover_url || venueObj?.images?.[0];
 
                 return (
                   <Link

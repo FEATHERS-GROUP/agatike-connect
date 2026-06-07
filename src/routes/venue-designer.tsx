@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
   ArrowLeft,
   Save,
@@ -294,6 +295,7 @@ function buildSeats(sections: Section[]): Seat[] {
 }
 
 function VenueDesignerPage() {
+  const { activeWorkspace } = useWorkspace();
   const [templateId, setTemplateId] = useState<TemplateId>("arena");
   const template = useMemo(() => templates.find((t) => t.id === templateId)!, [templateId]);
   const [sections, setSections] = useState<Section[]>(template.sections);
