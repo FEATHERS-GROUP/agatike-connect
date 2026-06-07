@@ -14,7 +14,29 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
   return hasuraRequest(CREATE_EVENT, { object: eventData });
 });
 
+export const getEventAttendeesCount = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const data = ctx.data as { eventId?: string, scheduleId?: string };
+  if (!data.eventId && !data.scheduleId) return 0;
 
+  let where = "";
+  if (data.scheduleId) {
+    where = `where: {schedule_id: {_eq: "${data.scheduleId}"}}`;
+  } else if (data.eventId) {
+    where = `where: {event_id: {_eq: "${data.eventId}"}}`;
+  }
+
+  const query = `
+    query GetAttendeesCount {
+      event_attendees_aggregate(${where}) {
+        aggregate {
+          count
+        }
+      }
+    }
+  `;
+  const result = await hasuraRequest<any>(query);
+  return result?.event_attendees_aggregate?.aggregate?.count || 0;
+});
 
 const CREATE_EVENT_SCHEDULE = `
   mutation CreateEventSchedule($data: event_schedules_insert_input!) {

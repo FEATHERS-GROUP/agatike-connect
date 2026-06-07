@@ -38,6 +38,8 @@ export const getUsersByIds = createServerFn({ method: "POST" }).handler(async (c
         users(where: {id: {_in: $ids}}) {
           id
           username
+          handle
+          country
           profile
         }
       }
@@ -80,6 +82,8 @@ export const getOrganizerFollowersProfiles = createServerFn({ method: "POST" }).
       users(where: {id: {_in: $ids}}) {
         id
         username
+        handle
+        country
         profile
       }
     }

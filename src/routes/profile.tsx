@@ -36,7 +36,7 @@ export const Route = createFileRoute("/profile")({
   component: ProfilePage,
 });
 
-const upcomingTickets = [
+export const upcomingTickets = [
   {
     ...events[0],
     id: "t1",

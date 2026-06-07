@@ -14,7 +14,8 @@ import {
   MessageCircle,
   Loader2,
   UploadCloud,
-  X
+  X,
+  Sticker
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import EmojiPicker from "emoji-picker-react";
+import { GiphyFetch } from "@giphy/js-fetch-api";
+import { Grid } from "@giphy/react-components";
+
+const gf = new GiphyFetch(import.meta.env.VITE_GIPHY_API_KEY || "");
+
 import {
   Dialog,
   DialogContent,
@@ -47,8 +55,33 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizerFollowersProfiles } from "@/api/users";
 import { getCommunityChannels, createCommunityChannel } from "@/api/community";
-import { getWorkspaceEvents } from "@/api/events";
+import { getWorkspaceEvents, getEventAttendeesCount } from "@/api/events";
 import { uploadFile } from "@/api/storage";
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  "Rwanda": "🇷🇼",
+  "United States": "🇺🇸",
+  "United Kingdom": "🇬🇧",
+  "Canada": "🇨🇦",
+  "France": "🇫🇷",
+  "Germany": "🇩🇪",
+  "Kenya": "🇰🇪",
+  "Uganda": "🇺🇬",
+  "Tanzania": "🇹🇿",
+  "Burundi": "🇧🇮",
+  "South Africa": "🇿🇦",
+  "Nigeria": "🇳🇬",
+  "India": "🇮🇳",
+  "China": "🇨🇳",
+  "Japan": "🇯🇵",
+  "Australia": "🇦🇺",
+  "Brazil": "🇧🇷",
+};
+
+const getCountryFlag = (countryName?: string) => {
+  if (!countryName) return "";
+  return COUNTRY_FLAGS[countryName] || "🌍";
+};
 
 function CommunityPage() {
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/community" });
@@ -90,6 +123,21 @@ function CommunityPage() {
   const [messageInput, setMessageInput] = useState("");
 
   const activeChat = channels.find((c) => c.id === activeChatId);
+  const activeHasuraChannel = communityChannels.find((c) => c.id === activeChatId);
+
+  const { data: attendeesCount = 0 } = useQuery({
+    queryKey: ["attendeesCount", activeHasuraChannel?.event_id, activeHasuraChannel?.schedule_id],
+    queryFn: async () => {
+      if (!activeHasuraChannel?.event_id && !activeHasuraChannel?.schedule_id) return 0;
+      return await getEventAttendeesCount({ 
+        data: { 
+          eventId: activeHasuraChannel.event_id || undefined, 
+          scheduleId: activeHasuraChannel.schedule_id || undefined 
+        } 
+      });
+    },
+    enabled: !!(activeHasuraChannel?.event_id || activeHasuraChannel?.schedule_id),
+  });
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,9 +148,25 @@ function CommunityPage() {
   };
 
   const [activeTab, setActiveTab] = useState("all");
+  const [gifSearch, setGifSearch] = useState("");
+  const [isGifPopoverOpen, setIsGifPopoverOpen] = useState(false);
+
+  const fetchGifs = (offset: number) => {
+    if (gifSearch) {
+      return gf.search(gifSearch, { offset, limit: 10 });
+    }
+    return gf.trending({ offset, limit: 10 });
+  };
+
+  const handleGifClick = (gif: any, e: React.SyntheticEvent<HTMLElement, Event>) => {
+    e.preventDefault();
+    if (!activeChat) return;
+    sendMessage("", activeChat, gif.images.fixed_width.url);
+    setIsGifPopoverOpen(false);
+  };
 
   const handleFollowerClick = async (follower: any) => {
-    const name = follower.username || "Follower";
+    const name = follower.handle ? `@${follower.handle}` : (follower.username || "Follower");
     const profileStr = typeof follower.profile === "string" ? follower.profile : "";
     const avatar = (profileStr && !profileStr.includes("pravatar.cc")) ? profileStr : "";
     await createDirectMessageChannel(follower.id, name, avatar);
@@ -369,7 +433,9 @@ function CommunityPage() {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="font-semibold text-sm truncate pr-2">{chat.name}</span>
+                        <span className="font-semibold text-sm truncate pr-2">
+                          {chat.name} {chat.country ? getCountryFlag(chat.country) : ""}
+                        </span>
                         <span className="text-[10px] text-muted-foreground whitespace-nowrap">{chat.time}</span>
                       </div>
                       <div className="flex justify-between items-center">
@@ -398,7 +464,7 @@ function CommunityPage() {
                   </div>
                 )}
                 {followers.map((follower: any) => {
-                  const name = follower.username || "Follower";
+                  const name = follower.handle ? `@${follower.handle}` : (follower.username || "Follower");
                   const profileStr = typeof follower.profile === "string" ? follower.profile : "";
                   const avatar = (profileStr && !profileStr.includes("pravatar.cc")) ? profileStr : "";
                   return (
@@ -416,7 +482,9 @@ function CommunityPage() {
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="font-semibold text-sm truncate pr-2">{name}</span>
+                          <span className="font-semibold text-sm truncate pr-2">
+                            {name} {follower.country ? getCountryFlag(follower.country) : ""}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
                           <p className="text-xs truncate pr-2 text-muted-foreground">
@@ -606,7 +674,9 @@ function CommunityPage() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold text-sm leading-tight">{activeChat.name}</h3>
+                <h3 className="font-semibold text-sm leading-tight">
+                  {activeChat.name} {activeChat.country ? getCountryFlag(activeChat.country) : ""}
+                </h3>
                 <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
                   {activeChat.online ? (
                     <>
@@ -620,19 +690,17 @@ function CommunityPage() {
                   {activeChat.type === "group" && (
                     <>
                       <span className="w-1 h-1 rounded-full bg-border"></span>
-                      <span>{followers.length} Members</span>
+                      <span>
+                        {activeChat.entityType === "GLOBAL" 
+                          ? `${followers.length} Members` 
+                          : `${attendeesCount} Members`}
+                      </span>
                     </>
                   )}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Button variant="ghost" size="icon" className="rounded-full hover:text-foreground">
-                <Phone className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="rounded-full hover:text-foreground">
-                <Video className="h-4 w-4" />
-              </Button>
               <Button variant="ghost" size="icon" className="rounded-full hover:text-foreground">
                 <Info className="h-4 w-4" />
               </Button>
@@ -656,31 +724,44 @@ function CommunityPage() {
                   <div key={msg.id} className={`flex gap-3 ${msg.isMe ? "justify-end" : "justify-start"}`}>
                     {!msg.isMe && (
                       <div className="w-8 shrink-0">
-                        {showAvatar && (
-                          <Avatar className="h-8 w-8 border border-border/50">
-                            <AvatarImage src={activeChat.avatar} />
-                            <AvatarFallback>{activeChat.name[0]}</AvatarFallback>
-                          </Avatar>
-                        )}
+                        {showAvatar && (() => {
+                          const senderProfile = followers.find((f: any) => f.id === msg.senderId);
+                          const profileStr = typeof senderProfile?.profile === "string" ? senderProfile.profile : "";
+                          const avatarSrc = (profileStr && !profileStr.includes("pravatar.cc")) ? profileStr : undefined;
+                          return (
+                            <Avatar className="h-8 w-8 border border-border/50">
+                              <AvatarImage src={avatarSrc} />
+                              <AvatarFallback>{(senderProfile?.handle || senderProfile?.username || "F")[0].toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                          );
+                        })()}
                       </div>
                     )}
                     
                     <div className={`flex flex-col ${msg.isMe ? "items-end" : "items-start"} max-w-[70%]`}>
-                      {!msg.isMe && activeChat.type === "group" && showAvatar && (
-                        <span className="text-[11px] text-muted-foreground mb-1 ml-1 font-medium">
-                          Follower Member
-                        </span>
-                      )}
+                      {!msg.isMe && activeChat.type === "group" && showAvatar && (() => {
+                        const senderProfile = followers.find((f: any) => f.id === msg.senderId);
+                        const senderName = senderProfile?.handle ? `@${senderProfile.handle}` : (senderProfile?.username || "Follower Member");
+                        const senderFlag = senderProfile?.country ? getCountryFlag(senderProfile.country) : "";
+                        return (
+                          <span className="text-[11px] text-muted-foreground mb-1 ml-1 font-medium">
+                            {senderName} {senderFlag}
+                          </span>
+                        );
+                      })()}
                       
                       <div 
                         className={`p-3.5 rounded-2xl shadow-sm text-sm ${
-                          msg.isMe 
+                          msg.isMe && !msg.mediaUrl
                             ? "bg-primary text-primary-foreground rounded-tr-sm" 
-                            : "bg-background border border-border/50 rounded-tl-sm"
+                            : (msg.mediaUrl && !msg.text) ? "p-0 bg-transparent shadow-none" : "bg-background border border-border/50 rounded-tl-sm"
                         }`}
-                        style={msg.isMe ? { background: "var(--gradient-primary)" } : {}}
+                        style={msg.isMe && !msg.mediaUrl ? { background: "var(--gradient-primary)" } : {}}
                       >
-                        {msg.text}
+                        {msg.mediaUrl && (
+                          <img src={msg.mediaUrl} alt="GIF" className="max-w-[200px] rounded-lg object-cover" />
+                        )}
+                        {msg.text && <div className={msg.mediaUrl ? "mt-2" : ""}>{msg.text}</div>}
                       </div>
                       <span className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1 mx-1">
                         {msg.timestamp}
@@ -696,12 +777,51 @@ function CommunityPage() {
           {/* Input Area */}
           <div className="p-4 bg-background/50 backdrop-blur-md border-t border-border/60 shrink-0">
             <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto relative flex items-center gap-2 bg-card border border-border/60 rounded-full p-1.5 shadow-sm">
-              <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0">
-                <Smile className="h-5 w-5" />
-              </Button>
-              <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0 hidden sm:inline-flex">
-                <Paperclip className="h-5 w-5" />
-              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0">
+                    <Smile className="h-5 w-5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent side="top" align="start" className="p-0 border-none shadow-xl bg-transparent mb-2">
+                  <EmojiPicker 
+                    onEmojiClick={(emojiData) => setMessageInput(prev => prev + emojiData.emoji)} 
+                    theme="auto"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Popover open={isGifPopoverOpen} onOpenChange={setIsGifPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0 hidden sm:inline-flex"
+                  >
+                    <Sticker className="h-5 w-5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent side="top" align="start" className="w-[300px] p-2 mb-2 shadow-xl rounded-xl">
+                  <Input 
+                    placeholder="Search GIFs..." 
+                    value={gifSearch}
+                    onChange={(e) => setGifSearch(e.target.value)}
+                    className="mb-2 h-8 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                  <div className="h-[300px] overflow-y-auto overflow-x-hidden rounded-md no-scrollbar">
+                    <Grid 
+                      key={gifSearch} 
+                      width={280} 
+                      columns={2} 
+                      fetchGifs={fetchGifs} 
+                      onGifClick={handleGifClick} 
+                      noLink
+                      hideAttribution
+                    />
+                  </div>
+                </PopoverContent>
+              </Popover>
               
               <Input 
                 value={messageInput}
@@ -710,20 +830,15 @@ function CommunityPage() {
                 className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-2 h-10 shadow-none text-sm"
               />
               
-              {messageInput.trim() ? (
-                <Button 
-                  type="submit" 
-                  size="icon" 
-                  className="h-10 w-10 rounded-full shrink-0 shadow-[var(--shadow-glow)] transition-all"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  <Send className="h-4 w-4 ml-0.5" />
-                </Button>
-              ) : (
-                <Button type="button" variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0">
-                  <ImageIcon className="h-5 w-5" />
-                </Button>
-              )}
+              <Button 
+                type="submit" 
+                size="icon" 
+                className="h-10 w-10 rounded-full shrink-0 shadow-[var(--shadow-glow)] transition-all"
+                style={{ background: "var(--gradient-primary)" }}
+                disabled={!messageInput.trim()}
+              >
+                <Send className="h-4 w-4 ml-0.5" />
+              </Button>
             </form>
           </div>
         </div>

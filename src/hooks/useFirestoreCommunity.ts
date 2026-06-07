@@ -20,6 +20,7 @@ export type Message = {
   timestamp: any;
   isMe: boolean;
   channelId: string;
+  mediaUrl?: string;
 };
 
 export type ChatChannel = {
@@ -35,6 +36,8 @@ export type ChatChannel = {
   messages: Message[];
   organizerId: string;
   userId?: string;
+  country?: string;
+  handle?: string;
 };
 
 export function useFirestoreCommunity(workspaceId: string, currentUserId: string) {
@@ -86,8 +89,10 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
               if (profile) {
                 return {
                   ...ch,
-                  name: profile.username || profile.profile?.first_name || ch.name,
-                  avatar: profile.profile || ch.avatar
+                  name: (profile.handle ? `@${profile.handle}` : profile.username) || profile.profile?.first_name || ch.name,
+                  avatar: profile.profile || ch.avatar,
+                  country: profile.country,
+                  handle: profile.handle
                 };
               }
             }
@@ -147,6 +152,7 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
           timeFormatted: rawTime?.toDate?.()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           isMe: data.senderId === currentUserId || data.senderId === workspaceId, // Include workspaceId for DMs
           channelId: data.channelId,
+          mediaUrl: data.mediaUrl,
           isPending: !rawTime
         };
       });
@@ -169,7 +175,7 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
     return () => unsubscribeMessages();
   }, [activeChatId, currentUserId]);
 
-  const sendMessage = async (text: string, activeChat: ChatChannel) => {
+  const sendMessage = async (text: string, activeChat: ChatChannel, mediaUrl?: string) => {
     if (!activeChatId) return;
 
     let senderId = currentUserId;
@@ -185,12 +191,13 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
       senderId,
       receiverId,
       text,
+      mediaUrl: mediaUrl || null,
       timestamp: serverTimestamp()
     });
 
     const channelRef = doc(db, "agatike_channels", activeChatId);
     await updateDoc(channelRef, {
-      lastMessage: text,
+      lastMessage: text || "Sent an attachment",
       lastMessageTime: serverTimestamp()
     });
   };
