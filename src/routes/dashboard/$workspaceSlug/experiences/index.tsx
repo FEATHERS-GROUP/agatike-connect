@@ -41,20 +41,40 @@ function DashboardExperiences() {
       .map((e: any) => {
         const ts = e.tour_stops || {};
         const fr = e.event_requency || {};
-        
+
+        // ── Tickets ─────────────────────────────────────
         let price = 0;
-        let spots = 0;
+        let ticketSold = 0;
+        let ticketRemaining = 0;
         if (e.event_tickets && e.event_tickets.length > 0) {
           price = Math.min(...e.event_tickets.map((t: any) => Number(t.cost || 0)));
-          spots = e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.remaining || 0), 0);
+          ticketSold = e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.sold || 0), 0);
+          ticketRemaining = e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.remaining || 0), 0);
         }
 
+        // ── Schedules ────────────────────────────────────
+        // Primary run = event_requency date + ticket spots
+        // Additional runs = DB schedules table (future occurrences of same experience)
+        const dbSchedules = e.schedules || [];
+        const primaryExists = !!fr.date || !!ts.date;
+
+        // Total count: 1 for the primary event date + each additional DB schedule
+        // Total sold: ticket sold (primary) + sum of DB schedule spots_filled
+        // Total capacity: ticket spots (primary) + sum of DB schedule total_spots
+        const dbScheduleSold = dbSchedules.reduce((acc: number, s: any) => acc + Number(s.spots_filled || 0), 0);
+        const dbScheduleCapacity = dbSchedules.reduce((acc: number, s: any) => acc + Number(s.total_spots || 0), 0);
+
+        const totalSold = ticketSold + dbScheduleSold;
+        const totalCapacity = (ticketSold + ticketRemaining) + dbScheduleCapacity;
+        const available = Math.max(0, totalCapacity - totalSold);
+
+        // ── Duration & Dates ─────────────────────────────
         const dateStr = fr.date || ts.date || "";
         const numDays = fr.numberOfDays || 1;
-        
+
         let durationStr = "Not specified";
         let endDateStr = dateStr;
-        
+
         if (numDays > 1) {
           durationStr = `${numDays} Days`;
           if (dateStr) {
@@ -63,26 +83,30 @@ function DashboardExperiences() {
             endDateStr = d.toISOString().split("T")[0];
           }
         } else {
-           const itin = ts.itinerary || [];
-           if (itin.length >= 2) {
-             const firstTime = itin[0].time;
-             const lastTime = itin[itin.length - 1].time;
-             if (firstTime && lastTime) {
-               const [h1, m1] = firstTime.split(':').map(Number);
-               const [h2, m2] = lastTime.split(':').map(Number);
-               const diff = (h2 + m2/60) - (h1 + m1/60);
-               durationStr = diff > 0 ? `${Math.round(diff * 10) / 10} hours` : "Not specified";
-             } else {
-               durationStr = "Not specified";
-             }
-           } else {
-             durationStr = "Not specified";
-           }
+          const itin = ts.itinerary || [];
+          if (itin.length >= 2) {
+            const firstTime = itin[0].time;
+            const lastTime = itin[itin.length - 1].time;
+            if (firstTime && lastTime) {
+              const [h1, m1] = firstTime.split(':').map(Number);
+              const [h2, m2] = lastTime.split(':').map(Number);
+              const diff = (h2 + m2/60) - (h1 + m1/60);
+              durationStr = diff > 0 ? `${Math.round(diff * 10) / 10} hours` : "Not specified";
+            } else {
+              durationStr = "Not specified";
+            }
+          } else {
+            durationStr = "Not specified";
+          }
         }
-        
+
+        // Total schedules = 1 primary (if event has a date) + additional DB schedule rows
+        const schedulesCount = (primaryExists ? 1 : 0) + dbSchedules.length;
+
+
         const displayDate = numDays > 1 && dateStr ? `${dateStr} to ${endDateStr}` : (dateStr || "Not scheduled");
         const city = ts.city || ts.venueName || "Location not set";
-        
+
         return {
           id: e.id,
           title: e.title || "Untitled Experience",
@@ -94,10 +118,14 @@ function DashboardExperiences() {
           price,
           currency: activeWorkspace?.currency || "USD",
           duration: durationStr,
-          spots
+          totalSold,
+          totalCapacity,
+          available,
+          schedulesCount,
         };
       });
   }, [rawEvents, activeWorkspace]);
+
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full">
@@ -119,13 +147,14 @@ function DashboardExperiences() {
       </header>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <div className="flex items-center justify-between mb-2 text-muted-foreground">
-            <span className="text-xs font-medium uppercase tracking-wider">Total Active</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Total Experiences</span>
             <Activity className="h-4 w-4 text-primary" />
           </div>
           <p className="text-2xl font-semibold mt-1">{expList.length}</p>
+          <p className="text-xs text-muted-foreground mt-1">Active listings</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <div className="flex items-center justify-between mb-2 text-muted-foreground">
@@ -133,9 +162,29 @@ function DashboardExperiences() {
             <Users className="h-4 w-4 text-blue-500" />
           </div>
           <p className="text-2xl font-semibold mt-1">
-            {expList.reduce((acc, curr) => acc + curr.spots, 0)}
+            {expList.reduce((acc, curr) => acc + curr.totalSold, 0)}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">Available capacity</p>
+          <p className="text-xs text-muted-foreground mt-1">Across all experiences</p>
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
+          <div className="flex items-center justify-between mb-2 text-muted-foreground">
+            <span className="text-xs font-medium uppercase tracking-wider">Available Spots</span>
+            <Calendar className="h-4 w-4 text-green-500" />
+          </div>
+          <p className="text-2xl font-semibold mt-1">
+            {expList.reduce((acc, curr) => acc + curr.available, 0)}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">Remaining capacity</p>
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
+          <div className="flex items-center justify-between mb-2 text-muted-foreground">
+            <span className="text-xs font-medium uppercase tracking-wider">Total Schedules</span>
+            <Clock className="h-4 w-4 text-orange-500" />
+          </div>
+          <p className="text-2xl font-semibold mt-1">
+            {expList.reduce((acc, curr) => acc + curr.schedulesCount, 0)}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">Across all experiences</p>
         </div>
       </div>
 
@@ -207,7 +256,7 @@ function DashboardExperiences() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Users className="h-3.5 w-3.5" />
-                      <span>{exp.spots} spots</span>
+                      <span>{exp.available} spots left</span>
                     </div>
                   </div>
                 </div>

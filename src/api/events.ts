@@ -133,6 +133,13 @@ const GET_WORKSPACE_EVENTS = `
         tour_stop_idx
         form_id
       }
+      schedules {
+        id
+        total_spots
+        spots_filled
+        start_date
+        end_date
+      }
     }
   }
 `;

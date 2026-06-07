@@ -151,17 +151,21 @@ function DashboardExperienceDetails() {
       requirements: [],
       included: ts.included || [],
       schedules: [
+        // Schedule #1 — the primary event date from event_requency
         ...(dateStr ? [{
-          id: e.id,
+          id: `primary-${e.id}`,
           date: dateStr,
           totalSpots: spots,
-          spotsFilled: e.event_tickets ? e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.sold || 0), 0) : 0,
+          spotsFilled: e.event_tickets
+            ? e.event_tickets.reduce((acc: number, t: any) => acc + Number(t.sold || 0), 0)
+            : 0,
         }] : []),
+        // Additional future runs added via the Schedules UI
         ...(e.schedules || []).map((s: any) => ({
           id: s.id,
           date: s.start_date,
           totalSpots: s.total_spots,
-          spotsFilled: s.spots_filled
+          spotsFilled: s.spots_filled,
         }))
       ].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()),
       addons: e.merchandises || [],
