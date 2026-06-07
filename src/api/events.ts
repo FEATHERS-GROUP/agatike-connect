@@ -30,8 +30,8 @@ const CREATE_EVENT_SCHEDULE = `
 `;
 
 export const createEventSchedule = createServerFn({ method: "POST" }).handler(async (ctx: any) => {
-  const { data } = ctx.data as unknown as { data: any };
-  return hasuraRequest<any>(CREATE_EVENT_SCHEDULE, { data });
+  const scheduleData = ctx.data as any;
+  return hasuraRequest<any>(CREATE_EVENT_SCHEDULE, { data: scheduleData });
 });
 
 

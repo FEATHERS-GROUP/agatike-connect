@@ -127,7 +127,7 @@ export function EventDetailsMobile({
   const reviews = feedbackData?.reviews || [];
   const avgRating = feedbackData?.aggregate?.avg?.rating
     ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1)
-    : "5.0";
+    : "N/A";
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-32">

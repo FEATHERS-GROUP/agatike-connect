@@ -24,6 +24,8 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useMemo, useState, useEffect, lazy, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventById, createEventSchedule } from "@/api/events";
+import { getEventStaff } from "@/api/staff";
+import { getEventFeedback } from "@/api/feedback";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -70,6 +72,21 @@ function DashboardExperienceDetails() {
   const { data: rawEvent, isLoading } = useQuery({
     queryKey: ["event", experienceId],
     queryFn: () => getEventById({ data: { id: experienceId } } as any),
+    enabled: !!experienceId,
+  });
+
+  const { data: staff = [] } = useQuery({
+    queryKey: ["event-staff", experienceId],
+    queryFn: async () => {
+      const res = await getEventStaff({ data: { event_id: experienceId } } as any);
+      return res || [];
+    },
+    enabled: !!experienceId,
+  });
+
+  const { data: feedbackData } = useQuery({
+    queryKey: ["event-feedback", experienceId],
+    queryFn: () => getEventFeedback({ data: { event_id: experienceId } } as any),
     enabled: !!experienceId,
   });
 
@@ -129,7 +146,7 @@ function DashboardExperienceDetails() {
       currency: activeWorkspace?.currency || "USD",
       duration: durationStr,
       spots,
-      rating: "4.8",
+      rating: feedbackData?.aggregate?.avg?.rating ? Number(feedbackData.aggregate.avg.rating).toFixed(1) : "N/A",
       itinerary: ts.itinerary || [],
       requirements: [],
       schedules: [
@@ -147,16 +164,33 @@ function DashboardExperienceDetails() {
         }))
       ].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()),
       addons: e.merchandises || [],
-      team: [] as any[]
+      team: staff.map((s: any) => {
+        const isUnregistered = !s.user_id && (s.first_name || s.last_name);
+        const displayName = isUnregistered
+          ? `${s.first_name || ""} ${s.last_name || ""}`.trim()
+          : `User ${s.user_id?.substring(0, 6) || "Unknown"}`;
+        return {
+          name: displayName,
+          role: s.role,
+          avatar: s.profile_image,
+        };
+      })
     };
-  }, [rawEvent, activeWorkspace]);
+  }, [rawEvent, activeWorkspace, staff, feedbackData]);
 
   const { totalBookings, maxCapacity } = useMemo(() => {
     let booked = 0;
-    if (rawEvent?.event_tickets) {
-      booked = rawEvent.event_tickets.reduce((acc: number, t: any) => acc + Number(t.sold || 0), 0);
+    let capacity = 0;
+    if (experience?.schedules && experience.schedules.length > 0) {
+      booked = experience.schedules.reduce((acc: number, s: any) => acc + Number(s.spotsFilled || 0), 0);
+      capacity = experience.schedules.reduce((acc: number, s: any) => acc + Number(s.totalSpots || 0), 0);
+    } else {
+      if (rawEvent?.event_tickets) {
+        booked = rawEvent.event_tickets.reduce((acc: number, t: any) => acc + Number(t.sold || 0), 0);
+      }
+      capacity = experience?.spots || 0;
     }
-    return { totalBookings: booked, maxCapacity: experience?.spots || 0 };
+    return { totalBookings: booked, maxCapacity: capacity };
   }, [rawEvent, experience]);
 
   const addScheduleMutation = useMutation({
@@ -279,9 +313,6 @@ function DashboardExperienceDetails() {
           <Button variant="outline" className="rounded-full shadow-sm hidden md:flex">
             <Share2 className="mr-2 h-4 w-4" /> Share
           </Button>
-          <Button variant="outline" className="rounded-full shadow-sm">
-            <User className="mr-2 h-4 w-4" /> Manage Team
-          </Button>
           <Button className="rounded-full shadow-sm" style={{ background: "var(--gradient-primary)" }}>
             <Edit2 className="mr-2 h-4 w-4" /> Edit Experience
           </Button>
@@ -321,7 +352,9 @@ function DashboardExperienceDetails() {
             <Activity className="h-4 w-4 text-purple-500" />
           </div>
           <p className="text-2xl font-bold text-purple-500">{experience.rating}</p>
-          <p className="text-[11px] text-muted-foreground mt-1">From past attendees</p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            From {feedbackData?.aggregate?.count || 0} review{(feedbackData?.aggregate?.count || 0) !== 1 ? "s" : ""}
+          </p>
         </div>
       </div>
 
@@ -424,7 +457,7 @@ function DashboardExperienceDetails() {
 
                 {/* Text Timeline */}
                 <div className="space-y-0 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent pt-2">
-                  {experience.itinerary.map((stop) => (
+                  {experience.itinerary.map((stop: any) => (
                     <div key={stop.id} className="relative flex items-start group is-active py-4">
                       {/* Marker */}
                       <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-primary shadow-sm shrink-0 relative z-10">
@@ -589,7 +622,7 @@ function DashboardExperienceDetails() {
 
               {experience.addons && experience.addons.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {experience.addons.map((addon) => (
+                  {experience.addons.map((addon: any) => (
                     <div key={addon.id} className="rounded-2xl border border-border/60 p-4 bg-secondary/20 hover:bg-secondary/40 transition-colors flex flex-col h-full">
                       <div className="flex-1">
                         <div className="flex items-start justify-between gap-4 mb-2">
@@ -622,7 +655,7 @@ function DashboardExperienceDetails() {
       {/* RIGHT COLUMN (Sidebar) */}
         <div className="space-y-6">
           <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] sticky top-6">
-            <h3 className="font-semibold text-lg mb-4">Meet the Team</h3>
+            <h3 className="font-semibold text-lg mb-4">People to Help</h3>
             {experience.team && experience.team.length > 0 ? (
               <div className="space-y-4 mb-6">
                 {experience.team.map((member, i) => (
@@ -640,7 +673,7 @@ function DashboardExperienceDetails() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground mb-6">No team members assigned.</p>
+              <p className="text-sm text-muted-foreground mb-6">No people assigned to help.</p>
             )}
             
             <div className="space-y-3 pt-4 border-t border-border/60">

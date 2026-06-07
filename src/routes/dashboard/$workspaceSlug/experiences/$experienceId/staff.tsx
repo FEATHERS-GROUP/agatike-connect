@@ -243,8 +243,8 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
     last_name: "",
     email: "",
     phone: "",
-    role: "Volunteer",
-    allowed_sections: [] as string[],
+    role: "Host",
+    allowed_sections: ["*"] as string[],
   });
 
   const mutation = useMutation({
@@ -372,68 +372,18 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Organizer">Organizer</SelectItem>
-                <SelectItem value="Event Coordinator">Event Coordinator</SelectItem>
-                <SelectItem value="Manager">Manager</SelectItem>
-                <SelectItem value="Security Lead">Security Lead</SelectItem>
-                <SelectItem value="Security">Security</SelectItem>
-                <SelectItem value="Gate Staff">Gate Staff / Check-in</SelectItem>
-                <SelectItem value="Box Office">Box Office / Ticketing</SelectItem>
-                <SelectItem value="Bartender">Bartender</SelectItem>
-                <SelectItem value="Bar Staff">Bar Staff</SelectItem>
-                <SelectItem value="Catering Staff">Catering Staff</SelectItem>
-                <SelectItem value="VIP Host">VIP Host / Concierge</SelectItem>
-                <SelectItem value="Stage Manager">Stage Manager</SelectItem>
-                <SelectItem value="Stage Hand">Stage Hand</SelectItem>
-                <SelectItem value="AV Technician">AV Tech</SelectItem>
+                <SelectItem value="Host">Experience Host</SelectItem>
+                <SelectItem value="Co-Host">Co-Host</SelectItem>
+                <SelectItem value="Lead Guide">Lead Guide</SelectItem>
+                <SelectItem value="Local Guide">Local Guide</SelectItem>
+                <SelectItem value="Instructor">Instructor / Coach</SelectItem>
+                <SelectItem value="Facilitator">Facilitator</SelectItem>
+                <SelectItem value="Driver">Driver / Transport</SelectItem>
+                <SelectItem value="Safety Officer">First Aid / Safety</SelectItem>
+                <SelectItem value="Support Staff">Assistant / Helper</SelectItem>
                 <SelectItem value="Photographer">Photographer</SelectItem>
-                <SelectItem value="Medical Staff">Medical / First Aid</SelectItem>
-                <SelectItem value="Volunteer">Volunteer</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-3 pt-2">
-            <Label className="text-sm font-semibold">Allowed Sections (Access Control)</Label>
-            <div className="space-y-2 border border-border/50 rounded-xl p-3 bg-secondary/10 max-h-[150px] overflow-y-auto">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <Checkbox
-                  checked={formData.allowed_sections.includes("*")}
-                  onCheckedChange={(c) => {
-                    if (c) setFormData({ ...formData, allowed_sections: ["*"] });
-                    else setFormData({ ...formData, allowed_sections: [] });
-                  }}
-                />
-                <span className="font-medium">All Access (Everywhere)</span>
-              </label>
-              {sections.map((s) => (
-                <label
-                  key={s.id}
-                  className={`flex items-center gap-2 text-sm cursor-pointer ${formData.allowed_sections.includes("*") ? "opacity-50 pointer-events-none" : ""}`}
-                >
-                  <Checkbox
-                    disabled={formData.allowed_sections.includes("*")}
-                    checked={formData.allowed_sections.includes(s.id)}
-                    onCheckedChange={(c) => {
-                      if (c) {
-                        setFormData({
-                          ...formData,
-                          allowed_sections: [...formData.allowed_sections, s.id],
-                        });
-                      } else {
-                        setFormData({
-                          ...formData,
-                          allowed_sections: formData.allowed_sections.filter((id) => id !== s.id),
-                        });
-                      }
-                    }}
-                  />
-                  <span>{s.name}</span>
-                </label>
-              ))}
-            </div>
-            <p className="text-[10px] text-muted-foreground">
-              Selecting specific sections restricts their badge scan to only those areas.
-            </p>
           </div>
           <Button
             className="w-full mt-4"
@@ -442,7 +392,7 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
             disabled={mutation.isPending}
           >
             {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Generate Staff Badge
+            Add Staff Member
           </Button>
         </div>
       </DialogContent>
