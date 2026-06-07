@@ -1314,4 +1314,15 @@ flowchart TD
 
 ---
 
+## 19. Community Channels (`/community`)
+
+**Logic:**
+- Channels represent isolated group chats for event attendees, organizers, and staff.
+- A central feature is the dynamic unfolding of complex event occurrences to ensure attendees are placed in the correct context.
+- **For Events (multi-city tours):** Channels are generated per specific `tour_stop` using `tour_stop_idx` (e.g., Event Name - New York Stop, Event Name - LA Stop).
+- **For Experiences (multi-date schedules):** The UI dynamically creates channels per schedule occurrence using `schedule_id`. 
+  - **Crucial Note on Experience Schedules:** A "Primary Schedule" is derived directly from `event_requency.date` on the `events` row itself. Additional or future schedules are parsed from the related `event_schedules` array. Both the primary and secondary schedules are combined and listed in the UI so organizers can spin up distinct Firebase group chats for each exact date.
+
+---
+
 _Last updated: June 2026 — Agatike Connect_

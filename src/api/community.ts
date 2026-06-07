@@ -8,6 +8,8 @@ export interface CommunityChannel {
   cover_url: string;
   is_main: boolean;
   event_id: string | null;
+  schedule_id: string | null;
+  tour_stop_idx: number | null;
   created_at: string;
 }
 
@@ -24,6 +26,8 @@ export const getCommunityChannels = createServerFn({ method: "POST" }).handler(a
         cover_url
         is_main
         event_id
+        schedule_id
+        tour_stop_idx
         created_at
       }
     }
@@ -40,18 +44,22 @@ export const createCommunityChannel = createServerFn({ method: "POST" }).handler
     coverUrl?: string; 
     isMain?: boolean; 
     eventId?: string;
+    scheduleId?: string;
+    tourStopIdx?: number;
   };
   
   if (!data.organizerId || !data.name) throw new Error("Missing required fields");
 
   const mutation = `
-    mutation CreateCommunityChannel($orgId: uuid!, $name: String!, $cover: String, $isMain: Boolean, $eventId: uuid) {
+    mutation CreateCommunityChannel($orgId: uuid!, $name: String!, $cover: String, $isMain: Boolean, $eventId: uuid, $scheduleId: uuid, $tourStopIdx: Int) {
       insert_community_channels_one(object: {
         organizer_id: $orgId, 
         name: $name, 
         cover_url: $cover, 
         is_main: $isMain, 
-        event_id: $eventId
+        event_id: $eventId,
+        schedule_id: $scheduleId,
+        tour_stop_idx: $tourStopIdx
       }) {
         id
         organizer_id
@@ -59,6 +67,8 @@ export const createCommunityChannel = createServerFn({ method: "POST" }).handler
         cover_url
         is_main
         event_id
+        schedule_id
+        tour_stop_idx
         created_at
       }
     }
@@ -69,7 +79,9 @@ export const createCommunityChannel = createServerFn({ method: "POST" }).handler
     name: data.name,
     cover: data.coverUrl || "",
     isMain: data.isMain || false,
-    eventId: data.eventId || null
+    eventId: data.eventId || null,
+    scheduleId: data.scheduleId || null,
+    tourStopIdx: data.tourStopIdx !== undefined ? data.tourStopIdx : null
   });
 
   return result.insert_community_channels_one;

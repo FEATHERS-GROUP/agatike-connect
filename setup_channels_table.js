@@ -3,18 +3,9 @@ config();
 
 async function run() {
   const sql = `
-    CREATE TABLE IF NOT EXISTS community_channels (
-      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-      organizer_id UUID NOT NULL,
-      name TEXT NOT NULL,
-      cover_url TEXT,
-      is_main BOOLEAN DEFAULT FALSE,
-      event_id UUID,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      updated_at TIMESTAMPTZ DEFAULT NOW()
-    );
-
-    -- Track the table in Hasura
+    ALTER TABLE community_channels
+    ADD COLUMN IF NOT EXISTS schedule_id UUID,
+    ADD COLUMN IF NOT EXISTS tour_stop_idx INTEGER;
   `;
 
   const sqlReq = {

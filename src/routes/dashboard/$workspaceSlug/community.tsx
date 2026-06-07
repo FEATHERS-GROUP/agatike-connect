@@ -1,5 +1,5 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   MoreVertical,
@@ -194,17 +194,19 @@ function CommunityPage() {
     }
   };
 
-  const handleCreateEventChannel = async (event: any) => {
+  const handleCreateEventChannel = async (target: any) => {
     if (creating) return;
     setCreating(true);
     try {
       const ch = await createCommunityChannel({ 
         data: { 
           organizerId, 
-          name: event.title, 
-          coverUrl: event.cover || "",
+          name: target.title, 
+          coverUrl: target.cover || "",
           isMain: false,
-          eventId: event.id
+          eventId: target.eventId,
+          scheduleId: target.scheduleId,
+          tourStopIdx: target.tourStopIdx
         } 
       });
       await createFirebaseGroupChannel(ch.id, ch.name, ch.cover_url || "", "EVENT");
@@ -213,6 +215,65 @@ function CommunityPage() {
       setCreating(false);
     }
   };
+
+  const channelTargets = React.useMemo(() => {
+    const targets: any[] = [];
+    events.forEach(event => {
+      const isExperience = event.event_type === "experience" || (event.schedules && event.schedules.length > 0);
+      
+      if (isExperience) {
+        const primaryDateStr = event.event_requency?.date || (!Array.isArray(event.tour_stops) ? event.tour_stops?.date : undefined);
+        
+        targets.push({
+          type: "schedule",
+          id: `sched_primary_${event.id}`,
+          eventId: event.id,
+          scheduleId: null,
+          tourStopIdx: null,
+          title: `${event.title} - ${primaryDateStr || 'Primary Schedule'}`,
+          cover: event.cover
+        });
+
+        if (Array.isArray(event.schedules)) {
+          event.schedules.forEach((schedule: any) => {
+            targets.push({
+              type: "schedule",
+              id: `sched_${schedule.id}`,
+              eventId: event.id,
+              scheduleId: schedule.id,
+              tourStopIdx: null,
+              title: `${event.title} - ${schedule.start_date || 'Date TBD'}`,
+              cover: event.cover
+            });
+          });
+        }
+      } else if (Array.isArray(event.tour_stops) && event.tour_stops.length > 0) {
+        event.tour_stops.forEach((stop: any, idx: number) => {
+          const stopName = stop.city || stop.venue || `Stop ${idx + 1}`;
+          targets.push({
+            type: "tour_stop",
+            id: `stop_${event.id}_${idx}`,
+            eventId: event.id,
+            scheduleId: null,
+            tourStopIdx: idx,
+            title: `${event.title} - ${stopName}`,
+            cover: event.cover
+          });
+        });
+      } else {
+        targets.push({
+          type: "event",
+          id: `ev_${event.id}`,
+          eventId: event.id,
+          scheduleId: null,
+          tourStopIdx: null,
+          title: event.title,
+          cover: event.cover
+        });
+      }
+    });
+    return targets;
+  }, [events]);
 
   const handleOpenHasuraChannel = (channelId: string) => {
     const hc = communityChannels.find(c => c.id === channelId);
@@ -431,8 +492,16 @@ function CommunityPage() {
                 {/* Event Channels Section */}
                 <div>
                   <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">Event Channels</h3>
-                  {events.map((event) => {
-                    const eventChannel = communityChannels.find(c => c.event_id === event.id);
+                  {channelTargets.map((target) => {
+                    const eventChannel = communityChannels.find(c => {
+                      if (c.event_id !== target.eventId) return false;
+                      if (target.type === "schedule") {
+                        if (target.scheduleId === null) return !c.schedule_id && c.tour_stop_idx === null;
+                        return c.schedule_id === target.scheduleId;
+                      }
+                      if (target.type === "tour_stop") return c.tour_stop_idx === target.tourStopIdx;
+                      return !c.schedule_id && c.tour_stop_idx === null;
+                    });
                     
                     if (eventChannel) {
                       const fc = channels.find(c => c.id === eventChannel.id);
@@ -478,10 +547,10 @@ function CommunityPage() {
                       );
                     } else {
                       return (
-                        <div key={event.id} className="flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left hover:bg-accent/50">
+                        <div key={target.id} className="flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left hover:bg-accent/50">
                           <div className="relative shrink-0">
                             <Avatar className="h-12 w-12 border border-border/50 opacity-50 grayscale">
-                              <AvatarImage src={(event.cover && !event.cover.includes("pravatar.cc")) ? event.cover : ""} alt={event.title} />
+                              <AvatarImage src={(target.cover && !target.cover.includes("pravatar.cc")) ? target.cover : ""} alt={target.title} />
                               <AvatarFallback className="bg-muted">
                                 <Users className="h-5 w-5 text-muted-foreground" />
                               </AvatarFallback>
@@ -489,14 +558,14 @@ function CommunityPage() {
                           </div>
                           <div className="flex-1 min-w-0 flex items-center justify-between">
                             <div>
-                              <span className="font-semibold text-sm truncate block">{event.title}</span>
+                              <span className="font-semibold text-sm truncate block">{target.title}</span>
                               <span className="text-[10px] text-muted-foreground">No channel active</span>
                             </div>
                             <Button 
                               variant="outline" 
                               size="sm" 
                               className="h-7 text-[10px] px-2 rounded-full"
-                              onClick={() => handleCreateEventChannel(event)}
+                              onClick={() => handleCreateEventChannel(target)}
                               disabled={creating}
                             >
                               Create
@@ -506,7 +575,7 @@ function CommunityPage() {
                       );
                     }
                   })}
-                  {events.length === 0 && (
+                  {channelTargets.length === 0 && (
                     <div className="px-2 text-center py-4">
                       <p className="text-xs text-muted-foreground">No events found. Create an event to add a channel.</p>
                     </div>
