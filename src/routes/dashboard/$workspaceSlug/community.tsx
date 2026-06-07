@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import {
   Search,
   MoreVertical,
@@ -12,6 +12,9 @@ import {
   Image as ImageIcon,
   Users,
   MessageCircle,
+  Loader2,
+  UploadCloud,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +22,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/community")({
   head: () => ({
@@ -30,134 +42,195 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/community")({
   component: CommunityPage,
 });
 
-// --- Mock Data ---
-type Message = {
-  id: string;
-  senderId: string;
-  text: string;
-  timestamp: string;
-  isMe: boolean;
-};
-
-type Chat = {
-  id: string;
-  name: string;
-  avatar: string;
-  lastMessage: string;
-  time: string;
-  unread: number;
-  online: boolean;
-  type: "user" | "group";
-  messages: Message[];
-};
-
-const MOCK_CHATS: Chat[] = [
-  {
-    id: "1",
-    name: "VIP Members Group",
-    avatar: "https://i.pravatar.cc/150?u=vip",
-    lastMessage: "Are there any updates on the summer festival tickets?",
-    time: "10:23 AM",
-    unread: 5,
-    online: true,
-    type: "group",
-    messages: [
-      { id: "m1", senderId: "other1", text: "Hey everyone! So excited for the upcoming events.", timestamp: "10:15 AM", isMe: false },
-      { id: "m2", senderId: "me", text: "Welcome! We have some great announcements coming soon.", timestamp: "10:18 AM", isMe: true },
-      { id: "m3", senderId: "other2", text: "Are there any updates on the summer festival tickets?", timestamp: "10:23 AM", isMe: false },
-    ],
-  },
-  {
-    id: "2",
-    name: "Sarah Jenkins",
-    avatar: "https://i.pravatar.cc/150?u=sarah",
-    lastMessage: "Thanks for the swift response!",
-    time: "Yesterday",
-    unread: 0,
-    online: false,
-    type: "user",
-    messages: [
-      { id: "m4", senderId: "other", text: "Hi, I had a question regarding my recent booking.", timestamp: "Yesterday 2:00 PM", isMe: false },
-      { id: "m5", senderId: "me", text: "Hello Sarah, how can I help you today?", timestamp: "Yesterday 2:05 PM", isMe: true },
-      { id: "m6", senderId: "me", text: "I've checked your booking. Everything is confirmed.", timestamp: "Yesterday 2:10 PM", isMe: true },
-      { id: "m7", senderId: "other", text: "Thanks for the swift response!", timestamp: "Yesterday 2:15 PM", isMe: false },
-    ],
-  },
-  {
-    id: "3",
-    name: "Event Organizers Hub",
-    avatar: "https://i.pravatar.cc/150?u=hub",
-    lastMessage: "Let's schedule a call for next week.",
-    time: "Tuesday",
-    unread: 2,
-    online: true,
-    type: "group",
-    messages: [
-      { id: "m8", senderId: "other", text: "The venue looks great, but we need more lighting.", timestamp: "Tuesday 9:00 AM", isMe: false },
-      { id: "m9", senderId: "me", text: "Noted. I will contact the suppliers.", timestamp: "Tuesday 9:30 AM", isMe: true },
-      { id: "m10", senderId: "other", text: "Let's schedule a call for next week.", timestamp: "Tuesday 10:00 AM", isMe: false },
-    ],
-  },
-  {
-    id: "4",
-    name: "Michael Chen",
-    avatar: "https://i.pravatar.cc/150?u=michael",
-    lastMessage: "See you at the conference!",
-    time: "Monday",
-    unread: 0,
-    online: true,
-    type: "user",
-    messages: [
-      { id: "m11", senderId: "other", text: "See you at the conference!", timestamp: "Monday", isMe: false },
-    ],
-  },
-  {
-    id: "5",
-    name: "Elena Rodriguez",
-    avatar: "https://i.pravatar.cc/150?u=elena",
-    lastMessage: "Can you send the presentation deck?",
-    time: "Last week",
-    unread: 1,
-    online: false,
-    type: "user",
-    messages: [
-      { id: "m12", senderId: "other", text: "Can you send the presentation deck?", timestamp: "Last week", isMe: false },
-    ],
-  },
-];
+import { useFirestoreCommunity } from "@/hooks/useFirestoreCommunity";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useQuery } from "@tanstack/react-query";
+import { getOrganizerFollowersProfiles } from "@/api/users";
+import { getCommunityChannels, createCommunityChannel } from "@/api/community";
+import { getWorkspaceEvents } from "@/api/events";
+import { uploadFile } from "@/api/storage";
 
 function CommunityPage() {
-  const [chats, setChats] = useState(MOCK_CHATS);
-  const [activeChatId, setActiveChatId] = useState<string>(MOCK_CHATS[0].id);
+  const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/community" });
+  const { activeWorkspace } = useWorkspace();
+  
+  // For demo, assume current user ID. Normally grabbed from auth context.
+  const currentUserId = "me"; 
+  const organizerId = activeWorkspace?.orgnizer_id || "";
+
+  const { channels, activeChatId, setActiveChatId, sendMessage, loading, createDirectMessageChannel, createFirebaseGroupChannel } = useFirestoreCommunity(organizerId, currentUserId);
+  
+  const { data: followers = [] } = useQuery({
+    queryKey: ["organizerFollowers", organizerId],
+    queryFn: async () => {
+      if (!organizerId) return [];
+      return await getOrganizerFollowersProfiles({ data: { organizerId } });
+    },
+    enabled: !!organizerId,
+  });
+
+  const { data: communityChannels = [], refetch: refetchChannels } = useQuery({
+    queryKey: ["communityChannels", organizerId],
+    queryFn: async () => {
+      if (!organizerId) return [];
+      return await getCommunityChannels({ data: { organizerId } });
+    },
+    enabled: !!organizerId,
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ["workspaceEvents", activeWorkspace?.id],
+    queryFn: async () => {
+      if (!activeWorkspace?.id) return [];
+      return await getWorkspaceEvents({ data: { workspace_id: activeWorkspace.id } });
+    },
+    enabled: !!activeWorkspace?.id,
+  });
+  
   const [messageInput, setMessageInput] = useState("");
 
-  const activeChat = chats.find((c) => c.id === activeChatId);
+  const activeChat = channels.find((c) => c.id === activeChatId);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageInput.trim() || !activeChat) return;
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      senderId: "me",
-      text: messageInput.trim(),
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isMe: true,
-    };
-
-    setChats(chats.map(chat => {
-      if (chat.id === activeChatId) {
-        return {
-          ...chat,
-          messages: [...chat.messages, newMessage],
-          lastMessage: newMessage.text,
-          time: newMessage.timestamp,
-        };
-      }
-      return chat;
-    }));
+    await sendMessage(messageInput);
     setMessageInput("");
   };
+
+  const handleFollowerClick = async (follower: any) => {
+    const name = follower.username || "Follower";
+    const avatar = (follower.profile && !follower.profile.includes("pravatar.cc")) ? follower.profile : "";
+    await createDirectMessageChannel(follower.id, name, avatar);
+  };
+
+  const [creating, setCreating] = useState(false);
+  const [isMainChannelModalOpen, setIsMainChannelModalOpen] = useState(false);
+  const [mainChannelName, setMainChannelName] = useState("General Announcements");
+  const [selectedAvatarUrl, setSelectedAvatarUrl] = useState<string>("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string>("");
+  const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
+
+  const BACKGROUND_COLORS = ["b6e3f4", "c0aede", "d1d4f9", "ffdfbf", "ffd5dc", "d1f4e0", "fce2c4", "f9d8e5"];
+
+  useEffect(() => {
+    if (isMainChannelModalOpen) {
+      const options = Array.from({ length: 8 }).map(() => {
+        const bg = BACKGROUND_COLORS[Math.floor(Math.random() * BACKGROUND_COLORS.length)];
+        const seed = Math.random().toString(36).substring(7);
+        return `https://api.dicebear.com/7.x/shapes/svg?seed=${seed}&backgroundColor=${bg}`;
+      });
+      setAvatarOptions(options);
+      setSelectedAvatarUrl(options[0]);
+    } else {
+      setSelectedFile(null);
+      setFilePreviewUrl("");
+      setMainChannelName("General Announcements");
+    }
+  }, [isMainChannelModalOpen]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("File size must be under 2MB.");
+      return;
+    }
+
+    setSelectedFile(file);
+    setFilePreviewUrl(URL.createObjectURL(file));
+    setSelectedAvatarUrl(""); 
+  };
+
+  const handleCreateMainChannelSubmit = async () => {
+    if (creating) return;
+    setCreating(true);
+    try {
+      let finalCoverUrl = selectedAvatarUrl;
+
+      if (selectedFile) {
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve) => {
+          reader.onload = () => resolve((reader.result as string).split(",")[1]);
+        });
+        reader.readAsDataURL(selectedFile);
+        const base64 = await base64Promise;
+
+        const ext = selectedFile.name.split(".").pop() || "png";
+        
+        const uploadRes = await uploadFile({
+          data: {
+            base64,
+            contentType: selectedFile.type,
+            folder: "channels",
+            ext,
+          } as any
+        });
+        
+        if (uploadRes && uploadRes.url) {
+          finalCoverUrl = uploadRes.url;
+        }
+      }
+
+      const ch = await createCommunityChannel({ 
+        data: { 
+          organizerId, 
+          name: mainChannelName || "General Announcements", 
+          coverUrl: finalCoverUrl,
+          isMain: true 
+        } 
+      });
+      await createFirebaseGroupChannel(ch.id, ch.name, ch.cover_url || "", "GLOBAL");
+      refetchChannels();
+      setIsMainChannelModalOpen(false);
+    } catch (e) {
+      console.error(e);
+      alert("Failed to create main channel.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleCreateEventChannel = async (event: any) => {
+    if (creating) return;
+    setCreating(true);
+    try {
+      const ch = await createCommunityChannel({ 
+        data: { 
+          organizerId, 
+          name: event.title, 
+          coverUrl: event.cover || "",
+          isMain: false,
+          eventId: event.id
+        } 
+      });
+      await createFirebaseGroupChannel(ch.id, ch.name, ch.cover_url || "", "EVENT");
+      refetchChannels();
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleOpenHasuraChannel = (channelId: string) => {
+    const hc = communityChannels.find(c => c.id === channelId);
+    if (hc) {
+      createFirebaseGroupChannel(hc.id, hc.name, hc.cover_url || "", hc.is_main ? "GLOBAL" : "EVENT");
+    }
+    setActiveChatId(channelId);
+  };
+
+  const mainChannel = communityChannels.find(c => c.is_main);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background border-none rounded-none shadow-none">
@@ -207,7 +280,7 @@ function CommunityPage() {
           <TabsContent value="all" className="flex-1 m-0">
             <ScrollArea className="h-full">
               <div className="p-2 flex flex-col gap-1">
-                {chats.map((chat) => (
+                {channels.map((chat) => (
                   <button
                     key={chat.id}
                     onClick={() => setActiveChatId(chat.id)}
@@ -220,7 +293,9 @@ function CommunityPage() {
                     <div className="relative shrink-0">
                       <Avatar className="h-12 w-12 border border-border/50">
                         <AvatarImage src={chat.avatar} alt={chat.name} />
-                        <AvatarFallback>{chat.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {chat.type === "group" ? <MessageCircle className="h-5 w-5" /> : chat.name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                       {chat.online && (
                         <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
@@ -252,44 +327,40 @@ function CommunityPage() {
           <TabsContent value="followers" className="flex-1 m-0">
             <ScrollArea className="h-full">
               <div className="p-2 flex flex-col gap-1">
-                {chats.filter(c => c.type === "user").map((chat) => (
-                   <button
-                   key={chat.id}
-                   onClick={() => setActiveChatId(chat.id)}
-                   className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
-                     activeChatId === chat.id 
-                       ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5" 
-                       : "hover:bg-accent/50"
-                   }`}
-                 >
-                   <div className="relative shrink-0">
-                     <Avatar className="h-12 w-12 border border-border/50">
-                       <AvatarImage src={chat.avatar} alt={chat.name} />
-                       <AvatarFallback>{chat.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                     </Avatar>
-                     {chat.online && (
-                       <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
-                     )}
-                   </div>
-                   
-                   <div className="flex-1 min-w-0">
-                     <div className="flex justify-between items-center mb-1">
-                       <span className="font-semibold text-sm truncate pr-2">{chat.name}</span>
-                       <span className="text-[10px] text-muted-foreground whitespace-nowrap">{chat.time}</span>
-                     </div>
-                     <div className="flex justify-between items-center">
-                       <p className={`text-xs truncate pr-2 ${chat.unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                         {chat.lastMessage}
-                       </p>
-                       {chat.unread > 0 && (
-                         <Badge className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]" style={{ background: "var(--gradient-primary)" }}>
-                           {chat.unread}
-                         </Badge>
-                       )}
-                     </div>
-                   </div>
-                 </button>
-                ))}
+                {followers.length === 0 && (
+                  <div className="text-center p-4 text-sm text-muted-foreground">
+                    No followers found.
+                  </div>
+                )}
+                {followers.map((follower: any) => {
+                  const name = follower.username || "Follower";
+                  const avatar = (follower.profile && !follower.profile.includes("pravatar.cc")) ? follower.profile : "";
+                  return (
+                    <button
+                      key={follower.id}
+                      onClick={() => handleFollowerClick(follower)}
+                      className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left hover:bg-accent/50`}
+                    >
+                      <div className="relative shrink-0">
+                        <Avatar className="h-12 w-12 border border-border/50">
+                          <AvatarImage src={avatar} alt={name} />
+                          <AvatarFallback>{name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-semibold text-sm truncate pr-2">{name}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className="text-xs truncate pr-2 text-muted-foreground">
+                            Tap to message
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </ScrollArea>
           </TabsContent>
@@ -297,44 +368,151 @@ function CommunityPage() {
           <TabsContent value="channels" className="flex-1 m-0">
             <ScrollArea className="h-full">
               <div className="p-2 flex flex-col gap-1">
-                {chats.filter(c => c.type === "group").map((chat) => (
-                   <button
-                   key={chat.id}
-                   onClick={() => setActiveChatId(chat.id)}
-                   className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
-                     activeChatId === chat.id 
-                       ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5" 
-                       : "hover:bg-accent/50"
-                   }`}
-                 >
-                   <div className="relative shrink-0">
-                     <Avatar className="h-12 w-12 border border-border/50">
-                       <AvatarImage src={chat.avatar} alt={chat.name} />
-                       <AvatarFallback>{chat.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                     </Avatar>
-                     {chat.online && (
-                       <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
-                     )}
-                   </div>
-                   
-                   <div className="flex-1 min-w-0">
-                     <div className="flex justify-between items-center mb-1">
-                       <span className="font-semibold text-sm truncate pr-2">{chat.name}</span>
-                       <span className="text-[10px] text-muted-foreground whitespace-nowrap">{chat.time}</span>
-                     </div>
-                     <div className="flex justify-between items-center">
-                       <p className={`text-xs truncate pr-2 ${chat.unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                         {chat.lastMessage}
-                       </p>
-                       {chat.unread > 0 && (
-                         <Badge className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]" style={{ background: "var(--gradient-primary)" }}>
-                           {chat.unread}
-                         </Badge>
-                       )}
-                     </div>
-                   </div>
-                 </button>
-                ))}
+                
+                {/* Main Channel Section */}
+                <div className="mb-4">
+                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">Main Channel</h3>
+                  {!mainChannel ? (
+                    <div className="px-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start text-muted-foreground border-dashed"
+                        onClick={() => setIsMainChannelModalOpen(true)}
+                        disabled={creating}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        Create Main Channel
+                      </Button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleOpenHasuraChannel(mainChannel.id)}
+                      className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
+                        activeChatId === mainChannel.id 
+                          ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5" 
+                          : "hover:bg-accent/50"
+                      }`}
+                    >
+                      <div className="relative shrink-0">
+                        <Avatar className="h-12 w-12 border border-border/50">
+                          <AvatarImage src={(mainChannel.cover_url && !mainChannel.cover_url.includes("pravatar.cc")) ? mainChannel.cover_url : ""} alt={mainChannel.name} />
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            <MessageCircle className="h-5 w-5" />
+                          </AvatarFallback>
+                        </Avatar>
+                        {channels.find(c => c.id === mainChannel.id)?.online && (
+                          <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-semibold text-sm truncate pr-2">{mainChannel.name}</span>
+                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                            {channels.find(c => c.id === mainChannel.id)?.time || ""}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className={`text-xs truncate pr-2 ${channels.find(c => c.id === mainChannel.id)?.unread ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                            {channels.find(c => c.id === mainChannel.id)?.lastMessage || "Tap to chat"}
+                          </p>
+                          {channels.find(c => c.id === mainChannel.id)?.unread ? (
+                            <Badge className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]" style={{ background: "var(--gradient-primary)" }}>
+                              {channels.find(c => c.id === mainChannel.id)?.unread}
+                            </Badge>
+                          ) : null}
+                        </div>
+                      </div>
+                    </button>
+                  )}
+                </div>
+
+                {/* Event Channels Section */}
+                <div>
+                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">Event Channels</h3>
+                  {events.map((event) => {
+                    const eventChannel = communityChannels.find(c => c.event_id === event.id);
+                    
+                    if (eventChannel) {
+                      const fc = channels.find(c => c.id === eventChannel.id);
+                      return (
+                        <button
+                          key={eventChannel.id}
+                          onClick={() => handleOpenHasuraChannel(eventChannel.id)}
+                          className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
+                            activeChatId === eventChannel.id 
+                              ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5" 
+                              : "hover:bg-accent/50"
+                          }`}
+                        >
+                          <div className="relative shrink-0">
+                            <Avatar className="h-12 w-12 border border-border/50">
+                              <AvatarImage src={(eventChannel.cover_url && !eventChannel.cover_url.includes("pravatar.cc")) ? eventChannel.cover_url : ""} alt={eventChannel.name} />
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                <Users className="h-5 w-5" />
+                              </AvatarFallback>
+                            </Avatar>
+                            {fc?.online && (
+                              <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-semibold text-sm truncate pr-2">{eventChannel.name}</span>
+                              <span className="text-[10px] text-muted-foreground whitespace-nowrap">{fc?.time || ""}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <p className={`text-xs truncate pr-2 ${fc?.unread ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                                {fc?.lastMessage || "Tap to chat"}
+                              </p>
+                              {fc?.unread ? (
+                                <Badge className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]" style={{ background: "var(--gradient-primary)" }}>
+                                  {fc.unread}
+                                </Badge>
+                              ) : null}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    } else {
+                      return (
+                        <div key={event.id} className="flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left hover:bg-accent/50">
+                          <div className="relative shrink-0">
+                            <Avatar className="h-12 w-12 border border-border/50 opacity-50 grayscale">
+                              <AvatarImage src={(event.cover && !event.cover.includes("pravatar.cc")) ? event.cover : ""} alt={event.title} />
+                              <AvatarFallback className="bg-muted">
+                                <Users className="h-5 w-5 text-muted-foreground" />
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
+                          <div className="flex-1 min-w-0 flex items-center justify-between">
+                            <div>
+                              <span className="font-semibold text-sm truncate block">{event.title}</span>
+                              <span className="text-[10px] text-muted-foreground">No channel active</span>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-7 text-[10px] px-2 rounded-full"
+                              onClick={() => handleCreateEventChannel(event)}
+                              disabled={creating}
+                            >
+                              Create
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    }
+                  })}
+                  {events.length === 0 && (
+                    <div className="px-2 text-center py-4">
+                      <p className="text-xs text-muted-foreground">No events found. Create an event to add a channel.</p>
+                    </div>
+                  )}
+                </div>
+
               </div>
             </ScrollArea>
           </TabsContent>
@@ -348,8 +526,10 @@ function CommunityPage() {
           <div className="h-16 px-6 border-b border-border/60 flex items-center justify-between bg-background/50 backdrop-blur-md z-10 shrink-0">
             <div className="flex items-center gap-4">
               <Avatar className="h-10 w-10 border border-border/50">
-                <AvatarImage src={activeChat.avatar} alt={activeChat.name} />
-                <AvatarFallback>{activeChat.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarImage src={(activeChat.avatar && !activeChat.avatar.includes("pravatar.cc")) ? activeChat.avatar : ""} alt={activeChat.name} />
+                <AvatarFallback className="bg-primary/10 text-primary">
+                  {activeChat.type === "group" ? <MessageCircle className="h-4 w-4" /> : activeChat.name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <h3 className="font-semibold text-sm leading-tight">{activeChat.name}</h3>
@@ -366,7 +546,7 @@ function CommunityPage() {
                   {activeChat.type === "group" && (
                     <>
                       <span className="w-1 h-1 rounded-full bg-border"></span>
-                      <span>24 Members</span>
+                      <span>{followers.length} Members</span>
                     </>
                   )}
                 </p>
@@ -484,6 +664,100 @@ function CommunityPage() {
           </p>
         </div>
       )}
+
+      {/* Main Channel Creation Dialog */}
+      <Dialog open={isMainChannelModalOpen} onOpenChange={setIsMainChannelModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create Main Channel</DialogTitle>
+            <DialogDescription>
+              This is the default channel for all your followers. Customize its name and appearance.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-6 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="channel-name">Channel Name</Label>
+              <Input
+                id="channel-name"
+                value={mainChannelName}
+                onChange={(e) => setMainChannelName(e.target.value)}
+                placeholder="e.g. General Announcements"
+              />
+            </div>
+            
+            <div className="space-y-3">
+              <Label>Channel Image</Label>
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 shrink-0 rounded-full border border-border/50 overflow-hidden relative group bg-muted flex items-center justify-center">
+                  {(filePreviewUrl || selectedAvatarUrl) ? (
+                    <img src={filePreviewUrl || selectedAvatarUrl} alt="Preview" className="h-full w-full object-cover" />
+                  ) : (
+                    <MessageCircle className="h-6 w-6 text-muted-foreground" />
+                  )}
+                  {filePreviewUrl && (
+                    <button 
+                      onClick={() => {
+                        setSelectedFile(null);
+                        setFilePreviewUrl("");
+                        setSelectedAvatarUrl(avatarOptions[0]);
+                      }}
+                      className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <Label 
+                    htmlFor="file-upload" 
+                    className="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full"
+                  >
+                    <UploadCloud className="h-4 w-4 mr-2" />
+                    Upload Photo
+                  </Label>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1.5 text-center">Max 2MB. Jpeg, Png.</p>
+                </div>
+              </div>
+            </div>
+
+            {!filePreviewUrl && (
+              <div className="space-y-3">
+                <Label className="text-xs text-muted-foreground uppercase tracking-wider">Or select an illustration</Label>
+                <div className="grid grid-cols-4 gap-2">
+                  {avatarOptions.map((url, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setSelectedAvatarUrl(url)}
+                      className={`h-12 w-12 rounded-full overflow-hidden border-2 transition-all ${
+                        selectedAvatarUrl === url ? "border-primary scale-110 shadow-sm" : "border-transparent hover:scale-105"
+                      }`}
+                    >
+                      <img src={url} alt={`Option ${i}`} className="h-full w-full" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMainChannelModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateMainChannelSubmit} disabled={creating || !mainChannelName.trim()}>
+              {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save & Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

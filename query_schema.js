@@ -4,10 +4,10 @@ config();
 async function run() {
   const query = `
     query {
-      __type(name: "product_orders") {
-        fields {
-          name
-        }
+      organizer_followers {
+        id
+        organizer_id
+        user_id
       }
     }
   `;

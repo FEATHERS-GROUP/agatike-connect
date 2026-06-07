@@ -238,9 +238,9 @@ const DashboardCreateOrganizerRoute =
     getParentRoute: () => DashboardRoute,
   } as any)
 const CommunityPostIdRoute = CommunityPostIdRouteImport.update({
-  id: '/$postId',
-  path: '/$postId',
-  getParentRoute: () => CommunityRoute,
+  id: '/community/$postId',
+  path: '/community/$postId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const BusesMobileRoute = BusesMobileRouteImport.update({
   id: '/buses/mobile',
@@ -1067,6 +1067,7 @@ export interface RootRouteChildren {
   BookEventIdRoute: typeof BookEventIdRoute
   BusesTripIdRoute: typeof BusesTripIdRoute
   BusesMobileRoute: typeof BusesMobileRoute
+  CommunityPostIdRoute: typeof CommunityPostIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   FFormIdRoute: typeof FFormIdRoute
   PSlugRoute: typeof PSlugRoute
@@ -1287,10 +1288,10 @@ declare module '@tanstack/react-router' {
     }
     '/community/$postId': {
       id: '/community/$postId'
-      path: '/$postId'
+      path: '/community/$postId'
       fullPath: '/community/$postId'
       preLoaderRoute: typeof CommunityPostIdRouteImport
-      parentRoute: typeof CommunityRoute
+      parentRoute: typeof rootRouteImport
     }
     '/buses/mobile': {
       id: '/buses/mobile'
@@ -1829,6 +1830,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookEventIdRoute: BookEventIdRoute,
   BusesTripIdRoute: BusesTripIdRoute,
   BusesMobileRoute: BusesMobileRoute,
+  CommunityPostIdRoute: CommunityPostIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   FFormIdRoute: FFormIdRoute,
   PSlugRoute: PSlugRoute,
