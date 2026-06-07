@@ -418,8 +418,7 @@ function ProductModal({
 }
 
 function ProductsAndAddonsView() {
-  const params = useParams({ strict: false });
-  const eventId = params.eventId as string;
+  const { experienceId: eventId } = Route.useParams();
   const { activeWorkspace } = useWorkspace();
 
   const [selectedItem, setSelectedItem] = useState<any>(null);
