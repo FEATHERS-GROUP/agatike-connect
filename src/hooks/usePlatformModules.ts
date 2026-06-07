@@ -54,6 +54,19 @@ export function usePlatformModules() {
         return aIdx - bIdx;
       });
 
+      // Inject Community module if it doesn't exist
+      if (!mapped.find(m => m.label === "Community")) {
+        mapped.push({
+          id: "community",
+          label: "Community",
+          desc: "Engage with your followers",
+          href: "community",
+          icon: LucideIcons.Users,
+          category: "Engagement",
+          mandatory: true,
+        });
+      }
+
       return mapped;
     },
   });

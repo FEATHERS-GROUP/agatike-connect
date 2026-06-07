@@ -54,6 +54,7 @@ import { Route as DashboardWorkspaceSlugSettingsRouteImport } from './routes/das
 import { Route as DashboardWorkspaceSlugScannerRouteImport } from './routes/dashboard/$workspaceSlug/scanner'
 import { Route as DashboardWorkspaceSlugProductsChar38addOnsRouteImport } from './routes/dashboard/$workspaceSlug/products&add-ons'
 import { Route as DashboardWorkspaceSlugPageBuilderRouteImport } from './routes/dashboard/$workspaceSlug/page-builder'
+import { Route as DashboardWorkspaceSlugCommunityRouteImport } from './routes/dashboard/$workspaceSlug/community'
 import { Route as DashboardWorkspaceSlugVenueDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/venue-designer/index'
 import { Route as DashboardWorkspaceSlugTicketDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/ticket-designer/index'
 import { Route as DashboardWorkspaceSlugRsvpsIndexRouteImport } from './routes/dashboard/$workspaceSlug/rsvps/index'
@@ -237,9 +238,9 @@ const DashboardCreateOrganizerRoute =
     getParentRoute: () => DashboardRoute,
   } as any)
 const CommunityPostIdRoute = CommunityPostIdRouteImport.update({
-  id: '/community/$postId',
-  path: '/community/$postId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$postId',
+  path: '/$postId',
+  getParentRoute: () => CommunityRoute,
 } as any)
 const BusesMobileRoute = BusesMobileRouteImport.update({
   id: '/buses/mobile',
@@ -321,6 +322,12 @@ const DashboardWorkspaceSlugPageBuilderRoute =
   DashboardWorkspaceSlugPageBuilderRouteImport.update({
     id: '/$workspaceSlug/page-builder',
     path: '/$workspaceSlug/page-builder',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugCommunityRoute =
+  DashboardWorkspaceSlugCommunityRouteImport.update({
+    id: '/$workspaceSlug/community',
+    path: '/$workspaceSlug/community',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardWorkspaceSlugVenueDesignerIndexRoute =
@@ -572,6 +579,7 @@ export interface FileRoutesByFullPath {
   '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
   '/venues/': typeof VenuesIndexRoute
+  '/dashboard/$workspaceSlug/community': typeof DashboardWorkspaceSlugCommunityRoute
   '/dashboard/$workspaceSlug/page-builder': typeof DashboardWorkspaceSlugPageBuilderRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
@@ -654,6 +662,7 @@ export interface FileRoutesByTo {
   '/buses': typeof BusesIndexRoute
   '/events': typeof EventsIndexRoute
   '/venues': typeof VenuesIndexRoute
+  '/dashboard/$workspaceSlug/community': typeof DashboardWorkspaceSlugCommunityRoute
   '/dashboard/$workspaceSlug/page-builder': typeof DashboardWorkspaceSlugPageBuilderRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
@@ -737,6 +746,7 @@ export interface FileRoutesById {
   '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
   '/venues/': typeof VenuesIndexRoute
+  '/dashboard/$workspaceSlug/community': typeof DashboardWorkspaceSlugCommunityRoute
   '/dashboard/$workspaceSlug/page-builder': typeof DashboardWorkspaceSlugPageBuilderRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
@@ -821,6 +831,7 @@ export interface FileRouteTypes {
     | '/buses/'
     | '/events/'
     | '/venues/'
+    | '/dashboard/$workspaceSlug/community'
     | '/dashboard/$workspaceSlug/page-builder'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
@@ -903,6 +914,7 @@ export interface FileRouteTypes {
     | '/buses'
     | '/events'
     | '/venues'
+    | '/dashboard/$workspaceSlug/community'
     | '/dashboard/$workspaceSlug/page-builder'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
@@ -985,6 +997,7 @@ export interface FileRouteTypes {
     | '/buses/'
     | '/events/'
     | '/venues/'
+    | '/dashboard/$workspaceSlug/community'
     | '/dashboard/$workspaceSlug/page-builder'
     | '/dashboard/$workspaceSlug/products&add-ons'
     | '/dashboard/$workspaceSlug/scanner'
@@ -1054,7 +1067,6 @@ export interface RootRouteChildren {
   BookEventIdRoute: typeof BookEventIdRoute
   BusesTripIdRoute: typeof BusesTripIdRoute
   BusesMobileRoute: typeof BusesMobileRoute
-  CommunityPostIdRoute: typeof CommunityPostIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   FFormIdRoute: typeof FFormIdRoute
   PSlugRoute: typeof PSlugRoute
@@ -1275,10 +1287,10 @@ declare module '@tanstack/react-router' {
     }
     '/community/$postId': {
       id: '/community/$postId'
-      path: '/community/$postId'
+      path: '/$postId'
       fullPath: '/community/$postId'
       preLoaderRoute: typeof CommunityPostIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CommunityRoute
     }
     '/buses/mobile': {
       id: '/buses/mobile'
@@ -1383,6 +1395,13 @@ declare module '@tanstack/react-router' {
       path: '/$workspaceSlug/page-builder'
       fullPath: '/dashboard/$workspaceSlug/page-builder'
       preLoaderRoute: typeof DashboardWorkspaceSlugPageBuilderRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/community': {
+      id: '/dashboard/$workspaceSlug/community'
+      path: '/$workspaceSlug/community'
+      fullPath: '/dashboard/$workspaceSlug/community'
+      preLoaderRoute: typeof DashboardWorkspaceSlugCommunityRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/$workspaceSlug/venue-designer/': {
@@ -1660,6 +1679,7 @@ interface DashboardRouteChildren {
   DashboardPricingRoute: typeof DashboardPricingRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardWorkspacesRoute: typeof DashboardWorkspacesRoute
+  DashboardWorkspaceSlugCommunityRoute: typeof DashboardWorkspaceSlugCommunityRoute
   DashboardWorkspaceSlugPageBuilderRoute: typeof DashboardWorkspaceSlugPageBuilderRoute
   DashboardWorkspaceSlugProductsChar38addOnsRoute: typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
   DashboardWorkspaceSlugScannerRoute: typeof DashboardWorkspaceSlugScannerRoute
@@ -1707,6 +1727,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardPricingRoute: DashboardPricingRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardWorkspacesRoute: DashboardWorkspacesRoute,
+  DashboardWorkspaceSlugCommunityRoute: DashboardWorkspaceSlugCommunityRoute,
   DashboardWorkspaceSlugPageBuilderRoute:
     DashboardWorkspaceSlugPageBuilderRoute,
   DashboardWorkspaceSlugProductsChar38addOnsRoute:
@@ -1808,7 +1829,6 @@ const rootRouteChildren: RootRouteChildren = {
   BookEventIdRoute: BookEventIdRoute,
   BusesTripIdRoute: BusesTripIdRoute,
   BusesMobileRoute: BusesMobileRoute,
-  CommunityPostIdRoute: CommunityPostIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   FFormIdRoute: FFormIdRoute,
   PSlugRoute: PSlugRoute,

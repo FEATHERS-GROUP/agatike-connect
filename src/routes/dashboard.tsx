@@ -67,7 +67,9 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/);
 
   const isDesigner =
-    isDesigningVenue || location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/);
+    isDesigningVenue || 
+    location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/community/i);
 
   useEffect(() => {
     if (!isLoaded) return;
