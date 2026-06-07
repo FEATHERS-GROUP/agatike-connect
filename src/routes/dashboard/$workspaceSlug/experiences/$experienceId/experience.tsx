@@ -224,20 +224,34 @@ function ExperienceDashboard() {
   });
 
   const MAX_POST_MEDIA_SIZE_MB = 5;
+  const MAX_POST_IMAGES = 4;
 
-  const handlePostMediaUpload = async (file: File) => {
-    if (file.size > MAX_POST_MEDIA_SIZE_MB * 1024 * 1024) {
-      toast.error(`Image too large`, {
-        description: `Max size is ${MAX_POST_MEDIA_SIZE_MB}MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`,
+  const handlePostMediaUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const remaining = MAX_POST_IMAGES - postMedia.length;
+    if (remaining <= 0) {
+      toast.error(`Maximum ${MAX_POST_IMAGES} photos per post.`);
+      return;
+    }
+    const toUpload = Array.from(files).slice(0, remaining);
+    const oversized = toUpload.filter((f) => f.size > MAX_POST_MEDIA_SIZE_MB * 1024 * 1024);
+    if (oversized.length > 0) {
+      toast.error(`${oversized.length} image(s) too large`, {
+        description: `Max size is ${MAX_POST_MEDIA_SIZE_MB}MB per image.`,
       });
       return;
     }
     setIsUploadingPostMedia(true);
     try {
-      const url = await uploadFileToStorage(file, `posts/${eventId}`);
-      setPostMedia((prev) => [...prev, url]);
+      const urls = await Promise.all(
+        toUpload.map((file) => uploadFileToStorage(file, `posts/${eventId}`)),
+      );
+      setPostMedia((prev) => [...prev, ...urls]);
+      if (toUpload.length < files.length) {
+        toast.info(`Only ${toUpload.length} of ${files.length} photos added (max ${MAX_POST_IMAGES}).`);
+      }
     } catch {
-      toast.error("Failed to upload image.");
+      toast.error("Failed to upload image(s).");
     } finally {
       setIsUploadingPostMedia(false);
     }
@@ -657,7 +671,7 @@ function ExperienceDashboard() {
                 {postMedia.map((url, i) => (
                   <div
                     key={i}
-                    className="relative group w-20 h-20 rounded-xl overflow-hidden border border-border"
+                    className="relative group w-24 h-24 rounded-xl overflow-hidden border border-border"
                   >
                     <img src={url} alt="" className="w-full h-full object-cover" />
                     <button
@@ -668,40 +682,62 @@ function ExperienceDashboard() {
                     </button>
                   </div>
                 ))}
+                {postMedia.length < MAX_POST_IMAGES && (
+                  <div className="relative w-24 h-24 rounded-xl border-2 border-dashed border-border/60 flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      multiple
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      disabled={isUploadingPostMedia}
+                      onChange={(e) => handlePostMediaUpload(e.target.files)}
+                    />
+                    {isUploadingPostMedia ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <>
+                        <Camera className="h-5 w-5 mb-1" />
+                        <span className="text-[10px] font-medium">{postMedia.length}/{MAX_POST_IMAGES}</span>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             )}
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  disabled={isUploadingPostMedia}
-                  onChange={(e) => {
-                    if (e.target.files?.[0]) handlePostMediaUpload(e.target.files[0]);
-                  }}
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-2 pointer-events-none text-muted-foreground"
-                >
-                  {isUploadingPostMedia ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Camera className="h-4 w-4" />
-                  )}
-                  Photo
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mr-auto">
-                Max {MAX_POST_MEDIA_SIZE_MB}MB
+              {postMedia.length === 0 && (
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    multiple
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    disabled={isUploadingPostMedia}
+                    onChange={(e) => handlePostMediaUpload(e.target.files)}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 pointer-events-none text-muted-foreground"
+                  >
+                    {isUploadingPostMedia ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Camera className="h-4 w-4" />
+                    )}
+                    Add Photos
+                  </Button>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Up to {MAX_POST_IMAGES} photos · Max {MAX_POST_MEDIA_SIZE_MB}MB each
               </p>
               <div className="flex-1" />
               <Button
                 onClick={() => createPostMutation.mutate()}
                 disabled={!postContent.trim() || createPostMutation.isPending}
                 className="gap-2"
+                style={{ background: "var(--gradient-primary)" }}
               >
                 {createPostMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
