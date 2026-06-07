@@ -150,12 +150,18 @@ function CommunityPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [gifSearch, setGifSearch] = useState("");
   const [isGifPopoverOpen, setIsGifPopoverOpen] = useState(false);
+  const [isFetchingGifs, setIsFetchingGifs] = useState(false);
 
-  const fetchGifs = (offset: number) => {
-    if (gifSearch) {
-      return gf.search(gifSearch, { offset, limit: 10 });
+  const fetchGifs = async (offset: number) => {
+    if (offset === 0) setIsFetchingGifs(true);
+    try {
+      if (gifSearch) {
+        return await gf.search(gifSearch, { offset, limit: 10 });
+      }
+      return await gf.trending({ offset, limit: 10 });
+    } finally {
+      if (offset === 0) setIsFetchingGifs(false);
     }
-    return gf.trending({ offset, limit: 10 });
   };
 
   const handleGifClick = (gif: any, e: React.SyntheticEvent<HTMLElement, Event>) => {
@@ -809,7 +815,12 @@ function CommunityPage() {
                     onChange={(e) => setGifSearch(e.target.value)}
                     className="mb-2 h-8 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
-                  <div className="h-[300px] overflow-y-auto overflow-x-hidden rounded-md no-scrollbar">
+                  <div className="h-[300px] overflow-y-auto overflow-x-hidden rounded-md no-scrollbar relative">
+                    {isFetchingGifs && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] z-10">
+                        <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                      </div>
+                    )}
                     <Grid 
                       key={gifSearch} 
                       width={280} 
