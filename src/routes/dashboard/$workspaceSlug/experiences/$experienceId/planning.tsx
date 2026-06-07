@@ -20,6 +20,11 @@ import {
   Download,
   Settings,
   List,
+  Tent,
+  Truck,
+  Utensils,
+  FileCheck,
+  Compass,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -762,40 +767,76 @@ function AgatikeBookTab({ eventId }: { eventId: string }) {
   const [bookName, setBookName] = useState("");
   const [schemaFields, setSchemaFields] = useState<any[]>([{ name: "Name", type: "text" }]);
 
-  const applyTemplate = (template: "expense" | "staff" | "checklist" | "sponsor" | "custom") => {
+  const applyTemplate = (
+    template:
+      | "activity_costs"
+      | "gear_rentals"
+      | "transport_costs"
+      | "catering_budget"
+      | "permits_passes"
+      | "staff_payouts"
+      | "custom",
+  ) => {
     switch (template) {
-      case "expense":
-        setBookName("Expenses & Payouts");
+      case "activity_costs":
+        setBookName("Activity Cost Tracking");
         setSchemaFields([
-          { name: "Description", type: "text" },
-          { name: "Amount", type: "number" },
+          { name: "Activity Name", type: "text" },
+          { name: "Budgeted Cost (RWF)", type: "number" },
+          { name: "Actual Cost (RWF)", type: "number" },
+          { name: "Deposit Paid (RWF)", type: "number" },
+          { name: "Paid in Full", type: "boolean" },
+        ]);
+        break;
+      case "gear_rentals":
+        setBookName("Gear & Equipment Rental Costs");
+        setSchemaFields([
+          { name: "Gear Item Name", type: "text" },
+          { name: "Quantity", type: "number" },
+          { name: "Rate per Unit (RWF)", type: "number" },
+          { name: "Total Cost (RWF)", type: "number" },
           { name: "Paid", type: "boolean" },
         ]);
         break;
-      case "staff":
-        setBookName("Staff Roster");
+      case "transport_costs":
+        setBookName("Transport & Logistics Expenses");
         setSchemaFields([
-          { name: "Name", type: "text" },
+          { name: "Service / Route", type: "text" },
+          { name: "Vehicle & Driver Details", type: "text" },
+          { name: "Fuel/Mileage Cost (RWF)", type: "number" },
+          { name: "Base Fee (RWF)", type: "number" },
+          { name: "Settled", type: "boolean" },
+        ]);
+        break;
+      case "catering_budget":
+        setBookName("Food & Beverage Catering");
+        setSchemaFields([
+          { name: "Item / Vendor", type: "text" },
+          { name: "Price per Pax (RWF)", type: "number" },
+          { name: "Number of Pax", type: "number" },
+          { name: "Total Amount (RWF)", type: "number" },
+          { name: "Invoice Settled", type: "boolean" },
+        ]);
+        break;
+      case "permits_passes":
+        setBookName("Permits & Entrance Fees");
+        setSchemaFields([
+          { name: "Fee/Permit Type", type: "text" },
+          { name: "Price per Permit (RWF)", type: "number" },
+          { name: "Total Permits Needed", type: "number" },
+          { name: "Total Cost (RWF)", type: "number" },
+          { name: "Acquired", type: "boolean" },
+        ]);
+        break;
+      case "staff_payouts":
+        setBookName("Guides & Staff Fees");
+        setSchemaFields([
+          { name: "Staff/Guide Name", type: "text" },
           { name: "Role", type: "text" },
-          { name: "Daily Rate", type: "number" },
+          { name: "Daily Rate (RWF)", type: "number" },
+          { name: "No. of Days", type: "number" },
+          { name: "Total Payout (RWF)", type: "number" },
           { name: "Paid", type: "boolean" },
-        ]);
-        break;
-      case "checklist":
-        setBookName("Event Checklist");
-        setSchemaFields([
-          { name: "Task", type: "text" },
-          { name: "Assigned To", type: "text" },
-          { name: "Completed", type: "boolean" },
-        ]);
-        break;
-      case "sponsor":
-        setBookName("Sponsor Deliverables");
-        setSchemaFields([
-          { name: "Sponsor", type: "text" },
-          { name: "Deliverable", type: "text" },
-          { name: "Value", type: "number" },
-          { name: "Delivered", type: "boolean" },
         ]);
         break;
       case "custom":
@@ -1049,51 +1090,75 @@ function AgatikeBookTab({ eventId }: { eventId: string }) {
             {builderStep === 1 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                 <div
-                  onClick={() => applyTemplate("expense")}
+                  onClick={() => applyTemplate("activity_costs")}
                   className="cursor-pointer border border-border/60 bg-card rounded-2xl p-6 hover:border-primary transition-all group"
                 >
                   <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
-                    <DollarSign className="h-5 w-5" />
+                    <Compass className="h-5 w-5" />
                   </div>
-                  <h3 className="font-semibold mb-1">Expenses & Payouts</h3>
+                  <h3 className="font-semibold mb-1">Activity Cost Tracking</h3>
                   <p className="text-sm text-muted-foreground">
-                    Track amounts, descriptions, and paid status.
+                    Track budgeted vs. actual costs and deposits for stops and activities.
                   </p>
                 </div>
                 <div
-                  onClick={() => applyTemplate("staff")}
+                  onClick={() => applyTemplate("gear_rentals")}
+                  className="cursor-pointer border border-border/60 bg-card rounded-2xl p-6 hover:border-primary transition-all group"
+                >
+                  <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
+                    <Tent className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-semibold mb-1">Gear & Equipment Rentals</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Monitor rental quantities, unit rates, deposits, and payments.
+                  </p>
+                </div>
+                <div
+                  onClick={() => applyTemplate("transport_costs")}
+                  className="cursor-pointer border border-border/60 bg-card rounded-2xl p-6 hover:border-primary transition-all group"
+                >
+                  <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
+                    <Truck className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-semibold mb-1">Transport & Logistics</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Manage fuel costs, driver fees, routes, and transport payouts.
+                  </p>
+                </div>
+                <div
+                  onClick={() => applyTemplate("catering_budget")}
+                  className="cursor-pointer border border-border/60 bg-card rounded-2xl p-6 hover:border-primary transition-all group"
+                >
+                  <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
+                    <Utensils className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-semibold mb-1">Food & Beverage Catering</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Track catering costs per head, guest count, and invoice statuses.
+                  </p>
+                </div>
+                <div
+                  onClick={() => applyTemplate("permits_passes")}
+                  className="cursor-pointer border border-border/60 bg-card rounded-2xl p-6 hover:border-primary transition-all group"
+                >
+                  <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
+                    <FileCheck className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-semibold mb-1">Permits & Entrance Fees</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Track government permit costs, national park fees, and acquisition.
+                  </p>
+                </div>
+                <div
+                  onClick={() => applyTemplate("staff_payouts")}
                   className="cursor-pointer border border-border/60 bg-card rounded-2xl p-6 hover:border-primary transition-all group"
                 >
                   <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
                     <Users className="h-5 w-5" />
                   </div>
-                  <h3 className="font-semibold mb-1">Staff Roster</h3>
+                  <h3 className="font-semibold mb-1">Guides & Staff Fees</h3>
                   <p className="text-sm text-muted-foreground">
-                    Manage event staff, roles, and daily rates.
-                  </p>
-                </div>
-                <div
-                  onClick={() => applyTemplate("checklist")}
-                  className="cursor-pointer border border-border/60 bg-card rounded-2xl p-6 hover:border-primary transition-all group"
-                >
-                  <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <h3 className="font-semibold mb-1">Event Checklist</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Track tasks, assignees, and completion.
-                  </p>
-                </div>
-                <div
-                  onClick={() => applyTemplate("sponsor")}
-                  className="cursor-pointer border border-border/60 bg-card rounded-2xl p-6 hover:border-primary transition-all group"
-                >
-                  <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform">
-                    <BookOpen className="h-5 w-5" />
-                  </div>
-                  <h3 className="font-semibold mb-1">Sponsor Tracking</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Monitor sponsor deliverables and values.
+                    Track daily rates, work days, and payouts for guides and event staff.
                   </p>
                 </div>
                 <div
@@ -1362,7 +1427,7 @@ function OverviewTab({ eventId }: { eventId: string }) {
     // Look for a number field to sum
     const numberFields = book.schema_fields?.filter((f: any) => f.type === "number") || [];
     if (numberFields.length > 0) {
-      const targetField = numberFields[0].name;
+      const targetField = (numberFields[0] as any).name;
       book.records?.forEach((r: any) => {
         bookTotal += Number(r.record_data?.[targetField] || 0);
       });
