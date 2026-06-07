@@ -14,7 +14,25 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
+import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
+
 // Initialize Firestore
 export const db = getFirestore(app);
+
+export async function deleteChannelMessages(channelId: string) {
+  try {
+    // Delete all messages
+    const q = query(collection(db, "agatike_messages"), where("channelId", "==", channelId));
+    const snapshot = await getDocs(q);
+    const deletePromises = snapshot.docs.map(docSnapshot => deleteDoc(doc(db, "agatike_messages", docSnapshot.id)));
+    await Promise.all(deletePromises);
+    
+    // Delete the channel metadata
+    await deleteDoc(doc(db, "agatike_channels", channelId));
+    console.log(`Deleted Firestore data for channel ${channelId}`);
+  } catch (error) {
+    console.error("Failed to delete channel messages:", error);
+  }
+}
 
 export default app;

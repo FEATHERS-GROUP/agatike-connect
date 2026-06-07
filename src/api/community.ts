@@ -13,6 +13,8 @@ export interface CommunityChannel {
   created_at: string;
 }
 
+import { deleteChannelMessages } from "@/lib/firebase";
+
 export const getCommunityChannels = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const data = ctx.data as { organizerId: string };
   if (!data.organizerId) return [];
@@ -34,7 +36,85 @@ export const getCommunityChannels = createServerFn({ method: "POST" }).handler(a
   `;
 
   const result = await hasuraRequest<{ community_channels: CommunityChannel[] }>(query, { orgId: data.organizerId });
-  return result.community_channels || [];
+  let channels = result.community_channels || [];
+
+  const eventIds = [...new Set(channels.filter(c => c.event_id).map(c => c.event_id!))];
+  
+  if (eventIds.length > 0) {
+    const eventsQuery = `
+      query GetEventsForChannels($ids: [uuid!]!) {
+        events(where: {id: {_in: $ids}}) {
+          id
+          tour_stops
+          schedules {
+            id
+            start_date
+            end_date
+          }
+        }
+      }
+    `;
+    const eventsResult = await hasuraRequest<{ events: any[] }>(eventsQuery, { ids: eventIds });
+    const events = eventsResult.events || [];
+
+    const now = new Date();
+    const validChannels: CommunityChannel[] = [];
+
+    for (const channel of channels) {
+      if (!channel.event_id) {
+        validChannels.push(channel);
+        continue;
+      }
+
+      const event = events.find(e => e.id === channel.event_id);
+      if (!event) {
+        validChannels.push(channel);
+        continue;
+      }
+
+      let endDate: Date | null = null;
+
+      if (channel.schedule_id) {
+        const schedule = event.schedules?.find((s: any) => s.id === channel.schedule_id);
+        if (schedule) {
+          endDate = new Date(schedule.end_date || schedule.start_date);
+        }
+      } else if (channel.tour_stop_idx !== null && channel.tour_stop_idx !== undefined) {
+        const tourStop = event.tour_stops?.[channel.tour_stop_idx];
+        if (tourStop) {
+          endDate = new Date(tourStop.date);
+        }
+      } else {
+        validChannels.push(channel);
+        continue;
+      }
+
+      if (endDate) {
+        const expirationDate = new Date(endDate);
+        expirationDate.setDate(expirationDate.getDate() + 5);
+
+        if (now > expirationDate) {
+          // Expired, delete it asynchronously
+          console.log(`Deleting expired channel ${channel.id}`);
+          
+          hasuraRequest(`
+            mutation DeleteChannel($id: uuid!) {
+              delete_community_channels_by_pk(id: $id) { id }
+            }
+          `, { id: channel.id }).catch(console.error);
+
+          deleteChannelMessages(channel.id).catch(console.error);
+          
+          continue; // skip pushing to validChannels
+        }
+      }
+
+      validChannels.push(channel);
+    }
+    channels = validChannels;
+  }
+
+  return channels;
 });
 
 export const createCommunityChannel = createServerFn({ method: "POST" }).handler(async (ctx) => {
