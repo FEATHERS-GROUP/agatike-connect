@@ -37,7 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createProduct, getEventProducts, updateProduct } from "@/api/products";
 import { toast } from "sonner";
@@ -214,6 +214,12 @@ function ProductModal({
                 label: "Physical Merch",
                 icon: ShoppingBag,
                 desc: "T-shirts, posters, physical goods",
+              },
+              {
+                id: "voucher",
+                label: "Voucher / Gift Card",
+                icon: Ticket,
+                desc: "Pre-paid monetary balance",
               },
               {
                 id: "punch_card",
@@ -428,6 +434,22 @@ function ProductsAndAddonsView() {
     queryFn: () => getEventProducts({ data: { event_id: eventId } } as any),
   });
 
+  const { totalRevenue, totalItemsSold, lowStockCount } = useMemo(() => {
+    let revenue = 0;
+    let sold = 0;
+    let lowStock = 0;
+    products.forEach((p: any) => {
+      const pPrice = Number(p.price || 0);
+      const pSold = Number(p.sold_count || 0);
+      revenue += pPrice * pSold;
+      sold += pSold;
+      if (p.stock_limit !== null && Number(p.stock_limit) < 10) {
+        lowStock++;
+      }
+    });
+    return { totalRevenue: revenue, totalItemsSold: sold, lowStockCount: lowStock };
+  }, [products]);
+
   const merchandise = products.filter((p: any) => p.type === "physical");
   const vouchers = products.filter((p: any) => p.type === "voucher");
   const punchCards = products.filter(
@@ -501,16 +523,18 @@ function ProductsAndAddonsView() {
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Revenue</p>
           <p className="text-2xl font-semibold mt-1">
-            {formatCurrency(27055, activeWorkspace?.currency)}
+            {formatCurrency(totalRevenue, activeWorkspace?.currency)}
           </p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Items Sold</p>
-          <p className="text-2xl font-semibold mt-1">670</p>
+          <p className="text-2xl font-semibold mt-1">{totalItemsSold}</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Low Stock Alerts</p>
-          <p className="text-2xl font-semibold text-orange-500 mt-1">2 Items</p>
+          <p className="text-2xl font-semibold text-orange-500 mt-1">
+            {lowStockCount} {lowStockCount === 1 ? "Item" : "Items"}
+          </p>
         </div>
       </div>
 
