@@ -1,5 +1,7 @@
 import React from "react";
-import { ConcertTemplate, MovieTemplate, ExperienceTemplate, ConferenceTemplate, EntranceTemplate } from "./templates";
+import { Concert1, Concert2, Movie1, Movie2, Experience1, Experience2, Conference1, Conference2, Entrance1, Entrance2 } from "./templates";
+import { DEFAULT_TERMS_HTML, DEFAULT_EXPERIENCE_BACK_HTML } from "./templates/types";
+import { Template, TicketLayout, TicketBack } from "./templates/types";
 
 import QRCodeImport from "react-qr-code";
 const QRCode = (QRCodeImport as any).default || QRCodeImport;
@@ -15,25 +17,6 @@ import {
 } from "lucide-react";
 
 export { DEFAULT_TERMS_HTML, DEFAULT_EXPERIENCE_BACK_HTML };
-import { DEFAULT_TERMS_HTML, DEFAULT_EXPERIENCE_BACK_HTML } from "./templates/types";
-
-export type Template = "concert" | "movie" | "experience" | "conference" | "entrance";
-
-export type TicketLayout = {
-  titleSize: number;
-  subtitleSize: number;
-  metaSize: number;
-  titleAlign: "left" | "center" | "right";
-  titleOffsetY: number;
-  subtitleOffsetY: number;
-  metaOffsetY: number;
-};
-
-export type TicketBack = {
-  backText: string;
-  backImage: string;
-  backImageOpacity: number;
-};
 
 export function TicketPreview(props: {
   template: Template;
@@ -167,9 +150,6 @@ export function TicketPreview(props: {
       </div>
     );
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // CONCERT – horizontal, gradient overlay, bottom-left text
-    // ═══════════════════════════════════════════════════════════════════════
     const templateProps = {
       ...props,
       isBack,
@@ -179,11 +159,16 @@ export function TicketPreview(props: {
       Cell
     };
 
-    if (template === "concert") return <ConcertTemplate {...templateProps} />;
-    if (template === "movie") return <MovieTemplate {...templateProps} />;
-    if (template === "experience") return <ExperienceTemplate {...templateProps} />;
-    if (template === "conference") return <ConferenceTemplate {...templateProps} />;
-    if (template === "entrance") return <EntranceTemplate {...templateProps} />;
+    if (template === "concert-1") return <Concert1 {...templateProps} />;
+    if (template === "concert-2") return <Concert2 {...templateProps} />;
+    if (template === "movie-1") return <Movie1 {...templateProps} />;
+    if (template === "movie-2") return <Movie2 {...templateProps} />;
+    if (template === "experience-1") return <Experience1 {...templateProps} />;
+    if (template === "experience-2") return <Experience2 {...templateProps} />;
+    if (template === "conference-1") return <Conference1 {...templateProps} />;
+    if (template === "conference-2") return <Conference2 {...templateProps} />;
+    if (template === "entrance-1") return <Entrance1 {...templateProps} />;
+    if (template === "entrance-2") return <Entrance2 {...templateProps} />;
 
     return null;
   }

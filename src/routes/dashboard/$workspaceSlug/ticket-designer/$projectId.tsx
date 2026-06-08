@@ -72,15 +72,29 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/ticket-designer/
   component: TicketDesignerPage,
 });
 
-type Template = "concert" | "movie" | "experience" | "conference" | "entrance";
+import { Template } from "@/components/desktop/dashboard/ticket-designer/templates/types";
 
 const templates: { id: Template; label: string; icon: any; accent: string }[] = [
-  { id: "concert", label: "Concert / Event", icon: TicketIcon, accent: "#f97316" },
-  { id: "movie", label: "Movie", icon: Film, accent: "#dc2626" },
-  { id: "experience", label: "Experience", icon: Mountain, accent: "#16a34a" },
-  { id: "conference", label: "Conference", icon: Briefcase, accent: "#0ea5e9" },
-  { id: "entrance", label: "General Entrance", icon: MapPin, accent: "#8b5cf6" },
+  { id: "concert-1", label: "Concert (Classic)", icon: TicketIcon, accent: "#f97316" },
+  { id: "concert-2", label: "Concert (Lanyard)", icon: TicketIcon, accent: "#ea580c" },
+  { id: "movie-1", label: "Movie (Cinematic)", icon: Film, accent: "#dc2626" },
+  { id: "movie-2", label: "Movie (Vintage)", icon: Film, accent: "#b91c1c" },
+  { id: "experience-1", label: "Experience (Pass)", icon: Mountain, accent: "#16a34a" },
+  { id: "experience-2", label: "Experience (Tech)", icon: Mountain, accent: "#15803d" },
+  { id: "conference-1", label: "Conference (Standard)", icon: Briefcase, accent: "#0ea5e9" },
+  { id: "conference-2", label: "Conference (VIP)", icon: Briefcase, accent: "#0369a1" },
+  { id: "entrance-1", label: "Entrance (Clean)", icon: MapPin, accent: "#8b5cf6" },
+  { id: "entrance-2", label: "Entrance (Wallet)", icon: MapPin, accent: "#7c3aed" },
 ];
+
+function migrateTemplate(t: string): Template {
+  if (t === "concert") return "concert-1";
+  if (t === "movie") return "movie-1";
+  if (t === "experience") return "experience-1";
+  if (t === "conference") return "conference-1";
+  if (t === "entrance") return "entrance-1";
+  return t as Template;
+}
 
 const palettes = [
   { name: "Sunset", from: "#f97316", to: "#db2777" },
@@ -198,7 +212,7 @@ function TicketDesignerPage() {
 
   // Read template from URL if it's a new project
   const searchParams = new URLSearchParams(window.location.search);
-  const initialTemplate = (searchParams.get("template") as Template) || "concert";
+  const initialTemplate = migrateTemplate((searchParams.get("template") as string) || "concert-1");
   const initialEventId = searchParams.get("eventId") || "";
   const initialName = searchParams.get("name") || "Untitled Project";
 
@@ -242,7 +256,7 @@ function TicketDesignerPage() {
   const [isExporting, setIsExporting] = useState(false);
 
   const [baseDesign, setBaseDesign] = useState<TicketDesign>({
-    template: (existingProject?.template as Template) || initialTemplate,
+    template: migrateTemplate((existingProject?.template as string) || initialTemplate),
     palette: existingProject?.palette || palettes[0],
     font: existingProject?.font || fonts[0],
     title: existingProject?.title || "",
@@ -281,7 +295,7 @@ function TicketDesignerPage() {
       setAssignmentType(dbProject.venueId ? "venue" : "event");
       const savedOverrides = dbProject.design_overrides || {};
       setBaseDesign({
-        template: (dbProject.template as Template) || initialTemplate,
+        template: migrateTemplate((dbProject.template as string) || initialTemplate),
         palette: dbProject.palette || palettes[0],
         font: dbProject.font || fonts[0],
         title: "",

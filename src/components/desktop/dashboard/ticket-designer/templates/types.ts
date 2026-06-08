@@ -1,6 +1,11 @@
 import { ReactNode } from "react";
 
-export type Template = "concert" | "movie" | "experience" | "conference" | "entrance";
+export type Template =
+  | "concert-1" | "concert-2"
+  | "movie-1" | "movie-2"
+  | "experience-1" | "experience-2"
+  | "conference-1" | "conference-2"
+  | "entrance-1" | "entrance-2";
 
 export type TicketLayout = {
   titleSize: number;
