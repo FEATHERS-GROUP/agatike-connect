@@ -1,7 +1,7 @@
 import React from "react";
 import QRCodeImport from "react-qr-code";
 const QRCode = (QRCodeImport as any).default || QRCodeImport;
-import { TemplateProps } from "../types";
+import { TemplateProps, DEFAULT_TERMS_HTML } from "../types";
 
 export function Entrance1(props: TemplateProps) {
   const {

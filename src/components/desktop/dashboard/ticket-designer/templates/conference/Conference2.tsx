@@ -14,80 +14,85 @@ export function Conference2(props: TemplateProps) {
     return (
       <div
         id="ticket-preview-container"
-        className="relative flex w-[480px] flex-col overflow-hidden rounded-[20px] shadow-2xl bg-white text-gray-900 border-[8px]"
+        className={`relative flex w-[760px] max-w-full overflow-hidden rounded-[16px] shadow-2xl bg-white text-gray-900 border-l-[12px] ${isBack ? "flex-row-reverse" : "flex-row"}`}
         style={{
           fontFamily: font.css,
-          height: 600,
+          height: 250,
           borderColor: palette.from
         }}
       >
-        {/* Lanyard Hole */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-4 rounded-full bg-black/10 shadow-inner z-20"></div>
-
         {isBack ? (
-          <div className="relative flex-1 flex flex-col pt-12 p-6 bg-gray-50">
-             <div className="text-center border-b border-gray-200 pb-4 mb-4">
-               <span className="text-sm font-black tracking-[0.2em] uppercase text-gray-800">{logoText}</span>
-             </div>
-             <div className="flex-1 overflow-hidden ticket-back-content text-[11px] text-gray-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: back.backText || DEFAULT_TERMS_HTML }} />
-             <div className="mt-4 flex flex-col items-center border-t border-gray-200 pt-6">
+          <div className="relative flex-1 flex flex-row p-6 bg-gray-50">
+             <div className="flex-1 overflow-hidden ticket-back-content text-[11px] text-gray-600 leading-relaxed pr-6 border-r border-gray-200" dangerouslySetInnerHTML={{ __html: back.backText || DEFAULT_TERMS_HTML }} />
+             <div className="w-[180px] flex flex-col items-center justify-center pl-6">
                 <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">Registration Scan</p>
-                <div className="p-2 border border-gray-200 rounded-xl bg-white shadow-sm">
-                   <QRCode value={qrValue || orderId} size={100} />
+                <div className="p-2 border border-gray-200 rounded-xl bg-white shadow-sm mb-2">
+                   <QRCode value={qrValue || orderId} size={90} />
                 </div>
-                <p className="mt-2 text-[10px] font-mono text-gray-400">{orderId}</p>
+                <p className="text-[10px] font-mono text-gray-400">{orderId}</p>
              </div>
           </div>
         ) : (
-          <div className="relative flex-1 flex flex-col">
-            {/* Header / Cover */}
-            <div className="relative h-[220px] w-full bg-gray-100 flex flex-col items-center justify-center pt-8 px-6 text-center overflow-hidden">
+          <>
+            {/* Main Information Panel */}
+            <div className="relative flex-1 flex flex-col p-8">
+               {/* Cover Image Background Option */}
                {cover && (
-                  <img crossOrigin="anonymous" src={cover} className="absolute inset-0 h-full w-full object-cover mix-blend-multiply opacity-20" alt="" />
+                  <div className="absolute inset-0 opacity-5">
+                    <img crossOrigin="anonymous" src={cover} className="w-full h-full object-cover mix-blend-multiply" alt="" />
+                  </div>
                )}
-               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white"></div>
-               
-               <div className="relative z-10 w-full flex flex-col items-center h-full justify-between pb-6">
+
+               <div className="relative z-10 flex justify-between items-start mb-6">
                   {logoImage ? (
-                     <img crossOrigin="anonymous" src={logoImage} style={{ height: `${logoScale}px`, opacity: logoOpacity, filter: logoColorMode === "white" ? "brightness(0)" : logoColorMode === "black" ? "none" : "none" }} className="object-contain cursor-pointer mb-2" alt="Logo" onClick={onLogoClick} />
+                     <img crossOrigin="anonymous" src={logoImage} style={{ height: `${logoScale}px`, opacity: logoOpacity, filter: logoColorMode === "white" ? "brightness(0)" : logoColorMode === "black" ? "none" : "none" }} className="object-contain cursor-pointer" alt="Logo" onClick={onLogoClick} />
                   ) : (
-                     <span className="text-xl font-black tracking-[0.2em] uppercase text-gray-900 mb-2">{logoText}</span>
+                     <span className="text-xl font-black tracking-[0.2em] uppercase text-gray-900">{logoText}</span>
                   )}
-                  <span className="bg-gray-900 text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg mt-auto" style={{ background: palette.from }}>
+                  <span className="text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-md" style={{ background: palette.from }}>
                      {tier}
                   </span>
                </div>
-            </div>
 
-            {/* Name / Title block */}
-            <div className="px-8 text-center flex flex-col items-center justify-center" style={{ marginTop: `${layout.titleOffsetY}%`, textAlign: layout.titleAlign as any, minHeight: "120px" }}>
-               <h2 className="font-black leading-tight tracking-tight text-gray-900" style={{ fontSize: `${layout.titleSize + 6}px` }}>
-                  {title}
-               </h2>
-               <p className="mt-2 font-medium text-gray-500 uppercase tracking-widest" style={{ fontSize: `${layout.subtitleSize}px` }}>
-                  {subtitle}
-               </p>
-            </div>
+               <div className="relative z-10 flex-1 flex flex-col justify-center" style={{ textAlign: layout.titleAlign as any, marginTop: `${layout.titleOffsetY}%` }}>
+                  <h2 className="font-black leading-tight tracking-tight text-gray-900" style={{ fontSize: `${layout.titleSize + 4}px` }}>
+                     {title}
+                  </h2>
+                  <p className="mt-1 font-semibold text-gray-500 uppercase tracking-widest" style={{ fontSize: `${layout.subtitleSize}px` }}>
+                     {subtitle}
+                  </p>
+               </div>
 
-            {/* QR Code Prominent in Center */}
-            <div className="flex-1 flex flex-col items-center justify-center py-4">
-               <div className="p-3 bg-white rounded-2xl shadow-xl border border-gray-100">
-                  <QRCode value={qrValue || orderId} size={140} fgColor={palette.from} />
+               <div className="relative z-10 grid grid-cols-3 gap-6 mt-6 border-t border-gray-100 pt-4" style={{ fontSize: `${layout.metaSize}px` }}>
+                  <div>
+                     <p className="text-[9px] uppercase tracking-widest text-gray-400">Date</p>
+                     <p className="font-bold text-gray-800 text-sm mt-0.5">{date}</p>
+                  </div>
+                  <div>
+                     <p className="text-[9px] uppercase tracking-widest text-gray-400">Time</p>
+                     <p className="font-bold text-gray-800 text-sm mt-0.5">{time}</p>
+                  </div>
+                  <div>
+                     <p className="text-[9px] uppercase tracking-widest text-gray-400">Access Level</p>
+                     <p className="font-bold text-gray-800 text-sm mt-0.5">{seat}</p>
+                  </div>
                </div>
             </div>
 
-            {/* Bottom Info Footer */}
-            <div className="bg-gray-50 px-8 py-5 border-t border-gray-200 grid grid-cols-2 gap-4">
-               <div>
-                  <p className="text-[9px] uppercase tracking-widest text-gray-400">Date & Time</p>
-                  <p className="font-bold text-gray-800 text-sm">{date} • {time}</p>
+            {/* Separator Line */}
+            <div className="relative w-px bg-gray-200 my-6"></div>
+
+            {/* Right Stub for QR Code */}
+            <div className="w-[200px] flex flex-col items-center justify-center p-6 bg-gray-50">
+               <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-200">
+                  <QRCode value={qrValue || orderId} size={110} fgColor={palette.from} />
                </div>
-               <div className="text-right">
-                  <p className="text-[9px] uppercase tracking-widest text-gray-400">Access</p>
-                  <p className="font-bold text-gray-800 text-sm">{seat}</p>
+               <div className="mt-4 text-center">
+                  <p className="text-[8px] uppercase tracking-widest text-gray-400 font-bold">Attendee ID</p>
+                  <p className="text-[10px] font-mono text-gray-600 mt-0.5">{orderId}</p>
                </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     );
