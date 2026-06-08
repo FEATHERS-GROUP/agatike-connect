@@ -552,55 +552,117 @@ export function ManualBookingDialog({
                 <p className="text-muted-foreground">Verify the details below before confirming.</p>
               </div>
 
-              <div className="bg-secondary/20 p-6 rounded-2xl border border-border/60 space-y-6">
-                <div className="flex justify-between items-center border-b border-border/50 pb-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Total Amount</p>
-                    <p className="text-3xl font-bold tracking-tight">
-                      {venue.currency} {Number(formData.amount).toLocaleString()}
+              {venueProject ? (
+                <div className="bg-secondary/20 p-6 rounded-2xl border border-border/60 space-y-4 overflow-hidden flex flex-col items-center">
+                  <div className="w-full">
+                    <p className="text-sm text-muted-foreground mb-4 text-center">
+                      This exact layout will be emailed to <span className="font-semibold text-foreground">{formData.customer_email || formData.customer_name || "the customer"}</span> upon confirmation.
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground mb-1">Payment Status</p>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-500 font-bold tracking-wider uppercase">
-                      <Check className="h-3.5 w-3.5" /> PAID
-                    </span>
+                  <div className="relative w-full flex justify-center bg-background/50 rounded-xl border border-border/40 p-4">
+                    <div className="scale-[0.8] origin-top w-fit">
+                      <TicketPreview
+                        template={venueProject.template}
+                        palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                        font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+                        tier={selectedPricingTier || "General"}
+                        title={venue.name}
+                        subtitle={venue.address || formData.customer_name}
+                        date={formData.start_date || "Date TBA"}
+                        time={isEntranceOnly ? "Opening Hours" : `${formData.start_time || ""} - ${formData.end_time || ""}`}
+                        seat={formData.customer_name || "General"}
+                        price={formData.amount}
+                        currency={venue.currency}
+                        cover={venueProject.coverImage || ""}
+                        logoText={venueProject.logoText || ""}
+                        logoImage={venueProject.logoImage}
+                        logoScale={Number(venueProject.logoScale || 24)}
+                        logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+                        logoColorMode={venueProject.logoColorMode || "original"}
+                        orderId="SAMPLE-OTP"
+                        previewMode="Front"
+                        layout={
+                          venueProject.design_overrides?.layout || {
+                            titleSize: 30,
+                            subtitleSize: 14,
+                            metaSize: 11,
+                            titleAlign: "left",
+                            titleOffsetY: 0,
+                            subtitleOffsetY: 0,
+                            metaOffsetY: 0,
+                          }
+                        }
+                        back={
+                          venueProject.design_overrides?.back || {
+                            backText: "",
+                            backImage: "",
+                            backImageOpacity: 0.3,
+                          }
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="w-full space-y-1.5 mt-4 pt-4 border-t border-border/50">
+                    <Label>Internal Notes (Optional)</Label>
+                    <textarea
+                      className="w-full min-h-[80px] rounded-xl bg-background border border-input p-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                      placeholder="Add any internal notes..."
+                      value={formData.internal_notes}
+                      onChange={(e) => setFormData((p) => ({ ...p, internal_notes: e.target.value }))}
+                    />
                   </div>
                 </div>
+              ) : (
+                <div className="bg-secondary/20 p-6 rounded-2xl border border-border/60 space-y-6">
+                  <div className="flex justify-between items-center border-b border-border/50 pb-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Total Amount</p>
+                      <p className="text-3xl font-bold tracking-tight">
+                        {venue.currency} {Number(formData.amount).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground mb-1">Payment Status</p>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-500 font-bold tracking-wider uppercase">
+                        <Check className="h-3.5 w-3.5" /> PAID
+                      </span>
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-2 gap-y-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground mb-0.5">Customer Name</p>
-                    <p className="font-medium">{formData.customer_name}</p>
+                  <div className="grid grid-cols-2 gap-y-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground mb-0.5">Customer Name</p>
+                      <p className="font-medium">{formData.customer_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-0.5">Contact</p>
+                      <p className="font-medium">
+                        {formData.customer_phone || formData.customer_email || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-0.5">Date</p>
+                      <p className="font-medium">
+                        {formData.start_date} {isEntranceOnly ? "" : `to ${formData.end_date}`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-0.5">Total People</p>
+                      <p className="font-medium">{1 + attendees.length} Attendee(s)</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground mb-0.5">Contact</p>
-                    <p className="font-medium">
-                      {formData.customer_phone || formData.customer_email || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground mb-0.5">Date</p>
-                    <p className="font-medium">
-                      {formData.start_date} {isEntranceOnly ? "" : `to ${formData.end_date}`}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground mb-0.5">Total People</p>
-                    <p className="font-medium">{1 + attendees.length} Attendee(s)</p>
-                  </div>
-                </div>
 
-                <div className="space-y-1.5">
-                  <Label>Internal Notes (Optional)</Label>
-                  <textarea
-                    className="w-full min-h-[80px] rounded-xl bg-background border border-input p-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                    placeholder="Add any internal notes..."
-                    value={formData.internal_notes}
-                    onChange={(e) => setFormData((p) => ({ ...p, internal_notes: e.target.value }))}
-                  />
+                  <div className="space-y-1.5">
+                    <Label>Internal Notes (Optional)</Label>
+                    <textarea
+                      className="w-full min-h-[80px] rounded-xl bg-background border border-input p-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                      placeholder="Add any internal notes..."
+                      value={formData.internal_notes}
+                      onChange={(e) => setFormData((p) => ({ ...p, internal_notes: e.target.value }))}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
