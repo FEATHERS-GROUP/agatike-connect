@@ -135,7 +135,7 @@ function VenueBookingsPage() {
                 flattenedBookings.map((b, i) => (
                   <tr key={`${b.id}-${i}`} className="hover:bg-secondary/20 transition-colors">
                     <td className="px-6 py-4 font-medium">
-                      {b.ticket ? (b.ticket.attendee_name || b.customer_name) : b.customer_name}
+                      {b.ticket ? b.ticket.attendee_name || b.customer_name : b.customer_name}
                     </td>
                     <td className="px-6 py-4 text-muted-foreground">
                       {b.ticket?.displayId ? (
@@ -153,7 +153,9 @@ function VenueBookingsPage() {
                       {b.ticket ? (
                         <div className="bg-secondary/40 rounded px-2 py-1.5 text-xs border border-border/50 w-max">
                           <p className="font-semibold">{b.ticket.tier}</p>
-                          <p className="font-mono text-primary font-bold tracking-widest mt-0.5">{b.ticket.otp}</p>
+                          <p className="font-mono text-primary font-bold tracking-widest mt-0.5">
+                            {b.ticket.otp}
+                          </p>
                         </div>
                       ) : (
                         <span className="text-muted-foreground text-xs italic">Not Generated</span>
@@ -219,24 +221,39 @@ function VenueBookingsPage() {
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 rounded-2xl border-border/60">
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-48 rounded-2xl border-border/60"
+                        >
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator className="bg-border/60" />
                           <DropdownMenuItem onClick={() => setSelectedViewTicket(b)}>
                             View Ticket Details
                           </DropdownMenuItem>
                           {b.ticket && (!b.ticket.status || b.ticket.status === "Active") && (
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
-                              onClick={() => setSelectedTicketAction({ bookingId: b.id, ticketId: b.ticket.id, action: "Cancel" })}
+                              onClick={() =>
+                                setSelectedTicketAction({
+                                  bookingId: b.id,
+                                  ticketId: b.ticket.id,
+                                  action: "Cancel",
+                                })
+                              }
                             >
                               Cancel Ticket
                             </DropdownMenuItem>
                           )}
                           {b.ticket && b.ticket.status === "Cancelled" && (
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10"
-                              onClick={() => setSelectedTicketAction({ bookingId: b.id, ticketId: b.ticket.id, action: "Reactivate" })}
+                              onClick={() =>
+                                setSelectedTicketAction({
+                                  bookingId: b.id,
+                                  ticketId: b.ticket.id,
+                                  action: "Reactivate",
+                                })
+                              }
                             >
                               Reactivate Ticket
                             </DropdownMenuItem>
@@ -269,7 +286,7 @@ function VenueBookingsPage() {
             </DialogTitle>
             <DialogDescription>
               Are you sure you want to {selectedTicketAction?.action.toLowerCase()} this ticket?
-              {selectedTicketAction?.action === "Cancel" 
+              {selectedTicketAction?.action === "Cancel"
                 ? " The ticket will no longer be valid for entry."
                 : " The ticket will become valid for entry again."}
             </DialogDescription>
@@ -292,7 +309,7 @@ function VenueBookingsPage() {
                 ticketMutation.mutate({
                   booking_id: selectedTicketAction.bookingId,
                   ticket_id: selectedTicketAction.ticketId,
-                  new_status: selectedTicketAction.action === "Cancel" ? "Cancelled" : "Active"
+                  new_status: selectedTicketAction.action === "Cancel" ? "Cancelled" : "Active",
                 });
               }}
             >
@@ -310,7 +327,9 @@ function VenueBookingsPage() {
           {selectedViewTicket && (
             <>
               <div className="bg-secondary/30 p-8 border-b border-border/60">
-                <DialogTitle className="text-2xl font-bold tracking-tight mb-2">Ticket Details</DialogTitle>
+                <DialogTitle className="text-2xl font-bold tracking-tight mb-2">
+                  Ticket Details
+                </DialogTitle>
                 <DialogDescription>
                   Full information for this specific ticket and its parent booking.
                 </DialogDescription>
@@ -323,15 +342,22 @@ function VenueBookingsPage() {
                   <div className="grid grid-cols-2 gap-y-6 gap-x-6">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Attendee Name</p>
-                      <p className="font-semibold">{selectedViewTicket.ticket?.attendee_name || selectedViewTicket.customer_name}</p>
+                      <p className="font-semibold">
+                        {selectedViewTicket.ticket?.attendee_name ||
+                          selectedViewTicket.customer_name}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Ticket Tier</p>
-                      <p className="font-semibold">{selectedViewTicket.ticket?.tier || "General"}</p>
+                      <p className="font-semibold">
+                        {selectedViewTicket.ticket?.tier || "General"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Ticket OTP</p>
-                      <p className="font-mono font-bold text-primary tracking-widest">{selectedViewTicket.ticket?.otp}</p>
+                      <p className="font-mono font-bold text-primary tracking-widest">
+                        {selectedViewTicket.ticket?.otp}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">ID / Passport</p>
@@ -373,7 +399,9 @@ function VenueBookingsPage() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Primary ID / Passport</p>
-                      <p className="font-semibold">{selectedViewTicket.customer_id_document || "Not provided"}</p>
+                      <p className="font-semibold">
+                        {selectedViewTicket.customer_id_document || "Not provided"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Event/Visit Date</p>
@@ -384,9 +412,15 @@ function VenueBookingsPage() {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Time Window</p>
                       <p className="font-semibold">
-                        {new Date(selectedViewTicket.start_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {new Date(selectedViewTicket.start_time).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                         {" - "}
-                        {new Date(selectedViewTicket.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {new Date(selectedViewTicket.end_time).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </p>
                     </div>
                     <div>
@@ -395,7 +429,9 @@ function VenueBookingsPage() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Total Paid</p>
-                      <p className="font-semibold">{venue.currency} {Number(selectedViewTicket.amount).toLocaleString()}</p>
+                      <p className="font-semibold">
+                        {venue.currency} {Number(selectedViewTicket.amount).toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 </div>

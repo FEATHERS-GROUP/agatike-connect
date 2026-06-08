@@ -57,7 +57,9 @@ function PublicTicketValidationRoute() {
     if (!ticket.attendee_name || ticket.attendee_name === booking.customer_name) {
       displayId = booking.customer_id_document;
     } else if (booking.attendees_info && Array.isArray(booking.attendees_info)) {
-      const matchedAttendee = booking.attendees_info.find((a: any) => a.name === ticket.attendee_name);
+      const matchedAttendee = booking.attendees_info.find(
+        (a: any) => a.name === ticket.attendee_name,
+      );
       if (matchedAttendee?.id_document) {
         displayId = matchedAttendee.id_document;
       }
@@ -77,11 +79,13 @@ function PublicTicketValidationRoute() {
           This ticket has been cancelled by the organizer and is no longer valid for entry.
         </p>
         <div className="bg-white/5 border border-white/10 rounded-3xl p-6 w-full max-w-sm backdrop-blur-md text-left">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Attempted Attendee</p>
-          <p className="text-lg font-bold text-white/50">{ticket.attendee_name || booking.customer_name}</p>
-          {displayId && (
-            <p className="text-sm text-red-400/80 mt-1">ID: {displayId}</p>
-          )}
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+            Attempted Attendee
+          </p>
+          <p className="text-lg font-bold text-white/50">
+            {ticket.attendee_name || booking.customer_name}
+          </p>
+          {displayId && <p className="text-sm text-red-400/80 mt-1">ID: {displayId}</p>}
         </div>
       </div>
     );
@@ -92,7 +96,7 @@ function PublicTicketValidationRoute() {
       <div className="h-24 w-24 rounded-full bg-emerald-500/20 flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(16,185,129,0.3)]">
         <CheckCircle2 className="h-12 w-12 text-emerald-500" />
       </div>
-      
+
       <h1 className="text-3xl font-black uppercase tracking-widest mb-2 text-emerald-400">
         Valid Ticket
       </h1>
@@ -103,7 +107,9 @@ function PublicTicketValidationRoute() {
       <div className="bg-white/5 border border-white/10 rounded-3xl p-8 w-full max-w-sm backdrop-blur-md">
         <div className="mb-6">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Attendee</p>
-          <p className="text-xl font-bold text-white">{ticket?.attendee_name || booking.customer_name}</p>
+          <p className="text-xl font-bold text-white">
+            {ticket?.attendee_name || booking.customer_name}
+          </p>
           {displayId && (
             <p className="text-sm text-white/60 mt-1 tracking-wider font-mono">ID: {displayId}</p>
           )}
@@ -112,10 +118,14 @@ function PublicTicketValidationRoute() {
         <div className="grid grid-cols-2 gap-4 mb-6 text-left">
           <div className="bg-black/30 rounded-xl p-3">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Tier</p>
-            <p className="font-semibold text-white truncate">{ticket?.tier || "General Admission"}</p>
+            <p className="font-semibold text-white truncate">
+              {ticket?.tier || "General Admission"}
+            </p>
           </div>
           <div className="bg-black/30 rounded-xl p-3">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Location</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+              Location
+            </p>
             <p className="font-semibold text-white truncate">{booking.venue_name || "Venue"}</p>
           </div>
         </div>
@@ -125,7 +135,7 @@ function PublicTicketValidationRoute() {
           <p className="font-mono text-sm text-white/80 tracking-widest">{ticketOtp}</p>
         </div>
       </div>
-      
+
       <p className="text-xs text-white/30 mt-12 font-mono">Agatike Verified Secure Ticket</p>
     </div>
   );

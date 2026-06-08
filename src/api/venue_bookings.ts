@@ -46,19 +46,30 @@ export const createVenueBooking = createServerFn({ method: "POST" })
       let ticketsToGenerate: any[] = [];
 
       if (tickets_data.selected_tier) {
-        ticketsToGenerate.push({ tier: tickets_data.selected_tier, name: customer_name, id_document: customer_id_document });
+        ticketsToGenerate.push({
+          tier: tickets_data.selected_tier,
+          name: customer_name,
+          id_document: customer_id_document,
+        });
       } else {
         const attendeeList = [
           { name: customer_name, id_document: customer_id_document },
-          ...(attendees_info || []).map((a: any) => ({ name: a.name, id_document: a.id_document }))
+          ...(attendees_info || []).map((a: any) => ({ name: a.name, id_document: a.id_document })),
         ];
         let nameIdx = 0;
 
         for (const [tierName, qty] of Object.entries(tickets_data)) {
           if (typeof qty === "number") {
             for (let i = 0; i < qty; i++) {
-              const attendee = attendeeList[nameIdx] || { name: customer_name, id_document: customer_id_document };
-              ticketsToGenerate.push({ tier: tierName, name: attendee.name, id_document: attendee.id_document });
+              const attendee = attendeeList[nameIdx] || {
+                name: customer_name,
+                id_document: customer_id_document,
+              };
+              ticketsToGenerate.push({
+                tier: tierName,
+                name: attendee.name,
+                id_document: attendee.id_document,
+              });
               nameIdx++;
             }
           }
@@ -192,7 +203,9 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
     const { booking_id, ticket_id, new_status } = ctx.data;
     if (!booking_id || !ticket_id || !new_status) throw new Error("Missing parameters");
 
-    const getRes = await hasuraRequest<{ venue_bookings_by_pk: any }>(GET_VENUE_BOOKING, { id: booking_id });
+    const getRes = await hasuraRequest<{ venue_bookings_by_pk: any }>(GET_VENUE_BOOKING, {
+      id: booking_id,
+    });
     const booking = getRes.venue_bookings_by_pk;
     if (!booking) throw new Error("Booking not found");
 
@@ -206,7 +219,7 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
 
     await hasuraRequest(UPDATE_VENUE_BOOKING_TICKETS, {
       id: booking_id,
-      tickets_data
+      tickets_data,
     });
 
     return { success: true };

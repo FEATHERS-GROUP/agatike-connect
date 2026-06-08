@@ -38,7 +38,7 @@ export function ManualBookingDialog({
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
   const [bookingRes, setBookingRes] = useState<any>(null);
-  const [generatedPdfs, setGeneratedPdfs] = useState<{filename: string, content: string}[]>([]);
+  const [generatedPdfs, setGeneratedPdfs] = useState<{ filename: string; content: string }[]>([]);
 
   const [step, setStep] = useState(1);
   const isEntranceOnly =
@@ -150,11 +150,7 @@ export function ManualBookingDialog({
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venue.id] });
 
       const ticketsData = res.tickets_data;
-      if (
-        ticketsData?.issued &&
-        ticketsData.issued.length > 0 &&
-        venueProject
-      ) {
+      if (ticketsData?.issued && ticketsData.issued.length > 0 && venueProject) {
         setIsGenerating(true);
         setIssuedTickets(ticketsData.issued);
         setBookingRes(res);
@@ -516,7 +512,7 @@ export function ManualBookingDialog({
                   <div className="flex items-center justify-between border-b pb-2 mb-4">
                     <h3 className="text-lg font-semibold">Additional Attendees (Optional)</h3>
                     <span className="text-sm font-medium bg-secondary px-3 py-1 rounded-full">
-                      {totalTickets - 1} ticket{totalTickets - 1 !== 1 ? 's' : ''} left to assign
+                      {totalTickets - 1} ticket{totalTickets - 1 !== 1 ? "s" : ""} left to assign
                     </span>
                   </div>
 
@@ -566,25 +562,39 @@ export function ManualBookingDialog({
                 <div className="bg-secondary/20 p-6 rounded-2xl border border-border/60 space-y-4 overflow-hidden flex flex-col items-center">
                   <div className="w-full">
                     <p className="text-sm text-muted-foreground mb-4 text-center">
-                      This exact layout will be emailed to <span className="font-semibold text-foreground">{formData.customer_email || formData.customer_name || "the customer"}</span> upon confirmation.
+                      This exact layout will be emailed to{" "}
+                      <span className="font-semibold text-foreground">
+                        {formData.customer_email || formData.customer_name || "the customer"}
+                      </span>{" "}
+                      upon confirmation.
                     </p>
                   </div>
                   <div className="relative w-full flex justify-center bg-background/50 rounded-xl border border-border/40 p-4">
                     <div className="scale-[0.8] origin-top w-fit">
                       <TicketPreview
                         template={venueProject.template}
-                        palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                        palette={
+                          venueProject.palette || { from: "#000", to: "#000", name: "Black" }
+                        }
                         font={venueProject.font || { css: "sans-serif", name: "Modern" }}
                         tier={selectedPricingTier || "General"}
                         title={venue.name}
                         subtitle={venue.address || formData.customer_name}
                         date={formData.start_date || "Date TBA"}
-                        time={isEntranceOnly ? "Opening Hours" : `${formData.start_time || ""} - ${formData.end_time || ""}`}
+                        time={
+                          isEntranceOnly
+                            ? "Opening Hours"
+                            : `${formData.start_time || ""} - ${formData.end_time || ""}`
+                        }
                         seat={formData.customer_name || "General"}
                         price={formData.amount}
                         currency={venue.currency}
                         cover={venueProject.coverImage || ""}
-                        logoText={venueProject.logoText || activeWorkspace?.name?.toUpperCase() || "agatiike"}
+                        logoText={
+                          venueProject.logoText ||
+                          activeWorkspace?.name?.toUpperCase() ||
+                          "agatiike"
+                        }
                         logoImage={venueProject.logoImage}
                         logoScale={Number(venueProject.logoScale || 24)}
                         logoOpacity={Number(venueProject.logoOpacity ?? 1)}
@@ -619,7 +629,9 @@ export function ManualBookingDialog({
                       className="w-full min-h-[80px] rounded-xl bg-background border border-input p-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                       placeholder="Add any internal notes..."
                       value={formData.internal_notes}
-                      onChange={(e) => setFormData((p) => ({ ...p, internal_notes: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, internal_notes: e.target.value }))
+                      }
                     />
                   </div>
                 </div>
@@ -669,7 +681,9 @@ export function ManualBookingDialog({
                       className="w-full min-h-[80px] rounded-xl bg-background border border-input p-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                       placeholder="Add any internal notes..."
                       value={formData.internal_notes}
-                      onChange={(e) => setFormData((p) => ({ ...p, internal_notes: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, internal_notes: e.target.value }))
+                      }
                     />
                   </div>
                 </div>
@@ -684,8 +698,8 @@ export function ManualBookingDialog({
               </div>
               <h2 className="text-2xl font-bold tracking-tight">Booking Confirmed!</h2>
               <p className="text-muted-foreground max-w-md mx-auto">
-                {formData.customer_email 
-                  ? `The tickets have been generated and emailed to ${formData.customer_email}.` 
+                {formData.customer_email
+                  ? `The tickets have been generated and emailed to ${formData.customer_email}.`
                   : "The booking has been saved. You can download the tickets below to send them to the customer."}
               </p>
 
@@ -698,7 +712,7 @@ export function ManualBookingDialog({
                       variant="outline"
                       className="w-full justify-between items-center gap-2 rounded-xl h-14"
                       onClick={() => {
-                        const link = document.createElement('a');
+                        const link = document.createElement("a");
                         link.href = `data:application/pdf;base64,${pdf.content}`;
                         link.download = pdf.filename;
                         document.body.appendChild(link);
@@ -736,7 +750,11 @@ export function ManualBookingDialog({
               className="rounded-xl px-8 shadow-[var(--shadow-glow)] gap-2"
               style={{ background: step === 4 ? "var(--gradient-primary)" : undefined }}
             >
-              {isPending || isGenerating ? "Confirming..." : step === 4 ? "Confirm & Pay" : "Next Step"}
+              {isPending || isGenerating
+                ? "Confirming..."
+                : step === 4
+                  ? "Confirm & Pay"
+                  : "Next Step"}
               {step < 4 && <ArrowRight className="h-4 w-4" />}
             </Button>
           </div>
@@ -773,12 +791,18 @@ export function ManualBookingDialog({
                   title={venue.name}
                   subtitle={venue.address || t.attendee_name || formData.customer_name}
                   date={formData.start_date || "Date TBA"}
-                  time={isEntranceOnly ? "Opening Hours" : `${formData.start_time || ""} - ${formData.end_time || ""}`}
+                  time={
+                    isEntranceOnly
+                      ? "Opening Hours"
+                      : `${formData.start_time || ""} - ${formData.end_time || ""}`
+                  }
                   seat={t.attendee_name || formData.customer_name || "General"}
                   price={formData.amount}
                   currency={venue.currency}
                   cover={venueProject.coverImage || ""}
-                  logoText={venueProject.logoText || activeWorkspace?.name?.toUpperCase() || "agatiike"}
+                  logoText={
+                    venueProject.logoText || activeWorkspace?.name?.toUpperCase() || "agatiike"
+                  }
                   logoImage={venueProject.logoImage}
                   logoScale={Number(venueProject.logoScale || 24)}
                   logoOpacity={Number(venueProject.logoOpacity ?? 1)}

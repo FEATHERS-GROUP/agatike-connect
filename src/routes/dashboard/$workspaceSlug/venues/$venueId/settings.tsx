@@ -21,7 +21,7 @@ function VenueSettingsPage() {
   });
 
   const [rentalType, setRentalType] = useState("Per Day");
-  const [pricingTiers, setPricingTiers] = useState<{name: string; amount: number}[]>([]);
+  const [pricingTiers, setPricingTiers] = useState<{ name: string; amount: number }[]>([]);
 
   useEffect(() => {
     if (venue?.rental_type) {
@@ -48,7 +48,7 @@ function VenueSettingsPage() {
   const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     // Parse numeric fields safely
     const parseNum = (val: FormDataEntryValue | null) => {
       if (!val) return null;
@@ -68,7 +68,13 @@ function VenueSettingsPage() {
       pricePerDay: parseNum(formData.get("price_per_day")),
       pricePerWeek: parseNum(formData.get("price_per_week")),
       priceAnnually: parseNum(formData.get("price_annually")),
-      amenities: formData.get("amenities")?.toString().split(",").map((s) => s.trim()).filter(Boolean) || [],
+      amenities:
+        formData
+          .get("amenities")
+          ?.toString()
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean) || [],
       status: formData.get("status")?.toString(),
     };
 
@@ -107,13 +113,21 @@ function VenueSettingsPage() {
 
             <div className="space-y-1.5">
               <Label>Venue Name</Label>
-              <Input name="name" defaultValue={venue.name} className="h-10 rounded-xl bg-secondary/50" />
+              <Input
+                name="name"
+                defaultValue={venue.name}
+                className="h-10 rounded-xl bg-secondary/50"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Type</Label>
-                <select name="type" defaultValue={venue.type} className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                <select
+                  name="type"
+                  defaultValue={venue.type}
+                  className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
                   <option value="Stadium">Stadium</option>
                   <option value="Arena">Arena</option>
                   <option value="Conference Room">Conference Room</option>
@@ -128,7 +142,11 @@ function VenueSettingsPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>City / Location</Label>
-                <Input name="city" defaultValue={venue.city} className="h-10 rounded-xl bg-secondary/50" />
+                <Input
+                  name="city"
+                  defaultValue={venue.city}
+                  className="h-10 rounded-xl bg-secondary/50"
+                />
               </div>
             </div>
           </div>
@@ -178,7 +196,7 @@ function VenueSettingsPage() {
                       <Plus className="w-3.5 h-3.5" /> Add Tier
                     </Button>
                   </div>
-                  
+
                   {pricingTiers.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4 bg-background/50 rounded-xl border border-dashed border-border">
                       No pricing tiers added. Click 'Add Tier' to create one.

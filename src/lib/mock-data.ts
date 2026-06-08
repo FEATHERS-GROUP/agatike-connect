@@ -948,7 +948,14 @@ export type RentableVenue = {
   status: "Active" | "Draft" | "Maintenance";
   pendingRequests: number;
   activeRentals: number;
-  rentalType?: "Per Day" | "Per Hour" | "Per Week" | "Annually" | "Entrance Fee" | "Multiple" | "Both";
+  rentalType?:
+    | "Per Day"
+    | "Per Hour"
+    | "Per Week"
+    | "Annually"
+    | "Entrance Fee"
+    | "Multiple"
+    | "Both";
   pricePerHour?: number;
   pricePerWeek?: number;
   priceAnnually?: number;

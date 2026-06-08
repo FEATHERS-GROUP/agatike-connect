@@ -91,7 +91,8 @@ export function TicketPreview(props: {
     const BackSide = (
       <div className="relative flex-1 p-7" style={{ background: "rgba(0,0,0,0.25)" }}>
         {cover && (
-          <img crossOrigin="anonymous"
+          <img
+            crossOrigin="anonymous"
             src={cover}
             className="absolute inset-0 h-full w-full object-cover opacity-20 -scale-x-100"
             alt=""
@@ -102,7 +103,8 @@ export function TicketPreview(props: {
           <div className="flex items-center justify-end mb-4">
             <span className="text-sm font-black tracking-[0.3em]">{logoText}</span>
             {logoImage && (
-              <img crossOrigin="anonymous"
+              <img
+                crossOrigin="anonymous"
                 src={logoImage}
                 style={{
                   height: `${logoScale}px`,
@@ -121,7 +123,8 @@ export function TicketPreview(props: {
           </div>
           <div className="flex-1 flex flex-col justify-end relative">
             {back.backImage && (
-              <img crossOrigin="anonymous"
+              <img
+                crossOrigin="anonymous"
                 src={back.backImage}
                 className="absolute inset-0 h-full w-full object-cover rounded-xl"
                 style={{ opacity: back.backImageOpacity }}
@@ -181,7 +184,8 @@ export function TicketPreview(props: {
           ) : (
             <div className="relative flex-1 p-7">
               {cover && (
-                <img crossOrigin="anonymous"
+                <img
+                  crossOrigin="anonymous"
                   src={cover}
                   className="absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-overlay"
                   alt=""
@@ -196,7 +200,8 @@ export function TicketPreview(props: {
                   <div className="flex flex-col items-end">
                     <span className="text-sm font-black tracking-[0.3em]">{logoText}</span>
                     {logoImage && (
-                      <img crossOrigin="anonymous"
+                      <img
+                        crossOrigin="anonymous"
                         src={logoImage}
                         style={{
                           height: `${logoScale}px`,
@@ -259,7 +264,8 @@ export function TicketPreview(props: {
         >
           {/* Full-bleed background */}
           {cover ? (
-            <img crossOrigin="anonymous"
+            <img
+              crossOrigin="anonymous"
               src={cover}
               className={`absolute inset-0 h-full w-full object-cover ${isBack ? "-scale-x-100" : ""}`}
               alt=""
@@ -305,7 +311,8 @@ export function TicketPreview(props: {
               </div>
               <div className="relative z-10 flex w-[170px] flex-col items-center justify-between bg-black/50 p-5 text-center backdrop-blur-sm">
                 {back.backImage && (
-                  <img crossOrigin="anonymous"
+                  <img
+                    crossOrigin="anonymous"
                     src={back.backImage}
                     className="absolute inset-0 h-full w-full object-cover"
                     style={{ opacity: back.backImageOpacity }}
@@ -335,7 +342,8 @@ export function TicketPreview(props: {
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     {logoImage && (
-                      <img crossOrigin="anonymous"
+                      <img
+                        crossOrigin="anonymous"
                         src={logoImage}
                         style={{
                           height: `${logoScale}px`,
@@ -435,7 +443,8 @@ export function TicketPreview(props: {
           {/* ── Left: full-bleed cover panel ─────────────────────── */}
           <div className="relative flex-1 overflow-hidden">
             {cover ? (
-              <img crossOrigin="anonymous"
+              <img
+                crossOrigin="anonymous"
                 src={cover}
                 className={`absolute inset-0 h-full w-full object-cover ${isBack ? "-scale-x-100" : ""}`}
                 alt=""
@@ -472,7 +481,8 @@ export function TicketPreview(props: {
               <div className="relative z-10 flex h-full flex-col justify-between p-6">
                 <div className="flex items-center gap-2">
                   {logoImage && (
-                    <img crossOrigin="anonymous"
+                    <img
+                      crossOrigin="anonymous"
                       src={logoImage}
                       style={{
                         height: `${logoScale * 0.65}px`,
@@ -532,7 +542,8 @@ export function TicketPreview(props: {
             style={{ background: `linear-gradient(160deg, ${palette.from}ee, ${palette.to}cc)` }}
           >
             {cover && (
-              <img crossOrigin="anonymous"
+              <img
+                crossOrigin="anonymous"
                 src={cover}
                 className="absolute inset-0 h-full w-full object-cover opacity-15"
                 alt=""
@@ -629,7 +640,8 @@ export function TicketPreview(props: {
               {/* Back header + terms */}
               <div className="relative flex-1 flex flex-col p-6 overflow-hidden bg-black/60">
                 {cover && (
-                  <img crossOrigin="anonymous"
+                  <img
+                    crossOrigin="anonymous"
                     src={cover}
                     className="absolute inset-0 h-full w-full object-cover opacity-20 -scale-x-100"
                     alt=""
@@ -657,7 +669,8 @@ export function TicketPreview(props: {
               {/* Back stub */}
               <div className="relative flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-md">
                 {back.backImage && (
-                  <img crossOrigin="anonymous"
+                  <img
+                    crossOrigin="anonymous"
                     src={back.backImage}
                     className="absolute inset-0 h-full w-full object-cover rounded-b-[28px]"
                     style={{ opacity: back.backImageOpacity }}
@@ -680,7 +693,8 @@ export function TicketPreview(props: {
               {/* Poster header – taller cover with conference branding */}
               <div className="relative h-[130px] overflow-hidden">
                 {cover && (
-                  <img crossOrigin="anonymous"
+                  <img
+                    crossOrigin="anonymous"
                     src={cover}
                     className="absolute inset-0 h-full w-full object-cover opacity-55"
                     alt=""
@@ -710,7 +724,8 @@ export function TicketPreview(props: {
                   </span>
                   <div className="flex items-center gap-1.5">
                     {logoImage && (
-                      <img crossOrigin="anonymous"
+                      <img
+                        crossOrigin="anonymous"
                         src={logoImage}
                         style={{
                           height: `${logoScale * 0.6}px`,
@@ -825,7 +840,12 @@ export function TicketPreview(props: {
               {/* Left Image */}
               <div className="relative w-[220px]">
                 {cover ? (
-                  <img crossOrigin="anonymous" src={cover} className="absolute inset-0 h-full w-full object-cover" alt="" />
+                  <img
+                    crossOrigin="anonymous"
+                    src={cover}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    alt=""
+                  />
                 ) : (
                   <div className="absolute inset-0 bg-slate-200" />
                 )}
@@ -840,7 +860,8 @@ export function TicketPreview(props: {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {logoImage && (
-                      <img crossOrigin="anonymous"
+                      <img
+                        crossOrigin="anonymous"
                         src={logoImage}
                         style={{
                           height: `${logoScale * 0.5}px`,
