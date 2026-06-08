@@ -723,6 +723,7 @@ export function ManualBookingDialog({
             <Button
               type="button"
               variant="ghost"
+              disabled={isPending || isGenerating}
               onClick={step === 1 ? handleClose : prevStep}
               className="rounded-xl px-6"
             >
@@ -730,12 +731,12 @@ export function ManualBookingDialog({
             </Button>
             <Button
               type="button"
-              disabled={isPending}
+              disabled={isPending || isGenerating}
               onClick={nextStep}
               className="rounded-xl px-8 shadow-[var(--shadow-glow)] gap-2"
               style={{ background: step === 4 ? "var(--gradient-primary)" : undefined }}
             >
-              {isPending ? "Confirming..." : step === 4 ? "Confirm & Pay" : "Next Step"}
+              {isPending || isGenerating ? "Confirming..." : step === 4 ? "Confirm & Pay" : "Next Step"}
               {step < 4 && <ArrowRight className="h-4 w-4" />}
             </Button>
           </div>
@@ -770,10 +771,10 @@ export function ManualBookingDialog({
                   font={venueProject.font || { css: "sans-serif", name: "Modern" }}
                   tier={t.tier}
                   title={venue.name}
-                  subtitle={venue.address || ""}
-                  date="Valid for 1 Day"
-                  time="Opening Hours"
-                  seat="General"
+                  subtitle={venue.address || formData.customer_name}
+                  date={formData.start_date || "Date TBA"}
+                  time={isEntranceOnly ? "Opening Hours" : `${formData.start_time || ""} - ${formData.end_time || ""}`}
+                  seat={formData.customer_name || "General"}
                   price={formData.amount}
                   currency={venue.currency}
                   cover={venueProject.coverImage || ""}

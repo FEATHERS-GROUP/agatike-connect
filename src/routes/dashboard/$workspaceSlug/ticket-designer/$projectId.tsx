@@ -441,8 +441,31 @@ function TicketDesignerPage() {
 
   const onUpload = (file?: File) => {
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Cover image size must be under 5MB.");
+      return;
+    }
     const reader = new FileReader();
-    reader.onload = () => updateDesign("cover", String(reader.result));
+    reader.onload = async () => {
+      const dataUrl = String(reader.result);
+      updateDesign("cover", dataUrl); // Immediate preview
+
+      try {
+        const base64 = dataUrl.split(",")[1];
+        const res = await uploadFile({
+          data: {
+            base64,
+            contentType: file.type,
+            folder: "tickets/covers",
+            ext: file.type.split("/")[1] || "jpg",
+          },
+        } as any);
+        updateDesign("cover", res.url);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to upload cover permanently. It might not save correctly.");
+      }
+    };
     reader.readAsDataURL(file);
   };
 
