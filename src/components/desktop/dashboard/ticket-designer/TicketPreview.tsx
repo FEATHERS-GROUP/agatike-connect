@@ -49,6 +49,7 @@ export function TicketPreview(props: {
   logoOpacity: number;
   logoColorMode: string;
   orderId: string;
+  qrValue?: string;
   previewMode: "Front" | "Back" | "Mobile";
   onLogoClick?: () => void;
   layout: TicketLayout;
@@ -72,6 +73,7 @@ export function TicketPreview(props: {
     logoOpacity,
     logoColorMode,
     orderId,
+    qrValue,
     template,
     previewMode,
     onLogoClick,
@@ -86,7 +88,7 @@ export function TicketPreview(props: {
     const BackSide = (
       <div className="relative flex-1 p-7" style={{ background: "rgba(0,0,0,0.25)" }}>
         {cover && (
-          <img
+          <img crossOrigin="anonymous"
             src={cover}
             className="absolute inset-0 h-full w-full object-cover opacity-20 -scale-x-100"
             alt=""
@@ -97,7 +99,7 @@ export function TicketPreview(props: {
           <div className="flex items-center justify-end mb-4">
             <span className="text-sm font-black tracking-[0.3em]">{logoText}</span>
             {logoImage && (
-              <img
+              <img crossOrigin="anonymous"
                 src={logoImage}
                 style={{
                   height: `${logoScale}px`,
@@ -116,7 +118,7 @@ export function TicketPreview(props: {
           </div>
           <div className="flex-1 flex flex-col justify-end relative">
             {back.backImage && (
-              <img
+              <img crossOrigin="anonymous"
                 src={back.backImage}
                 className="absolute inset-0 h-full w-full object-cover rounded-xl"
                 style={{ opacity: back.backImageOpacity }}
@@ -140,7 +142,7 @@ export function TicketPreview(props: {
           <p className="mt-1 text-[10px] font-mono opacity-80 break-all">{orderId}</p>
         </div>
         <div className="rounded-xl bg-white p-1.5 self-start">
-          <QRCode value={orderId} size={80} />
+          <QRCode value={qrValue || orderId} size={80} />
         </div>
         <div className="text-left">
           <p className="text-[9px] opacity-80">Scan at entrance</p>
@@ -176,7 +178,7 @@ export function TicketPreview(props: {
           ) : (
             <div className="relative flex-1 p-7">
               {cover && (
-                <img
+                <img crossOrigin="anonymous"
                   src={cover}
                   className="absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-overlay"
                   alt=""
@@ -191,7 +193,7 @@ export function TicketPreview(props: {
                   <div className="flex flex-col items-end">
                     <span className="text-sm font-black tracking-[0.3em]">{logoText}</span>
                     {logoImage && (
-                      <img
+                      <img crossOrigin="anonymous"
                         src={logoImage}
                         style={{
                           height: `${logoScale}px`,
@@ -254,7 +256,7 @@ export function TicketPreview(props: {
         >
           {/* Full-bleed background */}
           {cover ? (
-            <img
+            <img crossOrigin="anonymous"
               src={cover}
               className={`absolute inset-0 h-full w-full object-cover ${isBack ? "-scale-x-100" : ""}`}
               alt=""
@@ -300,7 +302,7 @@ export function TicketPreview(props: {
               </div>
               <div className="relative z-10 flex w-[170px] flex-col items-center justify-between bg-black/50 p-5 text-center backdrop-blur-sm">
                 {back.backImage && (
-                  <img
+                  <img crossOrigin="anonymous"
                     src={back.backImage}
                     className="absolute inset-0 h-full w-full object-cover"
                     style={{ opacity: back.backImageOpacity }}
@@ -311,7 +313,7 @@ export function TicketPreview(props: {
                   Scan to enter
                 </p>
                 <div className="relative z-10 rounded-lg bg-white p-2">
-                  <QRCode value={orderId} size={90} />
+                  <QRCode value={qrValue || orderId} size={90} />
                 </div>
                 <p className="relative z-10 text-[9px] font-mono text-white/50">{orderId}</p>
               </div>
@@ -330,7 +332,7 @@ export function TicketPreview(props: {
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     {logoImage && (
-                      <img
+                      <img crossOrigin="anonymous"
                         src={logoImage}
                         style={{
                           height: `${logoScale}px`,
@@ -402,7 +404,7 @@ export function TicketPreview(props: {
               <div className="relative z-10 flex w-[170px] flex-col items-center justify-between bg-black/50 p-5 text-center backdrop-blur-sm">
                 <p className="text-[9px] uppercase tracking-widest text-white/50">Now Showing</p>
                 <div className="rounded-xl bg-white p-2">
-                  <QRCode value={orderId} size={96} />
+                  <QRCode value={qrValue || orderId} size={96} />
                 </div>
                 <div>
                   <p className="text-[9px] uppercase tracking-widest text-white/50 mb-0.5">
@@ -430,7 +432,7 @@ export function TicketPreview(props: {
           {/* ── Left: full-bleed cover panel ─────────────────────── */}
           <div className="relative flex-1 overflow-hidden">
             {cover ? (
-              <img
+              <img crossOrigin="anonymous"
                 src={cover}
                 className={`absolute inset-0 h-full w-full object-cover ${isBack ? "-scale-x-100" : ""}`}
                 alt=""
@@ -467,7 +469,7 @@ export function TicketPreview(props: {
               <div className="relative z-10 flex h-full flex-col justify-between p-6">
                 <div className="flex items-center gap-2">
                   {logoImage && (
-                    <img
+                    <img crossOrigin="anonymous"
                       src={logoImage}
                       style={{
                         height: `${logoScale * 0.65}px`,
@@ -527,7 +529,7 @@ export function TicketPreview(props: {
             style={{ background: `linear-gradient(160deg, ${palette.from}ee, ${palette.to}cc)` }}
           >
             {cover && (
-              <img
+              <img crossOrigin="anonymous"
                 src={cover}
                 className="absolute inset-0 h-full w-full object-cover opacity-15"
                 alt=""
@@ -540,7 +542,7 @@ export function TicketPreview(props: {
               <div className="relative z-10 flex h-full flex-col items-center justify-between text-center">
                 <p className="text-[9px] uppercase tracking-widest text-white/50">{tier}</p>
                 <div className="rounded-xl bg-white p-2">
-                  <QRCode value={orderId} size={100} />
+                  <QRCode value={qrValue || orderId} size={100} />
                 </div>
                 <p className="text-[9px] font-mono text-white/50">{orderId}</p>
               </div>
@@ -594,7 +596,7 @@ export function TicketPreview(props: {
                     </p>
                   </div>
                   <div className="rounded-lg bg-white p-1.5">
-                    <QRCode value={orderId} size={60} />
+                    <QRCode value={qrValue || orderId} size={60} />
                   </div>
                 </div>
               </div>
@@ -624,7 +626,7 @@ export function TicketPreview(props: {
               {/* Back header + terms */}
               <div className="relative flex-1 flex flex-col p-6 overflow-hidden bg-black/60">
                 {cover && (
-                  <img
+                  <img crossOrigin="anonymous"
                     src={cover}
                     className="absolute inset-0 h-full w-full object-cover opacity-20 -scale-x-100"
                     alt=""
@@ -652,7 +654,7 @@ export function TicketPreview(props: {
               {/* Back stub */}
               <div className="relative flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-md">
                 {back.backImage && (
-                  <img
+                  <img crossOrigin="anonymous"
                     src={back.backImage}
                     className="absolute inset-0 h-full w-full object-cover rounded-b-[28px]"
                     style={{ opacity: back.backImageOpacity }}
@@ -666,7 +668,7 @@ export function TicketPreview(props: {
                   <p className="text-[10px] font-mono text-white/80 mt-0.5">{orderId}</p>
                 </div>
                 <div className="relative z-10 rounded-xl bg-white p-1.5">
-                  <QRCode value={orderId} size={64} />
+                  <QRCode value={qrValue || orderId} size={64} />
                 </div>
               </div>
             </>
@@ -675,7 +677,7 @@ export function TicketPreview(props: {
               {/* Poster header – taller cover with conference branding */}
               <div className="relative h-[130px] overflow-hidden">
                 {cover && (
-                  <img
+                  <img crossOrigin="anonymous"
                     src={cover}
                     className="absolute inset-0 h-full w-full object-cover opacity-55"
                     alt=""
@@ -705,7 +707,7 @@ export function TicketPreview(props: {
                   </span>
                   <div className="flex items-center gap-1.5">
                     {logoImage && (
-                      <img
+                      <img crossOrigin="anonymous"
                         src={logoImage}
                         style={{
                           height: `${logoScale * 0.6}px`,
@@ -754,7 +756,7 @@ export function TicketPreview(props: {
                   <p className="text-[10px] font-mono">{orderId}</p>
                 </div>
                 <div className="rounded-xl bg-white p-1.5">
-                  <QRCode value={orderId} size={52} />
+                  <QRCode value={qrValue || orderId} size={52} />
                 </div>
                 <p className="text-[9px] text-white/60 text-right">
                   Scan at
@@ -808,7 +810,7 @@ export function TicketPreview(props: {
                 style={{ background: `linear-gradient(135deg, ${palette.from}, ${palette.to})` }}
               >
                 <div className="rounded-xl bg-white p-1.5 mb-4">
-                  <QRCode value={orderId} size={84} />
+                  <QRCode value={qrValue || orderId} size={84} />
                 </div>
                 <p className="text-[10px] uppercase tracking-widest opacity-80">Scan at Gate</p>
                 <p className="text-[11px] font-mono opacity-100 mt-1">{orderId}</p>
@@ -820,7 +822,7 @@ export function TicketPreview(props: {
               {/* Left Image */}
               <div className="relative w-[220px]">
                 {cover ? (
-                  <img src={cover} className="absolute inset-0 h-full w-full object-cover" alt="" />
+                  <img crossOrigin="anonymous" src={cover} className="absolute inset-0 h-full w-full object-cover" alt="" />
                 ) : (
                   <div className="absolute inset-0 bg-slate-200" />
                 )}
@@ -835,7 +837,7 @@ export function TicketPreview(props: {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {logoImage && (
-                      <img
+                      <img crossOrigin="anonymous"
                         src={logoImage}
                         style={{
                           height: `${logoScale * 0.5}px`,
@@ -908,7 +910,7 @@ export function TicketPreview(props: {
                   </p>
                 </div>
                 <div className="rounded-xl bg-white p-1.5">
-                  <QRCode value={orderId} size={84} />
+                  <QRCode value={qrValue || orderId} size={84} />
                 </div>
               </div>
             </div>

@@ -7,9 +7,9 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { createVenueBooking } from "@/api/venue_bookings";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { ArrowLeft, ArrowRight, Check, Plus, Trash, Ticket } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Plus, Trash, Ticket, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
-import html2canvas from "html2canvas";
+import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { getWorkspaceTicketProjects } from "@/api/events";
 import { sendTicketsEmail } from "@/api/email";
@@ -38,6 +38,7 @@ export function ManualBookingDialog({
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
   const [bookingRes, setBookingRes] = useState<any>(null);
+  const [generatedPdfs, setGeneratedPdfs] = useState<{filename: string, content: string}[]>([]);
 
   const [step, setStep] = useState(1);
   const isEntranceOnly =
@@ -133,7 +134,6 @@ export function ManualBookingDialog({
       if (
         ticketsData?.issued &&
         ticketsData.issued.length > 0 &&
-        formData.customer_email &&
         venueProject
       ) {
         setIsGenerating(true);
@@ -142,7 +142,7 @@ export function ManualBookingDialog({
         // Generation will happen in a useEffect once the DOM elements render
       } else {
         toast.success("Booking created successfully");
-        handleClose();
+        setStep(5);
       }
     },
 
@@ -160,15 +160,21 @@ export function ManualBookingDialog({
             const el = document.getElementById(`ticket-render-${ticket.id}`);
             if (!el) continue;
 
-            const canvas = await html2canvas(el, { scale: 2, useCORS: true, allowTaint: true });
-            const imgData = canvas.toDataURL("image/png");
+            const imgData = await htmlToImage.toPng(el, {
+              pixelRatio: 2,
+              backgroundColor: "transparent",
+            });
+
+            const rect = el.getBoundingClientRect();
+            const width = rect.width || 720;
+            const height = rect.height || 260;
 
             const pdf = new jsPDF({
               orientation: "landscape",
               unit: "px",
-              format: [canvas.width / 2, canvas.height / 2],
+              format: [width, height],
             });
-            pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+            pdf.addImage(imgData, "PNG", 0, 0, width, height);
             const base64 = pdf.output("datauristring").split(",")[1];
 
             attachments.push({
@@ -177,7 +183,9 @@ export function ManualBookingDialog({
             });
           }
 
-          if (attachments.length > 0) {
+          setGeneratedPdfs(attachments);
+
+          if (attachments.length > 0 && formData.customer_email) {
             await sendTicketsEmail({
               data: {
                 to: formData.customer_email,
@@ -187,15 +195,17 @@ export function ManualBookingDialog({
               } as any,
             });
             toast.success("Booking created and tickets emailed!");
+          } else if (attachments.length > 0) {
+            toast.success("Tickets generated successfully!");
           } else {
             toast.success("Booking created!");
           }
         } catch (e: any) {
           console.error(e);
-          toast.error("Booking created, but failed to email custom tickets.");
+          toast.error("Booking created, but failed to process custom tickets.");
         } finally {
           setIsGenerating(false);
-          handleClose();
+          setStep(5);
         }
       };
 
@@ -580,6 +590,7 @@ export function ManualBookingDialog({
                         logoOpacity={Number(venueProject.logoOpacity ?? 1)}
                         logoColorMode={venueProject.logoColorMode || "original"}
                         orderId="SAMPLE-OTP"
+                        qrValue={`${window.location.origin}/dashboard/${activeWorkspace?.slug || "workspace"}/venues/${venue.id}/overview?ticket=SAMPLE-OTP`}
                         previewMode="Front"
                         layout={
                           venueProject.design_overrides?.layout || {
@@ -665,28 +676,81 @@ export function ManualBookingDialog({
               )}
             </div>
           )}
+
+          {step === 5 && (
+            <div className="space-y-6 text-center py-8 animate-in fade-in zoom-in-95 duration-300">
+              <div className="mx-auto w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mb-6">
+                <Check className="h-8 w-8" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight">Booking Confirmed!</h2>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                {formData.customer_email 
+                  ? `The tickets have been generated and emailed to ${formData.customer_email}.` 
+                  : "The booking has been saved. You can download the tickets below to send them to the customer."}
+              </p>
+
+              {generatedPdfs.length > 0 && (
+                <div className="pt-6 space-y-3 max-w-sm mx-auto">
+                  {generatedPdfs.map((pdf, idx) => (
+                    <Button
+                      key={idx}
+                      type="button"
+                      variant="outline"
+                      className="w-full justify-between items-center gap-2 rounded-xl h-14"
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = `data:application/pdf;base64,${pdf.content}`;
+                        link.download = pdf.filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
+                    >
+                      <span className="flex items-center gap-2 truncate">
+                        <Download className="h-4 w-4 text-primary shrink-0" />
+                        <span className="truncate">{pdf.filename}</span>
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        <div className="p-6 border-t border-border/60 flex items-center justify-between bg-card sticky bottom-0">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={step === 1 ? handleClose : prevStep}
-            className="rounded-xl px-6"
-          >
-            {step === 1 ? "Cancel" : "Back"}
-          </Button>
-          <Button
-            type="button"
-            disabled={isPending}
-            onClick={nextStep}
-            className="rounded-xl px-8 shadow-[var(--shadow-glow)] gap-2"
-            style={{ background: step === 4 ? "var(--gradient-primary)" : undefined }}
-          >
-            {isPending ? "Confirming..." : step === 4 ? "Confirm & Pay" : "Next Step"}
-            {step < 4 && <ArrowRight className="h-4 w-4" />}
-          </Button>
-        </div>
+        {step < 5 ? (
+          <div className="p-6 border-t border-border/60 flex items-center justify-between bg-card sticky bottom-0 z-10">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={step === 1 ? handleClose : prevStep}
+              className="rounded-xl px-6"
+            >
+              {step === 1 ? "Cancel" : "Back"}
+            </Button>
+            <Button
+              type="button"
+              disabled={isPending}
+              onClick={nextStep}
+              className="rounded-xl px-8 shadow-[var(--shadow-glow)] gap-2"
+              style={{ background: step === 4 ? "var(--gradient-primary)" : undefined }}
+            >
+              {isPending ? "Confirming..." : step === 4 ? "Confirm & Pay" : "Next Step"}
+              {step < 4 && <ArrowRight className="h-4 w-4" />}
+            </Button>
+          </div>
+        ) : (
+          <div className="p-6 border-t border-border/60 flex items-center justify-center bg-card sticky bottom-0 z-10">
+            <Button
+              type="button"
+              onClick={handleClose}
+              className="rounded-xl px-12 shadow-[var(--shadow-glow)]"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              Close & Finish
+            </Button>
+          </div>
+        )}
 
         {/* Hidden Renderer for PDFs */}
         {isGenerating && (
@@ -719,6 +783,7 @@ export function ManualBookingDialog({
                   logoOpacity={Number(venueProject.logoOpacity ?? 1)}
                   logoColorMode={venueProject.logoColorMode || "original"}
                   orderId={t.otp}
+                  qrValue={`${window.location.origin}/dashboard/${activeWorkspace?.slug || "workspace"}/venues/${venue.id}/overview?ticket=${t.otp}`}
                   previewMode="Front"
                   layout={
                     venueProject.design_overrides?.layout || {
