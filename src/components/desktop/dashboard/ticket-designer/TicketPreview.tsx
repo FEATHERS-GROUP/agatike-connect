@@ -12,6 +12,9 @@ import {
   Clock,
 } from "lucide-react";
 
+export const DEFAULT_TERMS_HTML = `<p><strong>Terms &amp; Conditions</strong></p><p>• Ticket is non-refundable and non-transferable.</p><p>• Organizer reserves the right to refuse entry.</p><p>• Retain this ticket for the duration of the event.</p>`;
+export const DEFAULT_EXPERIENCE_BACK_HTML = `<p><strong>What's Included</strong></p><p>• Professional certified guide</p><p>• All safety equipment &amp; gear</p><p>• Pickup &amp; drop-off service</p><p>• Refreshments during activity</p><p>• Insurance coverage</p><p>• Photo/video of experience</p>`;
+
 export type Template = "concert" | "movie" | "experience" | "conference" | "entrance";
 
 export type TicketLayout = {
