@@ -425,7 +425,7 @@ function TicketDesignerPage() {
     tierName: activeTier?.type || "General",
     seat: "General Admission",
     currency: getCurrencySymbol(activeWorkspace?.currency || activeWorkspace?.wallet?.currency),
-    brand: activeWorkspace?.name?.toUpperCase() || "AGATIKE",
+    brand: activeWorkspace?.name?.toUpperCase() || "agatiike",
   };
 
   const mergedDesign = {

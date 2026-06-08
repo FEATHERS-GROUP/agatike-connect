@@ -584,13 +584,13 @@ export function ManualBookingDialog({
                         price={formData.amount}
                         currency={venue.currency}
                         cover={venueProject.coverImage || ""}
-                        logoText={venueProject.logoText || ""}
+                        logoText={venueProject.logoText || activeWorkspace?.name?.toUpperCase() || "agatiike"}
                         logoImage={venueProject.logoImage}
                         logoScale={Number(venueProject.logoScale || 24)}
                         logoOpacity={Number(venueProject.logoOpacity ?? 1)}
                         logoColorMode={venueProject.logoColorMode || "original"}
                         orderId="SAMPLE-OTP"
-                        qrValue={`${window.location.origin}/dashboard/${activeWorkspace?.slug || "workspace"}/venues/${venue.id}/overview?ticket=SAMPLE-OTP`}
+                        qrValue={`${window.location.origin}/v/SAMPLE-OTP`}
                         previewMode="Front"
                         layout={
                           venueProject.design_overrides?.layout || {
@@ -778,13 +778,13 @@ export function ManualBookingDialog({
                   price={formData.amount}
                   currency={venue.currency}
                   cover={venueProject.coverImage || ""}
-                  logoText={venueProject.logoText || ""}
+                  logoText={venueProject.logoText || activeWorkspace?.name?.toUpperCase() || "agatiike"}
                   logoImage={venueProject.logoImage}
                   logoScale={Number(venueProject.logoScale || 24)}
                   logoOpacity={Number(venueProject.logoOpacity ?? 1)}
                   logoColorMode={venueProject.logoColorMode || "original"}
                   orderId={t.otp}
-                  qrValue={`${window.location.origin}/dashboard/${activeWorkspace?.slug || "workspace"}/venues/${venue.id}/overview?ticket=${t.otp}`}
+                  qrValue={`${window.location.origin}/v/${t.otp}`}
                   previewMode="Front"
                   layout={
                     venueProject.design_overrides?.layout || {

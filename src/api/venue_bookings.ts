@@ -134,3 +134,33 @@ export const getVenueBookings = createServerFn({ method: "POST" })
     const res = await hasuraRequest<{ venue_bookings: any[] }>(GET_VENUE_BOOKINGS, { venue_id });
     return res.venue_bookings;
   });
+
+const VALIDATE_TICKET_OTP = `
+  query ValidateTicketOtp($otp: String!) {
+    venue_bookings(
+      where: {
+        tickets_data: { _contains: { issued: [{ otp: $otp }] } }
+      }
+    ) {
+      id
+      customer_name
+      customer_email
+      start_time
+      end_time
+      status
+      payment_status
+      amount
+      tickets_data
+      venue_name
+    }
+  }
+`;
+
+export const getVenueBookingByOtp = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { otp } = ctx.data;
+    if (!otp) throw new Error("otp is required");
+    const res = await hasuraRequest<{ venue_bookings: any[] }>(VALIDATE_TICKET_OTP, { otp });
+    return res.venue_bookings[0] || null;
+  });
