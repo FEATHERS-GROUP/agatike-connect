@@ -1,12 +1,12 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { Save } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Save, Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useQuery } from "@tanstack/react-query";
-import { getRentableVenueById } from "@/api/rentable_venues";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getRentableVenueById, updateRentableVenue } from "@/api/rentable_venues";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { rentableVenues } from "@/lib/mock-data";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/settings")({
   component: VenueSettingsPage,
@@ -20,7 +20,60 @@ function VenueSettingsPage() {
     enabled: !!venueId,
   });
 
-  const [rentalType, setRentalType] = useState(venue?.rentalType || "Per Day");
+  const [rentalType, setRentalType] = useState("Per Day");
+  const [pricingTiers, setPricingTiers] = useState<{name: string; amount: number}[]>([]);
+
+  useEffect(() => {
+    if (venue?.rental_type) {
+      setRentalType(venue.rental_type);
+    }
+    if (venue?.pricing_tiers) {
+      setPricingTiers(venue.pricing_tiers);
+    }
+  }, [venue]);
+
+  const queryClient = useQueryClient();
+
+  const updateMutation = useMutation({
+    mutationFn: (data: any) => updateRentableVenue({ data }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["venue", venueId] });
+      toast.success("Venue settings updated successfully!");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to update venue settings");
+    },
+  });
+
+  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    // Parse numeric fields safely
+    const parseNum = (val: FormDataEntryValue | null) => {
+      if (!val) return null;
+      const n = Number(val);
+      return isNaN(n) ? null : n;
+    };
+
+    const updates = {
+      id: venueId,
+      name: formData.get("name")?.toString(),
+      type: formData.get("type")?.toString(),
+      city: formData.get("city")?.toString(),
+      capacity: parseNum(formData.get("capacity")),
+      rental_type: rentalType,
+      pricing_tiers: pricingTiers,
+      pricePerHour: parseNum(formData.get("price_per_hour")),
+      pricePerDay: parseNum(formData.get("price_per_day")),
+      pricePerWeek: parseNum(formData.get("price_per_week")),
+      priceAnnually: parseNum(formData.get("price_annually")),
+      amenities: formData.get("amenities")?.toString().split(",").map((s) => s.trim()).filter(Boolean) || [],
+      status: formData.get("status")?.toString(),
+    };
+
+    updateMutation.mutate(updates);
+  };
 
   if (isLoading)
     return <div className="p-8 text-center text-muted-foreground">Loading venue...</div>;
@@ -28,7 +81,7 @@ function VenueSettingsPage() {
     return <div className="p-8 text-center text-red-500 font-semibold">Venue not found</div>;
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <form onSubmit={handleSave} className="max-w-4xl space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-6 rounded-3xl border border-border/60">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Venue Settings</h2>
@@ -37,10 +90,12 @@ function VenueSettingsPage() {
           </p>
         </div>
         <Button
+          type="submit"
+          disabled={updateMutation.isPending}
           className="rounded-full gap-2 shadow-[var(--shadow-glow)]"
           style={{ background: "var(--gradient-primary)" }}
         >
-          <Save className="h-4 w-4" /> Save Changes
+          <Save className="h-4 w-4" /> {updateMutation.isPending ? "Saving..." : "Save Changes"}
         </Button>
       </div>
 
@@ -52,13 +107,13 @@ function VenueSettingsPage() {
 
             <div className="space-y-1.5">
               <Label>Venue Name</Label>
-              <Input defaultValue={venue.name} className="h-10 rounded-xl bg-secondary/50" />
+              <Input name="name" defaultValue={venue.name} className="h-10 rounded-xl bg-secondary/50" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Type</Label>
-                <select className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                <select name="type" defaultValue={venue.type} className="w-full h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
                   <option value="Stadium">Stadium</option>
                   <option value="Arena">Arena</option>
                   <option value="Conference Room">Conference Room</option>
@@ -73,7 +128,7 @@ function VenueSettingsPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>City / Location</Label>
-                <Input defaultValue={venue.city} className="h-10 rounded-xl bg-secondary/50" />
+                <Input name="city" defaultValue={venue.city} className="h-10 rounded-xl bg-secondary/50" />
               </div>
             </div>
           </div>
@@ -86,6 +141,7 @@ function VenueSettingsPage() {
               <div className="space-y-1.5">
                 <Label>Maximum Capacity (Guests)</Label>
                 <Input
+                  name="capacity"
                   type="number"
                   defaultValue={venue.capacity}
                   className="h-10 rounded-xl bg-secondary/50"
@@ -109,18 +165,72 @@ function VenueSettingsPage() {
               </div>
 
               {(rentalType === "Entrance Fee" || rentalType === "Multiple") && (
-                <div className="space-y-1.5">
-                  <Label>Entrance Fee (Per Person)</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      {venue.currency}
-                    </span>
-                    <Input
-                      type="number"
-                      defaultValue={venue.entranceFee || 0}
-                      className="pl-8 h-10 rounded-xl bg-secondary/50"
-                    />
+                <div className="space-y-3 sm:col-span-2 bg-secondary/20 p-4 rounded-2xl border border-border/50">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-medium">Entrance Fee Tiers</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPricingTiers([...pricingTiers, { name: "", amount: 0 }])}
+                      className="h-8 rounded-full gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Tier
+                    </Button>
                   </div>
+                  
+                  {pricingTiers.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4 bg-background/50 rounded-xl border border-dashed border-border">
+                      No pricing tiers added. Click 'Add Tier' to create one.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {pricingTiers.map((tier, idx) => (
+                        <div key={idx} className="flex items-start gap-3">
+                          <div className="flex-1 space-y-1.5">
+                            <Input
+                              placeholder="Tier Name (e.g. Regular, VIP)"
+                              value={tier.name}
+                              onChange={(e) => {
+                                const newTiers = [...pricingTiers];
+                                newTiers[idx].name = e.target.value;
+                                setPricingTiers(newTiers);
+                              }}
+                              className="h-10 rounded-xl bg-background"
+                            />
+                          </div>
+                          <div className="flex-1 space-y-1.5 relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                              {venue.currency}
+                            </span>
+                            <Input
+                              type="number"
+                              placeholder="Price"
+                              value={tier.amount || ""}
+                              onChange={(e) => {
+                                const newTiers = [...pricingTiers];
+                                newTiers[idx].amount = Number(e.target.value);
+                                setPricingTiers(newTiers);
+                              }}
+                              className="pl-9 h-10 rounded-xl bg-background"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              const newTiers = pricingTiers.filter((_, i) => i !== idx);
+                              setPricingTiers(newTiers);
+                            }}
+                            className="h-10 w-10 shrink-0 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-xl"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -134,6 +244,7 @@ function VenueSettingsPage() {
                       {venue.currency}
                     </span>
                     <Input
+                      name="price_per_hour"
                       type="number"
                       defaultValue={venue.pricePerHour || 0}
                       className="pl-8 h-10 rounded-xl bg-secondary/50"
@@ -150,6 +261,7 @@ function VenueSettingsPage() {
                       {venue.currency}
                     </span>
                     <Input
+                      name="price_per_day"
                       type="number"
                       defaultValue={venue.pricePerDay || 0}
                       className="pl-8 h-10 rounded-xl bg-secondary/50"
@@ -166,6 +278,7 @@ function VenueSettingsPage() {
                       {venue.currency}
                     </span>
                     <Input
+                      name="price_per_week"
                       type="number"
                       defaultValue={venue.pricePerWeek || 0}
                       className="pl-8 h-10 rounded-xl bg-secondary/50"
@@ -182,6 +295,7 @@ function VenueSettingsPage() {
                       {venue.currency}
                     </span>
                     <Input
+                      name="price_annually"
                       type="number"
                       defaultValue={venue.priceAnnually || 0}
                       className="pl-8 h-10 rounded-xl bg-secondary/50"
@@ -199,7 +313,8 @@ function VenueSettingsPage() {
               List the amenities included in the rental price.
             </p>
             <Input
-              defaultValue={venue.amenities.join(", ")}
+              name="amenities"
+              defaultValue={(venue.amenities || []).join(", ")}
               className="h-10 rounded-xl bg-secondary/50"
             />
           </div>
@@ -214,6 +329,7 @@ function VenueSettingsPage() {
                 <input
                   type="radio"
                   name="status"
+                  value="Active"
                   defaultChecked={venue.status === "Active"}
                   className="accent-primary"
                 />
@@ -226,6 +342,7 @@ function VenueSettingsPage() {
                 <input
                   type="radio"
                   name="status"
+                  value="Draft"
                   defaultChecked={venue.status === "Draft"}
                   className="accent-primary"
                 />
@@ -238,6 +355,7 @@ function VenueSettingsPage() {
                 <input
                   type="radio"
                   name="status"
+                  value="Maintenance"
                   defaultChecked={venue.status === "Maintenance"}
                   className="accent-primary"
                 />
@@ -252,7 +370,13 @@ function VenueSettingsPage() {
           <div className="bg-card p-6 rounded-3xl border border-border/60 space-y-4">
             <h3 className="font-semibold text-lg">Cover Photo</h3>
             <div className="aspect-video rounded-xl overflow-hidden bg-secondary">
-              <img src={venue.cover} alt="Cover" className="w-full h-full object-cover" />
+              {venue.cover_url ? (
+                <img src={venue.cover_url} alt="Cover" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground bg-secondary/30">
+                  <p className="text-sm">No cover photo</p>
+                </div>
+              )}
             </div>
             <Button variant="outline" className="w-full rounded-xl">
               Upload New Photo
@@ -260,6 +384,6 @@ function VenueSettingsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
