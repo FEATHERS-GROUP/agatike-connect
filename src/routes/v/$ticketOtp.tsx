@@ -52,6 +52,41 @@ function PublicTicketValidationRoute() {
   // Find the specific ticket inside tickets_data
   const ticket = booking.tickets_data?.issued?.find((t: any) => t.otp === ticketOtp);
 
+  let displayId = ticket?.id_document;
+  if (!displayId && ticket) {
+    if (!ticket.attendee_name || ticket.attendee_name === booking.customer_name) {
+      displayId = booking.customer_id_document;
+    } else if (booking.attendees_info && Array.isArray(booking.attendees_info)) {
+      const matchedAttendee = booking.attendees_info.find((a: any) => a.name === ticket.attendee_name);
+      if (matchedAttendee?.id_document) {
+        displayId = matchedAttendee.id_document;
+      }
+    }
+  }
+
+  if (ticket?.status === "Cancelled") {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6 text-center">
+        <div className="h-24 w-24 rounded-full bg-red-500/20 flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(239,68,68,0.3)]">
+          <ShieldAlert className="h-12 w-12 text-red-500" />
+        </div>
+        <h1 className="text-3xl font-black uppercase tracking-widest mb-2 text-red-400">
+          Cancelled Ticket
+        </h1>
+        <p className="text-muted-foreground mb-8 text-sm">
+          This ticket has been cancelled by the organizer and is no longer valid for entry.
+        </p>
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 w-full max-w-sm backdrop-blur-md text-left">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Attempted Attendee</p>
+          <p className="text-lg font-bold text-white/50">{ticket.attendee_name || booking.customer_name}</p>
+          {displayId && (
+            <p className="text-sm text-red-400/80 mt-1">ID: {displayId}</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6 text-center">
       <div className="h-24 w-24 rounded-full bg-emerald-500/20 flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(16,185,129,0.3)]">
@@ -69,6 +104,9 @@ function PublicTicketValidationRoute() {
         <div className="mb-6">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Attendee</p>
           <p className="text-xl font-bold text-white">{ticket?.attendee_name || booking.customer_name}</p>
+          {displayId && (
+            <p className="text-sm text-white/60 mt-1 tracking-wider font-mono">ID: {displayId}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-6 text-left">

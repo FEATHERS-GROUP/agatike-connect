@@ -216,11 +216,11 @@ function TicketDesignerPage() {
     assignmentType === "event"
       ? eventMatch?.event_tickets || []
       : venueMatch?.pricing_tiers?.map((t: any) => ({
-          ...t,
-          id: t.name,
-          type: t.name,
-          cost: t.amount,
-        })) || [];
+        ...t,
+        id: t.name,
+        type: t.name,
+        cost: t.amount,
+      })) || [];
   const tourStops = Array.isArray(eventMatch?.tour_stops) ? eventMatch.tour_stops : [];
 
   const [activeTourStopIdx, setActiveTourStopIdx] = useState<number>(-1);
@@ -425,7 +425,7 @@ function TicketDesignerPage() {
     tierName: activeTier?.type || "General",
     seat: "General Admission",
     currency: getCurrencySymbol(activeWorkspace?.currency || activeWorkspace?.wallet?.currency),
-    brand: activeWorkspace?.name?.toUpperCase() || "agatiike",
+    brand: activeWorkspace?.name?.toUpperCase() || "Agatike",
   };
 
   const mergedDesign = {
@@ -802,11 +802,10 @@ function TicketDesignerPage() {
                     <button
                       key={p.name}
                       onClick={() => updateDesign("palette", p)}
-                      className={`h-14 rounded-xl border-2 transition ${
-                        mergedDesign.palette?.name === p.name
+                      className={`h-14 rounded-xl border-2 transition ${mergedDesign.palette?.name === p.name
                           ? "border-primary"
                           : "border-transparent"
-                      }`}
+                        }`}
                       style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}
                       title={p.name}
                     />
@@ -821,11 +820,10 @@ function TicketDesignerPage() {
                       key={f.name}
                       onClick={() => updateDesign("font", f)}
                       style={{ fontFamily: f.css }}
-                      className={`rounded-xl border p-3 text-left text-sm ${
-                        mergedDesign.font?.name === f.name
+                      className={`rounded-xl border p-3 text-left text-sm ${mergedDesign.font?.name === f.name
                           ? "border-primary bg-accent/40"
                           : "border-border/60"
-                      }`}
+                        }`}
                     >
                       <p className="text-xs text-muted-foreground">{f.name}</p>
                       <p className="font-semibold">Aa Bb 123</p>
@@ -1061,11 +1059,10 @@ function TicketDesignerPage() {
                               titleAlign: align,
                             })
                           }
-                          className={`flex-1 flex items-center justify-center gap-1 rounded-lg border py-2 text-xs transition ${
-                            (mergedDesign.layout?.titleAlign ?? "left") === align
+                          className={`flex-1 flex items-center justify-center gap-1 rounded-lg border py-2 text-xs transition ${(mergedDesign.layout?.titleAlign ?? "left") === align
                               ? "border-primary bg-primary/20 text-primary"
                               : "border-border/60 hover:bg-secondary"
-                          }`}
+                            }`}
                         >
                           <Icon className="h-3 w-3" />
                           {align.charAt(0).toUpperCase() + align.slice(1)}

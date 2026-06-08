@@ -878,6 +878,7 @@ export type TicketProject = {
   id: string;
   name: string;
   eventId?: string;
+  venueId?: string;
   template: "concert" | "movie" | "experience" | "conference" | "entrance" | string;
   palette: { name: string; from: string; to: string } | any;
   font: { name: string; css: string } | any;
@@ -947,7 +948,7 @@ export type RentableVenue = {
   status: "Active" | "Draft" | "Maintenance";
   pendingRequests: number;
   activeRentals: number;
-  rentalType?: "Per Day" | "Per Hour" | "Per Week" | "Annually" | "Entrance Fee" | "Multiple";
+  rentalType?: "Per Day" | "Per Hour" | "Per Week" | "Annually" | "Entrance Fee" | "Multiple" | "Both";
   pricePerHour?: number;
   pricePerWeek?: number;
   priceAnnually?: number;

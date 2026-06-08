@@ -168,3 +168,46 @@ export const getVenueBookingByOtp = createServerFn({ method: "POST" })
     const res = await hasuraRequest<{ venue_bookings: any[] }>(VALIDATE_TICKET_OTP, { otp });
     return res.venue_bookings[0] || null;
   });
+
+const GET_VENUE_BOOKING = `
+  query GetVenueBooking($id: uuid!) {
+    venue_bookings_by_pk(id: $id) {
+      id
+      tickets_data
+    }
+  }
+`;
+
+const UPDATE_VENUE_BOOKING_TICKETS = `
+  mutation UpdateVenueBookingTickets($id: uuid!, $tickets_data: jsonb!) {
+    update_venue_bookings_by_pk(pk_columns: {id: $id}, _set: {tickets_data: $tickets_data}) {
+      id
+    }
+  }
+`;
+
+export const updateTicketStatus = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { booking_id, ticket_id, new_status } = ctx.data;
+    if (!booking_id || !ticket_id || !new_status) throw new Error("Missing parameters");
+
+    const getRes = await hasuraRequest<{ venue_bookings_by_pk: any }>(GET_VENUE_BOOKING, { id: booking_id });
+    const booking = getRes.venue_bookings_by_pk;
+    if (!booking) throw new Error("Booking not found");
+
+    const tickets_data = booking.tickets_data;
+    if (!tickets_data || !tickets_data.issued) throw new Error("No tickets found in booking");
+
+    const ticketIndex = tickets_data.issued.findIndex((t: any) => t.id === ticket_id);
+    if (ticketIndex === -1) throw new Error("Ticket not found");
+
+    tickets_data.issued[ticketIndex].status = new_status;
+
+    await hasuraRequest(UPDATE_VENUE_BOOKING_TICKETS, {
+      id: booking_id,
+      tickets_data
+    });
+
+    return { success: true };
+  });
