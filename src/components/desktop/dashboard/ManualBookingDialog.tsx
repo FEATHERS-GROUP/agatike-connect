@@ -65,6 +65,25 @@ export function ManualBookingDialog({
 
   const [attendees, setAttendees] = useState<{ name: string; id_document: string }[]>([]);
 
+  const totalTickets = isEntranceOnly
+    ? Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0)
+    : selectedPricingTier
+      ? 1
+      : 0;
+
+  useEffect(() => {
+    const requiredAttendees = Math.max(0, totalTickets - 1);
+    setAttendees((prev) => {
+      if (prev.length === requiredAttendees) return prev;
+      if (prev.length > requiredAttendees) return prev.slice(0, requiredAttendees);
+      const newAttendees = [...prev];
+      while (newAttendees.length < requiredAttendees) {
+        newAttendees.push({ name: "", id_document: "" });
+      }
+      return newAttendees;
+    });
+  }, [totalTickets]);
+
   // Auto-calculate amount
   useEffect(() => {
     if (isEntranceOnly && venue?.pricing_tiers) {
@@ -492,31 +511,21 @@ export function ManualBookingDialog({
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between border-b pb-2 mb-4">
-                  <h3 className="text-lg font-semibold">Additional Attendees (Optional)</h3>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAttendees([...attendees, { name: "", id_document: "" }])}
-                    className="rounded-full h-8 gap-1 text-xs"
-                  >
-                    <Plus className="h-3 w-3" /> Add Person
-                  </Button>
-                </div>
-
-                {attendees.length === 0 ? (
-                  <div className="text-center p-6 bg-secondary/20 rounded-xl border border-dashed border-border/60 text-muted-foreground text-sm">
-                    No additional attendees added. They are optional.
+              {totalTickets > 1 && (
+                <div>
+                  <div className="flex items-center justify-between border-b pb-2 mb-4">
+                    <h3 className="text-lg font-semibold">Additional Attendees (Optional)</h3>
+                    <span className="text-sm font-medium bg-secondary px-3 py-1 rounded-full">
+                      {totalTickets - 1} ticket{totalTickets - 1 !== 1 ? 's' : ''} left to assign
+                    </span>
                   </div>
-                ) : (
+
                   <div className="space-y-3">
                     {attendees.map((att, idx) => (
                       <div key={idx} className="flex gap-3 items-start">
                         <div className="flex-1 space-y-1.5">
                           <Input
-                            placeholder={`Attendee ${idx + 1} Name`}
+                            placeholder={`Attendee ${idx + 2} Name`}
                             value={att.name}
                             onChange={(e) => {
                               const newArr = [...attendees];
@@ -538,20 +547,11 @@ export function ManualBookingDialog({
                             className="h-10 rounded-xl bg-secondary/50"
                           />
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setAttendees(attendees.filter((_, i) => i !== idx))}
-                          className="shrink-0 h-10 w-10 text-muted-foreground hover:text-red-500"
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -771,10 +771,10 @@ export function ManualBookingDialog({
                   font={venueProject.font || { css: "sans-serif", name: "Modern" }}
                   tier={t.tier}
                   title={venue.name}
-                  subtitle={venue.address || formData.customer_name}
+                  subtitle={venue.address || t.attendee_name || formData.customer_name}
                   date={formData.start_date || "Date TBA"}
                   time={isEntranceOnly ? "Opening Hours" : `${formData.start_time || ""} - ${formData.end_time || ""}`}
-                  seat={formData.customer_name || "General"}
+                  seat={t.attendee_name || formData.customer_name || "General"}
                   price={formData.amount}
                   currency={venue.currency}
                   cover={venueProject.coverImage || ""}

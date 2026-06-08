@@ -1,4 +1,5 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { Search, Filter, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,15 @@ function VenueBookingsPage() {
     queryFn: () => getVenueBookings({ data: { venue_id: venueId } }),
     enabled: !!venueId,
   });
+
+  const flattenedBookings = useMemo(() => {
+    return bookings.flatMap((b: any) => {
+      if (b.tickets_data?.issued && b.tickets_data.issued.length > 0) {
+        return b.tickets_data.issued.map((t: any) => ({ ...b, ticket: t }));
+      }
+      return [{ ...b, ticket: null }];
+    });
+  }, [bookings]);
 
   if (isLoading)
     return <div className="p-8 text-center text-muted-foreground">Loading venue...</div>;
@@ -58,25 +68,43 @@ function VenueBookingsPage() {
           <table className="w-full text-sm text-left">
             <thead className="bg-secondary/30 text-muted-foreground uppercase text-[10px] font-bold tracking-wider border-b border-border/60">
               <tr>
-                <th className="px-6 py-4">Customer</th>
-                <th className="px-6 py-4">Contact</th>
-                <th className="px-6 py-4">Attendees</th>
+                <th className="px-6 py-4">Attendee</th>
+                <th className="px-6 py-4">Booking Contact</th>
+                <th className="px-6 py-4">Ticket</th>
                 <th className="px-6 py-4">Date & Time</th>
-                <th className="px-6 py-4">Amount</th>
+                <th className="px-6 py-4">Booking Total</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
-              {bookings.length > 0 ? (
-                bookings.map((b) => (
-                  <tr key={b.id} className="hover:bg-secondary/20 transition-colors">
-                    <td className="px-6 py-4 font-medium">{b.customer_name}</td>
-                    <td className="px-6 py-4 text-muted-foreground">
-                      <p>{b.customer_email || "N/A"}</p>
-                      <p className="text-xs">{b.customer_phone}</p>
+              {flattenedBookings.length > 0 ? (
+                flattenedBookings.map((b, i) => (
+                  <tr key={`${b.id}-${i}`} className="hover:bg-secondary/20 transition-colors">
+                    <td className="px-6 py-4 font-medium">
+                      {b.ticket ? (b.ticket.attendee_name || b.customer_name) : b.customer_name}
+                      {b.ticket?.id_document && (
+                        <p className="text-xs text-muted-foreground font-normal mt-0.5">ID: {b.ticket.id_document}</p>
+                      )}
                     </td>
-                    <td className="px-6 py-4 font-medium">{b.number_of_attendees || 1}</td>
+                    <td className="px-6 py-4 text-muted-foreground">
+                      <p className="font-medium text-foreground">{b.customer_name}</p>
+                      <p className="text-xs">{b.customer_email || "N/A"}</p>
+                      <p className="text-xs">{b.customer_phone}</p>
+                      {b.customer_id_document && (
+                        <p className="text-xs mt-0.5">ID: {b.customer_id_document}</p>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {b.ticket ? (
+                        <div className="bg-secondary/40 rounded px-2 py-1.5 text-xs border border-border/50 w-max">
+                          <p className="font-semibold">{b.ticket.tier}</p>
+                          <p className="font-mono text-primary font-bold tracking-widest mt-0.5">{b.ticket.otp}</p>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-xs italic">Not Generated</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <p>{new Date(b.start_time).toLocaleDateString()}</p>
                       <p className="text-xs text-muted-foreground">

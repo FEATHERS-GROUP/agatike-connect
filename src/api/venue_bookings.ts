@@ -46,16 +46,19 @@ export const createVenueBooking = createServerFn({ method: "POST" })
       let ticketsToGenerate: any[] = [];
 
       if (tickets_data.selected_tier) {
-        ticketsToGenerate.push({ tier: tickets_data.selected_tier, name: customer_name });
+        ticketsToGenerate.push({ tier: tickets_data.selected_tier, name: customer_name, id_document: customer_id_document });
       } else {
-        const attendeeNames = [customer_name, ...(attendees_info || []).map((a: any) => a.name)];
+        const attendeeList = [
+          { name: customer_name, id_document: customer_id_document },
+          ...(attendees_info || []).map((a: any) => ({ name: a.name, id_document: a.id_document }))
+        ];
         let nameIdx = 0;
 
         for (const [tierName, qty] of Object.entries(tickets_data)) {
           if (typeof qty === "number") {
             for (let i = 0; i < qty; i++) {
-              const nameForTicket = attendeeNames[nameIdx] || customer_name;
-              ticketsToGenerate.push({ tier: tierName, name: nameForTicket });
+              const attendee = attendeeList[nameIdx] || { name: customer_name, id_document: customer_id_document };
+              ticketsToGenerate.push({ tier: tierName, name: attendee.name, id_document: attendee.id_document });
               nameIdx++;
             }
           }
@@ -71,6 +74,7 @@ export const createVenueBooking = createServerFn({ method: "POST" })
           id: ticketId,
           tier: t.tier,
           attendee_name: t.name,
+          id_document: t.id_document || null,
           otp,
           used: false,
         });
