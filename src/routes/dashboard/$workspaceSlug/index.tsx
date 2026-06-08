@@ -96,7 +96,7 @@ function DashboardIndex() {
       // Determine completed vs pending
       // Use the last tour stop date if available, else fallback to current date comparison (simplified)
       let isCompleted = false;
-      const stops = e.tour_stops || [];
+      const stops = Array.isArray(e.tour_stops) ? e.tour_stops : [];
       if (stops.length > 0) {
         const lastStop = stops[stops.length - 1];
         if (lastStop && lastStop.date) {
@@ -139,7 +139,7 @@ function DashboardIndex() {
   const calendarEvents = useMemo(() => {
     const evs: any[] = [];
     rawEvents.forEach((e: any) => {
-      const stops = e.tour_stops || [];
+      const stops = Array.isArray(e.tour_stops) ? e.tour_stops : [];
       stops.forEach((stop: any, idx: number) => {
         if (stop.date) {
           const startDate = new Date(stop.date);
