@@ -1,5 +1,16 @@
 import React from "react";
-import { Concert1, Concert2, Movie1, Movie2, Experience1, Experience2, Conference1, Conference2, Entrance1, Entrance2 } from "./templates";
+import {
+  Concert1,
+  Concert2,
+  Movie1,
+  Movie2,
+  Experience1,
+  Experience2,
+  Conference1,
+  Conference2,
+  Entrance1,
+  Entrance2,
+} from "./templates";
 import { DEFAULT_TERMS_HTML, DEFAULT_EXPERIENCE_BACK_HTML } from "./templates/types";
 import { Template, TicketLayout, TicketBack } from "./templates/types";
 
@@ -156,7 +167,7 @@ export function TicketPreview(props: {
       BackSide,
       Stub,
       Perf,
-      Cell
+      Cell,
     };
 
     if (template === "concert-1") return <Concert1 {...templateProps} />;

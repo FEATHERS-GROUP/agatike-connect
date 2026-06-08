@@ -812,23 +812,25 @@ function TicketDesignerPage() {
             <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
               <Section title="Template" icon={TicketIcon}>
                 <div className="grid grid-cols-2 gap-2">
-                  {templates.filter(t => t.id.startsWith(mergedDesign.template.split('-')[0])).map((t) => {
-                    const Icon = t.icon;
-                    return (
-                      <button
-                        key={t.id}
-                        onClick={() => updateDesign("template", t.id)}
-                        className={`flex flex-col items-center justify-center rounded-xl border p-4 transition ${
-                          mergedDesign.template === t.id
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border/60 hover:border-primary/50 text-muted-foreground"
-                        }`}
-                      >
-                        <Icon className="mb-2 h-6 w-6" style={{ color: t.accent }} />
-                        <span className="text-[10px] font-semibold text-center">{t.label}</span>
-                      </button>
-                    );
-                  })}
+                  {templates
+                    .filter((t) => t.id.startsWith(mergedDesign.template.split("-")[0]))
+                    .map((t) => {
+                      const Icon = t.icon;
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => updateDesign("template", t.id)}
+                          className={`flex flex-col items-center justify-center rounded-xl border p-4 transition ${
+                            mergedDesign.template === t.id
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border/60 hover:border-primary/50 text-muted-foreground"
+                          }`}
+                        >
+                          <Icon className="mb-2 h-6 w-6" style={{ color: t.accent }} />
+                          <span className="text-[10px] font-semibold text-center">{t.label}</span>
+                        </button>
+                      );
+                    })}
                 </div>
               </Section>
 
