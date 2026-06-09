@@ -16,10 +16,12 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const [nationality, setNationality] = useState("");
   const [phone, setPhone] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [step, setStep] = useState(1);
 
   if (!venue) return null;
 
   const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
+  const isStep1Valid = date !== "" && totalTickets > 0;
   
   const total = (venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).reduce((acc: number, tier: any) => {
     const qty = ticketsData[tier.name || "Standard Entry"] || 0;
@@ -86,43 +88,45 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
         <div className="flex flex-col lg:flex-row gap-10">
           {/* Left Column: Form */}
           <div className="flex-1 bg-card rounded-3xl p-8 border border-border/50 shadow-[var(--shadow-card)]">
+            <div className="flex items-center gap-3 mb-8">
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>1</div>
+              <div className={`h-1 w-12 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-secondary'}`} />
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>2</div>
+            </div>
+
             <form onSubmit={handleCheckout} className="space-y-6">
-              <div className="grid grid-cols-1 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Calendar className="w-4 h-4" /> Select Date
-                  </label>
-                  <Input
-                    type="date"
-                    required
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="h-12 bg-secondary/40 max-w-sm"
-                  />
-                </div>
-              </div>
+              {step === 1 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        <Calendar className="w-4 h-4" /> Select Date
+                      </label>
+                      <Input
+                        type="date"
+                        required
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="h-12 bg-secondary/40 max-w-sm"
+                      />
+                    </div>
+                  </div>
 
               <div className="border-t border-border/40 pt-6">
-                <h3 className="text-xl font-semibold mb-4">Select Tickets</h3>
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <h3 className="text-xl font-semibold mb-4">Ticket Selection</h3>
+                <div className="space-y-3">
                   {(venue?.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
                     <div
                       key={idx}
-                      className="relative overflow-hidden flex justify-between items-center bg-secondary/30 p-5 rounded-2xl border-2 border-border/50 border-dashed"
+                      className="flex items-center justify-between bg-secondary/20 p-4 rounded-xl border border-border/50"
                     >
-                      <Ticket className="absolute -right-4 -bottom-4 h-24 w-24 text-muted-foreground/5 rotate-[-15deg] pointer-events-none" />
-                      <div className="relative z-10 flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <Ticket className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-bold tracking-tight">{tier.name || "Standard Entry"}</p>
-                          <p className="text-sm font-semibold text-muted-foreground">
-                            {tier.amount > 0 ? `${venue.currency} ${Number(tier.amount).toLocaleString()}` : "Free"}
-                          </p>
-                        </div>
+                      <div>
+                        <p className="font-semibold">{tier.name || "Standard Entry"}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {tier.amount > 0 ? `${venue.currency} ${Number(tier.amount).toLocaleString()}` : "Free"}
+                        </p>
                       </div>
-                      <div className="relative z-10">
+                      <div className="flex items-center gap-3">
                         <Input
                           type="number"
                           min="0"
@@ -131,7 +135,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                             const val = parseInt(e.target.value) || 0;
                             setTicketsData((p) => ({ ...p, [tier.name || "Standard Entry"]: val }));
                           }}
-                          className="w-20 h-12 text-center font-bold text-lg rounded-xl border-2"
+                          className="w-20 bg-background text-center"
                           placeholder="0"
                         />
                       </div>
@@ -139,8 +143,20 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                   ))}
                 </div>
               </div>
+              <Button
+                type="button"
+                disabled={!isStep1Valid}
+                onClick={() => setStep(2)}
+                className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] mt-4"
+              >
+                Continue to Details
+              </Button>
+            </div>
+          )}
 
-              <div className="border-t border-border/40 pt-6">
+          {step === 2 && (
+            <div className="space-y-6">
+              <div>
                 <h3 className="text-xl font-semibold mb-4">Primary Attendee</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -237,14 +253,26 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 </div>
               )}
 
-              <Button
-                type="submit"
-                disabled={totalTickets === 0}
-                className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                Pay {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
-              </Button>
+              <div className="flex gap-4 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setStep(1)}
+                  className="w-1/3 h-14 text-lg font-bold rounded-2xl"
+                >
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={totalTickets === 0}
+                  className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  Pay {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : (totalTickets > 0 ? "Free" : `${venue.currency} 0`)}
+                </Button>
+              </div>
+            </div>
+          )}
             </form>
           </div>
 
@@ -286,7 +314,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
               <div className="border-t border-border/40 pt-4 flex justify-between items-end">
                 <span className="text-muted-foreground font-semibold">Total</span>
                 <span className="text-3xl font-bold text-primary">
-                  {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
+                  {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : (totalTickets > 0 ? "Free" : `${venue.currency} 0`)}
                 </span>
               </div>
             </div>

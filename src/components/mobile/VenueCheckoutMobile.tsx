@@ -14,10 +14,12 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const [nationality, setNationality] = useState("");
   const [phone, setPhone] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [step, setStep] = useState(1);
 
   if (!venue) return null;
 
   const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
+  const isStep1Valid = date !== "" && totalTickets > 0;
   
   const total = (venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).reduce((acc: number, tier: any) => {
     const qty = ticketsData[tier.name || "Standard Entry"] || 0;
@@ -84,11 +86,17 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
       </div>
 
       <form onSubmit={handleCheckout} className="px-4 pt-6 space-y-6">
-        {/* Ticket Details */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold tracking-tight">Ticket Details</h2>
+        <div className="flex items-center gap-2 mb-6 justify-center">
+          <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>1</div>
+          <div className={`h-1 w-8 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-secondary'}`} />
+          <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>2</div>
+        </div>
 
+        {step === 1 && (
           <div className="space-y-4">
+            <h2 className="text-lg font-bold tracking-tight">Ticket Details</h2>
+
+            <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-1.5 flex items-center gap-2">
                 <Calendar className="w-4 h-4" /> Date
@@ -134,13 +142,28 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
               </div>
             </div>
           </div>
+          <div className="pt-4">
+            <Button
+              type="button"
+              disabled={!isStep1Valid}
+              onClick={() => setStep(2)}
+              className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+            >
+              Continue to Details
+            </Button>
+          </div>
         </div>
+        )}
 
-        {/* Attendee Details */}
-        <div className="space-y-4 border-t border-border/40 pt-6">
-          <h2 className="text-lg font-bold tracking-tight">Attendee Information</h2>
+        {step === 2 && (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold tracking-tight">Primary Attendee</h2>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setStep(1)} className="text-xs text-muted-foreground">Edit Tickets</Button>
+              </div>
 
-          <div className="space-y-3">
+              <div className="space-y-3">
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                 Full Name
@@ -246,24 +269,26 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         )}
 
         {/* Fixed Bottom Action Bar */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe-bottom bg-background/90 backdrop-blur-xl border-t border-border/40 z-30">
-          <div className="flex items-center justify-between gap-4 max-w-md mx-auto mb-2">
-            <span className="text-sm text-muted-foreground font-medium">Total Price</span>
-            <span className="text-xl font-bold text-foreground">
-              {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
-            </span>
+        {step === 2 && (
+          <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe-bottom bg-background/90 backdrop-blur-xl border-t border-border/40 z-30">
+            <div className="flex items-center justify-between gap-4 max-w-md mx-auto mb-2">
+              <span className="text-sm text-muted-foreground font-medium">Total Price</span>
+              <span className="text-xl font-bold text-foreground">
+                {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : (totalTickets > 0 ? "Free" : `${venue.currency} 0`)}
+              </span>
+            </div>
+            <div className="max-w-md mx-auto">
+              <Button
+                type="submit"
+                disabled={totalTickets === 0}
+                className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                Pay & Confirm
+              </Button>
+            </div>
           </div>
-          <div className="max-w-md mx-auto">
-            <Button
-              type="submit"
-              disabled={totalTickets === 0}
-              className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              Pay & Confirm
-            </Button>
-          </div>
-        </div>
+        )}
       </form>
     </div>
   );
