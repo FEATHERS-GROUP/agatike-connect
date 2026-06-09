@@ -170,15 +170,15 @@ export function TicketPreview(props: {
       Cell,
     };
 
-    if (template === "concert-1") return <Concert1 {...templateProps} />;
+    if (template === "concert-1" || template === "concert") return <Concert1 {...templateProps} />;
     if (template === "concert-2") return <Concert2 {...templateProps} />;
-    if (template === "movie-1") return <Movie1 {...templateProps} />;
+    if (template === "movie-1" || template === "movie") return <Movie1 {...templateProps} />;
     if (template === "movie-2") return <Movie2 {...templateProps} />;
-    if (template === "experience-1") return <Experience1 {...templateProps} />;
+    if (template === "experience-1" || template === "experience") return <Experience1 {...templateProps} />;
     if (template === "experience-2") return <Experience2 {...templateProps} />;
-    if (template === "conference-1") return <Conference1 {...templateProps} />;
+    if (template === "conference-1" || template === "conference") return <Conference1 {...templateProps} />;
     if (template === "conference-2") return <Conference2 {...templateProps} />;
-    if (template === "entrance-1") return <Entrance1 {...templateProps} />;
+    if (template === "entrance-1" || template === "entrance") return <Entrance1 {...templateProps} />;
     if (template === "entrance-2") return <Entrance2 {...templateProps} />;
 
     return null;

@@ -105,6 +105,7 @@ const GET_PUBLIC_RENTABLE_VENUES = `
   query GetPublicRentableVenues {
     rentable_venues(order_by: { created_at: desc }) {
       id
+      workspace_id
       name
       type
       city
@@ -133,6 +134,7 @@ const GET_RENTABLE_VENUE_BY_ID = `
   query GetRentableVenueById($id: uuid!) {
     rentable_venues_by_pk(id: $id) {
       id
+      workspace_id
       name
       type
       city

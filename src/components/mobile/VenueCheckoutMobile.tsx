@@ -4,6 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createVenueBooking } from "@/api/venue_bookings";
+import { getWorkspaceTicketProjects } from "@/api/events";
+import { sendTicketsEmail } from "@/api/email";
+import * as htmlToImage from "html-to-image";
+import jsPDF from "jspdf";
+import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const navigate = useNavigate();
@@ -23,6 +32,15 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [countries, setCountries] = useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
+
+  const { data: ticketProjects } = useQuery({
+    queryKey: ["workspace-ticket-projects", venue?.workspace_id],
+    queryFn: () => getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id! } } as any),
+    enabled: !!venue?.workspace_id,
+  });
+  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);
 
   useEffect(() => {
     fetch("https://restcountries.com/v3.1/all?fields=name")
@@ -80,6 +98,118 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     return acc + qty * (Number(tier.amount) || 0);
   }, 0) || 0;
 
+  const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
+    mutationFn: async () => {
+      const totalAttendees = 1 + attendees.length;
+      return createVenueBooking({
+        data: {
+          workspace_id: venue.workspace_id,
+          venue_id: venue.id,
+          user_id: user?.id || null,
+          customer_name: name,
+          customer_email: email,
+          customer_phone: phone,
+          customer_id_document: idPassport,
+          start_time: new Date(date).toISOString(),
+          end_time: new Date(date).toISOString(),
+          status: "Confirmed",
+          payment_status: "Paid",
+          amount: Number(total),
+          number_of_attendees: totalAttendees,
+          tickets_data: ticketsData,
+          attendees_info: attendees.length > 0 ? attendees : null,
+          internal_notes: null,
+          venue_name: venue.name,
+          venue_currency: venue.currency,
+        },
+      });
+    },
+    onSuccess: (res) => {
+      const td = res.tickets_data;
+      if (td?.issued && td.issued.length > 0 && venueProject) {
+        setIsGenerating(true);
+        setIssuedTickets(td.issued);
+      } else {
+        localStorage.removeItem(storageKey);
+        setIsSuccess(true);
+      }
+    },
+    onError: (e: any) => {
+      toast.error(e.message || "Checkout failed");
+    }
+  });
+
+  useEffect(() => {
+    if (isGenerating && issuedTickets.length > 0 && venueProject) {
+      const generatePDFs = async () => {
+        try {
+          const attachments = [];
+          for (const ticket of issuedTickets) {
+            const el = document.getElementById(`ticket-render-${ticket.id}`);
+            if (!el) continue;
+
+            // Wait a tiny bit more for React to flush the DOM
+            await new Promise((r) => setTimeout(r, 100));
+
+            const rectDebug = el.getBoundingClientRect();
+            console.log("Ticket element dimensions:", rectDebug.width, rectDebug.height);
+
+            const imgData = await htmlToImage.toPng(el, {
+              pixelRatio: 2,
+              backgroundColor: "transparent",
+              width: 720,
+              height: 260,
+            });
+            console.log("Generated imgData length:", imgData?.length);
+            if (!imgData || imgData === "data:,") {
+              throw new Error("htmlToImage returned an empty image. Usually caused by unloaded fonts or images.");
+            }
+
+            const rect = el.getBoundingClientRect();
+            const width = rect.width || 720;
+            const height = rect.height || 260;
+
+            const pdf = new jsPDF({
+              orientation: "landscape",
+              unit: "px",
+              format: [width, height],
+            });
+            pdf.addImage(imgData, "PNG", 0, 0, width, height);
+            const base64 = pdf.output("datauristring").split(",")[1];
+
+            attachments.push({
+              filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+              content: base64,
+            });
+          }
+
+          if (attachments.length > 0 && email) {
+            await sendTicketsEmail({
+              data: {
+                to: email,
+                customerName: name,
+                venueName: venue.name || "the Venue",
+                attachments,
+              } as any,
+            });
+            toast.success("Booking confirmed and tickets emailed!");
+          } else {
+            toast.success("Booking confirmed!");
+          }
+          setIsGenerating(false);
+          localStorage.removeItem(storageKey);
+          setIsSuccess(true);
+        } catch (e: any) {
+          console.error("PDF generation error:", e);
+          toast.error(`Ticket generation failed: ${e.message || "Unknown error"}. Please try again.`);
+          setIsGenerating(false);
+          // Don't set isSuccess(true) so they can try again
+        }
+      };
+      setTimeout(generatePDFs, 1000);
+    }
+  }, [isGenerating, issuedTickets, venueProject, email, name, venue?.name, storageKey]);
+
   useEffect(() => {
     const requiredAttendees = Math.max(0, totalTickets - 1);
     setAttendees((prev) => {
@@ -99,11 +229,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
       navigate({ to: "/signin", search: { redirect: `/venues/checkout/${venue.id}` } as any });
       return;
     }
-    setIsSuccess(true);
-    localStorage.removeItem(storageKey);
-    setTimeout(() => {
-      navigate({ to: "/venues" });
-    }, 3000);
+    doCheckout();
   };
 
   if (isSuccess) {
@@ -396,18 +522,89 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 </div>
               )}
 
-              <Button
-                type="submit"
-                disabled={totalTickets === 0}
-                className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                Pay & Confirm
-              </Button>
+              {issuedTickets.length > 0 ? (
+                <Button
+                  type="button"
+                  onClick={() => setIsGenerating(true)}
+                  disabled={isGenerating}
+                  className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform flex items-center justify-center"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : "Retry Ticket Generation"}
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  disabled={totalTickets === 0 || isCheckingOut || isGenerating}
+                  className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform flex items-center justify-center"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  {isCheckingOut || isGenerating ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>Pay & Confirm</>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         )}
       </form>
+
+      {/* Hidden Ticket Renderer */}
+      {isGenerating && issuedTickets.length > 0 && venueProject && (
+        <div
+          className="absolute -z-50 pointer-events-none"
+          style={{ top: "-9999px", left: "-9999px" }}
+        >
+          {issuedTickets.map((t) => (
+            <div key={t.id} id={`ticket-render-${t.id}`} className="inline-block bg-white relative">
+              <TicketPreview
+                  template={venueProject.template}
+                  palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                  font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+                  tier={t.tier}
+                  title={venue.name}
+                  subtitle={venue.address || t.attendee_name || name}
+                  date={date}
+                  time="Opening Hours"
+                  seat={t.attendee_name || name || "General"}
+                  price={total.toString()}
+                  currency={venue.currency}
+                  cover={venueProject.coverImage || ""}
+                  logoText={
+                    venueProject.logoText || "agatiike"
+                  }
+                  logoImage={venueProject.logoImage}
+                  logoScale={Number(venueProject.logoScale || 24)}
+                  logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+                  logoColorMode={venueProject.logoColorMode || "original"}
+                  orderId={t.otp}
+                  qrValue={`${window.location.origin}/v/${t.otp}`}
+                  previewMode="Front"
+                  layout={
+                    venueProject.design_overrides?.layout || {
+                      titleSize: 30,
+                      subtitleSize: 14,
+                      metaSize: 11,
+                      titleAlign: "left",
+                      titleOffsetY: 0,
+                      subtitleOffsetY: 0,
+                      metaOffsetY: 0,
+                    }
+                  }
+                  back={
+                    venueProject.design_overrides?.back || {
+                      backText: "",
+                      backImage: "",
+                      backImageOpacity: 0.3,
+                    }
+                  }
+                />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

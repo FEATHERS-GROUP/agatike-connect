@@ -1,14 +1,19 @@
 import { ReactNode } from "react";
 
 export type Template =
+  | "concert"
   | "concert-1"
   | "concert-2"
+  | "movie"
   | "movie-1"
   | "movie-2"
+  | "experience"
   | "experience-1"
   | "experience-2"
+  | "conference"
   | "conference-1"
   | "conference-2"
+  | "entrance"
   | "entrance-1"
   | "entrance-2";
 
