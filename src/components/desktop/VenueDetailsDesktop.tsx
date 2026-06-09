@@ -9,110 +9,147 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
   if (!venue) return null;
 
   return (
-    <div className="min-h-screen bg-secondary/20 font-sans">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
 
-      <section className="mx-auto max-w-7xl px-4 md:px-6 py-8">
-        <Link
-          to="/venues"
-          className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-6 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" /> Back to Venues
-        </Link>
-
-        <div className="flex flex-col lg:flex-row gap-10">
-          {/* Left Column: Details */}
-          <div className="flex-1 space-y-8">
-            <div className="rounded-3xl overflow-hidden border border-border/50 bg-card shadow-[var(--shadow-card)]">
-              <div className="aspect-[21/9] relative">
-                <img src={venue.cover} alt={venue.name} className="w-full h-full object-cover" />
-                <div className="absolute top-4 right-4 bg-background/90 backdrop-blur rounded-full px-3 py-1 text-sm font-bold shadow-sm flex items-center gap-1">
-                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" /> {venue.rating}
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h1 className="text-4xl font-bold tracking-tight mb-4">{venue.name}</h1>
-              <div className="flex flex-wrap items-center gap-4 text-muted-foreground font-medium mb-6">
-                <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-full">
-                  <MapPin className="w-4 h-4 text-primary" /> {venue.location}
-                </span>
-                <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-full">
-                  <Clock className="w-4 h-4 text-primary" /> {venue.openTime} - {venue.closeTime}
-                </span>
-                <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-full text-primary font-bold">
-                  {venue.type}
-                </span>
-              </div>
-              <div className="prose prose-neutral dark:prose-invert max-w-none">
-                <h3 className="text-xl font-semibold mb-2">About</h3>
-                <p className="text-muted-foreground leading-relaxed text-lg">{venue.description}</p>
-              </div>
-            </div>
-
-            <div className="border-t border-border/40 pt-8">
-              <h3 className="text-xl font-semibold mb-4">Amenities & Features</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {[
-                  "Free WiFi",
-                  "Parking Available",
-                  "Wheelchair Accessible",
-                  "Guided Tours",
-                  "Cafeteria",
-                  "Restrooms",
-                ].map((amenity, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-2 text-muted-foreground bg-secondary/30 p-3 rounded-xl border border-border/40"
-                  >
-                    <div className="w-2 h-2 rounded-full bg-primary" /> {amenity}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: CTA Widget */}
-          <div className="w-full lg:w-[400px] shrink-0">
-            <div className="sticky top-24 rounded-3xl border border-border/50 bg-card p-6 shadow-[var(--shadow-card)]">
-              <h3 className="text-2xl font-bold tracking-tight mb-2">Entry Ticket</h3>
-              <p className="text-muted-foreground mb-6">Book your access in advance</p>
-
-              <div className="flex items-center justify-between mb-8 pb-6 border-b border-border/40">
-                <span className="text-muted-foreground font-medium">Standard Entry</span>
-                <span className="text-2xl font-bold">
-                  {venue.price > 0 ? formatCurrency(venue.price, venue.currency) : "Free"}
-                </span>
-              </div>
-
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center gap-3 text-muted-foreground bg-secondary/30 p-4 rounded-2xl border border-border/40">
-                  <Users className="w-5 h-5 text-primary" />
-                  <span className="font-medium">Skip the line access</span>
-                </div>
-                <div className="flex items-center gap-3 text-muted-foreground bg-secondary/30 p-4 rounded-2xl border border-border/40">
-                  <Clock className="w-5 h-5 text-primary" />
-                  <span className="font-medium">Valid for full day</span>
-                </div>
-              </div>
-
-              <Link
-                to="/venues/checkout/$venueId"
-                params={{ venueId: venue.id }}
-                className="block w-full"
-              >
-                <Button
-                  className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  Book Ticket Now <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-            </div>
+      {/* Cinematic banner */}
+      <section className="relative h-[60vh] min-h-[420px] w-full overflow-hidden">
+        <img
+          src={venue.cover_url}
+          alt={venue.name}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-6 pb-10">
+          <span className="w-fit rounded-full bg-background/70 px-3 py-1 text-xs backdrop-blur font-bold uppercase tracking-wider">
+            {venue.type}
+          </span>
+          <h1 className="mt-3 max-w-3xl text-4xl font-semibold md:text-5xl">{venue.name}</h1>
+          <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="h-4 w-4" /> {venue.city || venue.address}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Clock className="h-4 w-4" /> {venue.opening_hours || "09:00"} - {venue.closing_hours || "22:00"}
+            </span>
           </div>
         </div>
       </section>
+
+      <div className="mx-auto grid max-w-7xl gap-10 px-6 pb-20 pt-10 lg:grid-cols-[1fr_400px]">
+        {/* Left Column */}
+        <div className="space-y-10 min-w-0">
+          <div>
+            <h2 className="text-xl font-semibold">About this venue</h2>
+            <p className="mt-3 text-muted-foreground leading-relaxed">
+              {venue.description}
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Amenities & Features</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {(venue.amenities || []).map((amenity: any, i: number) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 text-muted-foreground bg-secondary/30 p-3 rounded-xl border border-border/40"
+                >
+                  <div className="w-2 h-2 rounded-full bg-primary" /> {amenity}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Details</h2>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              {venue.capacity && (
+                <div>
+                  <span className="text-muted-foreground block">Capacity</span>
+                  <span className="font-medium">{venue.capacity} people</span>
+                </div>
+              )}
+              {venue.rental_model && (
+                <div>
+                  <span className="text-muted-foreground block">Rental Model</span>
+                  <span className="font-medium capitalize">{venue.rental_model.replace(/_/g, " ")}</span>
+                </div>
+              )}
+              {venue.rental_type && (
+                <div>
+                  <span className="text-muted-foreground block">Rental Type</span>
+                  <span className="font-medium capitalize">{venue.rental_type.replace(/_/g, " ")}</span>
+                </div>
+              )}
+              {venue.is_venue_private !== undefined && venue.is_venue_private !== null && (
+                <div>
+                  <span className="text-muted-foreground block">Access</span>
+                  <span className="font-medium">{venue.is_venue_private ? "Private" : "Public"}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {venue.instructions && (
+            <div className="prose prose-neutral dark:prose-invert max-w-none break-words overflow-hidden">
+              <h2 className="text-xl font-semibold mb-4">Instructions</h2>
+              <div 
+                className="text-muted-foreground leading-relaxed [&>p]:mb-4"
+                dangerouslySetInnerHTML={{ __html: venue.instructions }}
+              />
+            </div>
+          )}
+
+          {venue.latitude && venue.longitude && (
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Location</h2>
+              <div className="h-[350px] rounded-2xl overflow-hidden bg-secondary/30 relative border border-border/40 shadow-sm">
+                <iframe
+                  title="Location Map"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src={`https://www.google.com/maps?q=${venue.latitude},${venue.longitude}&output=embed`}
+                ></iframe>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: CTA Widget */}
+        <aside className="lg:sticky lg:top-24 h-fit">
+          <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
+            <h3 className="text-2xl font-bold tracking-tight mb-2">Entry Ticket</h3>
+            <p className="text-muted-foreground mb-6">Book your access in advance</p>
+
+            <div className="space-y-3 mb-8">
+              {(venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
+                <div key={idx} className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-secondary/30">
+                  <span className="text-muted-foreground font-medium">{tier.name || "Standard Entry"}</span>
+                  <span className="text-xl font-bold">
+                    {tier.amount > 0 ? formatCurrency(tier.amount, venue.currency) : "Free"}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <Link
+              to="/venues/checkout/$venueId"
+              params={{ venueId: venue.id }}
+              className="block w-full"
+            >
+              <Button
+                className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                Book Ticket Now <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </aside>
+      </div>
 
       <Footer />
     </div>

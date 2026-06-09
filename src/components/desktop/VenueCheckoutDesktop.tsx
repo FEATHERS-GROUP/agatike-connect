@@ -18,7 +18,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
   if (!venue) return null;
 
-  const total = venue.price * tickets;
+  const price = venue.pricing_tiers?.[0]?.amount || 0;
+  const total = price * tickets;
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +155,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
                 style={{ background: "var(--gradient-primary)" }}
               >
-                Pay {venue.price > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
+                Pay {price > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
               </Button>
             </form>
           </div>
@@ -166,14 +167,14 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
               <div className="flex gap-4 mb-6 pb-6 border-b border-border/40">
                 <img
-                  src={venue.cover}
+                  src={venue.cover_url}
                   alt={venue.name}
                   className="w-20 h-20 rounded-xl object-cover"
                 />
                 <div>
                   <h4 className="font-bold text-lg leading-tight mb-1">{venue.name}</h4>
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    <MapPin className="w-3 h-3" /> {venue.location}
+                    <MapPin className="w-3 h-3" /> {venue.city || venue.address}
                   </p>
                 </div>
               </div>
@@ -186,7 +187,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tickets</span>
                   <span>
-                    {tickets} x {venue.currency} {venue.price}
+                    {tickets} x {venue.currency} {price}
                   </span>
                 </div>
               </div>
@@ -194,7 +195,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
               <div className="border-t border-border/40 pt-4 flex justify-between items-end">
                 <span className="text-muted-foreground font-semibold">Total</span>
                 <span className="text-3xl font-bold text-primary">
-                  {venue.price > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
+                  {price > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
                 </span>
               </div>
             </div>

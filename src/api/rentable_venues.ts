@@ -101,9 +101,9 @@ export const getRentableVenues = createServerFn({ method: "POST" })
     return res.rentable_venues;
   });
 
-const GET_RENTABLE_VENUE_BY_ID = `
-  query GetRentableVenueById($id: uuid!) {
-    rentable_venues_by_pk(id: $id) {
+const GET_PUBLIC_RENTABLE_VENUES = `
+  query GetPublicRentableVenues {
+    rentable_venues(order_by: { created_at: desc }) {
       id
       name
       type
@@ -117,6 +117,44 @@ const GET_RENTABLE_VENUE_BY_ID = `
       status
       pricing_tiers
       amenities
+      created_at
+      description
+    }
+  }
+`;
+
+export const getPublicRentableVenues = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const res = await hasuraRequest<{ rentable_venues: any[] }>(GET_PUBLIC_RENTABLE_VENUES, {});
+    return res.rentable_venues;
+  });
+
+const GET_RENTABLE_VENUE_BY_ID = `
+  query GetRentableVenueById($id: uuid!) {
+    rentable_venues_by_pk(id: $id) {
+      id
+      name
+      type
+      city
+      country
+      address
+      capacity
+      rental_type
+      rental_model
+      currency
+      cover_url
+      images
+      status
+      pricing_tiers
+      amenities
+      description
+      latitude
+      longitude
+      opening_hours
+      closing_hours
+      instructions
+      sections
+      is_venue_private
       created_at
     }
   }

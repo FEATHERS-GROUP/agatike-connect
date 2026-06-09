@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { VenuesMobile } from "@/components/mobile/VenuesMobile";
 import { VenuesDesktop } from "@/components/desktop/VenuesDesktop";
+import { getPublicRentableVenues } from "@/api/rentable_venues";
 
 export const Route = createFileRoute("/venues/")({
   head: () => ({
@@ -12,6 +13,9 @@ export const Route = createFileRoute("/venues/")({
       },
     ],
   }),
+  loader: async () => {
+    return await getPublicRentableVenues();
+  },
   component: VenuesIndex,
 });
 

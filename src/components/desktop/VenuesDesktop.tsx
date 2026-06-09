@@ -1,20 +1,20 @@
 import { Search, MapPin, Clock, Star, Ticket } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLoaderData } from "@tanstack/react-router";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { mockVenues } from "@/lib/mock-venue-data";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useState } from "react";
 
 export function VenuesDesktop() {
+  const venues = useLoaderData({ from: "/venues/" }) as any[];
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
 
-  const types = ["All", ...Array.from(new Set(mockVenues.map((v) => v.type)))];
+  const types = ["All", ...Array.from(new Set(venues.map((v) => v.type)))];
 
-  const filteredVenues = mockVenues.filter((venue) => {
+  const filteredVenues = venues.filter((venue) => {
     if (searchTerm && !venue.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     if (typeFilter !== "All" && venue.type !== typeFilter) return false;
     return true;
@@ -97,13 +97,10 @@ export function VenuesDesktop() {
               >
                 <div className="aspect-video relative overflow-hidden">
                   <img
-                    src={venue.cover}
+                    src={venue.cover_url}
                     alt={venue.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute top-4 left-4 bg-background/90 backdrop-blur rounded-full px-3 py-1 text-xs font-bold shadow-sm flex items-center gap-1">
-                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {venue.rating}
-                  </div>
                   <div className="absolute top-4 right-4 bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-bold shadow-sm">
                     {venue.type}
                   </div>
@@ -112,10 +109,10 @@ export function VenuesDesktop() {
                   <h3 className="text-xl font-bold tracking-tight">{venue.name}</h3>
                   <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground font-medium">
                     <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" /> {venue.location}
+                      <MapPin className="w-4 h-4" /> {venue.city || venue.address}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" /> {venue.openTime} - {venue.closeTime}
+                      <Clock className="w-4 h-4" /> {venue.opening_hours || "09:00"} - {venue.closing_hours || "22:00"}
                     </span>
                   </div>
                   <p className="mt-4 text-sm text-muted-foreground line-clamp-2">
@@ -128,7 +125,7 @@ export function VenuesDesktop() {
                         Entry Fee
                       </p>
                       <span className="font-semibold text-lg text-primary">
-                        {venue.price > 0 ? formatCurrency(venue.price, venue.currency) : "Free"}
+                        {venue.pricing_tiers?.[0]?.amount > 0 ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency) : "Free"}
                       </span>
                     </div>
                     <Link to="/venues/$venueId" params={{ venueId: venue.id }}>

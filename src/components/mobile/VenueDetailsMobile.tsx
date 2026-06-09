@@ -9,7 +9,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
     <div className="min-h-screen bg-background pb-28">
       {/* Header Image & Actions */}
       <div className="relative h-72 w-full">
-        <img src={venue.cover} alt={venue.name} className="w-full h-full object-cover" />
+        <img src={venue.cover_url} alt={venue.name} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
         <div className="absolute top-0 left-0 right-0 pt-safe-top p-4 flex items-center justify-between z-10">
@@ -33,9 +33,6 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
           <div className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">
             {venue.type}
           </div>
-          <div className="bg-background/90 backdrop-blur-md rounded-full px-2.5 py-1 text-xs font-bold shadow-sm flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" /> {venue.rating}
-          </div>
         </div>
       </div>
 
@@ -45,10 +42,10 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
           <h1 className="text-2xl font-bold tracking-tight leading-tight mb-2">{venue.name}</h1>
           <div className="flex flex-col gap-2 text-sm text-muted-foreground font-medium">
             <span className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" /> {venue.location}
+              <MapPin className="w-4 h-4 text-primary" /> {venue.city || venue.address}
             </span>
             <span className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-primary" /> {venue.openTime} - {venue.closeTime}
+              <Clock className="w-4 h-4 text-primary" /> {venue.opening_hours || "09:00"} - {venue.closing_hours || "22:00"}
             </span>
           </div>
         </div>
@@ -61,7 +58,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
         <div className="border-t border-border/40 pt-6">
           <h3 className="font-bold mb-4">Amenities</h3>
           <div className="flex flex-wrap gap-2">
-            {["Free WiFi", "Parking", "Wheelchair", "Cafeteria"].map((amenity, i) => (
+            {(venue.amenities || []).map((amenity: any, i: number) => (
               <span
                 key={i}
                 className="px-3 py-1.5 bg-secondary/50 rounded-lg text-xs font-medium text-muted-foreground border border-border/40"
@@ -71,6 +68,77 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
             ))}
           </div>
         </div>
+
+        <div className="border-t border-border/40 pt-6">
+          <h3 className="font-bold mb-4">Details</h3>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            {venue.capacity && (
+              <div>
+                <span className="text-muted-foreground block text-xs">Capacity</span>
+                <span className="font-medium">{venue.capacity} people</span>
+              </div>
+            )}
+            {venue.rental_model && (
+              <div>
+                <span className="text-muted-foreground block text-xs">Rental Model</span>
+                <span className="font-medium capitalize">{venue.rental_model.replace(/_/g, " ")}</span>
+              </div>
+            )}
+            {venue.rental_type && (
+              <div>
+                <span className="text-muted-foreground block text-xs">Rental Type</span>
+                <span className="font-medium capitalize">{venue.rental_type.replace(/_/g, " ")}</span>
+              </div>
+            )}
+            {venue.is_venue_private !== undefined && venue.is_venue_private !== null && (
+              <div>
+                <span className="text-muted-foreground block text-xs">Access</span>
+                <span className="font-medium">{venue.is_venue_private ? "Private" : "Public"}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {venue.instructions && (
+          <div className="border-t border-border/40 pt-6 prose prose-sm prose-neutral dark:prose-invert max-w-none break-words overflow-hidden">
+            <h3 className="font-bold mb-4">Instructions</h3>
+            <div 
+              className="text-muted-foreground text-sm leading-relaxed [&>p]:mb-4"
+              dangerouslySetInnerHTML={{ __html: venue.instructions }}
+            />
+          </div>
+        )}
+
+        <div className="border-t border-border/40 pt-6">
+          <h3 className="font-bold mb-4">Entry Tickets</h3>
+          <div className="space-y-3">
+            {(venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
+              <div key={idx} className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30">
+                <span className="text-muted-foreground text-sm font-medium">{tier.name || "Standard Entry"}</span>
+                <span className="font-bold text-primary">
+                  {tier.amount > 0 ? formatCurrency(tier.amount, venue.currency) : "Free"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {venue.latitude && venue.longitude && (
+          <div className="border-t border-border/40 pt-6">
+            <h3 className="font-bold mb-4">Location</h3>
+            <div className="aspect-video rounded-2xl overflow-hidden bg-secondary/30 relative border border-border/40 shadow-sm">
+              <iframe
+                title="Location Map"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                allowFullScreen
+                src={`https://www.google.com/maps?q=${venue.latitude},${venue.longitude}&output=embed`}
+              ></iframe>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Fixed Bottom Action Bar */}
@@ -78,10 +146,10 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
         <div className="flex items-center justify-between gap-4 max-w-md mx-auto">
           <div className="flex flex-col">
             <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-              Entry Fee
+              Tickets from
             </span>
             <span className="text-xl font-bold text-foreground">
-              {venue.price > 0 ? formatCurrency(venue.price, venue.currency) : "Free"}
+              {venue.pricing_tiers?.[0]?.amount > 0 ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency) : "Free"}
             </span>
           </div>
           <Link to="/venues/checkout/$venueId" params={{ venueId: venue.id }} className="flex-1">

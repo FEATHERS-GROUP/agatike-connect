@@ -1,18 +1,18 @@
 import { Search, MapPin, Ticket, Star, ChevronLeft } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLoaderData } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/currency";
-import { mockVenues } from "@/lib/mock-venue-data";
 import { useState } from "react";
 import { MobileNav } from "@/components/mobile/MobileNav";
 
 export function VenuesMobile() {
+  const venues = useLoaderData({ from: "/venues/" }) as any[];
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
 
-  const types = ["All", ...Array.from(new Set(mockVenues.map((v) => v.type)))];
+  const types = ["All", ...Array.from(new Set(venues.map((v) => v.type)))];
 
-  const filteredVenues = mockVenues.filter((venue) => {
+  const filteredVenues = venues.filter((venue) => {
     if (searchTerm && !venue.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     if (typeFilter !== "All" && venue.type !== typeFilter) return false;
     return true;
@@ -81,10 +81,7 @@ export function VenuesMobile() {
             >
               <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm">
                 <div className="aspect-[16/9] relative">
-                  <img src={venue.cover} alt={venue.name} className="w-full h-full object-cover" />
-                  <div className="absolute top-3 left-3 bg-background/90 backdrop-blur rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm flex items-center gap-1">
-                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {venue.rating}
-                  </div>
+                  <img src={venue.cover_url} alt={venue.name} className="w-full h-full object-cover" />
                   <div className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm">
                     {venue.type}
                   </div>
@@ -93,7 +90,7 @@ export function VenuesMobile() {
                   <h3 className="font-bold text-base leading-tight mb-1">{venue.name}</h3>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium mb-3">
                     <MapPin className="w-3 h-3" />{" "}
-                    <span className="truncate">{venue.location}</span>
+                    <span className="truncate">{venue.city || venue.address}</span>
                   </div>
 
                   <div className="flex items-center justify-between mt-2 pt-3 border-t border-border/40">
@@ -102,7 +99,7 @@ export function VenuesMobile() {
                         Entry Fee
                       </span>
                       <span className="text-sm font-bold text-foreground">
-                        {venue.price > 0 ? formatCurrency(venue.price, venue.currency) : "Free"}
+                        {venue.pricing_tiers?.[0]?.amount > 0 ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency) : "Free"}
                       </span>
                     </div>
                     <div

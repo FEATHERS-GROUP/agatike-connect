@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { VenueDetailsMobile } from "@/components/mobile/VenueDetailsMobile";
 import { VenueDetailsDesktop } from "@/components/desktop/VenueDetailsDesktop";
-import { mockVenues } from "@/lib/mock-venue-data";
+import { getRentableVenueById } from "@/api/rentable_venues";
 
 export const Route = createFileRoute("/venues/$venueId")({
-  loader: ({ params }) => {
-    return mockVenues.find((v) => v.id === params.venueId);
+  loader: async ({ params }) => {
+    return await getRentableVenueById({ data: { id: params.venueId } });
   },
   component: VenueDetails,
 });

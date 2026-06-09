@@ -16,7 +16,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
   if (!venue) return null;
 
-  const total = venue.price * tickets;
+  const price = venue.pricing_tiers?.[0]?.amount || 0;
+  const total = price * tickets;
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,7 +166,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
           <div className="flex items-center justify-between gap-4 max-w-md mx-auto mb-2">
             <span className="text-sm text-muted-foreground font-medium">Total Price</span>
             <span className="text-xl font-bold text-foreground">
-              {venue.price > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
+              {price > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
             </span>
           </div>
           <div className="max-w-md mx-auto">
