@@ -16,12 +16,15 @@ import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/Ti
 import { toast } from "sonner";
 import { COUNTRIES } from "@/lib/countries";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PaymentModal } from "@/components/shared/PaymentModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export function BookingMobile({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [assignMode, setAssignMode] = useState<"me" | "others">("me");
   const [isSuccess, setIsSuccess] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -148,7 +151,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           email: sourceAttendee.email,
           phone: sourceAttendee.phone || "",
           qrcode_number: otp,
-          quanity: 1,
+          quanity: "1",
           status: "Confirmed",
           ticket_id: a.tierId,
           ticket_type: tier ? tier.type : "General Admission",
@@ -264,7 +267,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                 data: {
                   to: email,
                   customerName: group.name,
-                  eventTitle: event.title,
+                  venueName: event.title,
                   attachments: group.attachments,
                 }
               } as any).catch(e => console.error("Failed to email", email, e));
@@ -471,84 +474,6 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             })}
           </div>
         </div>
-
-        {/* Payment Methods */}
-        <div>
-          <h2 className="text-lg font-bold mb-4">Payment Method</h2>
-          <div className="space-y-3">
-            <button
-              onClick={() => setPaymentMethod("apple")}
-              className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all ${
-                paymentMethod === "apple"
-                  ? "border-primary bg-primary/10"
-                  : "border-border/40 bg-card/50"
-              }`}
-            >
-              <div className="h-10 w-10 bg-foreground text-background rounded-full flex items-center justify-center">
-                <Wallet className="h-5 w-5" />
-              </div>
-              <div className="text-left flex-1">
-                <p className="font-bold">Apple Pay</p>
-                <p className="text-xs text-muted-foreground">Fast, secure checkout</p>
-              </div>
-              <div
-                className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "apple" ? "border-primary" : "border-muted-foreground"}`}
-              >
-                {paymentMethod === "apple" && (
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-                )}
-              </div>
-            </button>
-
-            <button
-              onClick={() => setPaymentMethod("card")}
-              className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all ${
-                paymentMethod === "card"
-                  ? "border-primary bg-primary/10"
-                  : "border-border/40 bg-card/50"
-              }`}
-            >
-              <div className="h-10 w-10 bg-secondary rounded-full flex items-center justify-center">
-                <CreditCard className="h-5 w-5" />
-              </div>
-              <div className="text-left flex-1">
-                <p className="font-bold">Credit Card</p>
-                <p className="text-xs text-muted-foreground">Visa, Mastercard, Amex</p>
-              </div>
-              <div
-                className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "card" ? "border-primary" : "border-muted-foreground"}`}
-              >
-                {paymentMethod === "card" && (
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-                )}
-              </div>
-            </button>
-
-            <button
-              onClick={() => setPaymentMethod("momo")}
-              className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all ${
-                paymentMethod === "momo"
-                  ? "border-primary bg-primary/10"
-                  : "border-border/40 bg-card/50"
-              }`}
-            >
-              <div className="h-10 w-10 bg-yellow-500 text-yellow-950 rounded-full flex items-center justify-center">
-                <Smartphone className="h-5 w-5" />
-              </div>
-              <div className="text-left flex-1">
-                <p className="font-bold">Mobile Money</p>
-                <p className="text-xs text-muted-foreground">MTN MoMo, Airtel Money</p>
-              </div>
-              <div
-                className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "momo" ? "border-primary" : "border-muted-foreground"}`}
-              >
-                {paymentMethod === "momo" && (
-                  <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-                )}
-              </div>
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Sticky Bottom Action */}
@@ -560,25 +485,32 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           </span>
         </div>
         <Button
-          onClick={() => doCheckout()}
-          disabled={isCheckingOut || isGenerating || !isFormValid}
+          onClick={() => setIsPaymentModalOpen(true)}
+          disabled={!isFormValid || isCheckingOut || isGenerating}
           className="w-full h-14 rounded-full text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
           style={{ background: "var(--gradient-primary)" }}
         >
-          {isGenerating
-            ? "Generating Tickets..."
-            : isCheckingOut
-              ? "Processing..."
-              : `Pay ${formatCurrency(total, currency)}`}
+          Pay {formatCurrency(total, currency)}
         </Button>
         <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
           <Shield className="h-3.5 w-3.5" /> Secure encrypted checkout
         </div>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onOpenChange={setIsPaymentModalOpen}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        onProceed={doCheckout}
+        isProcessing={isCheckingOut}
+        isGenerating={isGenerating}
+      />
       
       {/* Hidden container for PDF rendering */}
       {isGenerating && issuedTickets.length > 0 && eventProject && (
-        <div style={{ position: "absolute", top: "-9999px", left: "-9999px", visibility: "hidden" }}>
+        <div style={{ position: "fixed", top: "-9999px", left: "-9999px", zIndex: -9999 }}>
           {issuedTickets.map((ticket: any) => {
             const mergedProject = getMergedProjectDesign(eventProject, ticket.attendee.stopIdx, ticket.attendee.tierId);
             return (

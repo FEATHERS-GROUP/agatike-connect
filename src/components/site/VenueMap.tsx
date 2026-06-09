@@ -16,12 +16,15 @@ const venueIcon = L.divIcon({
 function MapUpdater({ center }: { center: [number, number] }) {
   const map = useMap();
   useEffect(() => {
-    if (center && !isNaN(center[0]) && !isNaN(center[1])) {
-      try {
-        map.flyTo(center, 15, { duration: 1.5 });
-      } catch (err) {
-        // Ignore errors if leaflet internal state is corrupted by HMR
-        console.warn("Leaflet flyTo skipped due to error:", err);
+    if (center && Array.isArray(center)) {
+      const lat = parseFloat(center[0] as any);
+      const lng = parseFloat(center[1] as any);
+      if (!isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng)) {
+        try {
+          map.flyTo([lat, lng], 15, { duration: 1.5 });
+        } catch (err) {
+          console.warn("Leaflet flyTo skipped due to error:", err);
+        }
       }
     }
   }, [center, map]);
@@ -39,8 +42,14 @@ export default function VenueMap({
   venue: string;
   city: string;
 }) {
-  const safeLat = isNaN(lat) || lat == null ? -1.9441 : Number(lat);
-  const safeLng = isNaN(lng) || lng == null ? 30.0619 : Number(lng);
+  let parsedLat = parseFloat(lat as any);
+  let parsedLng = parseFloat(lng as any);
+  
+  if (isNaN(parsedLat) || !isFinite(parsedLat)) parsedLat = -1.9441;
+  if (isNaN(parsedLng) || !isFinite(parsedLng)) parsedLng = 30.0619;
+
+  const safeLat = parsedLat;
+  const safeLng = parsedLng;
 
   return (
     <>

@@ -11,8 +11,12 @@ import { Link, useRouter } from "@tanstack/react-router";
 function MapController({ selectedEvent }: { selectedEvent: Event | null }) {
   const map = useMap();
   useEffect(() => {
-    if (selectedEvent && selectedEvent.lat && selectedEvent.lng) {
-      map.flyTo([selectedEvent.lat, selectedEvent.lng], 14, { duration: 0.5 });
+    if (selectedEvent) {
+      const lat = parseFloat(selectedEvent.lat as any);
+      const lng = parseFloat(selectedEvent.lng as any);
+      if (!isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng)) {
+        map.flyTo([lat, lng], 14, { duration: 0.5 });
+      }
     }
   }, [selectedEvent, map]);
   return null;
@@ -94,11 +98,15 @@ export default function MapClient() {
           <MapController selectedEvent={selectedEvent} />
 
           {events
-            .filter((e) => e.lat && e.lng)
+            .filter((e) => {
+              const lat = parseFloat(e.lat as any);
+              const lng = parseFloat(e.lng as any);
+              return !isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng);
+            })
             .map((event) => (
               <Marker
                 key={event.id}
-                position={[event.lat!, event.lng!]}
+                position={[parseFloat(event.lat as any), parseFloat(event.lng as any)]}
                 icon={createCustomIcon(event, selectedEvent?.id === event.id)}
                 eventHandlers={{
                   click: () => setSelectedEvent(event),

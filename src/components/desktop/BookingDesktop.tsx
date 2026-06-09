@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, CreditCard, Shield, Smartphone, Wallet, Lock, MapPin, Calendar, Clock } from "lucide-react";
+import { ChevronLeft, CreditCard, Shield, Smartphone, Wallet, Lock, MapPin, Calendar, Clock, CheckCircle2 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PaymentModal } from "@/components/shared/PaymentModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { COUNTRIES } from "@/lib/countries";
 
 export function BookingDesktop({ eventId }: { eventId: string }) {
@@ -24,6 +26,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const { user } = useUserAuth();
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [assignMode, setAssignMode] = useState<"me" | "others">("me");
   const [isSuccess, setIsSuccess] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -154,7 +157,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           email: sourceAttendee.email,
           phone: sourceAttendee.phone || "",
           qrcode_number: otp,
-          quanity: 1,
+          quanity: "1",
           status: "Confirmed",
           ticket_id: a.tierId,
           ticket_type: tier ? tier.type : "General Admission",
@@ -274,7 +277,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                 data: {
                   to: email,
                   customerName: group.name,
-                  eventTitle: event.title,
+                  venueName: event.title,
                   attachments: group.attachments,
                 }
               } as any).catch(e => console.error("Failed to email", email, e));
@@ -450,84 +453,6 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                 })}
               </div>
             </div>
-
-            <div className="pt-8 border-t border-border/40">
-              <h2 className="text-xl font-semibold mb-6">Payment Method</h2>
-
-              <div className="grid gap-4">
-                <button
-                  onClick={() => setPaymentMethod("apple")}
-                  className={`flex items-center gap-4 p-5 rounded-2xl border transition-all ${
-                    paymentMethod === "apple"
-                      ? "border-primary bg-primary/5"
-                      : "border-border/60 hover:bg-secondary/40"
-                  }`}
-                >
-                  <div className="h-12 w-12 bg-foreground text-background rounded-full flex items-center justify-center shrink-0">
-                    <Wallet className="h-6 w-6" />
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="font-semibold text-lg">Apple Pay</p>
-                    <p className="text-sm text-muted-foreground">Fast, secure checkout</p>
-                  </div>
-                  <div
-                    className={`h-6 w-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === "apple" ? "border-primary" : "border-muted-foreground"}`}
-                  >
-                    {paymentMethod === "apple" && (
-                      <div className="h-3 w-3 rounded-full bg-primary" />
-                    )}
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setPaymentMethod("card")}
-                  className={`flex items-center gap-4 p-5 rounded-2xl border transition-all ${
-                    paymentMethod === "card"
-                      ? "border-primary bg-primary/5"
-                      : "border-border/60 hover:bg-secondary/40"
-                  }`}
-                >
-                  <div className="h-12 w-12 bg-secondary rounded-full flex items-center justify-center shrink-0">
-                    <CreditCard className="h-6 w-6" />
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="font-semibold text-lg">Credit Card</p>
-                    <p className="text-sm text-muted-foreground">Visa, Mastercard, Amex</p>
-                  </div>
-                  <div
-                    className={`h-6 w-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === "card" ? "border-primary" : "border-muted-foreground"}`}
-                  >
-                    {paymentMethod === "card" && (
-                      <div className="h-3 w-3 rounded-full bg-primary" />
-                    )}
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setPaymentMethod("momo")}
-                  className={`flex items-center gap-4 p-5 rounded-2xl border transition-all ${
-                    paymentMethod === "momo"
-                      ? "border-primary bg-primary/5"
-                      : "border-border/60 hover:bg-secondary/40"
-                  }`}
-                >
-                  <div className="h-12 w-12 bg-yellow-500 text-yellow-950 rounded-full flex items-center justify-center shrink-0">
-                    <Smartphone className="h-6 w-6" />
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="font-semibold text-lg">Mobile Money</p>
-                    <p className="text-sm text-muted-foreground">MTN MoMo, Airtel Money</p>
-                  </div>
-                  <div
-                    className={`h-6 w-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === "momo" ? "border-primary" : "border-muted-foreground"}`}
-                  >
-                    {paymentMethod === "momo" && (
-                      <div className="h-3 w-3 rounded-full bg-primary" />
-                    )}
-                  </div>
-                </button>
-              </div>
-            </div>
           </div>
 
           {/* Right Column: Summary */}
@@ -570,16 +495,12 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
               </div>
 
               <Button
-                onClick={() => doCheckout()}
-                disabled={isCheckingOut || isGenerating || !isFormValid}
+                onClick={() => setIsPaymentModalOpen(true)}
+                disabled={!isFormValid || isCheckingOut || isGenerating}
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide mb-4"
                 style={{ background: "var(--gradient-primary)" }}
               >
-                {isGenerating
-                  ? "Generating Tickets..."
-                  : isCheckingOut
-                    ? "Processing..."
-                    : `Pay ${formatCurrency(total, currency)}`}
+                Pay {formatCurrency(total, currency)}
               </Button>
 
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -589,10 +510,21 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           </div>
         </div>
       </main>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onOpenChange={setIsPaymentModalOpen}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        onProceed={doCheckout}
+        isProcessing={isCheckingOut}
+        isGenerating={isGenerating}
+      />
       
       {/* Hidden container for PDF rendering */}
       {isGenerating && issuedTickets.length > 0 && eventProject && (
-        <div style={{ position: "absolute", top: "-9999px", left: "-9999px", visibility: "hidden" }}>
+        <div style={{ position: "fixed", top: "-9999px", left: "-9999px", zIndex: -9999 }}>
           {issuedTickets.map((ticket: any) => {
             const mergedProject = getMergedProjectDesign(eventProject, ticket.attendee.stopIdx, ticket.attendee.tierId);
             return (
