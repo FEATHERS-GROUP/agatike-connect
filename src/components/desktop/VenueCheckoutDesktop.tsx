@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const navigate = useNavigate();
   const [date, setDate] = useState("");
-  const [tickets, setTickets] = useState(1);
+  const [ticketsData, setTicketsData] = useState<Record<string, number>>({});
+  const [attendees, setAttendees] = useState<{ name: string; id_document: string }[]>([]);
   const [name, setName] = useState("");
   const [idPassport, setIdPassport] = useState("");
   const [nationality, setNationality] = useState("");
@@ -18,8 +19,25 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
   if (!venue) return null;
 
-  const price = venue.pricing_tiers?.[0]?.amount || 0;
-  const total = price * tickets;
+  const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
+  
+  const total = (venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).reduce((acc: number, tier: any) => {
+    const qty = ticketsData[tier.name || "Standard Entry"] || 0;
+    return acc + qty * (Number(tier.amount) || 0);
+  }, 0) || 0;
+
+  useEffect(() => {
+    const requiredAttendees = Math.max(0, totalTickets - 1);
+    setAttendees((prev) => {
+      if (prev.length === requiredAttendees) return prev;
+      if (prev.length > requiredAttendees) return prev.slice(0, requiredAttendees);
+      const newAttendees = [...prev];
+      while (newAttendees.length < requiredAttendees) {
+        newAttendees.push({ name: "", id_document: "" });
+      }
+      return newAttendees;
+    });
+  }, [totalTickets]);
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +87,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           {/* Left Column: Form */}
           <div className="flex-1 bg-card rounded-3xl p-8 border border-border/50 shadow-[var(--shadow-card)]">
             <form onSubmit={handleCheckout} className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <Calendar className="w-4 h-4" /> Select Date
@@ -79,27 +97,51 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="h-12 bg-secondary/40"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Users className="w-4 h-4" /> Number of Tickets
-                  </label>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="10"
-                    required
-                    value={tickets}
-                    onChange={(e) => setTickets(parseInt(e.target.value))}
-                    className="h-12 bg-secondary/40"
+                    className="h-12 bg-secondary/40 max-w-sm"
                   />
                 </div>
               </div>
 
               <div className="border-t border-border/40 pt-6">
-                <h3 className="text-xl font-semibold mb-4">Attendee Information</h3>
+                <h3 className="text-xl font-semibold mb-4">Select Tickets</h3>
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  {(venue?.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="relative overflow-hidden flex justify-between items-center bg-secondary/30 p-5 rounded-2xl border-2 border-border/50 border-dashed"
+                    >
+                      <Ticket className="absolute -right-4 -bottom-4 h-24 w-24 text-muted-foreground/5 rotate-[-15deg] pointer-events-none" />
+                      <div className="relative z-10 flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <Ticket className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-bold tracking-tight">{tier.name || "Standard Entry"}</p>
+                          <p className="text-sm font-semibold text-muted-foreground">
+                            {tier.amount > 0 ? `${venue.currency} ${Number(tier.amount).toLocaleString()}` : "Free"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="relative z-10">
+                        <Input
+                          type="number"
+                          min="0"
+                          value={ticketsData[tier.name || "Standard Entry"] || ""}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 0;
+                            setTicketsData((p) => ({ ...p, [tier.name || "Standard Entry"]: val }));
+                          }}
+                          className="w-20 h-12 text-center font-bold text-lg rounded-xl border-2"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-border/40 pt-6">
+                <h3 className="text-xl font-semibold mb-4">Primary Attendee</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div className="space-y-2">
@@ -150,12 +192,58 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 </div>
               </div>
 
+              {totalTickets > 1 && (
+                <div className="border-t border-border/40 pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold">Additional Attendees</h3>
+                    <span className="text-sm font-medium bg-secondary px-3 py-1 rounded-full text-muted-foreground">
+                      {totalTickets - 1} ticket{totalTickets - 1 !== 1 ? "s" : ""} left to assign
+                    </span>
+                  </div>
+
+                  <div className="space-y-4">
+                    {attendees.map((att, idx) => (
+                      <div key={idx} className="flex gap-4 items-start">
+                        <div className="flex-1 space-y-1.5">
+                          <label className="text-sm font-medium text-muted-foreground">Attendee {idx + 2} Name</label>
+                          <Input
+                            required
+                            placeholder="Full Name"
+                            value={att.name}
+                            onChange={(e) => {
+                              const newArr = [...attendees];
+                              newArr[idx].name = e.target.value;
+                              setAttendees(newArr);
+                            }}
+                            className="h-12 rounded-xl bg-secondary/40"
+                          />
+                        </div>
+                        <div className="flex-1 space-y-1.5">
+                          <label className="text-sm font-medium text-muted-foreground">ID / Passport</label>
+                          <Input
+                            placeholder="Optional"
+                            value={att.id_document}
+                            onChange={(e) => {
+                              const newArr = [...attendees];
+                              newArr[idx].id_document = e.target.value;
+                              setAttendees(newArr);
+                            }}
+                            className="h-12 rounded-xl bg-secondary/40"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <Button
                 type="submit"
+                disabled={totalTickets === 0}
                 className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
                 style={{ background: "var(--gradient-primary)" }}
               >
-                Pay {price > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
+                Pay {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
               </Button>
             </form>
           </div>
@@ -184,18 +272,21 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                   <span className="text-muted-foreground">Date</span>
                   <span>{date ? date : "Not selected"}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tickets</span>
-                  <span>
-                    {tickets} x {venue.currency} {price}
-                  </span>
-                </div>
+                {Object.entries(ticketsData).filter(([_, qty]) => qty > 0).map(([name, qty], i) => {
+                   const tier = venue.pricing_tiers?.find((t: any) => t.name === name) || { amount: 0 };
+                   return (
+                     <div key={i} className="flex justify-between">
+                       <span className="text-muted-foreground">{name} x {qty}</span>
+                       <span>{tier.amount > 0 ? `${venue.currency} ${(qty * tier.amount).toLocaleString()}` : "Free"}</span>
+                     </div>
+                   );
+                })}
               </div>
 
               <div className="border-t border-border/40 pt-4 flex justify-between items-end">
                 <span className="text-muted-foreground font-semibold">Total</span>
                 <span className="text-3xl font-bold text-primary">
-                  {price > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
+                  {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
                 </span>
               </div>
             </div>

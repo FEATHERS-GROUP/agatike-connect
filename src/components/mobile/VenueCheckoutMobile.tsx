@@ -2,12 +2,13 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, Calendar, Users, CheckCircle2, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const navigate = useNavigate();
   const [date, setDate] = useState("");
-  const [tickets, setTickets] = useState(1);
+  const [ticketsData, setTicketsData] = useState<Record<string, number>>({});
+  const [attendees, setAttendees] = useState<{ name: string; id_document: string }[]>([]);
   const [name, setName] = useState("");
   const [idPassport, setIdPassport] = useState("");
   const [nationality, setNationality] = useState("");
@@ -16,8 +17,25 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
   if (!venue) return null;
 
-  const price = venue.pricing_tiers?.[0]?.amount || 0;
-  const total = price * tickets;
+  const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
+  
+  const total = (venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).reduce((acc: number, tier: any) => {
+    const qty = ticketsData[tier.name || "Standard Entry"] || 0;
+    return acc + qty * (Number(tier.amount) || 0);
+  }, 0) || 0;
+
+  useEffect(() => {
+    const requiredAttendees = Math.max(0, totalTickets - 1);
+    setAttendees((prev) => {
+      if (prev.length === requiredAttendees) return prev;
+      if (prev.length > requiredAttendees) return prev.slice(0, requiredAttendees);
+      const newAttendees = [...prev];
+      while (newAttendees.length < requiredAttendees) {
+        newAttendees.push({ name: "", id_document: "" });
+      }
+      return newAttendees;
+    });
+  }, [totalTickets]);
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +88,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         <div className="space-y-4">
           <h2 className="text-lg font-bold tracking-tight">Ticket Details</h2>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-1.5 flex items-center gap-2">
                 <Calendar className="w-4 h-4" /> Date
@@ -83,20 +101,37 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
               />
             </div>
-
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-1.5 flex items-center gap-2">
-                <Users className="w-4 h-4" /> Number of Tickets
+            
+            <div className="pt-2">
+              <label className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                <Ticket className="w-4 h-4" /> Select Tickets
               </label>
-              <Input
-                type="number"
-                min="1"
-                max="10"
-                required
-                value={tickets}
-                onChange={(e) => setTickets(parseInt(e.target.value))}
-                className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
-              />
+              <div className="space-y-3">
+                {(venue?.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="relative overflow-hidden flex justify-between items-center bg-secondary/30 p-4 rounded-xl border border-border/40"
+                  >
+                    <div>
+                      <p className="font-bold text-sm tracking-tight">{tier.name || "Standard Entry"}</p>
+                      <p className="text-sm font-semibold text-primary">
+                        {tier.amount > 0 ? `${venue.currency} ${Number(tier.amount).toLocaleString()}` : "Free"}
+                      </p>
+                    </div>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={ticketsData[tier.name || "Standard Entry"] || ""}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        setTicketsData((p) => ({ ...p, [tier.name || "Standard Entry"]: val }));
+                      }}
+                      className="w-20 h-10 text-center font-bold bg-background border-transparent"
+                      placeholder="0"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -161,17 +196,67 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
           </div>
         </div>
 
+        {/* Additional Attendees */}
+        {totalTickets > 1 && (
+          <div className="space-y-4 border-t border-border/40 pt-6">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-bold tracking-tight">Additional Attendees</h2>
+              <span className="text-xs font-medium bg-secondary px-2 py-1 rounded-full text-muted-foreground">
+                {totalTickets - 1} left
+              </span>
+            </div>
+
+            <div className="space-y-6">
+              {attendees.map((att, idx) => (
+                <div key={idx} className="space-y-3 bg-secondary/10 p-4 rounded-xl border border-border/20">
+                  <div className="font-medium text-sm border-b border-border/40 pb-2 mb-2">
+                    Attendee {idx + 2}
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Name</label>
+                    <Input
+                      required
+                      placeholder="Full Name"
+                      value={att.name}
+                      onChange={(e) => {
+                        const newArr = [...attendees];
+                        newArr[idx].name = e.target.value;
+                        setAttendees(newArr);
+                      }}
+                      className="h-10 text-sm bg-secondary/40 border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">ID / Passport (Optional)</label>
+                    <Input
+                      placeholder="Optional"
+                      value={att.id_document}
+                      onChange={(e) => {
+                        const newArr = [...attendees];
+                        newArr[idx].id_document = e.target.value;
+                        setAttendees(newArr);
+                      }}
+                      className="h-10 text-sm bg-secondary/40 border-transparent"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Fixed Bottom Action Bar */}
         <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe-bottom bg-background/90 backdrop-blur-xl border-t border-border/40 z-30">
           <div className="flex items-center justify-between gap-4 max-w-md mx-auto mb-2">
             <span className="text-sm text-muted-foreground font-medium">Total Price</span>
             <span className="text-xl font-bold text-foreground">
-              {price > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
+              {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : "Free"}
             </span>
           </div>
           <div className="max-w-md mx-auto">
             <Button
               type="submit"
+              disabled={totalTickets === 0}
               className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform"
               style={{ background: "var(--gradient-primary)" }}
             >
