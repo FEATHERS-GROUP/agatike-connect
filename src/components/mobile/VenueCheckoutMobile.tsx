@@ -267,8 +267,10 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             </div>
           </div>
         )}
+      </div>
+      )}
 
-        {/* Fixed Bottom Action Bar */}
+      {/* Fixed Bottom Action Bar */}
         {step === 2 && (
           <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe-bottom bg-background/90 backdrop-blur-xl border-t border-border/40 z-30">
             <div className="flex items-center justify-between gap-4 max-w-md mx-auto mb-2">
