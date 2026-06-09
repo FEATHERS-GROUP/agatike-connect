@@ -149,10 +149,16 @@ export function EventDetailsDesktop({
         image: m.image_url || ev.cover,
       }));
 
-  const [tier, setTier] = useState(activeTicketTiers[0]?.id);
-  const [qty, setQty] = useState(1);
-  const selected = activeTicketTiers.find((t: any) => t.id === tier) || activeTicketTiers[0];
-  const total = selected ? selected.price * qty : 0;
+  const [cart, setCart] = useState<Record<string, number>>({});
+  
+  const total = Object.entries(cart).reduce((sum, [key, qty]) => {
+    if (qty <= 0) return sum;
+    const [stopIdx, tierId] = key.split("_");
+    const tier = allTicketTiers.find((t: any) => t.id === tierId);
+    return sum + (tier ? tier.price * qty : 0);
+  }, 0);
+  
+  const totalTickets = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
 
   const { data: feedbackData } = useQuery({
     queryKey: ["public-feedback", eventId],
@@ -559,7 +565,6 @@ export function EventDetailsDesktop({
                           key={idx}
                           onClick={() => {
                             setSelectedStopIdx(idx);
-                            setTier(allTicketTiers.find((t: any) => t.tour_stop_idx === idx)?.id);
                           }}
                           className={`w-full px-2 py-2 rounded-xl text-[11px] leading-tight font-semibold border transition-all ${selectedStopIdx === idx ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border hover:bg-secondary"}`}
                         >
@@ -571,38 +576,52 @@ export function EventDetailsDesktop({
                   </div>
                 )}
 
-            <div className="mt-5 space-y-2">
-              {activeTicketTiers.map((t: any) => (
-                <button
-                  key={t.id}
-                  onClick={() => setTier(t.id)}
-                  className={`w-full rounded-2xl border p-4 text-left transition ${tier === t.id ? "border-primary bg-accent/40" : "border-border bg-background hover:bg-secondary"}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium">{t.name}</p>
-                    <p className="font-semibold">{formatCurrency(t.price, currencyCode)}</p>
+            <div className="mt-5 space-y-3">
+              {activeTicketTiers.map((t: any) => {
+                const cartKey = `${selectedStopIdx}_${t.id}`;
+                const itemQty = cart[cartKey] || 0;
+                const isSelected = itemQty > 0;
+                
+                return (
+                  <div
+                    key={t.id}
+                    className={`w-full rounded-2xl border p-4 text-left transition ${isSelected ? "border-primary bg-accent/40" : "border-border bg-background hover:bg-secondary"}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{t.name}</p>
+                        <p className="font-semibold">{formatCurrency(t.price, currencyCode)}</p>
+                      </div>
+                      <div className="flex items-center gap-2 bg-background rounded-full border p-1 shadow-sm">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7 rounded-full"
+                          onClick={() => setCart(prev => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))}
+                          disabled={itemQty === 0}
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </Button>
+                        <span className="w-4 text-center text-sm font-medium">{itemQty}</span>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7 rounded-full"
+                          onClick={() => setCart(prev => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">{t.perks.join(" · ")}</p>
+                    <p className="mt-1 text-xs text-primary">{t.remaining} left</p>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{t.perks.join(" · ")}</p>
-                  <p className="mt-1 text-xs text-primary">{t.remaining} left</p>
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-5 flex items-center justify-between rounded-2xl border border-border bg-background p-2">
-              <span className="px-3 text-sm">Quantity</span>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => setQty(Math.max(1, qty - 1))}>
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-6 text-center font-medium">{qty}</span>
-                <Button variant="ghost" size="icon" onClick={() => setQty(qty + 1)}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+                );
+              })}
             </div>
 
             <div className="mt-5 flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Total</span>
+              <span className="text-muted-foreground">Total ({totalTickets} items)</span>
               <span className="text-lg font-semibold">{formatCurrency(total, currencyCode)}</span>
             </div>
 
@@ -610,11 +629,16 @@ export function EventDetailsDesktop({
               asChild
               className="mt-4 h-12 w-full rounded-2xl text-base shadow-[var(--shadow-glow)]"
               style={{
-                background: selected?.price === 0 ? "var(--foreground)" : "var(--gradient-primary)",
+                background: total === 0 && totalTickets > 0 ? "var(--foreground)" : "var(--gradient-primary)",
+                opacity: totalTickets === 0 ? 0.5 : 1,
+                pointerEvents: totalTickets === 0 ? "none" : "auto"
+              }}
+              onClick={() => {
+                localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
               }}
             >
               <Link to="/book/$eventId" params={{ eventId: ev.id }} className="w-full block">
-                {selected?.price === 0 ? "Register for Free" : "Get Tickets"}
+                {total === 0 && totalTickets > 0 ? "Register for Free" : "Get Tickets"}
               </Link>
             </Button>
 
