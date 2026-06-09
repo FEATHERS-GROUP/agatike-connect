@@ -43,7 +43,15 @@ function SignIn() {
       toast.success("Welcome back!");
       await refresh();
       await router.invalidate();
-      navigate({ to: "/" });
+      
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectUrl = searchParams.get("redirect");
+      
+      if (redirectUrl) {
+        navigate({ to: redirectUrl as any });
+      } else {
+        navigate({ to: "/" });
+      }
     } catch (err: any) {
       const message = err?.message || "Invalid email or password";
       setError(message);

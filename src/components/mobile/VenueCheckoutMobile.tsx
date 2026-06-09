@@ -1,20 +1,74 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Calendar, Users, CheckCircle2, Ticket } from "lucide-react";
+import { ChevronLeft, Calendar, Users, CheckCircle2, Ticket, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 
 export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const navigate = useNavigate();
+  const { user } = useUserAuth();
+  
+  const storageKey = `venue_checkout_mobile_${venue?.id}`;
   const [date, setDate] = useState("");
   const [ticketsData, setTicketsData] = useState<Record<string, number>>({});
   const [attendees, setAttendees] = useState<{ name: string; id_document: string }[]>([]);
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [idPassport, setIdPassport] = useState("");
   const [nationality, setNationality] = useState("");
   const [phone, setPhone] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [step, setStep] = useState(1);
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [countries, setCountries] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("https://restcountries.com/v3.1/all?fields=name")
+      .then((res) => res.json())
+      .then((data) => {
+        const sorted = data.map((c: any) => c.name.common).sort();
+        setCountries(sorted);
+      })
+      .catch(() => setCountries([]));
+  }, []);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.date) setDate(parsed.date);
+        if (parsed.ticketsData) setTicketsData(parsed.ticketsData);
+        if (parsed.attendees) setAttendees(parsed.attendees);
+        if (parsed.name) setName(parsed.name);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.idPassport) setIdPassport(parsed.idPassport);
+        if (parsed.nationality) setNationality(parsed.nationality);
+        if (parsed.phone) setPhone(parsed.phone);
+        if (parsed.step) setStep(parsed.step);
+      }
+    } catch {}
+    setIsHydrated(true);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (user) {
+      if (!name && user.username) setName(user.username);
+      if (!phone && user.phone) setPhone(user.phone);
+      if (!email && user.email) setEmail(user.email);
+      if (!nationality && user.country) setNationality(user.country);
+    }
+  }, [user, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    localStorage.setItem(storageKey, JSON.stringify({
+      date, ticketsData, attendees, name, email, idPassport, nationality, phone, step
+    }));
+  }, [date, ticketsData, attendees, name, email, idPassport, nationality, phone, step, storageKey, isHydrated]);
 
   if (!venue) return null;
 
@@ -41,7 +95,12 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      navigate({ to: "/signin", search: { redirect: `/venues/checkout/${venue.id}` } as any });
+      return;
+    }
     setIsSuccess(true);
+    localStorage.removeItem(storageKey);
     setTimeout(() => {
       navigate({ to: "/venues" });
     }, 3000);
@@ -173,6 +232,21 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 placeholder="e.g. Jane Doe"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={!!user}
+                className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                Email Address
+              </label>
+              <Input
+                required
+                type="email"
+                placeholder="e.g. jane@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
               />
             </div>
@@ -194,13 +268,16 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
               <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
                 Nationality
               </label>
-              <Input
+              <select
                 required
-                placeholder="e.g. Rwandan"
                 value={nationality}
                 onChange={(e) => setNationality(e.target.value)}
-                className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
-              />
+                disabled={!!user?.country}
+                className="flex h-12 w-full rounded-md border border-input bg-secondary/40 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <option value="" disabled>Select Country</option>
+                {countries.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
             </div>
 
             <div>
@@ -213,7 +290,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 placeholder="e.g. 0780000000"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
+                disabled={!!user}
+                className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -270,16 +348,54 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
       </div>
       )}
 
-      {/* Fixed Bottom Action Bar */}
+        {/* Fixed Bottom Action Bar */}
         {step === 2 && (
-          <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe-bottom bg-background/90 backdrop-blur-xl border-t border-border/40 z-30">
-            <div className="flex items-center justify-between gap-4 max-w-md mx-auto mb-2">
-              <span className="text-sm text-muted-foreground font-medium">Total Price</span>
-              <span className="text-xl font-bold text-foreground">
-                {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : (totalTickets > 0 ? "Free" : `${venue.currency} 0`)}
-              </span>
-            </div>
+          <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe-bottom bg-background/95 backdrop-blur-xl border-t border-border/50 z-30 shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
             <div className="max-w-md mx-auto">
+              <div 
+                className="flex items-center justify-between gap-4 mb-3 cursor-pointer active:opacity-70 transition-opacity"
+                onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm text-muted-foreground font-medium">Order Summary</span>
+                  <ChevronUp className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : ''}`} />
+                </div>
+                <span className="text-xl font-bold text-foreground">
+                  {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : (totalTickets > 0 ? "Free" : `${venue.currency} 0`)}
+                </span>
+              </div>
+
+              {isSummaryExpanded && (
+                <div className="mb-4 border-t border-border/40 pt-4 animate-in slide-in-from-bottom-2 fade-in duration-200">
+                  <div className="flex gap-4 mb-4 pb-4 border-b border-border/20">
+                    <img
+                      src={venue.cover_url}
+                      alt={venue.name}
+                      className="w-16 h-16 rounded-xl object-cover"
+                    />
+                    <div className="flex-1">
+                      <h4 className="font-bold text-sm line-clamp-2">{venue.name}</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{venue.location}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Date</span>
+                      <span className="font-medium">{date ? date : "Not selected"}</span>
+                    </div>
+                    {Object.entries(ticketsData).filter(([_, qty]) => qty > 0).map(([name, qty], i) => {
+                       const tier = venue.pricing_tiers?.find((t: any) => t.name === name) || { amount: 0 };
+                       return (
+                         <div key={i} className="flex justify-between">
+                           <span className="text-muted-foreground">{name} <span className="text-xs opacity-70">x{qty}</span></span>
+                           <span className="font-medium">{tier.amount > 0 ? `${venue.currency} ${(qty * tier.amount).toLocaleString()}` : "Free"}</span>
+                         </div>
+                       );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <Button
                 type="submit"
                 disabled={totalTickets === 0}

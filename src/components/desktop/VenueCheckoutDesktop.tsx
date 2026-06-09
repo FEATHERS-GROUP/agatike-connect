@@ -5,18 +5,79 @@ import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useState, useEffect } from "react";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 
 export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const navigate = useNavigate();
+  const { user } = useUserAuth();
+  
+  const storageKey = `venue_checkout_desktop_${venue?.id}`;
   const [date, setDate] = useState("");
   const [ticketsData, setTicketsData] = useState<Record<string, number>>({});
   const [attendees, setAttendees] = useState<{ name: string; id_document: string }[]>([]);
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [idPassport, setIdPassport] = useState("");
   const [nationality, setNationality] = useState("");
   const [phone, setPhone] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [step, setStep] = useState(1);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [showOverrideDialog, setShowOverrideDialog] = useState(false);
+  const [countries, setCountries] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("https://restcountries.com/v3.1/all?fields=name")
+      .then((res) => res.json())
+      .then((data) => {
+        const sorted = data.map((c: any) => c.name.common).sort();
+        setCountries(sorted);
+      })
+      .catch(() => setCountries([]));
+  }, []);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.date) setDate(parsed.date);
+        if (parsed.ticketsData) setTicketsData(parsed.ticketsData);
+        if (parsed.attendees) setAttendees(parsed.attendees);
+        if (parsed.name) setName(parsed.name);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.idPassport) setIdPassport(parsed.idPassport);
+        if (parsed.nationality) setNationality(parsed.nationality);
+        if (parsed.phone) setPhone(parsed.phone);
+        if (parsed.step) setStep(parsed.step);
+      }
+    } catch {}
+    setIsHydrated(true);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    const returning = sessionStorage.getItem(`returning_from_login_${venue?.id}`);
+    
+    if (returning === "true" && user) {
+      sessionStorage.removeItem(`returning_from_login_${venue?.id}`);
+      setShowOverrideDialog(true);
+    }
+    
+    if (user && !returning) {
+      if (!name && user.username) setName(user.username);
+      if (!phone && user.phone) setPhone(user.phone);
+      if (!email && user.email) setEmail(user.email);
+      if (!nationality && user.country) setNationality(user.country);
+    }
+  }, [user, isHydrated, venue?.id]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    localStorage.setItem(storageKey, JSON.stringify({
+      date, ticketsData, attendees, name, email, idPassport, nationality, phone, step
+    }));
+  }, [date, ticketsData, attendees, name, email, idPassport, nationality, phone, step, storageKey, isHydrated]);
 
   if (!venue) return null;
 
@@ -43,7 +104,13 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      sessionStorage.setItem(`returning_from_login_${venue?.id}`, "true");
+      navigate({ to: "/signin", search: { redirect: `/venues/checkout/${venue.id}` } as any });
+      return;
+    }
     setIsSuccess(true);
+    localStorage.removeItem(storageKey);
     setTimeout(() => {
       navigate({ to: "/venues" });
     }, 3000);
@@ -73,8 +140,40 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   return (
     <div className="min-h-screen bg-secondary/20 font-sans">
       <Navbar />
+      
+      {showOverrideDialog && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
+          <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
+            <h3 className="text-2xl font-bold mb-3 tracking-tight">Use Account Details?</h3>
+            <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
+              You just signed in! Would you like to use your account details (Name, Phone, Email, Nationality) or keep the customer information you already entered?
+            </p>
+            <div className="flex flex-col gap-3">
+              <Button
+                onClick={() => {
+                  if (user?.username) setName(user.username);
+                  if (user?.phone) setPhone(user.phone);
+                  if (user?.email) setEmail(user.email);
+                  if (user?.country) setNationality(user.country);
+                  setShowOverrideDialog(false);
+                }}
+                className="w-full h-12 text-base font-semibold"
+              >
+                Use Account Details
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowOverrideDialog(false)}
+                className="w-full h-12 text-base font-semibold"
+              >
+                Keep Entered Info
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      <section className="mx-auto max-w-7xl px-4 md:px-6 py-8">
+      <section className="mx-auto max-w-5xl px-4 pt-8 pb-20 md:pt-12">
         <Link
           to="/venues/$venueId"
           params={{ venueId: venue.id }}
@@ -183,14 +282,28 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">Nationality</label>
+                    <label className="text-sm font-medium text-muted-foreground">Email Address</label>
                     <Input
                       required
-                      placeholder="e.g. Rwandan"
-                      value={nationality}
-                      onChange={(e) => setNationality(e.target.value)}
+                      type="email"
+                      placeholder="e.g. jane@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="h-12 bg-secondary/40"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-muted-foreground">Nationality</label>
+                    <select
+                      required
+                      value={nationality}
+                      onChange={(e) => setNationality(e.target.value)}
+                      disabled={!!user?.country}
+                      className="flex h-12 w-full rounded-md border border-input bg-secondary/40 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="" disabled>Select Country</option>
+                      {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-muted-foreground">

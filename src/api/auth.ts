@@ -15,7 +15,7 @@ export const loginOrganizer = createServerFn({ method: "POST" }).handler(async (
 
   const query = `
       query GetOrganizer($email: String!) {
-        organizers(where: { email: { _eq: $email } }) {
+        organizers(where: { email: { _ilike: $email } }) {
           id
           password
         }
@@ -51,7 +51,7 @@ export const loginOrganizer = createServerFn({ method: "POST" }).handler(async (
   return { success: true, id: organizer.id };
 });
 
-export const getSession = createServerFn({ method: "GET" }).handler(async () => {
+export const getSession = createServerFn({ method: "POST" }).handler(async () => {
   const token = getCookie("agatike_auth");
   if (!token) return null;
 
@@ -85,6 +85,7 @@ export interface UserProfile {
   phone: string | null;
   created_at: string | null;
   profile: string | null;
+  country: string | null;
 }
 
 export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
@@ -92,7 +93,7 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
 
   const query = `
     query GetUser($email: String!) {
-      users(where: { email: { _eq: $email } }) {
+      users(where: { email: { _ilike: $email } }) {
         id
         username
         handle
@@ -116,12 +117,14 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
 
   const user = result.users[0];
   if (!user) {
-    throw new Error("Invalid email or password");
+    // console.error("Auth Error: User not found for email:", email);
+    throw new Error("Invalid email (not found)");
   }
 
   const isValid = await bcrypt.compare(password, user.password);
   if (!isValid) {
-    throw new Error("Invalid email or password");
+    // console.error("Auth Error: Incorrect password for email:", email);
+    throw new Error("Invalid password");
   }
 
   if (!user.active) {
@@ -158,7 +161,7 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
   // Check if email already exists
   const checkQuery = `
     query CheckUser($email: String!) {
-      users(where: { email: { _eq: $email } }) {
+      users(where: { email: { _ilike: $email } }) {
         id
       }
     }
@@ -231,7 +234,7 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
   return { success: true, id: user.id, username: user.username, handle: user.handle };
 });
 
-export const getUserSession = createServerFn({ method: "GET" }).handler(async () => {
+export const getUserSession = createServerFn({ method: "POST" }).handler(async () => {
   const token = getCookie("agatike_user_auth");
   if (!token) return null;
 
@@ -254,6 +257,7 @@ export const getUserSession = createServerFn({ method: "GET" }).handler(async ()
           phone
           created_at
           profile
+          country
         }
       }
     `;

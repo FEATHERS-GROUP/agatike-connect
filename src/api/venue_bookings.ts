@@ -22,6 +22,7 @@ export const createVenueBooking = createServerFn({ method: "POST" })
     const {
       workspace_id,
       venue_id,
+      user_id,
       customer_name,
       customer_email,
       customer_phone,
@@ -101,6 +102,7 @@ export const createVenueBooking = createServerFn({ method: "POST" })
       object: {
         workspace_id,
         venue_id,
+        user_id,
         customer_name,
         customer_email,
         customer_phone,
