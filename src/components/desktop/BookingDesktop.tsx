@@ -24,6 +24,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const { user } = useUserAuth();
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
+  const [assignMode, setAssignMode] = useState<"me" | "others">("me");
   const [isSuccess, setIsSuccess] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
@@ -134,20 +135,24 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   }, 0);
   
   const totalTickets = attendees.length;
-  const isFormValid = attendees.every(a => a.firstName && a.lastName && a.email && a.country);
+  const isFormValid = assignMode === "me"
+    ? attendees.length > 0 && !!attendees[0].firstName && !!attendees[0].lastName && !!attendees[0].email && !!attendees[0].country
+    : attendees.every((a) => a.firstName && a.lastName && a.email && a.country);
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async () => {
       // Map attendees to Hasura table payload
-      const attendeesPayload = attendees.map(a => {
+      const attendeesPayload = attendees.map((a, idx) => {
         const otp = Math.random().toString(36).substring(2, 10).toUpperCase();
         const tier = getTierDetails(a.tierId);
+        const sourceAttendee = assignMode === "me" ? attendees[0] : a;
+
         return {
           event_id: event.id,
           user_id: user?.id || null,
-          names: `${a.firstName} ${a.lastName}`.trim(),
-          email: a.email,
-          phone: a.phone || "",
+          names: `${sourceAttendee.firstName} ${sourceAttendee.lastName}`.trim(),
+          email: sourceAttendee.email,
+          phone: sourceAttendee.phone || "",
           qrcode_number: otp,
           quanity: 1,
           status: "Confirmed",
@@ -155,30 +160,31 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           ticket_type: tier ? tier.type : "General Admission",
           type: "Booking",
           payment_method: paymentMethod,
-          custom_fields: { country: a.country, tour_stop_idx: a.stopIdx }
+          custom_fields: { country: sourceAttendee.country, tour_stop_idx: a.stopIdx }
         };
       });
 
-      return addEventAttendees({ data: { objects: attendeesPayload } } as any);
+      const res = await addEventAttendees({ data: { objects: attendeesPayload } } as any);
+      return { res, attendeesPayload };
     },
-    onSuccess: (res: any) => {
-      // res returns { affected_rows, returning }
+    onSuccess: (data: any) => {
+      const { res, attendeesPayload } = data;
       const returned = res?.insert_event_attendees?.returning || [];
-      // We need to attach the full attendee data we just sent so we can render PDFs!
-      const issued = attendees.map((a, idx) => {
+      
+      const ticketsToIssue = attendees.map((a, idx) => {
         const tier = getTierDetails(a.tierId);
-        const otp = res.config?.data ? JSON.parse(res.config.data).variables?.objects?.[idx]?.qrcode_number : Math.random().toString(36).substring(2, 10).toUpperCase();
+        const sourceAttendee = assignMode === "me" ? attendees[0] : a;
         return {
           id: returned[idx]?.id || `temp_${idx}`,
-          otp: otp,
+          otp: attendeesPayload[idx].qrcode_number,
           tier: tier ? tier.type : "General Admission",
-          attendee: a,
+          attendee: sourceAttendee,
         };
       });
 
-      if (issued.length > 0 && eventProject) {
+      if (ticketsToIssue.length > 0 && eventProject) {
         setIsGenerating(true);
-        setIssuedTickets(issued);
+        setIssuedTickets(ticketsToIssue);
       } else {
         localStorage.removeItem(storageKey);
         setIsSuccess(true);
@@ -337,8 +343,34 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             <div>
               <h1 className="text-3xl font-bold mb-6">Checkout ({totalTickets} Tickets)</h1>
 
+              {totalTickets > 1 && (
+                <div className="flex bg-muted/50 p-1 rounded-xl mb-6 w-fit">
+                  <button
+                    onClick={() => setAssignMode("me")}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      assignMode === "me"
+                        ? "bg-background shadow text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Assign to Me (Faster)
+                  </button>
+                  <button
+                    onClick={() => setAssignMode("others")}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      assignMode === "others"
+                        ? "bg-background shadow text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Assign Individually
+                  </button>
+                </div>
+              )}
+
               <div className="space-y-8">
-                {attendees.map((attendee, idx) => {
+                {(assignMode === "me" ? [attendees[0]] : attendees).map((attendee, idx) => {
+                  if (!attendee) return null;
                   const tier = getTierDetails(attendee.tierId);
                   const stop = getStopDetails(attendee.stopIdx);
                   
@@ -350,10 +382,14 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                             {idx + 1}
                           </div>
                           <div>
-                            <h3 className="font-semibold text-lg leading-tight">{tier ? tier.type : "Ticket"}</h3>
-                            <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
-                              <MapPin className="h-3 w-3" /> {stop.city} &middot; <Calendar className="h-3 w-3" /> {stop.date}
-                            </p>
+                            <h3 className="font-semibold text-lg leading-tight">
+                              {assignMode === "me" ? "Your Details (Applied to all tickets)" : (tier ? tier.type : "Ticket")}
+                            </h3>
+                            {assignMode === "others" && (
+                              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+                                <MapPin className="h-3 w-3" /> {stop.city} &middot; <Calendar className="h-3 w-3" /> {stop.date}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
