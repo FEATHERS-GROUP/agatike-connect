@@ -524,23 +524,57 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       
       {/* Hidden container for PDF rendering */}
       {isGenerating && issuedTickets.length > 0 && eventProject && (
-        <div style={{ position: "fixed", top: "-9999px", left: "-9999px", zIndex: -9999 }}>
+        <div
+          className="absolute -z-50 pointer-events-none"
+          style={{ top: "-9999px", left: "-9999px" }}
+        >
           {issuedTickets.map((ticket: any) => {
             const mergedProject = getMergedProjectDesign(eventProject, ticket.attendee.stopIdx, ticket.attendee.tierId);
             return (
               <div
                 key={ticket.id}
                 id={`ticket-render-${ticket.id}`}
-                className="w-[720px] h-[260px] overflow-hidden"
+                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
               >
                 <TicketPreview
-                  project={mergedProject}
-                  event={event}
-                  venue={null}
+                  template={mergedProject.template || "Concert 1"}
+                  palette={mergedProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                  font={mergedProject.font || { css: "sans-serif", name: "Modern" }}
                   tier={ticket.tier}
-                  otp={ticket.otp}
-                  date={getStopDetails(ticket.attendee.stopIdx).date}
-                  ticketOwner={`${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()}
+                  title={event.title}
+                  subtitle={event.venue || ""}
+                  date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
+                  time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
+                  seat={`${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()}
+                  price={getStopDetails(ticket.attendee.stopIdx)?.tiers?.find((t: any) => t.id === ticket.attendee.tierId)?.price?.toString() || "0"}
+                  currency={event.currency || "RWF"}
+                  cover={mergedProject.coverImage || event.cover || ""}
+                  logoText={mergedProject.logoText || "Agatike"}
+                  logoImage={mergedProject.logoImage}
+                  logoScale={Number(mergedProject.logoScale || 24)}
+                  logoOpacity={Number(mergedProject.logoOpacity ?? 1)}
+                  logoColorMode={mergedProject.logoColorMode || "original"}
+                  orderId={ticket.otp}
+                  qrValue={`${window.location.origin}/v/${ticket.otp}`}
+                  previewMode="Front"
+                  layout={
+                    mergedProject.design_overrides?.layout || {
+                      titleSize: 30,
+                      subtitleSize: 14,
+                      metaSize: 11,
+                      titleAlign: "left",
+                      titleOffsetY: 0,
+                      subtitleOffsetY: 0,
+                      metaOffsetY: 0,
+                    }
+                  }
+                  back={
+                    mergedProject.design_overrides?.back || {
+                      backText: "",
+                      backImage: "",
+                      backImageOpacity: 0.3,
+                    }
+                  }
                 />
               </div>
             );
