@@ -281,9 +281,9 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           setIsSuccess(true);
         } catch (err) {
           console.error("PDF generation error:", err);
-          toast.error("Booking succeeded but ticket PDF generation failed.");
-          localStorage.removeItem(storageKey);
-          setIsSuccess(true);
+          toast.error("Ticket PDF generation failed. You can retry generating.");
+          setIsGenerating(false);
+          setIsPaymentModalOpen(false);
         }
       };
 
@@ -488,14 +488,28 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             {formatCurrency(total, currency)}
           </span>
         </div>
-        <Button
-          onClick={() => setIsPaymentModalOpen(true)}
-          disabled={!isFormValid || isCheckingOut || isGenerating}
-          className="w-full h-14 rounded-full text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
-          style={{ background: "var(--gradient-primary)" }}
-        >
-          Pay {formatCurrency(total, currency)}
-        </Button>
+          {issuedTickets.length > 0 ? (
+            <Button
+              onClick={() => {
+                setIsGenerating(true);
+                setIsPaymentModalOpen(true);
+              }}
+              disabled={isGenerating}
+              className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              Retry Ticket Generation
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setIsPaymentModalOpen(true)}
+              disabled={!isFormValid || isCheckingOut || isGenerating}
+              className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              Pay {formatCurrency(total, currency)}
+            </Button>
+          )}
         <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
           <Shield className="h-3.5 w-3.5" /> Secure encrypted checkout
         </div>
