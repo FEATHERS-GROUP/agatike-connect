@@ -546,10 +546,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
                   time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
                   seat={`${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()}
-                  price={getStopDetails(ticket.attendee.stopIdx)?.tiers?.find((t: any) => t.id === ticket.attendee.tierId)?.price?.toString() || "0"}
-                  currency={event.currency || "RWF"}
+                  price={getTierDetails(ticket.attendee.tierId)?.cost?.toString() || getTierDetails(ticket.attendee.tierId)?.price?.toString() || "0"}
+                  currency={currency === "FRWS" ? "RWF" : currency}
                   cover={mergedProject.coverImage || event.cover || ""}
-                  logoText={mergedProject.logoText || "Agatike"}
+                  logoText={mergedProject.logoText || event.organizer || "Agatike"}
                   logoImage={mergedProject.logoImage}
                   logoScale={Number(mergedProject.logoScale || 24)}
                   logoOpacity={Number(mergedProject.logoOpacity ?? 1)}
