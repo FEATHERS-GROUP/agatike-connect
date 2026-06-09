@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, CreditCard, Shield, Smartphone, Wallet, Lock, MapPin, Calendar, Clock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { COUNTRIES } from "@/lib/countries";
 
 export function BookingDesktop({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
@@ -26,7 +27,6 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
-  const [countries, setCountries] = useState<string[]>([]);
   
   // State for attendees dynamic form
   const [attendees, setAttendees] = useState<any[]>([]);
@@ -65,19 +65,12 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     setIsHydrated(true);
   }, [storageKey]);
 
-  useEffect(() => {
-    fetch("https://restcountries.com/v3.1/all?fields=name")
-      .then((res) => res.json())
-      .then((data) => {
-        const sorted = data.map((c: any) => c.name.common).sort();
-        setCountries(sorted);
-      })
-      .catch(() => setCountries([]));
-  }, []);
 
   // Initialize attendees array based on cart
   useEffect(() => {
     if (!isHydrated || Object.keys(cart).length === 0) return;
+    
+    if (attendees.length > 0) return; // Prevent re-initialization which causes lag and resets inputs
     
     // Flatten cart into individual ticket records
     const initialAttendees: any[] = [];
@@ -89,20 +82,21 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           cartKey,
           stopIdx: parseInt(stopIdx),
           tierId,
-          names: "",
-          email: "",
-          phone: "",
-          country: "",
+          firstName: "",
+          lastName: "",
+          email: user?.email || "",
+          phone: user?.phone || "",
+          country: user?.country || "",
         });
       }
     });
 
-    // Pre-fill first attendee if user is logged in
+    // Pre-fill first attendee name if user is logged in
     if (initialAttendees.length > 0 && user) {
-      if (!initialAttendees[0].names && user.username) initialAttendees[0].names = user.username;
-      if (!initialAttendees[0].email && user.email) initialAttendees[0].email = user.email;
-      if (!initialAttendees[0].phone && user.phone) initialAttendees[0].phone = user.phone;
-      if (!initialAttendees[0].country && user.country) initialAttendees[0].country = user.country;
+      if (!initialAttendees[0].firstName && user.username) {
+        initialAttendees[0].firstName = user.username.split(" ")[0] || "";
+        initialAttendees[0].lastName = user.username.split(" ").slice(1).join(" ") || "";
+      }
     }
 
     setAttendees(initialAttendees);
@@ -113,6 +107,15 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     newAttendees[index] = { ...newAttendees[index], [field]: value };
     setAttendees(newAttendees);
   };
+
+  // Memoize countries to prevent massive re-rendering lag
+  const countrySelectItems = useMemo(() => {
+    return COUNTRIES.map((c) => (
+      <SelectItem key={c.name} value={c.name}>
+        {c.name}
+      </SelectItem>
+    ));
+  }, []);
 
   const getTierDetails = (tierId: string) => {
     return event?.event_tickets?.find((t: any) => t.id === tierId);
@@ -131,7 +134,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   }, 0);
   
   const totalTickets = attendees.length;
-  const isFormValid = attendees.every(a => a.names && a.email && a.country);
+  const isFormValid = attendees.every(a => a.firstName && a.lastName && a.email && a.country);
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async () => {
@@ -142,7 +145,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         return {
           event_id: event.id,
           user_id: user?.id || null,
-          names: a.names,
+          names: `${a.firstName} ${a.lastName}`.trim(),
           email: a.email,
           phone: a.phone || "",
           qrcode_number: otp,
@@ -245,15 +248,31 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             });
           }
 
-          if (attachments.length > 0 && attendees[0]?.email) {
-            await sendTicketsEmail({
-              data: {
-                to: attendees[0].email,
-                customerName: attendees[0].names,
-                eventTitle: event.title,
-                attachments: attachments,
+          if (attachments.length > 0) {
+            // Group tickets by email address so each friend gets their own tickets if changed!
+            const emailGroups: Record<string, { name: string, attachments: any[] }> = {};
+            
+            for (let i = 0; i < issuedTickets.length; i++) {
+              const email = issuedTickets[i].attendee.email || attendees[0]?.email;
+              const name = `${issuedTickets[i].attendee.firstName} ${issuedTickets[i].attendee.lastName}`.trim() || "Guest";
+              
+              if (!emailGroups[email]) {
+                emailGroups[email] = { name, attachments: [] };
               }
-            } as any);
+              emailGroups[email].attachments.push(attachments[i]);
+            }
+
+            // Send out emails to all unique addresses
+            for (const [email, group] of Object.entries(emailGroups)) {
+              await sendTicketsEmail({
+                data: {
+                  to: email,
+                  customerName: group.name,
+                  eventTitle: event.title,
+                  attachments: group.attachments,
+                }
+              } as any).catch(e => console.error("Failed to email", email, e));
+            }
           }
           localStorage.removeItem(storageKey);
           setIsSuccess(true);
@@ -343,16 +362,16 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                         <div className="space-y-2">
                           <Label>First Name</Label>
                           <Input 
-                            value={attendee.names.split(" ")[0] || ""}
-                            onChange={(e) => updateAttendee(idx, "names", `${e.target.value} ${attendee.names.split(" ").slice(1).join(" ")}`.trim())}
+                            value={attendee.firstName || ""}
+                            onChange={(e) => updateAttendee(idx, "firstName", e.target.value)}
                             placeholder="Alex" 
                           />
                         </div>
                         <div className="space-y-2">
                           <Label>Last Name</Label>
                           <Input 
-                            value={attendee.names.split(" ").slice(1).join(" ") || ""}
-                            onChange={(e) => updateAttendee(idx, "names", `${attendee.names.split(" ")[0] || ""} ${e.target.value}`.trim())}
+                            value={attendee.lastName || ""}
+                            onChange={(e) => updateAttendee(idx, "lastName", e.target.value)}
                             placeholder="Doe" 
                           />
                         </div>
@@ -362,7 +381,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                         <Label>Email</Label>
                         <Input 
                           type="email" 
-                          value={attendee.email}
+                          value={attendee.email || ""}
                           onChange={(e) => updateAttendee(idx, "email", e.target.value)}
                           placeholder="alex@example.com" 
                         />
@@ -373,7 +392,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                           <Label>Phone Number</Label>
                           <Input 
                             type="tel" 
-                            value={attendee.phone}
+                            value={attendee.phone || ""}
                             onChange={(e) => updateAttendee(idx, "phone", e.target.value)}
                             placeholder="+250 788 123 456" 
                           />
@@ -385,11 +404,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                               <SelectValue placeholder="Select Country" />
                             </SelectTrigger>
                             <SelectContent>
-                              {countries.map((c) => (
-                                <SelectItem key={c} value={c}>
-                                  {c}
-                                </SelectItem>
-                              ))}
+                              {countrySelectItems}
                             </SelectContent>
                           </Select>
                         </div>
@@ -557,7 +572,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   tier={ticket.tier}
                   otp={ticket.otp}
                   date={getStopDetails(ticket.attendee.stopIdx).date}
-                  ticketOwner={ticket.attendee.names}
+                  ticketOwner={`${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()}
                 />
               </div>
             );
