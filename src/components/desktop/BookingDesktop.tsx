@@ -148,7 +148,9 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       const attendeesPayload = attendees.map((a, idx) => {
         const otp = Math.random().toString(36).substring(2, 10).toUpperCase();
         const tier = getTierDetails(a.tierId);
-        const sourceAttendee = assignMode === "me" ? attendees[0] : a;
+        const sourceAttendee = assignMode === "me" 
+          ? { ...a, firstName: attendees[0].firstName, lastName: attendees[0].lastName, email: attendees[0].email, phone: attendees[0].phone, country: attendees[0].country } 
+          : a;
 
         return {
           event_id: event.id,
@@ -176,7 +178,9 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       
       const ticketsToIssue = attendees.map((a, idx) => {
         const tier = getTierDetails(a.tierId);
-        const sourceAttendee = assignMode === "me" ? attendees[0] : a;
+        const sourceAttendee = assignMode === "me" 
+          ? { ...a, firstName: attendees[0].firstName, lastName: attendees[0].lastName, email: attendees[0].email, phone: attendees[0].phone, country: attendees[0].country } 
+          : a;
         return {
           id: returned[idx]?.id || `temp_${idx}`,
           otp: attendeesPayload[idx].qrcode_number,
@@ -549,7 +553,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   price={getTierDetails(ticket.attendee.tierId)?.cost?.toString() || getTierDetails(ticket.attendee.tierId)?.price?.toString() || "0"}
                   currency={currency === "FRWS" ? "RWF" : currency}
                   cover={mergedProject.coverImage || event.cover || ""}
-                  logoText={mergedProject.logoText || event.organizer || "Agatike"}
+                  logoText={mergedProject.logoText !== undefined && mergedProject.logoText !== "" ? mergedProject.logoText : (event.organizer || "Agatike")}
                   logoImage={mergedProject.logoImage}
                   logoScale={Number(mergedProject.logoScale || 24)}
                   logoOpacity={Number(mergedProject.logoOpacity ?? 1)}
