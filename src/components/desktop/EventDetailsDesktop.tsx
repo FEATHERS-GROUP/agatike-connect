@@ -150,14 +150,14 @@ export function EventDetailsDesktop({
       }));
 
   const [cart, setCart] = useState<Record<string, number>>({});
-  
+
   const total = Object.entries(cart).reduce((sum, [key, qty]) => {
     if (qty <= 0) return sum;
     const [stopIdx, tierId] = key.split("_");
     const tier = allTicketTiers.find((t: any) => t.id === tierId);
     return sum + (tier ? tier.price * qty : 0);
   }, 0);
-  
+
   const totalTickets = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
 
   const { data: feedbackData } = useQuery({
@@ -581,7 +581,7 @@ export function EventDetailsDesktop({
                 const cartKey = `${selectedStopIdx}_${t.id}`;
                 const itemQty = cart[cartKey] || 0;
                 const isSelected = itemQty > 0;
-                
+
                 return (
                   <div
                     key={t.id}
@@ -593,21 +593,23 @@ export function EventDetailsDesktop({
                         <p className="font-semibold">{formatCurrency(t.price, currencyCode)}</p>
                       </div>
                       <div className="flex items-center gap-2 bg-background rounded-full border p-1 shadow-sm">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-7 w-7 rounded-full"
-                          onClick={() => setCart(prev => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))}
+                          onClick={() =>
+                            setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
+                          }
                           disabled={itemQty === 0}
                         >
                           <Minus className="h-3.5 w-3.5" />
                         </Button>
                         <span className="w-4 text-center text-sm font-medium">{itemQty}</span>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-7 w-7 rounded-full"
-                          onClick={() => setCart(prev => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                          onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
                         >
                           <Plus className="h-3.5 w-3.5" />
                         </Button>
@@ -629,9 +631,10 @@ export function EventDetailsDesktop({
               asChild
               className="mt-4 h-12 w-full rounded-2xl text-base shadow-[var(--shadow-glow)]"
               style={{
-                background: total === 0 && totalTickets > 0 ? "var(--foreground)" : "var(--gradient-primary)",
+                background:
+                  total === 0 && totalTickets > 0 ? "var(--foreground)" : "var(--gradient-primary)",
                 opacity: totalTickets === 0 ? 0.5 : 1,
-                pointerEvents: totalTickets === 0 ? "none" : "auto"
+                pointerEvents: totalTickets === 0 ? "none" : "auto",
               }}
               onClick={() => {
                 localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));

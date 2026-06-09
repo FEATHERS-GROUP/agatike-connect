@@ -112,7 +112,8 @@ export function VenuesDesktop() {
                       <MapPin className="w-4 h-4" /> {venue.city || venue.address}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" /> {venue.opening_hours || "09:00"} - {venue.closing_hours || "22:00"}
+                      <Clock className="w-4 h-4" /> {venue.opening_hours || "09:00"} -{" "}
+                      {venue.closing_hours || "22:00"}
                     </span>
                   </div>
                   <p className="mt-4 text-sm text-muted-foreground line-clamp-2">
@@ -125,7 +126,9 @@ export function VenuesDesktop() {
                         Entry Fee
                       </p>
                       <span className="font-semibold text-lg text-primary">
-                        {venue.pricing_tiers?.[0]?.amount > 0 ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency) : "Free"}
+                        {venue.pricing_tiers?.[0]?.amount > 0
+                          ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency)
+                          : "Free"}
                       </span>
                     </div>
                     <Link to="/venues/$venueId" params={{ venueId: venue.id }}>

@@ -39,7 +39,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
   const { data: ticketProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", venue?.workspace_id],
-    queryFn: () => getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id! } } as any),
+    queryFn: () =>
+      getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id! } } as any),
     enabled: !!venue?.workspace_id,
   });
   const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);
@@ -70,7 +71,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
         if (parsed.phone) setPhone(parsed.phone);
         if (parsed.step) setStep(parsed.step);
       }
-    } catch { }
+    } catch {}
     setIsHydrated(true);
   }, [storageKey]);
 
@@ -93,20 +94,47 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
   useEffect(() => {
     if (!isHydrated) return;
-    localStorage.setItem(storageKey, JSON.stringify({
-      date, ticketsData, attendees, name, email, idPassport, nationality, phone, step
-    }));
-  }, [date, ticketsData, attendees, name, email, idPassport, nationality, phone, step, storageKey, isHydrated]);
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        date,
+        ticketsData,
+        attendees,
+        name,
+        email,
+        idPassport,
+        nationality,
+        phone,
+        step,
+      }),
+    );
+  }, [
+    date,
+    ticketsData,
+    attendees,
+    name,
+    email,
+    idPassport,
+    nationality,
+    phone,
+    step,
+    storageKey,
+    isHydrated,
+  ]);
 
   if (!venue) return null;
 
   const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
   const isStep1Valid = date !== "" && totalTickets > 0;
 
-  const total = (venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).reduce((acc: number, tier: any) => {
-    const qty = ticketsData[tier.name || "Standard Entry"] || 0;
-    return acc + qty * (Number(tier.amount) || 0);
-  }, 0) || 0;
+  const total =
+    (venue.pricing_tiers?.length > 0
+      ? venue.pricing_tiers
+      : [{ name: "Standard Entry", amount: 0 }]
+    ).reduce((acc: number, tier: any) => {
+      const qty = ticketsData[tier.name || "Standard Entry"] || 0;
+      return acc + qty * (Number(tier.amount) || 0);
+    }, 0) || 0;
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async () => {
@@ -146,7 +174,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     },
     onError: (e: any) => {
       toast.error(e.message || "Checkout failed");
-    }
+    },
   });
 
   useEffect(() => {
@@ -172,7 +200,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             });
             console.log("Generated imgData length:", imgData?.length);
             if (!imgData || imgData === "data:,") {
-              throw new Error("htmlToImage returned an empty image. Usually caused by unloaded fonts or images.");
+              throw new Error(
+                "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
+              );
             }
 
             const rect = el.getBoundingClientRect();
@@ -211,7 +241,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           setIsSuccess(true);
         } catch (e: any) {
           console.error("PDF generation error:", e);
-          toast.error(`Ticket generation failed: ${e.message || "Unknown error"}. Please try again.`);
+          toast.error(
+            `Ticket generation failed: ${e.message || "Unknown error"}. Please try again.`,
+          );
           setIsGenerating(false);
           // Don't set isSuccess(true) so they can try again
         }
@@ -281,7 +313,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
             <h3 className="text-2xl font-bold mb-3 tracking-tight">Use Account Details?</h3>
             <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-              You just signed in! Would you like to use your account details (Name, Phone, Email, Nationality) or keep the customer information you already entered?
+              You just signed in! Would you like to use your account details (Name, Phone, Email,
+              Nationality) or keep the customer information you already entered?
             </p>
             <div className="flex flex-col gap-3">
               <Button
@@ -313,7 +346,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
             <h3 className="text-2xl font-bold mb-3 tracking-tight">Use Account Details?</h3>
             <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-              You just signed in! Would you like to use your account details (Name, Phone, Email, Nationality) or keep the customer information you already entered?
+              You just signed in! Would you like to use your account details (Name, Phone, Email,
+              Nationality) or keep the customer information you already entered?
             </p>
             <div className="flex flex-col gap-3">
               <Button
@@ -355,9 +389,19 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           {/* Left Column: Form */}
           <div className="flex-1 bg-card rounded-3xl p-8 border border-border/50 shadow-[var(--shadow-card)]">
             <div className="flex items-center gap-3 mb-8">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>1</div>
-              <div className={`h-1 w-12 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-secondary'}`} />
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>2</div>
+              <div
+                className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 1 ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+              >
+                1
+              </div>
+              <div
+                className={`h-1 w-12 rounded-full ${step >= 2 ? "bg-primary" : "bg-secondary"}`}
+              />
+              <div
+                className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 2 ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+              >
+                2
+              </div>
             </div>
 
             <form onSubmit={handleCheckout} className="space-y-6">
@@ -381,7 +425,10 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                   <div className="border-t border-border/40 pt-6">
                     <h3 className="text-xl font-semibold mb-4">Ticket Selection</h3>
                     <div className="space-y-3">
-                      {(venue?.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
+                      {(venue?.pricing_tiers?.length > 0
+                        ? venue.pricing_tiers
+                        : [{ name: "Standard Entry", amount: 0 }]
+                      ).map((tier: any, idx: number) => (
                         <div
                           key={idx}
                           className="flex items-center justify-between bg-secondary/20 p-4 rounded-xl border border-border/50"
@@ -389,7 +436,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                           <div>
                             <p className="font-semibold">{tier.name || "Standard Entry"}</p>
                             <p className="text-sm text-muted-foreground">
-                              {tier.amount > 0 ? `${venue.currency} ${Number(tier.amount).toLocaleString()}` : "Free"}
+                              {tier.amount > 0
+                                ? `${venue.currency} ${Number(tier.amount).toLocaleString()}`
+                                : "Free"}
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
@@ -399,7 +448,10 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                               value={ticketsData[tier.name || "Standard Entry"] || ""}
                               onChange={(e) => {
                                 const val = parseInt(e.target.value) || 0;
-                                setTicketsData((p) => ({ ...p, [tier.name || "Standard Entry"]: val }));
+                                setTicketsData((p) => ({
+                                  ...p,
+                                  [tier.name || "Standard Entry"]: val,
+                                }));
                               }}
                               className="w-20 bg-background text-center"
                               placeholder="0"
@@ -427,7 +479,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Full Name</label>
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Full Name
+                        </label>
                         <Input
                           required
                           placeholder="e.g. Jane Doe"
@@ -449,7 +503,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Email Address</label>
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Email Address
+                        </label>
                         <Input
                           required
                           type="email"
@@ -460,7 +516,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Nationality</label>
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Nationality
+                        </label>
                         <select
                           required
                           value={nationality}
@@ -468,8 +526,14 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                           disabled={!!user?.country}
                           className="flex h-12 w-full rounded-md border border-input bg-secondary/40 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          <option value="" disabled>Select Country</option>
-                          {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                          <option value="" disabled>
+                            Select Country
+                          </option>
+                          {countries.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
                         </select>
                       </div>
                       <div className="space-y-2">
@@ -493,7 +557,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-xl font-semibold">Additional Attendees</h3>
                         <span className="text-sm font-medium bg-secondary px-3 py-1 rounded-full text-muted-foreground">
-                          {totalTickets - 1} ticket{totalTickets - 1 !== 1 ? "s" : ""} left to assign
+                          {totalTickets - 1} ticket{totalTickets - 1 !== 1 ? "s" : ""} left to
+                          assign
                         </span>
                       </div>
 
@@ -501,7 +566,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                         {attendees.map((att, idx) => (
                           <div key={idx} className="flex gap-4 items-start">
                             <div className="flex-1 space-y-1.5">
-                              <label className="text-sm font-medium text-muted-foreground">Attendee {idx + 2} Name</label>
+                              <label className="text-sm font-medium text-muted-foreground">
+                                Attendee {idx + 2} Name
+                              </label>
                               <Input
                                 required
                                 placeholder="Full Name"
@@ -515,7 +582,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                               />
                             </div>
                             <div className="flex-1 space-y-1.5">
-                              <label className="text-sm font-medium text-muted-foreground">ID / Passport</label>
+                              <label className="text-sm font-medium text-muted-foreground">
+                                ID / Passport
+                              </label>
                               <Input
                                 placeholder="Optional"
                                 value={att.id_document}
@@ -570,7 +639,12 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                         className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
                         style={{ background: "var(--gradient-primary)" }}
                       >
-                        Pay {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : (totalTickets > 0 ? "Free" : `${venue.currency} 0`)}
+                        Pay{" "}
+                        {total > 0
+                          ? `${venue.currency} ${total.toLocaleString()}`
+                          : totalTickets > 0
+                            ? "Free"
+                            : `${venue.currency} 0`}
                       </Button>
                     )}
                   </div>
@@ -603,21 +677,35 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                   <span className="text-muted-foreground">Date</span>
                   <span>{date ? date : "Not selected"}</span>
                 </div>
-                {Object.entries(ticketsData).filter(([_, qty]) => qty > 0).map(([name, qty], i) => {
-                  const tier = venue.pricing_tiers?.find((t: any) => t.name === name) || { amount: 0 };
-                  return (
-                    <div key={i} className="flex justify-between">
-                      <span className="text-muted-foreground">{name} x {qty}</span>
-                      <span>{tier.amount > 0 ? `${venue.currency} ${(qty * tier.amount).toLocaleString()}` : "Free"}</span>
-                    </div>
-                  );
-                })}
+                {Object.entries(ticketsData)
+                  .filter(([_, qty]) => qty > 0)
+                  .map(([name, qty], i) => {
+                    const tier = venue.pricing_tiers?.find((t: any) => t.name === name) || {
+                      amount: 0,
+                    };
+                    return (
+                      <div key={i} className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {name} x {qty}
+                        </span>
+                        <span>
+                          {tier.amount > 0
+                            ? `${venue.currency} ${(qty * tier.amount).toLocaleString()}`
+                            : "Free"}
+                        </span>
+                      </div>
+                    );
+                  })}
               </div>
 
               <div className="border-t border-border/40 pt-4 flex justify-between items-end">
                 <span className="text-muted-foreground font-semibold">Total</span>
                 <span className="text-3xl font-bold text-primary">
-                  {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : (totalTickets > 0 ? "Free" : `${venue.currency} 0`)}
+                  {total > 0
+                    ? `${venue.currency} ${total.toLocaleString()}`
+                    : totalTickets > 0
+                      ? "Free"
+                      : `${venue.currency} 0`}
                 </span>
               </div>
             </div>
@@ -632,7 +720,11 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           style={{ top: "-9999px", left: "-9999px" }}
         >
           {issuedTickets.map((t) => (
-            <div key={t.id} id={`ticket-render-${t.id}`} className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden">
+            <div
+              key={t.id}
+              id={`ticket-render-${t.id}`}
+              className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+            >
               <TicketPreview
                 template={venueProject.template}
                 palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
@@ -646,9 +738,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 price={total.toString()}
                 currency={venue.currency}
                 cover={venueProject.coverImage || ""}
-                logoText={
-                  venueProject.logoText || "Agatike"
-                }
+                logoText={venueProject.logoText || "Agatike"}
                 logoImage={venueProject.logoImage}
                 logoScale={Number(venueProject.logoScale || 24)}
                 logoOpacity={Number(venueProject.logoOpacity ?? 1)}

@@ -3,7 +3,7 @@ require("dotenv").config();
 async function reloadMetadata() {
   const HASURA_URL = process.env.HASURA_ADMIN_API;
   const HASURA_ADMIN_SECRET = process.env.HASURA_ADMIN_SECRETE;
-  
+
   const metadataUrl = HASURA_URL.replace("/v1/graphql", "/v1/metadata");
 
   const res = await fetch(metadataUrl, {
@@ -14,7 +14,7 @@ async function reloadMetadata() {
     },
     body: JSON.stringify({
       type: "reload_metadata",
-      args: {}
+      args: {},
     }),
   });
 

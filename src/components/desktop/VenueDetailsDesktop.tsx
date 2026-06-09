@@ -30,7 +30,8 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
               <MapPin className="h-4 w-4" /> {venue.city || venue.address}
             </span>
             <span className="inline-flex items-center gap-1">
-              <Clock className="h-4 w-4" /> {venue.opening_hours || "09:00"} - {venue.closing_hours || "22:00"}
+              <Clock className="h-4 w-4" /> {venue.opening_hours || "09:00"} -{" "}
+              {venue.closing_hours || "22:00"}
             </span>
           </div>
         </div>
@@ -41,9 +42,7 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
         <div className="space-y-10 min-w-0">
           <div>
             <h2 className="text-xl font-semibold">About this venue</h2>
-            <p className="mt-3 text-muted-foreground leading-relaxed">
-              {venue.description}
-            </p>
+            <p className="mt-3 text-muted-foreground leading-relaxed">{venue.description}</p>
           </div>
 
           <div>
@@ -72,19 +71,25 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
               {venue.rental_model && (
                 <div>
                   <span className="text-muted-foreground block">Rental Model</span>
-                  <span className="font-medium capitalize">{venue.rental_model.replace(/_/g, " ")}</span>
+                  <span className="font-medium capitalize">
+                    {venue.rental_model.replace(/_/g, " ")}
+                  </span>
                 </div>
               )}
               {venue.rental_type && (
                 <div>
                   <span className="text-muted-foreground block">Rental Type</span>
-                  <span className="font-medium capitalize">{venue.rental_type.replace(/_/g, " ")}</span>
+                  <span className="font-medium capitalize">
+                    {venue.rental_type.replace(/_/g, " ")}
+                  </span>
                 </div>
               )}
               {venue.is_venue_private !== undefined && venue.is_venue_private !== null && (
                 <div>
                   <span className="text-muted-foreground block">Access</span>
-                  <span className="font-medium">{venue.is_venue_private ? "Private" : "Public"}</span>
+                  <span className="font-medium">
+                    {venue.is_venue_private ? "Private" : "Public"}
+                  </span>
                 </div>
               )}
             </div>
@@ -93,7 +98,7 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
           {venue.instructions && (
             <div className="prose prose-neutral dark:prose-invert max-w-none break-words overflow-hidden">
               <h2 className="text-xl font-semibold mb-4">Instructions</h2>
-              <div 
+              <div
                 className="text-muted-foreground leading-relaxed [&>p]:mb-4"
                 dangerouslySetInnerHTML={{ __html: venue.instructions }}
               />
@@ -125,9 +130,17 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
             <p className="text-muted-foreground mb-6">Book your access in advance</p>
 
             <div className="space-y-3 mb-8">
-              {(venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
-                <div key={idx} className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-secondary/30">
-                  <span className="text-muted-foreground font-medium">{tier.name || "Standard Entry"}</span>
+              {(venue.pricing_tiers?.length > 0
+                ? venue.pricing_tiers
+                : [{ name: "Standard Entry", amount: 0 }]
+              ).map((tier: any, idx: number) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-secondary/30"
+                >
+                  <span className="text-muted-foreground font-medium">
+                    {tier.name || "Standard Entry"}
+                  </span>
                   <span className="text-xl font-bold">
                     {tier.amount > 0 ? formatCurrency(tier.amount, venue.currency) : "Free"}
                   </span>

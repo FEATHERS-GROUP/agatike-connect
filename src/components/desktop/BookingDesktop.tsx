@@ -1,5 +1,16 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, CreditCard, Shield, Smartphone, Wallet, Lock, MapPin, Calendar, Clock, CheckCircle2 } from "lucide-react";
+import {
+  ChevronLeft,
+  CreditCard,
+  Shield,
+  Smartphone,
+  Wallet,
+  Lock,
+  MapPin,
+  Calendar,
+  Clock,
+  CheckCircle2,
+} from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
@@ -16,9 +27,21 @@ import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PaymentModal } from "@/components/shared/PaymentModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { COUNTRIES } from "@/lib/countries";
 
 export function BookingDesktop({ eventId }: { eventId: string }) {
@@ -31,10 +54,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
-  
+
   // State for attendees dynamic form
   const [attendees, setAttendees] = useState<any[]>([]);
-  
+
   const storageKey = `event_checkout_${eventId}`;
   const [cart, setCart] = useState<Record<string, number>>({});
   const [isHydrated, setIsHydrated] = useState(false);
@@ -51,10 +74,11 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   // Fetch Ticket Projects for PDF generation
   const { data: ticketProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", event?.workspace_id],
-    queryFn: () => getWorkspaceTicketProjects({ data: { workspaceId: event?.workspace_id! } } as any),
+    queryFn: () =>
+      getWorkspaceTicketProjects({ data: { workspaceId: event?.workspace_id! } } as any),
     enabled: !!event?.workspace_id,
   });
-  
+
   const eventProject = ticketProjects?.find((p: any) => p.eventId === event.id);
 
   // Load cart and init attendees
@@ -65,17 +89,16 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         const parsedCart = JSON.parse(saved);
         setCart(parsedCart);
       }
-    } catch { }
+    } catch {}
     setIsHydrated(true);
   }, [storageKey]);
-
 
   // Initialize attendees array based on cart
   useEffect(() => {
     if (!isHydrated || Object.keys(cart).length === 0) return;
-    
+
     if (attendees.length > 0) return; // Prevent re-initialization which causes lag and resets inputs
-    
+
     // Flatten cart into individual ticket records
     const initialAttendees: any[] = [];
     Object.entries(cart).forEach(([cartKey, qty]) => {
@@ -136,11 +159,16 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     const tier = getTierDetails(tierId);
     return sum + (tier ? parseFloat(tier.cost || tier.price || 0) * qty : 0);
   }, 0);
-  
+
   const totalTickets = attendees.length;
-  const isFormValid = assignMode === "me"
-    ? attendees.length > 0 && !!attendees[0].firstName && !!attendees[0].lastName && !!attendees[0].email && !!attendees[0].country
-    : attendees.every((a) => a.firstName && a.lastName && a.email && a.country);
+  const isFormValid =
+    assignMode === "me"
+      ? attendees.length > 0 &&
+        !!attendees[0].firstName &&
+        !!attendees[0].lastName &&
+        !!attendees[0].email &&
+        !!attendees[0].country
+      : attendees.every((a) => a.firstName && a.lastName && a.email && a.country);
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async () => {
@@ -148,9 +176,17 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       const attendeesPayload = attendees.map((a, idx) => {
         const otp = Math.random().toString(36).substring(2, 10).toUpperCase();
         const tier = getTierDetails(a.tierId);
-        const sourceAttendee = assignMode === "me" 
-          ? { ...a, firstName: attendees[0].firstName, lastName: attendees[0].lastName, email: attendees[0].email, phone: attendees[0].phone, country: attendees[0].country } 
-          : a;
+        const sourceAttendee =
+          assignMode === "me"
+            ? {
+                ...a,
+                firstName: attendees[0].firstName,
+                lastName: attendees[0].lastName,
+                email: attendees[0].email,
+                phone: attendees[0].phone,
+                country: attendees[0].country,
+              }
+            : a;
 
         return {
           event_id: event.id,
@@ -165,7 +201,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           ticket_type: tier ? tier.type : "General Admission",
           type: "Booking",
           payment_method: paymentMethod,
-          custom_fields: { country: sourceAttendee.country, tour_stop_idx: a.stopIdx }
+          custom_fields: { country: sourceAttendee.country, tour_stop_idx: a.stopIdx },
         };
       });
 
@@ -175,12 +211,20 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     onSuccess: (data: any) => {
       const { res, attendeesPayload } = data;
       const returned = res?.insert_event_attendees?.returning || [];
-      
+
       const ticketsToIssue = attendees.map((a, idx) => {
         const tier = getTierDetails(a.tierId);
-        const sourceAttendee = assignMode === "me" 
-          ? { ...a, firstName: attendees[0].firstName, lastName: attendees[0].lastName, email: attendees[0].email, phone: attendees[0].phone, country: attendees[0].country } 
-          : a;
+        const sourceAttendee =
+          assignMode === "me"
+            ? {
+                ...a,
+                firstName: attendees[0].firstName,
+                lastName: attendees[0].lastName,
+                email: attendees[0].email,
+                phone: attendees[0].phone,
+                country: attendees[0].country,
+              }
+            : a;
         return {
           id: returned[idx]?.id || `temp_${idx}`,
           otp: attendeesPayload[idx].qrcode_number,
@@ -199,7 +243,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     },
     onError: (e: any) => {
       toast.error(e.message || "Checkout failed");
-    }
+    },
   });
 
   // Deep merge utility for ticket design overrides
@@ -217,7 +261,11 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       ...stopOverride,
       ...tierOverride,
       ...combinationOverride,
-      palette: combinationOverride.palette || tierOverride.palette || stopOverride.palette || baseProject.palette,
+      palette:
+        combinationOverride.palette ||
+        tierOverride.palette ||
+        stopOverride.palette ||
+        baseProject.palette,
       font: combinationOverride.font || tierOverride.font || stopOverride.font || baseProject.font,
     };
   };
@@ -239,9 +287,11 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
               width: 720,
               height: 260,
             });
-            
+
             if (!imgData || imgData === "data:,") {
-              throw new Error("htmlToImage returned an empty image. Usually caused by unloaded fonts or images.");
+              throw new Error(
+                "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
+              );
             }
 
             const width = 720;
@@ -263,12 +313,14 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
           if (attachments.length > 0) {
             // Group tickets by email address so each friend gets their own tickets if changed!
-            const emailGroups: Record<string, { name: string, attachments: any[] }> = {};
-            
+            const emailGroups: Record<string, { name: string; attachments: any[] }> = {};
+
             for (let i = 0; i < issuedTickets.length; i++) {
               const email = issuedTickets[i].attendee.email || attendees[0]?.email;
-              const name = `${issuedTickets[i].attendee.firstName} ${issuedTickets[i].attendee.lastName}`.trim() || "Guest";
-              
+              const name =
+                `${issuedTickets[i].attendee.firstName} ${issuedTickets[i].attendee.lastName}`.trim() ||
+                "Guest";
+
               if (!emailGroups[email]) {
                 emailGroups[email] = { name, attachments: [] };
               }
@@ -283,8 +335,8 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   customerName: group.name,
                   venueName: event.title,
                   attachments: group.attachments,
-                }
-              } as any).catch(e => console.error("Failed to email", email, e));
+                },
+              } as any).catch((e) => console.error("Failed to email", email, e));
             }
           }
           localStorage.removeItem(storageKey);
@@ -310,11 +362,12 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     }
   }, [isSuccess, navigate]);
 
-  if (!event || attendees.length === 0) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <p className="text-muted-foreground">Loading cart...</p>
-    </div>
-  );
+  if (!event || attendees.length === 0)
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading cart...</p>
+      </div>
+    );
 
   if (isSuccess) {
     return (
@@ -324,7 +377,8 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         </div>
         <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
         <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
-          Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}.
+          Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}
+          .
         </p>
         <p className="text-sm text-muted-foreground animate-pulse">Redirecting to venues...</p>
       </div>
@@ -380,9 +434,12 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   if (!attendee) return null;
                   const tier = getTierDetails(attendee.tierId);
                   const stop = getStopDetails(attendee.stopIdx);
-                  
+
                   return (
-                    <div key={idx} className="p-6 rounded-3xl border border-border/60 bg-card/40 space-y-6">
+                    <div
+                      key={idx}
+                      className="p-6 rounded-3xl border border-border/60 bg-card/40 space-y-6"
+                    >
                       <div className="flex items-center justify-between pb-4 border-b border-border/60">
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
@@ -390,11 +447,16 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                           </div>
                           <div>
                             <h3 className="font-semibold text-lg leading-tight">
-                              {assignMode === "me" ? "Your Details (Applied to all tickets)" : (tier ? tier.type : "Ticket")}
+                              {assignMode === "me"
+                                ? "Your Details (Applied to all tickets)"
+                                : tier
+                                  ? tier.type
+                                  : "Ticket"}
                             </h3>
                             {assignMode === "others" && (
                               <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
-                                <MapPin className="h-3 w-3" /> {stop.city} &middot; <Calendar className="h-3 w-3" /> {stop.date}
+                                <MapPin className="h-3 w-3" /> {stop.city} &middot;{" "}
+                                <Calendar className="h-3 w-3" /> {stop.date}
                               </p>
                             )}
                           </div>
@@ -404,51 +466,52 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>First Name</Label>
-                          <Input 
+                          <Input
                             value={attendee.firstName || ""}
                             onChange={(e) => updateAttendee(idx, "firstName", e.target.value)}
-                            placeholder="Alex" 
+                            placeholder="Alex"
                           />
                         </div>
                         <div className="space-y-2">
                           <Label>Last Name</Label>
-                          <Input 
+                          <Input
                             value={attendee.lastName || ""}
                             onChange={(e) => updateAttendee(idx, "lastName", e.target.value)}
-                            placeholder="Doe" 
+                            placeholder="Doe"
                           />
                         </div>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <Label>Email</Label>
-                        <Input 
-                          type="email" 
+                        <Input
+                          type="email"
                           value={attendee.email || ""}
                           onChange={(e) => updateAttendee(idx, "email", e.target.value)}
-                          placeholder="alex@example.com" 
+                          placeholder="alex@example.com"
                         />
                       </div>
-                      
+
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Phone Number</Label>
-                          <Input 
-                            type="tel" 
+                          <Input
+                            type="tel"
                             value={attendee.phone || ""}
                             onChange={(e) => updateAttendee(idx, "phone", e.target.value)}
-                            placeholder="+250 788 123 456" 
+                            placeholder="+250 788 123 456"
                           />
                         </div>
                         <div className="space-y-2">
                           <Label>Country</Label>
-                          <Select value={attendee.country} onValueChange={(val) => updateAttendee(idx, "country", val)}>
+                          <Select
+                            value={attendee.country}
+                            onValueChange={(val) => updateAttendee(idx, "country", val)}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Select Country" />
                             </SelectTrigger>
-                            <SelectContent>
-                              {countrySelectItems}
-                            </SelectContent>
+                            <SelectContent>{countrySelectItems}</SelectContent>
                           </Select>
                         </div>
                       </div>
@@ -482,7 +545,9 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   if (!tier) return null;
                   return (
                     <div key={cartKey} className="flex justify-between items-center">
-                      <span>{qty}x {tier.type}</span>
+                      <span>
+                        {qty}x {tier.type}
+                      </span>
                       <span className="font-medium">
                         {formatCurrency(parseFloat(tier.cost || 0) * qty, currency)}
                       </span>
@@ -493,9 +558,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
               <div className="flex justify-between items-end mb-8">
                 <span className="font-semibold">Total</span>
-                <span className="text-2xl font-bold">
-                  {formatCurrency(total, currency)}
-                </span>
+                <span className="text-2xl font-bold">{formatCurrency(total, currency)}</span>
               </div>
 
               {issuedTickets.length > 0 ? (
@@ -539,7 +602,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         isProcessing={isCheckingOut}
         isGenerating={isGenerating}
       />
-      
+
       {/* Hidden container for PDF rendering */}
       {isGenerating && issuedTickets.length > 0 && eventProject && (
         <div
@@ -547,7 +610,11 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           style={{ top: "-9999px", left: "-9999px" }}
         >
           {issuedTickets.map((ticket: any) => {
-            const mergedProject = getMergedProjectDesign(eventProject, ticket.attendee.stopIdx, ticket.attendee.tierId);
+            const mergedProject = getMergedProjectDesign(
+              eventProject,
+              ticket.attendee.stopIdx,
+              ticket.attendee.tierId,
+            );
             return (
               <div
                 key={ticket.id}
@@ -564,10 +631,18 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
                   time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
                   seat={`${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()}
-                  price={getTierDetails(ticket.attendee.tierId)?.cost?.toString() || getTierDetails(ticket.attendee.tierId)?.price?.toString() || "0"}
+                  price={
+                    getTierDetails(ticket.attendee.tierId)?.cost?.toString() ||
+                    getTierDetails(ticket.attendee.tierId)?.price?.toString() ||
+                    "0"
+                  }
                   currency={currency === "FRWS" ? "RWF" : currency}
                   cover={mergedProject.coverImage || event.cover || ""}
-                  logoText={mergedProject.logoText !== undefined && mergedProject.logoText !== "" ? mergedProject.logoText : (event.organizer || "Agatike")}
+                  logoText={
+                    mergedProject.logoText !== undefined && mergedProject.logoText !== null
+                      ? mergedProject.logoText
+                      : event.organizer || "Agatike"
+                  }
                   logoImage={mergedProject.logoImage}
                   logoScale={Number(mergedProject.logoScale || 24)}
                   logoOpacity={Number(mergedProject.logoOpacity ?? 1)}

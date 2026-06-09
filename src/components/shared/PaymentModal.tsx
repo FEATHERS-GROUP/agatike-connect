@@ -1,4 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Wallet, CreditCard, Smartphone } from "lucide-react";
 
@@ -22,14 +28,14 @@ export function PaymentModal({
   isGenerating,
 }: PaymentModalProps) {
   return (
-    <Dialog 
-      open={isOpen} 
+    <Dialog
+      open={isOpen}
       onOpenChange={(open) => {
         if (!open && (isProcessing || isGenerating)) return;
         onOpenChange(open);
       }}
     >
-      <DialogContent 
+      <DialogContent
         aria-describedby={undefined}
         className="max-w-[95vw] sm:max-w-md rounded-3xl bg-background/95 backdrop-blur-xl border-border/60 p-5"
       >
@@ -55,9 +61,7 @@ export function PaymentModal({
             <div
               className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "apple" ? "border-primary" : "border-muted-foreground/30"}`}
             >
-              {paymentMethod === "apple" && (
-                <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-              )}
+              {paymentMethod === "apple" && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
             </div>
           </button>
 
@@ -79,9 +83,7 @@ export function PaymentModal({
             <div
               className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "card" ? "border-primary" : "border-muted-foreground/30"}`}
             >
-              {paymentMethod === "card" && (
-                <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-              )}
+              {paymentMethod === "card" && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
             </div>
           </button>
 
@@ -103,9 +105,7 @@ export function PaymentModal({
             <div
               className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "momo" ? "border-primary" : "border-muted-foreground/30"}`}
             >
-              {paymentMethod === "momo" && (
-                <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-              )}
+              {paymentMethod === "momo" && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
             </div>
           </button>
         </div>
@@ -120,7 +120,7 @@ export function PaymentModal({
               ? "Generating Tickets..."
               : isProcessing
                 ? "Processing..."
-                : `Proceed with ${paymentMethod === 'apple' ? 'Apple Pay' : paymentMethod === 'card' ? 'Credit Card' : 'Mobile Money'}`}
+                : `Proceed with ${paymentMethod === "apple" ? "Apple Pay" : paymentMethod === "card" ? "Credit Card" : "Mobile Money"}`}
           </Button>
         </DialogFooter>
       </DialogContent>

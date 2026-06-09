@@ -124,14 +124,14 @@ export function EventDetailsMobile({
       }));
 
   const [cart, setCart] = useState<Record<string, number>>({});
-  
+
   const total = Object.entries(cart).reduce((sum, [key, qty]) => {
     if (qty <= 0) return sum;
     const [stopIdx, tierId] = key.split("_");
     const tier = allTicketTiers.find((t: any) => t.id === tierId);
     return sum + (tier ? tier.price * qty : 0);
   }, 0);
-  
+
   const totalTickets = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
 
   const { data: feedbackData } = useQuery({
@@ -428,7 +428,7 @@ export function EventDetailsMobile({
               const cartKey = `${selectedStopIdx}_${t.id}`;
               const itemQty = cart[cartKey] || 0;
               const isSelected = itemQty > 0;
-              
+
               return (
                 <div
                   key={t.id}
@@ -441,13 +441,15 @@ export function EventDetailsMobile({
                     </p>
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">{t.perks.join(" · ")}</p>
-                  
+
                   <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
                     <span className="text-sm font-medium">Quantity</span>
                     <div className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm">
                       <button
                         className="h-8 w-8 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
-                        onClick={() => setCart(prev => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))}
+                        onClick={() =>
+                          setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
+                        }
                         disabled={itemQty === 0}
                       >
                         <Minus className="h-3 w-3" />
@@ -455,7 +457,7 @@ export function EventDetailsMobile({
                       <span className="w-4 text-center font-bold text-sm">{itemQty}</span>
                       <button
                         className="h-8 w-8 flex items-center justify-center rounded-full bg-secondary text-foreground"
-                        onClick={() => setCart(prev => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                        onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
                       >
                         <Plus className="h-3 w-3" />
                       </button>
@@ -471,16 +473,19 @@ export function EventDetailsMobile({
       {/* Sticky Bottom Action (Apple Pay style checkout) */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 z-40 pb-safe">
         <div className="flex items-center justify-between mb-3 px-2">
-          <span className="text-sm font-medium text-muted-foreground">Total ({totalTickets} items)</span>
+          <span className="text-sm font-medium text-muted-foreground">
+            Total ({totalTickets} items)
+          </span>
           <span className="text-xl font-bold">{formatCurrency(total, currencyCode)}</span>
         </div>
         <Button
           asChild
           className="w-full h-14 rounded-full text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
-          style={{ 
-            background: total === 0 && totalTickets > 0 ? "var(--foreground)" : "var(--gradient-primary)",
+          style={{
+            background:
+              total === 0 && totalTickets > 0 ? "var(--foreground)" : "var(--gradient-primary)",
             opacity: totalTickets === 0 ? 0.5 : 1,
-            pointerEvents: totalTickets === 0 ? "none" : "auto"
+            pointerEvents: totalTickets === 0 ? "none" : "auto",
           }}
           onClick={() => {
             localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));

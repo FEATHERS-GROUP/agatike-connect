@@ -43,10 +43,10 @@ function SignIn() {
       toast.success("Welcome back!");
       await refresh();
       await router.invalidate();
-      
+
       const searchParams = new URLSearchParams(window.location.search);
       const redirectUrl = searchParams.get("redirect");
-      
+
       if (redirectUrl) {
         navigate({ to: redirectUrl as any });
       } else {

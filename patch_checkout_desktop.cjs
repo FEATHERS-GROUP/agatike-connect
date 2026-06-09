@@ -16,7 +16,7 @@ import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";`
+import { Loader2 } from "lucide-react";`,
 );
 
 // 2. Add new states
@@ -24,7 +24,7 @@ content = content.replace(
   `const [name, setName] = useState("");\n  const [idPassport, setIdPassport] = useState("");`,
   `const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [idPassport, setIdPassport] = useState("");`
+  const [idPassport, setIdPassport] = useState("");`,
 );
 
 content = content.replace(
@@ -50,13 +50,13 @@ content = content.replace(
         setCountries(sorted);
       })
       .catch(() => setCountries([]));
-  }, []);`
+  }, []);`,
 );
 
 // 3. Update Hydration
 content = content.replace(
   `if (parsed.name) setName(parsed.name);`,
-  `if (parsed.name) setName(parsed.name);\n        if (parsed.email) setEmail(parsed.email);`
+  `if (parsed.name) setName(parsed.name);\n        if (parsed.email) setEmail(parsed.email);`,
 );
 
 content = content.replace(
@@ -82,16 +82,16 @@ content = content.replace(
       if (!email && user.email) setEmail(user.email);
       if (!nationality && user.country) setNationality(user.country);
     }
-  }, [user, isHydrated, venue?.id]);`
+  }, [user, isHydrated, venue?.id]);`,
 );
 
 content = content.replace(
   `date, ticketsData, attendees, name, idPassport, nationality, phone, step`,
-  `date, ticketsData, attendees, name, email, idPassport, nationality, phone, step`
+  `date, ticketsData, attendees, name, email, idPassport, nationality, phone, step`,
 );
 content = content.replace(
   `[date, ticketsData, attendees, name, idPassport, nationality, phone, step, storageKey, isHydrated]`,
-  `[date, ticketsData, attendees, name, email, idPassport, nationality, phone, step, storageKey, isHydrated]`
+  `[date, ticketsData, attendees, name, email, idPassport, nationality, phone, step, storageKey, isHydrated]`,
 );
 
 // 4. Booking Logic
@@ -102,7 +102,8 @@ const newTotalCalc = `  const total = (venue.pricing_tiers?.length > 0 ? venue.p
 
 content = content.replace(
   newTotalCalc,
-  newTotalCalc + `\n
+  newTotalCalc +
+    `\n
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async () => {
       const totalAttendees = 1 + attendees.length;
@@ -201,7 +202,7 @@ content = content.replace(
       };
       setTimeout(generatePDFs, 1000);
     }
-  }, [isGenerating, issuedTickets, venueProject, email, name, venue?.name, storageKey]);`
+  }, [isGenerating, issuedTickets, venueProject, email, name, venue?.name, storageKey]);`,
 );
 
 content = content.replace(
@@ -225,7 +226,7 @@ content = content.replace(
       return;
     }
     doCheckout();
-  };`
+  };`,
 );
 
 // 5. Desktop UI fixes
@@ -262,7 +263,7 @@ content = content.replace(
             </div>
           </div>
         </div>
-      )}`
+      )}`,
 );
 
 // Adding Email and Select
@@ -301,7 +302,7 @@ const newInputs = `<div className="space-y-2">
                       {countries.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>`;
-                  
+
 content = content.replace(oldNamePhone, newInputs);
 
 content = content.replace(
@@ -324,7 +325,7 @@ content = content.replace(
                 ) : (
                   <>Pay {total > 0 ? \`\${venue.currency} \${total.toLocaleString()}\` : (totalTickets > 0 ? "Free" : \`\${venue.currency} 0\`)}</>
                 )}
-              </Button>`
+              </Button>`,
 );
 
 content = content.replace(
@@ -382,7 +383,7 @@ content = content.replace(
         </div>
       )}
 
-      <Footer />`
+      <Footer />`,
 );
 
 fs.writeFileSync(target, content);

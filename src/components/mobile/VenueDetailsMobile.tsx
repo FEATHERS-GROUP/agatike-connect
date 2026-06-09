@@ -45,7 +45,8 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
               <MapPin className="w-4 h-4 text-primary" /> {venue.city || venue.address}
             </span>
             <span className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-primary" /> {venue.opening_hours || "09:00"} - {venue.closing_hours || "22:00"}
+              <Clock className="w-4 h-4 text-primary" /> {venue.opening_hours || "09:00"} -{" "}
+              {venue.closing_hours || "22:00"}
             </span>
           </div>
         </div>
@@ -81,13 +82,17 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
             {venue.rental_model && (
               <div>
                 <span className="text-muted-foreground block text-xs">Rental Model</span>
-                <span className="font-medium capitalize">{venue.rental_model.replace(/_/g, " ")}</span>
+                <span className="font-medium capitalize">
+                  {venue.rental_model.replace(/_/g, " ")}
+                </span>
               </div>
             )}
             {venue.rental_type && (
               <div>
                 <span className="text-muted-foreground block text-xs">Rental Type</span>
-                <span className="font-medium capitalize">{venue.rental_type.replace(/_/g, " ")}</span>
+                <span className="font-medium capitalize">
+                  {venue.rental_type.replace(/_/g, " ")}
+                </span>
               </div>
             )}
             {venue.is_venue_private !== undefined && venue.is_venue_private !== null && (
@@ -102,7 +107,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
         {venue.instructions && (
           <div className="border-t border-border/40 pt-6 prose prose-sm prose-neutral dark:prose-invert max-w-none break-words overflow-hidden">
             <h3 className="font-bold mb-4">Instructions</h3>
-            <div 
+            <div
               className="text-muted-foreground text-sm leading-relaxed [&>p]:mb-4"
               dangerouslySetInnerHTML={{ __html: venue.instructions }}
             />
@@ -112,9 +117,17 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
         <div className="border-t border-border/40 pt-6">
           <h3 className="font-bold mb-4">Entry Tickets</h3>
           <div className="space-y-3">
-            {(venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
-              <div key={idx} className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30">
-                <span className="text-muted-foreground text-sm font-medium">{tier.name || "Standard Entry"}</span>
+            {(venue.pricing_tiers?.length > 0
+              ? venue.pricing_tiers
+              : [{ name: "Standard Entry", amount: 0 }]
+            ).map((tier: any, idx: number) => (
+              <div
+                key={idx}
+                className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30"
+              >
+                <span className="text-muted-foreground text-sm font-medium">
+                  {tier.name || "Standard Entry"}
+                </span>
                 <span className="font-bold text-primary">
                   {tier.amount > 0 ? formatCurrency(tier.amount, venue.currency) : "Free"}
                 </span>
@@ -149,7 +162,9 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
               Tickets from
             </span>
             <span className="text-xl font-bold text-foreground">
-              {venue.pricing_tiers?.[0]?.amount > 0 ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency) : "Free"}
+              {venue.pricing_tiers?.[0]?.amount > 0
+                ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency)
+                : "Free"}
             </span>
           </div>
           <Link to="/venues/checkout/$venueId" params={{ venueId: venue.id }} className="flex-1">

@@ -44,7 +44,7 @@ export default function VenueMap({
 }) {
   let parsedLat = parseFloat(lat as any);
   let parsedLng = parseFloat(lng as any);
-  
+
   if (isNaN(parsedLat) || !isFinite(parsedLat)) parsedLat = -1.9441;
   if (isNaN(parsedLng) || !isFinite(parsedLng)) parsedLng = 30.0619;
 

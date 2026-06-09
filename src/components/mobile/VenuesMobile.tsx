@@ -81,7 +81,11 @@ export function VenuesMobile() {
             >
               <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm">
                 <div className="aspect-[16/9] relative">
-                  <img src={venue.cover_url} alt={venue.name} className="w-full h-full object-cover" />
+                  <img
+                    src={venue.cover_url}
+                    alt={venue.name}
+                    className="w-full h-full object-cover"
+                  />
                   <div className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm">
                     {venue.type}
                   </div>
@@ -99,7 +103,9 @@ export function VenuesMobile() {
                         Entry Fee
                       </span>
                       <span className="text-sm font-bold text-foreground">
-                        {venue.pricing_tiers?.[0]?.amount > 0 ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency) : "Free"}
+                        {venue.pricing_tiers?.[0]?.amount > 0
+                          ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency)
+                          : "Free"}
                       </span>
                     </div>
                     <div

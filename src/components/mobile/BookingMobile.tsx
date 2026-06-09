@@ -1,5 +1,16 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, CreditCard, Shield, Smartphone, Wallet, Lock, MapPin, Calendar, Clock, CheckCircle2 } from "lucide-react";
+import {
+  ChevronLeft,
+  CreditCard,
+  Shield,
+  Smartphone,
+  Wallet,
+  Lock,
+  MapPin,
+  Calendar,
+  Clock,
+  CheckCircle2,
+} from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
@@ -15,9 +26,21 @@ import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { toast } from "sonner";
 import { COUNTRIES } from "@/lib/countries";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PaymentModal } from "@/components/shared/PaymentModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export function BookingMobile({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
@@ -29,10 +52,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
-  
+
   // State for attendees dynamic form
   const [attendees, setAttendees] = useState<any[]>([]);
-  
+
   const storageKey = `event_checkout_${eventId}`;
   const [cart, setCart] = useState<Record<string, number>>({});
   const [isHydrated, setIsHydrated] = useState(false);
@@ -49,10 +72,11 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   // Fetch Ticket Projects for PDF generation
   const { data: ticketProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", event?.workspace_id],
-    queryFn: () => getWorkspaceTicketProjects({ data: { workspaceId: event?.workspace_id! } } as any),
+    queryFn: () =>
+      getWorkspaceTicketProjects({ data: { workspaceId: event?.workspace_id! } } as any),
     enabled: !!event?.workspace_id,
   });
-  
+
   const eventProject = ticketProjects?.find((p: any) => p.eventId === event.id);
 
   // Load cart and init attendees
@@ -63,17 +87,16 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         const parsedCart = JSON.parse(saved);
         setCart(parsedCart);
       }
-    } catch { }
+    } catch {}
     setIsHydrated(true);
   }, [storageKey]);
-
 
   // Initialize attendees array based on cart
   useEffect(() => {
     if (!isHydrated || Object.keys(cart).length === 0) return;
-    
+
     if (attendees.length > 0) return; // Prevent re-initialization which causes lag and resets inputs
-    
+
     const initialAttendees: any[] = [];
     Object.entries(cart).forEach(([cartKey, qty]) => {
       if (qty <= 0) return;
@@ -131,20 +154,33 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     const tier = getTierDetails(tierId);
     return sum + (tier ? parseFloat(tier.cost || tier.price || 0) * qty : 0);
   }, 0);
-  
+
   const totalTickets = attendees.length;
-  const isFormValid = assignMode === "me"
-    ? attendees.length > 0 && !!attendees[0].firstName && !!attendees[0].lastName && !!attendees[0].email && !!attendees[0].country
-    : attendees.every((a) => a.firstName && a.lastName && a.email && a.country);
+  const isFormValid =
+    assignMode === "me"
+      ? attendees.length > 0 &&
+        !!attendees[0].firstName &&
+        !!attendees[0].lastName &&
+        !!attendees[0].email &&
+        !!attendees[0].country
+      : attendees.every((a) => a.firstName && a.lastName && a.email && a.country);
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async () => {
       const attendeesPayload = attendees.map((a, idx) => {
         const otp = Math.random().toString(36).substring(2, 10).toUpperCase();
         const tier = getTierDetails(a.tierId);
-        const sourceAttendee = assignMode === "me" 
-          ? { ...a, firstName: attendees[0].firstName, lastName: attendees[0].lastName, email: attendees[0].email, phone: attendees[0].phone, country: attendees[0].country } 
-          : a;
+        const sourceAttendee =
+          assignMode === "me"
+            ? {
+                ...a,
+                firstName: attendees[0].firstName,
+                lastName: attendees[0].lastName,
+                email: attendees[0].email,
+                phone: attendees[0].phone,
+                country: attendees[0].country,
+              }
+            : a;
 
         return {
           event_id: event.id,
@@ -159,7 +195,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           ticket_type: tier ? tier.type : "General Admission",
           type: "Booking",
           payment_method: paymentMethod,
-          custom_fields: { country: sourceAttendee.country, tour_stop_idx: a.stopIdx }
+          custom_fields: { country: sourceAttendee.country, tour_stop_idx: a.stopIdx },
         };
       });
 
@@ -171,9 +207,17 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       const returned = res?.insert_event_attendees?.returning || [];
       const ticketsToIssue = attendees.map((a, idx) => {
         const tier = getTierDetails(a.tierId);
-        const sourceAttendee = assignMode === "me" 
-          ? { ...a, firstName: attendees[0].firstName, lastName: attendees[0].lastName, email: attendees[0].email, phone: attendees[0].phone, country: attendees[0].country } 
-          : a;
+        const sourceAttendee =
+          assignMode === "me"
+            ? {
+                ...a,
+                firstName: attendees[0].firstName,
+                lastName: attendees[0].lastName,
+                email: attendees[0].email,
+                phone: attendees[0].phone,
+                country: attendees[0].country,
+              }
+            : a;
         return {
           id: returned[idx]?.id || `temp_${idx}`,
           otp: attendeesPayload[idx].qrcode_number,
@@ -192,7 +236,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     },
     onError: (e: any) => {
       toast.error(e.message || "Checkout failed");
-    }
+    },
   });
 
   const getMergedProjectDesign = (baseProject: any, stopIdx: number, tierId: string) => {
@@ -209,7 +253,11 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       ...stopOverride,
       ...tierOverride,
       ...combinationOverride,
-      palette: combinationOverride.palette || tierOverride.palette || stopOverride.palette || baseProject.palette,
+      palette:
+        combinationOverride.palette ||
+        tierOverride.palette ||
+        stopOverride.palette ||
+        baseProject.palette,
       font: combinationOverride.font || tierOverride.font || stopOverride.font || baseProject.font,
     };
   };
@@ -231,9 +279,11 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               width: 720,
               height: 260,
             });
-            
+
             if (!imgData || imgData === "data:,") {
-              throw new Error("htmlToImage returned an empty image. Usually caused by unloaded fonts or images.");
+              throw new Error(
+                "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
+              );
             }
 
             const width = 720;
@@ -254,12 +304,14 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           }
 
           if (attachments.length > 0) {
-            const emailGroups: Record<string, { name: string, attachments: any[] }> = {};
-            
+            const emailGroups: Record<string, { name: string; attachments: any[] }> = {};
+
             for (let i = 0; i < issuedTickets.length; i++) {
               const email = issuedTickets[i].attendee.email || attendees[0]?.email;
-              const name = `${issuedTickets[i].attendee.firstName} ${issuedTickets[i].attendee.lastName}`.trim() || "Guest";
-              
+              const name =
+                `${issuedTickets[i].attendee.firstName} ${issuedTickets[i].attendee.lastName}`.trim() ||
+                "Guest";
+
               if (!emailGroups[email]) {
                 emailGroups[email] = { name, attachments: [] };
               }
@@ -273,8 +325,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   customerName: group.name,
                   venueName: event.title,
                   attachments: group.attachments,
-                }
-              } as any).catch(e => console.error("Failed to email", email, e));
+                },
+              } as any).catch((e) => console.error("Failed to email", email, e));
             }
           }
           localStorage.removeItem(storageKey);
@@ -300,11 +352,12 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     }
   }, [isSuccess, navigate]);
 
-  if (!event || attendees.length === 0) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <p className="text-muted-foreground">Loading cart...</p>
-    </div>
-  );
+  if (!event || attendees.length === 0)
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading cart...</p>
+      </div>
+    );
 
   if (isSuccess) {
     return (
@@ -314,7 +367,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         </div>
         <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
         <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
-          Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}.
+          Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}
+          .
         </p>
         <p className="text-sm text-muted-foreground animate-pulse">Redirecting to venues...</p>
       </div>
@@ -345,7 +399,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               </p>
             </div>
           </div>
-          
+
           <div className="space-y-3 bg-secondary/20 p-4 rounded-2xl border border-border/40">
             {Object.entries(cart).map(([cartKey, qty]) => {
               if (qty <= 0) return null;
@@ -354,7 +408,9 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               if (!tier) return null;
               return (
                 <div key={cartKey} className="flex justify-between items-center text-sm">
-                  <span>{qty}x {tier.type}</span>
+                  <span>
+                    {qty}x {tier.type}
+                  </span>
                   <span className="font-medium">
                     {formatCurrency(parseFloat(tier.cost || 0) * qty, currency)}
                   </span>
@@ -363,7 +419,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             })}
           </div>
         </div>
-        
+
         {/* Attendee Details */}
         <div>
           <h1 className="text-2xl font-bold px-1 mb-5">Checkout ({totalTickets})</h1>
@@ -398,16 +454,23 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               if (!attendee) return null;
               const tier = getTierDetails(attendee.tierId);
               const stop = getStopDetails(attendee.stopIdx);
-              
+
               return (
-                <div key={idx} className="p-5 rounded-3xl border border-border/60 bg-card/40 space-y-5">
+                <div
+                  key={idx}
+                  className="p-5 rounded-3xl border border-border/60 bg-card/40 space-y-5"
+                >
                   <div className="flex items-center gap-3 pb-3 border-b border-border/60">
                     <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
                       {idx + 1}
                     </div>
                     <div>
                       <h3 className="font-bold text-sm">
-                        {assignMode === "me" ? "Your Details (Applied to all tickets)" : (tier ? tier.type : "Ticket")}
+                        {assignMode === "me"
+                          ? "Your Details (Applied to all tickets)"
+                          : tier
+                            ? tier.type
+                            : "Ticket"}
                       </h3>
                       {assignMode === "others" && (
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
@@ -421,55 +484,56 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <Label className="text-xs">First Name</Label>
-                        <Input 
+                        <Input
                           value={attendee.firstName || ""}
                           onChange={(e) => updateAttendee(idx, "firstName", e.target.value)}
-                          placeholder="Alex" 
+                          placeholder="Alex"
                           className="h-10"
                         />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs">Last Name</Label>
-                        <Input 
+                        <Input
                           value={attendee.lastName || ""}
                           onChange={(e) => updateAttendee(idx, "lastName", e.target.value)}
-                          placeholder="Doe" 
+                          placeholder="Doe"
                           className="h-10"
                         />
                       </div>
                     </div>
-                    
+
                     <div className="space-y-1.5">
                       <Label className="text-xs">Email</Label>
-                      <Input 
-                        type="email" 
+                      <Input
+                        type="email"
                         value={attendee.email || ""}
                         onChange={(e) => updateAttendee(idx, "email", e.target.value)}
-                        placeholder="alex@example.com" 
+                        placeholder="alex@example.com"
                         className="h-10"
                       />
                     </div>
-                    
+
                     <div className="space-y-1.5">
                       <Label className="text-xs">Phone Number</Label>
-                        <Input 
-                          type="tel" 
-                          value={attendee.phone || ""}
-                          onChange={(e) => updateAttendee(idx, "phone", e.target.value)}
-                          placeholder="+250 788 123 456" 
-                          className="h-10"
-                        />
+                      <Input
+                        type="tel"
+                        value={attendee.phone || ""}
+                        onChange={(e) => updateAttendee(idx, "phone", e.target.value)}
+                        placeholder="+250 788 123 456"
+                        className="h-10"
+                      />
                     </div>
-                    
+
                     <div className="space-y-1.5">
                       <Label className="text-xs">Country</Label>
-                      <Select value={attendee.country} onValueChange={(val) => updateAttendee(idx, "country", val)}>
+                      <Select
+                        value={attendee.country}
+                        onValueChange={(val) => updateAttendee(idx, "country", val)}
+                      >
                         <SelectTrigger className="h-10">
                           <SelectValue placeholder="Select Country" />
                         </SelectTrigger>
-                        <SelectContent>
-                          {countrySelectItems}
-                        </SelectContent>
+                        <SelectContent>{countrySelectItems}</SelectContent>
                       </Select>
                     </div>
                   </div>
@@ -484,32 +548,30 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 z-40 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
         <div className="flex items-center justify-between mb-3 px-2">
           <span className="text-sm font-medium text-muted-foreground">Total to pay</span>
-          <span className="text-xl font-bold">
-            {formatCurrency(total, currency)}
-          </span>
+          <span className="text-xl font-bold">{formatCurrency(total, currency)}</span>
         </div>
-          {issuedTickets.length > 0 ? (
-            <Button
-              onClick={() => {
-                setIsGenerating(true);
-                setIsPaymentModalOpen(true);
-              }}
-              disabled={isGenerating}
-              className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              Retry Ticket Generation
-            </Button>
-          ) : (
-            <Button
-              onClick={() => setIsPaymentModalOpen(true)}
-              disabled={!isFormValid || isCheckingOut || isGenerating}
-              className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              Pay {formatCurrency(total, currency)}
-            </Button>
-          )}
+        {issuedTickets.length > 0 ? (
+          <Button
+            onClick={() => {
+              setIsGenerating(true);
+              setIsPaymentModalOpen(true);
+            }}
+            disabled={isGenerating}
+            className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            Retry Ticket Generation
+          </Button>
+        ) : (
+          <Button
+            onClick={() => setIsPaymentModalOpen(true)}
+            disabled={!isFormValid || isCheckingOut || isGenerating}
+            className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            Pay {formatCurrency(total, currency)}
+          </Button>
+        )}
         <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
           <Shield className="h-3.5 w-3.5" /> Secure encrypted checkout
         </div>
@@ -525,7 +587,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         isProcessing={isCheckingOut}
         isGenerating={isGenerating}
       />
-      
+
       {/* Hidden container for PDF rendering */}
       {isGenerating && issuedTickets.length > 0 && eventProject && (
         <div
@@ -533,7 +595,11 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           style={{ top: "-9999px", left: "-9999px" }}
         >
           {issuedTickets.map((ticket: any) => {
-            const mergedProject = getMergedProjectDesign(eventProject, ticket.attendee.stopIdx, ticket.attendee.tierId);
+            const mergedProject = getMergedProjectDesign(
+              eventProject,
+              ticket.attendee.stopIdx,
+              ticket.attendee.tierId,
+            );
             return (
               <div
                 key={ticket.id}
@@ -550,10 +616,18 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
                   time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
                   seat={`${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()}
-                  price={getTierDetails(ticket.attendee.tierId)?.cost?.toString() || getTierDetails(ticket.attendee.tierId)?.price?.toString() || "0"}
+                  price={
+                    getTierDetails(ticket.attendee.tierId)?.cost?.toString() ||
+                    getTierDetails(ticket.attendee.tierId)?.price?.toString() ||
+                    "0"
+                  }
                   currency={currency === "FRWS" ? "RWF" : currency}
                   cover={mergedProject.coverImage || event.cover || ""}
-                  logoText={mergedProject.logoText !== undefined && mergedProject.logoText !== "" ? mergedProject.logoText : (event.organizer || "Agatike")}
+                  logoText={
+                    mergedProject.logoText !== undefined && mergedProject.logoText !== null
+                      ? mergedProject.logoText
+                      : event.organizer || "Agatike"
+                  }
                   logoImage={mergedProject.logoImage}
                   logoScale={Number(mergedProject.logoScale || 24)}
                   logoOpacity={Number(mergedProject.logoOpacity ?? 1)}

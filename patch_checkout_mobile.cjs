@@ -16,7 +16,7 @@ import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";`
+import { Loader2 } from "lucide-react";`,
 );
 
 // 2. Add new states and Ticket Query
@@ -31,9 +31,8 @@ content = content.replace(
     queryFn: () => getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id! } } as any),
     enabled: !!venue?.workspace_id,
   });
-  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);`
+  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);`,
 );
-
 
 // 3. Booking Logic
 const newTotalCalc = `  const total = (venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).reduce((acc: number, tier: any) => {
@@ -43,7 +42,8 @@ const newTotalCalc = `  const total = (venue.pricing_tiers?.length > 0 ? venue.p
 
 content = content.replace(
   newTotalCalc,
-  newTotalCalc + `\n
+  newTotalCalc +
+    `\n
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async () => {
       const totalAttendees = 1 + attendees.length;
@@ -142,7 +142,7 @@ content = content.replace(
       };
       setTimeout(generatePDFs, 1000);
     }
-  }, [isGenerating, issuedTickets, venueProject, email, name, venue?.name, storageKey]);`
+  }, [isGenerating, issuedTickets, venueProject, email, name, venue?.name, storageKey]);`,
 );
 
 content = content.replace(
@@ -165,9 +165,8 @@ content = content.replace(
       return;
     }
     doCheckout();
-  };`
+  };`,
 );
-
 
 // 4. Update Button in Form
 content = content.replace(
@@ -190,7 +189,7 @@ content = content.replace(
                 ) : (
                   <>Pay {total > 0 ? \`\${venue.currency} \${total.toLocaleString()}\` : (totalTickets > 0 ? "Free" : \`\${venue.currency} 0\`)}</>
                 )}
-              </Button>`
+              </Button>`,
 );
 
 // 5. Hidden TicketPreview
@@ -248,7 +247,7 @@ content = content.replace(
         </div>
       )}
     </div>
-  );`
+  );`,
 );
 
 fs.writeFileSync(target, content);

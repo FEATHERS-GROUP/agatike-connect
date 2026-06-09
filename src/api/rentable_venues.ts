@@ -124,11 +124,10 @@ const GET_PUBLIC_RENTABLE_VENUES = `
   }
 `;
 
-export const getPublicRentableVenues = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const res = await hasuraRequest<{ rentable_venues: any[] }>(GET_PUBLIC_RENTABLE_VENUES, {});
-    return res.rentable_venues;
-  });
+export const getPublicRentableVenues = createServerFn({ method: "GET" }).handler(async () => {
+  const res = await hasuraRequest<{ rentable_venues: any[] }>(GET_PUBLIC_RENTABLE_VENUES, {});
+  return res.rentable_venues;
+});
 
 const GET_RENTABLE_VENUE_BY_ID = `
   query GetRentableVenueById($id: uuid!) {

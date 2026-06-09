@@ -48,8 +48,8 @@ async function run() {
         table: "venue_bookings",
         name: "user",
         using: {
-          foreign_key_constraint_on: "user_id"
-        }
+          foreign_key_constraint_on: "user_id",
+        },
       },
     }),
   });
