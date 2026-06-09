@@ -19,7 +19,7 @@ import { Loader2 } from "lucide-react";
 export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
-  
+
   const storageKey = `venue_checkout_desktop_${venue?.id}`;
   const [date, setDate] = useState("");
   const [ticketsData, setTicketsData] = useState<Record<string, number>>({});
@@ -70,19 +70,19 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
         if (parsed.phone) setPhone(parsed.phone);
         if (parsed.step) setStep(parsed.step);
       }
-    } catch {}
+    } catch { }
     setIsHydrated(true);
   }, [storageKey]);
 
   useEffect(() => {
     if (!isHydrated) return;
     const returning = sessionStorage.getItem(`returning_from_login_${venue?.id}`);
-    
+
     if (returning === "true" && user) {
       sessionStorage.removeItem(`returning_from_login_${venue?.id}`);
       setShowOverrideDialog(true);
     }
-    
+
     if (user && !returning) {
       if (!name && user.username) setName(user.username);
       if (!phone && user.phone) setPhone(user.phone);
@@ -102,7 +102,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
   const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
   const isStep1Valid = date !== "" && totalTickets > 0;
-  
+
   const total = (venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).reduce((acc: number, tier: any) => {
     const qty = ticketsData[tier.name || "Standard Entry"] || 0;
     return acc + qty * (Number(tier.amount) || 0);
@@ -307,7 +307,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           </div>
         </div>
       )}
-      
+
       {showOverrideDialog && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
           <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
@@ -378,201 +378,204 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                     </div>
                   </div>
 
-              <div className="border-t border-border/40 pt-6">
-                <h3 className="text-xl font-semibold mb-4">Ticket Selection</h3>
-                <div className="space-y-3">
-                  {(venue?.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between bg-secondary/20 p-4 rounded-xl border border-border/50"
-                    >
-                      <div>
-                        <p className="font-semibold">{tier.name || "Standard Entry"}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {tier.amount > 0 ? `${venue.currency} ${Number(tier.amount).toLocaleString()}` : "Free"}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Input
-                          type="number"
-                          min="0"
-                          value={ticketsData[tier.name || "Standard Entry"] || ""}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value) || 0;
-                            setTicketsData((p) => ({ ...p, [tier.name || "Standard Entry"]: val }));
-                          }}
-                          className="w-20 bg-background text-center"
-                          placeholder="0"
-                        />
-                      </div>
+                  <div className="border-t border-border/40 pt-6">
+                    <h3 className="text-xl font-semibold mb-4">Ticket Selection</h3>
+                    <div className="space-y-3">
+                      {(venue?.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between bg-secondary/20 p-4 rounded-xl border border-border/50"
+                        >
+                          <div>
+                            <p className="font-semibold">{tier.name || "Standard Entry"}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {tier.amount > 0 ? `${venue.currency} ${Number(tier.amount).toLocaleString()}` : "Free"}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Input
+                              type="number"
+                              min="0"
+                              value={ticketsData[tier.name || "Standard Entry"] || ""}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value) || 0;
+                                setTicketsData((p) => ({ ...p, [tier.name || "Standard Entry"]: val }));
+                              }}
+                              className="w-20 bg-background text-center"
+                              placeholder="0"
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-              <Button
-                type="button"
-                disabled={!isStep1Valid}
-                onClick={() => setStep(2)}
-                className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] mt-4"
-              >
-                Continue to Details
-              </Button>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-semibold mb-4">Primary Attendee</h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">Full Name</label>
-                    <Input
-                      required
-                      placeholder="e.g. Jane Doe"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="h-12 bg-secondary/40"
-                    />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">
-                      ID or Passport Number
-                    </label>
-                    <Input
-                      required
-                      placeholder="Enter ID/Passport"
-                      value={idPassport}
-                      onChange={(e) => setIdPassport(e.target.value)}
-                      className="h-12 bg-secondary/40"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">Email Address</label>
-                    <Input
-                      required
-                      type="email"
-                      placeholder="e.g. jane@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="h-12 bg-secondary/40"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">Nationality</label>
-                    <select
-                      required
-                      value={nationality}
-                      onChange={(e) => setNationality(e.target.value)}
-                      disabled={!!user?.country}
-                      className="flex h-12 w-full rounded-md border border-input bg-secondary/40 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <option value="" disabled>Select Country</option>
-                      {countries.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">
-                      Phone Number
-                    </label>
-                    <Input
-                      required
-                      type="tel"
-                      placeholder="e.g. 0780000000"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="h-12 bg-secondary/40"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {totalTickets > 1 && (
-                <div className="border-t border-border/40 pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold">Additional Attendees</h3>
-                    <span className="text-sm font-medium bg-secondary px-3 py-1 rounded-full text-muted-foreground">
-                      {totalTickets - 1} ticket{totalTickets - 1 !== 1 ? "s" : ""} left to assign
-                    </span>
-                  </div>
-
-                  <div className="space-y-4">
-                    {attendees.map((att, idx) => (
-                      <div key={idx} className="flex gap-4 items-start">
-                        <div className="flex-1 space-y-1.5">
-                          <label className="text-sm font-medium text-muted-foreground">Attendee {idx + 2} Name</label>
-                          <Input
-                            required
-                            placeholder="Full Name"
-                            value={att.name}
-                            onChange={(e) => {
-                              const newArr = [...attendees];
-                              newArr[idx].name = e.target.value;
-                              setAttendees(newArr);
-                            }}
-                            className="h-12 rounded-xl bg-secondary/40"
-                          />
-                        </div>
-                        <div className="flex-1 space-y-1.5">
-                          <label className="text-sm font-medium text-muted-foreground">ID / Passport</label>
-                          <Input
-                            placeholder="Optional"
-                            value={att.id_document}
-                            onChange={(e) => {
-                              const newArr = [...attendees];
-                              newArr[idx].id_document = e.target.value;
-                              setAttendees(newArr);
-                            }}
-                            className="h-12 rounded-xl bg-secondary/40"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <Button
+                    type="button"
+                    disabled={!isStep1Valid}
+                    onClick={() => setStep(2)}
+                    className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] mt-4"
+                  >
+                    Continue to Details
+                  </Button>
                 </div>
               )}
 
-              <div className="flex gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep(1)}
-                  className="w-1/3 h-14 text-lg font-bold rounded-2xl"
-                >
-                  Back
-                </Button>
-                {issuedTickets.length > 0 ? (
-                  <Button
-                    type="button"
-                    onClick={() => setIsGenerating(true)}
-                    disabled={isGenerating}
-                    className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-                    style={{ background: "var(--gradient-primary)" }}
-                  >
-                    {isGenerating ? (
-                      <span className="flex items-center justify-center"><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Retrying...</span>
+              {step === 2 && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">Primary Attendee</h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">Full Name</label>
+                        <Input
+                          required
+                          placeholder="e.g. Jane Doe"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="h-12 bg-secondary/40"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">
+                          ID or Passport Number
+                        </label>
+                        <Input
+                          required
+                          placeholder="Enter ID/Passport"
+                          value={idPassport}
+                          onChange={(e) => setIdPassport(e.target.value)}
+                          className="h-12 bg-secondary/40"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">Email Address</label>
+                        <Input
+                          required
+                          type="email"
+                          placeholder="e.g. jane@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="h-12 bg-secondary/40"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">Nationality</label>
+                        <select
+                          required
+                          value={nationality}
+                          onChange={(e) => setNationality(e.target.value)}
+                          disabled={!!user?.country}
+                          className="flex h-12 w-full rounded-md border border-input bg-secondary/40 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="" disabled>Select Country</option>
+                          {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Phone Number
+                        </label>
+                        <Input
+                          required
+                          type="tel"
+                          placeholder="e.g. 0780000000"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="h-12 bg-secondary/40"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {totalTickets > 1 && (
+                    <div className="border-t border-border/40 pt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xl font-semibold">Additional Attendees</h3>
+                        <span className="text-sm font-medium bg-secondary px-3 py-1 rounded-full text-muted-foreground">
+                          {totalTickets - 1} ticket{totalTickets - 1 !== 1 ? "s" : ""} left to assign
+                        </span>
+                      </div>
+
+                      <div className="space-y-4">
+                        {attendees.map((att, idx) => (
+                          <div key={idx} className="flex gap-4 items-start">
+                            <div className="flex-1 space-y-1.5">
+                              <label className="text-sm font-medium text-muted-foreground">Attendee {idx + 2} Name</label>
+                              <Input
+                                required
+                                placeholder="Full Name"
+                                value={att.name}
+                                onChange={(e) => {
+                                  const newArr = [...attendees];
+                                  newArr[idx].name = e.target.value;
+                                  setAttendees(newArr);
+                                }}
+                                className="h-12 rounded-xl bg-secondary/40"
+                              />
+                            </div>
+                            <div className="flex-1 space-y-1.5">
+                              <label className="text-sm font-medium text-muted-foreground">ID / Passport</label>
+                              <Input
+                                placeholder="Optional"
+                                value={att.id_document}
+                                onChange={(e) => {
+                                  const newArr = [...attendees];
+                                  newArr[idx].id_document = e.target.value;
+                                  setAttendees(newArr);
+                                }}
+                                className="h-12 rounded-xl bg-secondary/40"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-4 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setStep(1)}
+                      className="w-1/3 h-14 text-lg font-bold rounded-2xl"
+                    >
+                      Back
+                    </Button>
+                    {isGenerating || isCheckingOut ? (
+                      <Button
+                        type="button"
+                        disabled
+                        className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                        style={{ background: "var(--gradient-primary)" }}
+                      >
+                        <span className="flex items-center justify-center">
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          {isCheckingOut ? "Processing..." : "Generating Tickets..."}
+                        </span>
+                      </Button>
+                    ) : issuedTickets.length > 0 ? (
+                      <Button
+                        type="button"
+                        onClick={() => setIsGenerating(true)}
+                        className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                        style={{ background: "var(--gradient-primary)" }}
+                      >
+                        Retry Ticket Generation
+                      </Button>
                     ) : (
-                      <>Retry Ticket Generation</>
+                      <Button
+                        type="submit"
+                        disabled={totalTickets === 0}
+                        className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                        style={{ background: "var(--gradient-primary)" }}
+                      >
+                        Pay {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : (totalTickets > 0 ? "Free" : `${venue.currency} 0`)}
+                      </Button>
                     )}
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    disabled={totalTickets === 0 || isCheckingOut || isGenerating}
-                    className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-                    style={{ background: "var(--gradient-primary)" }}
-                  >
-                    {isCheckingOut || isGenerating ? (
-                      <span className="flex items-center justify-center"><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Generating...</span>
-                    ) : (
-                      <>Pay {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : (totalTickets > 0 ? "Free" : `${venue.currency} 0`)}</>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
+                  </div>
+                </div>
+              )}
             </form>
           </div>
 
@@ -601,13 +604,13 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                   <span>{date ? date : "Not selected"}</span>
                 </div>
                 {Object.entries(ticketsData).filter(([_, qty]) => qty > 0).map(([name, qty], i) => {
-                   const tier = venue.pricing_tiers?.find((t: any) => t.name === name) || { amount: 0 };
-                   return (
-                     <div key={i} className="flex justify-between">
-                       <span className="text-muted-foreground">{name} x {qty}</span>
-                       <span>{tier.amount > 0 ? `${venue.currency} ${(qty * tier.amount).toLocaleString()}` : "Free"}</span>
-                     </div>
-                   );
+                  const tier = venue.pricing_tiers?.find((t: any) => t.name === name) || { amount: 0 };
+                  return (
+                    <div key={i} className="flex justify-between">
+                      <span className="text-muted-foreground">{name} x {qty}</span>
+                      <span>{tier.amount > 0 ? `${venue.currency} ${(qty * tier.amount).toLocaleString()}` : "Free"}</span>
+                    </div>
+                  );
                 })}
               </div>
 
@@ -621,7 +624,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           </div>
         </div>
       </section>
-      
+
       {/* Hidden Ticket Renderer */}
       {isGenerating && issuedTickets.length > 0 && venueProject && (
         <div
@@ -629,49 +632,49 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           style={{ top: "-9999px", left: "-9999px" }}
         >
           {issuedTickets.map((t) => (
-            <div key={t.id} id={`ticket-render-${t.id}`} className="inline-block bg-white relative">
+            <div key={t.id} id={`ticket-render-${t.id}`} className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden">
               <TicketPreview
-                  template={venueProject.template}
-                  palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
-                  font={venueProject.font || { css: "sans-serif", name: "Modern" }}
-                  tier={t.tier}
-                  title={venue.name}
-                  subtitle={venue.address || t.attendee_name || name}
-                  date={date}
-                  time="Opening Hours"
-                  seat={t.attendee_name || name || "General"}
-                  price={total.toString()}
-                  currency={venue.currency}
-                  cover={venueProject.coverImage || ""}
-                  logoText={
-                    venueProject.logoText || "agatiike"
+                template={venueProject.template}
+                palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+                tier={t.tier}
+                title={venue.name}
+                subtitle={venue.address || t.attendee_name || name}
+                date={date}
+                time="Opening Hours"
+                seat={t.attendee_name || name || "General"}
+                price={total.toString()}
+                currency={venue.currency}
+                cover={venueProject.coverImage || ""}
+                logoText={
+                  venueProject.logoText || "Agatike"
+                }
+                logoImage={venueProject.logoImage}
+                logoScale={Number(venueProject.logoScale || 24)}
+                logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+                logoColorMode={venueProject.logoColorMode || "original"}
+                orderId={t.otp}
+                qrValue={`${window.location.origin}/v/${t.otp}`}
+                previewMode="Front"
+                layout={
+                  venueProject.design_overrides?.layout || {
+                    titleSize: 30,
+                    subtitleSize: 14,
+                    metaSize: 11,
+                    titleAlign: "left",
+                    titleOffsetY: 0,
+                    subtitleOffsetY: 0,
+                    metaOffsetY: 0,
                   }
-                  logoImage={venueProject.logoImage}
-                  logoScale={Number(venueProject.logoScale || 24)}
-                  logoOpacity={Number(venueProject.logoOpacity ?? 1)}
-                  logoColorMode={venueProject.logoColorMode || "original"}
-                  orderId={t.otp}
-                  qrValue={`${window.location.origin}/v/${t.otp}`}
-                  previewMode="Front"
-                  layout={
-                    venueProject.design_overrides?.layout || {
-                      titleSize: 30,
-                      subtitleSize: 14,
-                      metaSize: 11,
-                      titleAlign: "left",
-                      titleOffsetY: 0,
-                      subtitleOffsetY: 0,
-                      metaOffsetY: 0,
-                    }
+                }
+                back={
+                  venueProject.design_overrides?.back || {
+                    backText: "",
+                    backImage: "",
+                    backImageOpacity: 0.3,
                   }
-                  back={
-                    venueProject.design_overrides?.back || {
-                      backText: "",
-                      backImage: "",
-                      backImageOpacity: 0.3,
-                    }
-                  }
-                />
+                }
+              />
             </div>
           ))}
         </div>

@@ -17,7 +17,7 @@ import { Loader2 } from "lucide-react";
 export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
-  
+
   const storageKey = `venue_checkout_mobile_${venue?.id}`;
   const [date, setDate] = useState("");
   const [ticketsData, setTicketsData] = useState<Record<string, number>>({});
@@ -67,7 +67,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         if (parsed.phone) setPhone(parsed.phone);
         if (parsed.step) setStep(parsed.step);
       }
-    } catch {}
+    } catch { }
     setIsHydrated(true);
   }, [storageKey]);
 
@@ -92,7 +92,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
   const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
   const isStep1Valid = date !== "" && totalTickets > 0;
-  
+
   const total = (venue.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).reduce((acc: number, tier: any) => {
     const qty = ticketsData[tier.name || "Standard Entry"] || 0;
     return acc + qty * (Number(tier.amount) || 0);
@@ -291,62 +291,62 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             <h2 className="text-lg font-bold tracking-tight">Ticket Details</h2>
 
             <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-1.5 flex items-center gap-2">
-                <Calendar className="w-4 h-4" /> Date
-              </label>
-              <Input
-                type="date"
-                required
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
-              />
-            </div>
-            
-            <div className="pt-2">
-              <label className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                <Ticket className="w-4 h-4" /> Select Tickets
-              </label>
-              <div className="space-y-3">
-                {(venue?.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="relative overflow-hidden flex justify-between items-center bg-secondary/30 p-4 rounded-xl border border-border/40"
-                  >
-                    <div>
-                      <p className="font-bold text-sm tracking-tight">{tier.name || "Standard Entry"}</p>
-                      <p className="text-sm font-semibold text-primary">
-                        {tier.amount > 0 ? `${venue.currency} ${Number(tier.amount).toLocaleString()}` : "Free"}
-                      </p>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-1.5 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Date
+                </label>
+                <Input
+                  type="date"
+                  required
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
+                />
+              </div>
+
+              <div className="pt-2">
+                <label className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                  <Ticket className="w-4 h-4" /> Select Tickets
+                </label>
+                <div className="space-y-3">
+                  {(venue?.pricing_tiers?.length > 0 ? venue.pricing_tiers : [{ name: "Standard Entry", amount: 0 }]).map((tier: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="relative overflow-hidden flex justify-between items-center bg-secondary/30 p-4 rounded-xl border border-border/40"
+                    >
+                      <div>
+                        <p className="font-bold text-sm tracking-tight">{tier.name || "Standard Entry"}</p>
+                        <p className="text-sm font-semibold text-primary">
+                          {tier.amount > 0 ? `${venue.currency} ${Number(tier.amount).toLocaleString()}` : "Free"}
+                        </p>
+                      </div>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={ticketsData[tier.name || "Standard Entry"] || ""}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 0;
+                          setTicketsData((p) => ({ ...p, [tier.name || "Standard Entry"]: val }));
+                        }}
+                        className="w-20 h-10 text-center font-bold bg-background border-transparent"
+                        placeholder="0"
+                      />
                     </div>
-                    <Input
-                      type="number"
-                      min="0"
-                      value={ticketsData[tier.name || "Standard Entry"] || ""}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value) || 0;
-                        setTicketsData((p) => ({ ...p, [tier.name || "Standard Entry"]: val }));
-                      }}
-                      className="w-20 h-10 text-center font-bold bg-background border-transparent"
-                      placeholder="0"
-                    />
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
+            <div className="pt-4">
+              <Button
+                type="button"
+                disabled={!isStep1Valid}
+                onClick={() => setStep(2)}
+                className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+              >
+                Continue to Details
+              </Button>
+            </div>
           </div>
-          <div className="pt-4">
-            <Button
-              type="button"
-              disabled={!isStep1Valid}
-              onClick={() => setStep(2)}
-              className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-            >
-              Continue to Details
-            </Button>
-          </div>
-        </div>
         )}
 
         {step === 2 && (
@@ -358,136 +358,136 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
               </div>
 
               <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-                Full Name
-              </label>
-              <Input
-                required
-                placeholder="e.g. Jane Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={!!user}
-                className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-                Email Address
-              </label>
-              <Input
-                required
-                type="email"
-                placeholder="e.g. jane@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-                ID or Passport Number
-              </label>
-              <Input
-                required
-                placeholder="Enter ID/Passport"
-                value={idPassport}
-                onChange={(e) => setIdPassport(e.target.value)}
-                className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-                Nationality
-              </label>
-              <select
-                required
-                value={nationality}
-                onChange={(e) => setNationality(e.target.value)}
-                disabled={!!user?.country}
-                className="flex h-12 w-full rounded-md border border-input bg-secondary/40 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <option value="" disabled>Select Country</option>
-                {countries.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-                Phone Number
-              </label>
-              <Input
-                required
-                type="tel"
-                placeholder="e.g. 0780000000"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                disabled={!!user}
-                className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Additional Attendees */}
-        {totalTickets > 1 && (
-          <div className="space-y-4 border-t border-border/40 pt-6">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-bold tracking-tight">Additional Attendees</h2>
-              <span className="text-xs font-medium bg-secondary px-2 py-1 rounded-full text-muted-foreground">
-                {totalTickets - 1} left
-              </span>
-            </div>
-
-            <div className="space-y-6">
-              {attendees.map((att, idx) => (
-                <div key={idx} className="space-y-3 bg-secondary/10 p-4 rounded-xl border border-border/20">
-                  <div className="font-medium text-sm border-b border-border/40 pb-2 mb-2">
-                    Attendee {idx + 2}
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Name</label>
-                    <Input
-                      required
-                      placeholder="Full Name"
-                      value={att.name}
-                      onChange={(e) => {
-                        const newArr = [...attendees];
-                        newArr[idx].name = e.target.value;
-                        setAttendees(newArr);
-                      }}
-                      className="h-10 text-sm bg-secondary/40 border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">ID / Passport (Optional)</label>
-                    <Input
-                      placeholder="Optional"
-                      value={att.id_document}
-                      onChange={(e) => {
-                        const newArr = [...attendees];
-                        newArr[idx].id_document = e.target.value;
-                        setAttendees(newArr);
-                      }}
-                      className="h-10 text-sm bg-secondary/40 border-transparent"
-                    />
-                  </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                    Full Name
+                  </label>
+                  <Input
+                    required
+                    placeholder="e.g. Jane Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={!!user}
+                    className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
+                  />
                 </div>
-              ))}
+
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                    Email Address
+                  </label>
+                  <Input
+                    required
+                    type="email"
+                    placeholder="e.g. jane@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                    ID or Passport Number
+                  </label>
+                  <Input
+                    required
+                    placeholder="Enter ID/Passport"
+                    value={idPassport}
+                    onChange={(e) => setIdPassport(e.target.value)}
+                    className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                    Nationality
+                  </label>
+                  <select
+                    required
+                    value={nationality}
+                    onChange={(e) => setNationality(e.target.value)}
+                    disabled={!!user?.country}
+                    className="flex h-12 w-full rounded-md border border-input bg-secondary/40 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <option value="" disabled>Select Country</option>
+                    {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+                    Phone Number
+                  </label>
+                  <Input
+                    required
+                    type="tel"
+                    placeholder="e.g. 0780000000"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    disabled={!!user}
+                    className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
+                  />
+                </div>
+              </div>
             </div>
+
+            {/* Additional Attendees */}
+            {totalTickets > 1 && (
+              <div className="space-y-4 border-t border-border/40 pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-lg font-bold tracking-tight">Additional Attendees</h2>
+                  <span className="text-xs font-medium bg-secondary px-2 py-1 rounded-full text-muted-foreground">
+                    {totalTickets - 1} left
+                  </span>
+                </div>
+
+                <div className="space-y-6">
+                  {attendees.map((att, idx) => (
+                    <div key={idx} className="space-y-3 bg-secondary/10 p-4 rounded-xl border border-border/20">
+                      <div className="font-medium text-sm border-b border-border/40 pb-2 mb-2">
+                        Attendee {idx + 2}
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Name</label>
+                        <Input
+                          required
+                          placeholder="Full Name"
+                          value={att.name}
+                          onChange={(e) => {
+                            const newArr = [...attendees];
+                            newArr[idx].name = e.target.value;
+                            setAttendees(newArr);
+                          }}
+                          className="h-10 text-sm bg-secondary/40 border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">ID / Passport (Optional)</label>
+                        <Input
+                          placeholder="Optional"
+                          value={att.id_document}
+                          onChange={(e) => {
+                            const newArr = [...attendees];
+                            newArr[idx].id_document = e.target.value;
+                            setAttendees(newArr);
+                          }}
+                          className="h-10 text-sm bg-secondary/40 border-transparent"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
-      </div>
-      )}
 
         {/* Fixed Bottom Action Bar */}
         {step === 2 && (
           <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe-bottom bg-background/95 backdrop-blur-xl border-t border-border/50 z-30 shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
             <div className="max-w-md mx-auto">
-              <div 
+              <div
                 className="flex items-center justify-between gap-4 mb-3 cursor-pointer active:opacity-70 transition-opacity"
                 onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
               >
@@ -510,7 +510,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                     />
                     <div className="flex-1">
                       <h4 className="font-bold text-sm line-clamp-2">{venue.name}</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{venue.location}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{venue.location || venue.address}</p>
                     </div>
                   </div>
                   <div className="space-y-3 text-sm">
@@ -531,28 +531,35 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 </div>
               )}
 
-              {issuedTickets.length > 0 ? (
+              {isGenerating || isCheckingOut ? (
+                <Button
+                  type="button"
+                  disabled
+                  className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  <span className="flex items-center justify-center">
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    {isCheckingOut ? "Processing..." : "Generating Tickets..."}
+                  </span>
+                </Button>
+              ) : issuedTickets.length > 0 ? (
                 <Button
                   type="button"
                   onClick={() => setIsGenerating(true)}
-                  disabled={isGenerating}
-                  className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform flex items-center justify-center"
+                  className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : "Retry Ticket Generation"}
+                  Retry Ticket Generation
                 </Button>
               ) : (
                 <Button
                   type="submit"
-                  disabled={totalTickets === 0 || isCheckingOut || isGenerating}
-                  className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform flex items-center justify-center"
+                  disabled={totalTickets === 0}
+                  className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  {isCheckingOut || isGenerating ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>Pay & Confirm</>
-                  )}
+                  Pay {total > 0 ? `${venue.currency} ${total.toLocaleString()}` : (totalTickets > 0 ? "Free" : `${venue.currency} 0`)}
                 </Button>
               )}
             </div>
@@ -567,49 +574,49 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
           style={{ top: "-9999px", left: "-9999px" }}
         >
           {issuedTickets.map((t) => (
-            <div key={t.id} id={`ticket-render-${t.id}`} className="inline-block bg-white relative">
+            <div key={t.id} id={`ticket-render-${t.id}`} className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden">
               <TicketPreview
-                  template={venueProject.template}
-                  palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
-                  font={venueProject.font || { css: "sans-serif", name: "Modern" }}
-                  tier={t.tier}
-                  title={venue.name}
-                  subtitle={venue.address || t.attendee_name || name}
-                  date={date}
-                  time="Opening Hours"
-                  seat={t.attendee_name || name || "General"}
-                  price={total.toString()}
-                  currency={venue.currency}
-                  cover={venueProject.coverImage || ""}
-                  logoText={
-                    venueProject.logoText || "agatiike"
+                template={venueProject.template}
+                palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+                tier={t.tier}
+                title={venue.name}
+                subtitle={venue.address || t.attendee_name || name}
+                date={date}
+                time="Opening Hours"
+                seat={t.attendee_name || name || "General"}
+                price={total.toString()}
+                currency={venue.currency}
+                cover={venueProject.coverImage || ""}
+                logoText={
+                  venueProject.logoText || "Agatike"
+                }
+                logoImage={venueProject.logoImage}
+                logoScale={Number(venueProject.logoScale || 24)}
+                logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+                logoColorMode={venueProject.logoColorMode || "original"}
+                orderId={t.otp}
+                qrValue={`${window.location.origin}/v/${t.otp}`}
+                previewMode="Front"
+                layout={
+                  venueProject.design_overrides?.layout || {
+                    titleSize: 30,
+                    subtitleSize: 14,
+                    metaSize: 11,
+                    titleAlign: "left",
+                    titleOffsetY: 0,
+                    subtitleOffsetY: 0,
+                    metaOffsetY: 0,
                   }
-                  logoImage={venueProject.logoImage}
-                  logoScale={Number(venueProject.logoScale || 24)}
-                  logoOpacity={Number(venueProject.logoOpacity ?? 1)}
-                  logoColorMode={venueProject.logoColorMode || "original"}
-                  orderId={t.otp}
-                  qrValue={`${window.location.origin}/v/${t.otp}`}
-                  previewMode="Front"
-                  layout={
-                    venueProject.design_overrides?.layout || {
-                      titleSize: 30,
-                      subtitleSize: 14,
-                      metaSize: 11,
-                      titleAlign: "left",
-                      titleOffsetY: 0,
-                      subtitleOffsetY: 0,
-                      metaOffsetY: 0,
-                    }
+                }
+                back={
+                  venueProject.design_overrides?.back || {
+                    backText: "",
+                    backImage: "",
+                    backImageOpacity: 0.3,
                   }
-                  back={
-                    venueProject.design_overrides?.back || {
-                      backText: "",
-                      backImage: "",
-                      backImageOpacity: 0.3,
-                    }
-                  }
-                />
+                }
+              />
             </div>
           ))}
         </div>
