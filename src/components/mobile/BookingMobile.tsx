@@ -5,7 +5,6 @@ import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { events, experiences } from "@/lib/mock-data";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
@@ -40,7 +39,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     queryFn: () => getEventById({ data: { id: eventId } } as any),
   });
 
-  const event = dbEvent || events.find((e) => e.id === eventId) || experiences.find((x) => x.id === eventId) || events[0];
+  const event = dbEvent;
+  const currency = event?.workspaces?.currency || "RWF";
 
   // Fetch Ticket Projects for PDF generation
   const { data: ticketProjects } = useQuery({
@@ -326,7 +326,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                 <div key={cartKey} className="flex justify-between items-center text-sm">
                   <span>{qty}x {tier.type}</span>
                   <span className="font-medium">
-                    {formatCurrency(parseFloat(tier.cost || 0) * qty, event.currency || "USD")}
+                    {formatCurrency(parseFloat(tier.cost || 0) * qty, currency)}
                   </span>
                 </div>
               );
@@ -506,7 +506,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         <div className="flex items-center justify-between mb-3 px-2">
           <span className="text-sm font-medium text-muted-foreground">Total to pay</span>
           <span className="text-xl font-bold">
-            {formatCurrency(total, event.currency || "USD")}
+            {formatCurrency(total, currency)}
           </span>
         </div>
         <Button
@@ -519,7 +519,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             ? "Generating Tickets..."
             : isCheckingOut
               ? "Processing..."
-              : `Pay ${formatCurrency(total, event.currency || "USD")}`}
+              : `Pay ${formatCurrency(total, currency)}`}
         </Button>
         <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
           <Shield className="h-3.5 w-3.5" /> Secure encrypted checkout
