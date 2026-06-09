@@ -35,7 +35,7 @@ export function Experience1(props: TemplateProps) {
     Cell,
   } = props;
 
-  if (template === "experience-1") {
+  if (template === "experience-1" || template === "experience") {
     return (
       <div
         id="ticket-preview-container"

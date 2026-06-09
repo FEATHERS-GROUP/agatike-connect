@@ -35,7 +35,7 @@ export function Entrance1(props: TemplateProps) {
     Cell,
   } = props;
 
-  if (template === "entrance-1") {
+  if (template === "entrance-1" || template === "entrance") {
     return (
       <div
         id="ticket-preview-container"

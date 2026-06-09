@@ -35,7 +35,7 @@ export function Conference1(props: TemplateProps) {
     Cell,
   } = props;
 
-  if (template === "conference-1") {
+  if (template === "conference-1" || template === "conference") {
     return (
       <div
         id="ticket-preview-container"

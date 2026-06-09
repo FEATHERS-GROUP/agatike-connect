@@ -243,6 +243,15 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     doCheckout();
   };
 
+  useEffect(() => {
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        navigate({ to: "/venues" });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, navigate]);
+
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-secondary/20 flex flex-col items-center justify-center p-4">
