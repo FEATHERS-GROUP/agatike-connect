@@ -352,12 +352,13 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
   useEffect(() => {
     if (isSuccess) {
+      toast.success("Ticket purchase successful!");
       const timer = setTimeout(() => {
-        navigate({ to: "/venues", replace: true });
+        navigate({ to: "/events/$eventId", params: { eventId }, replace: true });
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [isSuccess, navigate]);
+  }, [isSuccess, navigate, eventId]);
 
   if (!event || attendees.length === 0)
     return (
@@ -377,7 +378,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}
           .
         </p>
-        <p className="text-sm text-muted-foreground animate-pulse">Redirecting to venues...</p>
+        <p className="text-sm text-muted-foreground animate-pulse">Redirecting to event details...</p>
       </div>
     );
   }
