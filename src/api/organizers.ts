@@ -273,7 +273,7 @@ export const getFollowedOrganizers = createServerFn({ method: "GET" }).handler(a
   if (!userId) return [];
 
   const query = `
-    query GetFollowedOrganizers($userId: uuid!) {
+    query GetFollowedOrganizers($userId: jsonb) {
       organizer_followers(where: { user_id: { _eq: $userId } }) {
         organizer_id
       }
@@ -292,10 +292,15 @@ export const followOrganizer = createServerFn({ method: "POST" }).handler(async 
 
   const { organizerId } = ctx.data as unknown as { organizerId: string };
 
+  // Use insert with on_conflict to silently skip if the follow already exists
+  // (prevents duplicate key constraint violations if the UI state was stale)
   const mutation = `
-    mutation FollowOrganizer($organizerId: uuid!, $userId: uuid!) {
-      insert_organizer_followers_one(object: { organizer_id: $organizerId, user_id: $userId }) {
-        id
+    mutation FollowOrganizer($organizerId: uuid!, $userId: jsonb) {
+      insert_organizer_followers(
+        objects: [{ organizer_id: $organizerId, user_id: $userId }],
+        on_conflict: { constraint: organizer_followers_organizer_id_key, update_columns: [] }
+      ) {
+        affected_rows
       }
       update_organizers_by_pk(pk_columns: { id: $organizerId }, _inc: { followers: 1 }) {
         id
@@ -303,9 +308,13 @@ export const followOrganizer = createServerFn({ method: "POST" }).handler(async 
     }
   `;
 
-  await hasuraRequest(mutation, { organizerId, userId });
-  return { success: true };
+  const result = await hasuraRequest<{
+    insert_organizer_followers: { affected_rows: number };
+  }>(mutation, { organizerId, userId });
+
+  return { success: true, inserted: result.insert_organizer_followers.affected_rows > 0 };
 });
+
 
 export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const userId = await getUserIdFromCookie();
@@ -314,7 +323,7 @@ export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(asyn
   const { organizerId } = ctx.data as unknown as { organizerId: string };
 
   const mutation = `
-    mutation UnfollowOrganizer($organizerId: uuid!, $userId: uuid!) {
+    mutation UnfollowOrganizer($organizerId: uuid!, $userId: jsonb) {
       delete_organizer_followers(where: { organizer_id: { _eq: $organizerId }, user_id: { _eq: $userId } }) {
         affected_rows
       }

@@ -11,16 +11,24 @@ import hero from "@/assets/hero-event.jpg";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
+import { getOrganizersRatings } from "@/api/feedback";
 
 export function HomeDesktop() {
-  const { toggleFollow, isFollowing } = useFollowedOrganizers();
+  const { toggleFollow, isFollowing, followedIds } = useFollowedOrganizers();
   
   const { data: dbOrganizers } = useQuery({
     queryKey: ["organizers"],
     queryFn: () => getOrganizers(),
   });
 
-  const list = dbOrganizers && dbOrganizers.length > 0 ? dbOrganizers : organizers;
+  const { data: ratingsMap = {} } = useQuery({
+    queryKey: ["organizers-ratings"],
+    queryFn: () => getOrganizersRatings(),
+  });
+
+  const allOrganizers = dbOrganizers && dbOrganizers.length > 0 ? dbOrganizers : organizers;
+  // On home, hide organizers the user is already following
+  const list = allOrganizers.filter((org: any) => !isFollowing(org.id));
 
   const trending = events.slice(0, 6);
   const weekend = events.slice(1, 5);
@@ -197,43 +205,57 @@ export function HomeDesktop() {
             See all →
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {list.slice(0, 4).map((org) => {
-            const following = isFollowing(org.id);
-            const followerCount = org.followers + (following ? 1 : 0);
-            const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
-            return (
-              <div
-                key={org.id}
-                className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-1 flex flex-col items-center text-center animate-in fade-in duration-300"
-              >
-                <img
-                  src={avatar}
-                  alt={org.name}
-                  className="h-16 w-16 rounded-full object-cover"
-                  loading="lazy"
-                />
-                <p className="mt-4 font-semibold">{org.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  @{org.handle}
-                </p>
-                <div className="mt-3 flex items-center gap-1 text-xs">
-                  <Star className="h-3 w-3 fill-primary text-primary" /> 4.9 ·{" "}
-                  {followerCount.toLocaleString()} followers
-                </div>
-                <Button
-                  variant={following ? "outline" : "default"}
-                  className={`mt-4 w-full rounded-full ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
-                  style={following ? undefined : { background: "var(--gradient-primary)" }}
-                  onClick={() => toggleFollow(org.id)}
+        {list.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 gap-3 text-muted-foreground border border-border/40 rounded-2xl bg-card">
+            <Star className="h-8 w-8 text-primary" />
+            <p className="font-medium text-sm">You're following all our top organizers!</p>
+            <Link to="/organizers" className="text-xs font-bold text-primary hover:underline">Browse all organizers →</Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {list.slice(0, 4).map((org) => {
+              const followerCount = org.followers ?? 0;
+              const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
+              return (
+                <div
+                  key={org.id}
+                  className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-1 flex flex-col items-center text-center animate-in fade-in duration-300"
                 >
-                  {following ? "Following" : "Follow"}
-                </Button>
-              </div>
-            );
-          })}
-        </div>
+                  <img
+                    src={avatar}
+                    alt={org.name}
+                    className="h-16 w-16 rounded-full object-cover"
+                    loading="lazy"
+                  />
+                  <p className="mt-4 font-semibold">{org.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    @{org.handle}
+                  </p>
+                  <div className="mt-3 flex items-center gap-1 text-xs">
+                    {ratingsMap[org.id] ? (
+                      <>
+                        <Star className="h-3 w-3 fill-primary text-primary" />
+                        <span>{ratingsMap[org.id].avg.toFixed(1)}</span>
+                        <span className="text-muted-foreground">·</span>
+                      </>
+                    ) : null}
+                    <span className="text-muted-foreground">{followerCount.toLocaleString()} followers</span>
+                  </div>
+                  <Button
+                    variant="default"
+                    className="mt-4 w-full rounded-full shadow-[var(--shadow-glow)]"
+                    style={{ background: "var(--gradient-primary)" }}
+                    onClick={() => toggleFollow(org.id)}
+                  >
+                    Follow
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
+
 
       {/* Community feed teaser */}
       <section className="mx-auto mt-20 max-w-7xl px-6">

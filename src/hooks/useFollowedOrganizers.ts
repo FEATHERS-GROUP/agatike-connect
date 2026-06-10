@@ -11,6 +11,9 @@ export function useFollowedOrganizers() {
     queryKey: ["followed-organizers"],
     queryFn: () => getFollowedOrganizers(),
     enabled: isLoggedIn,
+    // Always re-fetch on mount so stale cache (from previous broken queries) is cleared
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   const followMutation = useMutation({
@@ -26,6 +29,7 @@ export function useFollowedOrganizers() {
       toast.error("Failed to follow organizer");
     },
     onSuccess: () => {
+      toast.success("Following organizer!");
       queryClient.invalidateQueries({ queryKey: ["followed-organizers"] });
       queryClient.invalidateQueries({ queryKey: ["organizers"] });
     },
@@ -47,6 +51,7 @@ export function useFollowedOrganizers() {
       toast.error("Failed to unfollow organizer");
     },
     onSuccess: () => {
+      toast.success("Unfollowed organizer");
       queryClient.invalidateQueries({ queryKey: ["followed-organizers"] });
       queryClient.invalidateQueries({ queryKey: ["organizers"] });
     },

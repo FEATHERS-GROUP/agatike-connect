@@ -2,23 +2,33 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { feedPosts, events, movies, stories } from "@/lib/mock-data";
 import { FeedCard } from "@/components/site/FeedCard";
 import { Stories } from "@/components/site/Stories";
-import { Camera, Activity, Loader2, Users } from "lucide-react";
+import { Camera, Activity, Loader2, Users, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
+import { getOrganizersRatings } from "@/api/feedback";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 
 export function HomeMobile() {
   const { user, isLoading, isLoggedIn } = useUserAuth();
   const navigate = useNavigate();
-  const { toggleFollow, isFollowing } = useFollowedOrganizers();
+  const { toggleFollow, isFollowing, followedIds } = useFollowedOrganizers();
   const items = feedPosts;
 
   const { data: dbOrganizers = [], isLoading: organizersLoading } = useQuery({
     queryKey: ["organizers"],
     queryFn: () => getOrganizers(),
   });
+
+  const { data: ratingsMap = {} } = useQuery({
+    queryKey: ["organizers-ratings"],
+    queryFn: () => getOrganizersRatings(),
+  });
+
+  // On home page, hide organizers the user already follows
+  const unfollowedOrganizers = dbOrganizers.filter((org: any) => !isFollowing(org.id));
+  const allFollowed = dbOrganizers.length > 0 && unfollowedOrganizers.length === 0;
 
   // Show loading spinner while checking session
   if (isLoading) {
@@ -69,13 +79,19 @@ export function HomeMobile() {
             <div className="flex items-center justify-center w-full py-6">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
-          ) : dbOrganizers.length === 0 ? (
+          ) : allFollowed ? (
+            <div className="flex flex-col items-center justify-center w-full py-6 gap-2 text-muted-foreground">
+              <Users className="h-8 w-8" />
+              <p className="text-sm text-center">You're following all organizers!</p>
+              <Link to="/organizers" className="text-xs font-bold text-primary">View on organizers page →</Link>
+            </div>
+          ) : unfollowedOrganizers.length === 0 ? (
             <div className="flex flex-col items-center justify-center w-full py-6 gap-2 text-muted-foreground">
               <Users className="h-8 w-8" />
               <p className="text-sm">No organizers found</p>
             </div>
           ) : (
-            dbOrganizers.map((org: any) => {
+            unfollowedOrganizers.map((org: any) => {
               const following = isFollowing(org.id);
               return (
                 <Link
@@ -90,18 +106,24 @@ export function HomeMobile() {
                   />
                   <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
                   <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">@{org.handle}</p>
+                  {ratingsMap[org.id] && (
+                    <div className="flex items-center gap-0.5 mt-1 text-[10px] text-primary font-semibold">
+                      <Star className="h-2.5 w-2.5 fill-primary" />
+                      <span>{ratingsMap[org.id].avg.toFixed(1)}</span>
+                    </div>
+                  )}
                   <Button
                     size="sm"
-                    variant={following ? "outline" : "default"}
-                    className={`mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
-                    style={following ? undefined : { background: "var(--gradient-primary)" }}
+                    variant="default"
+                    className="mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider shadow-[var(--shadow-glow)]"
+                    style={{ background: "var(--gradient-primary)" }}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       toggleFollow(org.id);
                     }}
                   >
-                    {following ? "Following" : "Follow"}
+                    Follow
                   </Button>
                 </Link>
               );

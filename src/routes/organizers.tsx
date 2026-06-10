@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Search, Instagram, Twitter, CheckCircle2 } from "lucide-react";
+import { Search, Instagram, Twitter, CheckCircle2, Star } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { getOrganizers } from "@/api/organizers";
+import { getOrganizersRatings } from "@/api/feedback";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -46,6 +47,11 @@ function OrganizersPage() {
     queryFn: () => getOrganizers(),
   });
 
+  const { data: ratingsMap = {} } = useQuery({
+    queryKey: ["organizers-ratings"],
+    queryFn: () => getOrganizersRatings(),
+  });
+
   const list = dbOrganizers && dbOrganizers.length > 0 ? dbOrganizers : organizers;
 
   const handleOrgClick = (org: any) => {
@@ -62,7 +68,8 @@ function OrganizersPage() {
     const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
     const twitterUrl = org.twitterUrl || org.socials?.twitter || `https://twitter.com/${org.handle}`;
     const instagramUrl = org.instagramUrl || org.socials?.instagram || `https://instagram.com/${org.handle}`;
-    
+    const rating = ratingsMap[org.id];
+
     return (
       <div className="flex flex-col items-center pt-4 pb-6 px-4">
         <div className="h-24 w-24 rounded-full overflow-hidden border border-border/40 shadow-sm mb-4 relative">
@@ -72,9 +79,17 @@ function OrganizersPage() {
           <h2 className="text-xl font-bold">{org.name}</h2>
           <CheckCircle2 className="h-5 w-5 text-primary fill-primary/20" />
         </div>
-        <p className="text-sm font-medium text-muted-foreground mb-4">
-          @{org.handle} • {(followerCount / 1000).toFixed(1)}k followers
+        <p className="text-sm font-medium text-muted-foreground mb-2">
+          @{org.handle} · {(followerCount / 1000).toFixed(1)}k followers
         </p>
+
+        {rating && (
+          <div className="flex items-center gap-1 mb-4 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+            <Star className="h-3 w-3 fill-primary" />
+            <span>{rating.avg.toFixed(1)}</span>
+            <span className="text-muted-foreground font-normal">({rating.count} {rating.count === 1 ? "review" : "reviews"})</span>
+          </div>
+        )}
 
         <p className="text-center text-sm mb-6 max-w-xs">{org.bio}</p>
 
@@ -135,6 +150,7 @@ function OrganizersPage() {
             const following = isFollowing(org.id);
             const followerCount = org.followers + (following ? 1 : 0);
             const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
+            const rating = ratingsMap[org.id];
             return (
               <div
                 key={org.id}
@@ -150,6 +166,14 @@ function OrganizersPage() {
                 <p className="text-xs text-muted-foreground mt-1">
                   {(followerCount / 1000).toFixed(1)}k followers
                 </p>
+
+                {rating && (
+                  <div className="flex items-center gap-1 mt-2 text-xs text-primary font-medium">
+                    <Star className="h-3 w-3 fill-primary" />
+                    <span>{rating.avg.toFixed(1)}</span>
+                    <span className="text-muted-foreground font-normal">({rating.count})</span>
+                  </div>
+                )}
 
                 <Button
                   variant={following ? "outline" : "default"}

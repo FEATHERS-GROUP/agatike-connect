@@ -219,6 +219,56 @@ export const updateFeedback = createServerFn({ method: "POST" }).handler(async (
   return data.update_event_feedback_by_pk;
 });
 
+// ─── Get Ratings for All Organizers (across all their events) ─────────────────
+export const getOrganizersRatings = createServerFn({ method: "GET" }).handler(async () => {
+  // Query from event_feedback side — navigate up via events.workspaces to get orgnizer_id.
+  // Hasura exposes this direction; event_feedback_aggregate on events does NOT exist.
+  const query = `
+    query GetOrganizersRatings {
+      event_feedback(where: { is_public: { _eq: true } }) {
+        rating
+        events {
+          workspaces {
+            orgnizer_id
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await hasuraRequest<{
+    event_feedback: Array<{
+      rating: number;
+      events: {
+        workspaces: { orgnizer_id: string | null } | null;
+      } | null;
+    }>;
+  }>(query, {});
+
+  // Aggregate ratings per organizer in JS
+  const accumulator: Record<string, { total: number; count: number }> = {};
+
+  for (const fb of data.event_feedback || []) {
+    const organizerId = fb.events?.workspaces?.orgnizer_id;
+    if (!organizerId || fb.rating == null) continue;
+    if (!accumulator[organizerId]) {
+      accumulator[organizerId] = { total: 0, count: 0 };
+    }
+    accumulator[organizerId].total += fb.rating;
+    accumulator[organizerId].count += 1;
+  }
+
+  const ratingsMap: Record<string, { avg: number; count: number }> = {};
+  for (const [id, { total, count }] of Object.entries(accumulator)) {
+    ratingsMap[id] = {
+      avg: Math.round((total / count) * 10) / 10,
+      count,
+    };
+  }
+
+  return ratingsMap;
+});
+
 // ─── Check if user already submitted feedback ─────────────────────────────────
 export const checkFeedbackExists = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { event_id, reviewer_email } = ctx.data as unknown as {
