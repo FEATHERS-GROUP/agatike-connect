@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Heart, MessageCircle, Send, Bookmark, Ticket } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, Ticket, Users } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Stories } from "@/components/site/Stories";
 import { Button } from "@/components/ui/button";
 import { FeedCard } from "@/components/site/FeedCard";
 import { events, feedPosts } from "@/lib/mock-data";
+import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
+import { getOrganizers } from "@/api/organizers";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/feed")({
   head: () => ({
@@ -26,6 +29,20 @@ export const Route = createFileRoute("/feed")({
 });
 
 function Feed() {
+  const { isFollowing } = useFollowedOrganizers();
+  const { data: dbOrganizers = [] } = useQuery({
+    queryKey: ["organizers"],
+    queryFn: () => getOrganizers(),
+  });
+
+  // Extract handles of organizers the user follows
+  const followedHandles = dbOrganizers
+    .filter((org) => isFollowing(org.id))
+    .map((org) => org.handle);
+
+  // Filter feed posts to only show those from followed organizers
+  const filteredPosts = feedPosts.filter((post) => followedHandles.includes(post.handle));
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
@@ -33,9 +50,24 @@ function Feed() {
         <main>
           <Stories />
           <div className="mt-8 space-y-8">
-            {feedPosts.map((p, i) => (
-              <FeedCard key={`${p.id}-${i}`} post={p} />
-            ))}
+            {filteredPosts.length > 0 ? (
+              filteredPosts.map((p, i) => <FeedCard key={`${p.id}-${i}`} post={p} />)
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-card rounded-2xl border border-border/40">
+                <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
+                  <Users className="h-8 w-8" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground">Your feed is quiet</h3>
+                <p className="text-muted-foreground mt-2 text-sm max-w-sm">
+                  Follow organizers to see their latest updates, ticket drops, and event recaps right here.
+                </p>
+                <Link to="/organizers">
+                  <Button className="mt-6 rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+                    Discover Organizers
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </main>
 

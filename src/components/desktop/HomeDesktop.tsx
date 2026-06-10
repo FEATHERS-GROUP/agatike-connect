@@ -270,23 +270,40 @@ export function HomeDesktop() {
             See all →
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {feedPosts.slice(0, 4).map((p) => (
-            <div key={p.id} className="group relative aspect-square overflow-hidden rounded-2xl">
-              <img
-                src={p.image}
-                alt={p.eventTitle}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-              <div className="absolute bottom-3 left-3 right-3 text-xs text-white">
-                <p className="font-semibold">@{p.handle}</p>
-                <p className="opacity-80 line-clamp-1">{p.caption}</p>
+        {(() => {
+          const followedHandles = allOrganizers
+            .filter((org: any) => isFollowing(org.id))
+            .map((org: any) => org.handle);
+          const filteredPosts = feedPosts.filter((post) => followedHandles.includes(post.handle));
+
+          if (filteredPosts.length === 0) {
+            return (
+              <div className="flex flex-col items-center justify-center py-12 text-center bg-card rounded-2xl border border-border/40">
+                <p className="text-muted-foreground font-medium text-sm">Follow organizers to see their community moments here.</p>
               </div>
+            );
+          }
+
+          return (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {filteredPosts.slice(0, 4).map((p) => (
+                <div key={p.id} className="group relative aspect-square overflow-hidden rounded-2xl">
+                  <img
+                    src={p.image}
+                    alt={p.eventTitle}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3 text-xs text-white">
+                    <p className="font-semibold">@{p.handle}</p>
+                    <p className="opacity-80 line-clamp-1">{p.caption}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          );
+        })()}
       </section>
 
       {/* Create event CTA */}

@@ -199,9 +199,30 @@ export function HomeMobile() {
 
       {/* Feed List */}
       <div className="w-full pt-2 pb-24">
-        {items.map((item, index) => (
-          <FeedCard key={`${item.id}-${index}`} post={item} />
-        ))}
+        {(() => {
+          const followedHandles = dbOrganizers
+            .filter((org: any) => isFollowing(org.id))
+            .map((org: any) => org.handle);
+          const filteredItems = items.filter((item) => followedHandles.includes(item.handle));
+
+          if (filteredItems.length === 0) {
+            return (
+              <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
+                <div className="h-14 w-14 bg-secondary text-muted-foreground rounded-full flex items-center justify-center mb-3">
+                  <Users className="h-6 w-6" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">Your feed is quiet</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Follow organizers to see their updates here.
+                </p>
+              </div>
+            );
+          }
+
+          return filteredItems.map((item, index) => (
+            <FeedCard key={`${item.id}-${index}`} post={item} />
+          ));
+        })()}
       </div>
 
       {/* CSS to hide scrollbars */}
