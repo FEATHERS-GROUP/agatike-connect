@@ -1,7 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getCookie } from "@tanstack/react-start/server";
+import { jwtVerify } from "jose";
 import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
 import bcrypt from "bcryptjs";
+
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
+
+async function getUserIdFromCookie() {
+  const token = getCookie("agatike_user_auth");
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, SECRET);
+    return payload.sub;
+  } catch {
+    return null;
+  }
+}
 
 export interface OrganizerInput {
   bio?: string;
@@ -229,5 +244,86 @@ export const changeOrganizerPassword = createServerFn({ method: "POST" }).handle
     `;
   await hasuraRequest(mutation, { id: session.sub, password: newHash });
 
+  return { success: true };
+});
+
+export const getOrganizers = createServerFn({ method: "GET" }).handler(async () => {
+  const query = `
+    query GetOrganizers {
+      organizers {
+        id
+        name
+        handle
+        bio
+        followers
+        image
+        email
+        phone
+        socials
+        active
+      }
+    }
+  `;
+  const result = await hasuraRequest<{ organizers: any[] }>(query, {});
+  return result.organizers;
+});
+
+export const getFollowedOrganizers = createServerFn({ method: "GET" }).handler(async () => {
+  const userId = await getUserIdFromCookie();
+  if (!userId) return [];
+
+  const query = `
+    query GetFollowedOrganizers($userId: uuid!) {
+      organizer_followers(where: { user_id: { _eq: $userId } }) {
+        organizer_id
+      }
+    }
+  `;
+
+  const result = await hasuraRequest<{ organizer_followers: { organizer_id: string }[] }>(query, {
+    userId,
+  });
+  return result.organizer_followers.map((f) => f.organizer_id);
+});
+
+export const followOrganizer = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const userId = await getUserIdFromCookie();
+  if (!userId) throw new Error("unauthenticated");
+
+  const { organizerId } = ctx.data as unknown as { organizerId: string };
+
+  const mutation = `
+    mutation FollowOrganizer($organizerId: uuid!, $userId: uuid!) {
+      insert_organizer_followers_one(object: { organizer_id: $organizerId, user_id: $userId }) {
+        id
+      }
+      update_organizers_by_pk(pk_columns: { id: $organizerId }, _inc: { followers: 1 }) {
+        id
+      }
+    }
+  `;
+
+  await hasuraRequest(mutation, { organizerId, userId });
+  return { success: true };
+});
+
+export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const userId = await getUserIdFromCookie();
+  if (!userId) throw new Error("unauthenticated");
+
+  const { organizerId } = ctx.data as unknown as { organizerId: string };
+
+  const mutation = `
+    mutation UnfollowOrganizer($organizerId: uuid!, $userId: uuid!) {
+      delete_organizer_followers(where: { organizer_id: { _eq: $organizerId }, user_id: { _eq: $userId } }) {
+        affected_rows
+      }
+      update_organizers_by_pk(pk_columns: { id: $organizerId }, _inc: { followers: -1 }) {
+        id
+      }
+    }
+  `;
+
+  await hasuraRequest(mutation, { organizerId, userId });
   return { success: true };
 });

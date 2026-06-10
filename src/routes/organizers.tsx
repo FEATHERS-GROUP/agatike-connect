@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { organizers, Organizer } from "@/lib/mock-data";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
+import { getOrganizers } from "@/api/organizers";
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -34,10 +37,18 @@ export const Route = createFileRoute("/organizers")({
 
 function OrganizersPage() {
   const router = useRouter();
-  const [selectedOrg, setSelectedOrg] = useState<Organizer | null>(null);
+  const [selectedOrg, setSelectedOrg] = useState<any | null>(null);
   const isMobile = useIsMobile();
+  const { toggleFollow, isFollowing } = useFollowedOrganizers();
 
-  const handleOrgClick = (org: Organizer) => {
+  const { data: dbOrganizers } = useQuery({
+    queryKey: ["organizers"],
+    queryFn: () => getOrganizers(),
+  });
+
+  const list = dbOrganizers && dbOrganizers.length > 0 ? dbOrganizers : organizers;
+
+  const handleOrgClick = (org: any) => {
     setSelectedOrg(org);
   };
 
@@ -45,42 +56,52 @@ function OrganizersPage() {
     setSelectedOrg(null);
   };
 
-  const ProfileContent = ({ org }: { org: Organizer }) => (
-    <div className="flex flex-col items-center pt-4 pb-6 px-4">
-      <div className="h-24 w-24 rounded-full overflow-hidden border border-border/40 shadow-sm mb-4 relative">
-        <img src={org.avatar} alt={org.name} className="w-full h-full object-cover" />
-      </div>
-      <div className="flex items-center gap-1.5 mb-1">
-        <h2 className="text-xl font-bold">{org.name}</h2>
-        <CheckCircle2 className="h-5 w-5 text-primary fill-primary/20" />
-      </div>
-      <p className="text-sm font-medium text-muted-foreground mb-4">
-        @{org.handle} • {(org.followers / 1000).toFixed(1)}k followers
-      </p>
+  const ProfileContent = ({ org }: { org: any }) => {
+    const following = isFollowing(org.id);
+    const followerCount = org.followers + (following ? 1 : 0);
+    const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
+    const twitterUrl = org.twitterUrl || org.socials?.twitter || `https://twitter.com/${org.handle}`;
+    const instagramUrl = org.instagramUrl || org.socials?.instagram || `https://instagram.com/${org.handle}`;
+    
+    return (
+      <div className="flex flex-col items-center pt-4 pb-6 px-4">
+        <div className="h-24 w-24 rounded-full overflow-hidden border border-border/40 shadow-sm mb-4 relative">
+          <img src={avatar} alt={org.name} className="w-full h-full object-cover" />
+        </div>
+        <div className="flex items-center gap-1.5 mb-1">
+          <h2 className="text-xl font-bold">{org.name}</h2>
+          <CheckCircle2 className="h-5 w-5 text-primary fill-primary/20" />
+        </div>
+        <p className="text-sm font-medium text-muted-foreground mb-4">
+          @{org.handle} • {(followerCount / 1000).toFixed(1)}k followers
+        </p>
 
-      <p className="text-center text-sm mb-6 max-w-xs">{org.bio}</p>
+        <p className="text-center text-sm mb-6 max-w-xs">{org.bio}</p>
 
-      <div className="flex gap-4 w-full justify-center mb-6">
-        <Button variant="outline" size="icon" className="rounded-full" asChild>
-          <a href={org.twitterUrl} target="_blank" rel="noopener noreferrer">
-            <Twitter className="h-4 w-4" />
-          </a>
+        <div className="flex gap-4 w-full justify-center mb-6">
+          <Button variant="outline" size="icon" className="rounded-full" asChild>
+            <a href={twitterUrl} target="_blank" rel="noopener noreferrer">
+              <Twitter className="h-4 w-4" />
+            </a>
+          </Button>
+          <Button variant="outline" size="icon" className="rounded-full" asChild>
+            <a href={instagramUrl} target="_blank" rel="noopener noreferrer">
+              <Instagram className="h-4 w-4" />
+            </a>
+          </Button>
+        </div>
+
+        <Button
+          onClick={() => toggleFollow(org.id)}
+          variant={following ? "outline" : "default"}
+          className={`w-full max-w-xs rounded-full font-bold ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
+          style={following ? undefined : { background: "var(--gradient-primary)" }}
+        >
+          {following ? "Following" : "Follow"}
         </Button>
-        <Button variant="outline" size="icon" className="rounded-full" asChild>
-          <a href={org.instagramUrl} target="_blank" rel="noopener noreferrer">
-            <Instagram className="h-4 w-4" />
-          </a>
-        </Button>
       </div>
-
-      <Button
-        className="w-full max-w-xs rounded-full font-bold shadow-[var(--shadow-glow)]"
-        style={{ background: "var(--gradient-primary)" }}
-      >
-        Follow
-      </Button>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none">
@@ -110,33 +131,40 @@ function OrganizersPage() {
         </header>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-          {organizers.map((org) => (
-            <div
-              key={org.id}
-              onClick={() => handleOrgClick(org)}
-              className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-1 cursor-pointer flex flex-col items-center text-center"
-            >
-              <div className="relative h-20 w-20 mb-3 rounded-full overflow-hidden border border-border/40">
-                <img src={org.avatar} alt={org.name} className="w-full h-full object-cover" />
-              </div>
-              <h3 className="font-semibold text-sm leading-tight line-clamp-1 w-full">
-                {org.name}
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                {(org.followers / 1000).toFixed(1)}k followers
-              </p>
-
-              <Button
-                className="w-full mt-4 rounded-full text-xs font-semibold h-8 shadow-[var(--shadow-glow)]"
-                style={{ background: "var(--gradient-primary)" }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
+          {list.map((org) => {
+            const following = isFollowing(org.id);
+            const followerCount = org.followers + (following ? 1 : 0);
+            const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
+            return (
+              <div
+                key={org.id}
+                onClick={() => handleOrgClick(org)}
+                className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-1 cursor-pointer flex flex-col items-center text-center animate-in fade-in duration-300"
               >
-                Follow
-              </Button>
-            </div>
-          ))}
+                <div className="relative h-20 w-20 mb-3 rounded-full overflow-hidden border border-border/40">
+                  <img src={avatar} alt={org.name} className="w-full h-full object-cover" />
+                </div>
+                <h3 className="font-semibold text-sm leading-tight line-clamp-1 w-full">
+                  {org.name}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {(followerCount / 1000).toFixed(1)}k followers
+                </p>
+
+                <Button
+                  variant={following ? "outline" : "default"}
+                  className={`w-full mt-4 rounded-full text-xs font-semibold h-8 ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
+                  style={following ? undefined : { background: "var(--gradient-primary)" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFollow(org.id);
+                  }}
+                >
+                  {following ? "Following" : "Follow"}
+                </Button>
+              </div>
+            );
+          })}
         </div>
       </div>
 

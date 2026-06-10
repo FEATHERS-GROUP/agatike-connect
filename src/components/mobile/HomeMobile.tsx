@@ -1,16 +1,24 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { feedPosts, events, movies, organizers, stories } from "@/lib/mock-data";
+import { feedPosts, events, movies, stories } from "@/lib/mock-data";
 import { FeedCard } from "@/components/site/FeedCard";
 import { Stories } from "@/components/site/Stories";
-import { Camera, Activity, Loader2 } from "lucide-react";
+import { Camera, Activity, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserAuth } from "@/contexts/UserAuthContext";
-import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getOrganizers } from "@/api/organizers";
+import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 
 export function HomeMobile() {
   const { user, isLoading, isLoggedIn } = useUserAuth();
   const navigate = useNavigate();
+  const { toggleFollow, isFollowing } = useFollowedOrganizers();
   const items = feedPosts;
+
+  const { data: dbOrganizers = [], isLoading: organizersLoading } = useQuery({
+    queryKey: ["organizers"],
+    queryFn: () => getOrganizers(),
+  });
 
   // Show loading spinner while checking session
   if (isLoading) {
@@ -57,28 +65,48 @@ export function HomeMobile() {
           </Link>
         </div>
         <div className="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2">
-          {organizers.map((org) => (
-            <Link
-              key={org.id}
-              to="/organizers"
-              className="w-36 shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center text-center transition-transform active:scale-95 block"
-            >
-              <img
-                src={org.avatar}
-                alt={org.name}
-                className="w-16 h-16 rounded-full object-cover mb-3"
-              />
-              <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
-              <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">@{org.handle}</p>
-              <Button
-                size="sm"
-                className="mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider"
-                onClick={(e) => e.preventDefault()}
-              >
-                Follow
-              </Button>
-            </Link>
-          ))}
+          {organizersLoading ? (
+            <div className="flex items-center justify-center w-full py-6">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : dbOrganizers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center w-full py-6 gap-2 text-muted-foreground">
+              <Users className="h-8 w-8" />
+              <p className="text-sm">No organizers found</p>
+            </div>
+          ) : (
+            dbOrganizers.map((org: any) => {
+              const following = isFollowing(org.id);
+              return (
+                <Link
+                  key={org.id}
+                  to="/organizers"
+                  className="w-36 shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center text-center transition-transform active:scale-95 block"
+                >
+                  <img
+                    src={org.image || org.avatar || "/icon.svg"}
+                    alt={org.name}
+                    className="w-16 h-16 rounded-full object-cover mb-3"
+                  />
+                  <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">@{org.handle}</p>
+                  <Button
+                    size="sm"
+                    variant={following ? "outline" : "default"}
+                    className={`mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
+                    style={following ? undefined : { background: "var(--gradient-primary)" }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleFollow(org.id);
+                    }}
+                  >
+                    {following ? "Following" : "Follow"}
+                  </Button>
+                </Link>
+              );
+            })
+          )}
         </div>
       </div>
 

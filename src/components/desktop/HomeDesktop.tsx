@@ -6,10 +6,22 @@ import { EventCard } from "@/components/site/EventCard";
 import { Stories } from "@/components/site/Stories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { categories, events, feedPosts, movies, movieStories } from "@/lib/mock-data";
+import { categories, events, feedPosts, movies, movieStories, organizers } from "@/lib/mock-data";
 import hero from "@/assets/hero-event.jpg";
+import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
+import { useQuery } from "@tanstack/react-query";
+import { getOrganizers } from "@/api/organizers";
 
 export function HomeDesktop() {
+  const { toggleFollow, isFollowing } = useFollowedOrganizers();
+  
+  const { data: dbOrganizers } = useQuery({
+    queryKey: ["organizers"],
+    queryFn: () => getOrganizers(),
+  });
+
+  const list = dbOrganizers && dbOrganizers.length > 0 ? dbOrganizers : organizers;
+
   const trending = events.slice(0, 6);
   const weekend = events.slice(1, 5);
   return (
@@ -186,30 +198,40 @@ export function HomeDesktop() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {events.slice(0, 4).map((e) => (
-            <div
-              key={e.id}
-              className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-1"
-            >
-              <img
-                src={e.cover}
-                alt={e.organizer}
-                className="h-16 w-16 rounded-full object-cover"
-                loading="lazy"
-              />
-              <p className="mt-4 font-semibold">{e.organizer}</p>
-              <p className="text-xs text-muted-foreground">
-                @{e.organizerHandle} · {e.city}
-              </p>
-              <div className="mt-3 flex items-center gap-1 text-xs">
-                <Star className="h-3 w-3 fill-primary text-primary" /> {e.rating} ·{" "}
-                {(e.attendees * 12).toLocaleString()} followers
+          {list.slice(0, 4).map((org) => {
+            const following = isFollowing(org.id);
+            const followerCount = org.followers + (following ? 1 : 0);
+            const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
+            return (
+              <div
+                key={org.id}
+                className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-1 flex flex-col items-center text-center animate-in fade-in duration-300"
+              >
+                <img
+                  src={avatar}
+                  alt={org.name}
+                  className="h-16 w-16 rounded-full object-cover"
+                  loading="lazy"
+                />
+                <p className="mt-4 font-semibold">{org.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  @{org.handle}
+                </p>
+                <div className="mt-3 flex items-center gap-1 text-xs">
+                  <Star className="h-3 w-3 fill-primary text-primary" /> 4.9 ·{" "}
+                  {followerCount.toLocaleString()} followers
+                </div>
+                <Button
+                  variant={following ? "outline" : "default"}
+                  className={`mt-4 w-full rounded-full ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
+                  style={following ? undefined : { background: "var(--gradient-primary)" }}
+                  onClick={() => toggleFollow(org.id)}
+                >
+                  {following ? "Following" : "Follow"}
+                </Button>
               </div>
-              <Button variant="outline" className="mt-4 w-full rounded-full">
-                Follow
-              </Button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
