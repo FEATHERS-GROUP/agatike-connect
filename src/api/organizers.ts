@@ -272,8 +272,6 @@ export const getFollowedOrganizers = createServerFn({ method: "GET" }).handler(a
   const userId = await getUserIdFromCookie();
   if (!userId) return [];
 
-  // Fetch all follower rows and filter in JS to avoid jsonb GraphQL variable
-  // type-coercion issues (Hasura encodes jsonb variables differently from stored values)
   const query = `
     query GetFollowedOrganizers {
       organizer_followers {
@@ -287,9 +285,16 @@ export const getFollowedOrganizers = createServerFn({ method: "GET" }).handler(a
     organizer_followers: { organizer_id: string; user_id: any }[];
   }>(query, {});
 
-  const userIdStr = String(userId);
+  const userIdStr = String(userId).replace(/"/g, "");
+  
   return result.organizer_followers
-    .filter((f) => String(f.user_id) === userIdStr)
+    .filter((f) => {
+      // The database stores user_id as a jsonb array of follower user IDs
+      if (Array.isArray(f.user_id)) {
+        return f.user_id.some((id) => String(id).replace(/"/g, "") === userIdStr);
+      }
+      return String(f.user_id).replace(/"/g, "") === userIdStr;
+    })
     .map((f) => f.organizer_id);
 });
 
@@ -298,48 +303,108 @@ export const followOrganizer = createServerFn({ method: "POST" }).handler(async 
   if (!userId) throw new Error("unauthenticated");
 
   const { organizerId } = ctx.data as unknown as { organizerId: string };
+  const userIdStr = String(userId).replace(/"/g, "");
 
-  // Use insert with on_conflict to silently skip if the follow already exists
-  // (prevents duplicate key constraint violations if the UI state was stale)
-  const mutation = `
-    mutation FollowOrganizer($organizerId: uuid!, $userId: jsonb) {
-      insert_organizer_followers(
-        objects: [{ organizer_id: $organizerId, user_id: $userId }],
-        on_conflict: { constraint: organizer_followers_organizer_id_key, update_columns: [] }
-      ) {
-        affected_rows
-      }
-      update_organizers_by_pk(pk_columns: { id: $organizerId }, _inc: { followers: 1 }) {
+  // 1. Fetch current followers row
+  const fetchQuery = `
+    query GetRow($organizerId: uuid!) {
+      organizer_followers(where: { organizer_id: { _eq: $organizerId } }) {
         id
+        user_id
       }
     }
   `;
+  const existing = await hasuraRequest<{ organizer_followers: { id: string; user_id: any }[] }>(
+    fetchQuery,
+    { organizerId }
+  );
 
-  const result = await hasuraRequest<{
-    insert_organizer_followers: { affected_rows: number };
-  }>(mutation, { organizerId, userId });
+  const row = existing.organizer_followers[0];
 
-  return { success: true, inserted: result.insert_organizer_followers.affected_rows > 0 };
+  if (row) {
+    // Organizer already has a followers row. Append to the jsonb array.
+    let currentUsers = Array.isArray(row.user_id) ? row.user_id : row.user_id ? [row.user_id] : [];
+    const strUsers = currentUsers.map((u: any) => String(u).replace(/"/g, ""));
+    
+    if (strUsers.includes(userIdStr)) {
+      return { success: true, inserted: false }; // Already following
+    }
+    
+    currentUsers.push(userIdStr);
+
+    const updateMut = `
+      mutation UpdateFollowers($id: uuid!, $users: jsonb, $organizerId: uuid!) {
+        update_organizer_followers_by_pk(pk_columns: { id: $id }, _set: { user_id: $users }) {
+          id
+        }
+        update_organizers_by_pk(pk_columns: { id: $organizerId }, _inc: { followers: 1 }) {
+          id
+        }
+      }
+    `;
+    await hasuraRequest(updateMut, { id: row.id, users: currentUsers, organizerId });
+  } else {
+    // First time this organizer is being followed. Insert new row with array.
+    const insertMut = `
+      mutation InsertFollowers($organizerId: uuid!, $users: jsonb) {
+        insert_organizer_followers_one(object: { organizer_id: $organizerId, user_id: $users }) {
+          id
+        }
+        update_organizers_by_pk(pk_columns: { id: $organizerId }, _inc: { followers: 1 }) {
+          id
+        }
+      }
+    `;
+    await hasuraRequest(insertMut, { organizerId, users: [userIdStr] });
+  }
+
+  return { success: true, inserted: true };
 });
-
 
 export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const userId = await getUserIdFromCookie();
   if (!userId) throw new Error("unauthenticated");
 
   const { organizerId } = ctx.data as unknown as { organizerId: string };
+  const userIdStr = String(userId).replace(/"/g, "");
 
-  const mutation = `
-    mutation UnfollowOrganizer($organizerId: uuid!, $userId: jsonb) {
-      delete_organizer_followers(where: { organizer_id: { _eq: $organizerId }, user_id: { _eq: $userId } }) {
-        affected_rows
+  // Fetch current followers row
+  const fetchQuery = `
+    query GetRow($organizerId: uuid!) {
+      organizer_followers(where: { organizer_id: { _eq: $organizerId } }) {
+        id
+        user_id
+      }
+    }
+  `;
+  const existing = await hasuraRequest<{ organizer_followers: { id: string; user_id: any }[] }>(
+    fetchQuery,
+    { organizerId }
+  );
+
+  const row = existing.organizer_followers[0];
+  if (!row) return { success: true }; // Nothing to unfollow
+
+  let currentUsers = Array.isArray(row.user_id) ? row.user_id : row.user_id ? [row.user_id] : [];
+  const strUsers = currentUsers.map((u: any) => String(u).replace(/"/g, ""));
+  
+  if (!strUsers.includes(userIdStr)) {
+    return { success: true }; // Already not following
+  }
+
+  const newUsers = currentUsers.filter((u: any) => String(u).replace(/"/g, "") !== userIdStr);
+
+  const updateMut = `
+    mutation UpdateFollowers($id: uuid!, $users: jsonb, $organizerId: uuid!) {
+      update_organizer_followers_by_pk(pk_columns: { id: $id }, _set: { user_id: $users }) {
+        id
       }
       update_organizers_by_pk(pk_columns: { id: $organizerId }, _inc: { followers: -1 }) {
         id
       }
     }
   `;
+  await hasuraRequest(updateMut, { id: row.id, users: newUsers, organizerId });
 
-  await hasuraRequest(mutation, { organizerId, userId });
   return { success: true };
 });

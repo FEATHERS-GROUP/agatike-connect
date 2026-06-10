@@ -80,7 +80,7 @@ function OrganizersPage() {
           <CheckCircle2 className="h-5 w-5 text-primary fill-primary/20" />
         </div>
         <p className="text-sm font-medium text-muted-foreground mb-2">
-          @{org.handle} · {(followerCount / 1000).toFixed(1)}k followers
+          @{org.handle} · {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + 'k' : followerCount} followers
         </p>
 
         {rating && (
@@ -164,7 +164,7 @@ function OrganizersPage() {
                   {org.name}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {(followerCount / 1000).toFixed(1)}k followers
+                  {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + 'k' : followerCount} followers
                 </p>
 
                 {rating && (
