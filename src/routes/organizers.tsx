@@ -66,8 +66,10 @@ function OrganizersPage() {
     const following = isFollowing(org.id);
     const followerCount = org.followers + (following ? 1 : 0);
     const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
-    const twitterUrl = org.twitterUrl || org.socials?.twitter || `https://twitter.com/${org.handle}`;
-    const instagramUrl = org.instagramUrl || org.socials?.instagram || `https://instagram.com/${org.handle}`;
+    const twitterUrl =
+      org.twitterUrl || org.socials?.twitter || `https://twitter.com/${org.handle}`;
+    const instagramUrl =
+      org.instagramUrl || org.socials?.instagram || `https://instagram.com/${org.handle}`;
     const rating = ratingsMap[org.id];
 
     return (
@@ -80,14 +82,18 @@ function OrganizersPage() {
           <CheckCircle2 className="h-5 w-5 text-primary fill-primary/20" />
         </div>
         <p className="text-sm font-medium text-muted-foreground mb-2">
-          @{org.handle} · {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + 'k' : followerCount} followers
+          @{org.handle} ·{" "}
+          {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + "k" : followerCount}{" "}
+          followers
         </p>
 
         {rating && (
           <div className="flex items-center gap-1 mb-4 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
             <Star className="h-3 w-3 fill-primary" />
             <span>{rating.avg.toFixed(1)}</span>
-            <span className="text-muted-foreground font-normal">({rating.count} {rating.count === 1 ? "review" : "reviews"})</span>
+            <span className="text-muted-foreground font-normal">
+              ({rating.count} {rating.count === 1 ? "review" : "reviews"})
+            </span>
           </div>
         )}
 
@@ -164,7 +170,8 @@ function OrganizersPage() {
                   {org.name}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + 'k' : followerCount} followers
+                  {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + "k" : followerCount}{" "}
+                  followers
                 </p>
 
                 {rating && (

@@ -55,10 +55,14 @@ function Feed() {
                 </div>
                 <h3 className="text-lg font-bold text-foreground">Your feed is quiet</h3>
                 <p className="text-muted-foreground mt-2 text-sm max-w-sm">
-                  Follow organizers to see their latest updates, ticket drops, and event recaps right here.
+                  Follow organizers to see their latest updates, ticket drops, and event recaps
+                  right here.
                 </p>
                 <Link to="/organizers">
-                  <Button className="mt-6 rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+                  <Button
+                    className="mt-6 rounded-full shadow-[var(--shadow-glow)]"
+                    style={{ background: "var(--gradient-primary)" }}
+                  >
                     Discover Organizers
                   </Button>
                 </Link>

@@ -286,7 +286,7 @@ export const getFollowedOrganizers = createServerFn({ method: "GET" }).handler(a
   }>(query, {});
 
   const userIdStr = String(userId).replace(/"/g, "");
-  
+
   return result.organizer_followers
     .filter((f) => {
       // The database stores user_id as a jsonb array of follower user IDs
@@ -316,7 +316,7 @@ export const followOrganizer = createServerFn({ method: "POST" }).handler(async 
   `;
   const existing = await hasuraRequest<{ organizer_followers: { id: string; user_id: any }[] }>(
     fetchQuery,
-    { organizerId }
+    { organizerId },
   );
 
   const row = existing.organizer_followers[0];
@@ -325,11 +325,11 @@ export const followOrganizer = createServerFn({ method: "POST" }).handler(async 
     // Organizer already has a followers row. Append to the jsonb array.
     let currentUsers = Array.isArray(row.user_id) ? row.user_id : row.user_id ? [row.user_id] : [];
     const strUsers = currentUsers.map((u: any) => String(u).replace(/"/g, ""));
-    
+
     if (strUsers.includes(userIdStr)) {
       return { success: true, inserted: false }; // Already following
     }
-    
+
     currentUsers.push(userIdStr);
 
     const updateMut = `
@@ -379,7 +379,7 @@ export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(asyn
   `;
   const existing = await hasuraRequest<{ organizer_followers: { id: string; user_id: any }[] }>(
     fetchQuery,
-    { organizerId }
+    { organizerId },
   );
 
   const row = existing.organizer_followers[0];
@@ -387,7 +387,7 @@ export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(asyn
 
   let currentUsers = Array.isArray(row.user_id) ? row.user_id : row.user_id ? [row.user_id] : [];
   const strUsers = currentUsers.map((u: any) => String(u).replace(/"/g, ""));
-  
+
   if (!strUsers.includes(userIdStr)) {
     return { success: true }; // Already not following
   }

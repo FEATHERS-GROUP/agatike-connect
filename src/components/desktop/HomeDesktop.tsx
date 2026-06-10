@@ -16,7 +16,7 @@ import { getGlobalFeedPosts } from "@/api/experience";
 
 export function HomeDesktop() {
   const { toggleFollow, isFollowing, followedIds } = useFollowedOrganizers();
-  
+
   const { data: dbOrganizers } = useQuery({
     queryKey: ["organizers"],
     queryFn: () => getOrganizers(),
@@ -199,7 +199,6 @@ export function HomeDesktop() {
         </div>
       </section>
 
-
       {/* Organizers */}
       <section className="mx-auto mt-20 max-w-7xl px-6">
         <div className="mb-6 flex items-end justify-between">
@@ -215,7 +214,9 @@ export function HomeDesktop() {
           <div className="flex flex-col items-center justify-center py-10 gap-3 text-muted-foreground border border-border/40 rounded-2xl bg-card">
             <Star className="h-8 w-8 text-primary" />
             <p className="font-medium text-sm">You're following all our top organizers!</p>
-            <Link to="/organizers" className="text-xs font-bold text-primary hover:underline">Browse all organizers →</Link>
+            <Link to="/organizers" className="text-xs font-bold text-primary hover:underline">
+              Browse all organizers →
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -234,19 +235,18 @@ export function HomeDesktop() {
                     loading="lazy"
                   />
                   <p className="mt-4 font-semibold">{org.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    @{org.handle}
-                  </p>
-                  
+                  <p className="text-xs text-muted-foreground">@{org.handle}</p>
+
                   <p className="text-xs text-muted-foreground mt-1">
-                    {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + 'k' : followerCount} followers
+                    {followerCount >= 1000
+                      ? (followerCount / 1000).toFixed(1) + "k"
+                      : followerCount}{" "}
+                    followers
                   </p>
 
                   <div className="mt-2 flex items-center justify-center gap-1">
                     <Star className="h-3 w-3 fill-primary text-primary" />
-                    <span className="text-xs font-medium">
-                      {ratingsMap[org.id] || "4.5"}
-                    </span>
+                    <span className="text-xs font-medium">{ratingsMap[org.id] || "4.5"}</span>
                   </div>
 
                   <Button
@@ -263,7 +263,6 @@ export function HomeDesktop() {
           </div>
         )}
       </section>
-
 
       {/* Community feed teaser */}
       <section className="mx-auto mt-20 max-w-7xl px-6">
@@ -284,7 +283,9 @@ export function HomeDesktop() {
           if (filteredPosts.length === 0) {
             return (
               <div className="flex flex-col items-center justify-center py-12 text-center bg-card rounded-2xl border border-border/40">
-                <p className="text-muted-foreground font-medium text-sm">Follow organizers to see their community moments here.</p>
+                <p className="text-muted-foreground font-medium text-sm">
+                  Follow organizers to see their community moments here.
+                </p>
               </div>
             );
           }
@@ -292,7 +293,10 @@ export function HomeDesktop() {
           return (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               {filteredPosts.slice(0, 4).map((p) => (
-                <div key={p.id} className="group relative aspect-square overflow-hidden rounded-2xl">
+                <div
+                  key={p.id}
+                  className="group relative aspect-square overflow-hidden rounded-2xl"
+                >
                   <img
                     src={p.image}
                     alt={p.eventTitle}

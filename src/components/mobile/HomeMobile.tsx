@@ -16,7 +16,6 @@ export function HomeMobile() {
   const navigate = useNavigate();
   const { toggleFollow, isFollowing, followedIds } = useFollowedOrganizers();
 
-
   const { data: dbOrganizers = [], isLoading: organizersLoading } = useQuery({
     queryKey: ["organizers"],
     queryFn: () => getOrganizers(),
@@ -89,7 +88,9 @@ export function HomeMobile() {
             <div className="flex flex-col items-center justify-center w-full py-6 gap-2 text-muted-foreground">
               <Users className="h-8 w-8" />
               <p className="text-sm text-center">You're following all organizers!</p>
-              <Link to="/organizers" className="text-xs font-bold text-primary">View on organizers page →</Link>
+              <Link to="/organizers" className="text-xs font-bold text-primary">
+                View on organizers page →
+              </Link>
             </div>
           ) : unfollowedOrganizers.length === 0 ? (
             <div className="flex flex-col items-center justify-center w-full py-6 gap-2 text-muted-foreground">
@@ -111,7 +112,9 @@ export function HomeMobile() {
                     className="w-16 h-16 rounded-full object-cover mb-3"
                   />
                   <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">@{org.handle}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">
+                    @{org.handle}
+                  </p>
                   {ratingsMap[org.id] && (
                     <div className="flex items-center gap-0.5 mt-1 text-[10px] text-primary font-semibold">
                       <Star className="h-2.5 w-2.5 fill-primary" />
@@ -173,7 +176,6 @@ export function HomeMobile() {
           ))}
         </div>
       </div>
-
 
       {/* Movies Horizontal Scroll */}
       <div className="pt-2 pb-3">
