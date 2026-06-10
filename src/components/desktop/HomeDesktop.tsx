@@ -12,6 +12,7 @@ import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
 import { getOrganizersRatings } from "@/api/feedback";
+import { getGlobalFeedPosts } from "@/api/experience";
 
 export function HomeDesktop() {
   const { toggleFollow, isFollowing, followedIds } = useFollowedOrganizers();
@@ -19,6 +20,11 @@ export function HomeDesktop() {
   const { data: dbOrganizers } = useQuery({
     queryKey: ["organizers"],
     queryFn: () => getOrganizers(),
+  });
+
+  const { data: dbPosts = [] } = useQuery({
+    queryKey: ["global-feed-posts"],
+    queryFn: () => getGlobalFeedPosts(),
   });
 
   const { data: ratingsMap = {} } = useQuery({
@@ -231,23 +237,25 @@ export function HomeDesktop() {
                   <p className="text-xs text-muted-foreground">
                     @{org.handle}
                   </p>
-                  <div className="mt-3 flex items-center gap-1 text-xs">
-                    {ratingsMap[org.id] ? (
-                      <>
-                        <Star className="h-3 w-3 fill-primary text-primary" />
-                        <span>{ratingsMap[org.id].avg.toFixed(1)}</span>
-                        <span className="text-muted-foreground">·</span>
-                      </>
-                    ) : null}
-                    <span className="text-muted-foreground">{followerCount.toLocaleString()} followers</span>
+                  
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + 'k' : followerCount} followers
+                  </p>
+
+                  <div className="mt-2 flex items-center justify-center gap-1">
+                    <Star className="h-3 w-3 fill-primary text-primary" />
+                    <span className="text-xs font-medium">
+                      {ratingsMap[org.id] || "4.5"}
+                    </span>
                   </div>
+
                   <Button
-                    variant="default"
-                    className="mt-4 w-full rounded-full shadow-[var(--shadow-glow)]"
-                    style={{ background: "var(--gradient-primary)" }}
+                    size="sm"
+                    className="mt-4 w-full rounded-full"
+                    variant={isFollowing(org.id) ? "outline" : "default"}
                     onClick={() => toggleFollow(org.id)}
                   >
-                    Follow
+                    {isFollowing(org.id) ? "Following" : "Follow"}
                   </Button>
                 </div>
               );
@@ -271,10 +279,7 @@ export function HomeDesktop() {
           </Link>
         </div>
         {(() => {
-          const followedHandles = allOrganizers
-            .filter((org: any) => isFollowing(org.id))
-            .map((org: any) => org.handle);
-          const filteredPosts = feedPosts.filter((post) => followedHandles.includes(post.handle));
+          const filteredPosts = dbPosts.filter((post) => isFollowing(post.organizerId));
 
           if (filteredPosts.length === 0) {
             return (

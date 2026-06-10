@@ -227,6 +227,63 @@ export const getEventPosts = createServerFn({ method: "POST" }).handler(async (c
   });
 });
 
+export const getGlobalFeedPosts = createServerFn({ method: "GET" }).handler(async () => {
+  const query = `
+    query GetGlobalFeedPosts {
+      event_posts(
+        where: { is_published: { _eq: true } },
+        order_by: { created_at: desc }
+      ) {
+        id
+        content
+        media_urls
+        likes_count
+        comments_count
+        created_at
+        event_id
+        workspace {
+          organizer {
+            id
+            handle
+            name
+            image
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await hasuraRequest<{ event_posts: any[] }>(query, {});
+  return (data.event_posts || []).map((post) => {
+    let parsedMediaUrls = [];
+    try {
+      if (typeof post.media_urls === "string") {
+        parsedMediaUrls = JSON.parse(post.media_urls);
+      } else if (Array.isArray(post.media_urls)) {
+        parsedMediaUrls = post.media_urls;
+      }
+    } catch (e) {
+      console.error("Failed to parse media_urls for post", post.id, e);
+    }
+
+    const organizer = post.workspace?.organizer || {};
+
+    return {
+      id: post.id,
+      user: organizer.name || "Organizer",
+      handle: organizer.handle || "organizer",
+      avatar: organizer.image,
+      image: parsedMediaUrls[0] || null,
+      caption: post.content,
+      likes: post.likes_count,
+      comments: post.comments_count,
+      eventId: post.event_id,
+      organizerId: organizer.id,
+      created_at: post.created_at,
+    };
+  });
+});
+
 export const togglePinPost = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");

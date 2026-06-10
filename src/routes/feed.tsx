@@ -8,6 +8,7 @@ import { FeedCard } from "@/components/site/FeedCard";
 import { events, feedPosts } from "@/lib/mock-data";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { getOrganizers } from "@/api/organizers";
+import { getGlobalFeedPosts } from "@/api/experience";
 import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/feed")({
@@ -30,18 +31,13 @@ export const Route = createFileRoute("/feed")({
 
 function Feed() {
   const { isFollowing } = useFollowedOrganizers();
-  const { data: dbOrganizers = [] } = useQuery({
-    queryKey: ["organizers"],
-    queryFn: () => getOrganizers(),
+  const { data: dbPosts = [] } = useQuery({
+    queryKey: ["global-feed-posts"],
+    queryFn: () => getGlobalFeedPosts(),
   });
 
-  // Extract handles of organizers the user follows
-  const followedHandles = dbOrganizers
-    .filter((org) => isFollowing(org.id))
-    .map((org) => org.handle);
-
   // Filter feed posts to only show those from followed organizers
-  const filteredPosts = feedPosts.filter((post) => followedHandles.includes(post.handle));
+  const filteredPosts = dbPosts.filter((post) => isFollowing(post.organizerId));
 
   return (
     <div className="min-h-screen bg-background text-foreground">

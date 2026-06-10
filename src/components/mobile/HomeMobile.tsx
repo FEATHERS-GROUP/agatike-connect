@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { feedPosts, events, movies, stories } from "@/lib/mock-data";
+import { events, movies, stories } from "@/lib/mock-data";
 import { FeedCard } from "@/components/site/FeedCard";
 import { Stories } from "@/components/site/Stories";
 import { Camera, Activity, Loader2, Users, Star } from "lucide-react";
@@ -8,17 +8,23 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
 import { getOrganizersRatings } from "@/api/feedback";
+import { getGlobalFeedPosts } from "@/api/experience";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 
 export function HomeMobile() {
   const { user, isLoading, isLoggedIn } = useUserAuth();
   const navigate = useNavigate();
   const { toggleFollow, isFollowing, followedIds } = useFollowedOrganizers();
-  const items = feedPosts;
+
 
   const { data: dbOrganizers = [], isLoading: organizersLoading } = useQuery({
     queryKey: ["organizers"],
     queryFn: () => getOrganizers(),
+  });
+
+  const { data: dbPosts = [] } = useQuery({
+    queryKey: ["global-feed-posts"],
+    queryFn: () => getGlobalFeedPosts(),
   });
 
   const { data: ratingsMap = {} } = useQuery({
@@ -200,10 +206,7 @@ export function HomeMobile() {
       {/* Feed List */}
       <div className="w-full pt-2 pb-24">
         {(() => {
-          const followedHandles = dbOrganizers
-            .filter((org: any) => isFollowing(org.id))
-            .map((org: any) => org.handle);
-          const filteredItems = items.filter((item) => followedHandles.includes(item.handle));
+          const filteredItems = dbPosts.filter((post) => isFollowing(post.organizerId));
 
           if (filteredItems.length === 0) {
             return (
