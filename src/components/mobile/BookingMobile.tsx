@@ -266,10 +266,14 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     if (isGenerating && issuedTickets.length > 0 && eventProject) {
       const generatePDFs = async () => {
         try {
+          await new Promise((r) => setTimeout(r, 500)); // Wait for DOM to render
           const attachments = [];
           for (const ticket of issuedTickets) {
             const el = document.getElementById(`ticket-render-${ticket.id}`);
-            if (!el) continue;
+            if (!el) {
+              toast.error(`DOM Element missing for ticket ${ticket.id}`);
+              continue;
+            }
 
             await new Promise((r) => setTimeout(r, 100));
 
@@ -326,7 +330,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   venueName: event.title,
                   attachments: group.attachments,
                 },
-              } as any).catch((e) => console.error("Failed to email", email, e));
+              } as any).catch((e) => {
+                console.error("Failed to email", email, e);
+                toast.error(`Failed to email ${email}: ${e.message || "API Error"}`);
+              });
             }
           }
           localStorage.removeItem(storageKey);
