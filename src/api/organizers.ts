@@ -272,18 +272,25 @@ export const getFollowedOrganizers = createServerFn({ method: "GET" }).handler(a
   const userId = await getUserIdFromCookie();
   if (!userId) return [];
 
+  // Fetch all follower rows and filter in JS to avoid jsonb GraphQL variable
+  // type-coercion issues (Hasura encodes jsonb variables differently from stored values)
   const query = `
-    query GetFollowedOrganizers($userId: jsonb) {
-      organizer_followers(where: { user_id: { _eq: $userId } }) {
+    query GetFollowedOrganizers {
+      organizer_followers {
         organizer_id
+        user_id
       }
     }
   `;
 
-  const result = await hasuraRequest<{ organizer_followers: { organizer_id: string }[] }>(query, {
-    userId,
-  });
-  return result.organizer_followers.map((f) => f.organizer_id);
+  const result = await hasuraRequest<{
+    organizer_followers: { organizer_id: string; user_id: any }[];
+  }>(query, {});
+
+  const userIdStr = String(userId);
+  return result.organizer_followers
+    .filter((f) => String(f.user_id) === userIdStr)
+    .map((f) => f.organizer_id);
 });
 
 export const followOrganizer = createServerFn({ method: "POST" }).handler(async (ctx) => {
