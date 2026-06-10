@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { feedPosts, events, experiences, movies, organizers, stories } from "@/lib/mock-data";
+import { feedPosts, events, movies, organizers, stories } from "@/lib/mock-data";
 import { FeedCard } from "@/components/site/FeedCard";
 import { Stories } from "@/components/site/Stories";
 import { Camera, Activity, Loader2 } from "lucide-react";
@@ -118,37 +118,6 @@ export function HomeMobile() {
         </div>
       </div>
 
-      {/* Experiences Horizontal Scroll */}
-      <div className="pt-5 pb-3">
-        <div className="flex items-center justify-between px-4 mb-3">
-          <h2 className="text-lg font-bold tracking-tight text-foreground">Discover Experiences</h2>
-          <Link to="/experiences" className="text-sm font-bold text-primary">
-            See all
-          </Link>
-        </div>
-        <div className="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2">
-          {experiences.map((x) => (
-            <Link
-              key={x.id}
-              to="/events/$eventId"
-              params={{ eventId: x.id }}
-              className="w-56 shrink-0 rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
-            >
-              <div className="aspect-[4/3] relative">
-                <img src={x.cover} alt={x.title} className="w-full h-full object-cover" />
-                <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm">
-                  {x.currency || "$"}
-                  {x.price}
-                </div>
-              </div>
-              <div className="p-3">
-                <h3 className="font-bold text-sm leading-tight line-clamp-1">{x.title}</h3>
-                <p className="text-muted-foreground text-xs mt-1">{x.host}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
 
       {/* Movies Horizontal Scroll */}
       <div className="pt-2 pb-3">

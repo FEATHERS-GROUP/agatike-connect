@@ -6,7 +6,7 @@ import { EventCard } from "@/components/site/EventCard";
 import { Stories } from "@/components/site/Stories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { categories, events, feedPosts, movies, movieStories, experiences } from "@/lib/mock-data";
+import { categories, events, feedPosts, movies, movieStories } from "@/lib/mock-data";
 import hero from "@/assets/hero-event.jpg";
 
 export function HomeDesktop() {
@@ -173,50 +173,6 @@ export function HomeDesktop() {
         </div>
       </section>
 
-      {/* Experiences */}
-      <section className="mx-auto mt-20 max-w-7xl px-6">
-        <div className="mb-6 flex items-end justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">Experiences — hike, run, surf</h2>
-            <p className="text-sm text-muted-foreground">
-              Outdoor adventures and clubs you can join this week.
-            </p>
-          </div>
-          <Link to="/experiences" className="text-sm text-primary hover:underline">
-            Explore all →
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
-          {experiences.slice(0, 3).map((x) => (
-            <Link
-              key={x.id}
-              to="/experiences"
-              className="group overflow-hidden rounded-3xl bg-card shadow-[var(--shadow-card)] transition hover:-translate-y-1"
-            >
-              <div className="relative aspect-[4/3] overflow-hidden">
-                <img
-                  src={x.cover}
-                  alt={x.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  loading="lazy"
-                />
-                <span className="absolute top-3 left-3 rounded-full bg-background/90 px-3 py-1 text-xs">
-                  {x.category}
-                </span>
-              </div>
-              <div className="p-4">
-                <p className="font-semibold">{x.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  {x.host} · {x.city}
-                </p>
-                <p className="mt-2 text-sm">
-                  {x.price === 0 ? "Free" : `From ${x.currency || "$"}${x.price}`} · {x.duration}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
 
       {/* Organizers */}
       <section className="mx-auto mt-20 max-w-7xl px-6">

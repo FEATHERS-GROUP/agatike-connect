@@ -21,7 +21,6 @@ import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as ExploreRouteImport } from './routes/explore'
-import { Route as ExperiencesRouteImport } from './routes/experiences'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
@@ -151,11 +150,6 @@ const FeedRoute = FeedRouteImport.update({
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExperiencesRoute = ExperiencesRouteImport.update({
-  id: '/experiences',
-  path: '/experiences',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -560,7 +554,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
   '/map': typeof MapRoute
@@ -645,7 +638,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
   '/map': typeof MapRoute
@@ -731,7 +723,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
   '/map': typeof MapRoute
@@ -818,7 +809,6 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/dashboard'
-    | '/experiences'
     | '/explore'
     | '/feed'
     | '/map'
@@ -903,7 +893,6 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/dashboard'
-    | '/experiences'
     | '/explore'
     | '/feed'
     | '/map'
@@ -988,7 +977,6 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/dashboard'
-    | '/experiences'
     | '/explore'
     | '/feed'
     | '/map'
@@ -1074,7 +1062,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivityRoute: typeof ActivityRoute
   DashboardRoute: typeof DashboardRouteWithChildren
-  ExperiencesRoute: typeof ExperiencesRoute
   ExploreRoute: typeof ExploreRoute
   FeedRoute: typeof FeedRoute
   MapRoute: typeof MapRoute
@@ -1191,13 +1178,6 @@ declare module '@tanstack/react-router' {
       path: '/explore'
       fullPath: '/explore'
       preLoaderRoute: typeof ExploreRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/experiences': {
-      id: '/experiences'
-      path: '/experiences'
-      fullPath: '/experiences'
-      preLoaderRoute: typeof ExperiencesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -1855,7 +1835,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityRoute: ActivityRoute,
   DashboardRoute: DashboardRouteWithChildren,
-  ExperiencesRoute: ExperiencesRoute,
   ExploreRoute: ExploreRoute,
   FeedRoute: FeedRoute,
   MapRoute: MapRoute,

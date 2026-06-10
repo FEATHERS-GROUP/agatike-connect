@@ -31,13 +31,6 @@ export function Navbar() {
             Events
           </Link>
           <Link
-            to="/experiences"
-            className="hover:text-foreground transition-colors"
-            activeProps={{ className: "text-foreground font-medium" }}
-          >
-            Experiences
-          </Link>
-          <Link
             to="/movies"
             className="hover:text-foreground transition-colors"
             activeProps={{ className: "text-foreground font-medium" }}
