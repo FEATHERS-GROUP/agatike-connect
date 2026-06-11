@@ -2,14 +2,34 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { formatCurrency } from "@/lib/currency";
 import { Search, Map as MapIcon, SlidersHorizontal, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { categories, events, experiences, movies, organizers } from "@/lib/mock-data";
+import { categories, movies } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { getOrganizers } from "@/api/organizers";
+import { getPublicEvents } from "@/api/events";
+import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 
 export const Route = createFileRoute("/explore")({
   component: ExplorePage,
 });
 
 function ExplorePage() {
+  const { toggleFollow, isFollowing } = useFollowedOrganizers();
+
+  const { data: dbOrganizers = [] } = useQuery({
+    queryKey: ["organizers"],
+    queryFn: () => getOrganizers(),
+  });
+
+  const { data: dbEvents = [] } = useQuery({
+    queryKey: ["public-events"],
+    queryFn: () => getPublicEvents(),
+  });
+
+  const trendingEvents = dbEvents.slice(0, 4);
+  const upcomingEvents = dbEvents.slice(0, 8);
+  const dbExperiences = dbEvents.filter((e) => e.category?.toLowerCase() === "experience" || e.event_type?.toLowerCase() === "experience");
+
   return (
     <div className="min-h-screen bg-background pb-20 md:max-w-md md:mx-auto md:border-x md:border-border/40 md:min-h-[100dvh] md:pb-8 shadow-xl">
       {/* Sticky Header with Search */}
@@ -77,32 +97,35 @@ function ExplorePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {events.slice(0, 4).map((e, i) => (
-              <Link
-                key={e.id}
-                to="/events/$eventId"
-                params={{ eventId: e.id }}
-                className={`group relative rounded-3xl overflow-hidden bg-card shadow-[var(--shadow-card)] ${i === 0 || i === 3 ? "aspect-[3/4]" : "aspect-square"}`}
-              >
-                <img
-                  src={e.cover}
-                  alt={e.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <div className="text-[10px] font-bold text-primary mb-1 uppercase tracking-wider">
-                    {e.category}
+            {trendingEvents.map((e, i) => {
+              const city = e.workspaces?.city || e.workspaces?.name || "Local";
+              return (
+                <Link
+                  key={e.id}
+                  to="/events/$eventId"
+                  params={{ eventId: e.id }}
+                  className={`group relative rounded-3xl overflow-hidden bg-card shadow-[var(--shadow-card)] ${i === 0 || i === 3 ? "aspect-[3/4]" : "aspect-square"}`}
+                >
+                  <img
+                    src={e.cover}
+                    alt={e.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <div className="text-[10px] font-bold text-primary mb-1 uppercase tracking-wider">
+                      {e.category}
+                    </div>
+                    <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2">
+                      {e.title}
+                    </h3>
+                    <div className="text-white/80 text-[10px] mt-1 flex items-center gap-1">
+                      <MapPin className="h-3 w-3" /> {city}
+                    </div>
                   </div>
-                  <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2">
-                    {e.title}
-                  </h3>
-                  <div className="text-white/80 text-[10px] mt-1 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> {e.city}
-                  </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </section>
 
@@ -115,28 +138,38 @@ function ExplorePage() {
             </Link>
           </div>
           <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-2">
-            {organizers.map((org) => (
-              <Link
-                key={org.id}
-                to="/organizers"
-                className="w-36 shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center text-center transition-transform active:scale-95 block"
-              >
-                <img
-                  src={org.avatar}
-                  alt={org.name}
-                  className="w-16 h-16 rounded-full object-cover mb-3"
-                />
-                <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
-                <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">@{org.handle}</p>
-                <Button
-                  size="sm"
-                  className="mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider"
-                  onClick={(e) => e.preventDefault()}
+            {dbOrganizers.slice(0, 8).map((org) => {
+              const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
+              const following = isFollowing(org.id);
+              return (
+                <Link
+                  key={org.id}
+                  to="/organizers"
+                  className="w-36 shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center text-center transition-transform active:scale-95 block"
                 >
-                  Follow
-                </Button>
-              </Link>
-            ))}
+                  <img
+                    src={avatar}
+                    alt={org.name}
+                    className="w-16 h-16 rounded-full object-cover mb-3"
+                  />
+                  <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">@{org.handle}</p>
+                  <Button
+                    size="sm"
+                    variant={following ? "outline" : "default"}
+                    className={`mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
+                    style={following ? undefined : { background: "var(--gradient-primary)" }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleFollow(org.id);
+                    }}
+                  >
+                    {following ? "Following" : "Follow"}
+                  </Button>
+                </Link>
+              );
+            })}
           </div>
         </section>
 
@@ -146,29 +179,37 @@ function ExplorePage() {
             <h2 className="text-xl font-bold tracking-tight">Upcoming Events</h2>
           </div>
           <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-2">
-            {events.map((event) => (
-              <Link
-                key={event.id}
-                to="/events/$eventId"
-                params={{ eventId: event.id }}
-                className="w-60 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
-              >
-                <div className="aspect-[4/3] relative">
-                  <img src={event.cover} alt={event.title} className="w-full h-full object-cover" />
-                  <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm">
-                    {formatCurrency(event.price || 25, event.currency)}
+            {upcomingEvents.map((event) => {
+              const cheapestTicket = event.event_tickets?.reduce((min: number, t: any) => Math.min(min, t.cost), Infinity);
+              const price = cheapestTicket && cheapestTicket !== Infinity ? cheapestTicket : 0;
+              const currency = event.workspaces?.currency || "RWF";
+              const date = event.tour_stops?.[0]?.date || event.created_at;
+              const city = event.workspaces?.city || event.workspaces?.name || "Local";
+              
+              return (
+                <Link
+                  key={event.id}
+                  to="/events/$eventId"
+                  params={{ eventId: event.id }}
+                  className="w-60 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
+                >
+                  <div className="aspect-[4/3] relative">
+                    <img src={event.cover} alt={event.title} className="w-full h-full object-cover" />
+                    <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm">
+                      {price > 0 ? formatCurrency(price, currency) : "Free"}
+                    </div>
                   </div>
-                </div>
-                <div className="p-3">
-                  <p className="font-semibold text-sm leading-tight line-clamp-2">{event.title}</p>
-                  <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <span className="truncate">{event.date}</span>
-                    <span>•</span>
-                    <span className="truncate">{event.city}</span>
+                  <div className="p-3">
+                    <p className="font-semibold text-sm leading-tight line-clamp-2">{event.title}</p>
+                    <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <span className="truncate">{new Date(date).toLocaleDateString()}</span>
+                      <span>•</span>
+                      <span className="truncate">{city}</span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </section>
 
@@ -178,25 +219,38 @@ function ExplorePage() {
             <h2 className="text-xl font-bold tracking-tight">Unique Experiences</h2>
           </div>
           <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4">
-            {experiences.map((x) => (
-              <Link
-                key={x.id}
-                to="/events/$eventId"
-                params={{ eventId: x.id }}
-                className="w-64 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
-              >
-                <div className="aspect-video relative">
-                  <img src={x.cover} alt={x.title} className="w-full h-full object-cover" />
-                  <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-medium">
-                    {formatCurrency(x.price || 50, x.currency)}
+            {dbExperiences.map((x) => {
+              const cheapestTicket = x.event_tickets?.reduce((min: number, t: any) => Math.min(min, t.cost), Infinity);
+              const price = cheapestTicket && cheapestTicket !== Infinity ? cheapestTicket : 0;
+              const currency = x.workspaces?.currency || "RWF";
+              const host = x.workspaces?.organizer?.name || x.workspaces?.name || "Host";
+
+              return (
+                <Link
+                  key={x.id}
+                  to="/events/$eventId"
+                  params={{ eventId: x.id }}
+                  className="w-64 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
+                >
+                  <div className="aspect-video relative">
+                    <img src={x.cover} alt={x.title} className="w-full h-full object-cover" />
+                    <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-medium">
+                      {price > 0 ? formatCurrency(price, currency) : "Free"}
+                    </div>
                   </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-sm line-clamp-1">{x.title}</h3>
-                  <p className="text-muted-foreground text-xs mt-1">{x.host}</p>
-                </div>
-              </Link>
-            ))}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-sm line-clamp-1">{x.title}</h3>
+                    <p className="text-muted-foreground text-xs mt-1">{host}</p>
+                  </div>
+                </Link>
+              );
+            })}
+            
+            {dbExperiences.length === 0 && (
+              <div className="w-full text-center py-6 text-sm text-muted-foreground">
+                No unique experiences available right now.
+              </div>
+            )}
           </div>
         </section>
 
