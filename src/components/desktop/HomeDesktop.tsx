@@ -246,7 +246,9 @@ export function HomeDesktop() {
 
                   <div className="mt-2 flex items-center justify-center gap-1">
                     <Star className="h-3 w-3 fill-primary text-primary" />
-                    <span className="text-xs font-medium">{ratingsMap[org.id] || "4.5"}</span>
+                    <span className="text-xs font-medium">
+                      {ratingsMap[org.id]?.avg?.toFixed(1) || "4.5"}
+                    </span>
                   </div>
 
                   <Button

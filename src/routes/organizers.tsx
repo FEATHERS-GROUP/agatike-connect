@@ -64,7 +64,7 @@ function OrganizersPage() {
 
   const ProfileContent = ({ org }: { org: any }) => {
     const following = isFollowing(org.id);
-    const followerCount = org.followers + (following ? 1 : 0);
+    const followerCount = org.followers ?? 0;
     const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
     const twitterUrl =
       org.twitterUrl || org.socials?.twitter || `https://twitter.com/${org.handle}`;
@@ -154,7 +154,7 @@ function OrganizersPage() {
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
           {list.map((org) => {
             const following = isFollowing(org.id);
-            const followerCount = org.followers + (following ? 1 : 0);
+            const followerCount = org.followers ?? 0;
             const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
             const rating = ratingsMap[org.id];
             return (

@@ -333,29 +333,29 @@ export const followOrganizer = createServerFn({ method: "POST" }).handler(async 
     currentUsers.push(userIdStr);
 
     const updateMut = `
-      mutation UpdateFollowers($id: uuid!, $users: jsonb, $organizerId: uuid!) {
+      mutation UpdateFollowers($id: uuid!, $users: jsonb, $organizerId: uuid!, $count: Int!) {
         update_organizer_followers_by_pk(pk_columns: { id: $id }, _set: { user_id: $users }) {
           id
         }
-        update_organizers_by_pk(pk_columns: { id: $organizerId }, _inc: { followers: 1 }) {
+        update_organizers_by_pk(pk_columns: { id: $organizerId }, _set: { followers: $count }) {
           id
         }
       }
     `;
-    await hasuraRequest(updateMut, { id: row.id, users: currentUsers, organizerId });
+    await hasuraRequest(updateMut, { id: row.id, users: currentUsers, organizerId, count: currentUsers.length });
   } else {
     // First time this organizer is being followed. Insert new row with array.
     const insertMut = `
-      mutation InsertFollowers($organizerId: uuid!, $users: jsonb) {
+      mutation InsertFollowers($organizerId: uuid!, $users: jsonb, $count: Int!) {
         insert_organizer_followers_one(object: { organizer_id: $organizerId, user_id: $users }) {
           id
         }
-        update_organizers_by_pk(pk_columns: { id: $organizerId }, _inc: { followers: 1 }) {
+        update_organizers_by_pk(pk_columns: { id: $organizerId }, _set: { followers: $count }) {
           id
         }
       }
     `;
-    await hasuraRequest(insertMut, { organizerId, users: [userIdStr] });
+    await hasuraRequest(insertMut, { organizerId, users: [userIdStr], count: 1 });
   }
 
   return { success: true, inserted: true };
@@ -395,16 +395,16 @@ export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(asyn
   const newUsers = currentUsers.filter((u: any) => String(u).replace(/"/g, "") !== userIdStr);
 
   const updateMut = `
-    mutation UpdateFollowers($id: uuid!, $users: jsonb, $organizerId: uuid!) {
+    mutation UpdateFollowers($id: uuid!, $users: jsonb, $organizerId: uuid!, $count: Int!) {
       update_organizer_followers_by_pk(pk_columns: { id: $id }, _set: { user_id: $users }) {
         id
       }
-      update_organizers_by_pk(pk_columns: { id: $organizerId }, _inc: { followers: -1 }) {
+      update_organizers_by_pk(pk_columns: { id: $organizerId }, _set: { followers: $count }) {
         id
       }
     }
   `;
-  await hasuraRequest(updateMut, { id: row.id, users: newUsers, organizerId });
+  await hasuraRequest(updateMut, { id: row.id, users: newUsers, organizerId, count: newUsers.length });
 
   return { success: true };
 });

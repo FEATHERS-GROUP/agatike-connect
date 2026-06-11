@@ -107,7 +107,7 @@ export function HomeMobile() {
                   className="w-36 shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center text-center transition-transform active:scale-95 block"
                 >
                   <img
-                    src={org.image || org.avatar || "/icon.svg"}
+                    src={org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`}
                     alt={org.name}
                     className="w-16 h-16 rounded-full object-cover mb-3"
                   />

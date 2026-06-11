@@ -29,7 +29,6 @@ export function useFollowedOrganizers() {
       toast.error("Failed to follow organizer");
     },
     onSuccess: () => {
-      toast.success("Following organizer!");
       queryClient.invalidateQueries({ queryKey: ["followed-organizers"] });
       queryClient.invalidateQueries({ queryKey: ["organizers"] });
     },
@@ -51,7 +50,6 @@ export function useFollowedOrganizers() {
       toast.error("Failed to unfollow organizer");
     },
     onSuccess: () => {
-      toast.success("Unfollowed organizer");
       queryClient.invalidateQueries({ queryKey: ["followed-organizers"] });
       queryClient.invalidateQueries({ queryKey: ["organizers"] });
     },
