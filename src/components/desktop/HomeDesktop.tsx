@@ -238,7 +238,9 @@ export function HomeDesktop() {
                   <p className="text-xs text-muted-foreground">@{org.handle}</p>
 
                   <p className="text-xs text-muted-foreground mt-1">
-                    {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + 'k' : followerCount}{" "}
+                    {followerCount >= 1000
+                      ? (followerCount / 1000).toFixed(1) + "k"
+                      : followerCount}{" "}
                     {followerCount === 1 ? "follower" : "followers"}
                   </p>
 

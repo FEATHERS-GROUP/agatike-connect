@@ -136,7 +136,10 @@ export function GlobalNotificationListener() {
     if (!activeWorkspace?.orgnizer_id) return;
 
     const organizerId = activeWorkspace.orgnizer_id;
-    const q = query(collection(db, "agatike_notifications"), where("organizerId", "==", organizerId));
+    const q = query(
+      collection(db, "agatike_notifications"),
+      where("organizerId", "==", organizerId),
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (isFirstLoadRef.current) return;
@@ -145,9 +148,9 @@ export function GlobalNotificationListener() {
         if (change.type === "added") {
           const data = change.doc.data();
           const notifId = change.doc.id;
-          
+
           const rawTimeMillis = data.createdAt ? new Date(data.createdAt).getTime() : 0;
-          
+
           const storageKey = `notified_org_${notifId}`;
           const lastNotifiedTime = parseInt(localStorage.getItem(storageKey) || "0", 10);
 

@@ -1,4 +1,13 @@
-import { Send, Bookmark, MoreHorizontal, CalendarDays, ChevronLeft, ChevronRight, MessageCircle, Heart } from "lucide-react";
+import {
+  Send,
+  Bookmark,
+  MoreHorizontal,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  MessageCircle,
+  Heart,
+} from "lucide-react";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
@@ -10,7 +19,8 @@ export function FeedCard({ post }: { post: any }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes || 0);
 
-  const images = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : [post.image || post.cover];
+  const images =
+    post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : [post.image || post.cover];
 
   const handleLike = async () => {
     if (isLiked) return;
@@ -89,7 +99,7 @@ export function FeedCard({ post }: { post: any }) {
           params={{ postId: post.id || "p-0" }}
           className="block w-full aspect-square bg-secondary relative group overflow-hidden"
         >
-          <div 
+          <div
             className="flex transition-transform duration-300 ease-in-out h-full w-full"
             style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
           >
@@ -136,11 +146,18 @@ export function FeedCard({ post }: { post: any }) {
         {/* Action Row */}
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-4 text-sm font-medium text-foreground">
-            <button onClick={handleLike} className="flex items-center gap-1.5 focus:outline-none transition-transform active:scale-90 hover:text-foreground/80">
+            <button
+              onClick={handleLike}
+              className="flex items-center gap-1.5 focus:outline-none transition-transform active:scale-90 hover:text-foreground/80"
+            >
               <Heart className={`h-6 w-6 ${isLiked ? "fill-primary text-primary" : ""}`} />
               <span>{likesCount}</span>
             </button>
-            <Link to="/community/$postId" params={{ postId: post.id }} className="flex items-center gap-1.5 focus:outline-none transition-transform active:scale-90 hover:text-foreground/80">
+            <Link
+              to="/community/$postId"
+              params={{ postId: post.id }}
+              className="flex items-center gap-1.5 focus:outline-none transition-transform active:scale-90 hover:text-foreground/80"
+            >
               <MessageCircle className="h-6 w-6" style={{ transform: "scaleX(-1)" }} />
               <span>{post.comments || 0}</span>
             </Link>

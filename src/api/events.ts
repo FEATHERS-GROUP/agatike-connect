@@ -14,7 +14,9 @@ const CREATE_EVENT = `
 
 export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const eventData = ctx.data as any;
-  const result = await hasuraRequest<{ insert_events_one: any }>(CREATE_EVENT, { object: eventData });
+  const result = await hasuraRequest<{ insert_events_one: any }>(CREATE_EVENT, {
+    object: eventData,
+  });
   const eventId = result?.insert_events_one?.id;
 
   if (eventId && eventData.workspace_id) {
@@ -27,7 +29,9 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
           }
         }
       `;
-      const wsData = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, { id: eventData.workspace_id });
+      const wsData = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, {
+        id: eventData.workspace_id,
+      });
       const orgId = wsData?.workspaces_by_pk?.orgnizer_id;
 
       if (orgId) {
@@ -39,13 +43,15 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
             }
           }
         `;
-        const followersData = await hasuraRequest<{ organizer_followers: any[] }>(followersQuery, { orgId });
+        const followersData = await hasuraRequest<{ organizer_followers: any[] }>(followersQuery, {
+          orgId,
+        });
         const row = followersData?.organizer_followers?.[0];
-        
+
         if (row && row.user_id) {
           const userIds = Array.isArray(row.user_id) ? row.user_id : [row.user_id];
           const targetUsers = userIds.map((u: any) => String(u).replace(/"/g, ""));
-          
+
           if (targetUsers.length > 0) {
             const session = await getSession();
             await addDoc(collection(db, "agatike_notifications"), {
@@ -54,7 +60,7 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
               organizerId: eventData.workspace_id, // Front-end might need workspace_id or org_id
               actorId: session?.sub || orgId,
               targetUsers: targetUsers,
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
             });
           }
         }

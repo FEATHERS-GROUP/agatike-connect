@@ -25,7 +25,7 @@ export function GlobalUserNotificationListener() {
 
     const q = query(
       collection(db, "agatike_notifications"),
-      where("targetUsers", "array-contains", currentUserId)
+      where("targetUsers", "array-contains", currentUserId),
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -57,7 +57,9 @@ export function GlobalUserNotificationListener() {
 
           if (data.type === "comment") {
             title = "New Reply";
-            body = data.content ? `Someone commented: "${data.content}"` : "Someone replied to a post you follow.";
+            body = data.content
+              ? `Someone commented: "${data.content}"`
+              : "Someone replied to a post you follow.";
           }
 
           if ("Notification" in window && Notification.permission === "granted") {

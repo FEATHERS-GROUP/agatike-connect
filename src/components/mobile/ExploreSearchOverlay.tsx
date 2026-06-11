@@ -27,38 +27,43 @@ export function ExploreSearchOverlay({
   isFollowing,
   toggleFollow,
 }: ExploreSearchOverlayProps) {
-  
   const query = searchQuery.toLowerCase().trim();
 
   // Filter Data
   const filteredOrganizers = useMemo(() => {
     if (!query) return [];
-    return dbOrganizers.filter(
-      (org) =>
-        org.name?.toLowerCase().includes(query) ||
-        org.handle?.toLowerCase().includes(query) ||
-        org.bio?.toLowerCase().includes(query)
-    ).slice(0, 5);
+    return dbOrganizers
+      .filter(
+        (org) =>
+          org.name?.toLowerCase().includes(query) ||
+          org.handle?.toLowerCase().includes(query) ||
+          org.bio?.toLowerCase().includes(query),
+      )
+      .slice(0, 5);
   }, [dbOrganizers, query]);
 
   const filteredEvents = useMemo(() => {
     if (!query) return [];
-    return dbEvents.filter(
-      (e) =>
-        e.title?.toLowerCase().includes(query) ||
-        e.category?.toLowerCase().includes(query) ||
-        e.workspaces?.city?.toLowerCase().includes(query)
-    ).slice(0, 5);
+    return dbEvents
+      .filter(
+        (e) =>
+          e.title?.toLowerCase().includes(query) ||
+          e.category?.toLowerCase().includes(query) ||
+          e.workspaces?.city?.toLowerCase().includes(query),
+      )
+      .slice(0, 5);
   }, [dbEvents, query]);
 
   const filteredVenues = useMemo(() => {
     if (!query) return [];
-    return dbVenues.filter(
-      (v) =>
-        v.name?.toLowerCase().includes(query) ||
-        v.city?.toLowerCase().includes(query) ||
-        v.type?.toLowerCase().includes(query)
-    ).slice(0, 5);
+    return dbVenues
+      .filter(
+        (v) =>
+          v.name?.toLowerCase().includes(query) ||
+          v.city?.toLowerCase().includes(query) ||
+          v.type?.toLowerCase().includes(query),
+      )
+      .slice(0, 5);
   }, [dbVenues, query]);
 
   const [recentSearches, setRecentSearches] = React.useState<{ type: string; data: any }[]>(() => {
@@ -102,13 +107,22 @@ export function ExploreSearchOverlay({
           onClick={() => !isRecent && addRecentSearch("organizer", data)}
           className="flex items-center gap-3 group active:scale-95 transition-transform"
         >
-          <img src={avatar} alt={data.name} className="w-12 h-12 rounded-full object-cover shrink-0 border border-border/40" />
+          <img
+            src={avatar}
+            alt={data.name}
+            className="w-12 h-12 rounded-full object-cover shrink-0 border border-border/40"
+          />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors">{data.name}</p>
+            <p className="font-semibold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+              {data.name}
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">@{data.handle}</p>
           </div>
           {isRecent ? (
-            <button onClick={(e) => removeRecentSearch(e, data.id)} className="p-2 text-muted-foreground hover:text-foreground">
+            <button
+              onClick={(e) => removeRecentSearch(e, data.id)}
+              className="p-2 text-muted-foreground hover:text-foreground"
+            >
               ✕
             </button>
           ) : (
@@ -129,10 +143,12 @@ export function ExploreSearchOverlay({
         </Link>
       );
     }
-    
+
     if (type === "event") {
       const city = data.workspaces?.city || data.workspaces?.name || "Local";
-      const isExp = data.category?.toLowerCase() === "experience" || data.event_type?.toLowerCase() === "experience";
+      const isExp =
+        data.category?.toLowerCase() === "experience" ||
+        data.event_type?.toLowerCase() === "experience";
       return (
         <Link
           key={`recent-${data.id}`}
@@ -141,18 +157,29 @@ export function ExploreSearchOverlay({
           onClick={() => !isRecent && addRecentSearch("event", data)}
           className="flex items-center gap-3 group active:scale-95 transition-transform"
         >
-          <img src={data.cover} alt={data.title} className="w-16 h-12 rounded-xl object-cover shrink-0 border border-border/40" />
+          <img
+            src={data.cover}
+            alt={data.title}
+            className="w-16 h-12 rounded-xl object-cover shrink-0 border border-border/40"
+          />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors">{data.title}</p>
+            <p className="font-semibold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+              {data.title}
+            </p>
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
               <span className="uppercase text-primary font-bold bg-primary/10 px-1.5 py-0.5 rounded-sm">
                 {isExp ? "Experience" : data.category || "Event"}
               </span>
-              <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" /> {city}</span>
+              <span className="flex items-center gap-0.5">
+                <MapPin className="h-3 w-3" /> {city}
+              </span>
             </div>
           </div>
           {isRecent && (
-            <button onClick={(e) => removeRecentSearch(e, data.id)} className="p-2 text-muted-foreground hover:text-foreground">
+            <button
+              onClick={(e) => removeRecentSearch(e, data.id)}
+              className="p-2 text-muted-foreground hover:text-foreground"
+            >
               ✕
             </button>
           )}
@@ -169,21 +196,31 @@ export function ExploreSearchOverlay({
           onClick={() => !isRecent && addRecentSearch("venue", data)}
           className="flex items-center gap-3 group active:scale-95 transition-transform"
         >
-          <img 
-            src={data.cover_url || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop"} 
-            alt={data.name} 
-            className="w-16 h-12 rounded-xl object-cover shrink-0 border border-border/40" 
+          <img
+            src={
+              data.cover_url ||
+              "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop"
+            }
+            alt={data.name}
+            className="w-16 h-12 rounded-xl object-cover shrink-0 border border-border/40"
           />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors">{data.name}</p>
+            <p className="font-semibold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+              {data.name}
+            </p>
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
               <span className="capitalize">{data.type || "Venue"}</span>
               <span>•</span>
-              <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" /> {data.city || "Local"}</span>
+              <span className="flex items-center gap-0.5">
+                <MapPin className="h-3 w-3" /> {data.city || "Local"}
+              </span>
             </div>
           </div>
           {isRecent && (
-            <button onClick={(e) => removeRecentSearch(e, data.id)} className="p-2 text-muted-foreground hover:text-foreground">
+            <button
+              onClick={(e) => removeRecentSearch(e, data.id)}
+              className="p-2 text-muted-foreground hover:text-foreground"
+            >
               ✕
             </button>
           )}
@@ -203,7 +240,10 @@ export function ExploreSearchOverlay({
       {/* Header / Search Bar */}
       <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-xl border-b border-border/40 pt-safe-top">
         <div className="flex items-center gap-3 px-4 py-3">
-          <button onClick={onClose} className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors shrink-0">
+          <button
+            onClick={onClose}
+            className="p-1 -ml-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
             <ArrowLeft className="h-6 w-6" />
           </button>
           <div className="relative flex-1">
@@ -226,7 +266,10 @@ export function ExploreSearchOverlay({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold tracking-tight">Recent</h3>
-                <button onClick={clearAllRecent} className="text-xs font-bold text-primary hover:text-primary/80 transition-colors">
+                <button
+                  onClick={clearAllRecent}
+                  className="text-xs font-bold text-primary hover:text-primary/80 transition-colors"
+                >
                   Clear all
                 </button>
               </div>
@@ -246,7 +289,6 @@ export function ExploreSearchOverlay({
           </div>
         ) : (
           <div className="space-y-6 pb-20">
-            
             {/* Organizers Section */}
             {filteredOrganizers.length > 0 && (
               <section>
@@ -282,7 +324,6 @@ export function ExploreSearchOverlay({
                 </div>
               </section>
             )}
-
           </div>
         )}
       </div>

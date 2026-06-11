@@ -342,7 +342,12 @@ export const followOrganizer = createServerFn({ method: "POST" }).handler(async 
         }
       }
     `;
-    await hasuraRequest(updateMut, { id: row.id, users: currentUsers, organizerId, count: currentUsers.length });
+    await hasuraRequest(updateMut, {
+      id: row.id,
+      users: currentUsers,
+      organizerId,
+      count: currentUsers.length,
+    });
   } else {
     // First time this organizer is being followed. Insert new row with array.
     const insertMut = `
@@ -404,7 +409,12 @@ export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(asyn
       }
     }
   `;
-  await hasuraRequest(updateMut, { id: row.id, users: newUsers, organizerId, count: newUsers.length });
+  await hasuraRequest(updateMut, {
+    id: row.id,
+    users: newUsers,
+    organizerId,
+    count: newUsers.length,
+  });
 
   return { success: true };
 });

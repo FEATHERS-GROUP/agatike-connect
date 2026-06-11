@@ -38,7 +38,10 @@ function ExplorePage() {
 
   const trendingEvents = dbEvents.slice(0, 4);
   const upcomingEvents = dbEvents.slice(0, 8);
-  const dbExperiences = dbEvents.filter((e) => e.category?.toLowerCase() === "experience" || e.event_type?.toLowerCase() === "experience");
+  const dbExperiences = dbEvents.filter(
+    (e) =>
+      e.category?.toLowerCase() === "experience" || e.event_type?.toLowerCase() === "experience",
+  );
 
   return (
     <div className="min-h-screen bg-background pb-20 md:max-w-md md:mx-auto md:border-x md:border-border/40 md:min-h-[100dvh] md:pb-8 shadow-xl">
@@ -164,7 +167,9 @@ function ExplorePage() {
                     className="w-16 h-16 rounded-full object-cover mb-3"
                   />
                   <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">@{org.handle}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">
+                    @{org.handle}
+                  </p>
                   <Button
                     size="sm"
                     variant={following ? "outline" : "default"}
@@ -191,12 +196,15 @@ function ExplorePage() {
           </div>
           <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-2">
             {upcomingEvents.map((event) => {
-              const cheapestTicket = event.event_tickets?.reduce((min: number, t: any) => Math.min(min, t.cost), Infinity);
+              const cheapestTicket = event.event_tickets?.reduce(
+                (min: number, t: any) => Math.min(min, t.cost),
+                Infinity,
+              );
               const price = cheapestTicket && cheapestTicket !== Infinity ? cheapestTicket : 0;
               const currency = event.workspaces?.currency || "RWF";
               const date = event.tour_stops?.[0]?.date || event.created_at;
               const city = event.workspaces?.city || event.workspaces?.name || "Local";
-              
+
               return (
                 <Link
                   key={event.id}
@@ -205,13 +213,19 @@ function ExplorePage() {
                   className="w-60 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
                 >
                   <div className="aspect-[4/3] relative">
-                    <img src={event.cover} alt={event.title} className="w-full h-full object-cover" />
+                    <img
+                      src={event.cover}
+                      alt={event.title}
+                      className="w-full h-full object-cover"
+                    />
                     <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm">
                       {price > 0 ? formatCurrency(price, currency) : "Free"}
                     </div>
                   </div>
                   <div className="p-3">
-                    <p className="font-semibold text-sm leading-tight line-clamp-2">{event.title}</p>
+                    <p className="font-semibold text-sm leading-tight line-clamp-2">
+                      {event.title}
+                    </p>
                     <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                       <span className="truncate">{new Date(date).toLocaleDateString()}</span>
                       <span>•</span>
@@ -231,7 +245,10 @@ function ExplorePage() {
           </div>
           <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4">
             {dbExperiences.map((x) => {
-              const cheapestTicket = x.event_tickets?.reduce((min: number, t: any) => Math.min(min, t.cost), Infinity);
+              const cheapestTicket = x.event_tickets?.reduce(
+                (min: number, t: any) => Math.min(min, t.cost),
+                Infinity,
+              );
               const price = cheapestTicket && cheapestTicket !== Infinity ? cheapestTicket : 0;
               const currency = x.workspaces?.currency || "RWF";
               const host = x.workspaces?.organizer?.name || x.workspaces?.name || "Host";
@@ -256,7 +273,7 @@ function ExplorePage() {
                 </Link>
               );
             })}
-            
+
             {dbExperiences.length === 0 && (
               <div className="w-full text-center py-6 text-sm text-muted-foreground">
                 No unique experiences available right now.
@@ -278,10 +295,13 @@ function ExplorePage() {
                 className="w-56 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
               >
                 <div className="aspect-[4/3] relative">
-                  <img 
-                    src={venue.cover_url || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop"} 
-                    alt={venue.name} 
-                    className="w-full h-full object-cover" 
+                  <img
+                    src={
+                      venue.cover_url ||
+                      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop"
+                    }
+                    alt={venue.name}
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-medium capitalize shadow-sm">
                     {venue.type || "Venue"}
@@ -296,7 +316,7 @@ function ExplorePage() {
                 </div>
               </Link>
             ))}
-            
+
             {dbVenues.length === 0 && (
               <div className="w-full text-center py-6 text-sm text-muted-foreground">
                 No venues available right now.

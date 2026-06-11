@@ -7,8 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 
 export function timeAgo(dateParam: string | Date | number): string {
   if (!dateParam) return "";
-  
-  const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
+
+  const date = typeof dateParam === "object" ? dateParam : new Date(dateParam);
   const today = new Date();
   const seconds = Math.round((today.getTime() - date.getTime()) / 1000);
   const minutes = Math.round(seconds / 60);

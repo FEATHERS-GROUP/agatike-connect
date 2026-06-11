@@ -166,13 +166,15 @@ function OrganizersPage() {
                 <div className="relative h-12 w-12 shrink-0 md:h-20 md:w-20 md:mb-3 rounded-full overflow-hidden border border-border/40">
                   <img src={avatar} alt={org.name} className="w-full h-full object-cover" />
                 </div>
-                
+
                 <div className="flex-1 min-w-0 ml-3 md:ml-0">
                   <h3 className="font-semibold text-sm leading-tight line-clamp-1 w-full">
                     {org.name}
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5 md:mt-1">
-                    {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + "k" : followerCount}{" "}
+                    {followerCount >= 1000
+                      ? (followerCount / 1000).toFixed(1) + "k"
+                      : followerCount}{" "}
                     {followerCount === 1 ? "follower" : "followers"}
                   </p>
 

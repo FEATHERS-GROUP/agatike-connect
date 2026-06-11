@@ -45,11 +45,14 @@ export function HomeMobile() {
 
     const q = query(
       collection(db, "agatike_notifications"),
-      where("targetUsers", "array-contains", user.id)
+      where("targetUsers", "array-contains", user.id),
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const lastReadTimestamp = parseInt(localStorage.getItem("lastActivityReadTimestamp") || "0", 10);
+      const lastReadTimestamp = parseInt(
+        localStorage.getItem("lastActivityReadTimestamp") || "0",
+        10,
+      );
       let count = 0;
       snapshot.forEach((doc) => {
         const data = doc.data();
@@ -93,7 +96,7 @@ export function HomeMobile() {
           <Activity className="h-6 w-6" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center px-1">
-              {unreadCount > 99 ? '99+' : unreadCount}
+              {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
         </Link>

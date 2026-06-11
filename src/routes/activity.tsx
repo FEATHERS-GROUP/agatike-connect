@@ -1,5 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CheckCircle2, CalendarDays, Star, Film, ChevronRight, MessageCircle, Heart } from "lucide-react";
+import {
+  CheckCircle2,
+  CalendarDays,
+  Star,
+  Film,
+  ChevronRight,
+  MessageCircle,
+  Heart,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
@@ -28,10 +36,10 @@ function ActivityPage() {
 
   useEffect(() => {
     if (!user?.id) return;
-    
+
     const q = query(
       collection(db, "agatike_notifications"),
-      where("targetUsers", "array-contains", user.id)
+      where("targetUsers", "array-contains", user.id),
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -41,9 +49,9 @@ function ActivityPage() {
       });
       // Sort by createdAt desc locally since Firestore requires a composite index for where+orderBy
       notifs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      
+
       // Filter out notifications triggered by the user themselves
-      setNotifications(notifs.filter(n => n.actorId !== user.id));
+      setNotifications(notifs.filter((n) => n.actorId !== user.id));
     });
 
     return () => unsubscribe();
@@ -52,7 +60,7 @@ function ActivityPage() {
   useEffect(() => {
     // Mark as read when viewing activity
     localStorage.setItem("lastActivityReadTimestamp", Date.now().toString());
-    
+
     // Clear notification badge count immediately on this page
     window.dispatchEvent(new Event("activityRead"));
   }, []);
@@ -91,7 +99,9 @@ function ActivityPage() {
               color = "text-primary";
               bg = "bg-primary/10 border-primary/20";
               title = "New Reply";
-              description = n.content ? `Someone commented: "${n.content}"` : "Someone commented on a post you follow.";
+              description = n.content
+                ? `Someone commented: "${n.content}"`
+                : "Someone commented on a post you follow.";
             } else if (isNewEvent) {
               Icon = CalendarDays;
               color = "text-amber-500";
@@ -105,7 +115,9 @@ function ActivityPage() {
               color = "text-purple-500";
               bg = "bg-purple-500/10 border-purple-500/20";
               title = "New Post";
-              description = n.content ? `An organizer you follow posted: "${n.content}"` : "An organizer you follow posted an update.";
+              description = n.content
+                ? `An organizer you follow posted: "${n.content}"`
+                : "An organizer you follow posted an update.";
             }
             return (
               <div
@@ -135,7 +147,11 @@ function ActivityPage() {
                   </p>
 
                   <Link to={link}>
-                    <Button variant="secondary" size="sm" className="w-full text-xs h-7 mt-1 font-bold">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full text-xs h-7 mt-1 font-bold"
+                    >
                       {linkText}
                       <ChevronRight className="h-3 w-3 ml-1 opacity-50" />
                     </Button>

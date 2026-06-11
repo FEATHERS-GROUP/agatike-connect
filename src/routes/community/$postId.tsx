@@ -1,5 +1,14 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, Image as ImageIcon, Send, ChevronLeft, ChevronRight, MessageCircle, Heart } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Image as ImageIcon,
+  Send,
+  ChevronLeft,
+  ChevronRight,
+  MessageCircle,
+  Heart,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPostById, getPostComments, addPostComment, likeEventPost } from "@/api/experience";
@@ -85,15 +94,26 @@ function PostCommunityPage() {
   }, []);
 
   if (isLoadingPost) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>
+    );
   }
 
   if (!post) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">Post not found.</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        Post not found.
+      </div>
+    );
   }
 
   const following = isFollowing(post.organizerId);
-  const images = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : ["https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop"];
+  const images =
+    post.mediaUrls && post.mediaUrls.length > 0
+      ? post.mediaUrls
+      : [
+          "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop",
+        ];
 
   const nextImage = () => {
     if (currentImageIndex < images.length - 1) setCurrentImageIndex(currentImageIndex + 1);
@@ -124,9 +144,7 @@ function PostCommunityPage() {
               />
               <div className="flex flex-col">
                 <span className="font-bold text-sm leading-none">{post.user}</span>
-                <span className="text-[10px] text-muted-foreground">
-                  @{post.handle}
-                </span>
+                <span className="text-[10px] text-muted-foreground">@{post.handle}</span>
               </div>
             </div>
           ) : (
@@ -147,14 +165,17 @@ function PostCommunityPage() {
 
       {/* Main Post Image Header (Carousel) */}
       <div className="w-full aspect-square md:aspect-[4/3] bg-secondary relative overflow-hidden group">
-        <div 
+        <div
           className="flex transition-transform duration-300 ease-in-out h-full w-full"
           style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
         >
           {images.map((img: string, idx: number) => (
             <img
               key={idx}
-              src={img || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop"}
+              src={
+                img ||
+                "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop"
+              }
               alt={`Feed image ${idx + 1}`}
               className="h-full w-full object-cover shrink-0"
             />
@@ -207,9 +228,7 @@ function PostCommunityPage() {
             </div>
             <div>
               <h2 className="font-bold text-white text-shadow-sm">{post.user}</h2>
-              <p className="text-xs text-white/80 drop-shadow-sm">
-                @{post.handle}
-              </p>
+              <p className="text-xs text-white/80 drop-shadow-sm">@{post.handle}</p>
             </div>
           </div>
           <button
@@ -227,7 +246,10 @@ function PostCommunityPage() {
 
       {/* Post Actions */}
       <div className="px-4 py-3 flex items-center gap-4 text-sm font-medium text-foreground">
-        <button onClick={() => likeMutation.mutate()} className="flex items-center gap-1.5 focus:outline-none transition-transform active:scale-90 hover:text-foreground/80">
+        <button
+          onClick={() => likeMutation.mutate()}
+          className="flex items-center gap-1.5 focus:outline-none transition-transform active:scale-90 hover:text-foreground/80"
+        >
           <Heart className="h-6 w-6" />
           <span>{post.likes}</span>
         </button>
@@ -267,8 +289,12 @@ function PostCommunityPage() {
               />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm">@{comment.user?.handle || "user"} {getCountryFlag(comment.user?.country)}</span>
-                  <span className="text-[10px] text-muted-foreground">{timeAgo(comment.created_at)}</span>
+                  <span className="font-bold text-sm">
+                    @{comment.user?.handle || "user"} {getCountryFlag(comment.user?.country)}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {timeAgo(comment.created_at)}
+                  </span>
                 </div>
                 <p className="text-sm text-foreground/90 mt-0.5">{comment.content}</p>
               </div>
@@ -285,7 +311,7 @@ function PostCommunityPage() {
       {/* Comment Input Footer */}
       <div className="fixed bottom-0 left-0 right-0 md:max-w-xl md:mx-auto bg-background/90 backdrop-blur-md border-t border-border/40 p-4 pb-safe-bottom z-40">
         {following ? (
-          <form 
+          <form
             className="flex gap-3 items-center"
             onSubmit={(e) => {
               e.preventDefault();
@@ -293,7 +319,7 @@ function PostCommunityPage() {
             }}
           >
             <img
-              src={user?.profile || `https://i.pravatar.cc/150?u=${user?.id || 'default'}`}
+              src={user?.profile || `https://i.pravatar.cc/150?u=${user?.id || "default"}`}
               alt={user?.username || "You"}
               className="w-8 h-8 rounded-full object-cover shrink-0"
             />
@@ -308,8 +334,8 @@ function PostCommunityPage() {
               />
             </div>
             {commentText.trim().length > 0 && (
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="text-primary p-2 active:scale-95 transition-transform"
                 disabled={addCommentMutation.isPending}
               >

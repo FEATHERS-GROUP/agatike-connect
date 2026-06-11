@@ -196,7 +196,9 @@ export const createEventPost = createServerFn({ method: "POST" }).handler(async 
           }
         }
       `;
-      const wsData = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, { id: input.workspace_id });
+      const wsData = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, {
+        id: input.workspace_id,
+      });
       const orgId = wsData?.workspaces_by_pk?.orgnizer_id;
 
       if (orgId) {
@@ -208,13 +210,15 @@ export const createEventPost = createServerFn({ method: "POST" }).handler(async 
             }
           }
         `;
-        const followersData = await hasuraRequest<{ organizer_followers: any[] }>(followersQuery, { orgId });
+        const followersData = await hasuraRequest<{ organizer_followers: any[] }>(followersQuery, {
+          orgId,
+        });
         const row = followersData?.organizer_followers?.[0];
-        
+
         if (row && row.user_id) {
           const userIds = Array.isArray(row.user_id) ? row.user_id : [row.user_id];
           const targetUsers = userIds.map((u: any) => String(u).replace(/"/g, ""));
-          
+
           if (targetUsers.length > 0) {
             await addDoc(collection(db, "agatike_notifications"), {
               type: "new_post",
@@ -223,7 +227,7 @@ export const createEventPost = createServerFn({ method: "POST" }).handler(async 
               actorId: session.sub,
               content: input.content.slice(0, 50),
               targetUsers: targetUsers,
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
             });
           }
         }
@@ -274,7 +278,11 @@ export const getEventPosts = createServerFn({ method: "POST" }).handler(async (c
       console.error("Failed to parse media_urls for post", post.id, e);
     }
 
-    if (parsedMediaUrls.length === 0 && typeof post.media_urls === "string" && post.media_urls.startsWith("http")) {
+    if (
+      parsedMediaUrls.length === 0 &&
+      typeof post.media_urls === "string" &&
+      post.media_urls.startsWith("http")
+    ) {
       parsedMediaUrls = [post.media_urls];
     }
     return {
@@ -326,7 +334,11 @@ export const getGlobalFeedPosts = createServerFn({ method: "GET" }).handler(asyn
     }
 
     // Fallback if parsing completely fails and it looks like a raw URL string
-    if (parsedMediaUrls.length === 0 && typeof post.media_urls === "string" && post.media_urls.startsWith("http")) {
+    if (
+      parsedMediaUrls.length === 0 &&
+      typeof post.media_urls === "string" &&
+      post.media_urls.startsWith("http")
+    ) {
       parsedMediaUrls = [post.media_urls];
     }
 
@@ -416,12 +428,12 @@ export const deleteEventPost = createServerFn({ method: "POST" }).handler(async 
 export const likeEventPost = createServerFn({ method: "POST" })
   .inputValidator((d: { post_id: string }) => d)
   .handler(async (ctx) => {
-  const session = await getUserSession();
-  if (!session || !session.id) throw new Error("unauthenticated");
+    const session = await getUserSession();
+    if (!session || !session.id) throw new Error("unauthenticated");
 
-  const { post_id } = ctx.data as unknown as { post_id: string };
+    const { post_id } = ctx.data as unknown as { post_id: string };
 
-  const mutation = `
+    const mutation = `
     mutation LikeEventPost($post_id: uuid!, $user_id: uuid!) {
       insert_event_post_likes(
         objects: { post_id: $post_id, user_id: $user_id }
@@ -436,34 +448,34 @@ export const likeEventPost = createServerFn({ method: "POST" })
     }
   `;
 
-  const data = await hasuraRequest<{ update_event_posts_by_pk: any }>(mutation, {
-    post_id,
-    user_id: session.id,
-  });
+    const data = await hasuraRequest<{ update_event_posts_by_pk: any }>(mutation, {
+      post_id,
+      user_id: session.id,
+    });
 
-  const updatedPost = data.update_event_posts_by_pk;
-  if (updatedPost?.workspace_id) {
-    try {
-      await addDoc(collection(db, "agatike_notifications"), {
-        type: "like",
-        postId: post_id,
-        organizerId: updatedPost.workspace_id,
-        actorId: session.id,
-        createdAt: new Date().toISOString()
-      });
-    } catch (e) {
-      console.error("Failed to push like notification to Firebase:", e);
+    const updatedPost = data.update_event_posts_by_pk;
+    if (updatedPost?.workspace_id) {
+      try {
+        await addDoc(collection(db, "agatike_notifications"), {
+          type: "like",
+          postId: post_id,
+          organizerId: updatedPost.workspace_id,
+          actorId: session.id,
+          createdAt: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.error("Failed to push like notification to Firebase:", e);
+      }
     }
-  }
 
-  return updatedPost;
-});
+    return updatedPost;
+  });
 
 export const getPostById = createServerFn({ method: "POST" })
   .inputValidator((d: { postId: string }) => d)
   .handler(async (ctx) => {
-  const { postId } = ctx.data as unknown as { postId: string };
-  const query = `
+    const { postId } = ctx.data as unknown as { postId: string };
+    const query = `
     query GetPostById($id: uuid!) {
       event_posts_by_pk(id: $id) {
         id
@@ -484,54 +496,58 @@ export const getPostById = createServerFn({ method: "POST" })
       }
     }
   `;
-  const data = await hasuraRequest<{ event_posts_by_pk: any }>(query, { id: postId });
-  const post = data.event_posts_by_pk;
-  if (!post) return null;
+    const data = await hasuraRequest<{ event_posts_by_pk: any }>(query, { id: postId });
+    const post = data.event_posts_by_pk;
+    if (!post) return null;
 
-  let parsedMediaUrls: string[] = [];
-  try {
-    if (typeof post.media_urls === "string") {
-      let parsed = JSON.parse(post.media_urls);
-      if (typeof parsed === "string") parsed = JSON.parse(parsed);
-      if (Array.isArray(parsed)) parsedMediaUrls = parsed;
-    } else if (Array.isArray(post.media_urls)) {
-      parsedMediaUrls = post.media_urls;
+    let parsedMediaUrls: string[] = [];
+    try {
+      if (typeof post.media_urls === "string") {
+        let parsed = JSON.parse(post.media_urls);
+        if (typeof parsed === "string") parsed = JSON.parse(parsed);
+        if (Array.isArray(parsed)) parsedMediaUrls = parsed;
+      } else if (Array.isArray(post.media_urls)) {
+        parsedMediaUrls = post.media_urls;
+      }
+    } catch (e) {
+      console.error("Failed to parse media_urls for post", post.id, e);
     }
-  } catch (e) {
-    console.error("Failed to parse media_urls for post", post.id, e);
-  }
 
-  // Fallback if parsing completely fails and it looks like a raw URL string
-  if (parsedMediaUrls.length === 0 && typeof post.media_urls === "string" && post.media_urls.startsWith("http")) {
-    parsedMediaUrls = [post.media_urls];
-  }
+    // Fallback if parsing completely fails and it looks like a raw URL string
+    if (
+      parsedMediaUrls.length === 0 &&
+      typeof post.media_urls === "string" &&
+      post.media_urls.startsWith("http")
+    ) {
+      parsedMediaUrls = [post.media_urls];
+    }
 
-  const organizer = post.workspace?.organizer || {};
+    const organizer = post.workspace?.organizer || {};
 
-  return {
-    id: post.id,
-    user: organizer.name || "Organizer",
-    handle: organizer.handle || "organizer",
-    avatar: organizer.image,
-    mediaUrls: parsedMediaUrls,
-    caption: post.content,
-    likes: post.likes_count || 0,
-    comments: post.comments_count || 0,
-    eventId: post.event_id,
-    createdAt: post.created_at,
-    organizerId: organizer.id,
-  };
-});
+    return {
+      id: post.id,
+      user: organizer.name || "Organizer",
+      handle: organizer.handle || "organizer",
+      avatar: organizer.image,
+      mediaUrls: parsedMediaUrls,
+      caption: post.content,
+      likes: post.likes_count || 0,
+      comments: post.comments_count || 0,
+      eventId: post.event_id,
+      createdAt: post.created_at,
+      organizerId: organizer.id,
+    };
+  });
 
 export const addPostComment = createServerFn({ method: "POST" })
   .inputValidator((d: { post_id: string; content: string }) => d)
   .handler(async (ctx) => {
-  const session = await getUserSession();
-  if (!session || !session.id) throw new Error("unauthenticated");
+    const session = await getUserSession();
+    if (!session || !session.id) throw new Error("unauthenticated");
 
-  const { post_id, content } = ctx.data as unknown as { post_id: string; content: string };
+    const { post_id, content } = ctx.data as unknown as { post_id: string; content: string };
 
-  const mutation = `
+    const mutation = `
     mutation AddPostComment($post_id: uuid!, $user_id: uuid!, $content: String!) {
       insert_event_post_comments(objects: { post_id: $post_id, user_id: $user_id, content: $content }) {
         returning {
@@ -553,44 +569,46 @@ export const addPostComment = createServerFn({ method: "POST" })
     }
   `;
 
-  const data = await hasuraRequest<{ insert_event_post_comments: any }>(mutation, {
-    post_id,
-    user_id: session.id,
-    content,
-  });
-  
-  const insertedComment = data.insert_event_post_comments?.returning?.[0];
-  if (insertedComment) {
-    try {
-      const workspaceId = insertedComment.post?.workspace_id;
-      const allComments = insertedComment.post?.event_post_comments || [];
-      const targetUsers = Array.from(new Set(allComments.map((c: any) => c.user_id).filter((id: string) => id !== session.id)));
-      
-      if (workspaceId) {
-        await addDoc(collection(db, "agatike_notifications"), {
-          type: "comment",
-          postId: post_id,
-          organizerId: workspaceId,
-          targetUsers: targetUsers,
-          actorId: session.id,
-          content: content.slice(0, 50),
-          createdAt: new Date().toISOString()
-        });
-      }
-    } catch (e) {
-      console.error("Failed to push comment notification to Firebase:", e);
-    }
-  }
+    const data = await hasuraRequest<{ insert_event_post_comments: any }>(mutation, {
+      post_id,
+      user_id: session.id,
+      content,
+    });
 
-  return insertedComment;
-});
+    const insertedComment = data.insert_event_post_comments?.returning?.[0];
+    if (insertedComment) {
+      try {
+        const workspaceId = insertedComment.post?.workspace_id;
+        const allComments = insertedComment.post?.event_post_comments || [];
+        const targetUsers = Array.from(
+          new Set(allComments.map((c: any) => c.user_id).filter((id: string) => id !== session.id)),
+        );
+
+        if (workspaceId) {
+          await addDoc(collection(db, "agatike_notifications"), {
+            type: "comment",
+            postId: post_id,
+            organizerId: workspaceId,
+            targetUsers: targetUsers,
+            actorId: session.id,
+            content: content.slice(0, 50),
+            createdAt: new Date().toISOString(),
+          });
+        }
+      } catch (e) {
+        console.error("Failed to push comment notification to Firebase:", e);
+      }
+    }
+
+    return insertedComment;
+  });
 
 export const getPostComments = createServerFn({ method: "POST" })
   .inputValidator((d: { post_id: string }) => d)
   .handler(async (ctx) => {
-  const { post_id } = ctx.data as unknown as { post_id: string };
+    const { post_id } = ctx.data as unknown as { post_id: string };
 
-  const query = `
+    const query = `
     query GetPostComments($post_id: uuid!) {
       event_post_comments(
         where: { post_id: { _eq: $post_id } },
@@ -609,9 +627,9 @@ export const getPostComments = createServerFn({ method: "POST" })
     }
   `;
 
-  const data = await hasuraRequest<{ event_post_comments: any[] }>(query, { post_id });
-  return data.event_post_comments || [];
-});
+    const data = await hasuraRequest<{ event_post_comments: any[] }>(query, { post_id });
+    return data.event_post_comments || [];
+  });
 
 // ─── HIGHLIGHTS ───────────────────────────────────────────────────────────────
 
