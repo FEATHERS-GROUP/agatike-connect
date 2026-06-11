@@ -184,7 +184,56 @@ export const createEventPost = createServerFn({ method: "POST" }).handler(async 
       is_published: true,
     },
   });
-  return data.insert_event_posts_one;
+  const result = data.insert_event_posts_one;
+
+  if (result?.id && input.workspace_id) {
+    try {
+      // 1. Get organizer_id from workspace
+      const wsQuery = `
+        query GetWorkspaceOrg($id: uuid!) {
+          workspaces_by_pk(id: $id) {
+            orgnizer_id
+          }
+        }
+      `;
+      const wsData = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, { id: input.workspace_id });
+      const orgId = wsData?.workspaces_by_pk?.orgnizer_id;
+
+      if (orgId) {
+        // 2. Get followers
+        const followersQuery = `
+          query GetFollowers($orgId: uuid!) {
+            organizer_followers(where: { organizer_id: { _eq: $orgId } }) {
+              user_id
+            }
+          }
+        `;
+        const followersData = await hasuraRequest<{ organizer_followers: any[] }>(followersQuery, { orgId });
+        const row = followersData?.organizer_followers?.[0];
+        
+        if (row && row.user_id) {
+          const userIds = Array.isArray(row.user_id) ? row.user_id : [row.user_id];
+          const targetUsers = userIds.map((u: any) => String(u).replace(/"/g, ""));
+          
+          if (targetUsers.length > 0) {
+            await addDoc(collection(db, "agatike_notifications"), {
+              type: "new_post",
+              postId: result.id,
+              organizerId: input.workspace_id,
+              actorId: session.sub,
+              content: input.content.slice(0, 50),
+              targetUsers: targetUsers,
+              createdAt: new Date().toISOString()
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to push new_post notification:", e);
+    }
+  }
+
+  return result;
 });
 
 export const getEventPosts = createServerFn({ method: "POST" }).handler(async (ctx) => {

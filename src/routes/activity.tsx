@@ -18,6 +18,7 @@ type Notification = {
   organizerId: string;
   actorId: string;
   content?: string;
+  eventId?: string;
   createdAt: string;
 };
 
@@ -74,12 +75,38 @@ function ActivityPage() {
           )}
           {notifications.map((n) => {
             const isComment = n.type === "comment";
-            const Icon = isComment ? MessageCircle : Heart;
-            const color = isComment ? "text-primary" : "text-rose-500";
-            const bg = isComment ? "bg-primary/10 border-primary/20" : "bg-rose-500/10 border-rose-500/20";
-            const title = isComment ? "New Reply" : "New Like";
-            const description = isComment && n.content ? `Someone commented: "${n.content}"` : "Someone interacted with a post you follow.";
+            const isNewEvent = n.type === "new_event";
+            const isNewPost = n.type === "new_post";
 
+            let Icon = Heart;
+            let color = "text-rose-500";
+            let bg = "bg-rose-500/10 border-rose-500/20";
+            let title = "New Like";
+            let description = "Someone interacted with a post you follow.";
+            let link = `/community/${n.postId}`;
+            let linkText = "View Post";
+
+            if (isComment) {
+              Icon = MessageCircle;
+              color = "text-primary";
+              bg = "bg-primary/10 border-primary/20";
+              title = "New Reply";
+              description = n.content ? `Someone commented: "${n.content}"` : "Someone commented on a post you follow.";
+            } else if (isNewEvent) {
+              Icon = CalendarDays;
+              color = "text-amber-500";
+              bg = "bg-amber-500/10 border-amber-500/20";
+              title = "New Event";
+              description = "An organizer you follow just posted a new event!";
+              link = `/event/${n.eventId}`;
+              linkText = "View Event";
+            } else if (isNewPost) {
+              Icon = Film;
+              color = "text-purple-500";
+              bg = "bg-purple-500/10 border-purple-500/20";
+              title = "New Post";
+              description = n.content ? `An organizer you follow posted: "${n.content}"` : "An organizer you follow posted an update.";
+            }
             return (
               <div
                 key={n.id}
@@ -107,13 +134,10 @@ function ActivityPage() {
                     {description}
                   </p>
 
-                  <Link to={`/community/${n.postId}`}>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="h-8 w-full rounded-lg text-xs font-bold shadow-md shadow-primary/20"
-                    >
-                      View Post
+                  <Link to={link}>
+                    <Button variant="secondary" size="sm" className="w-full text-xs h-7 mt-1 font-bold">
+                      {linkText}
+                      <ChevronRight className="h-3 w-3 ml-1 opacity-50" />
                     </Button>
                   </Link>
                 </div>

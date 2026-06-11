@@ -1,5 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
+import { db } from "@/lib/firebase";
+import { collection, addDoc } from "firebase/firestore";
+import { getSession } from "./auth";
 
 const CREATE_EVENT = `
   mutation CreateEvent($object: events_insert_input!) {
@@ -11,7 +14,57 @@ const CREATE_EVENT = `
 
 export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const eventData = ctx.data as any;
-  return hasuraRequest(CREATE_EVENT, { object: eventData });
+  const result = await hasuraRequest<{ insert_events_one: any }>(CREATE_EVENT, { object: eventData });
+  const eventId = result?.insert_events_one?.id;
+
+  if (eventId && eventData.workspace_id) {
+    try {
+      // 1. Get organizer_id from workspace
+      const wsQuery = `
+        query GetWorkspaceOrg($id: uuid!) {
+          workspaces_by_pk(id: $id) {
+            orgnizer_id
+          }
+        }
+      `;
+      const wsData = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, { id: eventData.workspace_id });
+      const orgId = wsData?.workspaces_by_pk?.orgnizer_id;
+
+      if (orgId) {
+        // 2. Get followers
+        const followersQuery = `
+          query GetFollowers($orgId: uuid!) {
+            organizer_followers(where: { organizer_id: { _eq: $orgId } }) {
+              user_id
+            }
+          }
+        `;
+        const followersData = await hasuraRequest<{ organizer_followers: any[] }>(followersQuery, { orgId });
+        const row = followersData?.organizer_followers?.[0];
+        
+        if (row && row.user_id) {
+          const userIds = Array.isArray(row.user_id) ? row.user_id : [row.user_id];
+          const targetUsers = userIds.map((u: any) => String(u).replace(/"/g, ""));
+          
+          if (targetUsers.length > 0) {
+            const session = await getSession();
+            await addDoc(collection(db, "agatike_notifications"), {
+              type: "new_event",
+              eventId: eventId,
+              organizerId: eventData.workspace_id, // Front-end might need workspace_id or org_id
+              actorId: session?.sub || orgId,
+              targetUsers: targetUsers,
+              createdAt: new Date().toISOString()
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to push new_event notification:", e);
+    }
+  }
+
+  return result;
 });
 
 export const getEventAttendeesCount = createServerFn({ method: "POST" })
