@@ -1466,4 +1466,31 @@ The Venue Overview features a visual Calendar component (`react-day-picker`) tha
 | `rentable_venues` | Core venue profile, photos, location, pricing tiers, and rental model.                |
 | `venue_bookings`  | All reservations. Contains `tickets_data` (with OTPs), timestamps, and attendee info. |
 
+---
+
+## 18. Community Feed & Real-Time Interactions
+
+**Logic:**
+
+The mobile app includes a heavily optimized Community Feed designed for rapid interaction and dynamic content discovery.
+
+### A. Smart Feed Algorithm & Interleaved Carousels
+Instead of a static layout, the feed intelligently merges discovery carousels (Organizers, Events, Movies) directly into the post scroll at randomized intervals. 
+The core post list (`dbPosts`) is globally fetched and sorted using a specialized scoring engine:
+- **Priority 1 (Followed / Fresh):** Brand new posts (under 48h) from organizers the user follows. These are inversely sorted by likes to ensure the *least-liked* new posts get visibility quickly.
+- **Priority 2 (Followed / Established):** Older posts from followed organizers.
+- **Priority 3 (Unfollowed / Top Content):** Posts from organizers the user does *not* follow. We strictly prioritize surfacing their **most-liked** content to maximize quality discovery.
+- **Randomization:** A slight random modifier is applied to all scores, preventing the feed from feeling identical on repeated loads while strictly maintaining the priority buckets.
+
+### B. Optimistic UI (Likes & Comments)
+To ensure the app feels lightning-fast even on slow cellular networks, user interactions use React Query's Optimistic UI patterns:
+- **Liking:** Clicking the heart icon instantly updates the local state (turns red, increments count) before the server completes the `likeEventPost` or `unlikeEventPost` mutation in Hasura. If the background network request fails, the state gracefully reverts.
+- **Commenting:** The `onMutate` hook injects newly submitted comments directly into the `queryClient` cache. The comment input clears immediately, and the comment appears instantly in the list alongside the user's profile picture, while the backend processes the insertion silently.
+
+### C. Real-Time Firebase Notifications
+While the core database uses Postgres (Hasura), the real-time notification engine utilizes **Firebase Firestore** for immediate unread badge updates without polling:
+- **Producers:** Server functions (`createEvent`, `createEventPost`, `likeEventPost`) compute the relevant followers or targets and asynchronously push a document to the `agatike_notifications` collection.
+- **Consumers:** The mobile client opens an `onSnapshot` listener to its specific user ID within the `targetUsers` array.
+- **Unread Logic:** The unread count is calculated locally by comparing the notification's `createdAt` timestamp against a locally stored `lastActivityReadTimestamp` from `localStorage`, ensuring the red activity badge is always perfectly synced and accurate.
+
 _Last updated: June 2026 — Agatike Connect_
