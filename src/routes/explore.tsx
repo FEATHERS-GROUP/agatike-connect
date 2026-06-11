@@ -9,6 +9,8 @@ import { getOrganizers } from "@/api/organizers";
 import { getPublicEvents } from "@/api/events";
 import { getPublicVenues } from "@/api/venues";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
+import { ExploreSearchOverlay } from "@/components/mobile/ExploreSearchOverlay";
+import { useState } from "react";
 
 export const Route = createFileRoute("/explore")({
   component: ExplorePage,
@@ -16,6 +18,8 @@ export const Route = createFileRoute("/explore")({
 
 function ExplorePage() {
   const { toggleFollow, isFollowing } = useFollowedOrganizers();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: dbOrganizers = [] } = useQuery({
     queryKey: ["organizers"],
@@ -42,11 +46,12 @@ function ExplorePage() {
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/40 pt-safe-top">
         <div className="px-4 py-3">
           <div className="flex gap-2">
-            <div className="relative flex-1">
+            <div className="relative flex-1" onClick={() => setIsSearchOpen(true)}>
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
+                readOnly
                 placeholder="Search events, artists, venues..."
-                className="h-12 bg-secondary/50 border-transparent pl-10 rounded-2xl text-base shadow-sm focus-visible:ring-primary/50"
+                className="h-12 bg-secondary/50 border-transparent pl-10 rounded-2xl text-base shadow-sm focus-visible:ring-primary/50 cursor-pointer"
               />
             </div>
             <Button
@@ -335,6 +340,18 @@ function ExplorePage() {
           scrollbar-width: none;
         }
       `}</style>
+
+      <ExploreSearchOverlay
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        dbOrganizers={dbOrganizers}
+        dbEvents={dbEvents}
+        dbVenues={dbVenues}
+        isFollowing={isFollowing}
+        toggleFollow={toggleFollow}
+      />
     </div>
   );
 }
