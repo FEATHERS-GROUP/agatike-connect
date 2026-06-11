@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
 import { getPublicEvents } from "@/api/events";
+import { getPublicVenues } from "@/api/venues";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 
 export const Route = createFileRoute("/explore")({
@@ -24,6 +25,11 @@ function ExplorePage() {
   const { data: dbEvents = [] } = useQuery({
     queryKey: ["public-events"],
     queryFn: () => getPublicEvents(),
+  });
+
+  const { data: dbVenues = [] } = useQuery({
+    queryKey: ["public-venues"],
+    queryFn: () => getPublicVenues(),
   });
 
   const trendingEvents = dbEvents.slice(0, 4);
@@ -249,6 +255,46 @@ function ExplorePage() {
             {dbExperiences.length === 0 && (
               <div className="w-full text-center py-6 text-sm text-muted-foreground">
                 No unique experiences available right now.
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Venues Horizontal Scroll */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold tracking-tight">Top Venues</h2>
+          </div>
+          <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4">
+            {dbVenues.map((venue) => (
+              <Link
+                key={venue.id}
+                to="/"
+                className="w-56 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
+              >
+                <div className="aspect-[4/3] relative">
+                  <img 
+                    src={venue.cover_url || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop"} 
+                    alt={venue.name} 
+                    className="w-full h-full object-cover" 
+                  />
+                  <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-medium capitalize shadow-sm">
+                    {venue.type || "Venue"}
+                  </div>
+                </div>
+                <div className="p-3">
+                  <h3 className="font-semibold text-sm line-clamp-1">{venue.name}</h3>
+                  <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{venue.city || "Local"}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+            
+            {dbVenues.length === 0 && (
+              <div className="w-full text-center py-6 text-sm text-muted-foreground">
+                No venues available right now.
               </div>
             )}
           </div>

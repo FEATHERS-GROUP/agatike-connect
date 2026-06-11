@@ -192,3 +192,24 @@ export const disableDatabaseWorkspace = createServerFn({ method: "POST" }).handl
   });
   return data.update_workspaces_by_pk;
 });
+
+export const getPublicWorkspaces = createServerFn({ method: "GET" }).handler(async () => {
+  const query = `
+    query GetPublicWorkspaces {
+      workspaces(where: { deleted: { _eq: false } }, order_by: { created_at: desc }) {
+        id
+        name
+        city
+        country
+        logo
+        type
+        address
+        organizer {
+          name
+        }
+      }
+    }
+  `;
+  const data = await hasuraRequest<{ workspaces: any[] }>(query);
+  return data.workspaces || [];
+});

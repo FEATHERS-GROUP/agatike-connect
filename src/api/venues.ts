@@ -142,3 +142,22 @@ export const getWorkspaceVenueProjects = createServerFn({ method: "POST" }).hand
   });
   return data.venue_projects || [];
 });
+
+const GET_PUBLIC_VENUES = `
+  query GetPublicVenues {
+    rentable_venues(order_by: { created_at: desc }) {
+      id
+      name
+      type
+      city
+      cover_url
+      currency
+      pricing_tiers
+    }
+  }
+`;
+
+export const getPublicVenues = createServerFn({ method: "GET" }).handler(async () => {
+  const data = await hasuraRequest<{ rentable_venues: any[] }>(GET_PUBLIC_VENUES, {});
+  return data.rentable_venues || [];
+});
