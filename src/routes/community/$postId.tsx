@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPostById, getPostComments, addPostComment, likeEventPost } from "@/api/experience";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 
 export const Route = createFileRoute("/community/$postId")({
   component: PostCommunityPage,
@@ -24,6 +25,7 @@ function PostCommunityPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { isFollowing, toggleFollow } = useFollowedOrganizers();
+  const { user } = useUserAuth();
 
   const { data: post, isLoading: isLoadingPost } = useQuery({
     queryKey: ["post", postId],
@@ -272,8 +274,8 @@ function PostCommunityPage() {
             }}
           >
             <img
-              src="https://i.pravatar.cc/150?u=me"
-              alt="You"
+              src={user?.profile || `https://i.pravatar.cc/150?u=${user?.id || 'default'}`}
+              alt={user?.username || "You"}
               className="w-8 h-8 rounded-full object-cover shrink-0"
             />
             <div className="flex-1 flex items-center bg-secondary/50 border border-border/40 rounded-full px-4 py-1.5 focus-within:ring-1 focus-within:ring-primary transition-shadow">
