@@ -132,5 +132,60 @@ export function GlobalNotificationListener() {
     return () => unsubscribe();
   }, [activeWorkspace?.id, activeWorkspace?.slug, navigate]);
 
+  useEffect(() => {
+    if (!activeWorkspace?.organizer_id) return;
+
+    const organizerId = activeWorkspace.organizer_id;
+    const q = query(collection(db, "agatike_notifications"), where("organizerId", "==", organizerId));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (isFirstLoadRef.current) return;
+
+      snapshot.docChanges().forEach(async (change) => {
+        if (change.type === "added") {
+          const data = change.doc.data();
+          const notifId = change.doc.id;
+          
+          const rawTimeMillis = data.createdAt ? new Date(data.createdAt).getTime() : 0;
+          
+          const storageKey = `notified_org_${notifId}`;
+          const lastNotifiedTime = parseInt(localStorage.getItem(storageKey) || "0", 10);
+
+          if (rawTimeMillis <= lastNotifiedTime) return;
+
+          localStorage.setItem(storageKey, rawTimeMillis.toString());
+
+          let title = "Notification";
+          let body = "";
+
+          if (data.type === "comment") {
+            title = "New comment on your post!";
+            body = data.content || "Someone left a comment.";
+          } else if (data.type === "like") {
+            title = "New Like!";
+            body = "Someone liked your post.";
+          }
+
+          if ("Notification" in window && Notification.permission === "granted") {
+            const notif = new Notification(title, {
+              body,
+              icon: "/icon.svg",
+              tag: `notif-${notifId}`,
+            });
+            notif.onclick = () => {
+              window.focus();
+            };
+          }
+
+          toast(title, {
+            description: body,
+          });
+        }
+      });
+    });
+
+    return () => unsubscribe();
+  }, [activeWorkspace?.organizer_id]);
+
   return null;
 }

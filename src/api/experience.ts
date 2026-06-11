@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import { getSession, getUserSession } from "./auth";
 import { deleteFiles } from "./storage";
+import { db } from "@/lib/firebase";
+import { collection, addDoc } from "firebase/firestore";
 
 // ─── STORIES ──────────────────────────────────────────────────────────────────
 
@@ -378,6 +380,7 @@ export const likeEventPost = createServerFn({ method: "POST" }).handler(async (c
       update_event_posts_by_pk(pk_columns: { id: $post_id }, _inc: { likes_count: 1 }) {
         id
         likes_count
+        workspace_id
       }
     }
   `;
@@ -386,7 +389,23 @@ export const likeEventPost = createServerFn({ method: "POST" }).handler(async (c
     post_id,
     user_id: session.id,
   });
-  return data.update_event_posts_by_pk;
+
+  const updatedPost = data.update_event_posts_by_pk;
+  if (updatedPost?.workspace_id) {
+    try {
+      await addDoc(collection(db, "agatike_notifications"), {
+        type: "like",
+        postId: post_id,
+        organizerId: updatedPost.workspace_id,
+        actorId: session.id,
+        createdAt: new Date().toISOString()
+      });
+    } catch (e) {
+      console.error("Failed to push like notification to Firebase:", e);
+    }
+  }
+
+  return updatedPost;
 });
 
 export const getPostById = createServerFn({ method: "POST" }).handler(async (ctx) => {
@@ -464,6 +483,12 @@ export const addPostComment = createServerFn({ method: "POST" }).handler(async (
           id
           content
           created_at
+          post {
+            workspace_id
+            event_post_comments {
+              user_id
+            }
+          }
         }
       }
       update_event_posts_by_pk(pk_columns: { id: $post_id }, _inc: { comments_count: 1 }) {
@@ -478,7 +503,31 @@ export const addPostComment = createServerFn({ method: "POST" }).handler(async (
     user_id: session.id,
     content,
   });
-  return data.insert_event_post_comments?.returning?.[0];
+  
+  const insertedComment = data.insert_event_post_comments?.returning?.[0];
+  if (insertedComment) {
+    try {
+      const workspaceId = insertedComment.post?.workspace_id;
+      const allComments = insertedComment.post?.event_post_comments || [];
+      const targetUsers = Array.from(new Set(allComments.map((c: any) => c.user_id).filter((id: string) => id !== session.id)));
+      
+      if (workspaceId) {
+        await addDoc(collection(db, "agatike_notifications"), {
+          type: "comment",
+          postId: post_id,
+          organizerId: workspaceId,
+          targetUsers: targetUsers,
+          actorId: session.id,
+          content: content.slice(0, 50),
+          createdAt: new Date().toISOString()
+        });
+      }
+    } catch (e) {
+      console.error("Failed to push comment notification to Firebase:", e);
+    }
+  }
+
+  return insertedComment;
 });
 
 export const getPostComments = createServerFn({ method: "POST" }).handler(async (ctx) => {
