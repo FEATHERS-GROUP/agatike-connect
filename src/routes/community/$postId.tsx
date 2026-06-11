@@ -6,6 +6,25 @@ import { getPostById, getPostComments, addPostComment, likeEventPost } from "@/a
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 
+const COUNTRY_FLAGS: Record<string, string> = {
+  Rwanda: "🇷🇼",
+  "United States": "🇺🇸",
+  "United Kingdom": "🇬🇧",
+  France: "🇫🇷",
+  Germany: "🇩🇪",
+  Canada: "🇨🇦",
+  Kenya: "🇰🇪",
+  Uganda: "🇺🇬",
+  Tanzania: "🇹🇿",
+  Nigeria: "🇳🇬",
+  "South Africa": "🇿🇦",
+};
+
+const getCountryFlag = (countryName?: string | null) => {
+  if (!countryName) return "";
+  return COUNTRY_FLAGS[countryName] || "🌍";
+};
+
 export const Route = createFileRoute("/community/$postId")({
   component: PostCommunityPage,
 });
@@ -242,13 +261,13 @@ function PostCommunityPage() {
           {comments.map((comment: any) => (
             <div key={comment.id} className="flex gap-3">
               <img
-                src={comment.user?.avatar_url || `https://i.pravatar.cc/150?u=${comment.user_id}`}
-                alt={comment.user?.name || "User"}
+                src={comment.user?.profile || `https://i.pravatar.cc/150?u=${comment.user_id}`}
+                alt={comment.user?.handle || "User"}
                 className="w-8 h-8 rounded-full object-cover shrink-0"
               />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm">{comment.user?.name || "User"}</span>
+                  <span className="font-bold text-sm">@{comment.user?.handle || "user"} {getCountryFlag(comment.user?.country)}</span>
                   <span className="text-[10px] text-muted-foreground">{timeAgo(comment.created_at)}</span>
                 </div>
                 <p className="text-sm text-foreground/90 mt-0.5">{comment.content}</p>

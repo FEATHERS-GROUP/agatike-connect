@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
-import { getSession } from "./auth";
+import { getSession, getUserSession } from "./auth";
 import { deleteFiles } from "./storage";
 
 // ─── STORIES ──────────────────────────────────────────────────────────────────
@@ -363,8 +363,8 @@ export const deleteEventPost = createServerFn({ method: "POST" }).handler(async 
 });
 
 export const likeEventPost = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const session = await getSession();
-  if (!session || !session.sub) throw new Error("unauthenticated");
+  const session = await getUserSession();
+  if (!session || !session.id) throw new Error("unauthenticated");
 
   const { post_id } = ctx.data as unknown as { post_id: string };
 
@@ -384,7 +384,7 @@ export const likeEventPost = createServerFn({ method: "POST" }).handler(async (c
 
   const data = await hasuraRequest<{ update_event_posts_by_pk: any }>(mutation, {
     post_id,
-    user_id: session.sub,
+    user_id: session.id,
   });
   return data.update_event_posts_by_pk;
 });
@@ -452,8 +452,8 @@ export const getPostById = createServerFn({ method: "POST" }).handler(async (ctx
 });
 
 export const addPostComment = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const session = await getSession();
-  if (!session || !session.sub) throw new Error("unauthenticated");
+  const session = await getUserSession();
+  if (!session || !session.id) throw new Error("unauthenticated");
 
   const { post_id, content } = ctx.data as unknown as { post_id: string; content: string };
 
@@ -475,7 +475,7 @@ export const addPostComment = createServerFn({ method: "POST" }).handler(async (
 
   const data = await hasuraRequest<{ insert_event_post_comments: any }>(mutation, {
     post_id,
-    user_id: session.sub,
+    user_id: session.id,
     content,
   });
   return data.insert_event_post_comments?.returning?.[0];
@@ -494,6 +494,11 @@ export const getPostComments = createServerFn({ method: "POST" }).handler(async 
         content
         user_id
         created_at
+        user {
+          handle
+          profile
+          country
+        }
       }
     }
   `;
