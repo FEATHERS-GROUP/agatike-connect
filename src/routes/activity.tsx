@@ -48,6 +48,14 @@ function ActivityPage() {
     return () => unsubscribe();
   }, [user?.id]);
 
+  useEffect(() => {
+    // Mark as read when viewing activity
+    localStorage.setItem("lastActivityReadTimestamp", Date.now().toString());
+    
+    // Clear notification badge count immediately on this page
+    window.dispatchEvent(new Event("activityRead"));
+  }, []);
+
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-8 pt-safe-top md:max-w-md md:mx-auto md:border-x md:border-border/40 md:min-h-[100dvh] shadow-xl">
       <div className="px-4 py-3 sticky top-0 bg-background/90 backdrop-blur-md z-30 border-b border-border/40">

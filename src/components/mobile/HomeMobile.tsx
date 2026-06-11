@@ -10,6 +10,9 @@ import { getOrganizers } from "@/api/organizers";
 import { getOrganizersRatings } from "@/api/feedback";
 import { getGlobalFeedPosts } from "@/api/experience";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
+import { useEffect, useState } from "react";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export function HomeMobile() {
   const { user, isLoading, isLoggedIn } = useUserAuth();
@@ -35,6 +38,40 @@ export function HomeMobile() {
   const unfollowedOrganizers = dbOrganizers.filter((org: any) => !isFollowing(org.id));
   const allFollowed = dbOrganizers.length > 0 && unfollowedOrganizers.length === 0;
 
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const q = query(
+      collection(db, "agatike_notifications"),
+      where("targetUsers", "array-contains", user.id)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const lastReadTimestamp = parseInt(localStorage.getItem("lastActivityReadTimestamp") || "0", 10);
+      let count = 0;
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.actorId !== user.id) {
+          const notifTime = data.createdAt ? new Date(data.createdAt).getTime() : 0;
+          if (notifTime > lastReadTimestamp) {
+            count++;
+          }
+        }
+      });
+      setUnreadCount(count);
+    });
+
+    const handleReadEvent = () => setUnreadCount(0);
+    window.addEventListener("activityRead", handleReadEvent);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("activityRead", handleReadEvent);
+    };
+  }, [user?.id]);
+
   // Show loading spinner while checking session
   if (isLoading) {
     return (
@@ -52,9 +89,14 @@ export function HomeMobile() {
           <Camera className="h-6 w-6" />
         </button>
         <img src="/icon.svg" alt="Agatike" className="h-8 w-auto object-contain" />
-        <button className="text-foreground">
+        <Link to="/activity" className="text-foreground relative">
           <Activity className="h-6 w-6" />
-        </button>
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center px-1">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </Link>
       </div>
 
       {/* Welcome Banner */}
