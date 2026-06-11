@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { likeEventPost } from "@/api/experience";
+import { likeEventPost, unlikeEventPost } from "@/api/experience";
 
 export function FeedCard({ post }: { post: any }) {
   const [isSaved, setIsSaved] = useState(false);
@@ -23,14 +23,24 @@ export function FeedCard({ post }: { post: any }) {
     post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : [post.image || post.cover];
 
   const handleLike = async () => {
-    if (isLiked) return;
-    setIsLiked(true);
-    setLikesCount(likesCount + 1);
-    try {
-      await likeEventPost({ data: { post_id: post.id } });
-    } catch (e) {
+    if (isLiked) {
       setIsLiked(false);
-      setLikesCount(likesCount - 1);
+      setLikesCount(Math.max(0, likesCount - 1));
+      try {
+        await unlikeEventPost({ data: { post_id: post.id } });
+      } catch (e) {
+        setIsLiked(true);
+        setLikesCount(likesCount);
+      }
+    } else {
+      setIsLiked(true);
+      setLikesCount(likesCount + 1);
+      try {
+        await likeEventPost({ data: { post_id: post.id } });
+      } catch (e) {
+        setIsLiked(false);
+        setLikesCount(likesCount - 1);
+      }
     }
   };
 
@@ -150,7 +160,7 @@ export function FeedCard({ post }: { post: any }) {
               onClick={handleLike}
               className="flex items-center gap-1.5 focus:outline-none transition-transform active:scale-90 hover:text-foreground/80"
             >
-              <Heart className={`h-6 w-6 ${isLiked ? "fill-primary text-primary" : ""}`} />
+              <Heart className={`h-6 w-6 transition-colors ${isLiked ? "fill-rose-500 text-rose-500" : ""}`} />
               <span>{likesCount}</span>
             </button>
             <Link

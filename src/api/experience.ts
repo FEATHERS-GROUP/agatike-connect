@@ -471,6 +471,36 @@ export const likeEventPost = createServerFn({ method: "POST" })
     return updatedPost;
   });
 
+export const unlikeEventPost = createServerFn({ method: "POST" })
+  .inputValidator((d: { post_id: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getUserSession();
+    if (!session || !session.id) throw new Error("unauthenticated");
+
+    const { post_id } = ctx.data as unknown as { post_id: string };
+
+    const mutation = `
+    mutation UnlikeEventPost($post_id: uuid!, $user_id: uuid!) {
+      delete_event_post_likes(
+        where: { post_id: { _eq: $post_id }, user_id: { _eq: $user_id } }
+      ) {
+        affected_rows
+      }
+      update_event_posts_by_pk(pk_columns: { id: $post_id }, _inc: { likes_count: -1 }) {
+        id
+        likes_count
+      }
+    }
+  `;
+
+    const data = await hasuraRequest<{ update_event_posts_by_pk: any }>(mutation, {
+      post_id,
+      user_id: session.id,
+    });
+
+    return data.update_event_posts_by_pk;
+  });
+
 export const getPostById = createServerFn({ method: "POST" })
   .inputValidator((d: { postId: string }) => d)
   .handler(async (ctx) => {

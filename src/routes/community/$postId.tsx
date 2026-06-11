@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getPostById, getPostComments, addPostComment, likeEventPost } from "@/api/experience";
+import { getPostById, getPostComments, addPostComment, likeEventPost, unlikeEventPost } from "@/api/experience";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 
@@ -65,23 +65,67 @@ function PostCommunityPage() {
     queryFn: () => getPostComments({ data: { post_id: postId } }),
   });
 
+  const [commentText, setCommentText] = useState("");
+  const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+
+  useEffect(() => {
+    if (post) {
+      setLikesCount(post.likes || 0);
+    }
+  }, [post]);
+
   const addCommentMutation = useMutation({
     mutationFn: (content: string) => addPostComment({ data: { post_id: postId, content } }),
-    onSuccess: () => {
+    onMutate: async (newContent) => {
+      await queryClient.cancelQueries({ queryKey: ["post-comments", postId] });
+      const previousComments = queryClient.getQueryData(["post-comments", postId]);
+      
+      queryClient.setQueryData(["post-comments", postId], (old: any) => [
+        {
+          id: Math.random().toString(),
+          user: user?.name || "You",
+          handle: user?.handle || "you",
+          avatar: user?.photoURL || "",
+          content: newContent,
+          created_at: new Date().toISOString()
+        },
+        ...(old || [])
+      ]);
       setCommentText("");
-      refetchComments();
-      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+      
+      return { previousComments };
+    },
+    onError: (err, newContent, context) => {
+      queryClient.setQueryData(["post-comments", postId], context?.previousComments);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
     },
   });
 
-  const likeMutation = useMutation({
-    mutationFn: () => likeEventPost({ data: { post_id: postId } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["post", postId] });
-    },
-  });
+  const handleLike = async () => {
+    if (isLiked) {
+      setIsLiked(false);
+      setLikesCount(Math.max(0, likesCount - 1));
+      try {
+        await unlikeEventPost({ data: { post_id: postId } });
+      } catch (e) {
+        setIsLiked(true);
+        setLikesCount(likesCount);
+      }
+    } else {
+      setIsLiked(true);
+      setLikesCount(likesCount + 1);
+      try {
+        await likeEventPost({ data: { post_id: postId } });
+      } catch (e) {
+        setIsLiked(false);
+        setLikesCount(likesCount - 1);
+      }
+    }
+  };
 
-  const [commentText, setCommentText] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -247,11 +291,11 @@ function PostCommunityPage() {
       {/* Post Actions */}
       <div className="px-4 py-3 flex items-center gap-4 text-sm font-medium text-foreground">
         <button
-          onClick={() => likeMutation.mutate()}
+          onClick={handleLike}
           className="flex items-center gap-1.5 focus:outline-none transition-transform active:scale-90 hover:text-foreground/80"
         >
-          <Heart className="h-6 w-6" />
-          <span>{post.likes}</span>
+          <Heart className={`h-6 w-6 transition-colors ${isLiked ? "fill-rose-500 text-rose-500" : ""}`} />
+          <span>{likesCount}</span>
         </button>
         <div className="flex items-center gap-1.5">
           <MessageCircle className="h-6 w-6" style={{ transform: "scaleX(-1)" }} />
