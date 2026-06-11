@@ -84,7 +84,7 @@ function OrganizersPage() {
         <p className="text-sm font-medium text-muted-foreground mb-2">
           @{org.handle} ·{" "}
           {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + "k" : followerCount}{" "}
-          followers
+          {followerCount === 1 ? "follower" : "followers"}
         </p>
 
         {rating && (
@@ -151,7 +151,7 @@ function OrganizersPage() {
           </div>
         </header>
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+        <div className="flex flex-col gap-3 md:grid md:grid-cols-4 lg:grid-cols-5 md:gap-4">
           {list.map((org) => {
             const following = isFollowing(org.id);
             const followerCount = org.followers ?? 0;
@@ -161,30 +161,33 @@ function OrganizersPage() {
               <div
                 key={org.id}
                 onClick={() => handleOrgClick(org)}
-                className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-1 cursor-pointer flex flex-col items-center text-center animate-in fade-in duration-300"
+                className="rounded-2xl border border-border/60 bg-card p-3 md:p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-1 cursor-pointer flex flex-row items-center text-left md:flex-col md:items-center md:text-center animate-in fade-in duration-300"
               >
-                <div className="relative h-20 w-20 mb-3 rounded-full overflow-hidden border border-border/40">
+                <div className="relative h-12 w-12 shrink-0 md:h-20 md:w-20 md:mb-3 rounded-full overflow-hidden border border-border/40">
                   <img src={avatar} alt={org.name} className="w-full h-full object-cover" />
                 </div>
-                <h3 className="font-semibold text-sm leading-tight line-clamp-1 w-full">
-                  {org.name}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + "k" : followerCount}{" "}
-                  followers
-                </p>
+                
+                <div className="flex-1 min-w-0 ml-3 md:ml-0">
+                  <h3 className="font-semibold text-sm leading-tight line-clamp-1 w-full">
+                    {org.name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5 md:mt-1">
+                    {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + "k" : followerCount}{" "}
+                    {followerCount === 1 ? "follower" : "followers"}
+                  </p>
 
-                {rating && (
-                  <div className="flex items-center gap-1 mt-2 text-xs text-primary font-medium">
-                    <Star className="h-3 w-3 fill-primary" />
-                    <span>{rating.avg.toFixed(1)}</span>
-                    <span className="text-muted-foreground font-normal">({rating.count})</span>
-                  </div>
-                )}
+                  {rating && (
+                    <div className="flex items-center gap-1 mt-0.5 md:mt-2 md:justify-center text-xs text-primary font-medium">
+                      <Star className="h-3 w-3 fill-primary" />
+                      <span>{rating.avg.toFixed(1)}</span>
+                      <span className="text-muted-foreground font-normal">({rating.count})</span>
+                    </div>
+                  )}
+                </div>
 
                 <Button
                   variant={following ? "outline" : "default"}
-                  className={`w-full mt-4 rounded-full text-xs font-semibold h-8 ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
+                  className={`w-24 shrink-0 ml-3 md:w-full md:ml-0 md:mt-4 rounded-full text-xs font-semibold h-8 ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
                   style={following ? undefined : { background: "var(--gradient-primary)" }}
                   onClick={(e) => {
                     e.stopPropagation();

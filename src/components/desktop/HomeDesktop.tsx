@@ -238,10 +238,8 @@ export function HomeDesktop() {
                   <p className="text-xs text-muted-foreground">@{org.handle}</p>
 
                   <p className="text-xs text-muted-foreground mt-1">
-                    {followerCount >= 1000
-                      ? (followerCount / 1000).toFixed(1) + "k"
-                      : followerCount}{" "}
-                    followers
+                    {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + 'k' : followerCount}{" "}
+                    {followerCount === 1 ? "follower" : "followers"}
                   </p>
 
                   <div className="mt-2 flex items-center justify-center gap-1">

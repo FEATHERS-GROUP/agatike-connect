@@ -553,8 +553,9 @@ function ProfilePage() {
                 />
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm">{org.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    @{org.handle} · {(org.followers / 1000).toFixed(1)}k followers
+                  <p className="text-sm font-medium text-muted-foreground mt-2 md:text-base">
+                    @{org.handle} · {org.followers >= 1000 ? (org.followers / 1000).toFixed(1) + 'k' : org.followers}{" "}
+                    {org.followers === 1 ? "follower" : "followers"}
                   </p>
                 </div>
                 <Button
