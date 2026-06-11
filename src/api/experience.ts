@@ -364,7 +364,9 @@ export const deleteEventPost = createServerFn({ method: "POST" }).handler(async 
   return data.delete_event_posts_by_pk;
 });
 
-export const likeEventPost = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const likeEventPost = createServerFn({ method: "POST" })
+  .inputValidator((d: { post_id: string }) => d)
+  .handler(async (ctx) => {
   const session = await getUserSession();
   if (!session || !session.id) throw new Error("unauthenticated");
 
@@ -408,7 +410,9 @@ export const likeEventPost = createServerFn({ method: "POST" }).handler(async (c
   return updatedPost;
 });
 
-export const getPostById = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const getPostById = createServerFn({ method: "POST" })
+  .inputValidator((d: { postId: string }) => d)
+  .handler(async (ctx) => {
   const { postId } = ctx.data as unknown as { postId: string };
   const query = `
     query GetPostById($id: uuid!) {
@@ -470,7 +474,9 @@ export const getPostById = createServerFn({ method: "POST" }).handler(async (ctx
   };
 });
 
-export const addPostComment = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const addPostComment = createServerFn({ method: "POST" })
+  .inputValidator((d: { post_id: string; content: string }) => d)
+  .handler(async (ctx) => {
   const session = await getUserSession();
   if (!session || !session.id) throw new Error("unauthenticated");
 
@@ -530,7 +536,9 @@ export const addPostComment = createServerFn({ method: "POST" }).handler(async (
   return insertedComment;
 });
 
-export const getPostComments = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const getPostComments = createServerFn({ method: "POST" })
+  .inputValidator((d: { post_id: string }) => d)
+  .handler(async (ctx) => {
   const { post_id } = ctx.data as unknown as { post_id: string };
 
   const query = `

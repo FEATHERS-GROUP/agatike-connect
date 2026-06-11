@@ -133,9 +133,9 @@ export function GlobalNotificationListener() {
   }, [activeWorkspace?.id, activeWorkspace?.slug, navigate]);
 
   useEffect(() => {
-    if (!activeWorkspace?.organizer_id) return;
+    if (!activeWorkspace?.orgnizer_id) return;
 
-    const organizerId = activeWorkspace.organizer_id;
+    const organizerId = activeWorkspace.orgnizer_id;
     const q = query(collection(db, "agatike_notifications"), where("organizerId", "==", organizerId));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -185,7 +185,7 @@ export function GlobalNotificationListener() {
     });
 
     return () => unsubscribe();
-  }, [activeWorkspace?.organizer_id]);
+  }, [activeWorkspace?.orgnizer_id]);
 
   return null;
 }

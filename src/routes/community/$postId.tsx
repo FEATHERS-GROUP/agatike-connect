@@ -93,7 +93,7 @@ function PostCommunityPage() {
   }
 
   const following = isFollowing(post.organizerId);
-  const images = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : [post.image];
+  const images = post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : ["https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop"];
 
   const nextImage = () => {
     if (currentImageIndex < images.length - 1) setCurrentImageIndex(currentImageIndex + 1);
