@@ -160,7 +160,9 @@ export function FeedCard({ post }: { post: any }) {
               onClick={handleLike}
               className="flex items-center gap-1.5 focus:outline-none transition-transform active:scale-90 hover:text-foreground/80"
             >
-              <Heart className={`h-6 w-6 transition-colors ${isLiked ? "fill-rose-500 text-rose-500" : ""}`} />
+              <Heart
+                className={`h-6 w-6 transition-colors ${isLiked ? "fill-rose-500 text-rose-500" : ""}`}
+              />
               <span>{likesCount}</span>
             </button>
             <Link

@@ -11,7 +11,13 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getPostById, getPostComments, addPostComment, likeEventPost, unlikeEventPost } from "@/api/experience";
+import {
+  getPostById,
+  getPostComments,
+  addPostComment,
+  likeEventPost,
+  unlikeEventPost,
+} from "@/api/experience";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 
@@ -80,7 +86,7 @@ function PostCommunityPage() {
     onMutate: async (newContent) => {
       await queryClient.cancelQueries({ queryKey: ["post-comments", postId] });
       const previousComments = queryClient.getQueryData(["post-comments", postId]);
-      
+
       queryClient.setQueryData(["post-comments", postId], (old: any) => [
         {
           id: Math.random().toString(),
@@ -88,12 +94,12 @@ function PostCommunityPage() {
           handle: user?.handle || "you",
           avatar: user?.profile || "",
           content: newContent,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
         },
-        ...(old || [])
+        ...(old || []),
       ]);
       setCommentText("");
-      
+
       return { previousComments };
     },
     onError: (err, newContent, context) => {
@@ -294,7 +300,9 @@ function PostCommunityPage() {
           onClick={handleLike}
           className="flex items-center gap-1.5 focus:outline-none transition-transform active:scale-90 hover:text-foreground/80"
         >
-          <Heart className={`h-6 w-6 transition-colors ${isLiked ? "fill-rose-500 text-rose-500" : ""}`} />
+          <Heart
+            className={`h-6 w-6 transition-colors ${isLiked ? "fill-rose-500 text-rose-500" : ""}`}
+          />
           <span>{likesCount}</span>
         </button>
         <div className="flex items-center gap-1.5">

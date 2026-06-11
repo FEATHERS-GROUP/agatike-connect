@@ -14,7 +14,14 @@ import { useEffect, useState, useMemo, Fragment } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-function PopularOrganizers({ organizersLoading, allFollowed, unfollowedOrganizers, isFollowing, toggleFollow, ratingsMap }: any) {
+function PopularOrganizers({
+  organizersLoading,
+  allFollowed,
+  unfollowedOrganizers,
+  isFollowing,
+  toggleFollow,
+  ratingsMap,
+}: any) {
   return (
     <div className="pt-5 pb-3 border-b border-border/40">
       <div className="flex items-center justify-between px-4 mb-3">
@@ -55,9 +62,7 @@ function PopularOrganizers({ organizersLoading, allFollowed, unfollowedOrganizer
                   className="w-16 h-16 rounded-full object-cover mb-3"
                 />
                 <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
-                <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">
-                  @{org.handle}
-                </p>
+                <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">@{org.handle}</p>
                 {ratingsMap[org.id] && (
                   <div className="flex items-center gap-0.5 mt-1 text-[10px] text-primary font-semibold">
                     <Star className="h-2.5 w-2.5 fill-primary" />
@@ -220,7 +225,7 @@ export function HomeMobile() {
   }, [user?.id]);
 
   const carouselPositions = useMemo(() => {
-    const max = 25; 
+    const max = 25;
     let pos: number[] = [];
     while (pos.length < 3) {
       const r = Math.floor(Math.random() * max) + 1;
@@ -231,22 +236,22 @@ export function HomeMobile() {
 
   const sortedPosts = useMemo(() => {
     const now = new Date().getTime();
-    
+
     const postsWithRand = dbPosts.map((p: any) => ({ ...p, _rand: Math.random() * 50 }));
 
     return postsWithRand.sort((a: any, b: any) => {
       const aIsFollowing = isFollowing(a.organizerId);
       const bIsFollowing = isFollowing(b.organizerId);
-      
+
       const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      
-      const aIsNew = (now - aTime) < 48 * 60 * 60 * 1000;
-      const bIsNew = (now - bTime) < 48 * 60 * 60 * 1000;
-      
+
+      const aIsNew = now - aTime < 48 * 60 * 60 * 1000;
+      const bIsNew = now - bTime < 48 * 60 * 60 * 1000;
+
       let aScore = a._rand;
       let bScore = b._rand;
-      
+
       if (aIsFollowing) {
         if (aIsNew) {
           aScore += 10000 - (a.likes || 0);
@@ -256,7 +261,7 @@ export function HomeMobile() {
       } else {
         aScore += (a.likes || 0) * 10;
       }
-      
+
       if (bIsFollowing) {
         if (bIsNew) {
           bScore += 10000 - (b.likes || 0);
@@ -266,7 +271,7 @@ export function HomeMobile() {
       } else {
         bScore += (b.likes || 0) * 10;
       }
-      
+
       return bScore - aScore;
     });
   }, [dbPosts, followedIds]);
@@ -330,13 +335,13 @@ export function HomeMobile() {
                   </p>
                 </div>
                 <UpcomingEvents events={events} />
-                <PopularOrganizers 
-                  organizersLoading={organizersLoading} 
-                  allFollowed={allFollowed} 
-                  unfollowedOrganizers={unfollowedOrganizers} 
-                  isFollowing={isFollowing} 
-                  toggleFollow={toggleFollow} 
-                  ratingsMap={ratingsMap} 
+                <PopularOrganizers
+                  organizersLoading={organizersLoading}
+                  allFollowed={allFollowed}
+                  unfollowedOrganizers={unfollowedOrganizers}
+                  isFollowing={isFollowing}
+                  toggleFollow={toggleFollow}
+                  ratingsMap={ratingsMap}
                 />
                 <NowShowing movies={movies} />
               </div>
@@ -353,44 +358,36 @@ export function HomeMobile() {
                 return (
                   <Fragment key={`${item.id}-${index}`}>
                     <FeedCard post={item} />
-                    
-                    {isFirstCarousel && (
-                      <UpcomingEvents events={events} />
-                    )}
+
+                    {isFirstCarousel && <UpcomingEvents events={events} />}
                     {isSecondCarousel && (
-                      <PopularOrganizers 
-                        organizersLoading={organizersLoading} 
-                        allFollowed={allFollowed} 
-                        unfollowedOrganizers={unfollowedOrganizers} 
-                        isFollowing={isFollowing} 
-                        toggleFollow={toggleFollow} 
-                        ratingsMap={ratingsMap} 
+                      <PopularOrganizers
+                        organizersLoading={organizersLoading}
+                        allFollowed={allFollowed}
+                        unfollowedOrganizers={unfollowedOrganizers}
+                        isFollowing={isFollowing}
+                        toggleFollow={toggleFollow}
+                        ratingsMap={ratingsMap}
                       />
                     )}
-                    {isThirdCarousel && (
-                      <NowShowing movies={movies} />
-                    )}
+                    {isThirdCarousel && <NowShowing movies={movies} />}
                   </Fragment>
                 );
               })}
 
               {/* Catch-all to ensure carousels always render if the feed is too short */}
-              {sortedPosts.length <= carouselPositions[0] && (
-                <UpcomingEvents events={events} />
-              )}
+              {sortedPosts.length <= carouselPositions[0] && <UpcomingEvents events={events} />}
               {sortedPosts.length <= carouselPositions[1] && (
-                <PopularOrganizers 
-                  organizersLoading={organizersLoading} 
-                  allFollowed={allFollowed} 
-                  unfollowedOrganizers={unfollowedOrganizers} 
-                  isFollowing={isFollowing} 
-                  toggleFollow={toggleFollow} 
-                  ratingsMap={ratingsMap} 
+                <PopularOrganizers
+                  organizersLoading={organizersLoading}
+                  allFollowed={allFollowed}
+                  unfollowedOrganizers={unfollowedOrganizers}
+                  isFollowing={isFollowing}
+                  toggleFollow={toggleFollow}
+                  ratingsMap={ratingsMap}
                 />
               )}
-              {sortedPosts.length <= carouselPositions[2] && (
-                <NowShowing movies={movies} />
-              )}
+              {sortedPosts.length <= carouselPositions[2] && <NowShowing movies={movies} />}
             </>
           );
         })()}
