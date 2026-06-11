@@ -210,15 +210,21 @@ export const getEventPosts = createServerFn({ method: "POST" }).handler(async (c
 
   const data = await hasuraRequest<{ event_posts: any[] }>(query, { event_id });
   return (data.event_posts || []).map((post) => {
-    let parsedMediaUrls = [];
+    let parsedMediaUrls: string[] = [];
     try {
       if (typeof post.media_urls === "string") {
-        parsedMediaUrls = JSON.parse(post.media_urls);
+        let parsed = JSON.parse(post.media_urls);
+        if (typeof parsed === "string") parsed = JSON.parse(parsed);
+        if (Array.isArray(parsed)) parsedMediaUrls = parsed;
       } else if (Array.isArray(post.media_urls)) {
         parsedMediaUrls = post.media_urls;
       }
     } catch (e) {
       console.error("Failed to parse media_urls for post", post.id, e);
+    }
+
+    if (parsedMediaUrls.length === 0 && typeof post.media_urls === "string" && post.media_urls.startsWith("http")) {
+      parsedMediaUrls = [post.media_urls];
     }
     return {
       ...post,
@@ -255,15 +261,22 @@ export const getGlobalFeedPosts = createServerFn({ method: "GET" }).handler(asyn
 
   const data = await hasuraRequest<{ event_posts: any[] }>(query, {});
   return (data.event_posts || []).map((post) => {
-    let parsedMediaUrls = [];
+    let parsedMediaUrls: string[] = [];
     try {
       if (typeof post.media_urls === "string") {
-        parsedMediaUrls = JSON.parse(post.media_urls);
+        let parsed = JSON.parse(post.media_urls);
+        if (typeof parsed === "string") parsed = JSON.parse(parsed);
+        if (Array.isArray(parsed)) parsedMediaUrls = parsed;
       } else if (Array.isArray(post.media_urls)) {
         parsedMediaUrls = post.media_urls;
       }
     } catch (e) {
       console.error("Failed to parse media_urls for post", post.id, e);
+    }
+
+    // Fallback if parsing completely fails and it looks like a raw URL string
+    if (parsedMediaUrls.length === 0 && typeof post.media_urls === "string" && post.media_urls.startsWith("http")) {
+      parsedMediaUrls = [post.media_urls];
     }
 
     const organizer = post.workspace?.organizer || {};
@@ -273,11 +286,13 @@ export const getGlobalFeedPosts = createServerFn({ method: "GET" }).handler(asyn
       user: organizer.name || "Organizer",
       handle: organizer.handle || "organizer",
       avatar: organizer.image,
-      image: parsedMediaUrls[0] || null,
+      image: parsedMediaUrls[0] || null, // Keeping for backwards compatibility
+      mediaUrls: parsedMediaUrls, // New field for carousel
       caption: post.content,
       likes: post.likes_count,
       comments: post.comments_count,
       eventId: post.event_id,
+      createdAt: post.created_at,
       organizerId: organizer.id,
       created_at: post.created_at,
     };
@@ -355,11 +370,10 @@ export const likeEventPost = createServerFn({ method: "POST" }).handler(async (c
 
   const mutation = `
     mutation LikeEventPost($post_id: uuid!, $user_id: uuid!) {
-      insert_event_post_likes_one(
-        object: { post_id: $post_id, user_id: $user_id },
-        on_conflict: { constraint: event_post_likes_post_id_user_id_key, update_columns: [] }
+      insert_event_post_likes(
+        objects: { post_id: $post_id, user_id: $user_id }
       ) {
-        id
+        affected_rows
       }
       update_event_posts_by_pk(pk_columns: { id: $post_id }, _inc: { likes_count: 1 }) {
         id
@@ -375,6 +389,68 @@ export const likeEventPost = createServerFn({ method: "POST" }).handler(async (c
   return data.update_event_posts_by_pk;
 });
 
+export const getPostById = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { postId } = ctx.data as unknown as { postId: string };
+  const query = `
+    query GetPostById($id: uuid!) {
+      event_posts_by_pk(id: $id) {
+        id
+        content
+        media_urls
+        likes_count
+        comments_count
+        created_at
+        event_id
+        workspace {
+          organizer {
+            id
+            handle
+            name
+            image
+          }
+        }
+      }
+    }
+  `;
+  const data = await hasuraRequest<{ event_posts_by_pk: any }>(query, { id: postId });
+  const post = data.event_posts_by_pk;
+  if (!post) return null;
+
+  let parsedMediaUrls: string[] = [];
+  try {
+    if (typeof post.media_urls === "string") {
+      let parsed = JSON.parse(post.media_urls);
+      if (typeof parsed === "string") parsed = JSON.parse(parsed);
+      if (Array.isArray(parsed)) parsedMediaUrls = parsed;
+    } else if (Array.isArray(post.media_urls)) {
+      parsedMediaUrls = post.media_urls;
+    }
+  } catch (e) {
+    console.error("Failed to parse media_urls for post", post.id, e);
+  }
+
+  // Fallback if parsing completely fails and it looks like a raw URL string
+  if (parsedMediaUrls.length === 0 && typeof post.media_urls === "string" && post.media_urls.startsWith("http")) {
+    parsedMediaUrls = [post.media_urls];
+  }
+
+  const organizer = post.workspace?.organizer || {};
+
+  return {
+    id: post.id,
+    user: organizer.name || "Organizer",
+    handle: organizer.handle || "organizer",
+    avatar: organizer.image,
+    mediaUrls: parsedMediaUrls,
+    caption: post.content,
+    likes: post.likes_count || 0,
+    comments: post.comments_count || 0,
+    eventId: post.event_id,
+    createdAt: post.created_at,
+    organizerId: organizer.id,
+  };
+});
+
 export const addPostComment = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
@@ -383,10 +459,12 @@ export const addPostComment = createServerFn({ method: "POST" }).handler(async (
 
   const mutation = `
     mutation AddPostComment($post_id: uuid!, $user_id: uuid!, $content: String!) {
-      insert_event_post_comments_one(object: { post_id: $post_id, user_id: $user_id, content: $content }) {
-        id
-        content
-        created_at
+      insert_event_post_comments(objects: { post_id: $post_id, user_id: $user_id, content: $content }) {
+        returning {
+          id
+          content
+          created_at
+        }
       }
       update_event_posts_by_pk(pk_columns: { id: $post_id }, _inc: { comments_count: 1 }) {
         id
@@ -395,12 +473,12 @@ export const addPostComment = createServerFn({ method: "POST" }).handler(async (
     }
   `;
 
-  const data = await hasuraRequest<{ insert_event_post_comments_one: any }>(mutation, {
+  const data = await hasuraRequest<{ insert_event_post_comments: any }>(mutation, {
     post_id,
     user_id: session.sub,
     content,
   });
-  return data.insert_event_post_comments_one;
+  return data.insert_event_post_comments?.returning?.[0];
 });
 
 export const getPostComments = createServerFn({ method: "POST" }).handler(async (ctx) => {
