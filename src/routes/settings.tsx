@@ -140,11 +140,33 @@ function SettingsPage() {
     e.preventDefault();
     if (password.length < 6) return toast.error("Password must be at least 6 characters");
     if (password !== confirmPassword) return toast.error("Passwords do not match");
+    if (!isOtpStep) {
+      setIsUpdatingPassword(true);
+      try {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        setGeneratedOtp(otp);
+        await sendProfileUpdateOTP({ data: { to: user?.email || "", otp } });
+        setIsOtpStep(true);
+        toast.success("OTP sent to your email");
+      } catch (e: any) {
+        toast.error(e.message || "Failed to send OTP");
+      } finally {
+        setIsUpdatingPassword(false);
+      }
+      return;
+    }
+
+    if (otpInput !== generatedOtp) {
+      return toast.error("Invalid OTP");
+    }
+
     setIsUpdatingPassword(true);
     try {
       await updateUserPassword({ data: { password } });
       toast.success("Password updated successfully!");
       setPassword(""); setConfirmPassword("");
+      setIsOtpStep(false);
+      setOtpInput("");
       setActiveModal(null);
     } catch (e: any) {
       toast.error(e.message || "Failed to update password");
@@ -343,16 +365,43 @@ function SettingsPage() {
       case "security":
         return (
           <form onSubmit={handleUpdatePassword} className="space-y-4 px-1">
-            <div className="flex flex-col gap-3">
-              <Label>New Password</Label>
-              <Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="bg-background/50 rounded-xl" placeholder="Enter new password"/>
-            </div>
-            <div className="flex flex-col gap-3">
-              <Label>Confirm New Password</Label>
-              <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-background/50 rounded-xl" placeholder="Confirm new password"/>
-            </div>
-            <Button type="submit" disabled={isUpdatingPassword || !password || !confirmPassword} className="w-full rounded-xl mt-4" style={{ background: "var(--gradient-primary)" }}>
-              {isUpdatingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update Password"}
+            {isOtpStep ? (
+              <div className="flex flex-col gap-4 text-center py-6">
+                <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+                  <Lock className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold">Verification Required</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  We've sent a 6-digit OTP to <strong>{user?.email}</strong>. Please enter it below to securely change your password.
+                </p>
+                <div className="flex flex-col gap-3 text-left">
+                  <Label>One-Time Password</Label>
+                  <Input 
+                    value={otpInput} 
+                    onChange={e => setOtpInput(e.target.value)} 
+                    placeholder="Enter 6-digit OTP" 
+                    className="bg-background/50 rounded-xl text-center text-lg tracking-widest font-mono"
+                    maxLength={6}
+                  />
+                </div>
+                <Button type="button" variant="ghost" onClick={() => setIsOtpStep(false)} className="mt-2 text-muted-foreground">
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col gap-3">
+                  <Label>New Password</Label>
+                  <Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="bg-background/50 rounded-xl" placeholder="Enter new password"/>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Label>Confirm New Password</Label>
+                  <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-background/50 rounded-xl" placeholder="Confirm new password"/>
+                </div>
+              </>
+            )}
+            <Button type="submit" disabled={isUpdatingPassword || (!isOtpStep && (!password || !confirmPassword))} className="w-full rounded-xl mt-4" style={{ background: "var(--gradient-primary)" }}>
+              {isUpdatingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : isOtpStep ? "Confirm & Update Password" : "Update Password"}
             </Button>
           </form>
         );
@@ -515,10 +564,20 @@ function SettingsPage() {
         </main>
       </div>
 
-      <Dialog open={!!activeModal} onOpenChange={(open) => !open && setActiveModal(null)}>
+      <Dialog open={!!activeModal} onOpenChange={(open) => {
+        if (!open) {
+          setActiveModal(null);
+          setIsOtpStep(false);
+          setOtpInput("");
+        }
+      }}>
         <DialogContent className="w-full h-[100dvh] max-w-none sm:max-w-[500px] sm:h-auto p-0 overflow-hidden bg-card sm:bg-card/95 backdrop-blur-xl border-none sm:border-solid sm:border-border/40 rounded-none sm:rounded-2xl flex flex-col">
           <DialogHeader className="p-4 md:p-6 border-b border-border/40 bg-muted/20 flex flex-row items-center gap-3 space-y-0 text-left">
-            <button onClick={() => setActiveModal(null)} className="sm:hidden p-2 -ml-2 rounded-full hover:bg-secondary transition-colors">
+            <button onClick={() => {
+              setActiveModal(null);
+              setIsOtpStep(false);
+              setOtpInput("");
+            }} className="sm:hidden p-2 -ml-2 rounded-full hover:bg-secondary transition-colors">
               <ArrowLeft className="h-5 w-5" />
             </button>
             <DialogTitle className="text-xl font-bold tracking-tight">{getModalTitle()}</DialogTitle>
