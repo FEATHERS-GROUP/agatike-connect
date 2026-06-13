@@ -30,10 +30,10 @@ export const Route = createFileRoute("/settings")({
 
 const AVATAR_STYLES = ["micah", "avataaars", "bottts", "lorelei", "adventurer", "fun-emoji"];
 const INTEREST_OPTIONS = [
-  "Music", "Sports", "Cinema", "Conferences", "Tech", "Art", "Food", 
-  "Fashion", "Gaming", "Business", "Health", "Education",
-  "Bus Booking", "Travel & Transport", "Gym & Fitness", "Wellness", 
-  "Office Spaces", "Coworking", "Venue Booking", "Nightlife & Parties",
+  "Events", "Entertainment", "Experiences", "Music", "Sports", "Cinema", 
+  "Conferences", "Tech", "Art", "Food", "Fashion", "Gaming", "Business", 
+  "Health", "Education", "Bus Booking", "Travel & Transport", "Gym & Fitness", 
+  "Wellness", "Office Spaces", "Coworking", "Venue Booking", "Nightlife & Parties",
   "Networking", "Workshops", "Retreats", "Exhibitions & Expos", 
   "Comedy", "Theater & Arts", "Festivals", "Pop-ups & Markets", 
   "Real Estate", "Outdoors & Adventure", "Photography", "Startups"
@@ -66,6 +66,7 @@ function SettingsPage() {
   );
 
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [initialInterests, setInitialInterests] = useState<string[]>([]);
   const [isUpdatingInterests, setIsUpdatingInterests] = useState(false);
 
   useEffect(() => {
@@ -82,6 +83,7 @@ function SettingsPage() {
         ints = Array.isArray(user.interests) ? user.interests : (typeof user.interests === "string" ? JSON.parse(user.interests) : []);
       } catch (e) { }
       setSelectedInterests(ints);
+      setInitialInterests(ints);
     }
   }, [user]);
 
@@ -303,11 +305,16 @@ function SettingsPage() {
             <p className="text-sm text-muted-foreground">Select categories you're interested in to get better event recommendations.</p>
             <div className="flex flex-wrap gap-2">
               {INTEREST_OPTIONS.map(interest => {
-                const isSelected = selectedInterests.includes(interest);
+                const isSelected = selectedInterests.some(i => {
+                  if (typeof i !== 'string') return false;
+                  const d = i.toLowerCase();
+                  const o = interest.toLowerCase();
+                  return d === o || d + 's' === o || d === o + 's';
+                });
                 return (
                   <button
                     key={interest}
-                    onClick={() => setSelectedInterests(isSelected ? selectedInterests.filter(i => i !== interest) : [...selectedInterests, interest])}
+                    onClick={() => setSelectedInterests(isSelected ? selectedInterests.filter(i => typeof i === 'string' && i.toLowerCase() !== interest.toLowerCase()) : [...selectedInterests, interest])}
                     className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all ${isSelected ? "bg-primary/20 border-primary text-primary" : "bg-secondary border-border/40 text-muted-foreground hover:text-foreground"}`}
                   >
                     {interest}
@@ -315,9 +322,22 @@ function SettingsPage() {
                 );
               })}
             </div>
-            <Button onClick={handleUpdateInterests} disabled={isUpdatingInterests} className="w-full rounded-xl mt-4" style={{ background: "var(--gradient-primary)" }}>
-              {isUpdatingInterests ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Interests"}
-            </Button>
+            {(() => {
+              const normalizedSelected = selectedInterests.filter(i => typeof i === 'string').map(i => i.toLowerCase());
+              const normalizedInitial = initialInterests.filter(i => typeof i === 'string').map(i => i.toLowerCase());
+              const isChanged = normalizedSelected.length !== normalizedInitial.length || 
+                                normalizedSelected.some(i => !normalizedInitial.includes(i));
+              return (
+                <Button 
+                  onClick={handleUpdateInterests} 
+                  disabled={isUpdatingInterests || !isChanged} 
+                  className="w-full rounded-xl mt-4 transition-all" 
+                  style={{ background: !isChanged ? undefined : "var(--gradient-primary)" }}
+                >
+                  {isUpdatingInterests ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Interests"}
+                </Button>
+              );
+            })()}
           </div>
         );
       case "security":
