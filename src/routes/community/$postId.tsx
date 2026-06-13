@@ -96,9 +96,12 @@ function PostCommunityPage() {
       queryClient.setQueryData(["post-comments", postId], (old: any) => [
         {
           id: Math.random().toString(),
-          user: user?.username || "You",
-          handle: user?.handle || "you",
-          avatar: user?.profile || "",
+          user_id: user?.id,
+          user: {
+            handle: user?.handle || "you",
+            profile: user?.profile || "",
+            country: user?.country || "",
+          },
           content: newContent,
           created_at: new Date().toISOString(),
         },
