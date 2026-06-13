@@ -18,6 +18,7 @@ import {
   Mic,
   ScanLine,
   LogOut,
+  User,
 } from "lucide-react";
 import { events, organizers, movies, experiences } from "@/lib/mock-data";
 import { useState } from "react";
@@ -25,6 +26,8 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { EditProfileModal } from "@/components/site/EditProfileModal";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -209,10 +212,11 @@ function HistoryCard({ event }: { event: (typeof pastEvents)[0] }) {
 
 /* ─── Main Page ─── */
 function ProfilePage() {
-  const { user, signOut } = useUserAuth();
+  const { user, signOut, refresh, isLoading } = useUserAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("upcoming");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
@@ -236,6 +240,24 @@ function ProfilePage() {
     userInterests = [];
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center p-6 mt-10 md:mt-20">
+          <Skeleton className="h-24 w-24 rounded-full mb-6" />
+          <Skeleton className="h-6 w-48 mb-2" />
+          <Skeleton className="h-4 w-32 mb-10" />
+          <div className="flex gap-4 w-full max-w-md">
+            <Skeleton className="flex-1 h-24 rounded-2xl" />
+            <Skeleton className="flex-1 h-24 rounded-2xl" />
+            <Skeleton className="flex-1 h-24 rounded-2xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   /* ── Desktop ── */
   const desktop = (
     <div className="hidden md:flex flex-col min-h-screen bg-background text-foreground">
@@ -245,14 +267,21 @@ function ProfilePage() {
         <aside className="sticky top-24 space-y-5">
           <div className="rounded-3xl border border-border/60 bg-card p-6 flex flex-col items-center text-center shadow-[var(--shadow-card)]">
             <div
-              className="h-24 w-24 rounded-2xl p-[3px] shadow-lg mb-4"
+              className="h-24 w-24 rounded-2xl p-[3px] mb-4 relative"
               style={{ background: "var(--gradient-primary)" }}
             >
-              <img
-                src={user?.profile || "https://i.pravatar.cc/150?u=me"}
-                alt={user?.username || "User"}
-                className="h-full w-full rounded-[14px] object-cover"
-              />
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-2xl -z-10" />
+              {user?.profile ? (
+                <img
+                  src={user.profile}
+                  alt={user?.username || "User"}
+                  className="h-full w-full rounded-[14px] object-cover bg-card"
+                />
+              ) : (
+                <div className="h-full w-full rounded-[14px] bg-secondary flex items-center justify-center">
+                  <User className="h-10 w-10 text-muted-foreground opacity-50" />
+                </div>
+              )}
             </div>
             <h2 className="font-bold text-xl">{user?.username || "Guest User"}</h2>
             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
@@ -277,7 +306,11 @@ function ProfilePage() {
               ))}
             </div>
             <div className="flex gap-2 w-full mt-4">
-              <Button variant="secondary" className="flex-1 h-9 text-sm font-semibold rounded-xl">
+              <Button 
+                variant="secondary" 
+                className="flex-1 h-9 text-sm font-semibold rounded-xl"
+                onClick={() => setShowEditProfileModal(true)}
+              >
                 Edit Profile
               </Button>
               <Button
@@ -384,14 +417,15 @@ function ProfilePage() {
   const mobile = (
     <div className="md:hidden min-h-screen bg-background pb-24 text-foreground">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/40 pt-safe-top">
-        <div className="flex items-center justify-between px-4 py-3">
+      <div className="sticky top-0 z-40 bg-background/40 backdrop-blur-2xl border-none pt-safe-top relative">
+        <div className="absolute inset-0 bg-primary/5 pointer-events-none" />
+        <div className="flex items-center justify-between px-4 py-3 relative z-10">
           <h1 className="font-bold text-lg tracking-tight">My Profile</h1>
           <div className="flex items-center gap-2">
-            <Link to="/dashboard" className="p-2 rounded-full hover:bg-secondary transition-colors">
+            <Link to="/dashboard" className="p-2 rounded-full hover:bg-secondary/80 transition-colors">
               <ScanLine className="h-5 w-5" />
             </Link>
-            <button className="p-2 rounded-full hover:bg-secondary transition-colors">
+            <button className="p-2 rounded-full hover:bg-secondary/80 transition-colors">
               <Bell className="h-5 w-5" />
             </button>
             <button
@@ -405,53 +439,71 @@ function ProfilePage() {
       </div>
 
       {/* Profile Hero */}
-      <div className="relative px-4 pt-6 pb-4">
-        <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-primary/8 to-transparent pointer-events-none" />
-        <div className="flex items-center gap-4 relative z-10">
+      <div className="relative px-4 pt-4 pb-4">
+        <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent pointer-events-none -mt-4" />
+        
+        {/* Top Row: Avatar & Stats */}
+        <div className="flex items-center justify-between relative z-10 mb-4">
           <div
-            className="h-20 w-20 rounded-2xl p-[2px] shadow-lg shrink-0"
+            className="h-20 w-20 rounded-full p-[2px] shrink-0 relative"
             style={{ background: "var(--gradient-primary)" }}
           >
-            <img
-              src={user?.profile || "https://i.pravatar.cc/150?u=me"}
-              alt={user?.username || "User"}
-              className="h-full w-full rounded-[14px] object-cover bg-card"
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="font-bold text-xl tracking-tight">{user?.username || "Guest User"}</h2>
-            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-              @{user?.handle || "guest"}
-            </p>
-            {user?.phone && (
-              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-                {user.phone}
-              </p>
+            <div className="absolute inset-0 bg-primary/30 blur-lg rounded-full -z-10" />
+            {user?.profile ? (
+              <img
+                src={user.profile}
+                alt={user?.username || "User"}
+                className="h-full w-full rounded-full object-cover bg-card border-2 border-background"
+              />
+            ) : (
+              <div className="h-full w-full rounded-full bg-secondary border-2 border-background flex items-center justify-center">
+                <User className="h-8 w-8 text-muted-foreground opacity-50" />
+              </div>
             )}
-            <p className="text-xs text-muted-foreground mt-1">Member since {joinDate}</p>
+          </div>
+          
+          <div className="flex flex-1 justify-around ml-4">
+            {[
+              { value: "24", label: "Attended" },
+              { value: "8", label: "Following" },
+              { value: "5", label: "Upcoming" },
+            ].map(({ value, label }) => (
+              <div key={label} className="flex flex-col items-center">
+                <span className="font-bold text-lg leading-tight">{value}</span>
+                <span className="text-[12px] text-foreground/80">{label}</span>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="mt-5 grid grid-cols-3 gap-3">
-          {[
-            { value: "24", label: "Events Attended" },
-            { value: "8", label: "Following" },
-            { value: "5", label: "Upcoming" },
-          ].map(({ value, label }) => (
-            <div
-              key={label}
-              className="bg-card rounded-2xl border border-border/40 p-3 text-center shadow-sm"
-            >
-              <p className="font-bold text-xl">{value}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{label}</p>
-            </div>
-          ))}
+
+        {/* User Details */}
+        <div className="relative z-10 mb-5">
+          <h2 className="font-bold text-base leading-tight">{user?.username || "Guest User"}</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            @{user?.handle || "guest"}
+          </p>
+          {user?.phone && (
+            <p className="text-sm mt-1 text-foreground/90">
+              {user.phone}
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground mt-1">Member since {joinDate}</p>
         </div>
-        <div className="flex gap-2 mt-4">
-          <Button variant="secondary" className="flex-1 h-9 text-sm font-semibold rounded-xl">
-            Edit Profile
+
+        {/* Buttons */}
+        <div className="flex gap-2 relative z-10">
+          <Button 
+            variant="secondary" 
+            className="flex-1 h-8 text-[13px] font-bold rounded-lg bg-secondary/80 hover:bg-secondary text-foreground"
+            onClick={() => setShowEditProfileModal(true)}
+          >
+            Edit profile
           </Button>
-          <Button variant="secondary" className="flex-1 h-9 text-sm font-semibold rounded-xl">
-            Share
+          <Button 
+            variant="secondary" 
+            className="flex-1 h-8 text-[13px] font-bold rounded-lg bg-secondary/80 hover:bg-secondary text-foreground"
+          >
+            Share profile
           </Button>
         </div>
       </div>
@@ -624,6 +676,12 @@ function ProfilePage() {
       {desktop}
       {mobile}
       {logoutModal}
+      <EditProfileModal 
+        isOpen={showEditProfileModal} 
+        setIsOpen={setShowEditProfileModal} 
+        user={user} 
+        onUpdate={refresh} 
+      />
     </>
   );
 }

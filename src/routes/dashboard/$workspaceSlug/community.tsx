@@ -164,21 +164,19 @@ function CommunityPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Auto-scroll to bottom of messages when a chat is opened or new messages arrive
+  useEffect(() => {
+    if (activeChatId) {
+      localStorage.setItem(`chat_read_${activeChatId}`, Date.now().toString());
+    }
+    scrollToBottom();
+  }, [activeChat?.messages, activeChatId]);
+
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   };
-
-  useEffect(() => {
-    scrollToBottom();
-    const t1 = setTimeout(scrollToBottom, 150);
-    const t2 = setTimeout(scrollToBottom, 500);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, [activeChat?.messages, activeChatId]);
 
   const fetchGifs = async (offset: number) => {
     if (offset === 0) setIsFetchingGifs(true);
@@ -479,7 +477,10 @@ function CommunityPage() {
               <div className="p-2 flex flex-col gap-1">
                 {channels
                   .filter((c) => !(c.type === "user" && !c.lastMessage))
-                  .map((chat) => (
+                  .map((chat) => {
+                    const isUnread = chat.lastMessageSenderId !== user?.id && chat.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
+                    const displayUnread = chat.unread > 0 ? chat.unread : (isUnread ? 1 : 0);
+                    return (
                     <button
                       key={chat.id}
                       onClick={() => setActiveChatId(chat.id)}
@@ -514,31 +515,32 @@ function CommunityPage() {
                             {chat.time}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center mt-1">
                           <p
-                            className={`text-xs truncate pr-2 ${chat.unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}
+                            className={`text-xs truncate pr-2 ${displayUnread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}
                           >
                             {chat.lastMessage}
                           </p>
-                          {chat.unread > 0 && (
+                          {displayUnread > 0 && (
                             <Badge
                               className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
                               style={{ background: "var(--gradient-primary)" }}
                             >
-                              {chat.unread}
+                              {displayUnread}
                             </Badge>
                           )}
                         </div>
                       </div>
                     </button>
-                  ))}
+                    );
+                  })}
               </div>
             </ScrollArea>
           </TabsContent>
 
           <TabsContent value="followers" className="flex-1 m-0">
-            <ScrollArea className="h-full">
-              <div className="p-2 flex flex-col gap-1">
+            <ScrollArea className="flex-1 mt-4">
+              <div className="flex flex-col gap-1 pr-4">
                 {followers.length === 0 && (
                   <div className="text-center p-4 text-sm text-muted-foreground">
                     No followers found.

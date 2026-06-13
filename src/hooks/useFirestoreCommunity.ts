@@ -45,6 +45,8 @@ export type ChatChannel = {
   userId?: string;
   country?: string;
   handle?: string;
+  eventId?: string;
+  lastMessageSenderId?: string;
 };
 
 export function useFirestoreCommunity(workspaceId: string, currentUserId: string) {
@@ -76,6 +78,8 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
           messages: [],
           organizerId: data.organizerId,
           userId: data.userId,
+          eventId: data.eventId,
+          lastMessageSenderId: data.lastMessageSenderId,
         };
       });
 

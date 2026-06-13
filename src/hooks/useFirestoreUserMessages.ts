@@ -31,15 +31,17 @@ export type ChatChannel = {
   avatar: string;
   lastMessage: string;
   time: string;
+  rawTimeMillis: number;
   unread: number;
   online: boolean;
-  type: "user" | "group";
+  type: string;
   entityType?: string;
-  messages: Message[];
-  organizerId: string;
+  organizerId?: string;
   userId?: string;
-  country?: string;
+  eventId?: string;
   handle?: string;
+  lastMessageSenderId?: string;
+  messages: Message[];
 };
 
 export function useFirestoreUserMessages(
@@ -108,6 +110,8 @@ export function useFirestoreUserMessages(
           entityType: data.entityType,
           organizerId: data.organizerId,
           userId: data.userId,
+          eventId: data.eventId,
+          lastMessageSenderId: data.lastMessageSenderId,
         };
       });
 

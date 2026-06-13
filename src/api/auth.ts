@@ -304,3 +304,81 @@ export const updateUserOnboarding = createServerFn({ method: "POST" }).handler(a
     throw new Error("Failed to update user profile");
   }
 });
+
+export const updateUserGeneral = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const token = getCookie("agatike_user_auth");
+  if (!token) throw new Error("Unauthorized");
+
+  try {
+    const { payload } = await jwtVerify(token, SECRET);
+    if (payload.type !== "user") throw new Error("Unauthorized");
+
+    const { username, email, phone, country, gender, dateOfBirth } = ctx.data as unknown as {
+      username: string;
+      email: string;
+      phone: string;
+      country: string;
+      gender: string;
+      dateOfBirth: string;
+    };
+
+    const updateQuery = `
+      mutation UpdateUserGeneral($id: uuid!, $username: String!, $email: String!, $phone: String, $country: String, $gender: String, $dateOfBirth: date) {
+        update_users_by_pk(
+          pk_columns: { id: $id }, 
+          _set: { 
+            username: $username, 
+            email: $email, 
+            phone: $phone, 
+            country: $country, 
+            gender: $gender, 
+            dateOfBirth: $dateOfBirth 
+          }
+        ) {
+          id
+        }
+      }
+    `;
+
+    await hasuraRequest(updateQuery, {
+      id: payload.sub,
+      username,
+      email,
+      phone,
+      country,
+      gender,
+      dateOfBirth,
+    });
+
+    return { success: true };
+  } catch (e) {
+    throw new Error("Failed to update user info");
+  }
+});
+
+export const updateUserPassword = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const token = getCookie("agatike_user_auth");
+  if (!token) throw new Error("Unauthorized");
+
+  try {
+    const { payload } = await jwtVerify(token, SECRET);
+    if (payload.type !== "user") throw new Error("Unauthorized");
+
+    const { password } = ctx.data as unknown as { password: string };
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const updateQuery = `
+      mutation UpdateUserPassword($id: uuid!, $password: String!) {
+        update_users_by_pk(pk_columns: { id: $id }, _set: { password: $password }) {
+          id
+        }
+      }
+    `;
+
+    await hasuraRequest(updateQuery, { id: payload.sub, password: hashedPassword });
+
+    return { success: true };
+  } catch (e) {
+    throw new Error("Failed to update password");
+  }
+});

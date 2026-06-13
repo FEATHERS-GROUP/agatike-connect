@@ -10,6 +10,7 @@ import { getOrganizers } from "@/api/organizers";
 import { getOrganizersRatings } from "@/api/feedback";
 import { getGlobalFeedPosts } from "@/api/experience";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
+import { useFirestoreUserMessages } from "@/hooks/useFirestoreUserMessages";
 import { useEffect, useState, useMemo, Fragment } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -187,6 +188,12 @@ export function HomeMobile() {
   const unfollowedOrganizers = dbOrganizers.filter((org: any) => !isFollowing(org.id));
   const allFollowed = dbOrganizers.length > 0 && unfollowedOrganizers.length === 0;
 
+  const { channels } = useFirestoreUserMessages(user?.id || "", followedIds);
+  const unreadChatsCount = channels.filter(c => 
+    c.lastMessageSenderId !== user?.id && 
+    c.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${c.id}`) || "0", 10)
+  ).length;
+
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -289,8 +296,13 @@ export function HomeMobile() {
     <div className="h-full w-full bg-background text-foreground pb-20">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background z-30 border-b border-border/40 pt-safe-top">
-        <Link to="/$userId/message" params={{ userId: user?.id || "me" }} className="text-foreground">
+        <Link to="/$userId/message" params={{ userId: user?.id || "me" }} className="text-foreground relative">
           <MessageCircle className="h-6 w-6" />
+          {unreadChatsCount > 0 && (
+            <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center px-1 shadow-[var(--shadow-glow)] shadow-primary/20">
+              {unreadChatsCount > 99 ? "99+" : unreadChatsCount}
+            </span>
+          )}
         </Link>
         <img src="/icon.svg" alt="Agatike" className="h-8 w-auto object-contain" />
         <Link to="/activity" className="text-foreground relative">

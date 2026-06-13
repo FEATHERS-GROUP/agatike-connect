@@ -96,9 +96,12 @@ function UserMessagesPage() {
     createDirectMessageWithOrganizer,
   } = useFirestoreUserMessages(user?.id || "", followedIds, chatId);
 
-  // Sync activeChatId to URL
+  // Sync activeChatId to URL and update read receipt
   useEffect(() => {
     navigate({ search: { chatId: activeChatId || undefined }, replace: true });
+    if (activeChatId) {
+      localStorage.setItem(`chat_read_${activeChatId}`, Date.now().toString());
+    }
   }, [activeChatId, navigate]);
 
   const [messageInput, setMessageInput] = useState("");
@@ -306,8 +309,12 @@ function UserMessagesPage() {
                     <p className="text-sm font-medium">No messages yet</p>
                   </div>
                 ) : (
-                  displayChannels.map((chat) => (
-                    <button
+                  displayChannels.map((chat) => {
+                    const isUnread = chat.lastMessageSenderId !== user?.id && chat.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
+                    const displayUnread = chat.unread > 0 ? chat.unread : (isUnread ? 1 : 0);
+
+                    return (
+                      <button
                       key={chat.id}
                       onClick={() => setActiveChatId(chat.id)}
                       className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
@@ -342,25 +349,26 @@ function UserMessagesPage() {
                         <div className="flex justify-between items-center">
                           <p
                             className={`text-xs truncate pr-2 ${
-                              chat.unread > 0 ? "text-foreground font-medium" : "text-muted-foreground"
+                              displayUnread > 0 ? "text-foreground font-medium" : "text-muted-foreground"
                             }`}
                           >
                             {chat.lastMessage || "Tap to chat"}
                           </p>
-                          {chat.unread > 0 && (
+                          {displayUnread > 0 && (
                             <Badge
                               className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
                               style={{ background: "var(--gradient-primary)" }}
                             >
-                              {chat.unread}
+                              {displayUnread}
                             </Badge>
                           )}
-                        </div>
                       </div>
+                    </div>
                     </button>
-                  ))
-                )}
-              </div>
+                  );
+                })
+              )}
+            </div>
             </ScrollArea>
           </TabsContent>
 
@@ -376,8 +384,12 @@ function UserMessagesPage() {
                 ) : (
                   displayChannels
                     .filter((c) => c.type === "group")
-                    .map((chat) => (
-                      <button
+                    .map((chat) => {
+                      const isUnread = chat.lastMessageSenderId !== user?.id && chat.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
+                      const displayUnread = chat.unread > 0 ? chat.unread : (isUnread ? 1 : 0);
+
+                      return (
+                        <button
                         key={chat.id}
                         onClick={() => setActiveChatId(chat.id)}
                         className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
@@ -403,13 +415,26 @@ function UserMessagesPage() {
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <p className="text-xs truncate pr-2 text-muted-foreground">
+                            <p
+                              className={`text-xs truncate pr-2 ${
+                                displayUnread > 0 ? "text-foreground font-medium" : "text-muted-foreground"
+                              }`}
+                            >
                               {chat.lastMessage || "Tap to chat"}
                             </p>
+                            {displayUnread > 0 && (
+                              <Badge
+                                className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
+                                style={{ background: "var(--gradient-primary)" }}
+                              >
+                                {displayUnread}
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       </button>
-                    ))
+                    );
+                  })
                 )}
               </div>
             </ScrollArea>
