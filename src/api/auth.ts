@@ -146,8 +146,59 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
   return { success: true, id: user.id, username: user.username, handle: user.handle };
 });
 
+export const sendSignupOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { email } = ctx.data as unknown as { email: string };
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const hashedOtp = await bcrypt.hash(otp, 10);
+
+  const token = await new SignJWT({ email, otp: hashedOtp, type: "signup_otp" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("15m")
+    .sign(SECRET);
+
+  const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Verify your Email</h2>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6; text-align: center;">
+        <p>Please use the following One-Time Password (OTP) to complete your registration:</p>
+        <div style="font-size: 32px; font-weight: 800; letter-spacing: 4px; color: #F2571D; padding: 24px; background: #fff5f2; border-radius: 12px; display: inline-block; margin: 24px 0;">
+          ${otp}
+        </div>
+        <p style="font-size: 14px; color: #666;">This code will expire in 15 minutes.</p>
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0;">Powered securely by <strong>Agatike Connect</strong></p>
+      </div>
+    </div>
+  `;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [email],
+      subject: `Your Signup OTP: ${otp}`,
+      html: html,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to send OTP via email");
+  }
+
+  return { success: true, token };
+});
+
 export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { username, email, password, dateOfBirth, gender, country, phone, agreed_to_terms } =
+  const { username, email, password, dateOfBirth, gender, country, phone, agreed_to_terms, otpToken, otp } =
     ctx.data as unknown as {
       username: string;
       email: string;
@@ -157,7 +208,28 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
       country: string;
       phone: string;
       agreed_to_terms: boolean;
+      otpToken: string;
+      otp: string;
     };
+
+  // Verify OTP token
+  if (!otpToken || !otp) {
+    throw new Error("Missing OTP verification details");
+  }
+
+  try {
+    const { payload } = await jwtVerify(otpToken, SECRET);
+    if (payload.type !== "signup_otp" || payload.email !== email) {
+      throw new Error("Invalid OTP token");
+    }
+
+    const isValidOtp = await bcrypt.compare(otp, payload.otp as string);
+    if (!isValidOtp) {
+      throw new Error("Incorrect OTP provided");
+    }
+  } catch (e: any) {
+    throw new Error("Invalid or expired OTP");
+  }
 
   // Check if email already exists
   const checkQuery = `

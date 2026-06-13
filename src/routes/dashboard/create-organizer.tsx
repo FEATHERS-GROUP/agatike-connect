@@ -19,6 +19,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { createOrganizerAccount, checkOrganizerHandle } from "@/api/organizers";
+import { sendSignupOtp } from "@/api/auth";
 import { getUserByHandle } from "@/api/users";
 import {
   Building2,
@@ -97,6 +98,10 @@ function CreateOrganizerPage() {
   const [step, setStep] = useState(1);
   const totalSteps = 5;
   const [isGeneratingHandle, setIsGeneratingHandle] = useState(false);
+  const [otpStep, setOtpStep] = useState(false);
+  const [otpInput, setOtpInput] = useState("");
+  const [otpToken, setOtpToken] = useState("");
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   const [syncHandle, setSyncHandle] = useState("");
   const [syncUserId, setSyncUserId] = useState<string | null>(null);
@@ -211,8 +216,30 @@ function CreateOrganizerPage() {
     },
   });
 
-  const onSubmit = (values: FormValues) => {
-    mutation.mutate(values);
+  const onSubmit = async (values: FormValues) => {
+    if (!otpStep) {
+      setIsSendingOtp(true);
+      try {
+        const result = await sendSignupOtp({ data: { email: values.email } } as any);
+        if (result.success && result.token) {
+          setOtpToken(result.token);
+          setOtpStep(true);
+          toast.success("Verification code sent to your email!");
+        }
+      } catch (err: any) {
+        toast.error(err?.message || "Failed to send verification code.");
+      } finally {
+        setIsSendingOtp(false);
+      }
+      return;
+    }
+
+    if (otpInput.length < 6) {
+      toast.error("Please enter the 6-digit code.");
+      return;
+    }
+
+    mutation.mutate({ ...values, otpToken, otp: otpInput } as any);
   };
 
   const nextStep = async () => {
@@ -701,65 +728,94 @@ function CreateOrganizerPage() {
           {/* STEP 5: Security & Agreement */}
           {step === 5 && (
             <section className="bg-card border border-border/60 rounded-3xl p-8 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border/60">
-                <ShieldCheck className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-bold">Security & Agreement</h2>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label>Secure Password *</Label>
-                  <Input
-                    {...register("password")}
-                    type="password"
-                    className="h-11 rounded-xl bg-secondary/50"
-                    placeholder="••••••••"
-                  />
-                  {errors.password && (
-                    <p className="text-xs text-red-500">{errors.password.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Confirm Password *</Label>
-                  <Input
-                    {...register("confirm_password")}
-                    type="password"
-                    className="h-11 rounded-xl bg-secondary/50"
-                    placeholder="••••••••"
-                  />
-                  {errors.confirm_password && (
-                    <p className="text-xs text-red-500">{errors.confirm_password.message}</p>
-                  )}
-                </div>
-
-                <div className="md:col-span-2 flex items-center space-x-3 mt-4 mb-2">
-                  <Checkbox
-                    id="terms"
-                    checked={watch("terms")}
-                    onCheckedChange={(checked) =>
-                      setValue("terms", checked as boolean, { shouldValidate: true })
-                    }
-                  />
-                  <div className="grid gap-1">
-                    <Label
-                      htmlFor="terms"
-                      className="font-normal text-muted-foreground cursor-pointer"
-                    >
-                      I agree to the{" "}
-                      <a href="#" className="text-primary hover:underline">
-                        Terms and Conditions
-                      </a>{" "}
-                      and{" "}
-                      <a href="#" className="text-primary hover:underline">
-                        Privacy Policy
-                      </a>
-                      .
-                    </Label>
-                    {errors.terms && <p className="text-xs text-red-500">{errors.terms.message}</p>}
+              {otpStep ? (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  <div className="text-center space-y-2">
+                    <div className="mx-auto w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
+                      <CheckCircle2 className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-lg font-semibold">Verify your email</h3>
+                    <p className="text-sm text-muted-foreground">
+                      We've sent a 6-digit code to <strong>{watch("email")}</strong>. Please enter it below to launch your profile.
+                    </p>
+                  </div>
+                  <div className="max-w-xs mx-auto">
+                    <Label htmlFor="org-otp" className="sr-only">Verification Code</Label>
+                    <Input
+                      id="org-otp"
+                      required
+                      value={otpInput}
+                      onChange={(e) => setOtpInput(e.target.value)}
+                      placeholder="000000"
+                      className="text-center text-xl tracking-widest h-12"
+                      maxLength={6}
+                      disabled={mutation.isPending}
+                    />
                   </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border/60">
+                    <ShieldCheck className="h-5 w-5 text-primary" />
+                    <h2 className="text-lg font-bold">Security & Agreement</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label>Secure Password *</Label>
+                      <Input
+                        {...register("password")}
+                        type="password"
+                        className="h-11 rounded-xl bg-secondary/50"
+                        placeholder="••••••••"
+                      />
+                      {errors.password && (
+                        <p className="text-xs text-red-500">{errors.password.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Confirm Password *</Label>
+                      <Input
+                        {...register("confirm_password")}
+                        type="password"
+                        className="h-11 rounded-xl bg-secondary/50"
+                        placeholder="••••••••"
+                      />
+                      {errors.confirm_password && (
+                        <p className="text-xs text-red-500">{errors.confirm_password.message}</p>
+                      )}
+                    </div>
+
+                    <div className="md:col-span-2 flex items-center space-x-3 mt-4 mb-2">
+                      <Checkbox
+                        id="terms"
+                        checked={watch("terms")}
+                        onCheckedChange={(checked) =>
+                          setValue("terms", checked as boolean, { shouldValidate: true })
+                        }
+                      />
+                      <div className="grid gap-1">
+                        <Label
+                          htmlFor="terms"
+                          className="font-normal text-muted-foreground cursor-pointer"
+                        >
+                          I agree to the{" "}
+                          <a href="#" className="text-primary hover:underline">
+                            Terms and Conditions
+                          </a>{" "}
+                          and{" "}
+                          <a href="#" className="text-primary hover:underline">
+                            Privacy Policy
+                          </a>
+                          .
+                        </Label>
+                        {errors.terms && <p className="text-xs text-red-500">{errors.terms.message}</p>}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </section>
           )}
 
@@ -787,17 +843,20 @@ function CreateOrganizerPage() {
             ) : (
               <Button
                 type="button"
-                onClick={handleSubmit(onSubmit)}
-                disabled={mutation.isPending}
+                onClick={otpStep ? handleSubmit(onSubmit) : async () => {
+                  const isValid = await trigger(["password", "confirm_password", "terms"] as any);
+                  if (isValid) handleSubmit(onSubmit)();
+                }}
+                disabled={mutation.isPending || isSendingOtp}
                 className="rounded-xl h-12 px-8 shadow-[var(--shadow-glow)] gap-2"
                 style={{ background: "var(--gradient-primary)" }}
               >
-                {mutation.isPending ? (
+                {mutation.isPending || isSendingOtp ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <CheckCircle2 className="h-4 w-4" />
                 )}
-                Launch Profile
+                {otpStep ? "Verify & Create Profile" : "Send Verification Code"}
               </Button>
             )}
           </div>

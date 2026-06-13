@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { signupUser } from "@/api/auth";
+import { signupUser, sendSignupOtp } from "@/api/auth";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { toast } from "sonner";
 import hero from "@/assets/hero-event.jpg";
@@ -52,18 +52,46 @@ function SignUp() {
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [otpStep, setOtpStep] = useState(false);
+  const [otpInput, setOtpInput] = useState("");
+  const [otpToken, setOtpToken] = useState("");
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+    if (!otpStep) {
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters");
+        return;
+      }
+
+      if (!agreed) {
+        setError("You must agree to the Terms, Privacy Policy, and Identity Verification.");
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const result = await sendSignupOtp({ data: { email } } as any);
+        if (result.success && result.token) {
+          setOtpToken(result.token);
+          setOtpStep(true);
+          toast.success("Verification code sent to your email!");
+        }
+      } catch (err: any) {
+        const message = err?.message || "Failed to send verification code. Please try again.";
+        setError(message);
+        toast.error(message);
+      } finally {
+        setIsLoading(false);
+      }
       return;
     }
 
-    if (!agreed) {
-      setError("You must agree to the Terms, Privacy Policy, and Identity Verification.");
+    // OTP Step Submission
+    if (otpInput.length < 6) {
+      setError("Please enter the 6-digit code.");
       return;
     }
 
@@ -80,6 +108,8 @@ function SignUp() {
           country,
           phone,
           agreed_to_terms: agreed,
+          otpToken,
+          otp: otpInput,
         },
       } as any);
       toast.success("Account created! Let's personalize your experience.");
@@ -175,7 +205,62 @@ function SignUp() {
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4">
-              <div>
+              {otpStep ? (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  <div className="text-center space-y-2">
+                    <div className="mx-auto w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
+                      <Mail className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-lg font-semibold">Verify your email</h3>
+                    <p className="text-sm text-muted-foreground">
+                      We've sent a 6-digit code to <strong>{email}</strong>. Please enter it below to create your account.
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="signup-otp">Verification Code</Label>
+                    <Input
+                      id="signup-otp"
+                      required
+                      value={otpInput}
+                      onChange={(e) => setOtpInput(e.target.value)}
+                      placeholder="000000"
+                      className="text-center text-xl tracking-widest h-12"
+                      maxLength={6}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {error && (
+                    <p className="rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs text-destructive">
+                      {error}
+                    </p>
+                  )}
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-11 flex-1 rounded-xl"
+                      onClick={() => {
+                        setOtpStep(false);
+                        setOtpInput("");
+                        setError("");
+                      }}
+                      disabled={isLoading}
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="h-11 flex-1 rounded-xl shadow-[var(--shadow-glow)]"
+                      style={{ background: "var(--gradient-primary)" }}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify & Create"}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div>
                 <Label htmlFor="signup-name">Full name</Label>
                 <div className="relative mt-1">
                   <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -328,6 +413,8 @@ function SignUp() {
               >
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Create account"}
               </Button>
+            </>
+            )}
             </form>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">

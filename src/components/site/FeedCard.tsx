@@ -89,11 +89,6 @@ export function FeedCard({ post }: { post: any }) {
                 <span className="text-sm font-bold text-foreground leading-none">
                   {post.handle || post.organizerHandle || "organizer"}
                 </span>
-                {hasUpcomingEvent && (
-                  <span className="bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-                    <CalendarDays className="h-3 w-3" /> New Event
-                  </span>
-                )}
               </div>
               <span className="text-[10px] text-muted-foreground mt-1">Kigali, RW</span>
             </div>

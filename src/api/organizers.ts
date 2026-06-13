@@ -35,6 +35,8 @@ export interface OrganizerInput {
   socials?: any;
   speciality?: any;
   user_id?: string | null;
+  otpToken?: string;
+  otp?: string;
 }
 
 export const checkOrganizerHandle = createServerFn({ method: "POST" }).handler(async (ctx) => {
@@ -52,6 +54,25 @@ export const checkOrganizerHandle = createServerFn({ method: "POST" }).handler(a
 
 export const createOrganizerAccount = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const data = ctx.data as unknown as OrganizerInput;
+
+  if (!data.otpToken || !data.otp) {
+    throw new Error("Missing OTP verification details");
+  }
+
+  try {
+    const { payload } = await jwtVerify(data.otpToken, SECRET);
+    if (payload.type !== "signup_otp" || payload.email !== data.email) {
+      throw new Error("Invalid OTP token");
+    }
+
+    const isValidOtp = await bcrypt.compare(data.otp, payload.otp as string);
+    if (!isValidOtp) {
+      throw new Error("Incorrect OTP provided");
+    }
+  } catch (e: any) {
+    throw new Error("Invalid or expired OTP");
+  }
+
   const mutation = `
       mutation MyMutation(
         $bio: String = "", 
