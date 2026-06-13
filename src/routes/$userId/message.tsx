@@ -200,7 +200,7 @@ function UserMessagesPage() {
 
   if (authLoading || chatLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
+      <div className="flex h-[100dvh] w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -208,14 +208,14 @@ function UserMessagesPage() {
 
   if (!user) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
+      <div className="flex h-[100dvh] w-full items-center justify-center bg-background">
         <p className="text-muted-foreground">Please sign in to view messages.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-background border-none rounded-none shadow-none">
+    <div className="flex h-[100dvh] bg-background border-none rounded-none shadow-none">
       {/* LEFT SIDEBAR - Chat List */}
       <div
         className={`w-full md:w-[350px] lg:w-[400px] flex flex-col border-r border-border/60 bg-card/50 ${
@@ -311,7 +311,7 @@ function UserMessagesPage() {
           </div>
 
           <TabsContent value="all" className="flex-1 m-0">
-            <ScrollArea className="h-[calc(100vh-180px)]">
+            <ScrollArea className="h-[calc(100dvh-180px)]">
               <div className="p-2 flex flex-col gap-1">
                 {displayChannels.length === 0 ? (
                   <div className="text-center p-6 text-muted-foreground">
@@ -388,7 +388,7 @@ function UserMessagesPage() {
           </TabsContent>
 
           <TabsContent value="groups" className="flex-1 m-0">
-            <ScrollArea className="h-[calc(100vh-180px)]">
+            <ScrollArea className="h-[calc(100dvh-180px)]">
               <div className="p-2 flex flex-col gap-1">
                 {displayChannels.filter((c) => c.type === "group").length === 0 ? (
                   <div className="text-center p-6 text-muted-foreground">

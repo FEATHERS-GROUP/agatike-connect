@@ -392,7 +392,7 @@ function PostCommunityPage() {
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder="Join the conversation..."
-                className="flex-1 bg-transparent text-sm focus:outline-none py-1"
+                className="flex-1 bg-transparent text-base focus:outline-none py-1"
                 disabled={addCommentMutation.isPending}
               />
             </div>

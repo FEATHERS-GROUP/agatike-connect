@@ -75,7 +75,7 @@ export function MobileNav() {
         })}
 
         {/* More Menu Drawer */}
-        <Drawer>
+        <Drawer shouldScaleBackground={false}>
           <DrawerTrigger asChild>
             <button className="relative flex h-full flex-col items-center justify-center gap-1 transition-all duration-500 ease-out text-muted-foreground hover:text-foreground active:scale-95">
               <div className="relative flex items-center justify-center">
