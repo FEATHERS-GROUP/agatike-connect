@@ -31,7 +31,12 @@ export const Route = createFileRoute("/settings")({
 const AVATAR_STYLES = ["micah", "avataaars", "bottts", "lorelei", "adventurer", "fun-emoji"];
 const INTEREST_OPTIONS = [
   "Music", "Sports", "Cinema", "Conferences", "Tech", "Art", "Food", 
-  "Fashion", "Gaming", "Business", "Health", "Education"
+  "Fashion", "Gaming", "Business", "Health", "Education",
+  "Bus Booking", "Travel & Transport", "Gym & Fitness", "Wellness", 
+  "Office Spaces", "Coworking", "Venue Booking", "Nightlife & Parties",
+  "Networking", "Workshops", "Retreats", "Exhibitions & Expos", 
+  "Comedy", "Theater & Arts", "Festivals", "Pop-ups & Markets", 
+  "Real Estate", "Outdoors & Adventure", "Photography", "Startups"
 ];
 
 function SettingsPage() {
