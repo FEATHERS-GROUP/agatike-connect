@@ -201,7 +201,7 @@ function DesktopMoviesView({ active, setActive }: { active: string; setActive: (
         </div>
         <div className="grid grid-cols-4 gap-4 pb-6">
           {cinemas.map((c) => (
-            <div key={c.id} className="group cursor-pointer">
+            <Link key={c.id} to="/cinemas/$cinemaId" params={{ cinemaId: c.id }} className="group cursor-pointer">
               <div className="overflow-hidden rounded-3xl border border-border/40 bg-card shadow-sm transition-all duration-300 group-hover:shadow-[var(--shadow-card)] group-hover:border-primary/30">
                 <div className="relative aspect-video w-full overflow-hidden">
                   <img src={c.image} alt={c.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
@@ -218,7 +218,7 @@ function DesktopMoviesView({ active, setActive }: { active: string; setActive: (
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -305,7 +305,7 @@ function MobileMoviesView() {
         </div>
         <div className="flex overflow-x-auto hide-scrollbar gap-4 px-5 pb-6">
           {cinemas.map((c) => (
-            <div key={c.id} className="w-[260px] shrink-0 rounded-3xl border border-border/40 bg-card shadow-sm overflow-hidden">
+            <Link key={c.id} to="/cinemas/$cinemaId" params={{ cinemaId: c.id }} className="w-[260px] shrink-0 rounded-3xl border border-border/40 bg-card shadow-sm overflow-hidden">
               <div className="aspect-video relative">
                 <img src={c.image} alt={c.name} className="w-full h-full object-cover" />
               </div>
@@ -316,7 +316,7 @@ function MobileMoviesView() {
                   <span>{c.screens} screens</span>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

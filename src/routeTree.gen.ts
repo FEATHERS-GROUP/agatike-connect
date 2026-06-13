@@ -45,6 +45,7 @@ import { Route as DashboardPricingRouteImport } from './routes/dashboard/pricing
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
 import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard/create-organizer'
 import { Route as CommunityPostIdRouteImport } from './routes/community/$postId'
+import { Route as CinemasCinemaIdRouteImport } from './routes/cinemas/$cinemaId'
 import { Route as BusesMobileRouteImport } from './routes/buses/mobile'
 import { Route as BusesTripIdRouteImport } from './routes/buses/$tripId'
 import { Route as BookEventIdRouteImport } from './routes/book/$eventId'
@@ -278,6 +279,11 @@ const DashboardCreateOrganizerRoute =
 const CommunityPostIdRoute = CommunityPostIdRouteImport.update({
   id: '/community/$postId',
   path: '/community/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CinemasCinemaIdRoute = CinemasCinemaIdRouteImport.update({
+  id: '/cinemas/$cinemaId',
+  path: '/cinemas/$cinemaId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BusesMobileRoute = BusesMobileRouteImport.update({
@@ -620,6 +626,7 @@ export interface FileRoutesByFullPath {
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
+  '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -711,6 +718,7 @@ export interface FileRoutesByTo {
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
+  '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -803,6 +811,7 @@ export interface FileRoutesById {
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
+  '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -896,6 +905,7 @@ export interface FileRouteTypes {
     | '/book/$eventId'
     | '/buses/$tripId'
     | '/buses/mobile'
+    | '/cinemas/$cinemaId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
@@ -987,6 +997,7 @@ export interface FileRouteTypes {
     | '/book/$eventId'
     | '/buses/$tripId'
     | '/buses/mobile'
+    | '/cinemas/$cinemaId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
@@ -1078,6 +1089,7 @@ export interface FileRouteTypes {
     | '/book/$eventId'
     | '/buses/$tripId'
     | '/buses/mobile'
+    | '/cinemas/$cinemaId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/login'
@@ -1170,6 +1182,7 @@ export interface RootRouteChildren {
   BookEventIdRoute: typeof BookEventIdRoute
   BusesTripIdRoute: typeof BusesTripIdRoute
   BusesMobileRoute: typeof BusesMobileRoute
+  CinemasCinemaIdRoute: typeof CinemasCinemaIdRoute
   CommunityPostIdRoute: typeof CommunityPostIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   FFormIdRoute: typeof FFormIdRoute
@@ -1437,6 +1450,13 @@ declare module '@tanstack/react-router' {
       path: '/community/$postId'
       fullPath: '/community/$postId'
       preLoaderRoute: typeof CommunityPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cinemas/$cinemaId': {
+      id: '/cinemas/$cinemaId'
+      path: '/cinemas/$cinemaId'
+      fullPath: '/cinemas/$cinemaId'
+      preLoaderRoute: typeof CinemasCinemaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/buses/mobile': {
@@ -1999,6 +2019,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookEventIdRoute: BookEventIdRoute,
   BusesTripIdRoute: BusesTripIdRoute,
   BusesMobileRoute: BusesMobileRoute,
+  CinemasCinemaIdRoute: CinemasCinemaIdRoute,
   CommunityPostIdRoute: CommunityPostIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   FFormIdRoute: FFormIdRoute,
