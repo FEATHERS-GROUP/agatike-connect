@@ -27,7 +27,7 @@ function AboutPage() {
               Welcome to <span className="text-transparent bg-clip-text" style={{ backgroundImage: "var(--gradient-primary)" }}>Agatike Connect</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Africa's premium social event platform. We empower organizers and communities to discover music, nightlife, sports, festivals, and experiences worldwide while providing the ultimate suite of event management tools.
+              The premium social event platform. We empower organizers and communities to discover music, nightlife, sports, festivals, and experiences worldwide while providing the ultimate suite of event management tools.
             </p>
           </div>
         </section>
