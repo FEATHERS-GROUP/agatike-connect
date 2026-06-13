@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
   User, Lock, Image as ImageIcon, Heart, Loader2, 
-  RefreshCw, ChevronRight, Moon, Sun, Monitor, 
+  RefreshCw, ChevronRight, ChevronDown, Moon, Sun, Monitor, 
   FileText, ArrowLeft, Settings as SettingsIcon 
 } from "lucide-react";
 import { updateUserGeneral, updateUserPassword, updateUserOnboarding } from "@/api/auth";
@@ -153,43 +153,49 @@ function SettingsPage() {
       case "general":
         return (
           <form onSubmit={handleUpdateGeneral} className="space-y-4 px-1">
-            <div className="space-y-2">
+            <div className="flex flex-col gap-3">
               <Label>Name</Label>
               <Input value={general.username} onChange={e => setGeneral({...general, username: e.target.value})} className="bg-background/50 rounded-xl"/>
             </div>
-            <div className="space-y-2">
+            <div className="flex flex-col gap-3">
               <Label>Email</Label>
               <Input type="email" value={general.email} onChange={e => setGeneral({...general, email: e.target.value})} className="bg-background/50 rounded-xl"/>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="flex flex-col gap-3">
                 <Label>Phone Number</Label>
                 <Input value={general.phone} onChange={e => setGeneral({...general, phone: e.target.value})} className="bg-background/50 rounded-xl" placeholder="+1 234 567 890"/>
               </div>
-              <div className="space-y-2">
+              <div className="flex flex-col gap-3">
                 <Label>Country</Label>
-                <select 
-                  value={general.country} 
-                  onChange={e => setGeneral({...general, country: e.target.value})} 
-                  className="flex h-10 w-full rounded-xl border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="" disabled>Select Country</option>
-                  {COUNTRIES.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
-                </select>
+                <div className="relative">
+                  <select 
+                    value={general.country} 
+                    onChange={e => setGeneral({...general, country: e.target.value})} 
+                    className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="" disabled>Select Country</option>
+                    {COUNTRIES.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="flex flex-col gap-3">
               <Label>Gender</Label>
-              <select 
-                value={general.gender} 
-                onChange={e => setGeneral({...general, gender: e.target.value})} 
-                className="flex h-10 w-full rounded-xl border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="" disabled>Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
+              <div className="relative">
+                <select 
+                  value={general.gender} 
+                  onChange={e => setGeneral({...general, gender: e.target.value})} 
+                  className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="" disabled>Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+              </div>
             </div>
             <Button type="submit" disabled={isUpdatingGeneral} className="w-full rounded-xl mt-4" style={{ background: "var(--gradient-primary)" }}>
               {isUpdatingGeneral ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
@@ -258,11 +264,11 @@ function SettingsPage() {
       case "security":
         return (
           <form onSubmit={handleUpdatePassword} className="space-y-4 px-1">
-            <div className="space-y-2">
+            <div className="flex flex-col gap-3">
               <Label>New Password</Label>
               <Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="bg-background/50 rounded-xl" placeholder="Enter new password"/>
             </div>
-            <div className="space-y-2">
+            <div className="flex flex-col gap-3">
               <Label>Confirm New Password</Label>
               <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-background/50 rounded-xl" placeholder="Confirm new password"/>
             </div>
