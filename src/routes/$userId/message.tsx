@@ -7,7 +7,8 @@ import {
   MessageCircle,
   Loader2,
   Users,
-  Image as ImageIcon,
+  Smile,
+  Sticker,
   ArrowLeft,
   Plus,
 } from "lucide-react";
@@ -24,6 +25,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import EmojiPicker from "emoji-picker-react";
+import { GiphyFetch } from "@giphy/js-fetch-api";
+import { Grid } from "@giphy/react-components";
+
+const gf = new GiphyFetch(import.meta.env.VITE_GIPHY_API_KEY || "");
 
 import { useFirestoreUserMessages } from "@/hooks/useFirestoreUserMessages";
 import { useUserAuth } from "@/contexts/UserAuthContext";
@@ -79,6 +86,28 @@ function UserMessagesPage() {
   const [messageInput, setMessageInput] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [isNewMessageModalOpen, setIsNewMessageModalOpen] = useState(false);
+  const [gifSearch, setGifSearch] = useState("");
+  const [isGifPopoverOpen, setIsGifPopoverOpen] = useState(false);
+  const [isFetchingGifs, setIsFetchingGifs] = useState(false);
+
+  const fetchGifs = async (offset: number) => {
+    if (offset === 0) setIsFetchingGifs(true);
+    try {
+      if (gifSearch) {
+        return await gf.search(gifSearch, { offset, limit: 10 });
+      }
+      return await gf.trending({ offset, limit: 10 });
+    } finally {
+      if (offset === 0) setIsFetchingGifs(false);
+    }
+  };
+
+  const handleGifClick = (gif: any, e: React.SyntheticEvent<HTMLElement, Event>) => {
+    e.preventDefault();
+    if (!activeChat) return;
+    sendMessage("", activeChat, gif.images.fixed_width.url);
+    setIsGifPopoverOpen(false);
+  };
 
   // Map channels to show correct organizer info for DMs and filter event channels
   const displayChannels = useMemo(() => {
@@ -444,19 +473,74 @@ function UserMessagesPage() {
                 className="flex items-end gap-2 max-w-3xl mx-auto relative"
               >
                 <div className="flex-1 relative flex items-center bg-card border border-border/60 rounded-3xl shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/50 transition-all">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 rounded-full shrink-0 text-muted-foreground hover:text-foreground ml-1"
-                  >
-                    <ImageIcon className="h-5 w-5" />
-                  </Button>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 rounded-full shrink-0 text-muted-foreground hover:text-foreground ml-1"
+                      >
+                        <Smile className="h-5 w-5" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      side="top"
+                      align="start"
+                      className="p-0 border-none shadow-xl bg-transparent mb-2"
+                    >
+                      <EmojiPicker
+                        onEmojiClick={(emojiData) => setMessageInput((prev) => prev + emojiData.emoji)}
+                        theme="auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover open={isGifPopoverOpen} onOpenChange={setIsGifPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 rounded-full shrink-0 text-muted-foreground hover:text-foreground"
+                      >
+                        <Sticker className="h-5 w-5" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      side="top"
+                      align="start"
+                      className="w-[300px] p-2 mb-2 shadow-xl rounded-xl max-w-[90vw]"
+                    >
+                      <Input
+                        placeholder="Search GIFs..."
+                        value={gifSearch}
+                        onChange={(e) => setGifSearch(e.target.value)}
+                        className="mb-2 h-8 text-base focus-visible:ring-0 focus-visible:ring-offset-0"
+                      />
+                      <div className="h-[300px] overflow-y-auto overflow-x-hidden rounded-md no-scrollbar relative">
+                        {isFetchingGifs && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] z-10">
+                            <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                          </div>
+                        )}
+                        <Grid
+                          key={gifSearch}
+                          width={280}
+                          columns={2}
+                          fetchGifs={fetchGifs}
+                          onGifClick={handleGifClick}
+                          noLink
+                          hideAttribution
+                        />
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                   <Input
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
                     placeholder="Type a message..."
-                    className="flex-1 bg-transparent border-0 shadow-none focus-visible:ring-0 px-2 py-3 h-auto min-h-[44px]"
+                    className="flex-1 bg-transparent border-0 shadow-none focus-visible:ring-0 px-2 py-3 h-auto min-h-[44px] text-base"
                   />
                 </div>
 
