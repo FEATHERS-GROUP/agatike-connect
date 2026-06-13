@@ -20,6 +20,7 @@ import { LoaderProvider } from "@/contexts/LoaderContext";
 import { SplashLoader } from "@/components/site/SplashLoader";
 import { WorkspaceProvider } from "@/contexts/WorkspaceContext";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { GlobalNotificationListener } from "@/components/providers/GlobalNotificationListener";
 import { GlobalUserNotificationListener } from "@/components/providers/GlobalUserNotificationListener";
 function NotFoundComponent() {
@@ -152,34 +153,36 @@ function RootComponent() {
     location.pathname === "/onboarding";
 
   return (
-    <AppProvider>
-      <QueryClientProvider client={queryClient}>
-        <UserAuthProvider>
-          <AuthRedirect />
-          <WorkspaceProvider>
-            <LoaderProvider>
-              <GlobalNotificationListener />
-              <GlobalUserNotificationListener />
-              {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
-              <div className={`min-h-screen md:pb-0 ${hideNav ? "" : "pb-24"}`}>
-                <Outlet />
-              </div>
-
-              {/* Floating Mobile Navigation - Hidden on Desktop */}
-              {!hideNav && (
-                <div className="md:hidden">
-                  <MobileNav />
+    <ThemeProvider defaultTheme="system" storageKey="agatike-theme">
+      <AppProvider>
+        <QueryClientProvider client={queryClient}>
+          <UserAuthProvider>
+            <AuthRedirect />
+            <WorkspaceProvider>
+              <LoaderProvider>
+                <GlobalNotificationListener />
+                <GlobalUserNotificationListener />
+                {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
+                <div className={`min-h-screen md:pb-0 ${hideNav ? "" : "pb-24"}`}>
+                  <Outlet />
                 </div>
-              )}
 
-              <InstallPrompt />
-              <SplashLoader />
-              <Toaster position="top-center" />
-            </LoaderProvider>
-          </WorkspaceProvider>
-        </UserAuthProvider>
-      </QueryClientProvider>
-    </AppProvider>
+                {/* Floating Mobile Navigation - Hidden on Desktop */}
+                {!hideNav && (
+                  <div className="md:hidden">
+                    <MobileNav />
+                  </div>
+                )}
+
+                <InstallPrompt />
+                <SplashLoader />
+                <Toaster position="top-center" />
+              </LoaderProvider>
+            </WorkspaceProvider>
+          </UserAuthProvider>
+        </QueryClientProvider>
+      </AppProvider>
+    </ThemeProvider>
   );
 }
 

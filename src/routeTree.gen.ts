@@ -14,6 +14,7 @@ import { Route as VenueDesignerRouteImport } from './routes/venue-designer'
 import { Route as TicketDesignerRouteImport } from './routes/ticket-designer'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OrganizersRouteImport } from './routes/organizers'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -116,6 +117,11 @@ const SignupRoute = SignupRouteImport.update({
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -567,6 +573,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/ticket-designer': typeof TicketDesignerRoute
@@ -652,6 +659,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/ticket-designer': typeof TicketDesignerRoute
@@ -738,6 +746,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
   '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/ticket-designer': typeof TicketDesignerRoute
@@ -825,6 +834,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/organizers'
     | '/profile'
+    | '/settings'
     | '/signin'
     | '/signup'
     | '/ticket-designer'
@@ -910,6 +920,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/organizers'
     | '/profile'
+    | '/settings'
     | '/signin'
     | '/signup'
     | '/ticket-designer'
@@ -995,6 +1006,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/organizers'
     | '/profile'
+    | '/settings'
     | '/signin'
     | '/signup'
     | '/ticket-designer'
@@ -1081,6 +1093,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   OrganizersRoute: typeof OrganizersRoute
   ProfileRoute: typeof ProfileRoute
+  SettingsRoute: typeof SettingsRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   TicketDesignerRoute: typeof TicketDesignerRoute
@@ -1142,6 +1155,13 @@ declare module '@tanstack/react-router' {
       path: '/signin'
       fullPath: '/signin'
       preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -1862,6 +1882,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   OrganizersRoute: OrganizersRoute,
   ProfileRoute: ProfileRoute,
+  SettingsRoute: SettingsRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   TicketDesignerRoute: TicketDesignerRoute,

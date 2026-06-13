@@ -26,7 +26,6 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
-import { EditProfileModal } from "@/components/site/EditProfileModal";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/profile")({
@@ -216,7 +215,6 @@ function ProfilePage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("upcoming");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
@@ -309,7 +307,7 @@ function ProfilePage() {
               <Button 
                 variant="secondary" 
                 className="flex-1 h-9 text-sm font-semibold rounded-xl"
-                onClick={() => setShowEditProfileModal(true)}
+                onClick={() => navigate({ to: "/settings" })}
               >
                 Edit Profile
               </Button>
@@ -495,7 +493,7 @@ function ProfilePage() {
           <Button 
             variant="secondary" 
             className="flex-1 h-8 text-[13px] font-bold rounded-lg bg-secondary/80 hover:bg-secondary text-foreground"
-            onClick={() => setShowEditProfileModal(true)}
+            onClick={() => navigate({ to: "/settings" })}
           >
             Edit profile
           </Button>
@@ -676,12 +674,6 @@ function ProfilePage() {
       {desktop}
       {mobile}
       {logoutModal}
-      <EditProfileModal 
-        isOpen={showEditProfileModal} 
-        setIsOpen={setShowEditProfileModal} 
-        user={user} 
-        onUpdate={refresh} 
-      />
     </>
   );
 }
