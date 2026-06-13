@@ -38,7 +38,6 @@ import {
   updateUserOnboarding,
   verifyNewPasswordDifference,
   deactivateUserAccount,
-  logoutUser,
 } from "@/api/auth";
 import { sendProfileUpdateOTP } from "@/api/email";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
