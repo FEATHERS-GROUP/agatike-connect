@@ -338,7 +338,6 @@ function SignUp() {
             </p>
           </div>
 
-          </div>
         </div>
       </div>
     </div>

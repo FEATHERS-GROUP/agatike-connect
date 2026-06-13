@@ -26,7 +26,9 @@ import { Route as MapRouteImport } from './routes/map'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ActivityRouteImport } from './routes/activity'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VenuesIndexRouteImport } from './routes/venues/index'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
@@ -182,9 +184,19 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ActivityRoute = ActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -582,7 +594,9 @@ const DashboardWorkspaceSlugEventsEventIdAttendeesRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/activity': typeof ActivityRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
@@ -671,7 +685,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/activity': typeof ActivityRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
@@ -761,7 +777,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/activity': typeof ActivityRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
@@ -852,7 +870,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/activity'
+    | '/contact'
     | '/dashboard'
     | '/explore'
     | '/feed'
@@ -941,7 +961,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/activity'
+    | '/contact'
     | '/dashboard'
     | '/explore'
     | '/feed'
@@ -1030,7 +1052,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/activity'
+    | '/contact'
     | '/dashboard'
     | '/explore'
     | '/feed'
@@ -1120,7 +1144,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   ActivityRoute: typeof ActivityRoute
+  ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   ExploreRoute: typeof ExploreRoute
   FeedRoute: typeof FeedRoute
@@ -1280,11 +1306,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/activity': {
       id: '/activity'
       path: '/activity'
       fullPath: '/activity'
       preLoaderRoute: typeof ActivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1933,7 +1973,9 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   ActivityRoute: ActivityRoute,
+  ContactRoute: ContactRoute,
   DashboardRoute: DashboardRouteWithChildren,
   ExploreRoute: ExploreRoute,
   FeedRoute: FeedRoute,

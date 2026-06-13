@@ -49,6 +49,14 @@ export function Footer() {
                     <Link to="/refunds" className="hover:text-foreground transition">
                       {l}
                     </Link>
+                  ) : l === "About" ? (
+                    <Link to="/about" className="hover:text-foreground transition">
+                      {l}
+                    </Link>
+                  ) : l === "Contact" ? (
+                    <Link to="/contact" className="hover:text-foreground transition">
+                      {l}
+                    </Link>
                   ) : (
                     <a href="#" className="hover:text-foreground transition">
                       {l}
