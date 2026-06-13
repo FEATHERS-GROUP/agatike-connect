@@ -30,7 +30,7 @@ import EmojiPicker from "emoji-picker-react";
 import { GiphyFetch } from "@giphy/js-fetch-api";
 import { Grid } from "@giphy/react-components";
 
-const gf = new GiphyFetch(import.meta.env.VITE_GIPHY_API_KEY || "");
+const gf = new GiphyFetch(import.meta.env.GIPHY_API_KEY || "");
 
 import { useFirestoreUserMessages } from "@/hooks/useFirestoreUserMessages";
 import { useUserAuth } from "@/contexts/UserAuthContext";

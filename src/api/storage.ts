@@ -20,7 +20,7 @@ export const uploadFile = createServerFn({ method: "POST" }).handler(async (ctx)
   };
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const anonKey = process.env.VITE_SUPABASE_ANOM_KEY;
+  const anonKey = process.env.SUPABASE_ANOM_KEY;
 
   // Use service role key if properly configured, otherwise fall back to anon key
   const isServiceKeyValid =
@@ -67,7 +67,7 @@ export const deleteFiles = createServerFn({ method: "POST" }).handler(async (ctx
   const { urls } = ctx.data as unknown as { urls: string[] };
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const anonKey = process.env.VITE_SUPABASE_ANOM_KEY;
+  const anonKey = process.env.SUPABASE_ANOM_KEY;
   const isServiceKeyValid =
     serviceKey && serviceKey !== "YOUR_SERVICE_ROLE_KEY_HERE" && serviceKey.startsWith("eyJ");
   const authKey = isServiceKeyValid ? serviceKey : anonKey;

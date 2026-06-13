@@ -32,9 +32,9 @@ export function AddressAutocomplete({
       return () => clearInterval(checkInterval);
     }
 
-    const apiKey = import.meta.env.VITE_GOOGLE_MAP_API;
+    const apiKey = import.meta.env.GOOGLE_MAP_API;
     if (!apiKey) {
-      console.warn("VITE_GOOGLE_MAP_API is missing in environment variables.");
+      console.warn("GOOGLE_MAP_API is missing in environment variables.");
       return;
     }
 
