@@ -50,6 +50,7 @@ function SettingsPage() {
   const [selectedStyle, setSelectedStyle] = useState("micah");
   const [seed, setSeed] = useState(Math.random().toString(36).substring(7));
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
+  const [stagedAvatar, setStagedAvatar] = useState<string | null>(null);
   const generatedAvatars = Array.from({ length: 15 }).map((_, i) => 
     `https://api.dicebear.com/7.x/${selectedStyle}/svg?seed=${seed}_${i}`
   );
@@ -182,14 +183,19 @@ function SettingsPage() {
               {generatedAvatars.map((url, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleSelectAvatar(url)}
+                  onClick={() => setStagedAvatar(url)}
                   disabled={isUpdatingAvatar}
-                  className="aspect-square rounded-2xl bg-secondary/30 p-2 border border-border/40 hover:border-primary/50 transition-all hover:scale-105"
+                  className={`aspect-square rounded-2xl p-2 border transition-all hover:scale-105 ${stagedAvatar === url ? "bg-primary/20 border-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background" : "bg-secondary/30 border-border/40 hover:border-primary/50"}`}
                 >
                   <img src={url} alt={`Avatar ${idx}`} className="w-full h-full object-contain" />
                 </button>
               ))}
             </div>
+            {stagedAvatar && (
+              <Button onClick={() => handleSelectAvatar(stagedAvatar)} disabled={isUpdatingAvatar} className="w-full rounded-xl" style={{ background: "var(--gradient-primary)" }}>
+                {isUpdatingAvatar ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Selected Avatar"}
+              </Button>
+            )}
             <Button variant="secondary" onClick={() => setSeed(Math.random().toString(36).substring(7))} className="w-full rounded-xl">
               <RefreshCw className="h-4 w-4 mr-2" /> Generate More
             </Button>
