@@ -1500,3 +1500,187 @@ While the core database uses Postgres (Hasura), the real-time notification engin
 - **Unread Logic:** The unread count is calculated locally by comparing the notification's `createdAt` timestamp against a locally stored `lastActivityReadTimestamp` from `localStorage`, ensuring the red activity badge is always perfectly synced and accurate.
 
 _Last updated: June 2026 — Agatike Connect_
+
+---
+
+## 21. Secure Signup — OTP Email Verification
+
+**Files:** `src/api/auth.ts`, `src/routes/signup.tsx`, `src/routes/dashboard/create-organizer.tsx`, `src/api/organizers.ts`
+
+Every new account (both User and Organizer) is required to verify their email address via a One-Time Password (OTP) **before** the account is created in the database. This prevents fake, mistyped, or disposable email addresses from polluting the user base.
+
+### Design Philosophy: Stateless JWT-based OTP
+
+Instead of writing unverified users to a temporary database table (which requires cleanup jobs and extra schema), the system uses a **stateless JWT approach**:
+
+1. The server generates a random 6-digit OTP.
+2. The OTP is **hashed** using `bcrypt` (not stored in plaintext anywhere).
+3. The hash is embedded into a **short-lived JWT token** (15 minutes) alongside the user's email, signed with the app's `JWT_SECRET`.
+4. The signed token is returned to the **client** (not stored server-side).
+5. When the user submits the code, the server decodes and verifies the JWT (signature + expiry), then compares the submitted OTP against the hashed OTP inside the token using `bcrypt.compare`.
+6. Only if both checks pass does the server proceed to insert the new account.
+
+This approach is highly secure — the OTP is never stored in plaintext, the token auto-expires, and it cannot be forged without the server secret.
+
+### User Signup Flow (`/signup`)
+
+```mermaid
+flowchart TD
+    A[User fills signup form] -->|Submit| B[Client: calls sendSignupOtp with email]
+    B --> C[Server: generate 6-digit OTP]
+    C --> D[Server: bcrypt.hash OTP]
+    D --> E[Server: create signed JWT with email + hashed OTP]
+    E --> F[Server: send OTP email via Resend API]
+    F --> G[Server: return JWT token to client]
+    G --> H[Client: show OTP input screen]
+    H --> I{User enters 6-digit code}
+    I -->|Submit| J[Client: calls signupUser with form data + OTP + JWT token]
+    J --> K[Server: jwtVerify token — checks signature + expiry]
+    K -->|Invalid/Expired| L[throw Error: Invalid or expired OTP]
+    K -->|Valid| M[Server: bcrypt.compare submitted OTP vs hashed OTP in token]
+    M -->|No match| N[throw Error: Incorrect OTP provided]
+    M -->|Match| O[Server: insert new user into DB]
+    O --> P[Server: create session cookie]
+    P --> Q[Client: navigate to /onboarding]
+```
+
+**Key state in `signup.tsx`:**
+
+| State      | Type      | Purpose                                                    |
+| ---------- | --------- | ---------------------------------------------------------- |
+| `otpStep`  | `boolean` | Toggles between the signup form and the OTP entry screen   |
+| `otpToken` | `string`  | The JWT token returned by the server after sending the OTP |
+| `otpInput` | `string`  | The 6-digit code typed by the user                         |
+
+### Organizer Signup Flow (`/dashboard/create-organizer`)
+
+The organizer signup is a 5-step wizard. On **Step 5 (Security & Agreement)**, the flow is identical:
+
+```mermaid
+flowchart TD
+    A[Organizer completes Step 5 form] -->|Click Send Verification Code| B[Client: calls sendSignupOtp with organizer email]
+    B --> C[Step 5 UI transitions to OTP input view]
+    C --> D{Organizer enters 6-digit code}
+    D -->|Click Verify & Create Profile| E[Client: calls createOrganizerAccount with all form data + OTP + JWT token]
+    E --> F[Server: verify JWT + bcrypt.compare OTP]
+    F -->|Valid| G[Server: insert organizer record into DB]
+    F -->|Invalid| H[throw Error: Invalid or expired OTP]
+```
+
+**Key state in `create-organizer.tsx`:**
+
+| State         | Type      | Purpose                                            |
+| ------------- | --------- | -------------------------------------------------- |
+| `otpStep`     | `boolean` | Whether we're showing the OTP confirmation view    |
+| `otpToken`    | `string`  | JWT token returned from `sendSignupOtp`            |
+| `otpInput`    | `string`  | The user-typed 6-digit verification code           |
+| `isSendingOtp`| `boolean` | Loading state while waiting for the email to send  |
+
+### Server Functions
+
+| Function                 | File             | Description                                                                               |
+| ------------------------ | ---------------- | ----------------------------------------------------------------------------------------- |
+| `sendSignupOtp`          | `api/auth.ts`    | Generates OTP, hashes it, signs a 15-min JWT, sends email via Resend, returns the token  |
+| `signupUser`             | `api/auth.ts`    | Validates `otpToken` + `otp` via JWT + bcrypt before creating the user account            |
+| `createOrganizerAccount` | `api/organizers.ts` | Validates `otpToken` + `otp` via JWT + bcrypt before creating the organizer account    |
+
+### OTP Email Template
+
+The OTP email is a branded HTML email sent via the **Resend API** with:
+- An orange header matching the Agatike brand color (`#F2571D`)
+- The 6-digit code displayed large and bold in the center
+- A 15-minute expiry notice in the footer
+- Sent from `hello@agatike.com`
+
+---
+
+## 22. Account Deactivation ("Delete Account")
+
+**Files:** `src/api/auth.ts`, `src/routes/settings.tsx`
+
+Users can delete their account from the **Settings → Danger Zone** section. For legal, support, and data-integrity reasons, the account is not physically wiped from the database. Instead, it is **soft-deactivated** — the `active` column is set to `false`. This is invisible to the user; to them, the account appears fully deleted.
+
+### Soft-Delete vs Hard-Delete
+
+| Scenario              | `active` | `banned` | Login behaviour                                                                    |
+| --------------------- | -------- | -------- | ---------------------------------------------------------------------------------- |
+| Normal account        | `true`   | `false`  | Login succeeds                                                                     |
+| Self-deleted account  | `false`  | `false`  | Login returns: `"This account no longer exists."`                                  |
+| Admin-banned account  | `false`  | `true`   | Login returns: `"Your account has been suspended. Please contact support at..."`   |
+
+This distinction is critical: a banned user gets a specific message so they understand why they cannot log in, while a self-deleted user just sees a generic "not found" style error.
+
+### Database Columns
+
+Both columns must exist on the `users` table:
+
+| Column   | Type      | Default | Purpose                                                          |
+| -------- | --------- | ------- | ---------------------------------------------------------------- |
+| `active` | `boolean` | `true`  | Whether the account is accessible. Set to `false` on deletion    |
+| `banned` | `boolean` | `false` | Whether the account was banned by an admin. Read-only for users  |
+
+> The `add_banned_column.js` migration script in the project root adds the `banned` column (`NOT NULL DEFAULT false`) to the `users` table via the Hasura SQL API.
+
+### Delete Account Flow
+
+```mermaid
+flowchart TD
+    A[User opens Settings] --> B[Scrolls to Danger Zone section]
+    B --> C[Clicks Delete Account]
+    C --> D[Confirmation modal opens]
+    D --> E[User reads warning:\nThis action cannot be undone]
+    E --> F[User types their exact @handle in the input field]
+    F --> G{handle matches user.handle?}
+    G -->|No| H[Delete button remains disabled]
+    G -->|Yes| I[Delete button becomes active]
+    I --> J[User clicks Yes, delete my account]
+    J --> K[Client: calls deactivateUserAccount server fn]
+    K --> L[Server: reads agatike_user_auth cookie]
+    L --> M[Server: jwtVerify cookie — confirms identity]
+    M --> N[Server: Hasura mutation — set active=false for user.id]
+    N --> O[Server: deleteCookie agatike_user_auth]
+    O --> P[Client: toast.success - account deleted]
+    P --> Q[Client: navigate to /]
+```
+
+### Confirmation UX Details
+
+The modal has three safety layers designed to prevent accidental deletion:
+
+1. **Warning banner** — An `AlertTriangle` icon with text: _"This action cannot be undone. All your data, bookings, and tickets will become inaccessible."_
+2. **Handle confirmation input** — The user must type their exact `@handle`. The delete button is **programmatically disabled** (`disabled={deleteConfirmHandle !== user?.handle}`) until the input matches exactly.
+3. **Destructive button styling** — The confirm button uses the `variant="destructive"` style (red) to signal the severity of the action.
+
+### `deactivateUserAccount` Server Function
+
+```ts
+// src/api/auth.ts
+export const deactivateUserAccount = createServerFn({ method: "POST" }).handler(async () => {
+  // 1. Read session token from cookie
+  const token = getCookie("agatike_user_auth");
+  if (!token) throw new Error("Unauthorized");
+
+  // 2. Verify JWT — ensures only the authenticated user can deactivate their own account
+  const { payload } = await jwtVerify(token, SECRET);
+  if (payload.type !== "user") throw new Error("Unauthorized");
+
+  // 3. Set active = false in the database
+  await hasuraRequest(
+    `mutation DeactivateUser($id: uuid!) {
+      update_users_by_pk(pk_columns: { id: $id }, _set: { active: false }) { id }
+    }`,
+    { id: payload.sub }
+  );
+
+  // 4. Destroy the session — user is immediately logged out
+  deleteCookie("agatike_user_auth", { path: "/" });
+
+  return { success: true };
+});
+```
+
+The server function reads the user's identity **from the session cookie** (not from any client-supplied user ID), making it impossible for one user to deactivate another user's account.
+
+---
+
+_Last updated: June 2026 — Agatike Connect_
