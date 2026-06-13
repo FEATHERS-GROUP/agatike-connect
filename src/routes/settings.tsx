@@ -50,7 +50,7 @@ function SettingsPage() {
   const [selectedStyle, setSelectedStyle] = useState("micah");
   const [seed, setSeed] = useState(Math.random().toString(36).substring(7));
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
-  const generatedAvatars = Array.from({ length: 6 }).map((_, i) => 
+  const generatedAvatars = Array.from({ length: 15 }).map((_, i) => 
     `https://api.dicebear.com/7.x/${selectedStyle}/svg?seed=${seed}_${i}`
   );
 
