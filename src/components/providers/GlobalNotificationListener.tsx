@@ -5,6 +5,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
 import { getUsersByIds } from "@/api/users";
 import { useNavigate } from "@tanstack/react-router";
+import { MessageCircle, Bell } from "lucide-react";
 
 const COUNTRY_FLAGS: Record<string, string> = {
   Rwanda: "🇷🇼",
@@ -120,10 +121,12 @@ export function GlobalNotificationListener() {
           // Trigger In-App Toast
           toast(title, {
             description: body,
+            icon: <MessageCircle className="text-primary h-5 w-5" />,
             action: {
               label: "View",
               onClick: () => navigate({ to: `/dashboard/${activeWorkspace.slug}/community` }),
             },
+            actionButtonStyle: { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" },
           });
         }
       });
@@ -182,6 +185,7 @@ export function GlobalNotificationListener() {
 
           toast(title, {
             description: body,
+            icon: <Bell className="text-primary h-5 w-5" />,
           });
         }
       });

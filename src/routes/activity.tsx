@@ -85,10 +85,11 @@ function ActivityPage() {
             const isComment = n.type === "comment";
             const isNewEvent = n.type === "new_event";
             const isNewPost = n.type === "new_post";
+            const isNewMessage = n.type === "new_message";
 
             let Icon = Heart;
-            let color = "text-rose-500";
-            let bg = "bg-rose-500/10 border-rose-500/20";
+            let color = "text-primary";
+            let bg = "bg-primary/10 border-primary/20";
             let title = "New Like";
             let description = "Someone interacted with a post you follow.";
             let link = `/community/${n.postId}`;
@@ -96,28 +97,30 @@ function ActivityPage() {
 
             if (isComment) {
               Icon = MessageCircle;
-              color = "text-primary";
-              bg = "bg-primary/10 border-primary/20";
               title = "New Reply";
               description = n.content
                 ? `Someone commented: "${n.content}"`
                 : "Someone commented on a post you follow.";
             } else if (isNewEvent) {
               Icon = CalendarDays;
-              color = "text-amber-500";
-              bg = "bg-amber-500/10 border-amber-500/20";
               title = "New Event";
               description = "An organizer you follow just posted a new event!";
               link = `/event/${n.eventId}`;
               linkText = "View Event";
             } else if (isNewPost) {
               Icon = Film;
-              color = "text-purple-500";
-              bg = "bg-purple-500/10 border-purple-500/20";
               title = "New Post";
               description = n.content
                 ? `An organizer you follow posted: "${n.content}"`
                 : "An organizer you follow posted an update.";
+            } else if (isNewMessage) {
+              Icon = MessageCircle;
+              title = "New Message";
+              description = n.content
+                ? `New message: "${n.content}"`
+                : "You have a new message.";
+              link = `/${user?.id}/message`;
+              linkText = "View Messages";
             }
             return (
               <div

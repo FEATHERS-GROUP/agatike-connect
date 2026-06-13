@@ -12,6 +12,9 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getUsersByIds } from "@/api/users";
+import { getCommunityChannels } from "@/api/community";
+import { getEventAttendees } from "@/api/attendees";
+import { getOrganizerFollowerIds } from "@/api/organizers";
 
 export type Message = {
   id: string;
@@ -207,6 +210,40 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
       lastMessageTime: serverTimestamp(),
       lastMessageSenderId: senderId,
     });
+
+    try {
+      let targetUsers: string[] = [];
+      if (activeChat.type === "user" && activeChat.userId) {
+        targetUsers = [activeChat.userId];
+      } else if (activeChat.type === "group") {
+        if (activeChat.entityType === "EVENT") {
+          const channelsResult = await getCommunityChannels({ data: { organizerId: workspaceId } });
+          const hasuraChannel = channelsResult.find(c => c.id === activeChat.id);
+          if (hasuraChannel && hasuraChannel.event_id) {
+             const attendees = await getEventAttendees({ data: { event_id: hasuraChannel.event_id } });
+             targetUsers = attendees.map(a => a.user_id).filter(Boolean);
+          } else {
+             targetUsers = await getOrganizerFollowerIds({ data: { organizerId: workspaceId } });
+          }
+        } else {
+          targetUsers = await getOrganizerFollowerIds({ data: { organizerId: workspaceId } });
+        }
+      }
+
+      if (targetUsers.length > 0) {
+        await addDoc(collection(db, "agatike_notifications"), {
+          type: "new_message",
+          postId: activeChat.id,
+          organizerId: workspaceId,
+          actorId: senderId,
+          content: text || "Sent an attachment",
+          targetUsers,
+          createdAt: new Date().toISOString(),
+        });
+      }
+    } catch (e) {
+      console.error("Failed to create notification for message", e);
+    }
   };
 
   const createDirectMessageChannel = async (

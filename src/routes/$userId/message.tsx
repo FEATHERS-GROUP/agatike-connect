@@ -1,4 +1,4 @@
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Search,
@@ -40,7 +40,16 @@ import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { getUserAttendedEventIds } from "@/api/attendees";
 import { getCommunityChannelsForOrganizers } from "@/api/community";
 
+type MessageSearch = {
+  chatId?: string;
+};
+
 export const Route = createFileRoute("/$userId/message")({
+  validateSearch: (search: Record<string, unknown>): MessageSearch => {
+    return {
+      chatId: search.chatId as string | undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Messages — Agatike" },
@@ -51,6 +60,9 @@ export const Route = createFileRoute("/$userId/message")({
 });
 
 function UserMessagesPage() {
+  const { userId } = Route.useParams();
+  const { chatId } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
   const { user, isLoading: authLoading } = useUserAuth();
   const { followedIds } = useFollowedOrganizers();
   
@@ -81,7 +93,12 @@ function UserMessagesPage() {
     sendMessage,
     loading: chatLoading,
     createDirectMessageWithOrganizer,
-  } = useFirestoreUserMessages(user?.id || "", followedIds);
+  } = useFirestoreUserMessages(user?.id || "", followedIds, chatId);
+
+  // Sync activeChatId to URL
+  useEffect(() => {
+    navigate({ search: { chatId: activeChatId || undefined }, replace: true });
+  }, [activeChatId, navigate]);
 
   const [messageInput, setMessageInput] = useState("");
   const [activeTab, setActiveTab] = useState("all");

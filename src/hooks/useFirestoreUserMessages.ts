@@ -40,10 +40,21 @@ export type ChatChannel = {
   handle?: string;
 };
 
-export function useFirestoreUserMessages(currentUserId: string, followedOrganizerIds: string[] = []) {
+export function useFirestoreUserMessages(
+  currentUserId: string,
+  followedOrganizerIds: string[] = [],
+  initialChatId?: string | null
+) {
   const [channels, setChannels] = useState<ChatChannel[]>([]);
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [activeChatId, setActiveChatId] = useState<string | null>(initialChatId || null);
   const [loading, setLoading] = useState(true);
+
+  // Sync state if URL search param changes via back button
+  useEffect(() => {
+    if (initialChatId !== undefined && initialChatId !== activeChatId) {
+      setActiveChatId(initialChatId || null);
+    }
+  }, [initialChatId]);
 
   // 1. Listen to Channels (DMs and Groups)
   useEffect(() => {

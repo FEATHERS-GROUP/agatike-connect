@@ -4,6 +4,7 @@ import { db } from "@/lib/firebase";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
+import { MessageCircle, Bell, CalendarDays, Film } from "lucide-react";
 
 export function GlobalUserNotificationListener() {
   const { user } = useUserAuth();
@@ -54,12 +55,34 @@ export function GlobalUserNotificationListener() {
 
           let title = "New Notification";
           let body = "";
+          let targetPath = "/activity";
+          let Icon = Bell;
 
           if (data.type === "comment") {
             title = "New Reply";
             body = data.content
               ? `Someone commented: "${data.content}"`
               : "Someone replied to a post you follow.";
+            Icon = MessageCircle;
+          } else if (data.type === "new_event") {
+            title = "New Event Announced!";
+            body = "An organizer you follow just posted a new event.";
+            if (data.eventId) targetPath = `/event/${data.eventId}`;
+            Icon = CalendarDays;
+          } else if (data.type === "new_post") {
+            title = "New Post";
+            body = data.content
+              ? `An organizer posted: "${data.content}"`
+              : "An organizer you follow posted an update.";
+            if (data.postId) targetPath = `/community/${data.postId}`;
+            Icon = Film;
+          } else if (data.type === "new_message") {
+            title = "New Message";
+            body = data.content
+              ? `New message: "${data.content}"`
+              : "You have a new message.";
+            targetPath = `/${currentUserId}/message`;
+            Icon = MessageCircle;
           }
 
           if ("Notification" in window && Notification.permission === "granted") {
@@ -70,16 +93,18 @@ export function GlobalUserNotificationListener() {
             });
             notif.onclick = () => {
               window.focus();
-              navigate({ to: "/activity" });
+              navigate({ to: targetPath });
             };
           }
 
           toast(title, {
             description: body,
+            icon: <Icon className="text-primary h-5 w-5" />,
             action: {
               label: "View",
-              onClick: () => navigate({ to: "/activity" }),
+              onClick: () => navigate({ to: targetPath }),
             },
+            actionButtonStyle: { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" },
           });
         }
       });
