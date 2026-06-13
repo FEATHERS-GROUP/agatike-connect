@@ -223,12 +223,14 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
       } else if (activeChat.type === "group") {
         if (activeChat.entityType === "EVENT") {
           const channelsResult = await getCommunityChannels({ data: { organizerId: workspaceId } });
-          const hasuraChannel = channelsResult.find(c => c.id === activeChat.id);
+          const hasuraChannel = channelsResult.find((c) => c.id === activeChat.id);
           if (hasuraChannel && hasuraChannel.event_id) {
-             const attendees = await getEventAttendees({ data: { event_id: hasuraChannel.event_id } });
-             targetUsers = attendees.map(a => a.user_id).filter(Boolean);
+            const attendees = await getEventAttendees({
+              data: { event_id: hasuraChannel.event_id },
+            });
+            targetUsers = attendees.map((a) => a.user_id).filter(Boolean);
           } else {
-             targetUsers = await getOrganizerFollowerIds({ data: { organizerId: workspaceId } });
+            targetUsers = await getOrganizerFollowerIds({ data: { organizerId: workspaceId } });
           }
         } else {
           targetUsers = await getOrganizerFollowerIds({ data: { organizerId: workspaceId } });

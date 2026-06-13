@@ -736,11 +736,14 @@ function CreateOrganizerPage() {
                     </div>
                     <h3 className="text-lg font-semibold">Verify your email</h3>
                     <p className="text-sm text-muted-foreground">
-                      We've sent a 6-digit code to <strong>{watch("email")}</strong>. Please enter it below to launch your profile.
+                      We've sent a 6-digit code to <strong>{watch("email")}</strong>. Please enter
+                      it below to launch your profile.
                     </p>
                   </div>
                   <div className="max-w-xs mx-auto">
-                    <Label htmlFor="org-otp" className="sr-only">Verification Code</Label>
+                    <Label htmlFor="org-otp" className="sr-only">
+                      Verification Code
+                    </Label>
                     <Input
                       id="org-otp"
                       required
@@ -810,7 +813,9 @@ function CreateOrganizerPage() {
                           </a>
                           .
                         </Label>
-                        {errors.terms && <p className="text-xs text-red-500">{errors.terms.message}</p>}
+                        {errors.terms && (
+                          <p className="text-xs text-red-500">{errors.terms.message}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -843,10 +848,18 @@ function CreateOrganizerPage() {
             ) : (
               <Button
                 type="button"
-                onClick={otpStep ? handleSubmit(onSubmit) : async () => {
-                  const isValid = await trigger(["password", "confirm_password", "terms"] as any);
-                  if (isValid) handleSubmit(onSubmit)();
-                }}
+                onClick={
+                  otpStep
+                    ? handleSubmit(onSubmit)
+                    : async () => {
+                        const isValid = await trigger([
+                          "password",
+                          "confirm_password",
+                          "terms",
+                        ] as any);
+                        if (isValid) handleSubmit(onSubmit)();
+                      }
+                }
                 disabled={mutation.isPending || isSendingOtp}
                 className="rounded-xl h-12 px-8 shadow-[var(--shadow-glow)] gap-2"
                 style={{ background: "var(--gradient-primary)" }}

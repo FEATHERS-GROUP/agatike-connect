@@ -66,7 +66,7 @@ function UserMessagesPage() {
   const navigate = useNavigate({ from: Route.fullPath });
   const { user, isLoading: authLoading } = useUserAuth();
   const { followedIds } = useFollowedOrganizers();
-  
+
   const { data: dbOrganizers = [] } = useQuery({
     queryKey: ["organizers"],
     queryFn: () => getOrganizers(),
@@ -193,7 +193,7 @@ function UserMessagesPage() {
       org.id,
       org.name,
       org.image || org.avatar || "",
-      user.username || "User"
+      user.username || "User",
     );
     setIsNewMessageModalOpen(false);
   };
@@ -246,9 +246,13 @@ function UserMessagesPage() {
                   <DialogTitle>New Message</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-2 py-4">
-                  <p className="text-sm text-muted-foreground mb-2">Select an organizer you follow:</p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Select an organizer you follow:
+                  </p>
                   {followedOrganizers.length === 0 ? (
-                    <p className="text-sm text-center py-4">You aren't following any organizers yet.</p>
+                    <p className="text-sm text-center py-4">
+                      You aren't following any organizers yet.
+                    </p>
                   ) : (
                     <ScrollArea className="h-64">
                       {followedOrganizers.map((org: any) => (
@@ -259,7 +263,9 @@ function UserMessagesPage() {
                         >
                           <Avatar>
                             <AvatarImage src={org.image || org.avatar} />
-                            <AvatarFallback>{org.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                            <AvatarFallback>
+                              {org.name?.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
                             <p className="font-semibold text-sm">{org.name}</p>
@@ -282,7 +288,11 @@ function UserMessagesPage() {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex-1 flex flex-col w-full"
+        >
           <div className="px-4 pt-2 border-b border-border/60">
             <TabsList className="w-full grid grid-cols-2 bg-transparent p-0">
               <TabsTrigger
@@ -310,86 +320,14 @@ function UserMessagesPage() {
                   </div>
                 ) : (
                   displayChannels.map((chat) => {
-                    const isUnread = chat.lastMessageSenderId !== user?.id && chat.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
-                    const displayUnread = chat.unread > 0 ? chat.unread : (isUnread ? 1 : 0);
+                    const isUnread =
+                      chat.lastMessageSenderId !== user?.id &&
+                      chat.rawTimeMillis >
+                        parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
+                    const displayUnread = chat.unread > 0 ? chat.unread : isUnread ? 1 : 0;
 
                     return (
                       <button
-                      key={chat.id}
-                      onClick={() => setActiveChatId(chat.id)}
-                      className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
-                        activeChatId === chat.id
-                          ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
-                          : "hover:bg-accent/50"
-                      }`}
-                    >
-                      <div className="relative shrink-0">
-                        <Avatar className="h-12 w-12 border border-border/50">
-                          <AvatarImage src={chat.avatar} alt={chat.name} />
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {chat.type === "group" ? (
-                              <Users className="h-5 w-5" />
-                            ) : (
-                              chat.name.substring(0, 2).toUpperCase()
-                            )}
-                          </AvatarFallback>
-                        </Avatar>
-                        {chat.online && (
-                          <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="font-semibold text-sm truncate pr-2">{chat.name}</span>
-                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                            {chat.time}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <p
-                            className={`text-xs truncate pr-2 ${
-                              displayUnread > 0 ? "text-foreground font-medium" : "text-muted-foreground"
-                            }`}
-                          >
-                            {chat.lastMessage || "Tap to chat"}
-                          </p>
-                          {displayUnread > 0 && (
-                            <Badge
-                              className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
-                              style={{ background: "var(--gradient-primary)" }}
-                            >
-                              {displayUnread}
-                            </Badge>
-                          )}
-                      </div>
-                    </div>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="groups" className="flex-1 m-0">
-            <ScrollArea className="h-[calc(100vh-180px)]">
-              <div className="p-2 flex flex-col gap-1">
-                {displayChannels.filter((c) => c.type === "group").length === 0 ? (
-                  <div className="text-center p-6 text-muted-foreground">
-                    <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                    <p className="text-sm font-medium">No community channels</p>
-                    <p className="text-xs mt-1">Follow organizers to join their communities.</p>
-                  </div>
-                ) : (
-                  displayChannels
-                    .filter((c) => c.type === "group")
-                    .map((chat) => {
-                      const isUnread = chat.lastMessageSenderId !== user?.id && chat.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
-                      const displayUnread = chat.unread > 0 ? chat.unread : (isUnread ? 1 : 0);
-
-                      return (
-                        <button
                         key={chat.id}
                         onClick={() => setActiveChatId(chat.id)}
                         className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
@@ -402,9 +340,16 @@ function UserMessagesPage() {
                           <Avatar className="h-12 w-12 border border-border/50">
                             <AvatarImage src={chat.avatar} alt={chat.name} />
                             <AvatarFallback className="bg-primary/10 text-primary">
-                              <Users className="h-5 w-5" />
+                              {chat.type === "group" ? (
+                                <Users className="h-5 w-5" />
+                              ) : (
+                                chat.name.substring(0, 2).toUpperCase()
+                              )}
                             </AvatarFallback>
                           </Avatar>
+                          {chat.online && (
+                            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
+                          )}
                         </div>
 
                         <div className="flex-1 min-w-0">
@@ -417,7 +362,9 @@ function UserMessagesPage() {
                           <div className="flex justify-between items-center">
                             <p
                               className={`text-xs truncate pr-2 ${
-                                displayUnread > 0 ? "text-foreground font-medium" : "text-muted-foreground"
+                                displayUnread > 0
+                                  ? "text-foreground font-medium"
+                                  : "text-muted-foreground"
                               }`}
                             >
                               {chat.lastMessage || "Tap to chat"}
@@ -435,6 +382,81 @@ function UserMessagesPage() {
                       </button>
                     );
                   })
+                )}
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="groups" className="flex-1 m-0">
+            <ScrollArea className="h-[calc(100vh-180px)]">
+              <div className="p-2 flex flex-col gap-1">
+                {displayChannels.filter((c) => c.type === "group").length === 0 ? (
+                  <div className="text-center p-6 text-muted-foreground">
+                    <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm font-medium">No community channels</p>
+                    <p className="text-xs mt-1">Follow organizers to join their communities.</p>
+                  </div>
+                ) : (
+                  displayChannels
+                    .filter((c) => c.type === "group")
+                    .map((chat) => {
+                      const isUnread =
+                        chat.lastMessageSenderId !== user?.id &&
+                        chat.rawTimeMillis >
+                          parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
+                      const displayUnread = chat.unread > 0 ? chat.unread : isUnread ? 1 : 0;
+
+                      return (
+                        <button
+                          key={chat.id}
+                          onClick={() => setActiveChatId(chat.id)}
+                          className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
+                            activeChatId === chat.id
+                              ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
+                              : "hover:bg-accent/50"
+                          }`}
+                        >
+                          <div className="relative shrink-0">
+                            <Avatar className="h-12 w-12 border border-border/50">
+                              <AvatarImage src={chat.avatar} alt={chat.name} />
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                <Users className="h-5 w-5" />
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-semibold text-sm truncate pr-2">
+                                {chat.name}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                {chat.time}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <p
+                                className={`text-xs truncate pr-2 ${
+                                  displayUnread > 0
+                                    ? "text-foreground font-medium"
+                                    : "text-muted-foreground"
+                                }`}
+                              >
+                                {chat.lastMessage || "Tap to chat"}
+                              </p>
+                              {displayUnread > 0 && (
+                                <Badge
+                                  className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
+                                  style={{ background: "var(--gradient-primary)" }}
+                                >
+                                  {displayUnread}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })
                 )}
               </div>
             </ScrollArea>
@@ -486,7 +508,14 @@ function UserMessagesPage() {
             </div>
 
             {/* Chat Messages Area */}
-            <ScrollArea className="flex-1 p-4 md:p-6" style={{ backgroundImage: "var(--chat-pattern)", backgroundSize: "400px", backgroundBlendMode: "overlay" }}>
+            <ScrollArea
+              className="flex-1 p-4 md:p-6"
+              style={{
+                backgroundImage: "var(--chat-pattern)",
+                backgroundSize: "400px",
+                backgroundBlendMode: "overlay",
+              }}
+            >
               <div className="flex flex-col gap-4 max-w-3xl mx-auto pb-4">
                 {activeChat.messages.length === 0 && (
                   <div className="text-center py-10 text-sm text-muted-foreground">
@@ -497,43 +526,48 @@ function UserMessagesPage() {
                   const isMe = msg.isMe;
                   const currentMsgDate = formatMessageDate(msg.rawTimeMillis || Date.now());
                   const prevMsg = activeChat.messages[index - 1];
-                  const prevMsgDate = prevMsg ? formatMessageDate(prevMsg.rawTimeMillis || Date.now()) : null;
+                  const prevMsgDate = prevMsg
+                    ? formatMessageDate(prevMsg.rawTimeMillis || Date.now())
+                    : null;
                   const showDateHeader = currentMsgDate !== prevMsgDate;
 
                   return (
                     <React.Fragment key={msg.id}>
                       {showDateHeader && (
                         <div className="flex justify-center my-4">
-                          <Badge variant="secondary" className="px-3 py-1 text-xs bg-muted/50 backdrop-blur-sm border-border/50 text-muted-foreground font-medium rounded-full shadow-sm">
+                          <Badge
+                            variant="secondary"
+                            className="px-3 py-1 text-xs bg-muted/50 backdrop-blur-sm border-border/50 text-muted-foreground font-medium rounded-full shadow-sm"
+                          >
                             {currentMsgDate}
                           </Badge>
                         </div>
                       )}
-                      <div
-                        className={`flex ${isMe ? "justify-end" : "justify-start"} mb-1`}
-                      >
-                      <div className={`flex flex-col ${isMe ? "items-end" : "items-start"} max-w-[85%] md:max-w-[70%]`}>
+                      <div className={`flex ${isMe ? "justify-end" : "justify-start"} mb-1`}>
                         <div
-                          className={`px-4 py-2.5 rounded-2xl text-sm ${
-                            isMe
-                              ? "bg-primary text-primary-foreground rounded-br-sm shadow-[var(--shadow-glow)] shadow-primary/20"
-                              : "bg-card border border-border/50 text-foreground rounded-bl-sm shadow-sm"
-                          } ${msg.isPending ? "opacity-70" : ""}`}
+                          className={`flex flex-col ${isMe ? "items-end" : "items-start"} max-w-[85%] md:max-w-[70%]`}
                         >
-                          {msg.mediaUrl && (
-                            <img
-                              src={msg.mediaUrl}
-                              alt="attachment"
-                              className="max-w-full rounded-xl mb-2"
-                            />
-                          )}
-                          <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                          <div
+                            className={`px-4 py-2.5 rounded-2xl text-sm ${
+                              isMe
+                                ? "bg-primary text-primary-foreground rounded-br-sm shadow-[var(--shadow-glow)] shadow-primary/20"
+                                : "bg-card border border-border/50 text-foreground rounded-bl-sm shadow-sm"
+                            } ${msg.isPending ? "opacity-70" : ""}`}
+                          >
+                            {msg.mediaUrl && (
+                              <img
+                                src={msg.mediaUrl}
+                                alt="attachment"
+                                className="max-w-full rounded-xl mb-2"
+                              />
+                            )}
+                            <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground mt-1 px-1">
+                            {msg.timestamp}
+                          </span>
                         </div>
-                        <span className="text-[10px] text-muted-foreground mt-1 px-1">
-                          {msg.timestamp}
-                        </span>
                       </div>
-                    </div>
                     </React.Fragment>
                   );
                 })}
@@ -565,7 +599,9 @@ function UserMessagesPage() {
                       className="p-0 border-none shadow-xl bg-transparent mb-2"
                     >
                       <EmojiPicker
-                        onEmojiClick={(emojiData) => setMessageInput((prev) => prev + emojiData.emoji)}
+                        onEmojiClick={(emojiData) =>
+                          setMessageInput((prev) => prev + emojiData.emoji)
+                        }
                         theme="auto"
                       />
                     </PopoverContent>

@@ -1,5 +1,16 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Compass, Bus, Ticket, User, Menu, Film, LayoutDashboard, Info, Mail } from "lucide-react";
+import {
+  Home,
+  Compass,
+  Bus,
+  Ticket,
+  User,
+  Menu,
+  Film,
+  LayoutDashboard,
+  Info,
+  Mail,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Drawer,
@@ -30,7 +41,6 @@ export function MobileNav() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-safe pb-4 sm:pb-6 pointer-events-none">
       <div className="pointer-events-auto mx-auto flex h-[68px] max-w-[400px] items-center justify-between rounded-full border border-white/10 dark:border-white/5 bg-background/80 px-6 shadow-2xl shadow-primary/10 backdrop-blur-3xl backdrop-saturate-150">
-        
         {/* Regular Tabs */}
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.href;
@@ -79,7 +89,6 @@ export function MobileNav() {
               <DrawerTitle className="text-xl font-bold">More Options</DrawerTitle>
             </DrawerHeader>
             <div className="flex flex-col gap-1 p-4 pt-0">
-              
               {isLoggedIn ? (
                 <div className="flex items-center gap-4 p-4 mb-4 bg-secondary/50 rounded-2xl border border-border/40">
                   <div className="h-12 w-12 rounded-full p-[2px] bg-gradient-to-tr from-primary to-primary/50 shrink-0">
@@ -90,14 +99,21 @@ export function MobileNav() {
                     />
                   </div>
                   <div>
-                    <p className="font-bold text-foreground leading-tight">{user?.username || "User"}</p>
-                    <p className="text-sm text-muted-foreground truncate max-w-[200px]">{user?.email}</p>
+                    <p className="font-bold text-foreground leading-tight">
+                      {user?.username || "User"}
+                    </p>
+                    <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                      {user?.email}
+                    </p>
                   </div>
                 </div>
               ) : (
                 <div className="mb-4">
                   <DrawerClose asChild>
-                    <Link to="/signin" className="flex w-full items-center justify-center rounded-xl bg-primary text-primary-foreground h-12 font-bold shadow-[var(--shadow-glow)]">
+                    <Link
+                      to="/signin"
+                      className="flex w-full items-center justify-center rounded-xl bg-primary text-primary-foreground h-12 font-bold shadow-[var(--shadow-glow)]"
+                    >
                       Sign in or create account
                     </Link>
                   </DrawerClose>
@@ -131,7 +147,6 @@ export function MobileNav() {
             </div>
           </DrawerContent>
         </Drawer>
-
       </div>
     </div>
   );

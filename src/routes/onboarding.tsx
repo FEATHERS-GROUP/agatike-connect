@@ -4,12 +4,7 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { updateUserOnboarding } from "@/api/auth";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Loader2,
-  Check,
-  ArrowRight,
-  RefreshCw,
-} from "lucide-react";
+import { Loader2, Check, ArrowRight, RefreshCw } from "lucide-react";
 import hero from "@/assets/hero-event.jpg";
 
 export const Route = createFileRoute("/onboarding")({
@@ -21,13 +16,41 @@ export const Route = createFileRoute("/onboarding")({
 
 const AVATAR_STYLES = ["micah", "avataaars", "bottts", "lorelei", "adventurer", "fun-emoji"];
 const INTEREST_OPTIONS = [
-  "Events", "Entertainment", "Experiences", "Music", "Sports", "Cinema", 
-  "Conferences", "Tech", "Art", "Food", "Fashion", "Gaming", "Business", 
-  "Health", "Education", "Bus Booking", "Travel & Transport", "Gym & Fitness", 
-  "Wellness", "Office Spaces", "Coworking", "Venue Booking", "Nightlife & Parties",
-  "Networking", "Workshops", "Retreats", "Exhibitions & Expos", 
-  "Comedy", "Theater & Arts", "Festivals", "Pop-ups & Markets", 
-  "Real Estate", "Outdoors & Adventure", "Photography", "Startups"
+  "Events",
+  "Entertainment",
+  "Experiences",
+  "Music",
+  "Sports",
+  "Cinema",
+  "Conferences",
+  "Tech",
+  "Art",
+  "Food",
+  "Fashion",
+  "Gaming",
+  "Business",
+  "Health",
+  "Education",
+  "Bus Booking",
+  "Travel & Transport",
+  "Gym & Fitness",
+  "Wellness",
+  "Office Spaces",
+  "Coworking",
+  "Venue Booking",
+  "Nightlife & Parties",
+  "Networking",
+  "Workshops",
+  "Retreats",
+  "Exhibitions & Expos",
+  "Comedy",
+  "Theater & Arts",
+  "Festivals",
+  "Pop-ups & Markets",
+  "Real Estate",
+  "Outdoors & Adventure",
+  "Photography",
+  "Startups",
 ];
 
 function OnboardingPage() {
@@ -39,8 +62,8 @@ function OnboardingPage() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState("micah");
   const [seed, setSeed] = useState(Math.random().toString(36).substring(7));
-  const generatedAvatars = Array.from({ length: 30 }).map((_, i) => 
-    `https://api.dicebear.com/7.x/${selectedStyle}/svg?seed=${seed}_${i}`
+  const generatedAvatars = Array.from({ length: 30 }).map(
+    (_, i) => `https://api.dicebear.com/7.x/${selectedStyle}/svg?seed=${seed}_${i}`,
   );
   const [selectedAvatar, setSelectedAvatar] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -129,11 +152,11 @@ function OnboardingPage() {
 
                 <div className="flex flex-wrap gap-2">
                   {INTEREST_OPTIONS.map((interest) => {
-                    const isSelected = selectedInterests.some(i => {
-                      if (typeof i !== 'string') return false;
+                    const isSelected = selectedInterests.some((i) => {
+                      if (typeof i !== "string") return false;
                       const d = i.toLowerCase();
                       const o = interest.toLowerCase();
-                      return d === o || d + 's' === o || d === o + 's';
+                      return d === o || d + "s" === o || d === o + "s";
                     });
 
                     return (
@@ -184,7 +207,7 @@ function OnboardingPage() {
                 </div>
 
                 <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
-                  {AVATAR_STYLES.map(style => (
+                  {AVATAR_STYLES.map((style) => (
                     <button
                       key={style}
                       onClick={() => setSelectedStyle(style)}
@@ -211,7 +234,11 @@ function OnboardingPage() {
                   ))}
                 </div>
 
-                <Button variant="secondary" onClick={() => setSeed(Math.random().toString(36).substring(7))} className="w-full rounded-xl">
+                <Button
+                  variant="secondary"
+                  onClick={() => setSeed(Math.random().toString(36).substring(7))}
+                  className="w-full rounded-xl"
+                >
                   <RefreshCw className="h-4 w-4 mr-2" /> Generate More
                 </Button>
 

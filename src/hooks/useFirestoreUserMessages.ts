@@ -47,7 +47,7 @@ export type ChatChannel = {
 export function useFirestoreUserMessages(
   currentUserId: string,
   followedOrganizerIds: string[] = [],
-  initialChatId?: string | null
+  initialChatId?: string | null,
 ) {
   const [channels, setChannels] = useState<ChatChannel[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(initialChatId || null);
@@ -68,7 +68,7 @@ export function useFirestoreUserMessages(
     const dmQuery = query(
       collection(db, "agatike_channels"),
       where("type", "==", "user"),
-      where("userId", "==", currentUserId)
+      where("userId", "==", currentUserId),
     );
 
     // To listen to group channels, since `in` limits to 10, we'll listen to all group channels and filter in memory,
@@ -90,8 +90,12 @@ export function useFirestoreUserMessages(
     function handleSnapshot(snapshot: any, type: string) {
       snapshot.forEach((doc: any) => {
         const data = doc.data();
-        
-        if (type === "group" && followedOrganizerIds.length > 0 && !followedOrganizerIds.includes(data.organizerId)) {
+
+        if (
+          type === "group" &&
+          followedOrganizerIds.length > 0 &&
+          !followedOrganizerIds.includes(data.organizerId)
+        ) {
           // If it's a group channel and user is not following the organizer, skip it
           return;
         }
@@ -174,7 +178,7 @@ export function useFirestoreUserMessages(
       const finalMessages = messages.map((m) => ({ ...m, timestamp: m.timeFormatted }));
 
       setChannels((prev) =>
-        prev.map((ch) => (ch.id === activeChatId ? { ...ch, messages: finalMessages } : ch))
+        prev.map((ch) => (ch.id === activeChatId ? { ...ch, messages: finalMessages } : ch)),
       );
     });
 
@@ -209,7 +213,7 @@ export function useFirestoreUserMessages(
     organizerId: string,
     organizerName: string,
     organizerAvatar: string,
-    userName: string
+    userName: string,
   ) => {
     // Check if we already have a DM with this organizer
     const existing = channels.find((c) => c.type === "user" && c.organizerId === organizerId);
@@ -218,13 +222,13 @@ export function useFirestoreUserMessages(
       return;
     }
 
-    // Creating a DM from the user side sets the channel name to the organizer's name 
+    // Creating a DM from the user side sets the channel name to the organizer's name
     // Wait, in useFirestoreCommunity, the organizer sees the user's name as the channel name.
     // We should be careful about how 'name' is used. Inagatike_channels, 'name' is currently set to the user's name.
     // But since the database has one channel for both, we should just use the existing one or create it.
     // If we create it, name should probably be the userName, so the organizer knows who it is.
     // On the user side, we will display the organizer's name.
-    
+
     // Actually, let's just query if one exists.
     // The previous DM listener already listens for all DMs for this user.
     // So if it's not in `channels`, it doesn't exist.
@@ -238,7 +242,7 @@ export function useFirestoreUserMessages(
       lastMessageTime: serverTimestamp(),
       unreadCount: 0,
       online: false,
-      avatar: organizerAvatar, // Note: the organizer needs to see the user's avatar. The user needs to see the organizer's avatar. 
+      avatar: organizerAvatar, // Note: the organizer needs to see the user's avatar. The user needs to see the organizer's avatar.
       // If we store organizerAvatar, the organizer will see their own avatar.
       // Let's store userAvatar here instead if we can, or just let the UI handle it.
       userId: currentUserId,

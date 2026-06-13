@@ -213,7 +213,8 @@ function SignUp() {
                     </div>
                     <h3 className="text-lg font-semibold">Verify your email</h3>
                     <p className="text-sm text-muted-foreground">
-                      We've sent a 6-digit code to <strong>{email}</strong>. Please enter it below to create your account.
+                      We've sent a 6-digit code to <strong>{email}</strong>. Please enter it below
+                      to create your account.
                     </p>
                   </div>
                   <div>
@@ -261,160 +262,182 @@ function SignUp() {
               ) : (
                 <>
                   <div>
-                <Label htmlFor="signup-name">Full name</Label>
-                <div className="relative mt-1">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="signup-name"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Amaka Okafor"
-                    className="pl-9"
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="signup-email">Email</Label>
-                <div className="relative mt-1">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="signup-email"
-                    required
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@agatike.com"
-                    className="pl-9"
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="signup-dob">Date of Birth</Label>
-                  <div className="relative mt-1">
-                    <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="signup-dob"
-                      type="date"
-                      value={dateOfBirth}
-                      onChange={(e) => setDateOfBirth(e.target.value)}
-                      className="pl-9 text-sm"
-                      disabled={isLoading}
-                    />
+                    <Label htmlFor="signup-name">Full name</Label>
+                    <div className="relative mt-1">
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="signup-name"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Amaka Okafor"
+                        className="pl-9"
+                        disabled={isLoading}
+                      />
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <Label htmlFor="signup-gender">Gender</Label>
-                  <select
-                    id="signup-gender"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    className="mt-1 flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  <div>
+                    <Label htmlFor="signup-email">Email</Label>
+                    <div className="relative mt-1">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="signup-email"
+                        required
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@agatike.com"
+                        className="pl-9"
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="signup-dob">Date of Birth</Label>
+                      <div className="relative mt-1">
+                        <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          id="signup-dob"
+                          type="date"
+                          value={dateOfBirth}
+                          onChange={(e) => setDateOfBirth(e.target.value)}
+                          className="pl-9 text-sm"
+                          disabled={isLoading}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="signup-gender">Gender</Label>
+                      <select
+                        id="signup-gender"
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        className="mt-1 flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={isLoading}
+                      >
+                        <option value="prefer_not_to_say">Prefer not to say</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="signup-country">Country</Label>
+                    <select
+                      id="signup-country"
+                      value={country}
+                      onChange={(e) => {
+                        const selectedCountryName = e.target.value;
+                        setCountry(selectedCountryName);
+                        const selectedCountry = COUNTRIES.find(
+                          (c) => c.name === selectedCountryName,
+                        );
+                        if (selectedCountry) {
+                          setPhone(selectedCountry.dialCode + " ");
+                        }
+                      }}
+                      className="mt-1 flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={isLoading}
+                    >
+                      <option value="" disabled>
+                        Select country
+                      </option>
+                      {COUNTRIES.map((c) => (
+                        <option key={c.code} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <Label htmlFor="signup-phone">Phone</Label>
+                    <div className="relative mt-1">
+                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="signup-phone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+250..."
+                        className="pl-9 text-sm"
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="signup-pw">Password</Label>
+                    <div className="relative mt-1">
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="signup-pw"
+                        required
+                        type={showPw ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Min 6 characters"
+                        className="pl-9 pr-10"
+                        disabled={isLoading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPw(!showPw)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {error && (
+                    <p className="rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs text-destructive">
+                      {error}
+                    </p>
+                  )}
+
+                  <div className="flex items-start space-x-3 py-2">
+                    <Checkbox
+                      id="terms"
+                      checked={agreed}
+                      onCheckedChange={(checked) => setAgreed(checked as boolean)}
+                      disabled={isLoading}
+                      className="mt-0.5"
+                    />
+                    <label htmlFor="terms" className="text-xs leading-snug text-muted-foreground">
+                      I agree to the{" "}
+                      <Link
+                        to="/terms"
+                        target="_blank"
+                        className="underline text-primary hover:text-primary/80"
+                      >
+                        Terms
+                      </Link>
+                      ,{" "}
+                      <Link
+                        to="/privacy"
+                        target="_blank"
+                        className="underline text-primary hover:text-primary/80"
+                      >
+                        Privacy Policy
+                      </Link>
+                      , and to provide valid government-issued identification for verification
+                      purposes.
+                    </label>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="h-11 w-full rounded-xl shadow-[var(--shadow-glow)]"
+                    style={{ background: "var(--gradient-primary)" }}
                     disabled={isLoading}
                   >
-                    <option value="prefer_not_to_say">Prefer not to say</option>
-                    <option value="female">Female</option>
-                    <option value="male">Male</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="signup-country">Country</Label>
-                <select
-                  id="signup-country"
-                  value={country}
-                  onChange={(e) => {
-                    const selectedCountryName = e.target.value;
-                    setCountry(selectedCountryName);
-                    const selectedCountry = COUNTRIES.find((c) => c.name === selectedCountryName);
-                    if (selectedCountry) {
-                      setPhone(selectedCountry.dialCode + " ");
-                    }
-                  }}
-                  className="mt-1 flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={isLoading}
-                >
-                  <option value="" disabled>
-                    Select country
-                  </option>
-                  {COUNTRIES.map((c) => (
-                    <option key={c.code} value={c.name}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label htmlFor="signup-phone">Phone</Label>
-                <div className="relative mt-1">
-                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="signup-phone"
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+250..."
-                    className="pl-9 text-sm"
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="signup-pw">Password</Label>
-                <div className="relative mt-1">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="signup-pw"
-                    required
-                    type={showPw ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Min 6 characters"
-                    className="pl-9 pr-10"
-                    disabled={isLoading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw(!showPw)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-
-              {error && (
-                <p className="rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs text-destructive">
-                  {error}
-                </p>
+                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Create account"}
+                  </Button>
+                </>
               )}
-
-              <div className="flex items-start space-x-3 py-2">
-                <Checkbox id="terms" checked={agreed} onCheckedChange={(checked) => setAgreed(checked as boolean)} disabled={isLoading} className="mt-0.5" />
-                <label
-                  htmlFor="terms"
-                  className="text-xs leading-snug text-muted-foreground"
-                >
-                  I agree to the <Link to="/terms" target="_blank" className="underline text-primary hover:text-primary/80">Terms</Link>, <Link to="/privacy" target="_blank" className="underline text-primary hover:text-primary/80">Privacy Policy</Link>, and to provide valid government-issued identification for verification purposes.
-                </label>
-              </div>
-
-              <Button
-                type="submit"
-                className="h-11 w-full rounded-xl shadow-[var(--shadow-glow)]"
-                style={{ background: "var(--gradient-primary)" }}
-                disabled={isLoading}
-              >
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Create account"}
-              </Button>
-            </>
-            )}
             </form>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -424,7 +447,6 @@ function SignUp() {
               </Link>
             </p>
           </div>
-
         </div>
       </div>
     </div>

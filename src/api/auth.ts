@@ -131,7 +131,9 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
 
   if (!user.active) {
     if (user.banned) {
-      throw new Error("Your account has been suspended. Please contact support at support@agatike.com.");
+      throw new Error(
+        "Your account has been suspended. Please contact support at support@agatike.com.",
+      );
     }
     throw new Error("This account no longer exists.");
   }
@@ -203,19 +205,29 @@ export const sendSignupOtp = createServerFn({ method: "POST" }).handler(async (c
 });
 
 export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { username, email, password, dateOfBirth, gender, country, phone, agreed_to_terms, otpToken, otp } =
-    ctx.data as unknown as {
-      username: string;
-      email: string;
-      password: string;
-      dateOfBirth: string;
-      gender: string;
-      country: string;
-      phone: string;
-      agreed_to_terms: boolean;
-      otpToken: string;
-      otp: string;
-    };
+  const {
+    username,
+    email,
+    password,
+    dateOfBirth,
+    gender,
+    country,
+    phone,
+    agreed_to_terms,
+    otpToken,
+    otp,
+  } = ctx.data as unknown as {
+    username: string;
+    email: string;
+    password: string;
+    dateOfBirth: string;
+    gender: string;
+    country: string;
+    phone: string;
+    agreed_to_terms: boolean;
+    otpToken: string;
+    otp: string;
+  };
 
   // Verify OTP token
   if (!otpToken || !otp) {
@@ -463,17 +475,18 @@ export const updateUserPassword = createServerFn({ method: "POST" }).handler(asy
   }
 });
 
-export const verifyNewPasswordDifference = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const token = getCookie("agatike_user_auth");
-  if (!token) throw new Error("Unauthorized");
+export const verifyNewPasswordDifference = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const token = getCookie("agatike_user_auth");
+    if (!token) throw new Error("Unauthorized");
 
-  try {
-    const { payload } = await jwtVerify(token, SECRET);
-    if (payload.type !== "user") throw new Error("Unauthorized");
+    try {
+      const { payload } = await jwtVerify(token, SECRET);
+      if (payload.type !== "user") throw new Error("Unauthorized");
 
-    const { password } = ctx.data as unknown as { password: string };
+      const { password } = ctx.data as unknown as { password: string };
 
-    const query = `
+      const query = `
       query GetUserPassword($id: uuid!) {
         users_by_pk(id: $id) {
           password
@@ -481,19 +494,22 @@ export const verifyNewPasswordDifference = createServerFn({ method: "POST" }).ha
       }
     `;
 
-    const result = await hasuraRequest<{ users_by_pk: { password: string } }>(query, { id: payload.sub });
-    if (!result.users_by_pk) throw new Error("User not found");
+      const result = await hasuraRequest<{ users_by_pk: { password: string } }>(query, {
+        id: payload.sub,
+      });
+      if (!result.users_by_pk) throw new Error("User not found");
 
-    const isSame = await bcrypt.compare(password, result.users_by_pk.password);
-    if (isSame) {
-      throw new Error("Your new password cannot be the same as your current password");
+      const isSame = await bcrypt.compare(password, result.users_by_pk.password);
+      if (isSame) {
+        throw new Error("Your new password cannot be the same as your current password");
+      }
+
+      return { success: true };
+    } catch (e: any) {
+      throw new Error(e.message || "Failed to verify password difference");
     }
-
-    return { success: true };
-  } catch (e: any) {
-    throw new Error(e.message || "Failed to verify password difference");
-  }
-});
+  },
+);
 
 export const deactivateUserAccount = createServerFn({ method: "POST" }).handler(async () => {
   const token = getCookie("agatike_user_auth");

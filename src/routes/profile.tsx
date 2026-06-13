@@ -304,8 +304,8 @@ function ProfilePage() {
               ))}
             </div>
             <div className="flex gap-2 w-full mt-4">
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 className="flex-1 h-9 text-sm font-semibold rounded-xl"
                 onClick={() => navigate({ to: "/settings" })}
               >
@@ -420,7 +420,10 @@ function ProfilePage() {
         <div className="flex items-center justify-between px-4 py-3 relative z-10">
           <h1 className="font-bold text-lg tracking-tight">My Profile</h1>
           <div className="flex items-center gap-2">
-            <Link to="/dashboard" className="p-2 rounded-full hover:bg-secondary/80 transition-colors">
+            <Link
+              to="/dashboard"
+              className="p-2 rounded-full hover:bg-secondary/80 transition-colors"
+            >
               <ScanLine className="h-5 w-5" />
             </Link>
             <button className="p-2 rounded-full hover:bg-secondary/80 transition-colors">
@@ -439,7 +442,7 @@ function ProfilePage() {
       {/* Profile Hero */}
       <div className="relative px-4 pt-4 pb-4">
         <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent pointer-events-none -mt-4" />
-        
+
         {/* Top Row: Avatar & Stats */}
         <div className="flex items-center justify-between relative z-10 mb-4">
           <div
@@ -459,7 +462,7 @@ function ProfilePage() {
               </div>
             )}
           </div>
-          
+
           <div className="flex flex-1 justify-around ml-4">
             {[
               { value: "24", label: "Attended" },
@@ -477,28 +480,22 @@ function ProfilePage() {
         {/* User Details */}
         <div className="relative z-10 mb-5">
           <h2 className="font-bold text-base leading-tight">{user?.username || "Guest User"}</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            @{user?.handle || "guest"}
-          </p>
-          {user?.phone && (
-            <p className="text-sm mt-1 text-foreground/90">
-              {user.phone}
-            </p>
-          )}
+          <p className="text-sm text-muted-foreground mt-0.5">@{user?.handle || "guest"}</p>
+          {user?.phone && <p className="text-sm mt-1 text-foreground/90">{user.phone}</p>}
           <p className="text-xs text-muted-foreground mt-1">Member since {joinDate}</p>
         </div>
 
         {/* Buttons */}
         <div className="flex gap-2 relative z-10">
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             className="flex-1 h-8 text-[13px] font-bold rounded-lg bg-secondary/80 hover:bg-secondary text-foreground"
             onClick={() => navigate({ to: "/settings" })}
           >
             Edit profile
           </Button>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             className="flex-1 h-8 text-[13px] font-bold rounded-lg bg-secondary/80 hover:bg-secondary text-foreground"
           >
             Share profile

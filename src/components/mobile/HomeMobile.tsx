@@ -189,9 +189,10 @@ export function HomeMobile() {
   const allFollowed = dbOrganizers.length > 0 && unfollowedOrganizers.length === 0;
 
   const { channels } = useFirestoreUserMessages(user?.id || "", followedIds);
-  const unreadChatsCount = channels.filter(c => 
-    c.lastMessageSenderId !== user?.id && 
-    c.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${c.id}`) || "0", 10)
+  const unreadChatsCount = channels.filter(
+    (c) =>
+      c.lastMessageSenderId !== user?.id &&
+      c.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${c.id}`) || "0", 10),
   ).length;
 
   const [unreadCount, setUnreadCount] = useState(0);
@@ -296,7 +297,11 @@ export function HomeMobile() {
     <div className="h-full w-full bg-background text-foreground pb-20">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background z-30 border-b border-border/40 pt-safe-top">
-        <Link to="/$userId/message" params={{ userId: user?.id || "me" }} className="text-foreground relative">
+        <Link
+          to="/$userId/message"
+          params={{ userId: user?.id || "me" }}
+          className="text-foreground relative"
+        >
           <MessageCircle className="h-6 w-6" />
           {unreadChatsCount > 0 && (
             <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center px-1 shadow-[var(--shadow-glow)] shadow-primary/20">

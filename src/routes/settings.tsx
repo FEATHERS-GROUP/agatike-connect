@@ -4,16 +4,42 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  User, Lock, Image as ImageIcon, Heart, Loader2, 
-  RefreshCw, ChevronRight, ChevronDown, Moon, Sun, Monitor, 
-  FileText, ArrowLeft, Settings as SettingsIcon, Trash2, AlertTriangle
+import {
+  User,
+  Lock,
+  Image as ImageIcon,
+  Heart,
+  Loader2,
+  RefreshCw,
+  ChevronRight,
+  ChevronDown,
+  Moon,
+  Sun,
+  Monitor,
+  FileText,
+  ArrowLeft,
+  Settings as SettingsIcon,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
-import { updateUserGeneral, updateUserPassword, updateUserOnboarding, verifyNewPasswordDifference, deactivateUserAccount, logoutUser } from "@/api/auth";
+import {
+  updateUserGeneral,
+  updateUserPassword,
+  updateUserOnboarding,
+  verifyNewPasswordDifference,
+  deactivateUserAccount,
+  logoutUser,
+} from "@/api/auth";
 import { sendProfileUpdateOTP } from "@/api/email";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 import { RefundPolicy } from "@/components/legal/RefundPolicy";
@@ -33,13 +59,41 @@ export const Route = createFileRoute("/settings")({
 
 const AVATAR_STYLES = ["micah", "avataaars", "bottts", "lorelei", "adventurer", "fun-emoji"];
 const INTEREST_OPTIONS = [
-  "Events", "Entertainment", "Experiences", "Music", "Sports", "Cinema", 
-  "Conferences", "Tech", "Art", "Food", "Fashion", "Gaming", "Business", 
-  "Health", "Education", "Bus Booking", "Travel & Transport", "Gym & Fitness", 
-  "Wellness", "Office Spaces", "Coworking", "Venue Booking", "Nightlife & Parties",
-  "Networking", "Workshops", "Retreats", "Exhibitions & Expos", 
-  "Comedy", "Theater & Arts", "Festivals", "Pop-ups & Markets", 
-  "Real Estate", "Outdoors & Adventure", "Photography", "Startups"
+  "Events",
+  "Entertainment",
+  "Experiences",
+  "Music",
+  "Sports",
+  "Cinema",
+  "Conferences",
+  "Tech",
+  "Art",
+  "Food",
+  "Fashion",
+  "Gaming",
+  "Business",
+  "Health",
+  "Education",
+  "Bus Booking",
+  "Travel & Transport",
+  "Gym & Fitness",
+  "Wellness",
+  "Office Spaces",
+  "Coworking",
+  "Venue Booking",
+  "Nightlife & Parties",
+  "Networking",
+  "Workshops",
+  "Retreats",
+  "Exhibitions & Expos",
+  "Comedy",
+  "Theater & Arts",
+  "Festivals",
+  "Pop-ups & Markets",
+  "Real Estate",
+  "Outdoors & Adventure",
+  "Photography",
+  "Startups",
 ];
 
 function SettingsPage() {
@@ -50,7 +104,13 @@ function SettingsPage() {
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
   // States for sub-forms
-  const [general, setGeneral] = useState({ username: "", email: "", phone: "", country: "", gender: "" });
+  const [general, setGeneral] = useState({
+    username: "",
+    email: "",
+    phone: "",
+    country: "",
+    gender: "",
+  });
   const [isUpdatingGeneral, setIsUpdatingGeneral] = useState(false);
   const [isOtpStep, setIsOtpStep] = useState(false);
   const [generatedOtp, setGeneratedOtp] = useState("");
@@ -66,8 +126,8 @@ function SettingsPage() {
   const [seed, setSeed] = useState(Math.random().toString(36).substring(7));
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
   const [stagedAvatar, setStagedAvatar] = useState<string | null>(null);
-  const generatedAvatars = Array.from({ length: 12 }).map((_, i) => 
-    `https://api.dicebear.com/7.x/${selectedStyle}/svg?seed=${seed}_${i}`
+  const generatedAvatars = Array.from({ length: 12 }).map(
+    (_, i) => `https://api.dicebear.com/7.x/${selectedStyle}/svg?seed=${seed}_${i}`,
   );
 
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -85,8 +145,12 @@ function SettingsPage() {
       });
       let ints: string[] = [];
       try {
-        ints = Array.isArray(user.interests) ? user.interests : (typeof user.interests === "string" ? JSON.parse(user.interests) : []);
-      } catch (e) { }
+        ints = Array.isArray(user.interests)
+          ? user.interests
+          : typeof user.interests === "string"
+            ? JSON.parse(user.interests)
+            : [];
+      } catch (e) {}
       setSelectedInterests(ints);
       setInitialInterests(ints);
     }
@@ -96,7 +160,7 @@ function SettingsPage() {
   const handleUpdateGeneral = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!general.username || !general.email) return toast.error("Name and email are required");
-    
+
     if (!isOtpStep) {
       setIsUpdatingGeneral(true);
       try {
@@ -118,7 +182,7 @@ function SettingsPage() {
     }
 
     setIsUpdatingGeneral(true);
-    
+
     // Generate unique handle
     let newHandle = general.username.toLowerCase().replace(/[^a-z0-9]/g, "");
     if (!user?.handle || user.username !== general.username) {
@@ -128,7 +192,9 @@ function SettingsPage() {
     }
 
     try {
-      await updateUserGeneral({ data: { ...general, handle: newHandle, dateOfBirth: user?.dateOfBirth || "" } } as any);
+      await updateUserGeneral({
+        data: { ...general, handle: newHandle, dateOfBirth: user?.dateOfBirth || "" },
+      } as any);
       toast.success("Profile updated successfully!");
       refresh();
       setIsOtpStep(false);
@@ -149,7 +215,7 @@ function SettingsPage() {
       setIsUpdatingPassword(true);
       try {
         await verifyNewPasswordDifference({ data: { password } } as any);
-        
+
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         setGeneratedOtp(otp);
         await sendProfileUpdateOTP({ data: { to: user?.email || "", otp } } as any);
@@ -171,7 +237,8 @@ function SettingsPage() {
     try {
       await updateUserPassword({ data: { password } } as any);
       toast.success("Password updated successfully!");
-      setPassword(""); setConfirmPassword("");
+      setPassword("");
+      setConfirmPassword("");
       setIsOtpStep(false);
       setOtpInput("");
       setActiveModal(null);
@@ -199,7 +266,9 @@ function SettingsPage() {
   const handleUpdateInterests = async () => {
     setIsUpdatingInterests(true);
     try {
-      await updateUserOnboarding({ data: { profile: user?.profile || "", interests: selectedInterests } });
+      await updateUserOnboarding({
+        data: { profile: user?.profile || "", interests: selectedInterests },
+      });
       toast.success("Interests updated successfully!");
       refresh();
       setActiveModal(null);
@@ -239,19 +308,25 @@ function SettingsPage() {
                 </div>
                 <h3 className="text-xl font-bold">Verification Required</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  We've sent a 6-digit OTP to <strong>{general.email}</strong>. Please enter it below to save changes.
+                  We've sent a 6-digit OTP to <strong>{general.email}</strong>. Please enter it
+                  below to save changes.
                 </p>
                 <div className="flex flex-col gap-3 text-left">
                   <Label>One-Time Password</Label>
-                  <Input 
-                    value={otpInput} 
-                    onChange={e => setOtpInput(e.target.value)} 
-                    placeholder="Enter 6-digit OTP" 
+                  <Input
+                    value={otpInput}
+                    onChange={(e) => setOtpInput(e.target.value)}
+                    placeholder="Enter 6-digit OTP"
                     className="bg-background/50 rounded-xl text-center text-lg tracking-widest font-mono"
                     maxLength={6}
                   />
                 </div>
-                <Button type="button" variant="ghost" onClick={() => setIsOtpStep(false)} className="mt-2 text-muted-foreground">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsOtpStep(false)}
+                  className="mt-2 text-muted-foreground"
+                >
                   Cancel
                 </Button>
               </div>
@@ -259,52 +334,85 @@ function SettingsPage() {
               <>
                 <div className="flex flex-col gap-3">
                   <Label>Name</Label>
-                  <Input value={general.username} onChange={e => setGeneral({...general, username: e.target.value})} className="bg-background/50 rounded-xl"/>
+                  <Input
+                    value={general.username}
+                    onChange={(e) => setGeneral({ ...general, username: e.target.value })}
+                    className="bg-background/50 rounded-xl"
+                  />
                 </div>
-            <div className="flex flex-col gap-3">
-              <Label>Email</Label>
-              <Input type="email" value={general.email} onChange={e => setGeneral({...general, email: e.target.value})} className="bg-background/50 rounded-xl"/>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label>Phone Number</Label>
-                <Input value={general.phone} onChange={e => setGeneral({...general, phone: e.target.value})} className="bg-background/50 rounded-xl" placeholder="+1 234 567 890"/>
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label>Country</Label>
-                <div className="relative">
-                  <select 
-                    value={general.country} 
-                    onChange={e => setGeneral({...general, country: e.target.value})} 
-                    className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="" disabled>Select Country</option>
-                    {COUNTRIES.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <div className="flex flex-col gap-3">
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={general.email}
+                    onChange={(e) => setGeneral({ ...general, email: e.target.value })}
+                    className="bg-background/50 rounded-xl"
+                  />
                 </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <Label>Gender</Label>
-              <div className="relative">
-                <select 
-                  value={general.gender} 
-                  onChange={e => setGeneral({...general, gender: e.target.value})} 
-                  className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="" disabled>Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
-              </div>
-            </div>
-            </>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-3">
+                    <Label>Phone Number</Label>
+                    <Input
+                      value={general.phone}
+                      onChange={(e) => setGeneral({ ...general, phone: e.target.value })}
+                      className="bg-background/50 rounded-xl"
+                      placeholder="+1 234 567 890"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <Label>Country</Label>
+                    <div className="relative">
+                      <select
+                        value={general.country}
+                        onChange={(e) => setGeneral({ ...general, country: e.target.value })}
+                        className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="" disabled>
+                          Select Country
+                        </option>
+                        {COUNTRIES.map((c) => (
+                          <option key={c.code} value={c.name}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Label>Gender</Label>
+                  <div className="relative">
+                    <select
+                      value={general.gender}
+                      onChange={(e) => setGeneral({ ...general, gender: e.target.value })}
+                      className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="" disabled>
+                        Select Gender
+                      </option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  </div>
+                </div>
+              </>
             )}
-            <Button type="submit" disabled={isUpdatingGeneral} className="w-full rounded-xl mt-4" style={{ background: "var(--gradient-primary)" }}>
-              {isUpdatingGeneral ? <Loader2 className="h-4 w-4 animate-spin" /> : isOtpStep ? "Confirm & Save" : "Save Changes"}
+            <Button
+              type="submit"
+              disabled={isUpdatingGeneral}
+              className="w-full rounded-xl mt-4"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              {isUpdatingGeneral ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isOtpStep ? (
+                "Confirm & Save"
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </form>
         );
@@ -312,7 +420,7 @@ function SettingsPage() {
         return (
           <div className="space-y-5 px-1">
             <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-              {AVATAR_STYLES.map(style => (
+              {AVATAR_STYLES.map((style) => (
                 <button
                   key={style}
                   onClick={() => setSelectedStyle(style)}
@@ -335,11 +443,24 @@ function SettingsPage() {
               ))}
             </div>
             {stagedAvatar && (
-              <Button onClick={() => handleSelectAvatar(stagedAvatar)} disabled={isUpdatingAvatar} className="w-full rounded-xl" style={{ background: "var(--gradient-primary)" }}>
-                {isUpdatingAvatar ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Selected Avatar"}
+              <Button
+                onClick={() => handleSelectAvatar(stagedAvatar)}
+                disabled={isUpdatingAvatar}
+                className="w-full rounded-xl"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                {isUpdatingAvatar ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Save Selected Avatar"
+                )}
               </Button>
             )}
-            <Button variant="secondary" onClick={() => setSeed(Math.random().toString(36).substring(7))} className="w-full rounded-xl">
+            <Button
+              variant="secondary"
+              onClick={() => setSeed(Math.random().toString(36).substring(7))}
+              className="w-full rounded-xl"
+            >
               <RefreshCw className="h-4 w-4 mr-2" /> Generate More
             </Button>
           </div>
@@ -347,19 +468,30 @@ function SettingsPage() {
       case "interests":
         return (
           <div className="space-y-5 px-1">
-            <p className="text-sm text-muted-foreground">Select categories you're interested in to get better event recommendations.</p>
+            <p className="text-sm text-muted-foreground">
+              Select categories you're interested in to get better event recommendations.
+            </p>
             <div className="flex flex-wrap gap-2">
-              {INTEREST_OPTIONS.map(interest => {
-                const isSelected = selectedInterests.some(i => {
-                  if (typeof i !== 'string') return false;
+              {INTEREST_OPTIONS.map((interest) => {
+                const isSelected = selectedInterests.some((i) => {
+                  if (typeof i !== "string") return false;
                   const d = i.toLowerCase();
                   const o = interest.toLowerCase();
-                  return d === o || d + 's' === o || d === o + 's';
+                  return d === o || d + "s" === o || d === o + "s";
                 });
                 return (
                   <button
                     key={interest}
-                    onClick={() => setSelectedInterests(isSelected ? selectedInterests.filter(i => typeof i === 'string' && i.toLowerCase() !== interest.toLowerCase()) : [...selectedInterests, interest])}
+                    onClick={() =>
+                      setSelectedInterests(
+                        isSelected
+                          ? selectedInterests.filter(
+                              (i) =>
+                                typeof i === "string" && i.toLowerCase() !== interest.toLowerCase(),
+                            )
+                          : [...selectedInterests, interest],
+                      )
+                    }
                     className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all ${isSelected ? "bg-primary/20 border-primary text-primary" : "bg-secondary border-border/40 text-muted-foreground hover:text-foreground"}`}
                   >
                     {interest}
@@ -368,18 +500,27 @@ function SettingsPage() {
               })}
             </div>
             {(() => {
-              const normalizedSelected = selectedInterests.filter(i => typeof i === 'string').map(i => i.toLowerCase());
-              const normalizedInitial = initialInterests.filter(i => typeof i === 'string').map(i => i.toLowerCase());
-              const isChanged = normalizedSelected.length !== normalizedInitial.length || 
-                                normalizedSelected.some(i => !normalizedInitial.includes(i));
+              const normalizedSelected = selectedInterests
+                .filter((i) => typeof i === "string")
+                .map((i) => i.toLowerCase());
+              const normalizedInitial = initialInterests
+                .filter((i) => typeof i === "string")
+                .map((i) => i.toLowerCase());
+              const isChanged =
+                normalizedSelected.length !== normalizedInitial.length ||
+                normalizedSelected.some((i) => !normalizedInitial.includes(i));
               return (
-                <Button 
-                  onClick={handleUpdateInterests} 
-                  disabled={isUpdatingInterests || !isChanged} 
-                  className="w-full rounded-xl mt-4 transition-all" 
+                <Button
+                  onClick={handleUpdateInterests}
+                  disabled={isUpdatingInterests || !isChanged}
+                  className="w-full rounded-xl mt-4 transition-all"
                   style={{ background: !isChanged ? undefined : "var(--gradient-primary)" }}
                 >
-                  {isUpdatingInterests ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Interests"}
+                  {isUpdatingInterests ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Save Interests"
+                  )}
                 </Button>
               );
             })()}
@@ -395,19 +536,25 @@ function SettingsPage() {
                 </div>
                 <h3 className="text-xl font-bold">Verification Required</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  We've sent a 6-digit OTP to <strong>{user?.email}</strong>. Please enter it below to securely change your password.
+                  We've sent a 6-digit OTP to <strong>{user?.email}</strong>. Please enter it below
+                  to securely change your password.
                 </p>
                 <div className="flex flex-col gap-3 text-left">
                   <Label>One-Time Password</Label>
-                  <Input 
-                    value={otpInput} 
-                    onChange={e => setOtpInput(e.target.value)} 
-                    placeholder="Enter 6-digit OTP" 
+                  <Input
+                    value={otpInput}
+                    onChange={(e) => setOtpInput(e.target.value)}
+                    placeholder="Enter 6-digit OTP"
                     className="bg-background/50 rounded-xl text-center text-lg tracking-widest font-mono"
                     maxLength={6}
                   />
                 </div>
-                <Button type="button" variant="ghost" onClick={() => setIsOtpStep(false)} className="mt-2 text-muted-foreground">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsOtpStep(false)}
+                  className="mt-2 text-muted-foreground"
+                >
                   Cancel
                 </Button>
               </div>
@@ -415,29 +562,54 @@ function SettingsPage() {
               <>
                 <div className="flex flex-col gap-3">
                   <Label>New Password</Label>
-                  <Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="bg-background/50 rounded-xl" placeholder="Enter new password"/>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-background/50 rounded-xl"
+                    placeholder="Enter new password"
+                  />
                 </div>
                 <div className="flex flex-col gap-3">
                   <Label>Confirm New Password</Label>
-                  <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-background/50 rounded-xl" placeholder="Confirm new password"/>
+                  <Input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="bg-background/50 rounded-xl"
+                    placeholder="Confirm new password"
+                  />
                 </div>
               </>
             )}
-            <Button type="submit" disabled={isUpdatingPassword || (!isOtpStep && (!password || !confirmPassword))} className="w-full rounded-xl mt-4" style={{ background: "var(--gradient-primary)" }}>
-              {isUpdatingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : isOtpStep ? "Confirm & Update Password" : "Update Password"}
+            <Button
+              type="submit"
+              disabled={isUpdatingPassword || (!isOtpStep && (!password || !confirmPassword))}
+              className="w-full rounded-xl mt-4"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              {isUpdatingPassword ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isOtpStep ? (
+                "Confirm & Update Password"
+              ) : (
+                "Update Password"
+              )}
             </Button>
           </form>
         );
       case "preferences":
         return (
           <div className="space-y-4 px-1">
-            <p className="text-sm text-muted-foreground mb-4">Choose your preferred application theme.</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Choose your preferred application theme.
+            </p>
             <div className="grid grid-cols-3 gap-3">
               {[
                 { id: "light", label: "Light", icon: Sun },
                 { id: "dark", label: "Dark", icon: Moon },
-                { id: "system", label: "System", icon: Monitor }
-              ].map(t => (
+                { id: "system", label: "System", icon: Monitor },
+              ].map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setTheme(t.id as any)}
@@ -477,7 +649,8 @@ function SettingsPage() {
               </div>
               <h3 className="text-xl font-bold text-destructive">Delete Account</h3>
               <p className="text-sm text-muted-foreground max-w-xs">
-                This will permanently deactivate your account. You will be immediately logged out and will <strong>not</strong> be able to log back in.
+                This will permanently deactivate your account. You will be immediately logged out
+                and will <strong>not</strong> be able to log back in.
               </p>
             </div>
 
@@ -491,11 +664,12 @@ function SettingsPage() {
 
             <div className="flex flex-col gap-2">
               <Label className="text-sm">
-                Type your handle <strong className="text-foreground">@{user?.handle}</strong> to confirm:
+                Type your handle <strong className="text-foreground">@{user?.handle}</strong> to
+                confirm:
               </Label>
               <Input
                 value={deleteConfirmHandle}
-                onChange={e => setDeleteConfirmHandle(e.target.value)}
+                onChange={(e) => setDeleteConfirmHandle(e.target.value)}
                 placeholder={`@${user?.handle}`}
                 className="bg-background/50 rounded-xl"
               />
@@ -507,7 +681,13 @@ function SettingsPage() {
               disabled={isDeletingAccount || deleteConfirmHandle !== user?.handle}
               onClick={handleDeleteAccount}
             >
-              {isDeletingAccount ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Trash2 className="h-4 w-4 mr-2" /> Yes, delete my account</>}
+              {isDeletingAccount ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" /> Yes, delete my account
+                </>
+              )}
             </Button>
           </div>
         );
@@ -517,17 +697,27 @@ function SettingsPage() {
   };
 
   const getModalTitle = () => {
-    switch(activeModal) {
-      case "general": return "General Information";
-      case "avatar": return "Change Avatar";
-      case "interests": return "Manage Interests";
-      case "security": return "Security & Password";
-      case "preferences": return "App Preferences";
-      case "terms": return "Terms & Conditions";
-      case "refunds": return "Refund Policy";
-      case "privacy": return "Privacy Policy";
-      case "delete": return "Delete Account";
-      default: return "";
+    switch (activeModal) {
+      case "general":
+        return "General Information";
+      case "avatar":
+        return "Change Avatar";
+      case "interests":
+        return "Manage Interests";
+      case "security":
+        return "Security & Password";
+      case "preferences":
+        return "App Preferences";
+      case "terms":
+        return "Terms & Conditions";
+      case "refunds":
+        return "Refund Policy";
+      case "privacy":
+        return "Privacy Policy";
+      case "delete":
+        return "Delete Account";
+      default:
+        return "";
     }
   };
 
@@ -536,7 +726,10 @@ function SettingsPage() {
       {/* Mobile Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 pt-safe-top md:hidden">
         <div className="flex items-center gap-3 px-4 py-3">
-          <button onClick={() => navigate({ to: "/profile" })} className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors">
+          <button
+            onClick={() => navigate({ to: "/profile" })}
+            className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="font-bold text-lg tracking-tight">Settings</h1>
@@ -546,7 +739,9 @@ function SettingsPage() {
       <div className="flex-1 md:flex">
         <div className="hidden md:block w-64 border-r border-border/40 bg-card/50 min-h-[calc(100vh-64px)] pt-24">
           <div className="px-6 pb-6">
-            <h2 className="font-bold text-2xl mb-6 flex items-center gap-2"><SettingsIcon className="h-6 w-6"/> Settings</h2>
+            <h2 className="font-bold text-2xl mb-6 flex items-center gap-2">
+              <SettingsIcon className="h-6 w-6" /> Settings
+            </h2>
             {/* Desktop layout would normally put the list here, but we will reuse the main list for both */}
           </div>
         </div>
@@ -558,9 +753,14 @@ function SettingsPage() {
               <p className="text-xs text-muted-foreground">Manage your personal information</p>
             </div>
             <div className="divide-y divide-border/40">
-              <button onClick={() => setActiveModal("general")} className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left">
+              <button
+                onClick={() => setActiveModal("general")}
+                className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left"
+              >
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary"><User className="h-5 w-5" /></div>
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <User className="h-5 w-5" />
+                  </div>
                   <div>
                     <p className="font-semibold text-sm">General Info</p>
                     <p className="text-xs text-muted-foreground">Name, Email, Phone</p>
@@ -568,9 +768,14 @@ function SettingsPage() {
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </button>
-              <button onClick={() => setActiveModal("avatar")} className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left">
+              <button
+                onClick={() => setActiveModal("avatar")}
+                className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left"
+              >
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500"><ImageIcon className="h-5 w-5" /></div>
+                  <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                    <ImageIcon className="h-5 w-5" />
+                  </div>
                   <div>
                     <p className="font-semibold text-sm">Avatar</p>
                     <p className="text-xs text-muted-foreground">Change your profile picture</p>
@@ -578,9 +783,14 @@ function SettingsPage() {
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </button>
-              <button onClick={() => setActiveModal("interests")} className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left">
+              <button
+                onClick={() => setActiveModal("interests")}
+                className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left"
+              >
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500"><Heart className="h-5 w-5" /></div>
+                  <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500">
+                    <Heart className="h-5 w-5" />
+                  </div>
                   <div>
                     <p className="font-semibold text-sm">Interests</p>
                     <p className="text-xs text-muted-foreground">Manage event categories</p>
@@ -597,9 +807,14 @@ function SettingsPage() {
               <p className="text-xs text-muted-foreground">Security and preferences</p>
             </div>
             <div className="divide-y divide-border/40">
-              <button onClick={() => setActiveModal("security")} className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left">
+              <button
+                onClick={() => setActiveModal("security")}
+                className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left"
+              >
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500"><Lock className="h-5 w-5" /></div>
+                  <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                    <Lock className="h-5 w-5" />
+                  </div>
                   <div>
                     <p className="font-semibold text-sm">Security</p>
                     <p className="text-xs text-muted-foreground">Update your password</p>
@@ -607,9 +822,14 @@ function SettingsPage() {
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </button>
-              <button onClick={() => setActiveModal("preferences")} className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left">
+              <button
+                onClick={() => setActiveModal("preferences")}
+                className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left"
+              >
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500"><Monitor className="h-5 w-5" /></div>
+                  <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500">
+                    <Monitor className="h-5 w-5" />
+                  </div>
                   <div>
                     <p className="font-semibold text-sm">Preferences</p>
                     <p className="text-xs text-muted-foreground">Dark mode, Light mode</p>
@@ -617,9 +837,14 @@ function SettingsPage() {
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </button>
-              <button onClick={() => setActiveModal("terms")} className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left">
+              <button
+                onClick={() => setActiveModal("terms")}
+                className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left"
+              >
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500"><FileText className="h-5 w-5" /></div>
+                  <div className="h-10 w-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500">
+                    <FileText className="h-5 w-5" />
+                  </div>
                   <div>
                     <p className="font-semibold text-sm">Terms & Conditions</p>
                     <p className="text-xs text-muted-foreground">Read our legal agreements</p>
@@ -627,9 +852,14 @@ function SettingsPage() {
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </button>
-              <button onClick={() => setActiveModal("refunds")} className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left">
+              <button
+                onClick={() => setActiveModal("refunds")}
+                className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left"
+              >
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500"><FileText className="h-5 w-5" /></div>
+                  <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                    <FileText className="h-5 w-5" />
+                  </div>
                   <div>
                     <p className="font-semibold text-sm">Refund Policy</p>
                     <p className="text-xs text-muted-foreground">Read our refund rules</p>
@@ -637,9 +867,14 @@ function SettingsPage() {
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </button>
-              <button onClick={() => setActiveModal("privacy")} className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left">
+              <button
+                onClick={() => setActiveModal("privacy")}
+                className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left"
+              >
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-500"><Lock className="h-5 w-5" /></div>
+                  <div className="h-10 w-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                    <Lock className="h-5 w-5" />
+                  </div>
                   <div>
                     <p className="font-semibold text-sm">Privacy Policy</p>
                     <p className="text-xs text-muted-foreground">How we handle your data</p>
@@ -680,30 +915,36 @@ function SettingsPage() {
         </div>
       </div>
 
-      <Dialog open={!!activeModal} onOpenChange={(open) => {
-        if (!open) {
-          setActiveModal(null);
-          setIsOtpStep(false);
-          setOtpInput("");
-        }
-      }}>
+      <Dialog
+        open={!!activeModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActiveModal(null);
+            setIsOtpStep(false);
+            setOtpInput("");
+          }
+        }}
+      >
         <DialogContent className="w-full h-[100dvh] max-w-none sm:max-w-[500px] sm:h-auto p-0 overflow-hidden bg-card sm:bg-card/95 backdrop-blur-xl border-none sm:border-solid sm:border-border/40 rounded-none sm:rounded-2xl flex flex-col">
           <DialogHeader className="p-4 md:p-6 border-b border-border/40 bg-muted/20 flex flex-row items-center gap-3 space-y-0 text-left">
-            <button onClick={() => {
-              setActiveModal(null);
-              setIsOtpStep(false);
-              setOtpInput("");
-            }} className="sm:hidden p-2 -ml-2 rounded-full hover:bg-secondary transition-colors">
+            <button
+              onClick={() => {
+                setActiveModal(null);
+                setIsOtpStep(false);
+                setOtpInput("");
+              }}
+              className="sm:hidden p-2 -ml-2 rounded-full hover:bg-secondary transition-colors"
+            >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <DialogTitle className="text-xl font-bold tracking-tight">{getModalTitle()}</DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight">
+              {getModalTitle()}
+            </DialogTitle>
           </DialogHeader>
-          <div className="p-4 md:p-6 flex-1 overflow-y-auto">
-            {renderModalContent()}
-          </div>
+          <div className="p-4 md:p-6 flex-1 overflow-y-auto">{renderModalContent()}</div>
         </DialogContent>
       </Dialog>
-      
+
       <div className="hidden md:block">
         <Footer />
       </div>

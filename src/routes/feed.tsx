@@ -50,7 +50,10 @@ function Feed() {
             {isLoading ? (
               <div className="space-y-8">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex flex-col space-y-3 p-4 bg-card rounded-2xl border border-border/40">
+                  <div
+                    key={i}
+                    className="flex flex-col space-y-3 p-4 bg-card rounded-2xl border border-border/40"
+                  >
                     <div className="flex items-center space-x-4">
                       <Skeleton className="h-12 w-12 rounded-full" />
                       <div className="space-y-2">

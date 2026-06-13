@@ -478,60 +478,63 @@ function CommunityPage() {
                 {channels
                   .filter((c) => !(c.type === "user" && !c.lastMessage))
                   .map((chat) => {
-                    const isUnread = chat.lastMessageSenderId !== user?.id && chat.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
-                    const displayUnread = chat.unread > 0 ? chat.unread : (isUnread ? 1 : 0);
+                    const isUnread =
+                      chat.lastMessageSenderId !== user?.id &&
+                      chat.rawTimeMillis >
+                        parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
+                    const displayUnread = chat.unread > 0 ? chat.unread : isUnread ? 1 : 0;
                     return (
-                    <button
-                      key={chat.id}
-                      onClick={() => setActiveChatId(chat.id)}
-                      className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
-                        activeChatId === chat.id
-                          ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
-                          : "hover:bg-accent/50"
-                      }`}
-                    >
-                      <div className="relative shrink-0">
-                        <Avatar className="h-12 w-12 border border-border/50">
-                          <AvatarImage src={chat.avatar} alt={chat.name} />
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {chat.type === "group" ? (
-                              <MessageCircle className="h-5 w-5" />
-                            ) : (
-                              chat.name.substring(0, 2).toUpperCase()
-                            )}
-                          </AvatarFallback>
-                        </Avatar>
-                        {chat.online && (
-                          <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="font-semibold text-sm truncate pr-2">
-                            {chat.name} {chat.country ? getCountryFlag(chat.country) : ""}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                            {chat.time}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center mt-1">
-                          <p
-                            className={`text-xs truncate pr-2 ${displayUnread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}
-                          >
-                            {chat.lastMessage}
-                          </p>
-                          {displayUnread > 0 && (
-                            <Badge
-                              className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
-                              style={{ background: "var(--gradient-primary)" }}
-                            >
-                              {displayUnread}
-                            </Badge>
+                      <button
+                        key={chat.id}
+                        onClick={() => setActiveChatId(chat.id)}
+                        className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
+                          activeChatId === chat.id
+                            ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
+                            : "hover:bg-accent/50"
+                        }`}
+                      >
+                        <div className="relative shrink-0">
+                          <Avatar className="h-12 w-12 border border-border/50">
+                            <AvatarImage src={chat.avatar} alt={chat.name} />
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {chat.type === "group" ? (
+                                <MessageCircle className="h-5 w-5" />
+                              ) : (
+                                chat.name.substring(0, 2).toUpperCase()
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
+                          {chat.online && (
+                            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
                           )}
                         </div>
-                      </div>
-                    </button>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="font-semibold text-sm truncate pr-2">
+                              {chat.name} {chat.country ? getCountryFlag(chat.country) : ""}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                              {chat.time}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center mt-1">
+                            <p
+                              className={`text-xs truncate pr-2 ${displayUnread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}
+                            >
+                              {chat.lastMessage}
+                            </p>
+                            {displayUnread > 0 && (
+                              <Badge
+                                className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
+                                style={{ background: "var(--gradient-primary)" }}
+                              >
+                                {displayUnread}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </button>
                     );
                   })}
               </div>
@@ -671,19 +674,17 @@ function CommunityPage() {
                     Event Channels
                   </h3>
                   {channelTargets.map((target) => {
-                    const eventChannel = communityChannels.find(
-                      (c) => {
-                        if (c.event_id !== target.eventId) return false;
-                        if (target.type === "schedule") {
-                          if (target.scheduleId === null)
-                            return !c.schedule_id && c.tour_stop_idx === null;
-                          return c.schedule_id === target.scheduleId;
-                        }
-                        if (target.type === "tour_stop")
-                          return c.tour_stop_idx === target.tourStopIdx;
-                        return !c.schedule_id && c.tour_stop_idx === null;
-                      },
-                    );
+                    const eventChannel = communityChannels.find((c) => {
+                      if (c.event_id !== target.eventId) return false;
+                      if (target.type === "schedule") {
+                        if (target.scheduleId === null)
+                          return !c.schedule_id && c.tour_stop_idx === null;
+                        return c.schedule_id === target.scheduleId;
+                      }
+                      if (target.type === "tour_stop")
+                        return c.tour_stop_idx === target.tourStopIdx;
+                      return !c.schedule_id && c.tour_stop_idx === null;
+                    });
 
                     if (eventChannel) {
                       const fc = channels.find((c) => c.id === eventChannel.id);
@@ -865,7 +866,9 @@ function CommunityPage() {
               {activeChat.messages.map((msg, idx) => {
                 const currentMsgDate = formatMessageDate(msg.rawTimeMillis || Date.now());
                 const prevMsg = activeChat.messages[idx - 1];
-                const prevMsgDate = prevMsg ? formatMessageDate(prevMsg.rawTimeMillis || Date.now()) : null;
+                const prevMsgDate = prevMsg
+                  ? formatMessageDate(prevMsg.rawTimeMillis || Date.now())
+                  : null;
                 const showDateHeader = currentMsgDate !== prevMsgDate;
 
                 const showAvatar =
@@ -881,84 +884,86 @@ function CommunityPage() {
                         </span>
                       </div>
                     )}
-                    <div
-                      className={`flex gap-3 ${msg.isMe ? "justify-end" : "justify-start"}`}
-                    >
-                    {!msg.isMe && (
-                      <div className="w-8 shrink-0">
-                        {showAvatar &&
-                          (() => {
-                            const senderProfile = followers.find((f: any) => f.id === msg.senderId);
-                            const profileStr =
-                              typeof senderProfile?.profile === "string"
-                                ? senderProfile.profile
-                                : "";
-                            const avatarSrc =
-                              profileStr && !profileStr.includes("pravatar.cc")
-                                ? profileStr
-                                : undefined;
-                            return (
-                              <Avatar className="h-8 w-8 border border-border/50">
-                                <AvatarImage src={avatarSrc} />
-                                <AvatarFallback>
-                                  {(senderProfile?.handle ||
-                                    senderProfile?.username ||
-                                    "F")[0].toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                            );
-                          })()}
-                      </div>
-                    )}
-
-                    <div
-                      className={`flex flex-col ${msg.isMe ? "items-end" : "items-start"} max-w-[70%]`}
-                    >
-                      {!msg.isMe &&
-                        activeChat.type === "group" &&
-                        showAvatar &&
-                        (() => {
-                          const senderProfile = followers.find((f: any) => f.id === msg.senderId);
-                          const senderName = senderProfile?.handle
-                            ? `@${senderProfile.handle}`
-                            : senderProfile?.username || "Follower Member";
-                          const senderFlag = senderProfile?.country
-                            ? getCountryFlag(senderProfile.country)
-                            : "";
-                          return (
-                            <span className="text-[11px] text-muted-foreground mb-1 ml-1 font-medium">
-                              {senderName} {senderFlag}
-                            </span>
-                          );
-                        })()}
+                    <div className={`flex gap-3 ${msg.isMe ? "justify-end" : "justify-start"}`}>
+                      {!msg.isMe && (
+                        <div className="w-8 shrink-0">
+                          {showAvatar &&
+                            (() => {
+                              const senderProfile = followers.find(
+                                (f: any) => f.id === msg.senderId,
+                              );
+                              const profileStr =
+                                typeof senderProfile?.profile === "string"
+                                  ? senderProfile.profile
+                                  : "";
+                              const avatarSrc =
+                                profileStr && !profileStr.includes("pravatar.cc")
+                                  ? profileStr
+                                  : undefined;
+                              return (
+                                <Avatar className="h-8 w-8 border border-border/50">
+                                  <AvatarImage src={avatarSrc} />
+                                  <AvatarFallback>
+                                    {(senderProfile?.handle ||
+                                      senderProfile?.username ||
+                                      "F")[0].toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                              );
+                            })()}
+                        </div>
+                      )}
 
                       <div
-                        className={`p-3.5 rounded-2xl shadow-sm text-sm ${
-                          msg.isMe && !msg.mediaUrl
-                            ? "bg-primary text-primary-foreground rounded-tr-sm"
-                            : msg.mediaUrl && !msg.text
-                              ? "p-0 bg-transparent shadow-none"
-                              : "bg-background border border-border/50 rounded-tl-sm"
-                        }`}
-                        style={
-                          msg.isMe && !msg.mediaUrl ? { background: "var(--gradient-primary)" } : {}
-                        }
+                        className={`flex flex-col ${msg.isMe ? "items-end" : "items-start"} max-w-[70%]`}
                       >
-                        {msg.mediaUrl && (
-                          <img
-                            src={msg.mediaUrl}
-                            alt="GIF"
-                            className="max-w-[200px] rounded-lg object-cover"
-                          />
-                        )}
-                        {msg.text && <div className={msg.mediaUrl ? "mt-2" : ""}>{msg.text}</div>}
+                        {!msg.isMe &&
+                          activeChat.type === "group" &&
+                          showAvatar &&
+                          (() => {
+                            const senderProfile = followers.find((f: any) => f.id === msg.senderId);
+                            const senderName = senderProfile?.handle
+                              ? `@${senderProfile.handle}`
+                              : senderProfile?.username || "Follower Member";
+                            const senderFlag = senderProfile?.country
+                              ? getCountryFlag(senderProfile.country)
+                              : "";
+                            return (
+                              <span className="text-[11px] text-muted-foreground mb-1 ml-1 font-medium">
+                                {senderName} {senderFlag}
+                              </span>
+                            );
+                          })()}
+
+                        <div
+                          className={`p-3.5 rounded-2xl shadow-sm text-sm ${
+                            msg.isMe && !msg.mediaUrl
+                              ? "bg-primary text-primary-foreground rounded-tr-sm"
+                              : msg.mediaUrl && !msg.text
+                                ? "p-0 bg-transparent shadow-none"
+                                : "bg-background border border-border/50 rounded-tl-sm"
+                          }`}
+                          style={
+                            msg.isMe && !msg.mediaUrl
+                              ? { background: "var(--gradient-primary)" }
+                              : {}
+                          }
+                        >
+                          {msg.mediaUrl && (
+                            <img
+                              src={msg.mediaUrl}
+                              alt="GIF"
+                              className="max-w-[200px] rounded-lg object-cover"
+                            />
+                          )}
+                          {msg.text && <div className={msg.mediaUrl ? "mt-2" : ""}>{msg.text}</div>}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1 mx-1">
+                          {msg.timestamp}
+                          {msg.isMe && <span className="text-primary ml-1">✓✓</span>}
+                        </span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1 mx-1">
-                        {msg.timestamp}
-                        {msg.isMe && <span className="text-primary ml-1">✓✓</span>}
-                      </span>
                     </div>
-                  </div>
                   </React.Fragment>
                 );
               })}

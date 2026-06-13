@@ -78,9 +78,7 @@ export function GlobalUserNotificationListener() {
             Icon = Film;
           } else if (data.type === "new_message") {
             title = "New Message";
-            body = data.content
-              ? `New message: "${data.content}"`
-              : "You have a new message.";
+            body = data.content ? `New message: "${data.content}"` : "You have a new message.";
             targetPath = `/${currentUserId}/message`;
             Icon = MessageCircle;
           }
@@ -104,7 +102,10 @@ export function GlobalUserNotificationListener() {
               label: "View",
               onClick: () => navigate({ to: targetPath }),
             },
-            actionButtonStyle: { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" },
+            actionButtonStyle: {
+              backgroundColor: "var(--primary)",
+              color: "var(--primary-foreground)",
+            },
           });
         }
       });

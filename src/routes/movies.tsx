@@ -1,6 +1,17 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Clock, MapPin, Film, Ticket, ArrowLeft, Play, Star, Calendar, X, Search } from "lucide-react";
+import {
+  Clock,
+  MapPin,
+  Film,
+  Ticket,
+  ArrowLeft,
+  Play,
+  Star,
+  Calendar,
+  X,
+  Search,
+} from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { formatCurrency } from "@/lib/currency";
@@ -51,11 +62,17 @@ function Movies() {
 // --------------------------------------------------------
 // DESKTOP VIEW
 // --------------------------------------------------------
-function DesktopMoviesView({ active, setActive }: { active: string; setActive: (id: string) => void }) {
+function DesktopMoviesView({
+  active,
+  setActive,
+}: {
+  active: string;
+  setActive: (id: string) => void;
+}) {
   const activeMovie = movies.find((m) => m.id === active)!;
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [active]);
 
   return (
@@ -100,7 +117,9 @@ function DesktopMoviesView({ active, setActive }: { active: string; setActive: (
                 <span className="w-1 h-1 rounded-full bg-white/40" />
                 <span>{activeMovie.duration}</span>
                 <span className="w-1 h-1 rounded-full bg-white/40" />
-                <span className="px-1.5 py-0.5 rounded border border-white/30 text-xs">{activeMovie.rating}</span>
+                <span className="px-1.5 py-0.5 rounded border border-white/30 text-xs">
+                  {activeMovie.rating}
+                </span>
               </div>
 
               <p className="text-white/70 text-base max-w-2xl leading-relaxed mb-8 drop-shadow-sm">
@@ -125,8 +144,8 @@ function DesktopMoviesView({ active, setActive }: { active: string; setActive: (
                     <button
                       key={t}
                       className={`shrink-0 rounded-xl px-6 py-3 text-sm font-bold border transition-all ${
-                        i === 0 
-                          ? "bg-primary border-primary text-primary-foreground shadow-[var(--shadow-glow)]" 
+                        i === 0
+                          ? "bg-primary border-primary text-primary-foreground shadow-[var(--shadow-glow)]"
                           : "bg-white/5 border-white/10 hover:border-primary/50 text-white"
                       }`}
                     >
@@ -147,8 +166,8 @@ function DesktopMoviesView({ active, setActive }: { active: string; setActive: (
                     {formatCurrency(activeMovie.price || 8, activeMovie.currency)}
                   </Link>
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="h-14 rounded-2xl text-base font-bold px-8 bg-white/5 backdrop-blur-md border-white/20 hover:bg-white/10 hover:text-white text-white"
                 >
                   <Play className="mr-2 h-5 w-5" /> Watch Trailer
@@ -169,7 +188,9 @@ function DesktopMoviesView({ active, setActive }: { active: string; setActive: (
               key={m.id}
               onClick={() => setActive(m.id)}
               className={`text-left group transition-all duration-300 ${
-                active === m.id ? "scale-100 opacity-100" : "scale-95 opacity-60 hover:opacity-100 hover:scale-100"
+                active === m.id
+                  ? "scale-100 opacity-100"
+                  : "scale-95 opacity-60 hover:opacity-100 hover:scale-100"
               }`}
             >
               <div
@@ -177,7 +198,12 @@ function DesktopMoviesView({ active, setActive }: { active: string; setActive: (
                   active === m.id ? "ring-2 ring-primary ring-offset-4 ring-offset-background" : ""
                 }`}
               >
-                <img src={m.cover} alt={m.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                <img
+                  src={m.cover}
+                  alt={m.title}
+                  className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  loading="lazy"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <span className="absolute top-2 left-2 rounded-md bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] font-bold text-white border border-white/10">
                   {m.rating}
@@ -194,18 +220,33 @@ function DesktopMoviesView({ active, setActive }: { active: string; setActive: (
         <div className="flex items-center justify-between gap-4 mb-8">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Premium Cinemas</h2>
-            <p className="text-sm text-muted-foreground mt-1">Find theaters selling reserved seating on Agatike.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Find theaters selling reserved seating on Agatike.
+            </p>
           </div>
-          <Button variant="outline" className="rounded-full border-primary/20 text-primary hover:bg-primary/10">
+          <Button
+            variant="outline"
+            className="rounded-full border-primary/20 text-primary hover:bg-primary/10"
+          >
             View All Cinemas
           </Button>
         </div>
         <div className="grid grid-cols-4 gap-4 pb-6">
           {cinemas.map((c) => (
-            <Link key={c.id} to="/cinemas/$cinemaId" params={{ cinemaId: c.id }} className="group cursor-pointer">
+            <Link
+              key={c.id}
+              to="/cinemas/$cinemaId"
+              params={{ cinemaId: c.id }}
+              className="group cursor-pointer"
+            >
               <div className="overflow-hidden rounded-3xl border border-border/40 bg-card shadow-sm transition-all duration-300 group-hover:shadow-[var(--shadow-card)] group-hover:border-primary/30">
                 <div className="relative aspect-video w-full overflow-hidden">
-                  <img src={c.image} alt={c.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                  <img
+                    src={c.image}
+                    alt={c.name}
+                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-3 left-3 text-white">
                     <p className="font-bold text-sm">{c.city}</p>
@@ -232,7 +273,7 @@ function DesktopMoviesView({ active, setActive }: { active: string; setActive: (
 // --------------------------------------------------------
 function MobileMoviesView() {
   const router = useRouter();
-  const [selectedMovie, setSelectedMovie] = useState<typeof movies[0] | null>(null);
+  const [selectedMovie, setSelectedMovie] = useState<(typeof movies)[0] | null>(null);
 
   const featuredMovie = movies[0]; // Display the biggest blockbuster at the top
 
@@ -253,27 +294,29 @@ function MobileMoviesView() {
       <div className="px-4 py-2 bg-background/80 backdrop-blur-xl border-b border-border/40">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input 
-            placeholder="Search movies, cinemas, or genres..." 
-            className="pl-9 h-10 rounded-xl bg-secondary/50 border-transparent focus-visible:ring-1 focus-visible:ring-primary focus-visible:bg-background transition-all" 
+          <Input
+            placeholder="Search movies, cinemas, or genres..."
+            className="pl-9 h-10 rounded-xl bg-secondary/50 border-transparent focus-visible:ring-1 focus-visible:ring-primary focus-visible:bg-background transition-all"
           />
         </div>
       </div>
 
       {/* Featured Header */}
       <div className="px-4 py-6">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-primary mb-3">Featured Premiere</h2>
-        <div 
+        <h2 className="text-xs font-bold uppercase tracking-wider text-primary mb-3">
+          Featured Premiere
+        </h2>
+        <div
           className="relative aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl group active:scale-[0.98] transition-transform"
           onClick={() => setSelectedMovie(featuredMovie)}
         >
-          <img 
-            src={featuredMovie.cover} 
-            alt={featuredMovie.title} 
+          <img
+            src={featuredMovie.cover}
+            alt={featuredMovie.title}
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-          
+
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
             <span className="inline-flex items-center gap-1 rounded-md bg-white/20 backdrop-blur-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider mb-2">
               <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> Top Rated
@@ -316,7 +359,12 @@ function MobileMoviesView() {
         </div>
         <div className="flex overflow-x-auto hide-scrollbar gap-4 px-5 pb-6">
           {cinemas.map((c) => (
-            <Link key={c.id} to="/cinemas/$cinemaId" params={{ cinemaId: c.id }} className="w-[260px] shrink-0 rounded-3xl border border-border/40 bg-card shadow-sm overflow-hidden">
+            <Link
+              key={c.id}
+              to="/cinemas/$cinemaId"
+              params={{ cinemaId: c.id }}
+              className="w-[260px] shrink-0 rounded-3xl border border-border/40 bg-card shadow-sm overflow-hidden"
+            >
               <div className="aspect-video relative">
                 <img src={c.image} alt={c.name} className="w-full h-full object-cover" />
               </div>
@@ -334,30 +382,42 @@ function MobileMoviesView() {
 
       {/* Movie Details Drawer */}
       <Drawer open={!!selectedMovie} onOpenChange={(open) => !open && setSelectedMovie(null)}>
-        <DrawerContent className="max-h-[90vh] p-0 border-border/60" aria-describedby="movie-description">
+        <DrawerContent
+          className="max-h-[90vh] p-0 border-border/60"
+          aria-describedby="movie-description"
+        >
           {selectedMovie && (
             <div className="overflow-y-auto hide-scrollbar pb-safe">
               <DrawerHeader className="sr-only">
                 <DrawerTitle>{selectedMovie.title}</DrawerTitle>
-                <DrawerDescription id="movie-description">{selectedMovie.synopsis}</DrawerDescription>
+                <DrawerDescription id="movie-description">
+                  {selectedMovie.synopsis}
+                </DrawerDescription>
               </DrawerHeader>
               <div className="relative aspect-video w-full">
-                <img src={selectedMovie.cover} alt={selectedMovie.title} className="w-full h-full object-cover" />
+                <img
+                  src={selectedMovie.cover}
+                  alt={selectedMovie.title}
+                  className="w-full h-full object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-                <button 
+                <button
                   onClick={() => setSelectedMovie(null)}
                   className="absolute top-4 right-4 p-2 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/10"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              
+
               <div className="px-5 -mt-6 relative z-10">
                 <h2 className="text-3xl font-black tracking-tight mb-2">{selectedMovie.title}</h2>
                 <div className="flex flex-wrap gap-2 text-xs text-muted-foreground font-medium mb-4">
-                  <span>{selectedMovie.genre}</span> • <span>{selectedMovie.duration}</span> • <span className="border border-border/60 px-1 rounded">{selectedMovie.rating}</span>
+                  <span>{selectedMovie.genre}</span> • <span>{selectedMovie.duration}</span> •{" "}
+                  <span className="border border-border/60 px-1 rounded">
+                    {selectedMovie.rating}
+                  </span>
                 </div>
-                
+
                 <p className="text-sm text-foreground/90 leading-relaxed mb-6">
                   {selectedMovie.synopsis}
                 </p>
@@ -374,7 +434,10 @@ function MobileMoviesView() {
                     <p className="text-xs font-semibold mb-2">Today's Showtimes</p>
                     <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
                       {selectedMovie.showtimes.map((t, i) => (
-                        <button key={t} className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold border ${i === 0 ? "bg-primary border-primary text-primary-foreground" : "bg-background border-border/60"}`}>
+                        <button
+                          key={t}
+                          className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold border ${i === 0 ? "bg-primary border-primary text-primary-foreground" : "bg-background border-border/60"}`}
+                        >
                           {t}
                         </button>
                       ))}
@@ -388,7 +451,8 @@ function MobileMoviesView() {
                   style={{ background: "var(--gradient-primary)" }}
                 >
                   <Link to="/book/$eventId" params={{ eventId: selectedMovie.id }}>
-                    <Ticket className="mr-2 h-5 w-5" /> Book Ticket — {formatCurrency(selectedMovie.price || 8, selectedMovie.currency)}
+                    <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
+                    {formatCurrency(selectedMovie.price || 8, selectedMovie.currency)}
                   </Link>
                 </Button>
               </div>
@@ -396,7 +460,6 @@ function MobileMoviesView() {
           )}
         </DrawerContent>
       </Drawer>
-
     </div>
   );
 }

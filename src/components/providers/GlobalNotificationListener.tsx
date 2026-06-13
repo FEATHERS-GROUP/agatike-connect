@@ -126,7 +126,10 @@ export function GlobalNotificationListener() {
               label: "View",
               onClick: () => navigate({ to: `/dashboard/${activeWorkspace.slug}/community` }),
             },
-            actionButtonStyle: { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" },
+            actionButtonStyle: {
+              backgroundColor: "var(--primary)",
+              color: "var(--primary-foreground)",
+            },
           });
         }
       });

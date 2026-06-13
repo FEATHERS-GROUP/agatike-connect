@@ -4,12 +4,18 @@ export function TermsAndConditions() {
   return (
     <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
       <h2 className="text-2xl font-bold text-foreground mb-6">TERMS AND CONDITIONS OF USE</h2>
-      <p><strong>Last Updated:</strong> June 2026</p>
-      <p><strong>Effective Date:</strong> June 2026</p>
+      <p>
+        <strong>Last Updated:</strong> June 2026
+      </p>
+      <p>
+        <strong>Effective Date:</strong> June 2026
+      </p>
 
       <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">1. INTRODUCTION</h3>
       <p>
-        Welcome to Agatike Connect (“we,” “our,” “us,” or “Company”). These Terms and Conditions (“Terms”) govern your access to and use of our mobile application, website, software, and related services (collectively, the “Platform”).
+        Welcome to Agatike Connect (“we,” “our,” “us,” or “Company”). These Terms and Conditions
+        (“Terms”) govern your access to and use of our mobile application, website, software, and
+        related services (collectively, the “Platform”).
       </p>
       <p>Our Platform provides services including but not limited to:</p>
       <ul className="list-disc pl-5 my-2">
@@ -19,7 +25,8 @@ export function TermsAndConditions() {
         <li>Messaging, content sharing, and community engagement tools</li>
       </ul>
       <p>
-        By accessing or using the Platform, you agree to be bound by these Terms. If you do not agree, you must not use the Platform.
+        By accessing or using the Platform, you agree to be bound by these Terms. If you do not
+        agree, you must not use the Platform.
       </p>
 
       <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">2. ELIGIBILITY</h3>
@@ -65,7 +72,9 @@ export function TermsAndConditions() {
         <li>Misuse access privileges</li>
       </ul>
 
-      <h4 className="text-md font-medium text-foreground mt-4 mb-2">4.3 Social Networking Features</h4>
+      <h4 className="text-md font-medium text-foreground mt-4 mb-2">
+        4.3 Social Networking Features
+      </h4>
       <p>The Platform may include:</p>
       <ul className="list-disc pl-5 my-2">
         <li>User profiles</li>
@@ -73,7 +82,9 @@ export function TermsAndConditions() {
         <li>Posts, comments, and media sharing</li>
         <li>Community interaction tools</li>
       </ul>
-      <p>You understand that content posted may be visible to others depending on privacy settings.</p>
+      <p>
+        You understand that content posted may be visible to others depending on privacy settings.
+      </p>
 
       <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">5. USER CONTENT</h3>
       <p>You retain ownership of content you upload, post, or share (“User Content”).</p>
@@ -85,7 +96,10 @@ export function TermsAndConditions() {
         <li>Transferable</li>
         <li>Sub-licensable license</li>
       </ul>
-      <p>to use, display, reproduce, distribute, and adapt your content for Platform operation and promotion.</p>
+      <p>
+        to use, display, reproduce, distribute, and adapt your content for Platform operation and
+        promotion.
+      </p>
       <p>You agree that your content will not:</p>
       <ul className="list-disc pl-5 my-2">
         <li>Violate laws or regulations</li>
@@ -120,7 +134,9 @@ export function TermsAndConditions() {
       </ul>
       <p>We are not responsible for third-party payment errors.</p>
 
-      <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">8. REFUNDS AND CANCELLATIONS</h3>
+      <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">
+        8. REFUNDS AND CANCELLATIONS
+      </h3>
       <p>Refunds depend on:</p>
       <ul className="list-disc pl-5 my-2">
         <li>Event organizer policies</li>
@@ -141,7 +157,10 @@ export function TermsAndConditions() {
         <li>Data sharing</li>
         <li>Security practices</li>
       </ul>
-      <p>We comply with applicable international privacy laws including GDPR-like principles where applicable.</p>
+      <p>
+        We comply with applicable international privacy laws including GDPR-like principles where
+        applicable.
+      </p>
 
       <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">10. SECURITY</h3>
       <p>We implement reasonable security measures, but:</p>
@@ -183,7 +202,9 @@ export function TermsAndConditions() {
       </ul>
       <p>We are not responsible for third-party content or services.</p>
 
-      <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">14. LIMITATION OF LIABILITY</h3>
+      <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">
+        14. LIMITATION OF LIABILITY
+      </h3>
       <p>To the maximum extent permitted by law:</p>
       <ul className="list-disc pl-5 my-2">
         <li>We are not liable for indirect, incidental, or consequential damages</li>
@@ -202,7 +223,10 @@ export function TermsAndConditions() {
       </ul>
 
       <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">16. INDEMNIFICATION</h3>
-      <p>You agree to indemnify and hold harmless Agatike Connect from any claims, damages, liabilities, or expenses arising from:</p>
+      <p>
+        You agree to indemnify and hold harmless Agatike Connect from any claims, damages,
+        liabilities, or expenses arising from:
+      </p>
       <ul className="list-disc pl-5 my-2">
         <li>Your use of the Platform</li>
         <li>Your violation of these Terms</li>
@@ -210,10 +234,15 @@ export function TermsAndConditions() {
       </ul>
 
       <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">17. INTERNATIONAL USE</h3>
-      <p>The Platform is intended for global use. You are responsible for compliance with local laws in your jurisdiction.</p>
+      <p>
+        The Platform is intended for global use. You are responsible for compliance with local laws
+        in your jurisdiction.
+      </p>
       <p>We do not guarantee that the Platform is appropriate or legal in every country.</p>
 
-      <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">18. GOVERNING LAW AND DISPUTES</h3>
+      <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">
+        18. GOVERNING LAW AND DISPUTES
+      </h3>
       <p>These Terms shall be governed by: Rwanda</p>
       <p>Disputes shall be resolved through:</p>
       <ul className="list-disc pl-5 my-2">
@@ -234,7 +263,8 @@ export function TermsAndConditions() {
       <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">20. CONTACT INFORMATION</h3>
       <p>For questions or legal inquiries, contact:</p>
       <p>
-        <strong>Email:</strong> hello@agatike.rw<br />
+        <strong>Email:</strong> hello@agatike.rw
+        <br />
         <strong>Company Address:</strong> Kigali, Rwanda
       </p>
     </div>

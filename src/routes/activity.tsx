@@ -116,9 +116,7 @@ function ActivityPage() {
             } else if (isNewMessage) {
               Icon = MessageCircle;
               title = "New Message";
-              description = n.content
-                ? `New message: "${n.content}"`
-                : "You have a new message.";
+              description = n.content ? `New message: "${n.content}"` : "You have a new message.";
               link = `/${user?.id}/message`;
               linkText = "View Messages";
             }
