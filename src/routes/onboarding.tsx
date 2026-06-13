@@ -6,14 +6,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
-  Music,
-  Ticket,
-  Map,
-  Trophy,
   Check,
   ArrowRight,
-  Coffee,
-  Palette,
+  RefreshCw,
 } from "lucide-react";
 import hero from "@/assets/hero-event.jpg";
 
@@ -24,48 +19,15 @@ export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
 });
 
-const INTERESTS = [
-  {
-    id: "entertainment",
-    label: "Entertainment",
-    icon: Music,
-    color: "text-purple-500",
-    bg: "bg-purple-500/10",
-    border: "border-purple-500",
-  },
-  {
-    id: "event",
-    label: "Events",
-    icon: Ticket,
-    color: "text-blue-500",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500",
-  },
-  {
-    id: "experience",
-    label: "Experiences",
-    icon: Map,
-    color: "text-amber-500",
-    bg: "bg-amber-500/10",
-    border: "border-amber-500",
-  },
-  {
-    id: "sport",
-    label: "Sports",
-    icon: Trophy,
-    color: "text-rose-500",
-    bg: "bg-rose-500/10",
-    border: "border-rose-500",
-  },
-];
-
-const AVATARS = [
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=b6e3f4",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka&backgroundColor=c0aede",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Jude&backgroundColor=ffdfbf",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Ryleigh&backgroundColor=d1d4f9",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Jack&backgroundColor=c0aede",
-  "https://api.dicebear.com/7.x/avataaars/svg?seed=Lilly&backgroundColor=ffdfbf",
+const AVATAR_STYLES = ["micah", "avataaars", "bottts", "lorelei", "adventurer", "fun-emoji"];
+const INTEREST_OPTIONS = [
+  "Music", "Sports", "Cinema", "Conferences", "Tech", "Art", "Food", 
+  "Fashion", "Gaming", "Business", "Health", "Education",
+  "Bus Booking", "Travel & Transport", "Gym & Fitness", "Wellness", 
+  "Office Spaces", "Coworking", "Venue Booking", "Nightlife & Parties",
+  "Networking", "Workshops", "Retreats", "Exhibitions & Expos", 
+  "Comedy", "Theater & Arts", "Festivals", "Pop-ups & Markets", 
+  "Real Estate", "Outdoors & Adventure", "Photography", "Startups"
 ];
 
 function OnboardingPage() {
@@ -75,7 +37,12 @@ function OnboardingPage() {
 
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [selectedAvatar, setSelectedAvatar] = useState<string>(AVATARS[0]);
+  const [selectedStyle, setSelectedStyle] = useState("micah");
+  const [seed, setSeed] = useState(Math.random().toString(36).substring(7));
+  const generatedAvatars = Array.from({ length: 30 }).map((_, i) => 
+    `https://api.dicebear.com/7.x/${selectedStyle}/svg?seed=${seed}_${i}`
+  );
+  const [selectedAvatar, setSelectedAvatar] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Redirect to signin if not logged in
@@ -99,8 +66,9 @@ function OnboardingPage() {
 
     setIsSubmitting(true);
     try {
+      const finalAvatar = selectedAvatar || generatedAvatars[0];
       await updateUserOnboarding({
-        data: { interests: selectedInterests, profile: selectedAvatar },
+        data: { interests: selectedInterests, profile: finalAvatar },
       } as any);
 
       toast.success("Profile complete! Welcome to Agatike.");
@@ -159,33 +127,21 @@ function OnboardingPage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  {INTERESTS.map((interest) => {
-                    const isSelected = selectedInterests.includes(interest.id);
-                    const Icon = interest.icon;
+                <div className="flex flex-wrap gap-2">
+                  {INTEREST_OPTIONS.map((interest) => {
+                    const isSelected = selectedInterests.includes(interest);
 
                     return (
                       <button
-                        key={interest.id}
-                        onClick={() => toggleInterest(interest.id)}
-                        className={`group relative flex flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 p-6 transition-all active:scale-95 ${
+                        key={interest}
+                        onClick={() => toggleInterest(interest)}
+                        className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
                           isSelected
-                            ? `border-primary ${interest.bg}`
-                            : "border-border/40 bg-card hover:border-primary/50"
-                        }`}
+                            ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                            : "bg-secondary text-muted-foreground hover:bg-secondary/80 border-transparent"
+                        } border`}
                       >
-                        <div className={`rounded-full p-3 ${interest.bg}`}>
-                          <Icon className={`h-6 w-6 ${interest.color}`} />
-                        </div>
-                        <span className={`font-semibold ${isSelected ? "text-primary" : ""}`}>
-                          {interest.label}
-                        </span>
-
-                        {isSelected && (
-                          <div className="absolute right-3 top-3 rounded-full bg-primary p-1 text-primary-foreground">
-                            <Check className="h-3 w-3" />
-                          </div>
-                        )}
+                        {interest}
                       </button>
                     );
                   })}
@@ -212,7 +168,7 @@ function OnboardingPage() {
                 <div className="flex justify-center py-6">
                   <div className="relative">
                     <img
-                      src={selectedAvatar}
+                      src={selectedAvatar || generatedAvatars[0]}
                       alt="Selected profile"
                       className="h-32 w-32 rounded-full border-4 border-background bg-card shadow-2xl"
                     />
@@ -222,21 +178,37 @@ function OnboardingPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  {AVATARS.map((avatar, idx) => (
+                <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+                  {AVATAR_STYLES.map(style => (
                     <button
-                      key={idx}
-                      onClick={() => setSelectedAvatar(avatar)}
-                      className={`relative aspect-square overflow-hidden rounded-2xl border-2 transition-all active:scale-95 ${
-                        selectedAvatar === avatar
-                          ? "border-primary"
-                          : "border-transparent opacity-70 hover:opacity-100"
-                      }`}
+                      key={style}
+                      onClick={() => setSelectedStyle(style)}
+                      className={`text-xs px-3 py-1.5 rounded-full whitespace-nowrap capitalize transition-colors ${selectedStyle === style ? "bg-primary text-primary-foreground font-bold" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
                     >
-                      <img src={avatar} alt={`Avatar ${idx}`} className="h-full w-full bg-card" />
+                      {style}
                     </button>
                   ))}
                 </div>
+
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 max-h-[250px] overflow-y-auto p-1">
+                  {generatedAvatars.map((url, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedAvatar(url)}
+                      className={`relative aspect-square overflow-hidden rounded-2xl border-2 transition-all active:scale-95 ${
+                        selectedAvatar === url
+                          ? "border-primary shadow-sm"
+                          : "border-border/40 opacity-70 hover:opacity-100 hover:border-primary/50"
+                      }`}
+                    >
+                      <img src={url} alt={`Avatar ${idx}`} className="h-full w-full bg-card" />
+                    </button>
+                  ))}
+                </div>
+
+                <Button variant="secondary" onClick={() => setSeed(Math.random().toString(36).substring(7))} className="w-full rounded-xl">
+                  <RefreshCw className="h-4 w-4 mr-2" /> Generate More
+                </Button>
 
                 <div className="flex gap-4 pt-4">
                   <Button
