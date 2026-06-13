@@ -1,5 +1,5 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Search,
   MoreVertical,
@@ -139,6 +139,24 @@ function UserMessagesPage() {
   }, [channels, dbOrganizers, hasuraChannels, attendedEventIds]);
 
   const activeChat = displayChannels.find((c) => c.id === activeChatId);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+    const t1 = setTimeout(scrollToBottom, 150);
+    const t2 = setTimeout(scrollToBottom, 500);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [activeChat?.messages, activeChatId]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -463,6 +481,7 @@ function UserMessagesPage() {
                     </div>
                   );
                 })}
+                <div ref={messagesEndRef} className="h-4 w-full shrink-0" />
               </div>
             </ScrollArea>
 

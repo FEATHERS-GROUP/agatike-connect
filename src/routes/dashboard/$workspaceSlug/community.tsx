@@ -1,5 +1,5 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Search,
   MoreVertical,
@@ -161,6 +161,24 @@ function CommunityPage() {
   const [gifSearch, setGifSearch] = useState("");
   const [isGifPopoverOpen, setIsGifPopoverOpen] = useState(false);
   const [isFetchingGifs, setIsFetchingGifs] = useState(false);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+    const t1 = setTimeout(scrollToBottom, 150);
+    const t2 = setTimeout(scrollToBottom, 500);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [activeChat?.messages, activeChatId]);
 
   const fetchGifs = async (offset: number) => {
     if (offset === 0) setIsFetchingGifs(true);
@@ -652,7 +670,7 @@ function CommunityPage() {
                   </h3>
                   {channelTargets.map((target) => {
                     const eventChannel = communityChannels.find(
-                      (c: { event_id: any; schedule_id: any; tour_stop_idx: null }) => {
+                      (c) => {
                         if (c.event_id !== target.eventId) return false;
                         if (target.type === "schedule") {
                           if (target.scheduleId === null)
@@ -936,6 +954,7 @@ function CommunityPage() {
                   </div>
                 );
               })}
+              <div ref={messagesEndRef} className="h-4 w-full shrink-0" />
             </div>
           </ScrollArea>
 
