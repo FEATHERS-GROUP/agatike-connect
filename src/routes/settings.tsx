@@ -11,9 +11,9 @@ import { Label } from "@/components/ui/label";
 import { 
   User, Lock, Image as ImageIcon, Heart, Loader2, 
   RefreshCw, ChevronRight, ChevronDown, Moon, Sun, Monitor, 
-  FileText, ArrowLeft, Settings as SettingsIcon 
+  FileText, ArrowLeft, Settings as SettingsIcon, Trash2, AlertTriangle
 } from "lucide-react";
-import { updateUserGeneral, updateUserPassword, updateUserOnboarding, verifyNewPasswordDifference } from "@/api/auth";
+import { updateUserGeneral, updateUserPassword, updateUserOnboarding, verifyNewPasswordDifference, deactivateUserAccount, logoutUser } from "@/api/auth";
 import { sendProfileUpdateOTP } from "@/api/email";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 import { RefundPolicy } from "@/components/legal/RefundPolicy";
@@ -55,6 +55,8 @@ function SettingsPage() {
   const [isOtpStep, setIsOtpStep] = useState(false);
   const [generatedOtp, setGeneratedOtp] = useState("");
   const [otpInput, setOtpInput] = useState("");
+  const [deleteConfirmHandle, setDeleteConfirmHandle] = useState("");
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -205,6 +207,22 @@ function SettingsPage() {
       toast.error("Failed to update interests");
     } finally {
       setIsUpdatingInterests(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmHandle !== user?.handle) {
+      return toast.error("Handle does not match. Please type your exact handle.");
+    }
+    setIsDeletingAccount(true);
+    try {
+      await deactivateUserAccount();
+      toast.success("Your account has been deleted.");
+      navigate({ to: "/" });
+    } catch (e: any) {
+      toast.error(e.message || "Failed to delete account");
+    } finally {
+      setIsDeletingAccount(false);
     }
   };
 
@@ -450,6 +468,49 @@ function SettingsPage() {
             <PrivacyPolicy />
           </div>
         );
+      case "delete":
+        return (
+          <div className="space-y-6 px-1">
+            <div className="flex flex-col items-center text-center gap-3 py-4">
+              <div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="h-8 w-8 text-destructive" />
+              </div>
+              <h3 className="text-xl font-bold text-destructive">Delete Account</h3>
+              <p className="text-sm text-muted-foreground max-w-xs">
+                This will permanently deactivate your account. You will be immediately logged out and will <strong>not</strong> be able to log back in.
+              </p>
+            </div>
+
+            <div className="bg-destructive/5 border border-destructive/20 rounded-2xl p-4 flex gap-3">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <div className="text-sm text-destructive/80 space-y-1">
+                <p className="font-semibold">This action cannot be undone.</p>
+                <p>All your data, bookings, and tickets will become inaccessible.</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm">
+                Type your handle <strong className="text-foreground">@{user?.handle}</strong> to confirm:
+              </Label>
+              <Input
+                value={deleteConfirmHandle}
+                onChange={e => setDeleteConfirmHandle(e.target.value)}
+                placeholder={`@${user?.handle}`}
+                className="bg-background/50 rounded-xl"
+              />
+            </div>
+
+            <Button
+              variant="destructive"
+              className="w-full rounded-xl"
+              disabled={isDeletingAccount || deleteConfirmHandle !== user?.handle}
+              onClick={handleDeleteAccount}
+            >
+              {isDeletingAccount ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Trash2 className="h-4 w-4 mr-2" /> Yes, delete my account</>}
+            </Button>
+          </div>
+        );
       default:
         return null;
     }
@@ -465,6 +526,7 @@ function SettingsPage() {
       case "terms": return "Terms & Conditions";
       case "refunds": return "Refund Policy";
       case "privacy": return "Privacy Policy";
+      case "delete": return "Delete Account";
       default: return "";
     }
   };
@@ -588,6 +650,34 @@ function SettingsPage() {
             </div>
           </div>
         </main>
+      </div>
+
+      {/* Danger Zone */}
+      <div className="max-w-3xl mx-auto w-full px-4 md:px-10 pb-8">
+        <div className="bg-destructive/5 border border-destructive/20 rounded-3xl overflow-hidden">
+          <div className="p-4 md:p-6 border-b border-destructive/20">
+            <h2 className="font-bold text-lg text-destructive">Danger Zone</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Irreversible account actions</p>
+          </div>
+          <button
+            onClick={() => {
+              setDeleteConfirmHandle("");
+              setActiveModal("delete");
+            }}
+            className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-destructive/5 transition-colors text-left"
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm text-destructive">Delete Account</p>
+                <p className="text-xs text-muted-foreground">Permanently deactivate your account</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-destructive/50" />
+          </button>
+        </div>
       </div>
 
       <Dialog open={!!activeModal} onOpenChange={(open) => {

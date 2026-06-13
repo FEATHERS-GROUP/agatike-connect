@@ -100,6 +100,7 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
         email
         password
         active
+        banned
       }
     }
   `;
@@ -112,6 +113,7 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
       email: string;
       password: string;
       active: boolean;
+      banned: boolean;
     }[];
   }>(query, { email });
 
@@ -128,7 +130,10 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
   }
 
   if (!user.active) {
-    throw new Error("Account is deactivated. Please contact support.");
+    if (user.banned) {
+      throw new Error("Your account has been suspended. Please contact support at support@agatike.com.");
+    }
+    throw new Error("This account no longer exists.");
   }
 
   const token = await new SignJWT({ sub: user.id, type: "user", handle: user.handle })
@@ -487,5 +492,32 @@ export const verifyNewPasswordDifference = createServerFn({ method: "POST" }).ha
     return { success: true };
   } catch (e: any) {
     throw new Error(e.message || "Failed to verify password difference");
+  }
+});
+
+export const deactivateUserAccount = createServerFn({ method: "POST" }).handler(async () => {
+  const token = getCookie("agatike_user_auth");
+  if (!token) throw new Error("Unauthorized");
+
+  try {
+    const { payload } = await jwtVerify(token, SECRET);
+    if (payload.type !== "user") throw new Error("Unauthorized");
+
+    const updateQuery = `
+      mutation DeactivateUser($id: uuid!) {
+        update_users_by_pk(pk_columns: { id: $id }, _set: { active: false }) {
+          id
+        }
+      }
+    `;
+
+    await hasuraRequest(updateQuery, { id: payload.sub });
+
+    // Clear the session cookie so they are logged out immediately
+    deleteCookie("agatike_user_auth", { path: "/" });
+
+    return { success: true };
+  } catch (e: any) {
+    throw new Error(e.message || "Failed to deactivate account");
   }
 });
