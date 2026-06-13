@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { signupUser } from "@/api/auth";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { toast } from "sonner";
@@ -48,6 +49,7 @@ function SignUp() {
   const [gender, setGender] = useState("prefer_not_to_say");
   const [country, setCountry] = useState("");
   const [phone, setPhone] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -57,6 +59,11 @@ function SignUp() {
 
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
+      return;
+    }
+
+    if (!agreed) {
+      setError("You must agree to the Terms, Privacy Policy, and Identity Verification.");
       return;
     }
 
@@ -72,6 +79,7 @@ function SignUp() {
           gender,
           country,
           phone,
+          agreed_to_terms: agreed,
         },
       } as any);
       toast.success("Account created! Let's personalize your experience.");
@@ -302,6 +310,16 @@ function SignUp() {
                 </p>
               )}
 
+              <div className="flex items-start space-x-3 py-2">
+                <Checkbox id="terms" checked={agreed} onCheckedChange={(checked) => setAgreed(checked as boolean)} disabled={isLoading} className="mt-0.5" />
+                <label
+                  htmlFor="terms"
+                  className="text-xs leading-snug text-muted-foreground"
+                >
+                  I agree to the <Link to="/terms" target="_blank" className="underline text-primary hover:text-primary/80">Terms</Link>, <Link to="/privacy" target="_blank" className="underline text-primary hover:text-primary/80">Privacy Policy</Link>, and to provide valid government-issued identification for verification purposes.
+                </label>
+              </div>
+
               <Button
                 type="submit"
                 className="h-11 w-full rounded-xl shadow-[var(--shadow-glow)]"
@@ -320,17 +338,7 @@ function SignUp() {
             </p>
           </div>
 
-          <p className="mt-auto pt-6 text-center text-xs text-muted-foreground lg:mt-4 lg:pt-0">
-            By continuing you agree to our{" "}
-            <Link to="/" className="underline">
-              Terms
-            </Link>{" "}
-            and{" "}
-            <Link to="/" className="underline">
-              Privacy
-            </Link>
-            .
-          </p>
+          </div>
         </div>
       </div>
     </div>

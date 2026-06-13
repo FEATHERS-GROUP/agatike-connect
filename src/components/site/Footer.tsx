@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 export function Footer() {
   return (
     <footer className="mt-24 border-t border-border/60 bg-secondary/40">
@@ -35,9 +37,23 @@ export function Footer() {
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               {col.links.map((l) => (
                 <li key={l}>
-                  <a href="#" className="hover:text-foreground transition">
-                    {l}
-                  </a>
+                  {l === "Terms" ? (
+                    <Link to="/terms" className="hover:text-foreground transition">
+                      {l}
+                    </Link>
+                  ) : l === "Privacy" ? (
+                    <Link to="/privacy" className="hover:text-foreground transition">
+                      {l}
+                    </Link>
+                  ) : l === "Refunds" ? (
+                    <Link to="/refunds" className="hover:text-foreground transition">
+                      {l}
+                    </Link>
+                  ) : (
+                    <a href="#" className="hover:text-foreground transition">
+                      {l}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

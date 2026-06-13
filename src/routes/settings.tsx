@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import { updateUserGeneral, updateUserPassword, updateUserOnboarding, verifyNewPasswordDifference } from "@/api/auth";
 import { sendProfileUpdateOTP } from "@/api/email";
+import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
+import { RefundPolicy } from "@/components/legal/RefundPolicy";
+import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
 import { toast } from "sonner";
 import { COUNTRIES } from "@/lib/countries";
 
@@ -431,21 +434,20 @@ function SettingsPage() {
         );
       case "terms":
         return (
-          <div className="space-y-4 px-1 h-[60vh] overflow-y-auto">
-            <div className="prose prose-sm dark:prose-invert">
-              <h3>1. Terms of Use</h3>
-              <p>By accessing and using Agatike Connect, you accept and agree to be bound by the terms and provision of this agreement.</p>
-              <h3>2. Privacy Policy</h3>
-              <p>We respect your privacy. Any information you provide is protected securely and is only used to enhance your experience.</p>
-              <h3>3. User Conduct</h3>
-              <p>You agree to use the platform responsibly and not to engage in any activity that interferes with or disrupts the services.</p>
-              <h3>4. Modifications</h3>
-              <p>Agatike Connect reserves the right to modify these terms at any time. We will notify users of any significant changes.</p>
-              <p className="text-muted-foreground italic mt-4">These are placeholder terms. Actual terms and conditions apply to your use of this application.</p>
-            </div>
-            <Button onClick={() => setActiveModal(null)} className="w-full rounded-xl mt-6" variant="secondary">
-              Acknowledge & Close
-            </Button>
+          <div className="px-1 h-[60vh] overflow-y-auto">
+            <TermsAndConditions />
+          </div>
+        );
+      case "refunds":
+        return (
+          <div className="px-1 h-[60vh] overflow-y-auto">
+            <RefundPolicy />
+          </div>
+        );
+      case "privacy":
+        return (
+          <div className="px-1 h-[60vh] overflow-y-auto">
+            <PrivacyPolicy />
           </div>
         );
       default:
@@ -461,6 +463,8 @@ function SettingsPage() {
       case "security": return "Security & Password";
       case "preferences": return "App Preferences";
       case "terms": return "Terms & Conditions";
+      case "refunds": return "Refund Policy";
+      case "privacy": return "Privacy Policy";
       default: return "";
     }
   };
@@ -557,6 +561,26 @@ function SettingsPage() {
                   <div>
                     <p className="font-semibold text-sm">Terms & Conditions</p>
                     <p className="text-xs text-muted-foreground">Read our legal agreements</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </button>
+              <button onClick={() => setActiveModal("refunds")} className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left">
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500"><FileText className="h-5 w-5" /></div>
+                  <div>
+                    <p className="font-semibold text-sm">Refund Policy</p>
+                    <p className="text-xs text-muted-foreground">Read our refund rules</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </button>
+              <button onClick={() => setActiveModal("privacy")} className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-secondary/50 transition-colors text-left">
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-500"><Lock className="h-5 w-5" /></div>
+                  <div>
+                    <p className="font-semibold text-sm">Privacy Policy</p>
+                    <p className="text-xs text-muted-foreground">How we handle your data</p>
                   </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />

@@ -12,10 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as VenueDesignerRouteImport } from './routes/venue-designer'
 import { Route as TicketDesignerRouteImport } from './routes/ticket-designer'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OrganizersRouteImport } from './routes/organizers'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MoviesRouteImport } from './routes/movies'
@@ -109,6 +112,11 @@ const TicketDesignerRoute = TicketDesignerRouteImport.update({
   path: '/ticket-designer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -124,9 +132,19 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RefundsRoute = RefundsRouteImport.update({
+  id: '/refunds',
+  path: '/refunds',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrganizersRoute = OrganizersRouteImport.update({
@@ -572,10 +590,13 @@ export interface FileRoutesByFullPath {
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
+  '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
+  '/refunds': typeof RefundsRoute
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
@@ -658,10 +679,13 @@ export interface FileRoutesByTo {
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
+  '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
+  '/refunds': typeof RefundsRoute
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
@@ -745,10 +769,13 @@ export interface FileRoutesById {
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
+  '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
+  '/refunds': typeof RefundsRoute
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
   '/wallet': typeof WalletRoute
@@ -833,10 +860,13 @@ export interface FileRouteTypes {
     | '/movies'
     | '/onboarding'
     | '/organizers'
+    | '/privacy'
     | '/profile'
+    | '/refunds'
     | '/settings'
     | '/signin'
     | '/signup'
+    | '/terms'
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
@@ -919,10 +949,13 @@ export interface FileRouteTypes {
     | '/movies'
     | '/onboarding'
     | '/organizers'
+    | '/privacy'
     | '/profile'
+    | '/refunds'
     | '/settings'
     | '/signin'
     | '/signup'
+    | '/terms'
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
@@ -1005,10 +1038,13 @@ export interface FileRouteTypes {
     | '/movies'
     | '/onboarding'
     | '/organizers'
+    | '/privacy'
     | '/profile'
+    | '/refunds'
     | '/settings'
     | '/signin'
     | '/signup'
+    | '/terms'
     | '/ticket-designer'
     | '/venue-designer'
     | '/wallet'
@@ -1092,10 +1128,13 @@ export interface RootRouteChildren {
   MoviesRoute: typeof MoviesRoute
   OnboardingRoute: typeof OnboardingRoute
   OrganizersRoute: typeof OrganizersRoute
+  PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
+  RefundsRoute: typeof RefundsRoute
   SettingsRoute: typeof SettingsRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
+  TermsRoute: typeof TermsRoute
   TicketDesignerRoute: typeof TicketDesignerRoute
   VenueDesignerRoute: typeof VenueDesignerRoute
   WalletRoute: typeof WalletRoute
@@ -1143,6 +1182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TicketDesignerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -1164,11 +1210,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/refunds': {
+      id: '/refunds'
+      path: '/refunds'
+      fullPath: '/refunds'
+      preLoaderRoute: typeof RefundsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/organizers': {
@@ -1881,10 +1941,13 @@ const rootRouteChildren: RootRouteChildren = {
   MoviesRoute: MoviesRoute,
   OnboardingRoute: OnboardingRoute,
   OrganizersRoute: OrganizersRoute,
+  PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
+  RefundsRoute: RefundsRoute,
   SettingsRoute: SettingsRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
+  TermsRoute: TermsRoute,
   TicketDesignerRoute: TicketDesignerRoute,
   VenueDesignerRoute: VenueDesignerRoute,
   WalletRoute: WalletRoute,

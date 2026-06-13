@@ -147,7 +147,7 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
 });
 
 export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { username, email, password, dateOfBirth, gender, country, phone } =
+  const { username, email, password, dateOfBirth, gender, country, phone, agreed_to_terms } =
     ctx.data as unknown as {
       username: string;
       email: string;
@@ -156,6 +156,7 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
       gender: string;
       country: string;
       phone: string;
+      agreed_to_terms: boolean;
     };
 
   // Check if email already exists
@@ -183,7 +184,7 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
 
   // Insert user
   const insertQuery = `
-    mutation InsertUser($username: String!, $email: String!, $password: String!, $handle: String!, $dateOfBirth: date, $gender: String, $country: String, $phone: String) {
+    mutation InsertUser($username: String!, $email: String!, $password: String!, $handle: String!, $dateOfBirth: date, $gender: String, $country: String, $phone: String, $agreed_to_terms: Boolean) {
       insert_users_one(object: {
         username: $username,
         email: $email,
@@ -193,7 +194,8 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
         gender: $gender,
         country: $country,
         phone: $phone,
-        active: true
+        active: true,
+        agreed_to_terms: $agreed_to_terms
       }) {
         id
         username
@@ -214,6 +216,7 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
     gender,
     country,
     phone,
+    agreed_to_terms,
   });
 
   const user = result.insert_users_one;
