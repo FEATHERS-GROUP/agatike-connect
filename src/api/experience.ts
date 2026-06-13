@@ -293,6 +293,15 @@ export const getEventPosts = createServerFn({ method: "POST" }).handler(async (c
 });
 
 export const getGlobalFeedPosts = createServerFn({ method: "GET" }).handler(async () => {
+  // Try to get the current user session so we can include liked_by_user
+  let currentUserId: string | null = null;
+  try {
+    const session = await getUserSession();
+    if (session?.id) currentUserId = session.id;
+  } catch {
+    // Not logged in — liked_by_user will always be false
+  }
+
   const query = `
     query GetGlobalFeedPosts {
       event_posts(
@@ -306,6 +315,9 @@ export const getGlobalFeedPosts = createServerFn({ method: "GET" }).handler(asyn
         comments_count
         created_at
         event_id
+        event_post_likes {
+          user_id
+        }
         workspace {
           organizer {
             id
@@ -333,7 +345,6 @@ export const getGlobalFeedPosts = createServerFn({ method: "GET" }).handler(asyn
       console.error("Failed to parse media_urls for post", post.id, e);
     }
 
-    // Fallback if parsing completely fails and it looks like a raw URL string
     if (
       parsedMediaUrls.length === 0 &&
       typeof post.media_urls === "string" &&
@@ -343,14 +354,17 @@ export const getGlobalFeedPosts = createServerFn({ method: "GET" }).handler(asyn
     }
 
     const organizer = post.workspace?.organizer || {};
+    const likedByUser = currentUserId
+      ? (post.event_post_likes || []).some((l: any) => l.user_id === currentUserId)
+      : false;
 
     return {
       id: post.id,
       user: organizer.name || "Organizer",
       handle: organizer.handle || "organizer",
       avatar: organizer.image,
-      image: parsedMediaUrls[0] || null, // Keeping for backwards compatibility
-      mediaUrls: parsedMediaUrls, // New field for carousel
+      image: parsedMediaUrls[0] || null,
+      mediaUrls: parsedMediaUrls,
       caption: post.content,
       likes: post.likes_count,
       comments: post.comments_count,
@@ -358,6 +372,8 @@ export const getGlobalFeedPosts = createServerFn({ method: "GET" }).handler(asyn
       createdAt: post.created_at,
       organizerId: organizer.id,
       created_at: post.created_at,
+      // Whether the currently logged-in user has liked this post
+      liked_by_user: likedByUser,
     };
   });
 });
@@ -433,10 +449,13 @@ export const likeEventPost = createServerFn({ method: "POST" })
 
     const { post_id } = ctx.data as unknown as { post_id: string };
 
+    // on_conflict: do_nothing ensures this is idempotent — liking twice is a no-op
+    // The likes_count increment only runs if a new like row was actually inserted
     const mutation = `
     mutation LikeEventPost($post_id: uuid!, $user_id: uuid!) {
       insert_event_post_likes(
-        objects: { post_id: $post_id, user_id: $user_id }
+        objects: { post_id: $post_id, user_id: $user_id },
+        on_conflict: { constraint: event_post_likes_pkey, update_columns: [] }
       ) {
         affected_rows
       }
@@ -448,13 +467,19 @@ export const likeEventPost = createServerFn({ method: "POST" })
     }
   `;
 
-    const data = await hasuraRequest<{ update_event_posts_by_pk: any }>(mutation, {
+    const data = await hasuraRequest<{
+      insert_event_post_likes: { affected_rows: number };
+      update_event_posts_by_pk: any;
+    }>(mutation, {
       post_id,
       user_id: session.id,
     });
 
+    // If no row was inserted (duplicate like), skip the count increment side-effect
+    const affected = data.insert_event_post_likes?.affected_rows ?? 0;
     const updatedPost = data.update_event_posts_by_pk;
-    if (updatedPost?.workspace_id) {
+
+    if (affected > 0 && updatedPost?.workspace_id) {
       try {
         await addDoc(collection(db, "agatike_notifications"), {
           type: "like",
@@ -505,6 +530,16 @@ export const getPostById = createServerFn({ method: "POST" })
   .inputValidator((d: { postId: string }) => d)
   .handler(async (ctx) => {
     const { postId } = ctx.data as unknown as { postId: string };
+
+    // Try to get the logged-in user so we can include liked_by_user
+    let currentUserId: string | null = null;
+    try {
+      const session = await getUserSession();
+      if (session?.id) currentUserId = session.id;
+    } catch {
+      // Not logged in
+    }
+
     const query = `
     query GetPostById($id: uuid!) {
       event_posts_by_pk(id: $id) {
@@ -515,6 +550,9 @@ export const getPostById = createServerFn({ method: "POST" })
         comments_count
         created_at
         event_id
+        event_post_likes {
+          user_id
+        }
         workspace {
           organizer {
             id
@@ -553,6 +591,9 @@ export const getPostById = createServerFn({ method: "POST" })
     }
 
     const organizer = post.workspace?.organizer || {};
+    const likedByUser = currentUserId
+      ? (post.event_post_likes || []).some((l: any) => l.user_id === currentUserId)
+      : false;
 
     return {
       id: post.id,
@@ -566,6 +607,7 @@ export const getPostById = createServerFn({ method: "POST" })
       eventId: post.event_id,
       createdAt: post.created_at,
       organizerId: organizer.id,
+      liked_by_user: likedByUser,
     };
   });
 

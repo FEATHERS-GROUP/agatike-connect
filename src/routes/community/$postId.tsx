@@ -9,7 +9,7 @@ import {
   MessageCircle,
   Heart,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getPostById,
@@ -74,10 +74,16 @@ function PostCommunityPage() {
   const [commentText, setCommentText] = useState("");
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  // Guard: prevents double-tap while network request is in-flight
+  const isProcessing = useRef(false);
 
   useEffect(() => {
     if (post) {
       setLikesCount(post.likes || 0);
+      // Seed the liked state from the server data so it persists on refresh
+      if (post.liked_by_user !== undefined) {
+        setIsLiked(!!post.liked_by_user);
+      }
     }
   }, [post]);
 
@@ -111,25 +117,30 @@ function PostCommunityPage() {
   });
 
   const handleLike = async () => {
+    if (isProcessing.current) return;
+    isProcessing.current = true;
+
     if (isLiked) {
       setIsLiked(false);
-      setLikesCount(Math.max(0, likesCount - 1));
+      setLikesCount((c) => Math.max(0, c - 1));
       try {
         await unlikeEventPost({ data: { post_id: postId } });
       } catch (e) {
         setIsLiked(true);
-        setLikesCount(likesCount);
+        setLikesCount((c) => c + 1);
       }
     } else {
       setIsLiked(true);
-      setLikesCount(likesCount + 1);
+      setLikesCount((c) => c + 1);
       try {
         await likeEventPost({ data: { post_id: postId } });
       } catch (e) {
         setIsLiked(false);
-        setLikesCount(likesCount - 1);
+        setLikesCount((c) => Math.max(0, c - 1));
       }
     }
+
+    isProcessing.current = false;
   };
 
   const [scrolled, setScrolled] = useState(false);

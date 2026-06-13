@@ -8,7 +8,7 @@ import {
   MessageCircle,
   Heart,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { likeEventPost, unlikeEventPost } from "@/api/experience";
@@ -16,32 +16,42 @@ import { likeEventPost, unlikeEventPost } from "@/api/experience";
 export function FeedCard({ post }: { post: any }) {
   const [isSaved, setIsSaved] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(() => !!post.liked_by_user);
   const [likesCount, setLikesCount] = useState(post.likes || 0);
+  // Guard: prevents a second tap while the network request is in-flight
+  const isProcessing = useRef(false);
 
   const images =
     post.mediaUrls && post.mediaUrls.length > 0 ? post.mediaUrls : [post.image || post.cover];
 
   const handleLike = async () => {
+    // Prevent double-tap while a request is in flight
+    if (isProcessing.current) return;
+    isProcessing.current = true;
+
     if (isLiked) {
       setIsLiked(false);
-      setLikesCount(Math.max(0, likesCount - 1));
+      setLikesCount((c: number) => Math.max(0, c - 1));
       try {
         await unlikeEventPost({ data: { post_id: post.id } });
       } catch (e) {
+        // Revert on failure
         setIsLiked(true);
-        setLikesCount(likesCount);
+        setLikesCount((c: number) => c + 1);
       }
     } else {
       setIsLiked(true);
-      setLikesCount(likesCount + 1);
+      setLikesCount((c: number) => c + 1);
       try {
         await likeEventPost({ data: { post_id: post.id } });
       } catch (e) {
+        // Revert on failure
         setIsLiked(false);
-        setLikesCount(likesCount - 1);
+        setLikesCount((c: number) => Math.max(0, c - 1));
       }
     }
+
+    isProcessing.current = false;
   };
 
   const nextImage = (e: React.MouseEvent) => {
