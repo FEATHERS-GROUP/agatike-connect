@@ -860,23 +860,28 @@ function CommunityPage() {
           {/* Messages Area */}
           <ScrollArea className="flex-1 p-6">
             <div className="flex flex-col gap-6 max-w-3xl mx-auto pb-4">
-              {/* Date divider */}
-              <div className="flex items-center justify-center my-2">
-                <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground bg-muted/50 px-3 py-1 rounded-full border border-border/50">
-                  Today
-                </span>
-              </div>
-
               {activeChat.messages.map((msg, idx) => {
+                const currentMsgDate = formatMessageDate(msg.rawTimeMillis || Date.now());
+                const prevMsg = activeChat.messages[idx - 1];
+                const prevMsgDate = prevMsg ? formatMessageDate(prevMsg.rawTimeMillis || Date.now()) : null;
+                const showDateHeader = currentMsgDate !== prevMsgDate;
+
                 const showAvatar =
                   !msg.isMe &&
                   (idx === 0 || activeChat.messages[idx - 1]?.senderId !== msg.senderId);
 
                 return (
-                  <div
-                    key={msg.id}
-                    className={`flex gap-3 ${msg.isMe ? "justify-end" : "justify-start"}`}
-                  >
+                  <React.Fragment key={msg.id}>
+                    {showDateHeader && (
+                      <div className="flex items-center justify-center my-2">
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground bg-muted/50 px-3 py-1 rounded-full border border-border/50">
+                          {currentMsgDate}
+                        </span>
+                      </div>
+                    )}
+                    <div
+                      className={`flex gap-3 ${msg.isMe ? "justify-end" : "justify-start"}`}
+                    >
                     {!msg.isMe && (
                       <div className="w-8 shrink-0">
                         {showAvatar &&
@@ -952,6 +957,7 @@ function CommunityPage() {
                       </span>
                     </div>
                   </div>
+                  </React.Fragment>
                 );
               })}
               <div ref={messagesEndRef} className="h-4 w-full shrink-0" />

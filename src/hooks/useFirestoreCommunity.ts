@@ -15,6 +15,7 @@ import { getUsersByIds } from "@/api/users";
 import { getCommunityChannels } from "@/api/community";
 import { getEventAttendees } from "@/api/attendees";
 import { getOrganizerFollowerIds } from "@/api/organizers";
+import { formatMessageTime } from "@/lib/utils";
 
 export type Message = {
   id: string;
@@ -26,6 +27,7 @@ export type Message = {
   mediaUrl?: string;
   timeFormatted?: string;
   isPending?: boolean;
+  rawTimeMillis?: number;
 };
 
 export type ChatChannel = {
@@ -65,9 +67,7 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
           name: data.name || "Unknown Channel",
           avatar: data.avatar && !data.avatar.includes("pravatar.cc") ? data.avatar : "",
           lastMessage: data.lastMessage || "",
-          time:
-            rawTime?.toDate?.()?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) ||
-            new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: rawTime ? formatMessageTime(rawTime.toDate()) : formatMessageTime(new Date()),
           rawTimeMillis: rawTime?.toMillis?.() || Date.now(),
           unread: data.unreadCount || 0,
           online: data.online || false,
@@ -163,13 +163,14 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
           channelId: data.channelId,
           mediaUrl: data.mediaUrl,
           isPending: !rawTime,
+          rawTimeMillis: rawTime?.toMillis?.() || Date.now(),
         };
       });
 
       // Sort in memory to bypass the Firebase composite index requirement
       messages.sort((a, b) => {
-        const timeA = a.timestamp?.toMillis?.() || Date.now();
-        const timeB = b.timestamp?.toMillis?.() || Date.now();
+        const timeA = a.rawTimeMillis || Date.now();
+        const timeB = b.rawTimeMillis || Date.now();
         return timeA - timeB;
       });
 

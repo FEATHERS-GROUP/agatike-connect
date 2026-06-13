@@ -39,6 +39,7 @@ import { getOrganizers } from "@/api/organizers";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { getUserAttendedEventIds } from "@/api/attendees";
 import { getCommunityChannelsForOrganizers } from "@/api/community";
+import { formatMessageDate } from "@/lib/utils";
 
 type MessageSearch = {
   chatId?: string;
@@ -467,13 +468,25 @@ function UserMessagesPage() {
                     Say hi to start the conversation!
                   </div>
                 )}
-                {activeChat.messages.map((msg) => {
+                {activeChat.messages.map((msg, index) => {
                   const isMe = msg.isMe;
+                  const currentMsgDate = formatMessageDate(msg.rawTimeMillis || Date.now());
+                  const prevMsg = activeChat.messages[index - 1];
+                  const prevMsgDate = prevMsg ? formatMessageDate(prevMsg.rawTimeMillis || Date.now()) : null;
+                  const showDateHeader = currentMsgDate !== prevMsgDate;
+
                   return (
-                    <div
-                      key={msg.id}
-                      className={`flex ${isMe ? "justify-end" : "justify-start"} mb-1`}
-                    >
+                    <React.Fragment key={msg.id}>
+                      {showDateHeader && (
+                        <div className="flex justify-center my-4">
+                          <Badge variant="secondary" className="px-3 py-1 text-xs bg-muted/50 backdrop-blur-sm border-border/50 text-muted-foreground font-medium rounded-full shadow-sm">
+                            {currentMsgDate}
+                          </Badge>
+                        </div>
+                      )}
+                      <div
+                        className={`flex ${isMe ? "justify-end" : "justify-start"} mb-1`}
+                      >
                       <div className={`flex flex-col ${isMe ? "items-end" : "items-start"} max-w-[85%] md:max-w-[70%]`}>
                         <div
                           className={`px-4 py-2.5 rounded-2xl text-sm ${
@@ -496,6 +509,7 @@ function UserMessagesPage() {
                         </span>
                       </div>
                     </div>
+                    </React.Fragment>
                   );
                 })}
                 <div ref={messagesEndRef} className="h-4 w-full shrink-0" />
