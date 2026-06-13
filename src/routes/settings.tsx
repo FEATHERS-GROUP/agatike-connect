@@ -126,7 +126,7 @@ function SettingsPage() {
     }
 
     try {
-      await updateUserGeneral({ data: { ...general, handle: newHandle, dateOfBirth: user?.dateOfBirth || "" } });
+      await updateUserGeneral({ data: { ...general, handle: newHandle, dateOfBirth: user?.dateOfBirth || "" } } as any);
       toast.success("Profile updated successfully!");
       refresh();
       setIsOtpStep(false);
@@ -146,7 +146,7 @@ function SettingsPage() {
     if (!isOtpStep) {
       setIsUpdatingPassword(true);
       try {
-        await verifyNewPasswordDifference({ data: { password } });
+        await verifyNewPasswordDifference({ data: { password } } as any);
         
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         setGeneratedOtp(otp);
@@ -167,7 +167,7 @@ function SettingsPage() {
 
     setIsUpdatingPassword(true);
     try {
-      await updateUserPassword({ data: { password } });
+      await updateUserPassword({ data: { password } } as any);
       toast.success("Password updated successfully!");
       setPassword(""); setConfirmPassword("");
       setIsOtpStep(false);
