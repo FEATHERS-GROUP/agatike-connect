@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { updateUserGeneral, updateUserPassword, updateUserOnboarding } from "@/api/auth";
 import { toast } from "sonner";
+import { COUNTRIES } from "@/lib/countries";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -40,7 +41,7 @@ function SettingsPage() {
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
   // States for sub-forms
-  const [general, setGeneral] = useState({ username: "", email: "", phone: "", country: "" });
+  const [general, setGeneral] = useState({ username: "", email: "", phone: "", country: "", gender: "" });
   const [isUpdatingGeneral, setIsUpdatingGeneral] = useState(false);
 
   const [password, setPassword] = useState("");
@@ -51,7 +52,7 @@ function SettingsPage() {
   const [seed, setSeed] = useState(Math.random().toString(36).substring(7));
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
   const [stagedAvatar, setStagedAvatar] = useState<string | null>(null);
-  const generatedAvatars = Array.from({ length: 15 }).map((_, i) => 
+  const generatedAvatars = Array.from({ length: 12 }).map((_, i) => 
     `https://api.dicebear.com/7.x/${selectedStyle}/svg?seed=${seed}_${i}`
   );
 
@@ -65,6 +66,7 @@ function SettingsPage() {
         email: user.email || "",
         phone: user.phone || "",
         country: user.country || "",
+        gender: user.gender || "",
       });
       let ints: string[] = [];
       try {
@@ -79,8 +81,17 @@ function SettingsPage() {
     e.preventDefault();
     if (!general.username || !general.email) return toast.error("Name and email are required");
     setIsUpdatingGeneral(true);
+    
+    // Generate unique handle
+    let newHandle = general.username.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!user?.handle || user.username !== general.username) {
+      newHandle = newHandle + Math.floor(Math.random() * 10000);
+    } else {
+      newHandle = user.handle;
+    }
+
     try {
-      await updateUserGeneral({ data: { ...general, gender: user?.gender || "", dateOfBirth: user?.dateOfBirth || "" } });
+      await updateUserGeneral({ data: { ...general, handle: newHandle, dateOfBirth: user?.dateOfBirth || "" } });
       toast.success("Profile updated successfully!");
       refresh();
       setActiveModal(null);
@@ -157,8 +168,28 @@ function SettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label>Country</Label>
-                <Input value={general.country} onChange={e => setGeneral({...general, country: e.target.value})} className="bg-background/50 rounded-xl" placeholder="e.g. Rwanda"/>
+                <select 
+                  value={general.country} 
+                  onChange={e => setGeneral({...general, country: e.target.value})} 
+                  className="flex h-10 w-full rounded-xl border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="" disabled>Select Country</option>
+                  {COUNTRIES.map(c => <option key={c.code} value={c.name}>{c.name}</option>)}
+                </select>
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Gender</Label>
+              <select 
+                value={general.gender} 
+                onChange={e => setGeneral({...general, gender: e.target.value})} 
+                className="flex h-10 w-full rounded-xl border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="" disabled>Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <Button type="submit" disabled={isUpdatingGeneral} className="w-full rounded-xl mt-4" style={{ background: "var(--gradient-primary)" }}>
               {isUpdatingGeneral ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
