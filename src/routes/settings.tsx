@@ -13,7 +13,7 @@ import {
   RefreshCw, ChevronRight, ChevronDown, Moon, Sun, Monitor, 
   FileText, ArrowLeft, Settings as SettingsIcon 
 } from "lucide-react";
-import { updateUserGeneral, updateUserPassword, updateUserOnboarding } from "@/api/auth";
+import { updateUserGeneral, updateUserPassword, updateUserOnboarding, verifyNewPasswordDifference } from "@/api/auth";
 import { sendProfileUpdateOTP } from "@/api/email";
 import { toast } from "sonner";
 import { COUNTRIES } from "@/lib/countries";
@@ -143,6 +143,8 @@ function SettingsPage() {
     if (!isOtpStep) {
       setIsUpdatingPassword(true);
       try {
+        await verifyNewPasswordDifference({ data: { password } });
+        
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         setGeneratedOtp(otp);
         await sendProfileUpdateOTP({ data: { to: user?.email || "", otp } });

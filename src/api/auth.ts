@@ -382,3 +382,35 @@ export const updateUserPassword = createServerFn({ method: "POST" }).handler(asy
     throw new Error("Failed to update password");
   }
 });
+
+export const verifyNewPasswordDifference = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const token = getCookie("agatike_user_auth");
+  if (!token) throw new Error("Unauthorized");
+
+  try {
+    const { payload } = await jwtVerify(token, SECRET);
+    if (payload.type !== "user") throw new Error("Unauthorized");
+
+    const { password } = ctx.data as unknown as { password: string };
+
+    const query = `
+      query GetUserPassword($id: uuid!) {
+        users_by_pk(id: $id) {
+          password
+        }
+      }
+    `;
+
+    const result = await hasuraRequest<{ users_by_pk: { password: string } }>(query, { id: payload.sub });
+    if (!result.users_by_pk) throw new Error("User not found");
+
+    const isSame = await bcrypt.compare(password, result.users_by_pk.password);
+    if (isSame) {
+      throw new Error("Your new password cannot be the same as your current password");
+    }
+
+    return { success: true };
+  } catch (e: any) {
+    throw new Error(e.message || "Failed to verify password difference");
+  }
+});
