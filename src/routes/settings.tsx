@@ -14,6 +14,7 @@ import {
   FileText, ArrowLeft, Settings as SettingsIcon 
 } from "lucide-react";
 import { updateUserGeneral, updateUserPassword, updateUserOnboarding } from "@/api/auth";
+import { sendProfileUpdateOTP } from "@/api/email";
 import { toast } from "sonner";
 import { COUNTRIES } from "@/lib/countries";
 
@@ -43,6 +44,9 @@ function SettingsPage() {
   // States for sub-forms
   const [general, setGeneral] = useState({ username: "", email: "", phone: "", country: "", gender: "" });
   const [isUpdatingGeneral, setIsUpdatingGeneral] = useState(false);
+  const [isOtpStep, setIsOtpStep] = useState(false);
+  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [otpInput, setOtpInput] = useState("");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -80,6 +84,27 @@ function SettingsPage() {
   const handleUpdateGeneral = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!general.username || !general.email) return toast.error("Name and email are required");
+    
+    if (!isOtpStep) {
+      setIsUpdatingGeneral(true);
+      try {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        setGeneratedOtp(otp);
+        await sendProfileUpdateOTP({ data: { to: general.email, otp } });
+        setIsOtpStep(true);
+        toast.success("OTP sent to your email");
+      } catch (e: any) {
+        toast.error(e.message || "Failed to send OTP");
+      } finally {
+        setIsUpdatingGeneral(false);
+      }
+      return;
+    }
+
+    if (otpInput !== generatedOtp) {
+      return toast.error("Invalid OTP");
+    }
+
     setIsUpdatingGeneral(true);
     
     // Generate unique handle
@@ -94,6 +119,8 @@ function SettingsPage() {
       await updateUserGeneral({ data: { ...general, handle: newHandle, dateOfBirth: user?.dateOfBirth || "" } });
       toast.success("Profile updated successfully!");
       refresh();
+      setIsOtpStep(false);
+      setOtpInput("");
       setActiveModal(null);
     } catch (e: any) {
       toast.error(e.message || "Failed to update profile");
@@ -153,10 +180,35 @@ function SettingsPage() {
       case "general":
         return (
           <form onSubmit={handleUpdateGeneral} className="space-y-4 px-1">
-            <div className="flex flex-col gap-3">
-              <Label>Name</Label>
-              <Input value={general.username} onChange={e => setGeneral({...general, username: e.target.value})} className="bg-background/50 rounded-xl"/>
-            </div>
+            {isOtpStep ? (
+              <div className="flex flex-col gap-4 text-center py-6">
+                <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+                  <Lock className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold">Verification Required</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  We've sent a 6-digit OTP to <strong>{general.email}</strong>. Please enter it below to save changes.
+                </p>
+                <div className="flex flex-col gap-3 text-left">
+                  <Label>One-Time Password</Label>
+                  <Input 
+                    value={otpInput} 
+                    onChange={e => setOtpInput(e.target.value)} 
+                    placeholder="Enter 6-digit OTP" 
+                    className="bg-background/50 rounded-xl text-center text-lg tracking-widest font-mono"
+                    maxLength={6}
+                  />
+                </div>
+                <Button type="button" variant="ghost" onClick={() => setIsOtpStep(false)} className="mt-2 text-muted-foreground">
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col gap-3">
+                  <Label>Name</Label>
+                  <Input value={general.username} onChange={e => setGeneral({...general, username: e.target.value})} className="bg-background/50 rounded-xl"/>
+                </div>
             <div className="flex flex-col gap-3">
               <Label>Email</Label>
               <Input type="email" value={general.email} onChange={e => setGeneral({...general, email: e.target.value})} className="bg-background/50 rounded-xl"/>
@@ -197,8 +249,10 @@ function SettingsPage() {
                 <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
               </div>
             </div>
+            </>
+            )}
             <Button type="submit" disabled={isUpdatingGeneral} className="w-full rounded-xl mt-4" style={{ background: "var(--gradient-primary)" }}>
-              {isUpdatingGeneral ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
+              {isUpdatingGeneral ? <Loader2 className="h-4 w-4 animate-spin" /> : isOtpStep ? "Confirm & Save" : "Save Changes"}
             </Button>
           </form>
         );
