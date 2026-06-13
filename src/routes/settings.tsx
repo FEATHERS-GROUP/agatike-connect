@@ -252,7 +252,7 @@ function SettingsPage() {
   const handleSelectAvatar = async (url: string) => {
     setIsUpdatingAvatar(true);
     try {
-      await updateUserOnboarding({ data: { profile: url, interests: user?.interests } });
+      await updateUserOnboarding({ data: { profile: url, interests: user?.interests } } as any);
       toast.success("Avatar updated successfully!");
       refresh();
       setActiveModal(null);
@@ -268,7 +268,7 @@ function SettingsPage() {
     try {
       await updateUserOnboarding({
         data: { profile: user?.profile || "", interests: selectedInterests },
-      });
+      } as any);
       toast.success("Interests updated successfully!");
       refresh();
       setActiveModal(null);
