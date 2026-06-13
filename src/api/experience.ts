@@ -626,7 +626,7 @@ export const addPostComment = createServerFn({ method: "POST" })
           id
           content
           created_at
-          post {
+          event_post {
             workspace_id
             event_post_comments {
               user_id
@@ -650,8 +650,8 @@ export const addPostComment = createServerFn({ method: "POST" })
     const insertedComment = data.insert_event_post_comments?.returning?.[0];
     if (insertedComment) {
       try {
-        const workspaceId = insertedComment.post?.workspace_id;
-        const allComments = insertedComment.post?.event_post_comments || [];
+        const workspaceId = insertedComment.event_post?.workspace_id;
+        const allComments = insertedComment.event_post?.event_post_comments || [];
         const targetUsers = Array.from(
           new Set(allComments.map((c: any) => c.user_id).filter((id: string) => id !== session.id)),
         );
