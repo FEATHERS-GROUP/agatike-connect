@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
-import { Clock, MapPin, Film, Ticket, ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Clock, MapPin, Film, Ticket, ArrowLeft, Play, Star, Calendar } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { formatCurrency } from "@/lib/currency";
@@ -10,13 +10,13 @@ import { cinemas, movies } from "@/lib/mock-data";
 export const Route = createFileRoute("/movies")({
   head: () => ({
     meta: [
-      { title: "Movies — Agatike" },
+      { title: "Movies — Agatike Connect" },
       {
         name: "description",
-        content: "Showtimes, reserved seats and IMAX from cinemas across Africa.",
+        content: "Showtimes, reserved seats and premium cinemas.",
       },
       { property: "og:title", content: "Movies on Agatike" },
-      { property: "og:description", content: "Africa's cinemas, all in one app." },
+      { property: "og:description", content: "The best cinemas, all in one app." },
     ],
   }),
   component: Movies,
@@ -27,139 +27,211 @@ function Movies() {
   const activeMovie = movies.find((m) => m.id === active)!;
   const router = useRouter();
 
+  // Scroll to top when active movie changes on mobile to show the hero
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [active]);
+
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none">
+    <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0">
       <div className="hidden md:block">
         <Navbar />
       </div>
 
-      {/* Mobile Header */}
-      <div className="md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center gap-3">
+      {/* Mobile Back Button - Glassmorphic floating */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 px-4 py-3 pt-safe-top flex items-center justify-between pointer-events-none">
         <button
           onClick={() => router.history.back()}
-          className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+          className="p-2.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white shadow-lg pointer-events-auto active:scale-95 transition-transform"
         >
-          <ArrowLeft className="h-6 w-6" />
+          <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="font-bold text-lg tracking-tight">Movies & Cinemas</h1>
       </div>
 
-      <section className="relative overflow-hidden border-b border-border/60">
-        <img
-          src={activeMovie.cover}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-30 blur-sm"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/95 to-background" />
-        <div className="relative mx-auto grid max-w-7xl gap-6 px-4 md:px-6 py-6 md:gap-8 md:py-16 md:grid-cols-[260px_1fr]">
+      {/* Hero Section */}
+      <section className="relative w-full transition-all duration-700 ease-in-out">
+        {/* Desktop Blurred Background */}
+        <div className="hidden md:block absolute inset-0 overflow-hidden">
           <img
             src={activeMovie.cover}
-            alt={activeMovie.title}
-            className="aspect-[2/3] w-[180px] md:w-full rounded-2xl object-cover shadow-[var(--shadow-card)] mx-auto md:mx-0"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover opacity-20 blur-2xl scale-110 transition-all duration-700"
           />
-          <div className="text-center md:text-left">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs backdrop-blur">
-              <Film className="h-3.5 w-3.5 text-primary" /> Now playing
-            </span>
-            <h1 className="mt-4 text-3xl font-semibold md:text-5xl">{activeMovie.title}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {activeMovie.genre} · {activeMovie.duration} · {activeMovie.rating}
-            </p>
-            <p className="mt-4 max-w-xl text-sm text-muted-foreground mx-auto md:mx-0">
-              {activeMovie.synopsis}
-            </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm">
-              <span className="inline-flex items-center gap-1 text-muted-foreground">
-                <MapPin className="h-4 w-4" /> {activeMovie.cinema}, {activeMovie.city}
-              </span>
-              <span className="inline-flex items-center gap-1 text-muted-foreground">
-                <Clock className="h-4 w-4" /> Today
-              </span>
+          <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/80 to-background" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-0 md:px-6 md:py-16">
+          <div className="flex flex-col md:flex-row gap-0 md:gap-10 items-end md:items-start">
+            
+            {/* Mobile Hero Image */}
+            <div className="w-full md:w-[320px] shrink-0 relative aspect-[4/5] md:aspect-[2/3] md:rounded-3xl overflow-hidden shadow-2xl">
+              <img
+                key={activeMovie.id}
+                src={activeMovie.cover}
+                alt={activeMovie.title}
+                className="absolute inset-0 h-full w-full object-cover animate-in fade-in zoom-in-95 duration-500"
+              />
+              {/* Mobile Gradient Overlay to blend into background */}
+              <div className="md:hidden absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
             </div>
-            <div className="mt-5 flex overflow-x-auto hide-scrollbar gap-2 pb-2 justify-center md:justify-start">
-              {activeMovie.showtimes.map((t) => (
-                <button
-                  key={t}
-                  className="rounded-2xl border border-border bg-background px-5 py-3 text-sm font-medium hover:border-primary hover:bg-accent transition shrink-0"
+
+            {/* Content Details */}
+            <div className="w-full px-5 md:px-0 -mt-20 md:mt-0 relative z-10 text-left">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary backdrop-blur-md">
+                  <Film className="h-3.5 w-3.5" /> Now Playing
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-xs font-bold text-white backdrop-blur-md">
+                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" /> 4.8
+                </span>
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white mb-2 leading-tight drop-shadow-md">
+                {activeMovie.title}
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/80 font-medium mb-5">
+                <span>{activeMovie.genre}</span>
+                <span className="w-1 h-1 rounded-full bg-white/40" />
+                <span>{activeMovie.duration}</span>
+                <span className="w-1 h-1 rounded-full bg-white/40" />
+                <span className="px-1.5 py-0.5 rounded border border-white/30 text-xs">{activeMovie.rating}</span>
+              </div>
+
+              <p className="text-white/70 text-sm md:text-base max-w-2xl leading-relaxed mb-8 drop-shadow-sm line-clamp-3 md:line-clamp-none">
+                {activeMovie.synopsis}
+              </p>
+
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-4 text-sm mb-8 bg-card/40 md:bg-transparent backdrop-blur-md md:backdrop-blur-none p-4 md:p-0 rounded-2xl border border-border/40 md:border-transparent">
+                <div className="flex items-center gap-2 text-muted-foreground md:text-white/80">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <span className="font-medium">{activeMovie.cinema}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground md:text-white/80">
+                  <Calendar className="h-4 w-4 text-primary" />
+                  <span className="font-medium">Today</span>
+                </div>
+              </div>
+
+              {/* Showtimes */}
+              <div className="mb-8">
+                <h3 className="text-sm font-semibold mb-3 text-foreground md:text-white/90">Select Showtime</h3>
+                <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-5 px-5 md:mx-0 md:px-0">
+                  {activeMovie.showtimes.map((t, i) => (
+                    <button
+                      key={t}
+                      className={`shrink-0 rounded-xl px-6 py-3 text-sm font-bold border transition-all ${
+                        i === 0 
+                          ? "bg-primary border-primary text-primary-foreground shadow-[var(--shadow-glow)]" 
+                          : "bg-card md:bg-white/5 border-border md:border-white/10 hover:border-primary/50 text-foreground md:text-white"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <Button
+                  asChild
+                  className="w-full sm:w-auto h-14 rounded-2xl shadow-[var(--shadow-glow)] text-base font-bold px-8"
+                  style={{ background: "var(--gradient-primary)" }}
                 >
-                  {t}
-                </button>
-              ))}
-            </div>
-            <div className="mt-6 flex flex-wrap justify-center md:justify-start gap-2">
-              <Button
-                asChild
-                className="rounded-full shadow-[var(--shadow-glow)] w-full md:w-auto"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                <Link to="/book/$eventId" params={{ eventId: activeMovie.id }}>
-                  <Ticket className="mr-2 h-4 w-4" /> Reserve seat —{" "}
-                  {formatCurrency(activeMovie.price || 8, activeMovie.currency)}
-                </Link>
-              </Button>
-              <Button variant="outline" className="rounded-full w-full md:w-auto mt-2 md:mt-0">
-                Watch trailer
-              </Button>
+                  <Link to="/book/$eventId" params={{ eventId: activeMovie.id }}>
+                    <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
+                    {formatCurrency(activeMovie.price || 8, activeMovie.currency)}
+                  </Link>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full sm:w-auto h-14 rounded-2xl text-base font-bold px-8 bg-card/50 md:bg-white/5 backdrop-blur-md border-border/60 md:border-white/20 hover:bg-card md:hover:bg-white/10 md:text-white"
+                >
+                  <Play className="mr-2 h-5 w-5" /> Watch Trailer
+                </Button>
+              </div>
+
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 md:px-6 py-8 md:py-12">
-        <h2 className="text-lg md:text-xl font-semibold">All movies showing this week</h2>
-        <div className="mt-4 md:mt-6 grid grid-cols-2 gap-4 md:gap-5 md:grid-cols-4">
+      {/* Movies Carousel */}
+      <section className="mx-auto max-w-7xl py-12">
+        <div className="px-5 md:px-6 mb-6 flex items-center justify-between">
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight">Now Showing</h2>
+        </div>
+        
+        {/* Horizontal Scroll on Mobile, Grid on Desktop */}
+        <div className="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory gap-4 px-5 md:px-6 md:grid md:grid-cols-4 lg:grid-cols-5 md:snap-none md:overflow-visible pb-8">
           {movies.map((m) => (
             <button
               key={m.id}
               onClick={() => setActive(m.id)}
-              className={`text-left ${active === m.id ? "opacity-100" : "opacity-90 hover:opacity-100"}`}
+              className={`snap-start shrink-0 w-[140px] sm:w-[160px] md:w-auto text-left group transition-all duration-300 ${
+                active === m.id ? "scale-100 opacity-100" : "scale-95 opacity-60 hover:opacity-100 hover:scale-100"
+              }`}
             >
               <div
-                className={`relative aspect-[2/3] overflow-hidden rounded-2xl border ${active === m.id ? "border-primary ring-2 ring-primary/30" : "border-transparent"}`}
+                className={`relative aspect-[2/3] overflow-hidden rounded-2xl shadow-lg transition-all duration-300 ${
+                  active === m.id ? "ring-2 ring-primary ring-offset-4 ring-offset-background" : ""
+                }`}
               >
                 <img
                   src={m.cover}
                   alt={m.title}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
                   loading="lazy"
                 />
-                <span className="absolute top-3 left-3 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-medium backdrop-blur">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <span className="absolute top-2 left-2 rounded-md bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] font-bold text-white border border-white/10">
                   {m.rating}
                 </span>
               </div>
-              <p className="mt-3 truncate font-semibold">{m.title}</p>
-              <p className="text-xs text-muted-foreground">{m.cinema}</p>
+              <h3 className="mt-4 truncate font-bold text-sm md:text-base">{m.title}</h3>
+              <p className="text-xs text-muted-foreground truncate">{m.cinema}</p>
             </button>
           ))}
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 md:px-6 pb-20">
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+      {/* Cinemas */}
+      <section className="mx-auto max-w-7xl px-5 md:px-6 pb-24">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-lg md:text-xl font-semibold">Cinemas on Agatike</h2>
-            <p className="text-sm text-muted-foreground">
-              Theater partners selling seats through our platform.
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight">Premium Cinemas</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Find theaters selling reserved seating on Agatike.
             </p>
           </div>
-          <Button variant="outline" className="rounded-full w-full md:w-auto">
-            List your cinema
+          <Button variant="outline" className="rounded-full w-full md:w-auto border-primary/20 text-primary hover:bg-primary/10">
+            View All Cinemas
           </Button>
         </div>
-        <div className="mt-4 md:mt-6 grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-4">
+
+        <div className="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory gap-4 pb-6 -mx-5 px-5 md:mx-0 md:px-0 md:grid md:grid-cols-2 lg:grid-cols-4 md:snap-none md:overflow-visible">
           {cinemas.map((c) => (
-            <div key={c.id} className="overflow-hidden rounded-2xl border border-border/60 bg-card">
-              <img
-                src={c.image}
-                alt={c.name}
-                className="aspect-video w-full object-cover"
-                loading="lazy"
-              />
-              <div className="p-4">
-                <p className="font-semibold">{c.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {c.city} · {c.screens} screens
-                </p>
+            <div key={c.id} className="snap-start shrink-0 w-[260px] md:w-auto group cursor-pointer">
+              <div className="overflow-hidden rounded-3xl border border-border/40 bg-card shadow-sm transition-all duration-300 group-hover:shadow-[var(--shadow-card)] group-hover:border-primary/30">
+                <div className="relative aspect-video w-full overflow-hidden">
+                  <img
+                    src={c.image}
+                    alt={c.name}
+                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-3 left-3 text-white">
+                    <p className="font-bold text-sm">{c.city}</p>
+                  </div>
+                </div>
+                <div className="p-4 md:p-5">
+                  <p className="font-bold text-base truncate">{c.name}</p>
+                  <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                    <Film className="h-3.5 w-3.5" />
+                    <span>{c.screens} premium screens</span>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
@@ -168,6 +240,20 @@ function Movies() {
 
       <div className="hidden md:block">
         <Footer />
+      </div>
+
+      {/* Mobile Floating Action Button (Sticky Bottom) for Booking */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 pb-safe">
+        <Button
+          asChild
+          className="w-full h-14 rounded-2xl shadow-[var(--shadow-glow)] text-base font-bold"
+          style={{ background: "var(--gradient-primary)" }}
+        >
+          <Link to="/book/$eventId" params={{ eventId: activeMovie.id }}>
+            <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
+            {formatCurrency(activeMovie.price || 8, activeMovie.currency)}
+          </Link>
+        </Button>
       </div>
     </div>
   );
