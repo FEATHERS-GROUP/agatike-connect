@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Clock, MapPin, Film, Ticket, ArrowLeft, Play, Star, Calendar, X } from "lucide-react";
+import { Clock, MapPin, Film, Ticket, ArrowLeft, Play, Star, Calendar, X, Search } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cinemas, movies } from "@/lib/mock-data";
 import {
   Drawer,
@@ -246,7 +247,17 @@ function MobileMoviesView() {
           <ArrowLeft className="h-6 w-6" />
         </button>
         <h1 className="font-bold text-lg tracking-tight">Movies & Cinemas</h1>
-        <div className="w-6" /> {/* Spacer for centering */}
+      </div>
+
+      {/* Mobile Search Bar */}
+      <div className="px-4 py-2 bg-background/80 backdrop-blur-xl border-b border-border/40">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input 
+            placeholder="Search movies, cinemas, or genres..." 
+            className="pl-9 h-10 rounded-xl bg-secondary/50 border-transparent focus-visible:ring-1 focus-visible:ring-primary focus-visible:bg-background transition-all" 
+          />
+        </div>
       </div>
 
       {/* Featured Header */}
