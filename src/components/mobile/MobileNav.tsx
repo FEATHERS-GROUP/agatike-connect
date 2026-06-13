@@ -25,9 +25,6 @@ export function MobileNav() {
   const moreMenuLinks = [
     { name: "Movies & Cinemas", href: "/movies", icon: Film },
     { name: "Profile Settings", href: "/profile", icon: User, requiresAuth: true },
-    { name: "Dashboard / Organizer", href: "/dashboard", icon: LayoutDashboard },
-    { name: "About Agatike", href: "/about", icon: Info },
-    { name: "Contact Support", href: "/contact", icon: Mail },
   ];
 
   return (
