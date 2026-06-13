@@ -7,9 +7,7 @@ import {
   User,
   Menu,
   Film,
-  LayoutDashboard,
-  Info,
-  Mail,
+  CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -34,6 +32,7 @@ export function MobileNav() {
   ];
 
   const moreMenuLinks = [
+    { name: "Events", href: "/events", icon: CalendarDays },
     { name: "Movies & Cinemas", href: "/movies", icon: Film },
     { name: "Profile Settings", href: "/profile", icon: User, requiresAuth: true },
   ];
