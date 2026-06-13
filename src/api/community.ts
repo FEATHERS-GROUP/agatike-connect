@@ -124,6 +124,34 @@ export const getCommunityChannels = createServerFn({ method: "POST" })
     return channels;
   });
 
+export const getCommunityChannelsForOrganizers = createServerFn({ method: "POST" })
+  .inputValidator((d: { organizerIds: string[] }) => d)
+  .handler(async (ctx) => {
+    const data = ctx.data;
+    if (!data.organizerIds || data.organizerIds.length === 0) return [];
+
+    const query = `
+    query GetCommunityChannelsForOrganizers($orgIds: [uuid!]!) {
+      community_channels(where: {organizer_id: {_in: $orgIds}}, order_by: {created_at: asc}) {
+        id
+        organizer_id
+        name
+        cover_url
+        is_main
+        event_id
+        schedule_id
+        tour_stop_idx
+        created_at
+      }
+    }
+  `;
+
+    const result = await hasuraRequest<{ community_channels: CommunityChannel[] }>(query, {
+      orgIds: data.organizerIds,
+    });
+    return result.community_channels || [];
+  });
+
 export const createCommunityChannel = createServerFn({ method: "POST" })
   .inputValidator(
     (d: {

@@ -118,3 +118,30 @@ export const checkUserAttendance = createServerFn({ method: "POST" }).handler(as
 
   return data.event_attendees.length > 0 ? data.event_attendees[0] : null;
 });
+
+export const getUserAttendedEventIds = createServerFn({ method: "GET" }).handler(async () => {
+  const { getUserSession } = await import("./auth");
+  const user = await getUserSession();
+
+  if (!user || !user.email) return [];
+
+  const query = `
+    query GetUserAttendedEvents($user_id: uuid, $email: String!) {
+      event_attendees(where: {
+        _or: [
+          { user_id: { _eq: $user_id } },
+          { email: { _eq: $email } }
+        ]
+      }) {
+        event_id
+      }
+    }
+  `;
+
+  const data = await hasuraRequest<{ event_attendees: { event_id: string }[] }>(query, {
+    user_id: user.id || null,
+    email: user.email,
+  });
+
+  return [...new Set(data.event_attendees.map((a) => a.event_id))];
+});

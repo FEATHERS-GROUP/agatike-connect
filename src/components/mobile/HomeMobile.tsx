@@ -2,7 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { events, movies, stories } from "@/lib/mock-data";
 import { FeedCard } from "@/components/site/FeedCard";
 import { Stories } from "@/components/site/Stories";
-import { Camera, Activity, Loader2, Users, Star } from "lucide-react";
+import { MessageCircle, Activity, Loader2, Users, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -289,9 +289,9 @@ export function HomeMobile() {
     <div className="h-full w-full bg-background text-foreground pb-20">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background z-30 border-b border-border/40 pt-safe-top">
-        <button className="text-foreground">
-          <Camera className="h-6 w-6" />
-        </button>
+        <Link to="/$userId/message" params={{ userId: user?.id || "me" }} className="text-foreground">
+          <MessageCircle className="h-6 w-6" />
+        </Link>
         <img src="/icon.svg" alt="Agatike" className="h-8 w-auto object-contain" />
         <Link to="/activity" className="text-foreground relative">
           <Activity className="h-6 w-6" />
