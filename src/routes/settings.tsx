@@ -100,7 +100,7 @@ function SettingsPage() {
       try {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         setGeneratedOtp(otp);
-        await sendProfileUpdateOTP({ data: { to: general.email, otp } });
+        await sendProfileUpdateOTP({ data: { to: general.email, otp } } as any);
         setIsOtpStep(true);
         toast.success("OTP sent to your email");
       } catch (e: any) {
@@ -150,7 +150,7 @@ function SettingsPage() {
         
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         setGeneratedOtp(otp);
-        await sendProfileUpdateOTP({ data: { to: user?.email || "", otp } });
+        await sendProfileUpdateOTP({ data: { to: user?.email || "", otp } } as any);
         setIsOtpStep(true);
         toast.success("OTP sent to your email");
       } catch (e: any) {
