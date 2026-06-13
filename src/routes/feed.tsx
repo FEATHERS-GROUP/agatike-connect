@@ -4,6 +4,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Stories } from "@/components/site/Stories";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { FeedCard } from "@/components/site/FeedCard";
 import { events, feedPosts } from "@/lib/mock-data";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/feed")({
 
 function Feed() {
   const { isFollowing } = useFollowedOrganizers();
-  const { data: dbPosts = [] } = useQuery({
+  const { data: dbPosts = [], isLoading } = useQuery({
     queryKey: ["global-feed-posts"],
     queryFn: () => getGlobalFeedPosts(),
   });
@@ -44,9 +45,28 @@ function Feed() {
       <Navbar />
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[1fr_320px]">
         <main>
-          <Stories />
+          <Stories isLoading={isLoading} />
           <div className="mt-8 space-y-8">
-            {filteredPosts.length > 0 ? (
+            {isLoading ? (
+              <div className="space-y-8">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex flex-col space-y-3 p-4 bg-card rounded-2xl border border-border/40">
+                    <div className="flex items-center space-x-4">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-[200px]" />
+                        <Skeleton className="h-3 w-[100px]" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-[300px] w-full rounded-xl" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-5/6" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredPosts.length > 0 ? (
               filteredPosts.map((p, i) => <FeedCard key={`${p.id}-${i}`} post={p} />)
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-card rounded-2xl border border-border/40">

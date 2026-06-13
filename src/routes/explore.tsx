@@ -4,6 +4,7 @@ import { Search, Map as MapIcon, SlidersHorizontal, MapPin } from "lucide-react"
 import { Input } from "@/components/ui/input";
 import { categories, movies } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
 import { getPublicEvents } from "@/api/events";
@@ -21,17 +22,17 @@ function ExplorePage() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: dbOrganizers = [] } = useQuery({
+  const { data: dbOrganizers = [], isLoading: isLoadingOrganizers } = useQuery({
     queryKey: ["organizers"],
     queryFn: () => getOrganizers(),
   });
 
-  const { data: dbEvents = [] } = useQuery({
+  const { data: dbEvents = [], isLoading: isLoadingEvents } = useQuery({
     queryKey: ["public-events"],
     queryFn: () => getPublicEvents(),
   });
 
-  const { data: dbVenues = [] } = useQuery({
+  const { data: dbVenues = [], isLoading: isLoadingVenues } = useQuery({
     queryKey: ["public-venues"],
     queryFn: () => getPublicVenues(),
   });
@@ -111,35 +112,39 @@ function ExplorePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {trendingEvents.map((e, i) => {
-              const city = e.workspaces?.city || e.workspaces?.name || "Local";
-              return (
-                <Link
-                  key={e.id}
-                  to="/events/$eventId"
-                  params={{ eventId: e.id }}
-                  className={`group relative rounded-3xl overflow-hidden bg-card shadow-[var(--shadow-card)] ${i === 0 || i === 3 ? "aspect-[3/4]" : "aspect-square"}`}
-                >
-                  <img
-                    src={e.cover}
-                    alt={e.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <div className="text-[10px] font-bold text-primary mb-1 uppercase tracking-wider">
-                      {e.category}
+            {isLoadingEvents ? (
+              [1, 2, 3, 4].map(i => <Skeleton key={i} className={`rounded-3xl ${i === 1 || i === 4 ? "aspect-[3/4]" : "aspect-square"}`} />)
+            ) : (
+              trendingEvents.map((e, i) => {
+                const city = e.workspaces?.city || e.workspaces?.name || "Local";
+                return (
+                  <Link
+                    key={e.id}
+                    to="/events/$eventId"
+                    params={{ eventId: e.id }}
+                    className={`group relative rounded-3xl overflow-hidden bg-card shadow-[var(--shadow-card)] ${i === 0 || i === 3 ? "aspect-[3/4]" : "aspect-square"}`}
+                  >
+                    <img
+                      src={e.cover}
+                      alt={e.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <div className="text-[10px] font-bold text-primary mb-1 uppercase tracking-wider">
+                        {e.category}
+                      </div>
+                      <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2">
+                        {e.title}
+                      </h3>
+                      <div className="text-white/80 text-[10px] mt-1 flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> {city}
+                      </div>
                     </div>
-                    <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2">
-                      {e.title}
-                    </h3>
-                    <div className="text-white/80 text-[10px] mt-1 flex items-center gap-1">
-                      <MapPin className="h-3 w-3" /> {city}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+                  </Link>
+                );
+              })
+            )}
           </div>
         </section>
 
@@ -152,40 +157,51 @@ function ExplorePage() {
             </Link>
           </div>
           <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-2">
-            {dbOrganizers.slice(0, 8).map((org) => {
-              const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
-              const following = isFollowing(org.id);
-              return (
-                <Link
-                  key={org.id}
-                  to="/organizers"
-                  className="w-36 shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center text-center transition-transform active:scale-95 block"
-                >
-                  <img
-                    src={avatar}
-                    alt={org.name}
-                    className="w-16 h-16 rounded-full object-cover mb-3"
-                  />
-                  <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">
-                    @{org.handle}
-                  </p>
-                  <Button
-                    size="sm"
-                    variant={following ? "outline" : "default"}
-                    className={`mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
-                    style={following ? undefined : { background: "var(--gradient-primary)" }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      toggleFollow(org.id);
-                    }}
+            {isLoadingOrganizers ? (
+              [1, 2, 3].map(i => (
+                <div key={i} className="w-36 shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center">
+                  <Skeleton className="w-16 h-16 rounded-full mb-3" />
+                  <Skeleton className="h-4 w-24 mb-1" />
+                  <Skeleton className="h-3 w-16 mb-3" />
+                  <Skeleton className="h-7 w-full rounded-full" />
+                </div>
+              ))
+            ) : (
+              dbOrganizers.slice(0, 8).map((org) => {
+                const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
+                const following = isFollowing(org.id);
+                return (
+                  <Link
+                    key={org.id}
+                    to="/organizers"
+                    className="w-36 shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center text-center transition-transform active:scale-95 block"
                   >
-                    {following ? "Following" : "Follow"}
-                  </Button>
-                </Link>
-              );
-            })}
+                    <img
+                      src={avatar}
+                      alt={org.name}
+                      className="w-16 h-16 rounded-full object-cover mb-3"
+                    />
+                    <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">
+                      @{org.handle}
+                    </p>
+                    <Button
+                      size="sm"
+                      variant={following ? "outline" : "default"}
+                      className={`mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
+                      style={following ? undefined : { background: "var(--gradient-primary)" }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleFollow(org.id);
+                      }}
+                    >
+                      {following ? "Following" : "Follow"}
+                    </Button>
+                  </Link>
+                );
+              })
+            )}
           </div>
         </section>
 
@@ -195,46 +211,58 @@ function ExplorePage() {
             <h2 className="text-xl font-bold tracking-tight">Upcoming Events</h2>
           </div>
           <div className="flex gap-4 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-2">
-            {upcomingEvents.map((event) => {
-              const cheapestTicket = event.event_tickets?.reduce(
-                (min: number, t: any) => Math.min(min, t.cost),
-                Infinity,
-              );
-              const price = cheapestTicket && cheapestTicket !== Infinity ? cheapestTicket : 0;
-              const currency = event.workspaces?.currency || "RWF";
-              const date = event.tour_stops?.[0]?.date || event.created_at;
-              const city = event.workspaces?.city || event.workspaces?.name || "Local";
-
-              return (
-                <Link
-                  key={event.id}
-                  to="/events/$eventId"
-                  params={{ eventId: event.id }}
-                  className="w-60 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
-                >
-                  <div className="aspect-[4/3] relative">
-                    <img
-                      src={event.cover}
-                      alt={event.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm">
-                      {price > 0 ? formatCurrency(price, currency) : "Free"}
-                    </div>
-                  </div>
+            {isLoadingEvents ? (
+              [1, 2, 3].map(i => (
+                <div key={i} className="w-60 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block">
+                  <Skeleton className="aspect-[4/3] w-full" />
                   <div className="p-3">
-                    <p className="font-semibold text-sm leading-tight line-clamp-2">
-                      {event.title}
-                    </p>
-                    <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <span className="truncate">{new Date(date).toLocaleDateString()}</span>
-                      <span>•</span>
-                      <span className="truncate">{city}</span>
-                    </div>
+                    <Skeleton className="h-4 w-3/4 mb-2" />
+                    <Skeleton className="h-3 w-1/2" />
                   </div>
-                </Link>
-              );
-            })}
+                </div>
+              ))
+            ) : (
+              upcomingEvents.map((event) => {
+                const cheapestTicket = event.event_tickets?.reduce(
+                  (min: number, t: any) => Math.min(min, t.cost),
+                  Infinity,
+                );
+                const price = cheapestTicket && cheapestTicket !== Infinity ? cheapestTicket : 0;
+                const currency = event.workspaces?.currency || "RWF";
+                const date = event.tour_stops?.[0]?.date || event.created_at;
+                const city = event.workspaces?.city || event.workspaces?.name || "Local";
+
+                return (
+                  <Link
+                    key={event.id}
+                    to="/events/$eventId"
+                    params={{ eventId: event.id }}
+                    className="w-60 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
+                  >
+                    <div className="aspect-[4/3] relative">
+                      <img
+                        src={event.cover}
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm">
+                        {price > 0 ? formatCurrency(price, currency) : "Free"}
+                      </div>
+                    </div>
+                    <div className="p-3">
+                      <p className="font-semibold text-sm leading-tight line-clamp-2">
+                        {event.title}
+                      </p>
+                      <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span className="truncate">{new Date(date).toLocaleDateString()}</span>
+                        <span>•</span>
+                        <span className="truncate">{city}</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })
+            )}
           </div>
         </section>
 
