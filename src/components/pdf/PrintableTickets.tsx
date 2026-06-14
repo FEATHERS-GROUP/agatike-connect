@@ -3,6 +3,7 @@ import { Ticket as TicketIcon, Film, MapPin, Briefcase, User } from "lucide-reac
 import QRCode from "react-qr-code";
 import Barcode from "react-barcode";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
+import { DEFAULT_TERMS_HTML } from "@/components/desktop/dashboard/ticket-designer/templates/types";
 
 export type TicketTemplateConfig = {
   layout?: "movie" | "conference" | "default";
@@ -24,6 +25,20 @@ export type TicketTemplateConfig = {
   };
 };
 
+export function getCustomTemplateHeight(template: string): number {
+  if (template === "entrance-1" || template === "entrance") return 260;
+  if (template === "entrance-2") return 250;
+  if (template === "concert-1" || template === "concert") return 230;
+  if (template === "concert-2") return 250;
+  if (template === "conference-1" || template === "conference") return 280;
+  if (template === "conference-2") return 250;
+  if (template === "movie-1" || template === "movie") return 240;
+  if (template === "movie-2") return 220;
+  if (template === "experience-1" || template === "experience") return 260;
+  if (template === "experience-2") return 250;
+  return 250;
+}
+
 export function PrintableTicket({
   ticket,
   id,
@@ -35,62 +50,195 @@ export function PrintableTicket({
 }) {
   const isCustomDesign = !!ticket.design;
   const width = isCustomDesign ? "720px" : "800px";
-  const height = isCustomDesign ? "230px" : "300px";
+  const height = isCustomDesign
+    ? `${getCustomTemplateHeight(ticket.design.template)}px`
+    : "300px";
+
+  return (
+    <div className="absolute top-0 left-0 -z-50 opacity-0 pointer-events-none flex flex-col gap-4">
+      {/* Front Side */}
+      <div
+        id={`${id}-front`}
+        className="overflow-hidden shadow-none flex"
+        style={{
+          fontFamily: isCustomDesign ? undefined : "'Inter', sans-serif",
+          width,
+          height,
+        }}
+      >
+        {isCustomDesign ? (
+          <TicketPreview
+            template={ticket.design.template}
+            palette={ticket.design.palette || { from: "#1f2937", to: "#111827", name: "Dark" }}
+            font={ticket.design.font || { css: "sans-serif", name: "Modern" }}
+            tier={ticket.ticketType || "Standard"}
+            title={ticket.title}
+            subtitle={ticket.venueName || ticket.city || ""}
+            date={ticket.date}
+            time={ticket.time}
+            seat={ticket.passengerName}
+            price={ticket.price?.toString() || "0"}
+            currency={ticket.isVenueBooking ? (ticket.currency || "RWF") : "RWF"}
+            cover={ticket.design.coverImage || ticket.cover || ""}
+            logoText={ticket.design.logoText || "Agatike"}
+            logoImage={ticket.design.logoImage}
+            logoScale={ticket.design.logoScale || 24}
+            logoOpacity={ticket.design.logoOpacity ?? 1}
+            logoColorMode={ticket.design.logoColorMode || "original"}
+            orderId={ticket.orderId}
+            qrValue={`${window.location.origin}/v/${ticket.orderId}`}
+            previewMode="Front"
+            layout={
+              ticket.design.layout || {
+                titleSize: 30,
+                subtitleSize: 14,
+                metaSize: 11,
+                titleAlign: "left",
+                titleOffsetY: 0,
+                subtitleOffsetY: 0,
+                metaOffsetY: 0,
+              }
+            }
+            back={
+              ticket.design.back || {
+                backText: "",
+                backImage: "",
+                backImageOpacity: 0.3,
+              }
+            }
+          />
+        ) : (
+          <DynamicPrintablePass ticket={ticket} config={config} />
+        )}
+      </div>
+
+      {/* Back Side */}
+      <div
+        id={`${id}-back`}
+        className="overflow-hidden shadow-none flex"
+        style={{
+          fontFamily: isCustomDesign ? undefined : "'Inter', sans-serif",
+          width,
+          height,
+        }}
+      >
+        {isCustomDesign ? (
+          <TicketPreview
+            template={ticket.design.template}
+            palette={ticket.design.palette || { from: "#1f2937", to: "#111827", name: "Dark" }}
+            font={ticket.design.font || { css: "sans-serif", name: "Modern" }}
+            tier={ticket.ticketType || "Standard"}
+            title={ticket.title}
+            subtitle={ticket.venueName || ticket.city || ""}
+            date={ticket.date}
+            time={ticket.time}
+            seat={ticket.passengerName}
+            price={ticket.price?.toString() || "0"}
+            currency={ticket.isVenueBooking ? (ticket.currency || "RWF") : "RWF"}
+            cover={ticket.design.coverImage || ticket.cover || ""}
+            logoText={ticket.design.logoText || "Agatike"}
+            logoImage={ticket.design.logoImage}
+            logoScale={ticket.design.logoScale || 24}
+            logoOpacity={ticket.design.logoOpacity ?? 1}
+            logoColorMode={ticket.design.logoColorMode || "original"}
+            orderId={ticket.orderId}
+            qrValue={`${window.location.origin}/v/${ticket.orderId}`}
+            previewMode="Back"
+            layout={
+              ticket.design.layout || {
+                titleSize: 30,
+                subtitleSize: 14,
+                metaSize: 11,
+                titleAlign: "left",
+                titleOffsetY: 0,
+                subtitleOffsetY: 0,
+                metaOffsetY: 0,
+              }
+            }
+            back={
+              ticket.design.back || {
+                backText: "",
+                backImage: "",
+                backImageOpacity: 0.3,
+              }
+            }
+          />
+        ) : (
+          <DynamicPrintablePassBack ticket={ticket} config={config} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DynamicPrintablePassBack({ ticket, config }: { ticket: any; config?: TicketTemplateConfig }) {
+  const bgColor = config?.bgColor || "#1a1a1a";
+  const textColor = config?.textColor || "#ffffff";
+  const accentColor = config?.accentColor || "#ea580c";
 
   return (
     <div
-      id={id}
-      className="absolute top-0 left-0 -z-50 opacity-0 pointer-events-none overflow-hidden shadow-none flex"
-      style={{
-        fontFamily: isCustomDesign ? undefined : "'Inter', sans-serif",
-        width,
-        height,
-      }}
+      className="w-full h-full flex"
+      style={{ backgroundColor: bgColor, color: textColor }}
     >
-      {isCustomDesign ? (
-        <TicketPreview
-          template={ticket.design.template}
-          palette={ticket.design.palette || { from: "#1f2937", to: "#111827", name: "Dark" }}
-          font={ticket.design.font || { css: "sans-serif", name: "Modern" }}
-          tier={ticket.ticketType || "Standard"}
-          title={ticket.title}
-          subtitle={ticket.venueName || ticket.city || ""}
-          date={ticket.date}
-          time={ticket.time}
-          seat={ticket.passengerName}
-          price={ticket.price?.toString() || "0"}
-          currency={ticket.isVenueBooking ? (ticket.currency || "RWF") : "RWF"}
-          cover={ticket.design.coverImage || ticket.cover || ""}
-          logoText={ticket.design.logoText || "Agatike"}
-          logoImage={ticket.design.logoImage}
-          logoScale={ticket.design.logoScale || 24}
-          logoOpacity={ticket.design.logoOpacity ?? 1}
-          logoColorMode={ticket.design.logoColorMode || "original"}
-          orderId={ticket.orderId}
-          qrValue={`${window.location.origin}/v/${ticket.orderId}`}
-          previewMode="Front"
-          layout={
-            ticket.design.layout || {
-              titleSize: 30,
-              subtitleSize: 14,
-              metaSize: 11,
-              titleAlign: "left",
-              titleOffsetY: 0,
-              subtitleOffsetY: 0,
-              metaOffsetY: 0,
-            }
-          }
-          back={
-            ticket.design.back || {
-              backText: "",
-              backImage: "",
-              backImageOpacity: 0.3,
-            }
-          }
-        />
-      ) : (
-        <DynamicPrintablePass ticket={ticket} config={config} />
-      )}
+      {/* Left stub: similar to front but styled for back */}
+      <div className="w-[120px] bg-white text-black flex flex-col items-center justify-between py-6 border-r-2 border-dashed border-gray-400">
+        <div className="rounded bg-gray-100 p-2 flex flex-col items-center gap-1.5">
+          <QRCode value={ticket.orderId || "TIX-001"} size={70} />
+        </div>
+        <p className="text-[9px] uppercase tracking-wider text-center text-gray-500 font-bold px-1">
+          Scan to Verify
+        </p>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 relative overflow-hidden flex flex-col p-8 justify-between">
+        {ticket.cover && !config?.bgColor && (
+          <img
+            src={ticket.cover}
+            alt="Event"
+            className="absolute inset-0 w-full h-full object-cover opacity-10 -scale-x-100"
+          />
+        )}
+        <div className="relative z-10">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-50 mb-3">
+            Terms & Conditions
+          </p>
+          <div
+            className="ticket-back-content text-[11px] text-white/80 leading-relaxed max-w-[420px]"
+            dangerouslySetInnerHTML={{ __html: DEFAULT_TERMS_HTML }}
+          />
+        </div>
+        
+        <div className="relative z-10 text-[10px] opacity-60 flex justify-between border-t border-white/10 pt-3">
+          <p>Organized by Agatike Connect Partners</p>
+          <p>Support: support@agatike.com</p>
+        </div>
+      </div>
+
+      {/* Right stub matching the standard front tear-off stub */}
+      <div className="w-[160px] bg-white text-black p-6 flex flex-col justify-between items-center text-center relative border-l-2 border-dashed border-gray-400">
+        <div className="absolute -left-4 -top-4 w-8 h-8 bg-black rounded-full" />
+        <div className="absolute -left-4 -bottom-4 w-8 h-8 bg-black rounded-full" />
+
+        <div className="w-full text-center space-y-4">
+          <p className="text-sm font-black tracking-wider" style={{ color: accentColor }}>
+            Agatike
+          </p>
+          <div>
+            <p className="text-[10px] uppercase text-gray-400 font-bold tracking-widest">
+              Reference
+            </p>
+            <p className="text-xs font-mono font-bold mt-1">{ticket.orderId}</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase text-gray-400 font-bold tracking-widest">
+              Pass Type
+            </p>
+            <p className="text-xs font-bold mt-0.5">{ticket.ticketType || "General Entry"}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

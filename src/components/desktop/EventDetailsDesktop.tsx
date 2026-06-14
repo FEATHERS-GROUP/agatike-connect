@@ -439,7 +439,7 @@ export function EventDetailsDesktop({
                       </div>
                     }
                   >
-                    <VenueMap lat={lat} lng={lng} venue={venue} city={city} />
+                    <VenueMap lat={lat} lng={lng} venue={venue} city={city} tourStops={tourStops} selectedStopIdx={selectedStopIdx} />
                   </Suspense>
                 ) : (
                   <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground">

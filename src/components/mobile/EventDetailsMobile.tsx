@@ -10,6 +10,7 @@ import {
   Plus,
   Minus,
   ChevronLeft,
+  ChevronUp,
   Instagram,
   CheckCircle2,
 } from "lucide-react";
@@ -53,6 +54,17 @@ export function EventDetailsMobile({
       ? ev.tour_stops
       : [{ city: ev.city, venue: ev.venue, date: ev.date, time: ev.time }];
   const [selectedStopIdx, setSelectedStopIdx] = useState(0);
+  const [isTicketsExpanded, setIsTicketsExpanded] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 30) {
+        setIsTicketsExpanded(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const currentStop = tourStops[selectedStopIdx] || tourStops[0];
   const date = isMock ? ev.date : currentStop.date || "TBD";
@@ -232,7 +244,7 @@ export function EventDetailsMobile({
                   </div>
                 }
               >
-                <VenueMap lat={lat} lng={lng} venue={venue} city={city} />
+                <VenueMap lat={lat} lng={lng} venue={venue} city={city} tourStops={tourStops} selectedStopIdx={selectedStopIdx} />
               </Suspense>
             ) : (
               <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground text-sm font-medium">
@@ -401,100 +413,172 @@ export function EventDetailsMobile({
             )}
           </div>
         </div>
+      </div>
 
-        <div>
-          <h2 className="text-lg font-bold mb-4">Tickets</h2>
-          {tourStops.length > 1 && (
-            <div className="mb-4">
-              <p className="text-sm font-medium mb-2">Select Tour Stop</p>
-              <div className="grid grid-cols-2 gap-2 pb-2">
+      {/* Sticky Bottom Action & Collapsible Tickets Drawer */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-xl border-t border-border/50 z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+        <div className="max-w-md mx-auto w-full">
+          {/* Collapsible Header/Toggle */}
+          <div
+            className="flex items-center justify-between gap-4 mb-3 cursor-pointer active:opacity-70 transition-opacity"
+            onClick={() => setIsTicketsExpanded(!isTicketsExpanded)}
+          >
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm text-muted-foreground font-semibold">Tickets & Pricing</span>
+              <ChevronUp
+                className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${isTicketsExpanded ? "rotate-180" : ""}`}
+              />
+            </div>
+            {!isTicketsExpanded && activeTicketTiers.length > 1 && (
+              <span className="text-xs text-primary font-bold">
+                Show {activeTicketTiers.length - 1} more options
+              </span>
+            )}
+          </div>
+
+          {/* Tour Stops selection as Tabs inside the bottom sheet (Visible when expanded) */}
+          {isTicketsExpanded && tourStops.length > 1 && (
+            <div className="mb-3 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Select Tour Stop</p>
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                 {tourStops.map((stop: any, idx: number) => (
                   <button
                     key={idx}
-                    onClick={() => {
-                      setSelectedStopIdx(idx);
-                    }}
-                    className={`w-full px-2 py-2 rounded-xl text-[11px] leading-tight font-semibold border transition-all ${selectedStopIdx === idx ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-muted-foreground hover:bg-secondary"}`}
+                    onClick={() => setSelectedStopIdx(idx)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border shrink-0 ${selectedStopIdx === idx ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-muted-foreground border-border/40 hover:bg-secondary/80"}`}
                   >
-                    <span className="block truncate">{stop.city}</span>
-                    <span className="block opacity-80 mt-0.5">{stop.date}</span>
+                    {stop.city} ({stop.date})
                   </button>
                 ))}
               </div>
             </div>
           )}
-          <div className="space-y-3">
-            {activeTicketTiers.map((t: any) => {
-              const cartKey = `${selectedStopIdx}_${t.id}`;
-              const itemQty = cart[cartKey] || 0;
-              const isSelected = itemQty > 0;
 
-              return (
-                <div
-                  key={t.id}
-                  className={`w-full rounded-3xl border p-4 transition-all duration-300 ${isSelected ? "border-primary bg-primary/10 scale-[1.02]" : "border-border/40 bg-card/50"}`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="font-bold text-base">{t.name}</p>
-                    <p className="font-bold text-lg text-primary">
-                      {formatCurrency(t.price, currencyCode)}
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">{t.perks.join(" · ")}</p>
+          {/* Tickets List */}
+          {isTicketsExpanded && (
+            <div className="max-h-[35vh] overflow-y-auto space-y-2.5 pr-1 border-t border-border/40 pt-3 mb-4 scrollbar-hide animate-in slide-in-from-bottom-2 fade-in duration-200">
+              {activeTicketTiers.map((t: any) => {
+                const cartKey = `${selectedStopIdx}_${t.id}`;
+                const itemQty = cart[cartKey] || 0;
+                const isSelected = itemQty > 0;
 
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
-                    <span className="text-sm font-medium">Quantity</span>
-                    <div className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm">
-                      <button
-                        className="h-8 w-8 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
-                        onClick={() =>
-                          setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
-                        }
-                        disabled={itemQty === 0}
-                      >
-                        <Minus className="h-3 w-3" />
-                      </button>
-                      <span className="w-4 text-center font-bold text-sm">{itemQty}</span>
-                      <button
-                        className="h-8 w-8 flex items-center justify-center rounded-full bg-secondary text-foreground"
-                        onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
+                return (
+                  <div
+                    key={t.id}
+                    className={`w-full rounded-2xl border p-3.5 transition-all duration-300 ${isSelected ? "border-primary bg-primary/10" : "border-border/40 bg-card/50"}`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-bold text-sm">{t.name}</p>
+                      <p className="font-bold text-base text-primary">
+                        {formatCurrency(t.price, currencyCode)}
+                      </p>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mb-3 leading-snug">{t.perks.join(" · ")}</p>
+
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
+                      <span className="text-xs font-medium text-muted-foreground">Quantity</span>
+                      <div className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm border border-border/20">
+                        <button
+                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
+                          onClick={() =>
+                            setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
+                          }
+                          disabled={itemQty === 0}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-4 text-center font-bold text-xs">{itemQty}</span>
+                        <button
+                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground"
+                          onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          )}
+
+          {/* If minimized, show exactly one ticket option */}
+          {!isTicketsExpanded && activeTicketTiers.length > 0 && (
+            <div className="mb-4 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
+              {activeTicketTiers.slice(0, 1).map((t: any) => {
+                const cartKey = `${selectedStopIdx}_${t.id}`;
+                const itemQty = cart[cartKey] || 0;
+                const isSelected = itemQty > 0;
+
+                return (
+                  <div
+                    key={t.id}
+                    className={`w-full rounded-2xl border p-3.5 transition-all duration-300 ${isSelected ? "border-primary bg-primary/10" : "border-border/40 bg-card/50"}`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-bold text-sm">{t.name}</p>
+                      <p className="font-bold text-base text-primary">
+                        {formatCurrency(t.price, currencyCode)}
+                      </p>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mb-3 leading-snug">{t.perks.join(" · ")}</p>
+
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
+                      <span className="text-xs font-medium text-muted-foreground">Quantity</span>
+                      <div className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm border border-border/20">
+                        <button
+                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
+                          onClick={() =>
+                            setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
+                          }
+                          disabled={itemQty === 0}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-4 text-center font-bold text-xs">{itemQty}</span>
+                        <button
+                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground"
+                          onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Action Row */}
+          <div className="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-border/30">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                Total ({totalTickets} items)
+              </span>
+              <span className="text-lg font-bold text-foreground">
+                {formatCurrency(total, currencyCode)}
+              </span>
+            </div>
+            <Button
+              asChild
+              className="flex-1 h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] tracking-wide"
+              style={{
+                background:
+                  total === 0 && totalTickets > 0 ? "var(--foreground)" : "var(--gradient-primary)",
+                opacity: totalTickets === 0 ? 0.5 : 1,
+                pointerEvents: totalTickets === 0 ? "none" : "auto",
+              }}
+              onClick={() => {
+                localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
+              }}
+            >
+              <Link to="/book/$eventId" params={{ eventId: ev.id }} className="w-full block text-center leading-[48px]">
+                {total === 0 && totalTickets > 0 ? "Register for Free" : "Get Tickets"}
+              </Link>
+            </Button>
           </div>
         </div>
-      </div>
-
-      {/* Sticky Bottom Action (Apple Pay style checkout) */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 z-40 pb-safe">
-        <div className="flex items-center justify-between mb-3 px-2">
-          <span className="text-sm font-medium text-muted-foreground">
-            Total ({totalTickets} items)
-          </span>
-          <span className="text-xl font-bold">{formatCurrency(total, currencyCode)}</span>
-        </div>
-        <Button
-          asChild
-          className="w-full h-14 rounded-full text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
-          style={{
-            background:
-              total === 0 && totalTickets > 0 ? "var(--foreground)" : "var(--gradient-primary)",
-            opacity: totalTickets === 0 ? 0.5 : 1,
-            pointerEvents: totalTickets === 0 ? "none" : "auto",
-          }}
-          onClick={() => {
-            localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
-          }}
-        >
-          <Link to="/book/$eventId" params={{ eventId: ev.id }} className="w-full block">
-            {total === 0 && totalTickets > 0 ? "Register for Free" : "Get Tickets"}
-          </Link>
-        </Button>
       </div>
     </div>
   );

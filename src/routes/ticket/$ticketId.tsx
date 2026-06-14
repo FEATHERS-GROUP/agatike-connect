@@ -15,7 +15,7 @@ import { getUserAllTickets } from "@/api/user_tickets";
 import { useState } from "react";
 import * as htmlToImage from "html-to-image";
 import { jsPDF } from "jspdf";
-import { PrintableTicket } from "@/components/pdf/PrintableTickets";
+import { PrintableTicket, getCustomTemplateHeight } from "@/components/pdf/PrintableTickets";
 
 export const Route = createFileRoute("/ticket/$ticketId")({
   component: TicketViewer,
@@ -35,17 +35,27 @@ function TicketViewer() {
     if (isDownloading) return;
     setIsDownloading(true);
     try {
-      const element = document.getElementById("printable-ticket");
-      if (!element) throw new Error("Ticket element not found");
+      const elementFront = document.getElementById("printable-ticket-front");
+      const elementBack = document.getElementById("printable-ticket-back");
+      if (!elementFront || !elementBack) throw new Error("Ticket elements not found");
 
       const isCustomDesign = !!ticket?.design;
       const width = isCustomDesign ? 720 : 800;
-      const height = isCustomDesign ? 230 : 300;
+      const height = isCustomDesign
+        ? getCustomTemplateHeight(ticket.design.template)
+        : 300;
 
-      // html-to-image uses the browser's native renderer via SVG foreignObject,
-      // which safely supports all modern CSS like oklch variables.
-      // cacheBust is critical for preventing blank outputs in WebKit browsers with external images.
-      const imgData = await htmlToImage.toPng(element, {
+      // Capture front
+      const imgDataFront = await htmlToImage.toPng(elementFront, {
+        pixelRatio: 2,
+        backgroundColor: "transparent",
+        style: {
+          opacity: "1",
+        },
+      });
+
+      // Capture back
+      const imgDataBack = await htmlToImage.toPng(elementBack, {
         pixelRatio: 2,
         backgroundColor: "transparent",
         style: {
@@ -60,7 +70,13 @@ function TicketViewer() {
         format: [width, height],
       });
 
-      pdf.addImage(imgData, "PNG", 0, 0, width, height);
+      // Page 1: Front
+      pdf.addImage(imgDataFront, "PNG", 0, 0, width, height);
+
+      // Page 2: Back
+      pdf.addPage([width, height], "landscape");
+      pdf.addImage(imgDataBack, "PNG", 0, 0, width, height);
+
       pdf.save(`agatike-ticket-${ticket?.orderId || ticketId}.pdf`);
     } catch (error) {
       console.error("Failed to generate PDF:", error);
@@ -92,7 +108,7 @@ function TicketViewer() {
   }
 
   return (
-    <div className="relative min-h-screen font-sans overflow-hidden flex flex-col items-center justify-between text-foreground">
+    <div className="relative h-screen h-[100dvh] font-sans overflow-hidden flex flex-col items-center justify-between text-foreground">
       {/* Ambient background — blurred cover image */}
       {ticket.cover && (
         <>
@@ -108,9 +124,9 @@ function TicketViewer() {
       )}
 
       {/* Centered responsive container */}
-      <div className="relative z-10 w-full max-w-md px-4 flex flex-col justify-between min-h-screen py-5 md:py-8">
+      <div className="relative z-10 w-full max-w-md px-4 flex flex-col justify-between h-full max-h-screen max-h-[100dvh] py-4 md:py-6 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-none">
           <Link
             to="/profile"
             className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center hover:bg-white/30 transition-colors"
@@ -133,25 +149,27 @@ function TicketViewer() {
         </div>
 
         {/* Content area: Title + Pass card */}
-        <div className="flex-1 flex flex-col justify-center my-3">
+        <div className="flex-1 flex flex-col justify-center min-h-0 my-2 overflow-hidden">
           {/* Event Meta */}
-          <div className="mb-4 text-center">
+          <div className="mb-2 text-center flex-none">
             <p className="text-white/75 text-xs font-semibold uppercase tracking-wider mb-0.5">
               {ticket.date}, {ticket.time || ticket.showtimes?.[0]}
             </p>
-            <h1 className="text-2xl font-black tracking-tight text-white drop-shadow-md line-clamp-2 leading-tight">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-white drop-shadow-md line-clamp-1 leading-tight">
               {ticket.title}
             </h1>
           </div>
 
           {/* Dynamic Ticket Card */}
-          <div className="transform scale-[0.9] sm:scale-100 origin-center transition-transform">
-            <DynamicPass ticket={ticket} />
+          <div className="ticket-card-wrapper flex-1 flex items-center justify-center min-h-0 relative overflow-hidden">
+            <div className="ticket-card-scaler origin-center transition-transform">
+              <DynamicPass ticket={ticket} />
+            </div>
           </div>
         </div>
 
         {/* Download Button */}
-        <div className="w-full">
+        <div className="w-full flex-none mt-2">
           <button
             onClick={handleDownload}
             disabled={isDownloading}
@@ -166,6 +184,62 @@ function TicketViewer() {
           </button>
         </div>
       </div>
+
+      {/* Styles for dynamic card height and width scaling */}
+      <style>{`
+        .ticket-card-scaler {
+          transform: scale(1);
+          transform-origin: center center;
+          transition: transform 0.15s ease-out;
+          width: 350px;
+          max-width: 100%;
+        }
+        
+        /* Height-based scaling */
+        @media (max-height: 850px) { .ticket-card-scaler { transform: scale(0.95); } }
+        @media (max-height: 800px) { .ticket-card-scaler { transform: scale(0.90); } }
+        @media (max-height: 750px) { .ticket-card-scaler { transform: scale(0.85); } }
+        @media (max-height: 700px) {
+          .ticket-card-scaler { transform: scale(0.80); }
+          .ticket-card-inner {
+            padding: 1.25rem !important; /* p-5 */
+            padding-bottom: 1.5rem !important; /* pb-6 */
+          }
+          .ticket-card-inner .mb-6 { margin-bottom: 1rem !important; }
+          .ticket-card-inner .mb-4 { margin-bottom: 0.75rem !important; }
+          .ticket-card-inner .mt-6 { margin-top: 1rem !important; }
+          .ticket-card-inner .pb-5 { padding-bottom: 0.75rem !important; }
+        }
+        @media (max-height: 650px) { .ticket-card-scaler { transform: scale(0.72); } }
+        @media (max-height: 600px) { .ticket-card-scaler { transform: scale(0.65); } }
+        @media (max-height: 550px) {
+          .ticket-card-scaler { transform: scale(0.58); }
+          .ticket-card-inner {
+            padding: 1rem !important; /* p-4 */
+            padding-bottom: 1.25rem !important; /* pb-5 */
+          }
+          .ticket-card-inner .mb-6 { margin-bottom: 0.75rem !important; }
+          .ticket-card-inner .mb-4 { margin-bottom: 0.5rem !important; }
+          .ticket-card-inner .mt-6 { margin-top: 0.75rem !important; }
+          .ticket-card-inner .pb-5 { padding-bottom: 0.5rem !important; }
+        }
+        @media (max-height: 500px) { .ticket-card-scaler { transform: scale(0.50); } }
+        @media (max-height: 450px) { .ticket-card-scaler { transform: scale(0.45); } }
+
+        /* Width-based scaling (to prevent horizontal overflow on narrow screens) */
+        @media (max-width: 380px) {
+          .ticket-card-scaler { transform: scale(0.9); }
+          @media (max-height: 700px) { .ticket-card-scaler { transform: scale(0.75); } }
+          @media (max-height: 650px) { .ticket-card-scaler { transform: scale(0.68); } }
+          @media (max-height: 600px) { .ticket-card-scaler { transform: scale(0.60); } }
+        }
+        @media (max-width: 340px) {
+          .ticket-card-scaler { transform: scale(0.8); }
+          @media (max-height: 700px) { .ticket-card-scaler { transform: scale(0.68); } }
+          @media (max-height: 650px) { .ticket-card-scaler { transform: scale(0.60); } }
+          @media (max-height: 600px) { .ticket-card-scaler { transform: scale(0.55); } }
+        }
+      `}</style>
 
       {/* Hidden PDF Printable Layer */}
       <PrintableTicket id="printable-ticket" ticket={ticket} />
@@ -189,7 +263,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
   // Layout variations
   if (ticket.ticketCategory === "movie") {
     return (
-      <div className="bg-white text-black rounded-[2rem] p-7 relative overflow-hidden pb-8 shadow-2xl">
+      <div className="ticket-card-inner bg-white text-black rounded-[2rem] p-7 relative overflow-hidden pb-8 shadow-2xl">
         <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">Moviegoer</p>
         <p className="text-2xl font-bold mb-4">{ticket.passengerName || "Guest"}</p>
 
@@ -248,7 +322,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
 
   if (ticket.ticketCategory === "conference") {
     return (
-      <div className="bg-white text-black rounded-[2rem] p-7 relative overflow-hidden pb-8 shadow-2xl">
+      <div className="ticket-card-inner bg-white text-black rounded-[2rem] p-7 relative overflow-hidden pb-8 shadow-2xl">
         <div className="flex justify-between items-start mb-4">
           <div>
             <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">
@@ -326,7 +400,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
 
   // Default Event Layout (applies to 'event', 'experience', 'free')
   return (
-    <div className="bg-white text-black rounded-[2rem] p-7 relative overflow-hidden pb-8 shadow-2xl">
+    <div className="ticket-card-inner bg-white text-black rounded-[2rem] p-7 relative overflow-hidden pb-8 shadow-2xl">
       <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">
         {ticket.ticketCategory === "free" ? "Guest" : "Passenger"}
       </p>
@@ -387,7 +461,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
       </div>
 
       <div className="absolute -left-5 bottom-20 w-10 h-10 bg-gray-100 rounded-full" />
-      ,      <div className="absolute -right-5 bottom-20 w-10 h-10 bg-gray-100 rounded-full" />
+      <div className="absolute -right-5 bottom-20 w-10 h-10 bg-gray-100 rounded-full" />
       <div className="absolute left-6 right-6 bottom-[100px] border-t-2 border-dashed border-gray-200" />
 
       <Barcode />
