@@ -20,6 +20,12 @@ const GET_EVENT_ATTENDEES = `
       type
       updated_at
       user_id
+      users {
+        id
+        profile
+        handle
+        username
+      }
       events {
         title
         tour_stops

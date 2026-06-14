@@ -27,7 +27,7 @@ import {
 } from "@/lib/mock-data";
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
-import { checkUserAttendance } from "@/api/attendees";
+import { checkUserAttendance, getEventAttendees } from "@/api/attendees";
 import { formatCurrency } from "@/lib/currency";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
@@ -170,6 +170,11 @@ export function EventDetailsDesktop({
     queryFn: () => checkUserAttendance({ data: { event_id: eventId } } as any),
   });
 
+  const { data: attendeesList = [] } = useQuery({
+    queryKey: ["event-attendees", eventId],
+    queryFn: () => getEventAttendees({ data: { event_id: eventId } } as any),
+  });
+
   const reviews = feedbackData?.reviews || [];
   const avgRating = feedbackData?.aggregate?.avg?.rating
     ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1)
@@ -296,7 +301,44 @@ export function EventDetailsDesktop({
             <h2 className="text-xl font-semibold">
               People going · {attendeesCount.toLocaleString()}
             </h2>
-            {attendeesCount > 10 && (
+            {attendeesList && attendeesList.length > 0 ? (
+              <div className="mt-4 flex flex-col gap-3">
+                <div className="flex -space-x-3 overflow-hidden">
+                  {attendeesList.slice(0, 8).map((att: any, i: number) => {
+                    const avatarUrl = att.users?.profile || `https://i.pravatar.cc/100?img=${i + 20}`;
+                    return (
+                      <img
+                        key={att.id || i}
+                        src={avatarUrl}
+                        className="h-10 w-10 rounded-full border-2 border-background object-cover"
+                        alt={att.names || "Attendee"}
+                      />
+                    );
+                  })}
+                  {attendeesList.length > 8 && (
+                    <div className="ml-4 flex items-center justify-center h-10 w-10 rounded-full bg-secondary text-xs font-bold border-2 border-background">
+                      +{attendeesList.length - 8}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {attendeesList.slice(0, 8).map((att: any, i: number) => {
+                    const name = att.users?.handle ? `@${att.users.handle}` : att.names;
+                    if (!name) return null;
+                    return (
+                      <span key={att.id || i} className="text-xs bg-secondary/50 text-muted-foreground px-2.5 py-1 rounded-full border border-border/30 font-medium">
+                        {name}
+                      </span>
+                    );
+                  })}
+                  {attendeesList.length > 8 && (
+                    <span className="text-xs text-muted-foreground self-center ml-1">
+                      & {attendeesList.length - 8} more
+                    </span>
+                  )}
+                </div>
+              </div>
+            ) : attendeesCount > 0 ? (
               <div className="mt-4 flex -space-x-3">
                 {Array.from({ length: Math.min(attendeesCount || 8, 8) }).map((_, i) => (
                   <div
@@ -311,6 +353,8 @@ export function EventDetailsDesktop({
                   </div>
                 )}
               </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted-foreground">Be the first to join!</p>
             )}
           </div>
 
