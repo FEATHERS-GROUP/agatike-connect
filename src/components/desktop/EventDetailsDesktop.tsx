@@ -148,15 +148,21 @@ export function EventDetailsDesktop({
           perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
           remaining: ticketsLeft,
           sold,
+          sale_ends_at: t.sale_ends_at,
           tour_stop_idx: t.tour_stop_idx || 0,
         };
       });
 
-  const activeTicketTiers = allTicketTiers.filter((t: any) =>
-    // Filter by tour stop AND hide sold-out tiers
-    (isExperience ? true : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1) &&
-    t.remaining > 0,
-  );
+  const activeTicketTiers = allTicketTiers.filter((t: any) => {
+    // Filter by tour stop
+    const rightStop = isExperience ? true : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
+    // Hide sold-out tiers
+    const hasInventory = t.remaining > 0;
+    // Hide expired tiers
+    const isNotExpired = !t.sale_ends_at || new Date(t.sale_ends_at) > new Date();
+
+    return rightStop && hasInventory && isNotExpired;
+  });
 
   const activeMerch = isMock
     ? merch

@@ -216,9 +216,14 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       attendees.forEach((a) => { qtByTier[a.tierId] = (qtByTier[a.tierId] || 0) + 1; });
       Object.entries(qtByTier).forEach(([tierId, qty]) => {
         if (tierId && tierId !== "ga") {
-          incrementTicketSold({ data: { ticket_id: tierId, qty } } as any).catch((e) =>
-            console.error("Failed to increment sold for", tierId, e),
-          );
+          const tier = getTierDetails(tierId);
+          if (tier) {
+            const currentSold = parseInt(tier.sold) || 0;
+            const new_sold = currentSold + qty;
+            incrementTicketSold({ data: { ticket_id: tierId, new_sold } } as any).catch((e) =>
+              console.error("Failed to update sold for", tierId, e),
+            );
+          }
         }
       });
 

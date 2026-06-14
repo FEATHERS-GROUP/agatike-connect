@@ -710,12 +710,13 @@ export const getWorkspaceTicketProjects = createServerFn({ method: "POST" }).han
   },
 );
 
-// Atomically increment the sold count on a ticket tier after a successful booking
+// Update the sold count on a ticket tier after a successful booking
+// Note: using _set (not _inc) because Hasura's inc_input does not expose the sold column
 const INCREMENT_TICKET_SOLD = `
-  mutation IncrementTicketSold($ticket_id: uuid!, $qty: Int!) {
+  mutation UpdateTicketSold($ticket_id: uuid!, $new_sold: Int!) {
     update_event_tickets_by_pk(
       pk_columns: { id: $ticket_id },
-      _inc: { sold: $qty }
+      _set: { sold: $new_sold }
     ) {
       id
       sold
@@ -725,10 +726,10 @@ const INCREMENT_TICKET_SOLD = `
 `;
 
 export const incrementTicketSold = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { ticket_id, qty } = ctx.data as unknown as { ticket_id: string; qty: number };
+  const { ticket_id, new_sold } = ctx.data as unknown as { ticket_id: string; new_sold: number };
   const data = await hasuraRequest<{ update_event_tickets_by_pk: any }>(INCREMENT_TICKET_SOLD, {
     ticket_id,
-    qty,
+    new_sold,
   });
   return data.update_event_tickets_by_pk;
 });
