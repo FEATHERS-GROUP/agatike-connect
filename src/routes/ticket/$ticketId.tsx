@@ -38,6 +38,10 @@ function TicketViewer() {
       const element = document.getElementById("printable-ticket");
       if (!element) throw new Error("Ticket element not found");
 
+      const isCustomDesign = !!ticket?.design;
+      const width = isCustomDesign ? 720 : 800;
+      const height = isCustomDesign ? 230 : 300;
+
       // html-to-image uses the browser's native renderer via SVG foreignObject,
       // which safely supports all modern CSS like oklch variables.
       // cacheBust is critical for preventing blank outputs in WebKit browsers with external images.
@@ -49,16 +53,14 @@ function TicketViewer() {
         },
       });
 
-      // Landscape orientation, A4 size (approx), measuring pixels
-      // A typical horizontal ticket is roughly 800x300, which is an 8:3 ratio
-      // We will output a custom sized PDF that matches the ticket dimensions
+      // Landscape orientation, measuring pixels
       const pdf = new jsPDF({
         orientation: "landscape",
         unit: "px",
-        format: [800, 300],
+        format: [width, height],
       });
 
-      pdf.addImage(imgData, "PNG", 0, 0, 800, 300);
+      pdf.addImage(imgData, "PNG", 0, 0, width, height);
       pdf.save(`agatike-ticket-${ticket?.orderId || ticketId}.pdf`);
     } catch (error) {
       console.error("Failed to generate PDF:", error);

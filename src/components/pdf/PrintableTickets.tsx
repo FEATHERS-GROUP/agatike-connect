@@ -2,6 +2,7 @@ import React from "react";
 import { Ticket as TicketIcon, Film, MapPin, Briefcase, User } from "lucide-react";
 import QRCode from "react-qr-code";
 import Barcode from "react-barcode";
+import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 
 export type TicketTemplateConfig = {
   layout?: "movie" | "conference" | "default";
@@ -32,13 +33,64 @@ export function PrintableTicket({
   id: string;
   config?: TicketTemplateConfig;
 }) {
+  const isCustomDesign = !!ticket.design;
+  const width = isCustomDesign ? "720px" : "800px";
+  const height = isCustomDesign ? "230px" : "300px";
+
   return (
     <div
       id={id}
-      className="absolute top-0 left-0 -z-50 opacity-0 pointer-events-none w-[800px] h-[300px] overflow-hidden shadow-none flex"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      className="absolute top-0 left-0 -z-50 opacity-0 pointer-events-none overflow-hidden shadow-none flex"
+      style={{
+        fontFamily: isCustomDesign ? undefined : "'Inter', sans-serif",
+        width,
+        height,
+      }}
     >
-      <DynamicPrintablePass ticket={ticket} config={config} />
+      {isCustomDesign ? (
+        <TicketPreview
+          template={ticket.design.template}
+          palette={ticket.design.palette || { from: "#1f2937", to: "#111827", name: "Dark" }}
+          font={ticket.design.font || { css: "sans-serif", name: "Modern" }}
+          tier={ticket.ticketType || "Standard"}
+          title={ticket.title}
+          subtitle={ticket.venueName || ticket.city || ""}
+          date={ticket.date}
+          time={ticket.time}
+          seat={ticket.passengerName}
+          price={ticket.price?.toString() || "0"}
+          currency={ticket.isVenueBooking ? (ticket.currency || "RWF") : "RWF"}
+          cover={ticket.design.coverImage || ticket.cover || ""}
+          logoText={ticket.design.logoText || "Agatike"}
+          logoImage={ticket.design.logoImage}
+          logoScale={ticket.design.logoScale || 24}
+          logoOpacity={ticket.design.logoOpacity ?? 1}
+          logoColorMode={ticket.design.logoColorMode || "original"}
+          orderId={ticket.orderId}
+          qrValue={`${window.location.origin}/v/${ticket.orderId}`}
+          previewMode="Front"
+          layout={
+            ticket.design.layout || {
+              titleSize: 30,
+              subtitleSize: 14,
+              metaSize: 11,
+              titleAlign: "left",
+              titleOffsetY: 0,
+              subtitleOffsetY: 0,
+              metaOffsetY: 0,
+            }
+          }
+          back={
+            ticket.design.back || {
+              backText: "",
+              backImage: "",
+              backImageOpacity: 0.3,
+            }
+          }
+        />
+      ) : (
+        <DynamicPrintablePass ticket={ticket} config={config} />
+      )}
     </div>
   );
 }

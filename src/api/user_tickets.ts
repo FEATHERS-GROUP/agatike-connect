@@ -39,6 +39,23 @@ const GET_USER_EVENT_ATTENDEES = `
         workspaces {
           currency
         }
+        ticket_projects(where: { deleted: { _eq: false } }) {
+          id
+          name
+          template
+          coverImage
+          palette
+          font
+          design_overrides
+          logoText
+          logoScale
+          logoImage
+          logoColorMode
+          logoOpacity
+          eventId
+          venueId
+          tier
+        }
       }
     }
   }
@@ -76,10 +93,50 @@ const GET_USER_VENUE_BOOKINGS = `
         city
         cover_url
         currency
+        ticket_projects(where: { deleted: { _eq: false } }) {
+          id
+          name
+          template
+          coverImage
+          palette
+          font
+          design_overrides
+          logoText
+          logoScale
+          logoImage
+          logoColorMode
+          logoOpacity
+          eventId
+          venueId
+          tier
+        }
       }
     }
   }
 `;
+
+const getMergedProjectDesign = (baseProject: any, stopIdx: number, tierId: string) => {
+  if (!baseProject) return null;
+  const overrides = baseProject.design_overrides?.overrides;
+  if (!overrides) return baseProject;
+
+  const stopOverride = overrides.tourStops?.[stopIdx] || {};
+  const tierOverride = overrides.tiers?.[tierId] || {};
+  const combinationOverride = overrides.combinations?.[`${stopIdx}_${tierId}`] || {};
+
+  return {
+    ...baseProject,
+    ...stopOverride,
+    ...tierOverride,
+    ...combinationOverride,
+    palette:
+      combinationOverride.palette ||
+      tierOverride.palette ||
+      stopOverride.palette ||
+      baseProject.palette,
+    font: combinationOverride.font || tierOverride.font || stopOverride.font || baseProject.font,
+  };
+};
 
 export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async () => {
   const user = await getUserSession();
@@ -122,6 +179,22 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       ticketCategory = cat;
     }
 
+    const baseProject = event?.ticket_projects?.[0];
+    const mergedProject = baseProject ? getMergedProjectDesign(baseProject, stopIdx, att.ticket_id) : null;
+    const design = mergedProject ? {
+      template: mergedProject.template || "default",
+      palette: mergedProject.palette || null,
+      font: mergedProject.font || null,
+      coverImage: mergedProject.coverImage || null,
+      logoText: mergedProject.logoText !== undefined && mergedProject.logoText !== null ? mergedProject.logoText : null,
+      logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+      logoImage: mergedProject.logoImage || null,
+      logoColorMode: mergedProject.logoColorMode || null,
+      logoOpacity: mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null ? Number(mergedProject.logoOpacity) : null,
+      layout: mergedProject.design_overrides?.layout || null,
+      back: mergedProject.design_overrides?.back || null,
+    } : null;
+
     tickets.push({
       id: att.id,
       title: event?.title || "Event Ticket",
@@ -138,6 +211,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       isVenueBooking: false,
       status: att.status || "Confirmed",
       eventDate: stop?.date || event?.schedules?.[0]?.start_date || att.created_at,
+      design,
     });
   }
 
@@ -150,8 +224,25 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
 
     // Venue booking could have multiple tickets issued inside tickets_data.issued
     const issuedTickets = booking.tickets_data?.issued || [];
+    const baseProject = venue?.ticket_projects?.[0];
+
     if (issuedTickets.length > 0) {
       for (const t of issuedTickets) {
+        const mergedProject = baseProject ? getMergedProjectDesign(baseProject, 0, t.tier || "") : null;
+        const design = mergedProject ? {
+          template: mergedProject.template || "default",
+          palette: mergedProject.palette || null,
+          font: mergedProject.font || null,
+          coverImage: mergedProject.coverImage || null,
+          logoText: mergedProject.logoText !== undefined && mergedProject.logoText !== null ? mergedProject.logoText : null,
+          logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+          logoImage: mergedProject.logoImage || null,
+          logoColorMode: mergedProject.logoColorMode || null,
+          logoOpacity: mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null ? Number(mergedProject.logoOpacity) : null,
+          layout: mergedProject.design_overrides?.layout || null,
+          back: mergedProject.design_overrides?.back || null,
+        } : null;
+
         tickets.push({
           id: t.id,
           bookingId: booking.id,
@@ -179,9 +270,25 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           eventDate: booking.start_time,
           venueName,
           city,
+          design,
         });
       }
     } else {
+      const mergedProject = baseProject ? getMergedProjectDesign(baseProject, 0, "") : null;
+      const design = mergedProject ? {
+        template: mergedProject.template || "default",
+        palette: mergedProject.palette || null,
+        font: mergedProject.font || null,
+        coverImage: mergedProject.coverImage || null,
+        logoText: mergedProject.logoText !== undefined && mergedProject.logoText !== null ? mergedProject.logoText : null,
+        logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+        logoImage: mergedProject.logoImage || null,
+        logoColorMode: mergedProject.logoColorMode || null,
+        logoOpacity: mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null ? Number(mergedProject.logoOpacity) : null,
+        layout: mergedProject.design_overrides?.layout || null,
+        back: mergedProject.design_overrides?.back || null,
+      } : null;
+
       tickets.push({
         id: booking.id,
         bookingId: booking.id,
@@ -209,6 +316,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         eventDate: booking.start_time,
         venueName,
         city,
+        design,
       });
     }
   }
