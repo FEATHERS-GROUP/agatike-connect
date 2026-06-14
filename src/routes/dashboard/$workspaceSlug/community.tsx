@@ -57,6 +57,7 @@ import { getOrganizerFollowersProfiles } from "@/api/users";
 import { getCommunityChannels, createCommunityChannel } from "@/api/community";
 import { getWorkspaceEvents, getEventAttendeesCount } from "@/api/events";
 import { uploadFile } from "@/api/storage";
+import { formatMessageDate } from "@/lib/utils";
 
 const COUNTRY_FLAGS: Record<string, string> = {
   Rwanda: "🇷🇼",
@@ -479,7 +480,7 @@ function CommunityPage() {
                   .filter((c) => !(c.type === "user" && !c.lastMessage))
                   .map((chat) => {
                     const isUnread =
-                      chat.lastMessageSenderId !== user?.id &&
+                      chat.lastMessageSenderId !== currentUserId &&
                       chat.rawTimeMillis >
                         parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
                     const displayUnread = chat.unread > 0 ? chat.unread : isUnread ? 1 : 0;
