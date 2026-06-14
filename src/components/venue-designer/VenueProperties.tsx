@@ -384,30 +384,49 @@ export function VenueProperties({
                         <DialogTitle>{sec.name} - Seat Preview</DialogTitle>
                       </DialogHeader>
                       <div className="p-6 bg-secondary/10 rounded-lg overflow-auto max-h-[60vh] flex justify-center items-center">
-                        <div 
-                          className="grid gap-1.5 justify-center" 
-                          style={{ gridTemplateColumns: `repeat(${sec.cols || 0}, minmax(0, auto))` }}
-                        >
-                          {Array.from({ length: (sec.rows || 0) * (sec.cols || 0) }).map((_, i) => {
-                             const row = Math.floor(i / (sec.cols || 1));
-                             const col = i % (sec.cols || 1);
-                             return (
-                               <div
-                                 key={i}
-                                 className="w-7 h-7 rounded-t-lg rounded-b-sm flex items-center justify-center text-[9px] font-medium transition-colors hover:brightness-110 cursor-pointer shadow-sm"
-                                 style={{ backgroundColor: sec.color || "#0ea5e9", color: "#fff" }}
-                                 title={`Row ${row + 1}, Seat ${col + 1}`}
-                               >
-                                 {row + 1}-{col + 1}
-                               </div>
-                             );
-                          })}
-                          {(sec.rows === 0 || sec.cols === 0) && (
-                            <p className="text-sm text-muted-foreground text-center col-span-full">
-                              No seats defined. Increase rows and seats per row to generate a grid.
-                            </p>
-                          )}
-                        </div>
+                        {(() => {
+                          const pitch = sections.find((s) => s.shape === "pitch");
+                          return (
+                            <div className="flex flex-col gap-6 items-center justify-center w-full">
+                              <div 
+                                className="grid gap-1.5 justify-center" 
+                                style={{ gridTemplateColumns: `repeat(${sec.cols || 0}, minmax(0, auto))` }}
+                              >
+                                {Array.from({ length: (sec.rows || 0) * (sec.cols || 0) }).map((_, i) => {
+                                  const visualRow = Math.floor(i / (sec.cols || 1));
+                                  const visualCol = i % (sec.cols || 1);
+                                  
+                                  // Stage is at the bottom, so Row 1 is at the bottom of the visual grid
+                                  const rowLabel = (sec.rows || 1) - visualRow;
+                                  const colLabel = visualCol + 1;
+
+                                  return (
+                                    <div
+                                      key={i}
+                                      className="w-7 h-7 rounded-t-lg rounded-b-sm flex flex-col items-center justify-center text-[9px] font-medium transition-colors hover:brightness-110 cursor-pointer shadow-sm leading-none gap-0.5"
+                                      style={{ backgroundColor: sec.color || "#0ea5e9", color: "#fff" }}
+                                      title={`Row ${rowLabel}, Seat ${colLabel}`}
+                                    >
+                                      <span>R{rowLabel}</span>
+                                      <span className="opacity-80">S{colLabel}</span>
+                                    </div>
+                                  );
+                                })}
+                                {(sec.rows === 0 || sec.cols === 0) && (
+                                  <p className="text-sm text-muted-foreground text-center col-span-full">
+                                    No seats defined. Increase rows and seats per row to generate a grid.
+                                  </p>
+                                )}
+                              </div>
+
+                              {pitch && (
+                                <div className="bg-primary/20 border-2 border-primary/30 flex items-center justify-center text-xs font-bold tracking-widest text-primary rounded-xl w-full h-12 mt-4">
+                                  <span>STAGE / FRONT</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </DialogContent>
                   </Dialog>

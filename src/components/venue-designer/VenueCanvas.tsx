@@ -127,6 +127,7 @@ export function VenueCanvas({
   const svgRef = useRef<SVGSVGElement>(null);
   const [draggingSectionId, setDraggingSectionId] = useState<string | null>(null);
   const [resizingSectionId, setResizingSectionId] = useState<string | null>(null);
+  const [rotatingSectionId, setRotatingSectionId] = useState<string | null>(null);
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [initialSectionPos, setInitialSectionPos] = useState({ x: 0, y: 0 });
   const [initialSectionSize, setInitialSectionSize] = useState<{ w: number; h: number; points?: string }>({ w: 0, h: 0 });
@@ -279,10 +280,38 @@ export function VenueCanvas({
     (e.target as Element).setPointerCapture(e.pointerId);
   };
 
+  const handleRotatePointerDown = (e: React.PointerEvent<SVGCircleElement>, section: Section) => {
+    if (toolMode === "draw") return;
+    e.stopPropagation();
+    saveHistory();
+    setActiveSection(section.id);
+    setRotatingSectionId(section.id);
+
+    (e.target as Element).setPointerCapture(e.pointerId);
+  };
+
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (toolMode === "draw") {
         setCurrentMousePos(getSvgCoordinates(e));
+        return;
+      }
+
+      if (rotatingSectionId) {
+        const coords = getSvgCoordinates(e);
+        const section = sections.find(s => s.id === rotatingSectionId);
+        if (!section) return;
+
+        const dx = coords.x - section.x;
+        const dy = coords.y - section.y;
+        
+        let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        let rotation = angle + 90;
+        
+        // Snap to 5 degrees for cleaner UI
+        rotation = Math.round(rotation / 5) * 5;
+
+        updateSection(rotatingSectionId, { rotation });
         return;
       }
 
@@ -341,6 +370,12 @@ export function VenueCanvas({
     }
     if (resizingSectionId) {
       setResizingSectionId(null);
+      try {
+        (e.target as Element).releasePointerCapture(e.pointerId);
+      } catch (err) {}
+    }
+    if (rotatingSectionId) {
+      setRotatingSectionId(null);
       try {
         (e.target as Element).releasePointerCapture(e.pointerId);
       } catch (err) {}
@@ -521,6 +556,37 @@ export function VenueCanvas({
                     strokeDasharray="8 6"
                     className="animate-pulse"
                   />
+                  {/* Rotation Handle */}
+                  {(() => {
+                    let topY = -50;
+                    if (sec.shape === "rect" || sec.shape === "pitch" || sec.shape === "polygon") {
+                      topY = -((sec.height || 100) / 2);
+                    } else if (sec.shape === "arc") {
+                      topY = -(sec.outerRadius || 150);
+                    }
+                    return (
+                      <g>
+                        <line 
+                          x1="0" 
+                          y1={topY - 5} 
+                          x2="0" 
+                          y2={topY - 30} 
+                          stroke="#3b82f6" 
+                          strokeWidth="2" 
+                        />
+                        <circle
+                          cx="0"
+                          cy={topY - 30}
+                          r="6"
+                          fill="#ffffff"
+                          stroke="#3b82f6"
+                          strokeWidth="3"
+                          style={{ cursor: "grab", pointerEvents: "all" }}
+                          onPointerDown={(e) => handleRotatePointerDown(e, sec)}
+                        />
+                      </g>
+                    );
+                  })()}
                   {/* Resize handle for rects/pitches/polygons */}
                   {(!sec.shape || sec.shape === "rect" || sec.shape === "pitch" || sec.shape === "polygon") && (
                     <circle
