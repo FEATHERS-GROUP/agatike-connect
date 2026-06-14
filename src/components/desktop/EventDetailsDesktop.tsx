@@ -32,7 +32,9 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 import { checkUserAttendance, getEventAttendees } from "@/api/attendees";
+import { getEventVenueProjects } from "@/api/venues";
 import { formatCurrency } from "@/lib/currency";
+import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
@@ -176,6 +178,27 @@ export function EventDetailsDesktop({
       }));
 
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [selectedSeatsObj, setSelectedSeatsObj] = useState<any[]>([]);
+  const [isSeatModalOpen, setIsSeatModalOpen] = useState(false);
+  const [activeTicketIdForMap, setActiveTicketIdForMap] = useState<string | undefined>();
+
+  const handleSeatSelect = (seat: any) => {
+    setSelectedSeatsObj((prev) => [...prev, seat]);
+    setCart((prev) => {
+      const key = `${selectedStopIdx}_${seat.ticketId}`;
+      return { ...prev, [key]: (prev[key] || 0) + 1 };
+    });
+  };
+
+  const handleSeatDeselect = (code: string) => {
+    const seat = selectedSeatsObj.find((s) => s.code === code);
+    if (!seat) return;
+    setSelectedSeatsObj((prev) => prev.filter((s) => s.code !== code));
+    setCart((prev) => {
+      const key = `${selectedStopIdx}_${seat.ticketId}`;
+      return { ...prev, [key]: Math.max(0, (prev[key] || 0) - 1) };
+    });
+  };
 
   const total = Object.entries(cart).reduce((sum, [key, qty]) => {
     if (qty <= 0) return sum;
@@ -195,6 +218,15 @@ export function EventDetailsDesktop({
     queryKey: ["check-attendance", eventId],
     queryFn: () => checkUserAttendance({ data: { event_id: eventId } } as any),
   });
+
+  const { data: eventVenueProjects } = useQuery({
+    queryKey: ["event-venues", eventId],
+    queryFn: () => getEventVenueProjects({ data: { event_id: eventId } } as any),
+  });
+
+  const currentVenueProject = eventVenueProjects?.find(
+    (p: any) => p.tour_stop_idx === selectedStopIdx
+  );
 
   const { data: rawAttendeesList = [] } = useQuery({
     queryKey: ["event-attendees", eventId],
@@ -728,39 +760,56 @@ export function EventDetailsDesktop({
                 const itemQty = cart[cartKey] || 0;
                 const isSelected = itemQty > 0;
 
+                const isMapped = currentVenueProject?.sections_data?.some((s: any) => s.ticketId === t.id);
+
                 return (
                   <div
                     key={t.id}
-                    className={`w-full rounded-2xl border p-4 text-left transition ${isSelected ? "border-primary bg-accent/40" : "border-border bg-background hover:bg-secondary"}`}
+                    className={`w-full rounded-2xl border p-4 text-left transition ${isSelected ? "border-primary bg-accent/40" : "border-border bg-background hover:bg-secondary"} ${isMapped ? "cursor-pointer" : ""}`}
+                    onClick={() => {
+                      if (isMapped) {
+                        setActiveTicketIdForMap(t.id);
+                        setIsSeatModalOpen(true);
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">{t.name}</p>
                         <p className="font-semibold">{formatCurrency(t.price, currencyCode)}</p>
                       </div>
-                      <div className="flex items-center gap-2 bg-background rounded-full border p-1 shadow-sm">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-full"
-                          onClick={() =>
-                            setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
-                          }
-                          disabled={itemQty === 0}
-                        >
-                          <Minus className="h-3.5 w-3.5" />
-                        </Button>
-                        <span className="w-4 text-center text-sm font-medium">{itemQty}</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-full"
-                          onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
-                          disabled={itemQty >= t.remaining}
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
+                      
+                      {isMapped ? (
+                        itemQty > 0 && (
+                          <div className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
+                            {itemQty} Selected
+                          </div>
+                        )
+                      ) : (
+                        <div className="flex items-center gap-2 bg-background rounded-full border p-1 shadow-sm" onClick={e => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() =>
+                              setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
+                            }
+                            disabled={itemQty === 0}
+                          >
+                            <Minus className="h-3.5 w-3.5" />
+                          </Button>
+                          <span className="w-4 text-center text-sm font-medium">{itemQty}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                            disabled={itemQty >= t.remaining}
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">{t.perks.join(" · ")}</p>
                     <p className="mt-1 text-xs text-primary">{t.remaining} left</p>
@@ -785,6 +834,7 @@ export function EventDetailsDesktop({
               }}
               onClick={() => {
                 localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
+                localStorage.setItem(`event_checkout_seats_${ev.id}`, JSON.stringify(selectedSeatsObj));
               }}
             >
               <Link to="/book/$eventId" params={{ eventId: ev.id }} className="w-full block">
@@ -809,6 +859,37 @@ export function EventDetailsDesktop({
       </div>
 
       <Footer />
+
+      {isSeatModalOpen && currentVenueProject && activeTicketIdForMap && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8 animate-in fade-in duration-200">
+          <div className="bg-background w-full max-w-5xl h-[85vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl relative animate-in zoom-in-95 duration-200">
+            <div className="p-4 border-b flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold">Select Seats</h2>
+                <p className="text-sm text-muted-foreground">Pick your seats for {activeTicketTiers.find((t: any) => t.id === activeTicketIdForMap)?.name}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" onClick={() => setIsSeatModalOpen(false)}>Back</Button>
+                <Button onClick={() => setIsSeatModalOpen(false)}>Confirm Selection</Button>
+              </div>
+            </div>
+            <div className="flex-1 bg-secondary/20 p-4 overflow-hidden">
+              <VenueSeatSelector
+                venueProject={currentVenueProject}
+                eventTickets={activeTicketTiers}
+                bookedSeats={[]}
+                selectedSeats={selectedSeatsObj.map(s => s.code)}
+                onSeatSelect={handleSeatSelect}
+                onSeatDeselect={handleSeatDeselect}
+                maxSelectable={10}
+                currency={currencyCode}
+                activeTicketId={activeTicketIdForMap}
+                hideLegend={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

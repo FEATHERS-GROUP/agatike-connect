@@ -124,28 +124,59 @@ export const saveVenueProject = createServerFn({ method: "POST" }).handler(async
 
 const GET_WORKSPACE_VENUE_PROJECTS = `
   query GetWorkspaceVenueProjects($workspace_id: uuid!) {
-    venue_projects(where: { workspace_id: { _eq: $workspace_id } }, order_by: { created_at: desc }) {
+    venue_projects(where: { workspace_id: { _eq: $workspace_id } }) {
       id
+      workspace_id
       name
       event_id
+      tour_stop_idx
       canvas_bg
       boundary_shape
       boundary_width
       boundary_height
       boundary_rx
-      tour_stop_idx
       sections_data
     }
   }
 `;
 
-export const getWorkspaceVenueProjects = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { workspace_id } = ctx.data as unknown as { workspace_id: string };
-  const data = await hasuraRequest<{ venue_projects: any[] }>(GET_WORKSPACE_VENUE_PROJECTS, {
-    workspace_id,
+export const getWorkspaceVenueProjects = createServerFn({ method: "POST" })
+  .inputValidator((d: { workspace_id: string }) => d)
+  .handler(async (ctx) => {
+    const { workspace_id } = ctx.data;
+    const res = await hasuraRequest<{ venue_projects: any[] }>(GET_WORKSPACE_VENUE_PROJECTS, {
+      workspace_id,
+    });
+    return res.venue_projects || [];
   });
-  return data.venue_projects || [];
-});
+
+const GET_EVENT_VENUE_PROJECTS = `
+  query GetEventVenueProjects($event_id: uuid!) {
+    venue_projects(where: { event_id: { _eq: $event_id } }) {
+      id
+      workspace_id
+      name
+      event_id
+      tour_stop_idx
+      canvas_bg
+      boundary_shape
+      boundary_width
+      boundary_height
+      boundary_rx
+      sections_data
+    }
+  }
+`;
+
+export const getEventVenueProjects = createServerFn({ method: "POST" })
+  .inputValidator((d: { event_id: string }) => d)
+  .handler(async (ctx) => {
+    const { event_id } = ctx.data;
+    const res = await hasuraRequest<{ venue_projects: any[] }>(GET_EVENT_VENUE_PROJECTS, {
+      event_id,
+    });
+    return res.venue_projects || [];
+  });
 
 const GET_PUBLIC_VENUES = `
   query GetPublicVenues {

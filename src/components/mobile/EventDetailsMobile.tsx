@@ -31,7 +31,9 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 import { checkUserAttendance, getEventAttendees } from "@/api/attendees";
+import { getEventVenueProjects } from "@/api/venues";
 import { formatCurrency } from "@/lib/currency";
+import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 
@@ -160,6 +162,27 @@ export function EventDetailsMobile({
       }));
 
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [selectedSeatsObj, setSelectedSeatsObj] = useState<any[]>([]);
+  const [isSeatModalOpen, setIsSeatModalOpen] = useState(false);
+  const [activeTicketIdForMap, setActiveTicketIdForMap] = useState<string | undefined>();
+
+  const handleSeatSelect = (seat: any) => {
+    setSelectedSeatsObj((prev) => [...prev, seat]);
+    setCart((prev) => {
+      const key = `${selectedStopIdx}_${seat.ticketId}`;
+      return { ...prev, [key]: (prev[key] || 0) + 1 };
+    });
+  };
+
+  const handleSeatDeselect = (code: string) => {
+    const seat = selectedSeatsObj.find((s) => s.code === code);
+    if (!seat) return;
+    setSelectedSeatsObj((prev) => prev.filter((s) => s.code !== code));
+    setCart((prev) => {
+      const key = `${selectedStopIdx}_${seat.ticketId}`;
+      return { ...prev, [key]: Math.max(0, (prev[key] || 0) - 1) };
+    });
+  };
 
   const total = Object.entries(cart).reduce((sum, [key, qty]) => {
     if (qty <= 0) return sum;
@@ -179,6 +202,15 @@ export function EventDetailsMobile({
     queryKey: ["check-attendance", eventId],
     queryFn: () => checkUserAttendance({ data: { event_id: eventId } } as any),
   });
+
+  const { data: eventVenueProjects } = useQuery({
+    queryKey: ["event-venues", eventId],
+    queryFn: () => getEventVenueProjects({ data: { event_id: eventId } } as any),
+  });
+
+  const currentVenueProject = eventVenueProjects?.find(
+    (p: any) => p.tour_stop_idx === selectedStopIdx
+  );
 
   const { data: rawAttendeesList = [] } = useQuery({
     queryKey: ["event-attendees", eventId],
@@ -608,10 +640,18 @@ export function EventDetailsMobile({
                 const itemQty = cart[cartKey] || 0;
                 const isSelected = itemQty > 0;
 
+                const isMapped = currentVenueProject?.sections_data?.some((s: any) => s.ticketId === t.id);
+
                 return (
                   <div
                     key={t.id}
-                    className={`w-full rounded-2xl border p-3.5 transition-all duration-300 ${isSelected ? "border-primary bg-primary/10" : "border-border/40 bg-card/50"}`}
+                    className={`w-full rounded-2xl border p-3.5 transition-all duration-300 ${isSelected ? "border-primary bg-primary/10" : "border-border/40 bg-card/50"} ${isMapped ? "cursor-pointer" : ""}`}
+                    onClick={() => {
+                      if (isMapped) {
+                        setActiveTicketIdForMap(t.id);
+                        setIsSeatModalOpen(true);
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <p className="font-bold text-sm">{t.name}</p>
@@ -628,25 +668,33 @@ export function EventDetailsMobile({
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
                       <span className="text-xs font-medium text-muted-foreground">Quantity</span>
-                      <div className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm border border-border/20">
-                        <button
-                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
-                          onClick={() =>
-                            setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
-                          }
-                          disabled={itemQty === 0}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </button>
-                        <span className="w-4 text-center font-bold text-xs">{itemQty}</span>
-                        <button
-                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
-                          onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
-                          disabled={itemQty >= t.remaining}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
-                      </div>
+                      {isMapped ? (
+                        itemQty > 0 && (
+                          <div className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            {itemQty} Selected
+                          </div>
+                        )
+                      ) : (
+                        <div className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm border border-border/20" onClick={e => e.stopPropagation()}>
+                          <button
+                            className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
+                            onClick={() =>
+                              setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
+                            }
+                            disabled={itemQty === 0}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          <span className="w-4 text-center font-bold text-xs">{itemQty}</span>
+                          <button
+                            className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
+                            onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                            disabled={itemQty >= t.remaining}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -661,11 +709,18 @@ export function EventDetailsMobile({
                 const cartKey = `${selectedStopIdx}_${t.id}`;
                 const itemQty = cart[cartKey] || 0;
                 const isSelected = itemQty > 0;
+                const isMapped = currentVenueProject?.sections_data?.some((s: any) => s.ticketId === t.id);
 
                 return (
                   <div
                     key={t.id}
-                    className={`w-full rounded-2xl border p-3.5 transition-all duration-300 ${isSelected ? "border-primary bg-primary/10" : "border-border/40 bg-card/50"}`}
+                    className={`w-full rounded-2xl border p-3.5 transition-all duration-300 ${isSelected ? "border-primary bg-primary/10" : "border-border/40 bg-card/50"} ${isMapped ? "cursor-pointer" : ""}`}
+                    onClick={() => {
+                      if (isMapped) {
+                        setActiveTicketIdForMap(t.id);
+                        setIsSeatModalOpen(true);
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <p className="font-bold text-sm">{t.name}</p>
@@ -682,25 +737,33 @@ export function EventDetailsMobile({
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
                       <span className="text-xs font-medium text-muted-foreground">Quantity</span>
-                      <div className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm border border-border/20">
-                        <button
-                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
-                          onClick={() =>
-                            setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
-                          }
-                          disabled={itemQty === 0}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </button>
-                        <span className="w-4 text-center font-bold text-xs">{itemQty}</span>
-                        <button
-                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
-                          onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
-                          disabled={itemQty >= t.remaining}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
-                      </div>
+                      {isMapped ? (
+                        itemQty > 0 && (
+                          <div className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            {itemQty} Selected
+                          </div>
+                        )
+                      ) : (
+                        <div className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm border border-border/20" onClick={e => e.stopPropagation()}>
+                          <button
+                            className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
+                            onClick={() =>
+                              setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
+                            }
+                            disabled={itemQty === 0}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          <span className="w-4 text-center font-bold text-xs">{itemQty}</span>
+                          <button
+                            className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
+                            onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                            disabled={itemQty >= t.remaining}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -729,6 +792,7 @@ export function EventDetailsMobile({
               }}
               onClick={() => {
                 localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
+                localStorage.setItem(`event_checkout_seats_${ev.id}`, JSON.stringify(selectedSeatsObj));
               }}
             >
               <Link
@@ -742,6 +806,42 @@ export function EventDetailsMobile({
           </div>
         </div>
       </div>
+
+      {/* Seat Selection Modal */}
+      {isSeatModalOpen && currentVenueProject && activeTicketIdForMap && (
+        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl flex flex-col animate-in slide-in-from-bottom-full duration-300">
+          <div className="flex items-center justify-between p-4 border-b border-border/40 mt-safe-top">
+            <div>
+              <h2 className="text-lg font-bold">Select Seats</h2>
+              <p className="text-xs text-muted-foreground">
+                For {activeTicketTiers.find((t: any) => t.id === activeTicketIdForMap)?.name}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setIsSeatModalOpen(false)}>
+                Back
+              </Button>
+              <Button size="sm" onClick={() => setIsSeatModalOpen(false)}>
+                Confirm
+              </Button>
+            </div>
+          </div>
+          <div className="flex-1 w-full bg-secondary/30 relative">
+            <VenueSeatSelector
+              venueProject={currentVenueProject}
+              eventTickets={activeTicketTiers}
+              bookedSeats={[]}
+              selectedSeats={selectedSeatsObj.map((s) => s.code)}
+              onSeatSelect={handleSeatSelect}
+              onSeatDeselect={handleSeatDeselect}
+              maxSelectable={10}
+              currency={currencyCode}
+              activeTicketId={activeTicketIdForMap}
+              hideLegend={true}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,9 +1,11 @@
 import React, { useMemo, useState, useRef } from "react";
 import { Section, VenueTemplate } from "../venue-designer/types";
 import { PitchRenderer } from "../venue-designer/PitchRenderer";
-import { Info, Map as MapIcon, Minus, Plus } from "lucide-react";
+import { Info, Map as MapIcon, Minus, Plus, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/currency";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
   const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
@@ -58,6 +60,8 @@ interface VenueSeatSelectorProps {
   onSeatDeselect: (code: string) => void;
   maxSelectable: number;
   currency?: string;
+  activeTicketId?: string;
+  hideLegend?: boolean;
 }
 
 export function VenueSeatSelector({
@@ -69,9 +73,18 @@ export function VenueSeatSelector({
   onSeatDeselect,
   maxSelectable,
   currency,
+  activeTicketId,
+  hideLegend,
 }: VenueSeatSelectorProps) {
   const sections: Section[] = venueProject.sections_data || [];
   
+  const [zoomScale, setZoomScale] = useState(1);
+  const [panPos, setPanPos] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  
+  const [activeSectionForModal, setActiveSectionForModal] = useState<Section | null>(null);
+
   // Create a map of ticketId -> ticket details for quick lookup
   const ticketMap = useMemo(() => {
     const map: Record<string, any> = {};
@@ -110,11 +123,6 @@ export function VenueSeatSelector({
     }
   };
 
-  const [zoomScale, setZoomScale] = useState(1);
-  const [panPos, setPanPos] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStart = useRef({ x: 0, y: 0 });
-
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     const zoomIntensity = 0.05;
@@ -146,44 +154,58 @@ export function VenueSeatSelector({
   const viewBoxH = bh + padding * 2;
   const viewBoxStr = `${-(bw / 2) - padding} ${-(bh / 2) - padding} ${viewBoxW} ${viewBoxH}`;
 
+  const handleSectionAutoZoom = (sec: Section) => {
+    if (activeTicketId && sec.ticketId !== activeTicketId) return;
+
+    if (!sec.rows || sec.rows === 0) {
+      // If it's a GA section with no individual seats to click, select the section
+      const isSelected = selectedSeats.includes(`GA-${sec.id}`);
+      handleSeatClick(`GA-${sec.id}`, sec, false, isSelected);
+    } else {
+      setActiveSectionForModal(sec);
+    }
+  };
+
   return (
     <div className="w-full h-[600px] relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
-      <div className="absolute top-4 left-4 z-10 bg-card/90 backdrop-blur-md border p-3 rounded-xl shadow-lg w-64 text-sm">
-        <h3 className="font-semibold flex items-center gap-2 mb-2">
-          <MapIcon className="h-4 w-4 text-primary" /> Legend
-        </h3>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-primary ring-2 ring-primary ring-offset-2 ring-offset-background"></div>
-            <span className="text-xs">Your Selection</span>
+      {!hideLegend && (
+        <div className="absolute top-4 left-4 z-10 bg-card/90 backdrop-blur-md border p-3 rounded-xl shadow-lg w-64 text-sm">
+          <h3 className="font-semibold flex items-center gap-2 mb-2">
+            <MapIcon className="h-4 w-4 text-primary" /> Legend
+          </h3>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-primary ring-2 ring-primary ring-offset-2 ring-offset-background"></div>
+              <span className="text-xs">Your Selection</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-muted-foreground/30"></div>
+              <span className="text-xs">Unavailable / Sold</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-muted-foreground/30"></div>
-            <span className="text-xs">Unavailable / Sold</span>
-          </div>
-        </div>
-        <div className="mt-3 pt-3 border-t">
-          <p className="text-xs text-muted-foreground font-medium mb-2">Ticket Sections</p>
-          <div className="space-y-1.5 max-h-32 overflow-y-auto custom-scrollbar">
-            {sections.map(s => {
-              if (s.shape === "pitch" || !s.ticketId) return null;
-              const t = ticketMap[s.ticketId];
-              return (
-                <div key={s.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }}></div>
-                    <span className="text-xs truncate max-w-[100px]" title={s.name}>{s.name}</span>
+          <div className="mt-3 pt-3 border-t">
+            <p className="text-xs text-muted-foreground font-medium mb-2">Ticket Sections</p>
+            <div className="space-y-1.5 max-h-32 overflow-y-auto custom-scrollbar">
+              {sections.map(s => {
+                if (s.shape === "pitch" || !s.ticketId) return null;
+                const t = ticketMap[s.ticketId];
+                return (
+                  <div key={s.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }}></div>
+                      <span className="text-xs truncate max-w-[100px]" title={s.name}>{s.name}</span>
+                    </div>
+                    <span className="text-xs font-semibold">{t ? formatCurrency(t.cost, currency || "RWF") : '-'}</span>
                   </div>
-                  <span className="text-xs font-semibold">{t ? formatCurrency(t.cost, currency || "RWF") : '-'}</span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          </div>
+          <div className="mt-3 pt-2 text-xs text-center text-muted-foreground">
+            Selected: {selectedSeats.length} / {maxSelectable || "∞"}
           </div>
         </div>
-        <div className="mt-3 pt-2 text-xs text-center text-muted-foreground">
-          Selected: {selectedSeats.length} / {maxSelectable || "∞"}
-        </div>
-      </div>
+      )}
 
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-card/90 backdrop-blur-md border border-border p-1.5 rounded-xl shadow-lg">
         <button
@@ -209,7 +231,7 @@ export function VenueSeatSelector({
         </button>
       </div>
 
-      <div className="flex-1 w-full h-full relative" style={{ backgroundColor: venueProject.canvas_bg || "#ffffff" }}>
+      <div className="flex-1 w-full h-full relative" style={{ backgroundColor: venueProject.canvas_bg === '#ffffff' ? 'transparent' : (venueProject.canvas_bg || 'transparent') }}>
         <svg
           viewBox={viewBoxStr}
           className={`w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} touch-none`}
@@ -289,10 +311,13 @@ export function VenueSeatSelector({
               }
             }
 
+            const isActive = !activeTicketId || sec.ticketId === activeTicketId;
+
             return (
               <g
                 key={sec.id}
                 transform={`translate(${sec.x || 0}, ${sec.y || 0}) rotate(${sec.rotation || 0}) scale(${sec.scaleX || 1}, ${sec.scaleY || 1})`}
+                style={{ opacity: isActive ? 1 : 0.2, pointerEvents: isActive ? 'auto' : 'none' }}
               >
                 {/* Background Shape */}
                 {sec.shape === "pitch" ? (
@@ -303,8 +328,14 @@ export function VenueSeatSelector({
                     fill={sec.color}
                     stroke="rgba(255,255,255,0.15)"
                     strokeWidth="1"
-                    className="opacity-20"
-                  />
+                    className={`transition-all duration-200 ${sec.ticketId ? 'cursor-pointer hover:opacity-50' : 'opacity-20'} ${selectedSeats.includes(`GA-${sec.id}`) ? 'opacity-60 ring-2 ring-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]' : 'opacity-20'}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSectionAutoZoom(sec);
+                    }}
+                  >
+                    <title>{sec.name}</title>
+                  </path>
                 )}
 
                 {/* Draw Individual Seats */}
@@ -336,6 +367,84 @@ export function VenueSeatSelector({
           </g>
         </svg>
       </div>
+
+      <Dialog open={!!activeSectionForModal} onOpenChange={(open) => !open && setActiveSectionForModal(null)}>
+        <DialogContent className="max-w-[95vw] md:max-w-6xl xl:max-w-7xl border-border bg-card z-[110]">
+          <DialogHeader>
+            <DialogTitle>{activeSectionForModal?.name} - Select Seats</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 md:p-6 bg-secondary/20 rounded-xl overflow-auto max-h-[80vh] flex justify-center items-center custom-scrollbar">
+            {activeSectionForModal && (() => {
+              const sec = activeSectionForModal;
+              const pitch = sections.find((s) => s.shape === "pitch");
+              
+              const cols = sec.cols || 1;
+              const isDense = cols > 12;
+              const isVeryDense = cols > 20;
+
+              const seatSize = isVeryDense 
+                ? "w-6 h-6 sm:w-7 sm:h-7 text-[8px]" 
+                : isDense 
+                  ? "w-8 h-8 sm:w-9 sm:h-9 text-[9px]" 
+                  : "w-10 h-10 sm:w-12 sm:h-12 text-[11px]";
+                  
+              const gapSize = isVeryDense ? "gap-0.5" : isDense ? "gap-1" : "gap-1.5 sm:gap-2";
+
+              return (
+                <div className="flex flex-col gap-6 items-center justify-center w-full min-w-max">
+                  <div 
+                    className={`grid justify-center ${gapSize}`} 
+                    style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, auto))` }}
+                  >
+                    {Array.from({ length: (sec.rows || 0) * cols }).map((_, i) => {
+                      const visualRow = Math.floor(i / cols);
+                      const visualCol = i % cols;
+                      
+                      // Stage is at the bottom, so Row 1 is at the bottom of the visual grid
+                      const rowLabel = (sec.rows || 1) - visualRow;
+                      const colLabel = visualCol + 1;
+                      const code = `${sec.name}-R${rowLabel}-C${colLabel}`.replace(/\s+/g, '-');
+                      
+                      const isBooked = bookedSeats.includes(code);
+                      const isSelected = selectedSeats.includes(code);
+                      
+                      let bgColor = sec.color || "#0ea5e9";
+                      if (isBooked) bgColor = "rgba(128,128,128,0.5)";
+                      if (isSelected) bgColor = "var(--primary)";
+
+                      return (
+                        <div
+                          key={i}
+                          onClick={() => {
+                            if (!isBooked) handleSeatClick(code, sec, isBooked, isSelected);
+                          }}
+                          className={`${seatSize} rounded-t-xl rounded-b-sm flex flex-col items-center justify-center font-bold transition-all shadow-sm leading-none gap-0.5 ${isBooked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:brightness-110 hover:-translate-y-0.5'} ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]' : ''}`}
+                          style={{ backgroundColor: bgColor, color: "#fff" }}
+                          title={`Row ${rowLabel}, Seat ${colLabel}${isBooked ? ' (Sold)' : ''}`}
+                        >
+                          {!isVeryDense && <span>R{rowLabel}</span>}
+                          {!isVeryDense && <span className="opacity-90">S{colLabel}</span>}
+                        </div>
+                      );
+                    })}
+                    {(sec.rows === 0 || cols === 0) && (
+                      <p className="text-sm text-muted-foreground text-center col-span-full">
+                        No seats defined in this section.
+                      </p>
+                    )}
+                  </div>
+
+                  {pitch && (
+                    <div className="bg-primary/10 border border-primary/30 flex items-center justify-center text-xs font-bold tracking-widest text-primary rounded-xl w-full max-w-md h-12 mt-4 shadow-sm">
+                      <span>STAGE / FRONT</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
