@@ -253,7 +253,7 @@ export function EventDetailsDesktop({
               </Button>
               {organizerId && following && isLoggedIn && (
                 <Button asChild variant="outline" size="icon" className="rounded-full">
-                  <Link to="/$userId/message" params={{ userId: user?.id }} search={{ chatId: organizerId }}>
+                  <Link to="/$userId/message" params={{ userId: user?.id }} search={{ chatId: organizerId, eventId: ev.id }}>
                     <MessageCircle className="h-4 w-4" />
                   </Link>
                 </Button>

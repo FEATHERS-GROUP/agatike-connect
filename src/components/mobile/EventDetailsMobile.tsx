@@ -244,7 +244,7 @@ export function EventDetailsMobile({
           <div className="flex gap-2">
             {organizerId && following && isLoggedIn && (
               <Button asChild size="icon" variant="outline" className="rounded-full h-8 w-8">
-                <Link to="/$userId/message" params={{ userId: user?.id }} search={{ chatId: organizerId }}>
+                <Link to="/$userId/message" params={{ userId: user?.id }} search={{ chatId: organizerId, eventId: ev.id }}>
                   <MessageCircle className="h-4 w-4" />
                 </Link>
               </Button>

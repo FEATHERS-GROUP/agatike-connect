@@ -1,4 +1,4 @@
-import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useParams, useNavigate, Link } from "@tanstack/react-router";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Search,
@@ -11,6 +11,8 @@ import {
   Sticker,
   ArrowLeft,
   Plus,
+  X,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,12 +45,14 @@ import { formatMessageDate } from "@/lib/utils";
 
 type MessageSearch = {
   chatId?: string;
+  eventId?: string;
 };
 
 export const Route = createFileRoute("/$userId/message")({
   validateSearch: (search: Record<string, unknown>): MessageSearch => {
     return {
       chatId: search.chatId as string | undefined,
+      eventId: search.eventId as string | undefined,
     };
   },
   head: () => ({
@@ -62,7 +66,7 @@ export const Route = createFileRoute("/$userId/message")({
 
 function UserMessagesPage() {
   const { userId } = Route.useParams();
-  const { chatId } = Route.useSearch();
+  const { chatId, eventId } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const { user, isLoading: authLoading } = useUserAuth();
   const { followedIds } = useFollowedOrganizers();
@@ -98,11 +102,11 @@ function UserMessagesPage() {
 
   // Sync activeChatId to URL and update read receipt
   useEffect(() => {
-    navigate({ search: { chatId: activeChatId || undefined }, replace: true });
+    navigate({ search: { chatId: activeChatId || undefined, eventId }, replace: true });
     if (activeChatId) {
       localStorage.setItem(`chat_read_${activeChatId}`, Date.now().toString());
     }
-  }, [activeChatId, navigate]);
+  }, [activeChatId, navigate, eventId]);
 
   // Automatically resolve organizerId search param to DM channel or create one
   useEffect(() => {
@@ -145,6 +149,35 @@ function UserMessagesPage() {
   const [gifSearch, setGifSearch] = useState("");
   const [isGifPopoverOpen, setIsGifPopoverOpen] = useState(false);
   const [isFetchingGifs, setIsFetchingGifs] = useState(false);
+  const [pendingEventCard, setPendingEventCard] = useState<any>(null);
+
+  useEffect(() => {
+    if (eventId) {
+      import("@/lib/mock-data").then(async ({ events, experiences, movies }) => {
+        let ev: any = events.find((e) => e.id === eventId) ||
+                   experiences.find((x) => x.id === eventId) ||
+                   movies.find((m) => m.id === eventId);
+        
+        if (!ev) {
+          try {
+            const { getEventById } = await import("@/api/events");
+            ev = await getEventById({ data: { id: eventId } } as any);
+          } catch (error) {
+            console.error("Failed to fetch event for card", error);
+          }
+        }
+
+        if (ev) {
+          setPendingEventCard({
+            eventId: ev.id,
+            title: ev.title || ev.name || "Event",
+            image: ev.cover || ev.image_url || "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
+            info: ev.date || "Event Details",
+          });
+        }
+      });
+    }
+  }, [eventId]);
 
   const fetchGifs = async (offset: number) => {
     if (offset === 0) setIsFetchingGifs(true);
@@ -216,10 +249,14 @@ function UserMessagesPage() {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!messageInput.trim() || !activeChat) return;
+    if (!messageInput.trim() && !pendingEventCard && !activeChat) return;
 
-    sendMessage(messageInput, activeChat);
+    sendMessage(messageInput, activeChat, undefined, pendingEventCard);
     setMessageInput("");
+    setPendingEventCard(null);
+
+    // clear eventId from url
+    navigate({ search: { chatId: activeChatId || undefined } as any, replace: true });
   };
 
   const startDM = async (org: any) => {
@@ -596,6 +633,18 @@ function UserMessagesPage() {
                                 className="max-w-full rounded-xl mb-2"
                               />
                             )}
+                            {msg.eventCard && (
+                              <Link to="/events/$eventId" params={{ eventId: msg.eventCard.eventId }} className="block mb-2 w-64 border border-border/50 rounded-xl overflow-hidden bg-card/50 hover:border-primary/50 transition-colors cursor-pointer">
+                                <img src={msg.eventCard.image} alt={msg.eventCard.title} className="w-full h-32 object-cover" />
+                                <div className="p-3">
+                                  <p className="font-bold text-sm truncate">{msg.eventCard.title}</p>
+                                  <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+                                    <Calendar className="h-3 w-3" />
+                                    <span>{msg.eventCard.info}</span>
+                                  </div>
+                                </div>
+                              </Link>
+                            )}
                             <p className="whitespace-pre-wrap break-words">{msg.text}</p>
                           </div>
                           <span className="text-[10px] text-muted-foreground mt-1 px-1">
@@ -612,6 +661,23 @@ function UserMessagesPage() {
 
             {/* Chat Input Area */}
             <div className="p-3 md:p-4 bg-background/80 backdrop-blur-md border-t border-border/60 shrink-0 pb-safe">
+              {pendingEventCard && (
+                <div className="mb-3 max-w-3xl mx-auto flex items-center justify-between bg-card/80 border border-border/50 p-2 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <img src={pendingEventCard.image} alt="Event" className="h-10 w-10 rounded-md object-cover" />
+                    <div>
+                      <p className="font-semibold text-xs leading-none mb-1">Attaching Event</p>
+                      <p className="text-xs text-muted-foreground truncate max-w-[200px]">{pendingEventCard.title}</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => {
+                    setPendingEventCard(null);
+                    navigate({ search: { chatId: activeChatId || undefined } as any, replace: true });
+                  }}>
+                    <X className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </div>
+              )}
               <form
                 onSubmit={handleSendMessage}
                 className="flex items-end gap-2 max-w-3xl mx-auto relative"

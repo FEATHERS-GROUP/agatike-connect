@@ -20,6 +20,7 @@ export type Message = {
   isMe: boolean;
   channelId: string;
   mediaUrl?: string;
+  eventCard?: { eventId: string; title: string; image: string; info: string };
   timeFormatted?: string;
   isPending?: boolean;
   rawTimeMillis?: number;
@@ -164,6 +165,7 @@ export function useFirestoreUserMessages(
           isMe: data.senderId === currentUserId,
           channelId: data.channelId,
           mediaUrl: data.mediaUrl,
+          eventCard: data.eventCard,
           isPending: !rawTime,
           rawTimeMillis: rawTime?.toMillis?.() || Date.now(),
         };
@@ -185,7 +187,7 @@ export function useFirestoreUserMessages(
     return () => unsubscribeMessages();
   }, [activeChatId, currentUserId]);
 
-  const sendMessage = async (text: string, activeChat: ChatChannel, mediaUrl?: string) => {
+  const sendMessage = async (text: string, activeChat: ChatChannel, mediaUrl?: string, eventCard?: any) => {
     if (!activeChatId) return;
 
     let senderId = currentUserId;
@@ -198,12 +200,13 @@ export function useFirestoreUserMessages(
       receiverId,
       text,
       mediaUrl: mediaUrl || null,
+      eventCard: eventCard || null,
       timestamp: serverTimestamp(),
     });
 
     const channelRef = doc(db, "agatike_channels", activeChatId);
     await updateDoc(channelRef, {
-      lastMessage: text || "Sent an attachment",
+      lastMessage: text || (eventCard ? `Shared event: ${eventCard.title}` : "Sent an attachment"),
       lastMessageTime: serverTimestamp(),
       lastMessageSenderId: senderId,
     });
