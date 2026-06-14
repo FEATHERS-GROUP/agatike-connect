@@ -1006,11 +1006,51 @@ flowchart TD
     Col --> |Load Project| Designer
 ```
 
-### Event Sections Integration
+### Ticket Assignment & Mapping Logic
 
-While the visual representation lives in JSON, the actual ticketable zones are managed as **Event Sections**. Organizers create discrete "Event Sections" (e.g., VIP Lounge) in the Event Sidebar (`/sections`), which act as the bridge linking Ticket Tiers, Staff Access Credentials, and the physical Venue Map.
+The true power of the Venue Designer is how it bridges visual shapes with actual sellable inventory. This is done through a seamless mapping flow where visual shapes on the canvas are connected to **Ticket Tiers** created in the Event Dashboard.
 
-**Database tables:** `venue_projects`
+**Logic:**
+1. **Create Tickets:** The organizer creates Ticket Tiers (e.g., "VIP", "General Admission") under the event's `products & add-ons` settings.
+2. **Design Venue:** In the Venue Designer, the organizer draws shapes (rectangles, polygons, arcs, or a pitch) representing physical zones.
+3. **Assign Tickets to Zones:** Clicking any shape in the canvas opens the Venue Properties sidebar. Here, the organizer selects a **Linked Ticket Tier** from a dropdown. 
+4. **Capacity Calculation:** The shape is assigned a `capacity` (for GA) or specific `rows` and `cols` (for assigned seating). The system uses this to validate if the physical section holds enough seats to match the ticket inventory.
+
+```mermaid
+flowchart TD
+    Event[Event Dashboard] -->|Creates| Tickets[Ticket Tiers (e.g., VIP, GA)]
+    Venue[Venue Designer] -->|Draws| Shape[Canvas Shape]
+    Shape -->|Selects| Sidebar[Properties Sidebar]
+    Sidebar -->|Assigns Ticket| Map[Link Shape to Ticket ID]
+    Map -->|Save| JSONB[(venue_projects.sections_data)]
+    
+    style Map fill:#bbf,stroke:#333,stroke-width:2px
+```
+
+### Event Checkout Flow (Seat Selection)
+
+When a customer attempts to buy tickets on the public event page (`/events/$eventId`), the system dynamically determines whether to show a standard quantity selector or an interactive Seat Map.
+
+**Logic:**
+- **Matching:** The public event details page queries `getEventVenueProjects`. It checks if any ticket in the user's cart (or available tickets) has a matching `ticketId` inside the mapped `sections_data` of the venue project.
+- **Seat Map Trigger:** If a ticket is mapped to a section, a "Select Seats" button appears instead of the standard +/- quantity controls.
+- **Grid Auto-Generation:** Clicking the button opens the `VenueSeatSelector` modal. The system automatically reads the `rows` and `cols` from the JSON configuration and generates a precise CSS grid (e.g., R1-C1, R1-C2).
+- **Cart Sync:** The customer taps specific seats to select them. The total number of selected seats directly syncs to the checkout cart quantity.
+
+```mermaid
+flowchart TD
+    Checkout[Event Details Page] --> Fetch[Fetch venue_projects]
+    Fetch --> Check{Is Ticket Mapped\nto a Canvas Shape?}
+    Check -->|No| Basic[Standard +/- Quantity Selector]
+    Check -->|Yes| SeatButton[Show 'Select Seats' Button]
+    SeatButton -->|Clicks| SVGMap[Interactive SVG Venue Map]
+    SVGMap -->|Clicks Shape| AutoZoom[Zoom into Section]
+    AutoZoom --> GridView[Render CSS Grid of Seats]
+    GridView -->|User taps seat| AddCart[Add exact seat to Cart]
+    AddCart --> Confirm[Proceed to Payment]
+```
+
+**Database tables:** `venue_projects` (stores `sections_data`), `events`, `event_tickets`
 
 ---
 
