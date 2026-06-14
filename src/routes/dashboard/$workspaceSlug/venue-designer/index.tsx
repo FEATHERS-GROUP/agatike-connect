@@ -92,6 +92,7 @@ function VenueDesignerIndex() {
   const [newProjectName, setNewProjectName] = useState("Untitled Venue");
   const [selectedEventId, setSelectedEventId] = useState("");
   const [selectedTourStopIdx, setSelectedTourStopIdx] = useState(0);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
   const activeEvent = events.find((e: any) => e.id === selectedEventId);
   const hasMultipleStops =
@@ -159,6 +160,7 @@ function VenueDesignerIndex() {
     mutationFn: (id: string) => deleteVenueProject({ data: { id } } as any),
     onSuccess: () => {
       toast.success("Venue map deleted.");
+      setProjectToDelete(null);
       refetch();
     },
     onError: () => toast.error("Failed to delete venue map."),
@@ -362,6 +364,36 @@ function VenueDesignerIndex() {
           </DialogContent>
         </Dialog>
 
+        {/* Delete Confirm Modal */}
+        <Dialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Delete Venue Map</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this venue map? This action cannot be undone. 
+                If it is linked to an event, the event will automatically be unlinked.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setProjectToDelete(null)} disabled={deleteMutation.isPending}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={() => {
+                  if (projectToDelete) {
+                    deleteMutation.mutate(projectToDelete);
+                  }
+                }}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Saved Projects Section */}
         <section>
           <div className="mb-6 flex items-center justify-between">
@@ -444,9 +476,7 @@ function VenueDesignerIndex() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (window.confirm("Are you sure you want to delete this venue map? If it is linked to an event, it will be unlinked automatically.")) {
-                              deleteMutation.mutate(proj.id);
-                            }
+                            setProjectToDelete(proj.id);
                           }}
                         >
                           <Trash2 className="h-4 w-4" />

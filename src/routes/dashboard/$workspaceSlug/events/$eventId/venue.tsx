@@ -423,12 +423,41 @@ function VenueView() {
                     )}
                   </div>
 
-                  {/* Interactive Seating Layout */}
-                  <div className="mt-8 border-t border-border/50 pt-6">
-                    <h3 className="font-semibold flex items-center gap-2 mb-4">
-                      <Map className="h-5 w-5 text-primary" /> Interactive Seating Layout
-                    </h3>
-                    
+                  </div>
+                </div>
+
+                {/* Interactive Seating Layout (Full Width, 2-Column inner grid) */}
+              <div className="mt-8 border-t border-border/50 pt-8 px-6 pb-6">
+                <h3 className="font-semibold flex items-center gap-2 mb-6 text-lg">
+                  <Map className="h-6 w-6 text-primary" /> Interactive Seating Layout
+                </h3>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Left Column: Live Occupancy Map */}
+                  <div className="flex flex-col">
+                    {!assignedProject || !assignedProject.sections_data || assignedProject.sections_data.length === 0 ? (
+                      <div className="h-full min-h-[400px] border-2 border-dashed border-border/60 rounded-2xl flex flex-col items-center justify-center bg-secondary/10 p-6 text-center">
+                        <Map className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                        <h4 className="font-medium text-muted-foreground">No Layout Assigned</h4>
+                        <p className="text-sm text-muted-foreground/70 mt-1">Assign a venue layout to view the live occupancy map here.</p>
+                      </div>
+                    ) : (
+                      <div className="bg-secondary/10 rounded-2xl border border-border/50 h-full">
+                        <VenueSeatSelector
+                          venueProject={assignedProject}
+                          eventTickets={event.event_tickets || []}
+                          bookedSeats={stopBookedSeats}
+                          selectedSeats={[]}
+                          maxSelectable={0}
+                          onSeatSelect={() => {}}
+                          onSeatDeselect={() => {}}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column: Mapping Controls */}
+                  <div className="space-y-6">
                     {!assignedProject ? (
                       <div className="space-y-4">
                         <p className="text-sm text-muted-foreground">
@@ -477,46 +506,34 @@ function VenueView() {
 
                         <div className="space-y-3 mt-4">
                           <h4 className="text-sm font-medium">Map Tickets to Sections</h4>
-                          {(!assignedProject.sections_data || assignedProject.sections_data.length === 0) ? (
-                            <p className="text-sm text-muted-foreground italic">No sections defined in this layout.</p>
+                          {(!assignedProject.sections_data || assignedProject.sections_data.filter((s: any) => s.shape !== "pitch").length === 0) ? (
+                            <p className="text-sm text-muted-foreground italic">No mappable sections defined in this layout.</p>
                           ) : (
-                            assignedProject.sections_data.map((section: any, sIdx: number) => (
-                              <div key={section.id || sIdx} className="flex items-center justify-between gap-4 p-2 rounded-md hover:bg-secondary/20 border border-transparent hover:border-border/50 transition-colors">
-                                <span className="text-sm font-medium flex-1">{section.name || 'Unnamed Section'}</span>
-                                <select
-                                  className="flex h-9 w-[200px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                  value={section.ticketId || ""}
-                                  onChange={(e) => {
-                                    const newSections = [...assignedProject.sections_data];
-                                    newSections[sIdx] = { ...section, ticketId: e.target.value };
-                                    const updatedProject = { ...assignedProject, sections_data: newSections };
-                                    saveMappingMutation.mutate(updatedProject);
-                                  }}
-                                >
-                                  <option value="">No Ticket Mapped</option>
-                                  {event.event_tickets?.filter((t: any) => !t.deleted).map((t: any) => (
-                                    <option key={t.id} value={t.id}>{t.type} - {event.event_tickets?.[0]?.cost ? `${t.cost}` : 'Free'}</option>
-                                  ))}
-                                </select>
-                              </div>
-                            ))
+                            assignedProject.sections_data.map((section: any, sIdx: number) => {
+                              if (section.shape === "pitch") return null;
+                              return (
+                                <div key={section.id || sIdx} className="flex items-center justify-between gap-4 p-2 rounded-md hover:bg-secondary/20 border border-transparent hover:border-border/50 transition-colors">
+                                  <span className="text-sm font-medium flex-1">{section.name || 'Unnamed Section'}</span>
+                                  <select
+                                    className="flex h-9 w-[200px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    value={section.ticketId || ""}
+                                    onChange={(e) => {
+                                      const newSections = [...assignedProject.sections_data];
+                                      newSections[sIdx] = { ...section, ticketId: e.target.value };
+                                      const updatedProject = { ...assignedProject, sections_data: newSections };
+                                      saveMappingMutation.mutate(updatedProject);
+                                    }}
+                                  >
+                                    <option value="">No Ticket Mapped</option>
+                                    {event.event_tickets?.filter((t: any) => !t.deleted).map((t: any) => (
+                                      <option key={t.id} value={t.id}>{t.type} - {event.event_tickets?.[0]?.cost ? `${t.cost}` : 'Free'}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              );
+                            })
                           )}
                         </div>
-                        
-                        {assignedProject.sections_data && assignedProject.sections_data.length > 0 && (
-                          <div className="mt-8 border-t border-border/50 pt-6">
-                            <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wider">Live Occupancy Map</h3>
-                            <VenueSeatSelector
-                              venueProject={assignedProject}
-                              eventTickets={event.event_tickets || []}
-                              bookedSeats={stopBookedSeats}
-                              selectedSeats={[]}
-                              maxSelectable={0}
-                              onSeatSelect={() => {}}
-                              onSeatDeselect={() => {}}
-                            />
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>

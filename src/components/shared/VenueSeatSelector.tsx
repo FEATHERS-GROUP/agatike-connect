@@ -107,8 +107,13 @@ export function VenueSeatSelector({
     }
   };
 
+  const bw = venueProject.boundary_width || 800;
+  const bh = venueProject.boundary_height || 600;
+  const padding = Math.max(bw, bh) * 0.1;
+  const viewBoxStr = `${-(bw / 2) - padding} ${-(bh / 2) - padding} ${bw + padding * 2} ${bh + padding * 2}`;
+
   return (
-    <div className="w-full h-[600px] relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col">
+    <div className="w-full h-[600px] relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
       <div className="absolute top-4 left-4 z-10 bg-card/90 backdrop-blur-md border p-3 rounded-xl shadow-lg w-64 text-sm">
         <h3 className="font-semibold flex items-center gap-2 mb-2">
           <MapIcon className="h-4 w-4 text-primary" /> Legend
@@ -148,7 +153,7 @@ export function VenueSeatSelector({
 
       <div className="flex-1 w-full h-full relative" style={{ backgroundColor: venueProject.canvas_bg || "#ffffff" }}>
         <svg
-          viewBox="-560 -480 1120 960"
+          viewBox={viewBoxStr}
           className="w-full h-full cursor-grab active:cursor-grabbing"
           preserveAspectRatio="xMidYMid meet"
         >
