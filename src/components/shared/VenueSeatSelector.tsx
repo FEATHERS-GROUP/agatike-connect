@@ -57,7 +57,7 @@ interface VenueSeatSelectorProps {
   eventTickets: any[];
   bookedSeats: SeatCode[];
   selectedSeats: SeatCode[];
-  onSeatSelect: (seat: { code: string; sectionName: string; ticketId: string; cost: number; type: string }) => void;
+  onSeatSelect: (seat: { code: string; sectionName: string; seatName?: string; ticketId: string; cost: number; type: string }) => void;
   onSeatDeselect: (code: string) => void;
   maxSelectable: number;
   currency?: string;
@@ -105,8 +105,8 @@ export function VenueSeatSelector({
         targetSections.forEach(sec => {
           const x = sec.x || 0;
           const y = sec.y || 0;
-          const w = sec.w || 100;
-          const h = sec.h || 100;
+          const w = sec.width || 100;
+          const h = sec.height || 100;
           if (x - w / 2 < minX) minX = x - w / 2;
           if (x + w / 2 > maxX) maxX = x + w / 2;
           if (y - h / 2 < minY) minY = y - h / 2;
