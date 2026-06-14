@@ -2,11 +2,21 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeft, MapPin, Clock, Star, Heart, Share2, Users, ChevronUp } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { useState, useEffect } from "react";
-
+import { useQuery } from "@tanstack/react-query";
+import { getEventFeedbackPublic } from "@/api/feedback";
+import { Button } from "@/components/ui/button";
 export function VenueDetailsMobile({ venue }: { venue: any }) {
   if (!venue) return null;
 
   const [isTicketsExpanded, setIsTicketsExpanded] = useState(true);
+
+  const { data: feedbackData } = useQuery({
+    queryKey: ["eventFeedback", venue.id],
+    queryFn: () => getEventFeedbackPublic({ data: { event_id: venue.id } } as any),
+    enabled: !!venue.id,
+  });
+
+  const reviews = feedbackData?.reviews || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -148,6 +158,51 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Community Reviews */}
+        <div className="border-t border-border/40 pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold">Community reviews</h2>
+            <Button asChild variant="outline" size="sm" className="rounded-full h-8">
+              <Link
+                to="/f/$eventId/review"
+                params={{ eventId: venue.id }}
+              >
+                Leave a Review
+              </Link>
+            </Button>
+          </div>
+          <div className="space-y-3">
+            {reviews.length > 0 ? (
+              reviews.slice(0, 3).map((r: any) => (
+                <div
+                  key={r.id}
+                  className="rounded-3xl border border-border/40 bg-card/60 p-4 backdrop-blur"
+                >
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    {r.reviewer_name}
+                    {r.is_verified && (
+                      <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-semibold">
+                        Verified
+                      </span>
+                    )}
+                    <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      <Star className="h-3 w-3 fill-primary text-primary" /> {r.rating.toFixed(1)}
+                    </span>
+                  </div>
+                  {r.title && <p className="mt-2 text-sm font-semibold">{r.title}</p>}
+                  {r.body && (
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                      {r.body}
+                    </p>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No reviews yet. Be the first!</p>
+            )}
           </div>
         </div>
 

@@ -4,9 +4,19 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
+import { useQuery } from "@tanstack/react-query";
+import { getEventFeedbackPublic } from "@/api/feedback";
 
 export function VenueDetailsDesktop({ venue }: { venue: any }) {
   if (!venue) return null;
+
+  const { data: feedbackData } = useQuery({
+    queryKey: ["eventFeedback", venue.id],
+    queryFn: () => getEventFeedbackPublic({ data: { event_id: venue.id } } as any),
+    enabled: !!venue.id,
+  });
+
+  const reviews = feedbackData?.reviews || [];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -104,6 +114,56 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
               />
             </div>
           )}
+
+          {/* Community Reviews */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Community reviews</h2>
+              <Button asChild variant="outline" size="sm" className="rounded-full">
+                <Link
+                  to="/f/$eventId/review"
+                  params={{ eventId: venue.id }}
+                >
+                  Leave a Review
+                </Link>
+              </Button>
+            </div>
+            <div className="space-y-3">
+              {reviews.length > 0 ? (
+                reviews.map((r: any) => (
+                  <div key={r.id} className="rounded-2xl border border-border/60 bg-card p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 flex items-center justify-center rounded-full bg-secondary text-sm font-bold uppercase">
+                        {r.reviewer_name?.substring(0, 2) || "U"}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">{r.reviewer_name}</span>
+                          {r.is_verified && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-semibold tracking-wide uppercase">
+                              Verified
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 mt-0.5 text-xs text-muted-foreground">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3 w-3 ${i < Math.floor(r.rating) ? "fill-primary text-primary" : "text-muted"}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    {r.title && <p className="mt-3 font-semibold text-foreground">{r.title}</p>}
+                    {r.body && <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{r.body}</p>}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No reviews yet. Be the first!</p>
+              )}
+            </div>
+          </div>
 
           {venue.latitude && venue.longitude && (
             <div>

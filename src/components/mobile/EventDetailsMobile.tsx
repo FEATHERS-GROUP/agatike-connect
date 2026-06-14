@@ -461,21 +461,23 @@ export function EventDetailsMobile({
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold">Community reviews</h2>
-            {attendeeRecord && (
-              <Button asChild variant="outline" size="sm" className="rounded-full h-8">
-                <Link
-                  to="/f/$eventId/review"
-                  params={{ eventId }}
-                  search={{
-                    attendeeId: attendeeRecord.id,
-                    name: attendeeRecord.names,
-                    email: attendeeRecord.email,
-                  }}
-                >
-                  Leave a Review
-                </Link>
-              </Button>
-            )}
+            <Button asChild variant="outline" size="sm" className="rounded-full h-8">
+              <Link
+                to="/f/$eventId/review"
+                params={{ eventId }}
+                search={
+                  attendeeRecord
+                    ? {
+                        attendeeId: attendeeRecord.id,
+                        name: attendeeRecord.names,
+                        email: attendeeRecord.email,
+                      }
+                    : undefined
+                }
+              >
+                Leave a Review
+              </Link>
+            </Button>
           </div>
           <div className="space-y-3">
             {reviews.length > 0 ? (

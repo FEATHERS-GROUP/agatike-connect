@@ -32,6 +32,7 @@ export const submitEventFeedback = createServerFn({ method: "POST" }).handler(as
     `;
     const checkData = await hasuraRequest<{ event_attendees_by_pk: any }>(checkQuery, {
       id: input.attendee_id,
+      event_id: input.event_id,
     });
     const att = checkData.event_attendees_by_pk;
     if (att && att.event_id === input.event_id) {
