@@ -136,18 +136,26 @@ export function EventDetailsDesktop({
     ? ticketTiers
     : (ev.event_tickets?.length
         ? ev.event_tickets
-        : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100 }]
-      ).map((t: any) => ({
-        id: t.id,
-        name: t.type,
-        price: parseFloat(t.cost) || 0,
-        perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
-        remaining: t.remaining,
-        tour_stop_idx: t.tour_stop_idx || 0,
-      }));
+        : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100, sold: 0 }]
+      ).map((t: any) => {
+        const sold = parseInt(t.sold) || 0;
+        const capacity = parseInt(t.remaining) || 0;
+        const ticketsLeft = Math.max(0, capacity - sold);
+        return {
+          id: t.id,
+          name: t.type,
+          price: parseFloat(t.cost) || 0,
+          perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
+          remaining: ticketsLeft,
+          sold,
+          tour_stop_idx: t.tour_stop_idx || 0,
+        };
+      });
 
   const activeTicketTiers = allTicketTiers.filter((t: any) =>
-    isExperience ? true : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1,
+    // Filter by tour stop AND hide sold-out tiers
+    (isExperience ? true : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1) &&
+    t.remaining > 0,
   );
 
   const activeMerch = isMock

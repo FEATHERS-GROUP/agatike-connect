@@ -20,7 +20,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
+import { getEventById, getWorkspaceTicketProjects, incrementTicketSold } from "@/api/events";
 import { addEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import * as htmlToImage from "html-to-image";
@@ -210,6 +210,18 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     },
     onSuccess: (data: any) => {
       const { res, attendeesPayload } = data;
+
+      // Increment sold count per ticket tier (grouped by tierId)
+      const qtByTier: Record<string, number> = {};
+      attendees.forEach((a) => { qtByTier[a.tierId] = (qtByTier[a.tierId] || 0) + 1; });
+      Object.entries(qtByTier).forEach(([tierId, qty]) => {
+        if (tierId && tierId !== "ga") {
+          incrementTicketSold({ data: { ticket_id: tierId, qty } } as any).catch((e) =>
+            console.error("Failed to increment sold for", tierId, e),
+          );
+        }
+      });
+
       const returned = res?.insert_event_attendees?.returning || [];
 
       const ticketsToIssue = attendees.map((a, idx) => {

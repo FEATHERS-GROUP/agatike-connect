@@ -709,3 +709,26 @@ export const getWorkspaceTicketProjects = createServerFn({ method: "POST" }).han
     return data.ticket_projects || [];
   },
 );
+
+// Atomically increment the sold count on a ticket tier after a successful booking
+const INCREMENT_TICKET_SOLD = `
+  mutation IncrementTicketSold($ticket_id: uuid!, $qty: Int!) {
+    update_event_tickets_by_pk(
+      pk_columns: { id: $ticket_id },
+      _inc: { sold: $qty }
+    ) {
+      id
+      sold
+      remaining
+    }
+  }
+`;
+
+export const incrementTicketSold = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { ticket_id, qty } = ctx.data as unknown as { ticket_id: string; qty: number };
+  const data = await hasuraRequest<{ update_event_tickets_by_pk: any }>(INCREMENT_TICKET_SOLD, {
+    ticket_id,
+    qty,
+  });
+  return data.update_event_tickets_by_pk;
+});
