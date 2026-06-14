@@ -598,8 +598,16 @@ export function EventDetailsMobile({
         </div>
       </div>
 
+      {/* Backdrop for Expanded Tickets */}
+      {isTicketsExpanded && !isSeatModalOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 animate-in fade-in duration-300"
+          onClick={() => setIsTicketsExpanded(false)}
+        />
+      )}
+
       {/* Sticky Bottom Action & Collapsible Tickets Drawer */}
-      <div className={`fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-xl border-t border-border/50 z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)] ${isSeatModalOpen ? 'hidden' : ''}`}>
+      <div className={`fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-xl border-t border-border/50 z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)] transition-transform duration-300 ${isSeatModalOpen ? 'hidden' : ''}`}>
         <div className="max-w-md mx-auto w-full">
           {/* Collapsible Header/Toggle */}
           <div
@@ -847,7 +855,6 @@ export function EventDetailsMobile({
           <Drawer 
             open={isSeatModalOpen} 
             onOpenChange={setIsSeatModalOpen}
-            snapPoints={[0.7, 1]}
           >
             <DrawerContent className="h-[95vh] flex flex-col bg-background/95 backdrop-blur-xl px-0 pb-safe border-border/40">
               {!isSectionActive && (
