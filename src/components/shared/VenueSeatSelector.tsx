@@ -1,8 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import { Section, VenueTemplate } from "../venue-designer/types";
 import { PitchRenderer } from "../venue-designer/PitchRenderer";
 import { Info, Map as MapIcon, Minus, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { formatCurrency } from "@/lib/currency";
 
 function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
   const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
@@ -56,6 +57,7 @@ interface VenueSeatSelectorProps {
   onSeatSelect: (seat: { code: string; sectionName: string; ticketId: string; cost: number; type: string }) => void;
   onSeatDeselect: (code: string) => void;
   maxSelectable: number;
+  currency?: string;
 }
 
 export function VenueSeatSelector({
@@ -66,6 +68,7 @@ export function VenueSeatSelector({
   onSeatSelect,
   onSeatDeselect,
   maxSelectable,
+  currency,
 }: VenueSeatSelectorProps) {
   const sections: Section[] = venueProject.sections_data || [];
   
@@ -107,10 +110,41 @@ export function VenueSeatSelector({
     }
   };
 
+  const [zoomScale, setZoomScale] = useState(1);
+  const [panPos, setPanPos] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const zoomIntensity = 0.05;
+    let newScale = zoomScale + (e.deltaY < 0 ? zoomIntensity : -zoomIntensity);
+    newScale = Math.min(Math.max(0.5, newScale), 5);
+    setZoomScale(newScale);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsDragging(true);
+    dragStart.current = { x: e.clientX - panPos.x, y: e.clientY - panPos.y };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    setPanPos({ x: e.clientX - dragStart.current.x, y: e.clientY - dragStart.current.y });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setIsDragging(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+
   const bw = venueProject.boundary_width || 800;
   const bh = venueProject.boundary_height || 600;
-  const padding = Math.max(bw, bh) * 0.1;
-  const viewBoxStr = `${-(bw / 2) - padding} ${-(bh / 2) - padding} ${bw + padding * 2} ${bh + padding * 2}`;
+  const padding = Math.max(bw, bh) * 0.02; // Reduced padding to 2%
+  const viewBoxW = bw + padding * 2;
+  const viewBoxH = bh + padding * 2;
+  const viewBoxStr = `${-(bw / 2) - padding} ${-(bh / 2) - padding} ${viewBoxW} ${viewBoxH}`;
 
   return (
     <div className="w-full h-[600px] relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
@@ -140,7 +174,7 @@ export function VenueSeatSelector({
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }}></div>
                     <span className="text-xs truncate max-w-[100px]" title={s.name}>{s.name}</span>
                   </div>
-                  <span className="text-xs font-semibold">{t ? `$${t.cost}` : '-'}</span>
+                  <span className="text-xs font-semibold">{t ? formatCurrency(t.cost, currency || "RWF") : '-'}</span>
                 </div>
               );
             })}
@@ -151,12 +185,42 @@ export function VenueSeatSelector({
         </div>
       </div>
 
+      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-card/90 backdrop-blur-md border border-border p-1.5 rounded-xl shadow-lg">
+        <button
+          onClick={() => setZoomScale(s => Math.min(s + 0.2, 5))}
+          className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+          title="Zoom In"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => setZoomScale(s => Math.max(s - 0.2, 0.5))}
+          className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+          title="Zoom Out"
+        >
+          <Minus className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => { setZoomScale(1); setPanPos({ x: 0, y: 0 }); }}
+          className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+          title="Reset View"
+        >
+          <MapIcon className="h-4 w-4" />
+        </button>
+      </div>
+
       <div className="flex-1 w-full h-full relative" style={{ backgroundColor: venueProject.canvas_bg || "#ffffff" }}>
         <svg
           viewBox={viewBoxStr}
-          className="w-full h-full cursor-grab active:cursor-grabbing"
+          className={`w-full h-full ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} touch-none`}
           preserveAspectRatio="xMidYMid meet"
+          onWheel={handleWheel}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
         >
+          <g transform={`translate(${panPos.x * (viewBoxW / 800)}, ${panPos.y * (viewBoxH / 600)}) scale(${zoomScale})`}>
           {venueProject.boundary_shape && venueProject.boundary_width && venueProject.boundary_height && (
             <path
               d={getBoundaryPath(
@@ -269,6 +333,7 @@ export function VenueSeatSelector({
               </g>
             );
           })}
+          </g>
         </svg>
       </div>
     </div>

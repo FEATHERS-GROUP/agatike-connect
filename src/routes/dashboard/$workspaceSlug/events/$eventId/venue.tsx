@@ -22,6 +22,7 @@ import { uploadFileToStorage } from "@/lib/firebase-storage";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { AddressInput } from "./edit";
+import { formatCurrency } from "@/lib/currency";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/venue")({
   component: VenueView,
@@ -31,6 +32,7 @@ function VenueView() {
   const { eventId, workspaceSlug } = Route.useParams();
   const queryClient = useQueryClient();
   const venueImageRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const { activeWorkspace } = useWorkspace();
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -449,6 +451,7 @@ function VenueView() {
                           bookedSeats={stopBookedSeats}
                           selectedSeats={[]}
                           maxSelectable={0}
+                          currency={activeWorkspace?.currency}
                           onSeatSelect={() => {}}
                           onSeatDeselect={() => {}}
                         />
@@ -525,8 +528,8 @@ function VenueView() {
                                     }}
                                   >
                                     <option value="">No Ticket Mapped</option>
-                                    {event.event_tickets?.filter((t: any) => !t.deleted).map((t: any) => (
-                                      <option key={t.id} value={t.id}>{t.type} - {event.event_tickets?.[0]?.cost ? `${t.cost}` : 'Free'}</option>
+                                    {event.event_tickets?.filter((t: any) => !t.deleted && (tourStops.length > 1 ? t.tour_stop_idx === idx : true)).map((t: any) => (
+                                      <option key={t.id} value={t.id}>{t.type} - {t.cost ? formatCurrency(t.cost, activeWorkspace?.currency || "RWF") : 'Free'}</option>
                                     ))}
                                   </select>
                                 </div>
