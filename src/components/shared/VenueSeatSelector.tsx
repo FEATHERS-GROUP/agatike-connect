@@ -87,6 +87,8 @@ export function VenueSeatSelector({
   const [panPos, setPanPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
+  const pointerDownPos = useRef({ x: 0, y: 0 });
+  const isPointerDown = useRef(false);
   
   const [activeSectionForModal, setActiveSectionForModal] = useState<Section | null>(null);
 
@@ -148,11 +150,9 @@ export function VenueSeatSelector({
     if (typeof window !== "undefined") {
       if (window.innerWidth < 768) {
         setZoomScale(1.5);
-      } else {
-        setZoomScale(1);
+        setPanPos({ x: 0, y: 150 });
       }
     }
-    setPanPos({ x: 0, y: 0 });
   }, [activeTicketId, sections, venueProject]);
 
   // REALTIME SYNC (Mocking WebSocket behavior across tabs)
@@ -185,7 +185,7 @@ export function VenueSeatSelector({
   // Create a map of ticketId -> ticket details for quick lookup
   const ticketMap = useMemo(() => {
     const map: Record<string, any> = {};
-    eventTickets.forEach(t => {
+    eventTickets.forEach((t) => {
       map[t.id] = t;
     });
     return map;
@@ -227,7 +227,6 @@ export function VenueSeatSelector({
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    // Cannot prevent default on passive event listeners in React by default.
     const zoomIntensity = 0.05;
     let newScale = zoomScale + (e.deltaY < 0 ? zoomIntensity : -zoomIntensity);
     newScale = Math.min(Math.max(0.5, newScale), 5);
@@ -235,19 +234,33 @@ export function VenueSeatSelector({
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    setIsDragging(true);
+    isPointerDown.current = true;
+    pointerDownPos.current = { x: e.clientX, y: e.clientY };
     dragStartPos.current = { x: e.clientX - panPos.x, y: e.clientY - panPos.y };
-    e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging) return;
+    if (!isPointerDown.current) return;
+    
+    if (!isDragging) {
+      const dist = Math.hypot(e.clientX - pointerDownPos.current.x, e.clientY - pointerDownPos.current.y);
+      if (dist > 5) {
+        setIsDragging(true);
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } else {
+        return;
+      }
+    }
+    
     setPanPos({ x: e.clientX - dragStartPos.current.x, y: e.clientY - dragStartPos.current.y });
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    setIsDragging(false);
-    e.currentTarget.releasePointerCapture(e.pointerId);
+    isPointerDown.current = false;
+    if (isDragging) {
+      setIsDragging(false);
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
   };
 
   const bw = venueProject.boundary_width || 800;
