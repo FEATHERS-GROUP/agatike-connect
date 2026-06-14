@@ -282,6 +282,32 @@ export function VenueSeatSelector({
     
     const isDense = cols > 10;
     const isVeryDense = cols > 16;
+    
+    const totalCells = Math.ceil(actualSeatCount / cols) * cols;
+    const maxRender = 3000;
+    if (totalCells > maxRender) {
+      return (
+        <div className="w-full h-full relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
+          <div className="p-4 border-b border-border/40 flex items-center justify-between bg-card z-10 shadow-sm shrink-0">
+            <div>
+              <h2 className="text-xl font-bold">{sec.name} - Section Too Large</h2>
+            </div>
+            <button 
+              className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary font-bold rounded-xl transition-colors text-sm"
+              onClick={() => setActiveSectionForModal(null)}
+            >
+              Back to Map
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto p-4 flex flex-col items-center justify-center text-center">
+            <h3 className="text-xl font-bold mb-2">Section is too large to render visually</h3>
+            <p className="text-muted-foreground mb-4">
+              This section has {actualSeatCount} seats. Please break it down into smaller subsections in the venue builder to enable visual seat selection.
+            </p>
+          </div>
+        </div>
+      );
+    }
 
     // Seat dimensions for SVG
     const size = isVeryDense ? 32 : isDense ? 40 : 50;
@@ -291,7 +317,7 @@ export function VenueSeatSelector({
     const gaBookedCount = isGA ? bookedSeats.filter(c => c === `GA-${sec.id}` || c.startsWith(`${sec.id}-`) || c.startsWith(`GA-${sec.id}-`)).length : 0;
     const remainingCount = Math.max(0, actualSeatCount - (isGA ? gaBookedCount : bookedSeats.filter(c => c.startsWith(`${sec.id}-`)).length));
 
-    const totalCells = Math.ceil(actualSeatCount / cols) * cols;
+
     const seats = Array.from({ length: totalCells }).map((_, i) => i < actualSeatCount ? i : null);
     
     const rowsArray = [];
@@ -508,7 +534,7 @@ export function VenueSeatSelector({
 
             // Generate Seats
             const seatsToRender = [];
-            if (sec.rows > 0 && sec.cols > 0 && sec.shape !== "pitch") {
+            if (sec.rows > 0 && sec.cols > 0 && sec.shape !== "pitch" && (sec.rows * sec.cols <= 2000)) {
               if (sec.shape === "rect") {
                 const w = sec.width || 100;
                 const h = sec.height || 50;

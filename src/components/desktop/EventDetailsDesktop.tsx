@@ -180,6 +180,7 @@ export function EventDetailsDesktop({
   const [cart, setCart] = useState<Record<string, number>>({});
   const [selectedSeatsObj, setSelectedSeatsObj] = useState<any[]>([]);
   const [isSeatModalOpen, setIsSeatModalOpen] = useState(false);
+  const [isSectionActive, setIsSectionActive] = useState(false);
   const [activeTicketIdForMap, setActiveTicketIdForMap] = useState<string | undefined>();
 
   const handleSeatSelect = (seat: any) => {
@@ -863,12 +864,14 @@ export function EventDetailsDesktop({
       {isSeatModalOpen && currentVenueProject && activeTicketIdForMap && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8 animate-in fade-in duration-200">
           <div className="bg-background w-full max-w-5xl h-[85vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl relative animate-in zoom-in-95 duration-200">
-            <div className="p-4 border-b flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold">Select Seats</h2>
-                <p className="text-sm text-muted-foreground">Pick your seats for {activeTicketTiers.find((t: any) => t.id === activeTicketIdForMap)?.name}</p>
+            {!isSectionActive && (
+              <div className="p-4 border-b flex items-center justify-between bg-card shrink-0">
+                <div>
+                  <h2 className="text-xl font-bold">Select Seats</h2>
+                  <p className="text-sm text-muted-foreground">Pick your seats for {activeTicketTiers.find((t: any) => t.id === activeTicketIdForMap)?.name}</p>
+                </div>
               </div>
-            </div>
+            )}
             <div className="flex-1 bg-secondary/20 p-4 overflow-hidden relative">
               <VenueSeatSelector
                 venueProject={currentVenueProject}
@@ -884,11 +887,13 @@ export function EventDetailsDesktop({
                 currency={currencyCode}
                 activeTicketId={activeTicketIdForMap}
                 hideLegend={true}
+                onSectionActive={setIsSectionActive}
               />
             </div>
-            <div className="p-4 border-t flex items-center justify-between bg-background">
-              <div className="flex flex-col">
-                <span className="text-base font-bold text-foreground">
+            {!isSectionActive && (
+              <div className="p-4 border-t flex items-center justify-between bg-background shrink-0">
+                <div className="flex flex-col">
+                  <span className="text-base font-bold text-foreground">
                   {selectedSeatsObj.length} Seat{selectedSeatsObj.length !== 1 ? 's' : ''} Selected
                 </span>
                 <span className="text-sm text-muted-foreground max-w-[300px] truncate">
@@ -900,6 +905,7 @@ export function EventDetailsDesktop({
                 <Button onClick={() => setIsSeatModalOpen(false)}>Confirm Selection</Button>
               </div>
             </div>
+            )}
           </div>
         </div>
       )}

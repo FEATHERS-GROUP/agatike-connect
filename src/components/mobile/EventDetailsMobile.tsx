@@ -119,33 +119,33 @@ export function EventDetailsMobile({
       ? ev.lineup
       : isMock
         ? [
-            { id: "1", name: "DJ Nala", role: "Main DJ", instagram: "djnala" },
-            { id: "2", name: "Burna Sound", role: "Guest Artist" },
-            { id: "3", name: "Amapiano Live", role: "Set", instagram: "amapianolive" },
-            { id: "4", name: "Surprise Guest", role: "Special Appearance" },
-          ]
+          { id: "1", name: "DJ Nala", role: "Main DJ", instagram: "djnala" },
+          { id: "2", name: "Burna Sound", role: "Guest Artist" },
+          { id: "3", name: "Amapiano Live", role: "Set", instagram: "amapianolive" },
+          { id: "4", name: "Surprise Guest", role: "Special Appearance" },
+        ]
         : [];
 
   const allTicketTiers = isMock
     ? ticketTiers
     : (ev.event_tickets?.length
-        ? ev.event_tickets
-        : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100, sold: 0 }]
-      ).map((t: any) => {
-        const sold = parseInt(t.sold) || 0;
-        const capacity = parseInt(t.remaining) || 0;
-        const ticketsLeft = Math.max(0, capacity - sold);
-        return {
-          id: t.id,
-          name: t.type,
-          price: parseFloat(t.cost) || 0,
-          perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
-          remaining: ticketsLeft,
-          sold,
-          sale_ends_at: t.sale_ends_at,
-          tour_stop_idx: t.tour_stop_idx || 0,
-        };
-      });
+      ? ev.event_tickets
+      : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100, sold: 0 }]
+    ).map((t: any) => {
+      const sold = parseInt(t.sold) || 0;
+      const capacity = parseInt(t.remaining) || 0;
+      const ticketsLeft = Math.max(0, capacity - sold);
+      return {
+        id: t.id,
+        name: t.type,
+        price: parseFloat(t.cost) || 0,
+        perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
+        remaining: ticketsLeft,
+        sold,
+        sale_ends_at: t.sale_ends_at,
+        tour_stop_idx: t.tour_stop_idx || 0,
+      };
+    });
 
   const activeTicketTiers = allTicketTiers.filter((t: any) => {
     // Filter by tour stop
@@ -161,11 +161,11 @@ export function EventDetailsMobile({
   const activeMerch = isMock
     ? merch
     : (ev.merchandises || []).map((m: any) => ({
-        id: m.id,
-        name: m.name,
-        price: m.price,
-        image: m.image_url || ev.cover,
-      }));
+      id: m.id,
+      name: m.name,
+      price: m.price,
+      image: m.image_url || ev.cover,
+    }));
 
   const [cart, setCart] = useState<Record<string, number>>({});
   const [selectedSeatsObj, setSelectedSeatsObj] = useState<any[]>([]);
@@ -528,10 +528,10 @@ export function EventDetailsMobile({
                 search={
                   attendeeRecord
                     ? {
-                        attendeeId: attendeeRecord.id,
-                        name: attendeeRecord.names,
-                        email: attendeeRecord.email,
-                      }
+                      attendeeId: attendeeRecord.id,
+                      name: attendeeRecord.names,
+                      email: attendeeRecord.email,
+                    }
                     : undefined
                 }
               >
@@ -600,7 +600,7 @@ export function EventDetailsMobile({
 
       {/* Backdrop for Expanded Tickets */}
       {isTicketsExpanded && !isSeatModalOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 animate-in fade-in duration-300"
           onClick={() => setIsTicketsExpanded(false)}
         />
@@ -640,11 +640,10 @@ export function EventDetailsMobile({
                     <button
                       key={idx}
                       onClick={() => setSelectedStopIdx(idx)}
-                      className={`relative snap-start flex flex-col items-start min-w-[160px] p-3.5 rounded-2xl border transition-all duration-300 shrink-0 text-left ${
-                        isSelected 
-                          ? "bg-primary/10 border-primary shadow-[0_4px_20px_rgba(var(--primary),0.15)] ring-1 ring-primary/20" 
+                      className={`relative snap-start flex flex-col items-start min-w-[160px] p-3.5 rounded-2xl border transition-all duration-300 shrink-0 text-left ${isSelected
+                          ? "bg-primary/10 border-primary shadow-[0_4px_20px_rgba(var(--primary),0.15)] ring-1 ring-primary/20"
                           : "bg-card border-border/40 hover:border-border hover:bg-secondary/30"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2 mb-1 w-full">
                         <MapPin className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -665,7 +664,7 @@ export function EventDetailsMobile({
                         )}
                       </div>
                       {isSelected && (
-                         <div className="absolute top-3.5 right-3.5 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),1)]" />
+                        <div className="absolute top-3.5 right-3.5 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),1)]" />
                       )}
                     </button>
                   );
@@ -852,8 +851,8 @@ export function EventDetailsMobile({
       {/* Seat Selection Modal */}
       {currentVenueProject && activeTicketIdForMap && (
         <>
-          <Drawer 
-            open={isSeatModalOpen} 
+          <Drawer
+            open={isSeatModalOpen}
             onOpenChange={setIsSeatModalOpen}
           >
             <DrawerContent className="h-[95vh] flex flex-col bg-background/95 backdrop-blur-xl px-0 pb-safe border-border/40">
@@ -900,7 +899,7 @@ export function EventDetailsMobile({
               </div>
               <div className="flex items-center gap-3">
                 <Button variant="outline" className="h-12 px-6 rounded-2xl text-base font-bold" onClick={() => setIsSeatModalOpen(false)}>
-                  Back
+                  Cancle
                 </Button>
                 <Button className="h-12 px-8 rounded-2xl text-base font-bold" onClick={() => setIsSeatModalOpen(false)}>
                   Confirm
