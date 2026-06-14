@@ -311,7 +311,7 @@ export function EventDetailsMobile({
               <Button asChild size="icon" variant="outline" className="rounded-full h-8 w-8">
                 <Link
                   to="/$userId/message"
-                  params={{ userId: user?.id }}
+                  params={{ userId: user?.id || "" }}
                   search={{ chatId: organizerId, eventId: ev.id }}
                 >
                   <MessageCircle className="h-4 w-4" />
