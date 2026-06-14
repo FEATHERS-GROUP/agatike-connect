@@ -16,6 +16,10 @@ import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/Ti
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+import { COUNTRIES } from "@/lib/countries";
+
+const countries = COUNTRIES.map((c) => c.name).sort();
+
 export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
@@ -33,7 +37,6 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const [step, setStep] = useState(1);
   const [isHydrated, setIsHydrated] = useState(false);
   const [showOverrideDialog, setShowOverrideDialog] = useState(false);
-  const [countries, setCountries] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
 
@@ -44,16 +47,6 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     enabled: !!venue?.workspace_id,
   });
   const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);
-
-  useEffect(() => {
-    fetch("https://restcountries.com/v3.1/all?fields=name")
-      .then((res) => res.json())
-      .then((data) => {
-        const sorted = data.map((c: any) => c.name.common).sort();
-        setCountries(sorted);
-      })
-      .catch(() => setCountries([]));
-  }, []);
 
   useEffect(() => {
     try {
