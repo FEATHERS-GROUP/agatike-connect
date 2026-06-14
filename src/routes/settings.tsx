@@ -1264,13 +1264,7 @@ function SettingsPage() {
               ].map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => {
-                    if (item.id === "delete") {
-                      setShowDelete(true);
-                    } else {
-                      setActiveModal(item.id);
-                    }
-                  }}
+                  onClick={() => setActiveModal(item.id)}
                   className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors text-left"
                 >
                   <div className="flex items-center gap-4">
