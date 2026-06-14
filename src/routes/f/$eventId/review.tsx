@@ -87,7 +87,7 @@ function FeedbackForm() {
   
   const attendeeId = search?.attendeeId || "";
   const prefillEmail = search?.email || user?.email || "";
-  const prefillName = search?.name || user?.name || "";
+  const prefillName = search?.name || user?.username || "";
 
   const { data: event, isLoading: isLoadingEvent } = useQuery({
     queryKey: ["event", eventId],
