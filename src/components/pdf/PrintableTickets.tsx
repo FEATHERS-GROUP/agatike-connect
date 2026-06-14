@@ -161,16 +161,24 @@ function DynamicPrintablePass({ ticket, config }: { ticket: any; config?: Ticket
       >
         <div className="flex-1 p-8 border-r-2 border-dashed border-white/50 flex flex-col justify-between">
           <div className="flex items-center gap-6">
-            <div className="w-24 h-24 rounded-full border-4 border-white bg-gray-200 flex items-center justify-center text-gray-400 overflow-hidden">
-              <User className="w-12 h-12" />
-            </div>
+            {ticket.passengerProfile ? (
+              <img
+                src={ticket.passengerProfile}
+                alt={ticket.passengerName || "Attendee"}
+                className="w-24 h-24 rounded-full border-4 border-white object-cover shrink-0 animate-fade-in"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full border-4 border-white bg-gray-200 flex items-center justify-center text-gray-400 overflow-hidden shrink-0">
+                <User className="w-12 h-12" />
+              </div>
+            )}
             <div>
               <p className="text-sm uppercase tracking-widest opacity-80 mb-1">
                 {labels.attendee || "Attendee"}
               </p>
-              <h2 className="text-4xl font-bold mb-1">Alex Doe</h2>
+              <h2 className="text-4xl font-bold mb-1">{ticket.passengerName || "Guest"}</h2>
               <p className="text-xl font-medium" style={{ color: accentColor || "#fde047" }}>
-                Frontend Engineer @ Agatike
+                {ticket.ticketType || "Attendee"}
               </p>
             </div>
           </div>

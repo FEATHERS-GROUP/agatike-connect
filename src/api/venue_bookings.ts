@@ -168,7 +168,7 @@ const VALIDATE_TICKET_OTP = `
       payment_status
       amount
       tickets_data
-      venue_name
+      venue_id
     }
   }
 `;
@@ -179,7 +179,18 @@ export const getVenueBookingByOtp = createServerFn({ method: "POST" })
     const { otp } = ctx.data;
     if (!otp) throw new Error("otp is required");
     const res = await hasuraRequest<{ venue_bookings: any[] }>(VALIDATE_TICKET_OTP, { otp });
-    return res.venue_bookings[0] || null;
+    const booking = res.venue_bookings[0] || null;
+    if (booking && booking.venue_id) {
+      const venueRes = await hasuraRequest<{ rentable_venues_by_pk: any }>(`
+        query GetVenueName($id: uuid!) {
+          rentable_venues_by_pk(id: $id) {
+            name
+          }
+        }
+      `, { id: booking.venue_id });
+      booking.venue_name = venueRes?.rentable_venues_by_pk?.name || "Venue";
+    }
+    return booking;
   });
 
 const GET_VENUE_BOOKING = `

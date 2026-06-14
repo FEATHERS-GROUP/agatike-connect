@@ -27,6 +27,8 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
+import { getUserAllTickets } from "@/api/user_tickets";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -173,20 +175,22 @@ function TicketCard({ ticket }: { ticket: any }) {
 }
 
 /* ─── History Card ─── */
-function HistoryCard({ event }: { event: (typeof pastEvents)[0] }) {
+function HistoryCard({ ticket }: { ticket: any }) {
+  const rating = ticket.histRating || 5;
+  const isRated = ticket.rated ?? true;
   return (
     <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] flex gap-3 p-3">
       <img
-        src={event.cover}
-        alt={event.title}
+        src={ticket.cover}
+        alt={ticket.title}
         className="w-20 h-20 object-cover rounded-xl shrink-0"
       />
       <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
         <div>
-          <p className="font-semibold text-sm leading-tight line-clamp-2">{event.title}</p>
+          <p className="font-semibold text-sm leading-tight line-clamp-2">{ticket.title}</p>
           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
             <MapPin className="h-3 w-3" />
-            {event.city}
+            {ticket.city || "Online"}
           </p>
         </div>
         <div className="flex items-center justify-between mt-2">
@@ -194,11 +198,11 @@ function HistoryCard({ event }: { event: (typeof pastEvents)[0] }) {
             {[1, 2, 3, 4, 5].map((s) => (
               <Star
                 key={s}
-                className={`h-3.5 w-3.5 ${s <= event.histRating ? "text-yellow-400 fill-yellow-400" : "text-border"}`}
+                className={`h-3.5 w-3.5 ${s <= rating ? "text-yellow-400 fill-yellow-400" : "text-border"}`}
               />
             ))}
           </div>
-          {!event.rated && (
+          {!isRated && (
             <button className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
               Rate
             </button>
@@ -215,6 +219,30 @@ function ProfilePage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("upcoming");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const { data: tickets = [], isLoading: isLoadingTickets } = useQuery({
+    queryKey: ["user-tickets", user?.id],
+    queryFn: () => getUserAllTickets(),
+    enabled: !!user,
+  });
+
+  const upcomingTicketsList = tickets.filter((t: any) => {
+    if (t.status === "Cancelled") return false;
+    const eventDate = new Date(t.eventDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate >= today;
+  });
+
+  const historyTicketsList = tickets.filter((t: any) => {
+    if (t.status === "Cancelled") return true;
+    const eventDate = new Date(t.eventDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate < today;
+  });
 
   const handleLogout = async () => {
     await signOut();
@@ -238,7 +266,7 @@ function ProfilePage() {
     userInterests = [];
   }
 
-  if (isLoading) {
+  if (isLoading || isLoadingTickets) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
@@ -293,9 +321,9 @@ function ProfilePage() {
             <p className="text-xs text-muted-foreground mt-1">Member since {joinDate}</p>
             <div className="grid grid-cols-3 gap-3 w-full mt-5">
               {[
-                { v: "24", l: "Attended" },
-                { v: "8", l: "Following" },
-                { v: "5", l: "Upcoming" },
+                { v: String(historyTicketsList.length), l: "Attended" },
+                { v: String(organizers.slice(0, 4).length), l: "Following" },
+                { v: String(upcomingTicketsList.length), l: "Upcoming" },
               ].map(({ v, l }) => (
                 <div key={l} className="bg-secondary/60 rounded-xl p-2.5 text-center">
                   <p className="font-bold text-base">{v}</p>
@@ -388,22 +416,37 @@ function ProfilePage() {
                 Browse events <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 items-start">
-              {upcomingTickets.map((t) => (
-                <TicketCard key={t.id} ticket={t} />
-              ))}
-            </div>
+            {upcomingTicketsList.length > 0 ? (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+                {upcomingTicketsList.map((t) => (
+                  <TicketCard key={t.id} ticket={t} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10 border border-dashed border-border/60 rounded-3xl bg-card">
+                <p className="text-muted-foreground text-sm">No upcoming tickets or bookings.</p>
+                <Link to="/events" className="text-primary text-sm font-bold mt-2 inline-block hover:underline">
+                  Browse events
+                </Link>
+              </div>
+            )}
           </section>
 
           <section>
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" /> Event History
             </h2>
-            <div className="grid grid-cols-2 gap-4">
-              {pastEvents.map((e) => (
-                <HistoryCard key={e.id} event={e} />
-              ))}
-            </div>
+            {historyTicketsList.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4">
+                {historyTicketsList.map((t) => (
+                  <HistoryCard key={t.id} ticket={t} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10 border border-dashed border-border/60 rounded-3xl bg-card">
+                <p className="text-muted-foreground text-sm">No past tickets or bookings.</p>
+              </div>
+            )}
           </section>
         </main>
       </div>
@@ -465,9 +508,9 @@ function ProfilePage() {
 
           <div className="flex flex-1 justify-around ml-4">
             {[
-              { value: "24", label: "Attended" },
-              { value: "8", label: "Following" },
-              { value: "5", label: "Upcoming" },
+              { value: String(historyTicketsList.length), label: "Attended" },
+              { value: String(organizers.slice(0, 4).length), label: "Following" },
+              { value: String(upcomingTicketsList.length), label: "Upcoming" },
             ].map(({ value, label }) => (
               <div key={label} className="flex flex-col items-center">
                 <span className="font-bold text-lg leading-tight">{value}</span>
@@ -565,9 +608,15 @@ function ProfilePage() {
       <div className="px-4 pt-4">
         {tab === "upcoming" && (
           <div className="space-y-4">
-            {upcomingTickets.map((t) => (
-              <TicketCard key={t.id} ticket={t} />
-            ))}
+            {upcomingTicketsList.length > 0 ? (
+              upcomingTicketsList.map((t) => (
+                <TicketCard key={t.id} ticket={t} />
+              ))
+            ) : (
+              <div className="text-center py-10 border border-dashed border-border/60 rounded-3xl bg-card">
+                <p className="text-muted-foreground text-sm">No upcoming tickets or bookings.</p>
+              </div>
+            )}
 
             <Link
               to="/events"
@@ -580,9 +629,15 @@ function ProfilePage() {
 
         {tab === "history" && (
           <div className="space-y-3">
-            {pastEvents.map((event) => (
-              <HistoryCard key={event.id} event={event} />
-            ))}
+            {historyTicketsList.length > 0 ? (
+              historyTicketsList.map((t) => (
+                <HistoryCard key={t.id} ticket={t} />
+              ))
+            ) : (
+              <div className="text-center py-10 border border-dashed border-border/60 rounded-3xl bg-card">
+                <p className="text-muted-foreground text-sm">No past tickets or bookings.</p>
+              </div>
+            )}
           </div>
         )}
 

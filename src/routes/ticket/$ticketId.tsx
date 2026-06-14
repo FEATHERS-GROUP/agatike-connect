@@ -10,7 +10,8 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react";
-import { upcomingTickets } from "../profile";
+import { useQuery } from "@tanstack/react-query";
+import { getUserAllTickets } from "@/api/user_tickets";
 import { useState } from "react";
 import * as htmlToImage from "html-to-image";
 import { jsPDF } from "jspdf";
@@ -22,7 +23,12 @@ export const Route = createFileRoute("/ticket/$ticketId")({
 
 function TicketViewer() {
   const { ticketId } = Route.useParams();
-  const ticket = upcomingTickets.find((t) => t.id === ticketId);
+  const { data: tickets = [], isLoading } = useQuery({
+    queryKey: ["user-tickets"],
+    queryFn: () => getUserAllTickets(),
+  });
+
+  const ticket = tickets.find((t: any) => t.id === ticketId);
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
@@ -60,6 +66,17 @@ function TicketViewer() {
       setIsDownloading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center text-foreground">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
+          Loading ticket details...
+        </p>
+      </div>
+    );
+  }
 
   if (!ticket) {
     return (
@@ -163,7 +180,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
     return (
       <div className="bg-white text-black rounded-[2rem] p-7 relative overflow-hidden pb-8 shadow-2xl">
         <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">Moviegoer</p>
-        <p className="text-2xl font-bold mb-8">Alex Doe</p>
+        <p className="text-2xl font-bold mb-8">{ticket.passengerName || "Guest"}</p>
 
         {/* Timeline Component */}
         <div className="flex justify-between items-center mb-6 relative">
@@ -226,14 +243,20 @@ function DynamicPass({ ticket }: { ticket: any }) {
             <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">
               Attendee
             </p>
-            <p className="text-2xl font-bold">Alex Doe</p>
-            <p className="text-[#2dd4bf] font-bold text-sm mt-1">Frontend Engineer</p>
+            <p className="text-2xl font-bold">{ticket.passengerName || "Guest"}</p>
+            <p className="text-[#2dd4bf] font-bold text-sm mt-1">{ticket.ticketType || "Attendee"}</p>
           </div>
-          <img
-            src="https://i.pravatar.cc/150?u=me"
-            alt="Alex Doe"
-            className="w-14 h-14 rounded-full border-2 border-gray-100"
-          />
+          {ticket.passengerProfile ? (
+            <img
+              src={ticket.passengerProfile}
+              alt={ticket.passengerName || "Attendee"}
+              className="w-14 h-14 rounded-full border-2 border-gray-100 object-cover"
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-full border-2 border-gray-100 bg-secondary flex items-center justify-center text-muted-foreground text-sm font-bold uppercase shrink-0">
+              {(ticket.passengerName || "G")[0]}
+            </div>
+          )}
         </div>
 
         <div className="flex justify-between items-center mb-6 relative">
@@ -296,7 +319,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
       <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">
         {ticket.ticketCategory === "free" ? "Guest" : "Passenger"}
       </p>
-      <p className="text-2xl font-bold mb-8">Alex Doe</p>
+      <p className="text-2xl font-bold mb-8">{ticket.passengerName || "Guest"}</p>
 
       {/* Timeline Component */}
       <div className="flex justify-between items-center mb-6 relative">
