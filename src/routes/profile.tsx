@@ -226,9 +226,20 @@ function ProfilePage() {
     enabled: !!user,
   });
 
+  const parseDateInsensitively = (dateInput: any) => {
+    if (!dateInput) return new Date();
+    if (typeof dateInput === "string") {
+      const match = dateInput.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      }
+    }
+    return new Date(dateInput);
+  };
+
   const upcomingTicketsList = tickets.filter((t: any) => {
     if (t.status === "Cancelled") return false;
-    const eventDate = new Date(t.eventDate);
+    const eventDate = parseDateInsensitively(t.eventDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     eventDate.setHours(0, 0, 0, 0);
@@ -237,7 +248,7 @@ function ProfilePage() {
 
   const historyTicketsList = tickets.filter((t: any) => {
     if (t.status === "Cancelled") return true;
-    const eventDate = new Date(t.eventDate);
+    const eventDate = parseDateInsensitively(t.eventDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     eventDate.setHours(0, 0, 0, 0);

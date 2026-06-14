@@ -93,6 +93,7 @@ const GET_USER_VENUE_BOOKINGS = `
         city
         cover_url
         currency
+        rental_model
         ticket_projects(where: { deleted: { _eq: false } }) {
           id
           name
@@ -263,7 +264,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           passengerProfile: user.profile || null,
           orderId: t.otp || booking.id.substring(0, 8),
           ticketType: t.tier || "Standard Entry",
-          ticketCategory: "venue",
+          ticketCategory: venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
           price: booking.amount,
           isVenueBooking: true,
           status: t.status || booking.status || "Confirmed",
@@ -309,7 +310,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         passengerProfile: user.profile || null,
         orderId: booking.id.substring(0, 8),
         ticketType: "Standard Entry",
-        ticketCategory: "venue",
+        ticketCategory: venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
         price: booking.amount,
         isVenueBooking: true,
         status: booking.status || "Confirmed",

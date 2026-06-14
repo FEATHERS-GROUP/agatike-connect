@@ -123,7 +123,11 @@ function TicketViewer() {
               ? "Movie"
               : ticket.ticketCategory === "conference"
                 ? "Conference"
-                : "Event"}
+                : ticket.ticketCategory === "entrance"
+                  ? "Entrance Pass"
+                  : ticket.ticketCategory === "venue"
+                    ? "Venue Booking"
+                    : "Event"}
           </span>
           <div className="w-12" />
         </div>
@@ -367,7 +371,9 @@ function DynamicPass({ ticket }: { ticket: any }) {
         </div>
         <div className="text-center">
           <p className="text-gray-500 text-xs font-medium mb-1">Gate</p>
-          <p className="font-bold text-sm">G-12</p>
+          <p className={`font-bold ${ticket.ticketCategory === "sports" ? "text-sm" : "text-[11px]"}`}>
+            {ticket.ticketCategory === "sports" ? (ticket.gate || "Gate 3") : "Main Entrance"}
+          </p>
         </div>
         <div className="text-right">
           <p className="text-gray-500 text-xs font-medium mb-1">Seat</p>

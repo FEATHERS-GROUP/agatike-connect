@@ -360,7 +360,9 @@ function DynamicPrintablePass({ ticket, config }: { ticket: any; config?: Ticket
             <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">
               {labels.gate || "Gate"}
             </p>
-            <p className="text-2xl font-black">12</p>
+            <p className={`font-black ${ticket.ticketCategory === "sports" ? "text-2xl" : "text-xs"}`}>
+              {ticket.ticketCategory === "sports" ? (ticket.gate || "Gate 3") : "Main Entrance"}
+            </p>
           </div>
           <div>
             <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">
