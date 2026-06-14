@@ -28,6 +28,7 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { getUserAllTickets } from "@/api/user_tickets";
+import { getFollowedOrganizers, getOrganizersByIds } from "@/api/organizers";
 
 // Stubbed mock data
 const events: any[] = [];
@@ -231,6 +232,18 @@ function ProfilePage() {
     enabled: !!user,
   });
 
+  const { data: followedIds = [] } = useQuery({
+    queryKey: ["user-followed-organizers", user?.id],
+    queryFn: () => getFollowedOrganizers(),
+    enabled: !!user,
+  });
+
+  const { data: followedOrganizers = [], isLoading: isLoadingOrganizers } = useQuery({
+    queryKey: ["user-followed-organizers-profiles", followedIds],
+    queryFn: () => getOrganizersByIds({ data: { ids: followedIds } }),
+    enabled: followedIds.length > 0,
+  });
+
   const parseDateInsensitively = (dateInput: any) => {
     if (!dateInput) return new Date();
     if (typeof dateInput === "string") {
@@ -282,7 +295,7 @@ function ProfilePage() {
     userInterests = [];
   }
 
-  if (isLoading || isLoadingTickets) {
+  if (isLoading || isLoadingTickets || isLoadingOrganizers) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
@@ -338,7 +351,7 @@ function ProfilePage() {
             <div className="grid grid-cols-3 gap-3 w-full mt-5">
               {[
                 { v: String(historyTicketsList.length), l: "Attended" },
-                { v: String(organizers.slice(0, 4).length), l: "Following" },
+                { v: String(followedOrganizers.length), l: "Following" },
                 { v: String(upcomingTicketsList.length), l: "Upcoming" },
               ].map(({ v, l }) => (
                 <div key={l} className="bg-secondary/60 rounded-xl p-2.5 text-center">
@@ -403,10 +416,10 @@ function ProfilePage() {
               </Link>
             </div>
             <div className="space-y-3">
-              {organizers.slice(0, 4).map((org) => (
+              {followedOrganizers.slice(0, 4).map((org: any) => (
                 <div key={org.id} className="flex items-center gap-3">
                   <img
-                    src={org.avatar}
+                    src={org.image || "https://placehold.co/100"}
                     alt={org.name}
                     className="h-9 w-9 rounded-full object-cover border border-border/40"
                   />
@@ -525,7 +538,7 @@ function ProfilePage() {
           <div className="flex flex-1 justify-around ml-4">
             {[
               { value: String(historyTicketsList.length), label: "Attended" },
-              { value: String(organizers.slice(0, 4).length), label: "Following" },
+              { value: String(followedOrganizers.length), label: "Following" },
               { value: String(upcomingTicketsList.length), label: "Upcoming" },
             ].map(({ value, label }) => (
               <div key={label} className="flex flex-col items-center">
@@ -659,13 +672,13 @@ function ProfilePage() {
 
         {tab === "following" && (
           <div className="space-y-3">
-            {organizers.slice(0, 5).map((org) => (
+            {followedOrganizers.slice(0, 5).map((org: any) => (
               <div
                 key={org.id}
                 className="bg-card border border-border/40 rounded-2xl flex items-center gap-3 p-3 shadow-sm"
               >
                 <img
-                  src={org.avatar}
+                  src={org.image || "https://placehold.co/100"}
                   alt={org.name}
                   className="h-12 w-12 rounded-full object-cover shrink-0 border border-border/40"
                 />

@@ -456,3 +456,29 @@ export const getOrganizerFollowerIds = createServerFn({ method: "POST" }).handle
   const users = existing.organizer_followers[0].user_id;
   return Array.isArray(users) ? users.map((u) => String(u).replace(/"/g, "")) : [];
 });
+
+export const getOrganizersByIds = createServerFn({ method: "POST" })
+  .inputValidator((d: { ids: string[] }) => d)
+  .handler(async (ctx) => {
+    const { ids } = ctx.data;
+    if (!ids || ids.length === 0) return [];
+
+    const query = `
+      query GetOrganizersByIds($ids: [uuid!]!) {
+        organizers(where: {id: {_in: $ids}}) {
+          id
+          name
+          handle
+          bio
+          followers
+          image
+          email
+          phone
+          socials
+          active
+        }
+      }
+    `;
+    const result = await hasuraRequest<{ organizers: any[] }>(query, { ids });
+    return result.organizers || [];
+  });
