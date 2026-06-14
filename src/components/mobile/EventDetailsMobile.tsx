@@ -243,20 +243,20 @@ export function EventDetailsMobile({
           </div>
           <div className="flex gap-2">
             {organizerId && following && isLoggedIn && (
-              <Button asChild size="sm" variant="outline" className="rounded-full h-8 px-4 font-bold gap-1.5">
+              <Button asChild size="icon" variant="outline" className="rounded-full h-8 w-8">
                 <Link to="/$userId/message" params={{ userId: user?.id }} search={{ chatId: organizerId }}>
-                  <MessageCircle className="h-4 w-4" /> Message
+                  <MessageCircle className="h-4 w-4" />
                 </Link>
               </Button>
             )}
-            {organizerId && (
+            {organizerId && !following && (
               <Button
                 size="sm"
-                variant={following ? "secondary" : "default"}
+                variant="default"
                 className="rounded-full h-8 px-4 font-bold"
                 onClick={() => toggleFollow(organizerId)}
               >
-                {following ? "Following" : "Follow"}
+                Follow
               </Button>
             )}
           </div>

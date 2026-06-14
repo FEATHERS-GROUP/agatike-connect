@@ -252,19 +252,19 @@ export function EventDetailsDesktop({
                 <Share2 className="h-4 w-4" />
               </Button>
               {organizerId && following && isLoggedIn && (
-                <Button asChild variant="outline" className="rounded-full gap-1.5">
+                <Button asChild variant="outline" size="icon" className="rounded-full">
                   <Link to="/$userId/message" params={{ userId: user?.id }} search={{ chatId: organizerId }}>
-                    <MessageCircle className="h-4 w-4" /> Message
+                    <MessageCircle className="h-4 w-4" />
                   </Link>
                 </Button>
               )}
-              {organizerId && (
+              {organizerId && !following && (
                 <Button
-                  variant={following ? "secondary" : "default"}
+                  variant="default"
                   className="rounded-full"
                   onClick={() => toggleFollow(organizerId)}
                 >
-                  {following ? "Following" : "Follow"}
+                  Follow
                 </Button>
               )}
             </div>
