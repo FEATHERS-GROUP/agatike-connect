@@ -34,6 +34,12 @@ import { checkUserAttendance, getEventAttendees } from "@/api/attendees";
 import { getEventVenueProjects } from "@/api/venues";
 import { formatCurrency } from "@/lib/currency";
 import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 
@@ -614,20 +620,47 @@ export function EventDetailsMobile({
 
           {/* Tour Stops selection as Tabs inside the bottom sheet (Visible when expanded) */}
           {isTicketsExpanded && tourStops.length > 1 && (
-            <div className="mb-3 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            <div className="mb-4 border-t border-border/40 pt-4 animate-in slide-in-from-bottom-2 fade-in duration-200">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                 Select Tour Stop
               </p>
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                {tourStops.map((stop: any, idx: number) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedStopIdx(idx)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border shrink-0 ${selectedStopIdx === idx ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-muted-foreground border-border/40 hover:bg-secondary/80"}`}
-                  >
-                    {stop.city} ({stop.date})
-                  </button>
-                ))}
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+                {tourStops.map((stop: any, idx: number) => {
+                  const isSelected = selectedStopIdx === idx;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedStopIdx(idx)}
+                      className={`relative snap-start flex flex-col items-start min-w-[160px] p-3.5 rounded-2xl border transition-all duration-300 shrink-0 text-left ${
+                        isSelected 
+                          ? "bg-primary/10 border-primary shadow-[0_4px_20px_rgba(var(--primary),0.15)] ring-1 ring-primary/20" 
+                          : "bg-card border-border/40 hover:border-border hover:bg-secondary/30"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1 w-full">
+                        <MapPin className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <span className={`text-sm font-bold truncate ${isSelected ? 'text-foreground' : 'text-foreground/80'}`}>
+                          {stop.venue || stop.city || `Stop ${idx + 1}`}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-0.5 mt-1">
+                        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                          <Calendar className="h-3 w-3 shrink-0" />
+                          {stop.date || "TBD"}
+                        </span>
+                        {stop.time && (
+                          <span className="text-[10px] font-medium text-muted-foreground/80 flex items-center gap-1.5 ml-0.5">
+                            <Clock className="h-2.5 w-2.5 shrink-0" />
+                            {stop.time}
+                          </span>
+                        )}
+                      </div>
+                      {isSelected && (
+                         <div className="absolute top-3.5 right-3.5 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),1)]" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -808,39 +841,60 @@ export function EventDetailsMobile({
       </div>
 
       {/* Seat Selection Modal */}
-      {isSeatModalOpen && currentVenueProject && activeTicketIdForMap && (
-        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl flex flex-col animate-in slide-in-from-bottom-full duration-300">
-          <div className="flex items-center justify-between p-4 border-b border-border/40 mt-safe-top">
-            <div>
-              <h2 className="text-lg font-bold">Select Seats</h2>
-              <p className="text-xs text-muted-foreground">
-                For {activeTicketTiers.find((t: any) => t.id === activeTicketIdForMap)?.name}
-              </p>
+      {currentVenueProject && activeTicketIdForMap && (
+        <>
+          <Drawer 
+            open={isSeatModalOpen} 
+            onOpenChange={setIsSeatModalOpen}
+            snapPoints={[0.7, 1]}
+          >
+            <DrawerContent className="h-[95vh] flex flex-col bg-background/95 backdrop-blur-xl px-0 pb-safe border-border/40">
+              <DrawerHeader className="border-b border-border/40 flex items-center justify-between p-4 shrink-0 text-left">
+                <div>
+                  <DrawerTitle className="text-lg font-bold">Select Seats</DrawerTitle>
+                  <p className="text-xs text-muted-foreground">
+                    For {activeTicketTiers.find((t: any) => t.id === activeTicketIdForMap)?.name}
+                  </p>
+                </div>
+              </DrawerHeader>
+              <div className="flex-1 w-full bg-secondary/30 relative overflow-hidden pb-24">
+                <VenueSeatSelector
+                  venueProject={currentVenueProject}
+                  eventTickets={activeTicketTiers}
+                  bookedSeats={[]}
+                  selectedSeats={selectedSeatsObj.map((s) => s.code)}
+                  onSeatSelect={handleSeatSelect}
+                  onSeatDeselect={handleSeatDeselect}
+                  maxSelectable={10}
+                  currency={currencyCode}
+                  activeTicketId={activeTicketIdForMap}
+                  hideLegend={true}
+                />
+              </div>
+            </DrawerContent>
+          </Drawer>
+
+          {isSeatModalOpen && (
+            <div className="fixed bottom-0 left-0 right-0 p-4 border-t border-border bg-background flex items-center justify-between shadow-[0_-8px_30px_rgb(0,0,0,0.12)] z-[60] pb-safe animate-in slide-in-from-bottom-full duration-300">
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-foreground">
+                  {selectedSeatsObj.length} Seat{selectedSeatsObj.length !== 1 ? 's' : ''} Selected
+                </span>
+                <span className="text-xs text-muted-foreground max-w-[150px] truncate">
+                  {selectedSeatsObj.length > 0 ? selectedSeatsObj.map(s => s.seatName || s.code).join(", ") : "None"}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" className="h-12 px-6 rounded-2xl text-base font-bold" onClick={() => setIsSeatModalOpen(false)}>
+                  Back
+                </Button>
+                <Button className="h-12 px-8 rounded-2xl text-base font-bold" onClick={() => setIsSeatModalOpen(false)}>
+                  Confirm
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setIsSeatModalOpen(false)}>
-                Back
-              </Button>
-              <Button size="sm" onClick={() => setIsSeatModalOpen(false)}>
-                Confirm
-              </Button>
-            </div>
-          </div>
-          <div className="flex-1 w-full bg-secondary/30 relative">
-            <VenueSeatSelector
-              venueProject={currentVenueProject}
-              eventTickets={activeTicketTiers}
-              bookedSeats={[]}
-              selectedSeats={selectedSeatsObj.map((s) => s.code)}
-              onSeatSelect={handleSeatSelect}
-              onSeatDeselect={handleSeatDeselect}
-              maxSelectable={10}
-              currency={currencyCode}
-              activeTicketId={activeTicketIdForMap}
-              hideLegend={true}
-            />
-          </div>
-        </div>
+          )}
+        </>
       )}
     </div>
   );

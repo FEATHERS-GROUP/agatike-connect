@@ -44,6 +44,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
   const storageKey = `event_checkout_${eventId}`;
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [selectedSeats, setSelectedSeats] = useState<any[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Fetch Event
@@ -86,9 +87,13 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         const parsedCart = JSON.parse(saved);
         setCart(parsedCart);
       }
+      const savedSeats = localStorage.getItem(`event_checkout_seats_${eventId}`);
+      if (savedSeats) {
+        setSelectedSeats(JSON.parse(savedSeats));
+      }
     } catch {}
     setIsHydrated(true);
-  }, [storageKey]);
+  }, [storageKey, eventId]);
 
   // Initialize attendees array based on cart
   useEffect(() => {
@@ -96,16 +101,32 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
     if (attendees.length > 0) return; // Prevent re-initialization which causes lag and resets inputs
 
-    // Flatten cart into individual ticket records
+    const availableSeats = [...selectedSeats];
     const initialAttendees: any[] = [];
+    
+    // Flatten cart into individual ticket records
     Object.entries(cart).forEach(([cartKey, qty]) => {
       if (qty <= 0) return;
-      const [stopIdx, tierId] = cartKey.split("_");
+      const [stopIdxStr, tierId] = cartKey.split("_");
+      const stopIdx = parseInt(stopIdxStr);
+      
       for (let i = 0; i < qty; i++) {
+        // Assign pre-selected seat for this tier if available
+        const seatIdx = availableSeats.findIndex(s => s.ticketId === tierId);
+        let assignedSeat = undefined;
+        let assignedSeatName = undefined;
+        if (seatIdx !== -1) {
+          assignedSeat = availableSeats[seatIdx].code;
+          assignedSeatName = availableSeats[seatIdx].seatName;
+          availableSeats.splice(seatIdx, 1);
+        }
+
         initialAttendees.push({
           cartKey,
-          stopIdx: parseInt(stopIdx),
+          stopIdx,
           tierId,
+          seat: assignedSeat,
+          seatName: assignedSeatName,
           firstName: "",
           lastName: "",
           email: user?.email || "",
@@ -124,7 +145,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     }
 
     setAttendees(initialAttendees);
-  }, [isHydrated, cart, user]);
+  }, [isHydrated, cart, user, selectedSeats]);
 
   const updateAttendee = (index: number, field: string, value: string) => {
     const newAttendees = [...attendees];
@@ -456,44 +477,6 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         <div className="grid lg:grid-cols-[1fr_400px] gap-12">
           {/* Left Column: Form & Payment */}
           <div className="space-y-10">
-            {/* Seating Assignment */}
-            {stopsWithVenues.map(({ stopIdx, project }) => {
-              const stopBookedSeats = bookedAttendees
-                ?.filter((a: any) => a.custom_fields?.tour_stop_idx === stopIdx)
-                .map((a: any) => a.custom_fields?.seat)
-                .filter(Boolean) || [];
-
-              const selectedSeats = attendees
-                .filter((a) => a.stopIdx === stopIdx && a.seat)
-                .map((a) => a.seat);
-
-              const mappedTierIds =
-                project.sections_data?.map((s: any) => s.ticketId).filter(Boolean) || [];
-              const maxSelectable = attendees.filter(
-                (a) => a.stopIdx === stopIdx && mappedTierIds.includes(a.tierId)
-              ).length;
-
-              if (maxSelectable === 0) return null;
-
-              return (
-                <div key={stopIdx} className="mb-12 animate-in fade-in slide-in-from-bottom-4">
-                  <h2 className="text-2xl font-bold mb-4">Select Seats for {getStopDetails(stopIdx).city}</h2>
-                  <p className="text-muted-foreground mb-6">
-                    Please select {maxSelectable} seat{maxSelectable > 1 ? "s" : ""} on the map for your selected tickets.
-                  </p>
-                  <VenueSeatSelector
-                    venueProject={project}
-                    eventTickets={event.event_tickets || []}
-                    bookedSeats={stopBookedSeats}
-                    selectedSeats={selectedSeats}
-                    maxSelectable={maxSelectable}
-                    onSeatSelect={(seat) => handleSeatSelect(stopIdx, seat)}
-                    onSeatDeselect={(code) => handleSeatDeselect(stopIdx, code)}
-                  />
-                </div>
-              );
-            })}
-
             <div>
               <h1 className="text-3xl font-bold mb-6">Checkout ({totalTickets} Tickets)</h1>
 
@@ -531,12 +514,27 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   const projectForStop = stopsWithVenues.find((s) => s.stopIdx === attendee.stopIdx)?.project;
                   const isSeatRequired = projectForStop?.sections_data?.some((s: any) => s.ticketId === attendee.tierId);
 
+                  // Calculate assigned seats to show
+                  const seatsList = assignMode === "me" 
+                    ? attendees.filter(a => a.tierId === attendee.tierId && a.stopIdx === attendee.stopIdx).map(a => a.seatName || a.seat).filter(Boolean)
+                    : [attendee.seatName || attendee.seat].filter(Boolean);
+
+                  const formatSeatDisplay = (raw: any) => {
+                    if (typeof raw !== 'string') raw = String(raw);
+                    const str = raw.trim();
+                    if (str.includes("-R") && str.includes("-C")) {
+                      const match = str.match(/-R(\d+)-C(\d+)/);
+                      if (match) return `Row ${match[1]}, Seat ${match[2]}`;
+                    }
+                    return str;
+                  };
+
                   return (
                     <div
                       key={idx}
                       className="p-6 rounded-3xl border border-border/60 bg-card/40 space-y-6"
                     >
-                      <div className="flex items-center justify-between pb-4 border-b border-border/60">
+                      <div className="flex items-start justify-between pb-4 border-b border-border/60">
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
                             {idx + 1}
@@ -557,6 +555,21 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                             )}
                           </div>
                         </div>
+                        
+                        {isSeatRequired && seatsList.length > 0 && (
+                          <div className="flex flex-col items-end">
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                              Assigned Seat{seatsList.length > 1 ? 's' : ''}
+                            </span>
+                            <div className="flex gap-1.5 flex-wrap justify-end">
+                              {seatsList.map((sName, sIdx) => (
+                                <span key={sIdx} className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-xs font-bold">
+                                  {formatSeatDisplay(sName)}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
@@ -611,19 +624,6 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                           </Select>
                         </div>
                       </div>
-
-                      {isSeatRequired && (
-                        <div className="mt-4 p-4 rounded-xl bg-secondary/30 border border-border flex items-center justify-between transition-colors">
-                          <div>
-                            <Label className="text-xs uppercase tracking-wider text-muted-foreground">Assigned Seat</Label>
-                            <p className="text-base font-medium mt-1">
-                              {attendee.seat || "Please select a seat from the map above"}
-                            </p>
-                          </div>
-                          {!attendee.seat && <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />}
-                          {attendee.seat && <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
-                        </div>
-                      )}
                     </div>
                   );
                 })}

@@ -60,6 +60,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
   const storageKey = `event_checkout_${eventId}`;
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [selectedSeats, setSelectedSeats] = useState<any[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Fetch Event
@@ -102,9 +103,13 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         const parsedCart = JSON.parse(saved);
         setCart(parsedCart);
       }
+      const savedSeats = localStorage.getItem(`event_checkout_seats_${eventId}`);
+      if (savedSeats) {
+        setSelectedSeats(JSON.parse(savedSeats));
+      }
     } catch {}
     setIsHydrated(true);
-  }, [storageKey]);
+  }, [storageKey, eventId]);
 
   // Initialize attendees array based on cart
   useEffect(() => {
@@ -112,15 +117,31 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
     if (attendees.length > 0) return; // Prevent re-initialization which causes lag and resets inputs
 
+    const availableSeats = [...selectedSeats];
     const initialAttendees: any[] = [];
+    
     Object.entries(cart).forEach(([cartKey, qty]) => {
       if (qty <= 0) return;
-      const [stopIdx, tierId] = cartKey.split("_");
+      const [stopIdxStr, tierId] = cartKey.split("_");
+      const stopIdx = parseInt(stopIdxStr);
+      
       for (let i = 0; i < qty; i++) {
+        // Assign pre-selected seat for this tier if available
+        const seatIdx = availableSeats.findIndex(s => s.ticketId === tierId);
+        let assignedSeat = undefined;
+        let assignedSeatName = undefined;
+        if (seatIdx !== -1) {
+          assignedSeat = availableSeats[seatIdx].code;
+          assignedSeatName = availableSeats[seatIdx].seatName;
+          availableSeats.splice(seatIdx, 1);
+        }
+
         initialAttendees.push({
           cartKey,
-          stopIdx: parseInt(stopIdx),
+          stopIdx,
           tierId,
+          seat: assignedSeat,
+          seatName: assignedSeatName,
           firstName: "",
           lastName: "",
           email: user?.email || "",
@@ -138,7 +159,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     }
 
     setAttendees(initialAttendees);
-  }, [isHydrated, cart, user]);
+  }, [isHydrated, cart, user, selectedSeats]);
 
   const updateAttendee = (index: number, field: string, value: string) => {
     const newAttendees = [...attendees];
@@ -493,44 +514,6 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           </div>
         </div>
 
-        {/* Seating Assignment */}
-        {stopsWithVenues.map(({ stopIdx, project }) => {
-          const stopBookedSeats = bookedAttendees
-            ?.filter((a: any) => a.custom_fields?.tour_stop_idx === stopIdx)
-            .map((a: any) => a.custom_fields?.seat)
-            .filter(Boolean) || [];
-
-          const selectedSeats = attendees
-            .filter((a) => a.stopIdx === stopIdx && a.seat)
-            .map((a) => a.seat);
-
-          const mappedTierIds =
-            project.sections_data?.map((s: any) => s.ticketId).filter(Boolean) || [];
-          const maxSelectable = attendees.filter(
-            (a) => a.stopIdx === stopIdx && mappedTierIds.includes(a.tierId)
-          ).length;
-
-          if (maxSelectable === 0) return null;
-
-          return (
-            <div key={stopIdx} className="animate-in fade-in slide-in-from-bottom-4">
-              <h2 className="text-xl font-bold mb-2">Select Seats ({getStopDetails(stopIdx).city})</h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                Please select {maxSelectable} seat{maxSelectable > 1 ? "s" : ""} on the map for your tickets.
-              </p>
-              <VenueSeatSelector
-                venueProject={project}
-                eventTickets={event.event_tickets || []}
-                bookedSeats={stopBookedSeats}
-                selectedSeats={selectedSeats}
-                maxSelectable={maxSelectable}
-                onSeatSelect={(seat) => handleSeatSelect(stopIdx, seat)}
-                onSeatDeselect={(code) => handleSeatDeselect(stopIdx, code)}
-              />
-            </div>
-          );
-        })}
-
         {/* Attendee Details */}
         <div>
           <h1 className="text-2xl font-bold px-1 mb-5">Checkout ({totalTickets})</h1>
@@ -569,29 +552,60 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               const projectForStop = stopsWithVenues.find((s) => s.stopIdx === attendee.stopIdx)?.project;
               const isSeatRequired = projectForStop?.sections_data?.some((s: any) => s.ticketId === attendee.tierId);
 
+              // Calculate assigned seats to show
+              const seatsList = assignMode === "me" 
+                ? attendees.filter(a => a.tierId === attendee.tierId && a.stopIdx === attendee.stopIdx).map(a => a.seatName || a.seat).filter(Boolean)
+                : [attendee.seatName || attendee.seat].filter(Boolean);
+
+              const formatSeatDisplay = (raw: any) => {
+                if (typeof raw !== 'string') raw = String(raw);
+                const str = raw.trim();
+                if (str.includes("-R") && str.includes("-C")) {
+                  const match = str.match(/-R(\d+)-C(\d+)/);
+                  if (match) return `Row ${match[1]}, Seat ${match[2]}`;
+                }
+                return str;
+              };
+
               return (
                 <div
                   key={idx}
                   className="p-5 rounded-3xl border border-border/60 bg-card/40 space-y-5"
                 >
-                  <div className="flex items-center gap-3 pb-3 border-b border-border/60">
-                    <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                      {idx + 1}
+                  <div className="flex items-start justify-between pb-3 border-b border-border/60">
+                    <div className="flex items-center gap-3">
+                      <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                        {idx + 1}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm">
+                          {assignMode === "me"
+                            ? "Your Details (Applied to all tickets)"
+                            : tier
+                              ? tier.type
+                              : "Ticket"}
+                        </h3>
+                        {assignMode === "others" && (
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                            {stop.city} &middot; {stop.date}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-sm">
-                        {assignMode === "me"
-                          ? "Your Details (Applied to all tickets)"
-                          : tier
-                            ? tier.type
-                            : "Ticket"}
-                      </h3>
-                      {assignMode === "others" && (
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                          {stop.city} &middot; {stop.date}
-                        </p>
-                      )}
-                    </div>
+                    {isSeatRequired && seatsList.length > 0 && (
+                      <div className="flex flex-col items-end">
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">
+                          Assigned Seat{seatsList.length > 1 ? 's' : ''}
+                        </span>
+                        <div className="flex gap-1 flex-wrap justify-end">
+                          {seatsList.map((sName, sIdx) => (
+                            <span key={sIdx} className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-xs font-bold">
+                              {formatSeatDisplay(sName)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-4">
@@ -650,19 +664,6 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                         <SelectContent>{countrySelectItems}</SelectContent>
                       </Select>
                     </div>
-
-                    {isSeatRequired && (
-                      <div className="p-3 rounded-lg bg-secondary/30 border border-border flex items-center justify-between transition-colors">
-                        <div>
-                          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Assigned Seat</Label>
-                          <p className="text-sm font-medium mt-0.5">
-                            {attendee.seat || "Select a seat above"}
-                          </p>
-                        </div>
-                        {!attendee.seat && <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />}
-                        {attendee.seat && <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
-                      </div>
-                    )}
                   </div>
                 </div>
               );

@@ -868,12 +868,8 @@ export function EventDetailsDesktop({
                 <h2 className="text-xl font-bold">Select Seats</h2>
                 <p className="text-sm text-muted-foreground">Pick your seats for {activeTicketTiers.find((t: any) => t.id === activeTicketIdForMap)?.name}</p>
               </div>
-              <div className="flex items-center gap-3">
-                <Button variant="outline" onClick={() => setIsSeatModalOpen(false)}>Back</Button>
-                <Button onClick={() => setIsSeatModalOpen(false)}>Confirm Selection</Button>
-              </div>
             </div>
-            <div className="flex-1 bg-secondary/20 p-4 overflow-hidden">
+            <div className="flex-1 bg-secondary/20 p-4 overflow-hidden relative">
               <VenueSeatSelector
                 venueProject={currentVenueProject}
                 eventTickets={activeTicketTiers}
@@ -886,6 +882,20 @@ export function EventDetailsDesktop({
                 activeTicketId={activeTicketIdForMap}
                 hideLegend={true}
               />
+            </div>
+            <div className="p-4 border-t flex items-center justify-between bg-background">
+              <div className="flex flex-col">
+                <span className="text-base font-bold text-foreground">
+                  {selectedSeatsObj.length} Seat{selectedSeatsObj.length !== 1 ? 's' : ''} Selected
+                </span>
+                <span className="text-sm text-muted-foreground max-w-[300px] truncate">
+                  {selectedSeatsObj.length > 0 ? selectedSeatsObj.map(s => s.seatName || s.code).join(", ") : "None"}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" onClick={() => setIsSeatModalOpen(false)}>Back</Button>
+                <Button onClick={() => setIsSeatModalOpen(false)}>Confirm Selection</Button>
+              </div>
             </div>
           </div>
         </div>
