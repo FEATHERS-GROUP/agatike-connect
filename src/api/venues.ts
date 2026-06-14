@@ -10,12 +10,13 @@ const CREATE_VENUE_PROJECT = `
 `;
 
 const UPDATE_VENUE_PROJECT = `
-  mutation UpdateVenueProject($id: uuid!, $name: String, $event_id: uuid, $canvas_bg: String, $boundary_shape: String, $boundary_width: Int, $boundary_height: Int, $boundary_rx: Int, $sections_data: jsonb) {
+  mutation UpdateVenueProject($id: uuid!, $name: String, $event_id: uuid, $tour_stop_idx: Int, $canvas_bg: String, $boundary_shape: String, $boundary_width: Int, $boundary_height: Int, $boundary_rx: Int, $sections_data: jsonb) {
     update_venue_projects_by_pk(
       pk_columns: { id: $id },
       _set: {
         name: $name,
         event_id: $event_id,
+        tour_stop_idx: $tour_stop_idx,
         canvas_bg: $canvas_bg,
         boundary_shape: $boundary_shape,
         boundary_width: $boundary_width,
@@ -66,6 +67,7 @@ export const saveVenueProject = createServerFn({ method: "POST" }).handler(async
     workspace_id,
     name,
     event_id,
+    tour_stop_idx,
     canvas_bg,
     boundary,
     sections,
@@ -83,6 +85,7 @@ export const saveVenueProject = createServerFn({ method: "POST" }).handler(async
           workspace_id,
           name,
           event_id,
+          tour_stop_idx,
           canvas_bg,
           sections_data: sections || [],
           boundary_shape: boundary?.shape,
@@ -98,6 +101,7 @@ export const saveVenueProject = createServerFn({ method: "POST" }).handler(async
       id: projectId,
       name,
       event_id,
+      tour_stop_idx,
       canvas_bg,
       sections_data: sections || [],
       boundary_shape: boundary?.shape,
@@ -161,3 +165,59 @@ export const getPublicVenues = createServerFn({ method: "GET" }).handler(async (
   const data = await hasuraRequest<{ rentable_venues: any[] }>(GET_PUBLIC_VENUES, {});
   return data.rentable_venues || [];
 });
+
+const GET_VENUE_PROJECT = `
+  query GetVenueProject($id: uuid!) {
+    venue_projects_by_pk(id: $id) {
+      workspace_id
+      name
+      canvas_bg
+      boundary_shape
+      boundary_width
+      boundary_height
+      boundary_rx
+      sections_data
+    }
+  }
+`;
+
+export const assignVenueProjectToStop = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { venue_project_id, event_id, tour_stop_idx } = ctx.data as any;
+  
+  // 1. Fetch the source project
+  const projectRes = await hasuraRequest<{ venue_projects_by_pk: any }>(GET_VENUE_PROJECT, { id: venue_project_id });
+  const project = projectRes.venue_projects_by_pk;
+  
+  if (!project) throw new Error("Venue project not found");
+
+  // 2. Delete any existing assigned project for this event/stop to ensure uniqueness
+  await hasuraRequest(`
+    mutation ClearExistingAssignments($event_id: uuid!, $tour_stop_idx: Int!) {
+      delete_venue_projects(where: { event_id: { _eq: $event_id }, tour_stop_idx: { _eq: $tour_stop_idx } }) {
+        affected_rows
+      }
+    }
+  `, { event_id, tour_stop_idx });
+
+  // 3. Create a duplicate linked to the event and stop
+  const res = await hasuraRequest<{ insert_venue_projects_one: { id: string } }>(
+    CREATE_VENUE_PROJECT,
+    {
+      object: {
+        workspace_id: project.workspace_id,
+        name: project.name,
+        event_id,
+        tour_stop_idx,
+        canvas_bg: project.canvas_bg,
+        boundary_shape: project.boundary_shape,
+        boundary_width: project.boundary_width,
+        boundary_height: project.boundary_height,
+        boundary_rx: project.boundary_rx,
+        sections_data: project.sections_data || [],
+      },
+    },
+  );
+  
+  return { success: true, venue_project_id: res.insert_venue_projects_one.id };
+});
+

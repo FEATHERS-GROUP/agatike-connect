@@ -10,7 +10,8 @@ import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
-import { addEventAttendees } from "@/api/attendees";
+import { getWorkspaceVenueProjects } from "@/api/venues";
+import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { COUNTRIES } from "@/lib/countries";
+import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 
 export function BookingDesktop({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
@@ -62,6 +64,19 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   });
 
   const eventProject = ticketProjects?.find((p: any) => p.eventId === event.id);
+
+  // Fetch venue projects and booked attendees
+  const { data: venueProjects } = useQuery({
+    queryKey: ["workspace-venues", event?.workspace_id],
+    queryFn: () => getWorkspaceVenueProjects({ data: { workspace_id: event?.workspace_id! } } as any),
+    enabled: !!event?.workspace_id,
+  });
+
+  const { data: bookedAttendees } = useQuery({
+    queryKey: ["event-attendees", eventId],
+    queryFn: () => getEventAttendees({ data: { event_id: eventId } } as any),
+    enabled: !!eventId,
+  });
 
   // Load cart and init attendees
   useEffect(() => {
@@ -142,15 +157,62 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     return sum + (tier ? parseFloat(tier.cost || tier.price || 0) * qty : 0);
   }, 0);
 
+  // SEATING LOGIC
+  const activeStopIndices = useMemo(() => {
+    const stops = new Set<number>();
+    Object.keys(cart).forEach((key) => {
+      if (cart[key] > 0) stops.add(parseInt(key.split("_")[0]));
+    });
+    return Array.from(stops);
+  }, [cart]);
+
+  const stopsWithVenues = useMemo(() => {
+    return activeStopIndices.map((stopIdx) => {
+      const project = venueProjects?.find(
+        (v) => v.event_id === event?.id && v.tour_stop_idx === stopIdx
+      );
+      return { stopIdx, project };
+    }).filter((s) => s.project);
+  }, [activeStopIndices, venueProjects, event?.id]);
+
+  const handleSeatSelect = (stopIdx: number, seat: { code: string; ticketId: string }) => {
+    const attendeeIdx = attendees.findIndex(
+      (a) => a.stopIdx === stopIdx && a.tierId === seat.ticketId && !a.seat
+    );
+    if (attendeeIdx === -1) {
+      toast.error(`All ${getTierDetails(seat.ticketId)?.type || 'selected'} tickets in your cart already have seats assigned.`);
+      return;
+    }
+    const newAttendees = [...attendees];
+    newAttendees[attendeeIdx] = { ...newAttendees[attendeeIdx], seat: seat.code };
+    setAttendees(newAttendees);
+  };
+
+  const handleSeatDeselect = (stopIdx: number, code: string) => {
+    const attendeeIdx = attendees.findIndex((a) => a.stopIdx === stopIdx && a.seat === code);
+    if (attendeeIdx !== -1) {
+      const newAttendees = [...attendees];
+      delete newAttendees[attendeeIdx].seat;
+      setAttendees(newAttendees);
+    }
+  };
+
   const totalTickets = attendees.length;
   const isFormValid =
-    assignMode === "me"
+    (assignMode === "me"
       ? attendees.length > 0 &&
         !!attendees[0].firstName &&
         !!attendees[0].lastName &&
         !!attendees[0].email &&
         !!attendees[0].country
-      : attendees.every((a) => a.firstName && a.lastName && a.email && a.country);
+      : attendees.every((a) => a.firstName && a.lastName && a.email && a.country)) &&
+    attendees.every((a) => {
+      const projectForStop = stopsWithVenues.find((s) => s.stopIdx === a.stopIdx)?.project;
+      const isSeatRequired = projectForStop?.sections_data?.some(
+        (s: any) => s.ticketId === a.tierId
+      );
+      return !isSeatRequired || !!a.seat;
+    });
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async () => {
@@ -183,7 +245,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           ticket_type: tier ? tier.type : "General Admission",
           type: "Booking",
           payment_method: paymentMethod,
-          custom_fields: { country: sourceAttendee.country, tour_stop_idx: a.stopIdx },
+          custom_fields: { country: sourceAttendee.country, tour_stop_idx: a.stopIdx, seat: a.seat },
         };
       });
 
@@ -394,6 +456,44 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         <div className="grid lg:grid-cols-[1fr_400px] gap-12">
           {/* Left Column: Form & Payment */}
           <div className="space-y-10">
+            {/* Seating Assignment */}
+            {stopsWithVenues.map(({ stopIdx, project }) => {
+              const stopBookedSeats = bookedAttendees
+                ?.filter((a: any) => a.custom_fields?.tour_stop_idx === stopIdx)
+                .map((a: any) => a.custom_fields?.seat)
+                .filter(Boolean) || [];
+
+              const selectedSeats = attendees
+                .filter((a) => a.stopIdx === stopIdx && a.seat)
+                .map((a) => a.seat);
+
+              const mappedTierIds =
+                project.sections_data?.map((s: any) => s.ticketId).filter(Boolean) || [];
+              const maxSelectable = attendees.filter(
+                (a) => a.stopIdx === stopIdx && mappedTierIds.includes(a.tierId)
+              ).length;
+
+              if (maxSelectable === 0) return null;
+
+              return (
+                <div key={stopIdx} className="mb-12 animate-in fade-in slide-in-from-bottom-4">
+                  <h2 className="text-2xl font-bold mb-4">Select Seats for {getStopDetails(stopIdx).city}</h2>
+                  <p className="text-muted-foreground mb-6">
+                    Please select {maxSelectable} seat{maxSelectable > 1 ? "s" : ""} on the map for your selected tickets.
+                  </p>
+                  <VenueSeatSelector
+                    venueProject={project}
+                    eventTickets={event.event_tickets || []}
+                    bookedSeats={stopBookedSeats}
+                    selectedSeats={selectedSeats}
+                    maxSelectable={maxSelectable}
+                    onSeatSelect={(seat) => handleSeatSelect(stopIdx, seat)}
+                    onSeatDeselect={(code) => handleSeatDeselect(stopIdx, code)}
+                  />
+                </div>
+              );
+            })}
+
             <div>
               <h1 className="text-3xl font-bold mb-6">Checkout ({totalTickets} Tickets)</h1>
 
@@ -427,6 +527,9 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   if (!attendee) return null;
                   const tier = getTierDetails(attendee.tierId);
                   const stop = getStopDetails(attendee.stopIdx);
+
+                  const projectForStop = stopsWithVenues.find((s) => s.stopIdx === attendee.stopIdx)?.project;
+                  const isSeatRequired = projectForStop?.sections_data?.some((s: any) => s.ticketId === attendee.tierId);
 
                   return (
                     <div
@@ -508,6 +611,19 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                           </Select>
                         </div>
                       </div>
+
+                      {isSeatRequired && (
+                        <div className="mt-4 p-4 rounded-xl bg-secondary/30 border border-border flex items-center justify-between transition-colors">
+                          <div>
+                            <Label className="text-xs uppercase tracking-wider text-muted-foreground">Assigned Seat</Label>
+                            <p className="text-base font-medium mt-1">
+                              {attendee.seat || "Please select a seat from the map above"}
+                            </p>
+                          </div>
+                          {!attendee.seat && <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />}
+                          {attendee.seat && <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

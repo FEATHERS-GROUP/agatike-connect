@@ -54,9 +54,7 @@ function DashboardLayout() {
   const isExperienceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/experiences\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
   const search = location.search as any;
-  const isDesigningVenue =
-    location.pathname.match(/^\/dashboard\/[^/]+\/venue-designer/) &&
-    search.step === "DESIGN_CANVAS";
+  const isDesigningVenue = !!location.pathname.match(/^\/dashboard\/[^/]+\/venue-designer\/[^/]+/);
 
   const hideSidebar =
     location.pathname === "/dashboard/login" ||

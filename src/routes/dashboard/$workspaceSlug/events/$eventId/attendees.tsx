@@ -241,7 +241,7 @@ function AttendeesView() {
               </th>
               <th className="px-6 py-4 font-medium">Attendee</th>
               <th className="px-6 py-4 font-medium">Type</th>
-              <th className="px-6 py-4 font-medium">Ticket / Status</th>
+              <th className="px-6 py-4 font-medium">Ticket / Seat</th>
               <th className="px-6 py-4 font-medium">Registration Date</th>
               <th className="px-6 py-4 font-medium text-right">Actions</th>
             </tr>
@@ -300,7 +300,17 @@ function AttendeesView() {
                   </td>
                   <td className="px-6 py-4">
                     <p className="font-medium">{a.ticket_type || "N/A"}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{a.status}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-muted-foreground capitalize">{a.status}</span>
+                      {a.custom_fields?.seat && (
+                        <>
+                          <span className="text-xs text-border">•</span>
+                          <span className="text-xs font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                            {a.custom_fields.seat}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-muted-foreground">
                     {format(new Date(a.created_at), "MMM d, yyyy")}
@@ -499,6 +509,12 @@ function AttendeeDetailsModal({
                 <p className="text-muted-foreground text-xs">Quantity</p>
                 <p className="font-medium">{attendee.quanity || "1"}</p>
               </div>
+              {attendee.custom_fields?.seat && (
+                <div>
+                  <p className="text-muted-foreground text-xs">Assigned Seat</p>
+                  <p className="font-medium">{attendee.custom_fields.seat}</p>
+                </div>
+              )}
             </div>
 
             {attendee.custom_fields && Object.keys(attendee.custom_fields).length > 0 && (

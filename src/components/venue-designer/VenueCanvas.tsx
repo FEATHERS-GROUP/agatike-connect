@@ -1,4 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
+import { ZoomIn, ZoomOut } from "lucide-react";
 import { Seat, Section, VenueTemplate } from "./types";
 import { PitchRenderer } from "./PitchRenderer";
 
@@ -119,8 +120,10 @@ export function VenueCanvas({
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [draggingSectionId, setDraggingSectionId] = useState<string | null>(null);
+  const [resizingSectionId, setResizingSectionId] = useState<string | null>(null);
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [initialSectionPos, setInitialSectionPos] = useState({ x: 0, y: 0 });
+  const [initialSectionSize, setInitialSectionSize] = useState({ w: 0, h: 0 });
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -128,12 +131,63 @@ export function VenueCanvas({
   } | null>(null);
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
+  const [zoom, setZoom] = useState(1);
 
   // Close context menu on outside click
   useEffect(() => {
     const close = () => setContextMenu(null);
     window.addEventListener("pointerdown", close);
     return () => window.removeEventListener("pointerdown", close);
+  }, []);
+
+  // Handle native wheel (scroll/trackpad) and multi-touch (tablet pinch) zoom
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault(); // prevent browser zoom/scroll
+      // e.ctrlKey is true for pinch gestures on Mac trackpads
+      const sensitivity = e.ctrlKey ? 0.01 : 0.002;
+      setZoom((z) => Math.max(0.25, Math.min(3, z - e.deltaY * sensitivity)));
+    };
+
+    let initialDist = 0;
+    let initialZoom = 1;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault(); // prevent default browser pinch zoom
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        initialDist = Math.sqrt(dx * dx + dy * dy);
+        setZoom((z) => {
+          initialZoom = z;
+          return z;
+        });
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && initialDist > 0) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const scale = dist / initialDist;
+        setZoom(Math.max(0.25, Math.min(3, initialZoom * scale)));
+      }
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("touchstart", onTouchStart, { passive: false });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+    };
   }, []);
 
   // Convert screen coordinates to SVG viewBox coordinates
@@ -160,13 +214,37 @@ export function VenueCanvas({
     (e.target as Element).setPointerCapture(e.pointerId);
   };
 
+  const handleResizePointerDown = (e: React.PointerEvent<SVGCircleElement>, section: Section) => {
+    e.stopPropagation();
+    saveHistory();
+    setActiveSection(section.id);
+    const coords = getSvgCoordinates(e as any);
+    setResizingSectionId(section.id);
+    setDragStartPos(coords);
+    setInitialSectionSize({ w: section.width || 100, h: section.height || 50 });
+
+    (e.target as Element).setPointerCapture(e.pointerId);
+  };
+
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
+      if (resizingSectionId) {
+        const coords = getSvgCoordinates(e);
+        const dx = (coords.x - dragStartPos.x) / zoom;
+        const dy = (coords.y - dragStartPos.y) / zoom;
+
+        const newW = Math.max(20, Math.round((initialSectionSize.w + dx * 2) / 10) * 10);
+        const newH = Math.max(20, Math.round((initialSectionSize.h + dy * 2) / 10) * 10);
+
+        updateSection(resizingSectionId, { width: newW, height: newH });
+        return;
+      }
+
       if (!draggingSectionId) return;
 
       const coords = getSvgCoordinates(e);
-      const dx = coords.x - dragStartPos.x;
-      const dy = coords.y - dragStartPos.y;
+      const dx = (coords.x - dragStartPos.x) / zoom;
+      const dy = (coords.y - dragStartPos.y) / zoom;
 
       // Snap to grid (10px increments)
       const newX = Math.round((initialSectionPos.x + dx) / 10) * 10;
@@ -174,12 +252,18 @@ export function VenueCanvas({
 
       updateSection(draggingSectionId, { x: newX, y: newY });
     },
-    [draggingSectionId, dragStartPos, initialSectionPos, updateSection],
+    [draggingSectionId, resizingSectionId, dragStartPos, initialSectionPos, initialSectionSize, updateSection, zoom],
   );
 
   const handlePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
     if (draggingSectionId) {
       setDraggingSectionId(null);
+      try {
+        (e.target as Element).releasePointerCapture(e.pointerId);
+      } catch (err) {}
+    }
+    if (resizingSectionId) {
+      setResizingSectionId(null);
       try {
         (e.target as Element).releasePointerCapture(e.pointerId);
       } catch (err) {}
@@ -201,7 +285,8 @@ export function VenueCanvas({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        {/* Arena Outer Boundary Wall */}
+        <g transform={`scale(${zoom})`}>
+          {/* Arena Outer Boundary Wall */}
         {template.boundaryWidth && template.boundaryHeight && (
           <>
             {/* Outer shadow/glow */}
@@ -303,7 +388,7 @@ export function VenueCanvas({
                 cursor: isDragging ? "grabbing" : "grab",
               }}
             >
-              {/* Canva-style Selection Box */}
+              {/* Canva-style Selection Box & Resize Handles */}
               {isActive && (
                 <g pointerEvents="none">
                   <path
@@ -314,6 +399,19 @@ export function VenueCanvas({
                     strokeDasharray="8 6"
                     className="animate-pulse"
                   />
+                  {/* Resize handle for rects/pitches */}
+                  {(!sec.shape || sec.shape === "rect" || sec.shape === "pitch") && (
+                    <circle
+                      cx={(sec.width || 100) / 2}
+                      cy={(sec.height || 50) / 2}
+                      r="8"
+                      fill="#ffffff"
+                      stroke="#3b82f6"
+                      strokeWidth="3"
+                      style={{ cursor: "nwse-resize", pointerEvents: "all" }}
+                      onPointerDown={(e) => handleResizePointerDown(e, sec)}
+                    />
+                  )}
                 </g>
               )}
 
@@ -362,6 +460,7 @@ export function VenueCanvas({
             </g>
           );
         })}
+        </g>
       </svg>
 
       {/* Right-click Context Menu */}
@@ -494,6 +593,27 @@ export function VenueCanvas({
           )}
         </div>
       )}
+
+      {/* Zoom Controls */}
+      <div className="absolute bottom-4 right-4 flex items-center bg-card border border-border/60 rounded-full shadow-lg p-1 z-10">
+        <button
+          onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))}
+          className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-full transition-colors"
+          title="Zoom Out"
+        >
+          <ZoomOut className="w-5 h-5" />
+        </button>
+        <span className="text-xs font-medium px-2 min-w-[3rem] text-center">
+          {Math.round(zoom * 100)}%
+        </span>
+        <button
+          onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
+          className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-full transition-colors"
+          title="Zoom In"
+        >
+          <ZoomIn className="w-5 h-5" />
+        </button>
+      </div>
     </div>
   );
 }

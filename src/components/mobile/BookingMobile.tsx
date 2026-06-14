@@ -19,7 +19,8 @@ import { Label } from "@/components/ui/label";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getEventById, getWorkspaceTicketProjects, incrementTicketSold } from "@/api/events";
-import { addEventAttendees } from "@/api/attendees";
+import { getWorkspaceVenueProjects } from "@/api/venues";
+import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
@@ -34,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PaymentModal } from "@/components/shared/PaymentModal";
+import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 import {
   Dialog,
   DialogContent,
@@ -78,6 +80,19 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   });
 
   const eventProject = ticketProjects?.find((p: any) => p.eventId === event.id);
+
+  // Fetch venue projects and booked attendees
+  const { data: venueProjects } = useQuery({
+    queryKey: ["workspace-venues", event?.workspace_id],
+    queryFn: () => getWorkspaceVenueProjects({ data: { workspace_id: event?.workspace_id! } } as any),
+    enabled: !!event?.workspace_id,
+  });
+
+  const { data: bookedAttendees } = useQuery({
+    queryKey: ["event-attendees", eventId],
+    queryFn: () => getEventAttendees({ data: { event_id: eventId } } as any),
+    enabled: !!eventId,
+  });
 
   // Load cart and init attendees
   useEffect(() => {
@@ -155,15 +170,62 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     return sum + (tier ? parseFloat(tier.cost || tier.price || 0) * qty : 0);
   }, 0);
 
+  // SEATING LOGIC
+  const activeStopIndices = useMemo(() => {
+    const stops = new Set<number>();
+    Object.keys(cart).forEach((key) => {
+      if (cart[key] > 0) stops.add(parseInt(key.split("_")[0]));
+    });
+    return Array.from(stops);
+  }, [cart]);
+
+  const stopsWithVenues = useMemo(() => {
+    return activeStopIndices.map((stopIdx) => {
+      const project = venueProjects?.find(
+        (v) => v.event_id === event?.id && v.tour_stop_idx === stopIdx
+      );
+      return { stopIdx, project };
+    }).filter((s) => s.project);
+  }, [activeStopIndices, venueProjects, event?.id]);
+
+  const handleSeatSelect = (stopIdx: number, seat: { code: string; ticketId: string }) => {
+    const attendeeIdx = attendees.findIndex(
+      (a) => a.stopIdx === stopIdx && a.tierId === seat.ticketId && !a.seat
+    );
+    if (attendeeIdx === -1) {
+      toast.error(`All ${getTierDetails(seat.ticketId)?.type || 'selected'} tickets in your cart already have seats assigned.`);
+      return;
+    }
+    const newAttendees = [...attendees];
+    newAttendees[attendeeIdx] = { ...newAttendees[attendeeIdx], seat: seat.code };
+    setAttendees(newAttendees);
+  };
+
+  const handleSeatDeselect = (stopIdx: number, code: string) => {
+    const attendeeIdx = attendees.findIndex((a) => a.stopIdx === stopIdx && a.seat === code);
+    if (attendeeIdx !== -1) {
+      const newAttendees = [...attendees];
+      delete newAttendees[attendeeIdx].seat;
+      setAttendees(newAttendees);
+    }
+  };
+
   const totalTickets = attendees.length;
   const isFormValid =
-    assignMode === "me"
+    (assignMode === "me"
       ? attendees.length > 0 &&
         !!attendees[0].firstName &&
         !!attendees[0].lastName &&
         !!attendees[0].email &&
         !!attendees[0].country
-      : attendees.every((a) => a.firstName && a.lastName && a.email && a.country);
+      : attendees.every((a) => a.firstName && a.lastName && a.email && a.country)) &&
+    attendees.every((a) => {
+      const projectForStop = stopsWithVenues.find((s) => s.stopIdx === a.stopIdx)?.project;
+      const isSeatRequired = projectForStop?.sections_data?.some(
+        (s: any) => s.ticketId === a.tierId
+      );
+      return !isSeatRequired || !!a.seat;
+    });
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async () => {
@@ -195,7 +257,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           ticket_type: tier ? tier.type : "General Admission",
           type: "Booking",
           payment_method: paymentMethod,
-          custom_fields: { country: sourceAttendee.country, tour_stop_idx: a.stopIdx },
+          custom_fields: { country: sourceAttendee.country, tour_stop_idx: a.stopIdx, seat: a.seat },
         };
       });
 
@@ -431,6 +493,44 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           </div>
         </div>
 
+        {/* Seating Assignment */}
+        {stopsWithVenues.map(({ stopIdx, project }) => {
+          const stopBookedSeats = bookedAttendees
+            ?.filter((a: any) => a.custom_fields?.tour_stop_idx === stopIdx)
+            .map((a: any) => a.custom_fields?.seat)
+            .filter(Boolean) || [];
+
+          const selectedSeats = attendees
+            .filter((a) => a.stopIdx === stopIdx && a.seat)
+            .map((a) => a.seat);
+
+          const mappedTierIds =
+            project.sections_data?.map((s: any) => s.ticketId).filter(Boolean) || [];
+          const maxSelectable = attendees.filter(
+            (a) => a.stopIdx === stopIdx && mappedTierIds.includes(a.tierId)
+          ).length;
+
+          if (maxSelectable === 0) return null;
+
+          return (
+            <div key={stopIdx} className="animate-in fade-in slide-in-from-bottom-4">
+              <h2 className="text-xl font-bold mb-2">Select Seats ({getStopDetails(stopIdx).city})</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Please select {maxSelectable} seat{maxSelectable > 1 ? "s" : ""} on the map for your tickets.
+              </p>
+              <VenueSeatSelector
+                venueProject={project}
+                eventTickets={event.event_tickets || []}
+                bookedSeats={stopBookedSeats}
+                selectedSeats={selectedSeats}
+                maxSelectable={maxSelectable}
+                onSeatSelect={(seat) => handleSeatSelect(stopIdx, seat)}
+                onSeatDeselect={(code) => handleSeatDeselect(stopIdx, code)}
+              />
+            </div>
+          );
+        })}
+
         {/* Attendee Details */}
         <div>
           <h1 className="text-2xl font-bold px-1 mb-5">Checkout ({totalTickets})</h1>
@@ -465,6 +565,9 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               if (!attendee) return null;
               const tier = getTierDetails(attendee.tierId);
               const stop = getStopDetails(attendee.stopIdx);
+
+              const projectForStop = stopsWithVenues.find((s) => s.stopIdx === attendee.stopIdx)?.project;
+              const isSeatRequired = projectForStop?.sections_data?.some((s: any) => s.ticketId === attendee.tierId);
 
               return (
                 <div
@@ -547,6 +650,19 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                         <SelectContent>{countrySelectItems}</SelectContent>
                       </Select>
                     </div>
+
+                    {isSeatRequired && (
+                      <div className="p-3 rounded-lg bg-secondary/30 border border-border flex items-center justify-between transition-colors">
+                        <div>
+                          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Assigned Seat</Label>
+                          <p className="text-sm font-medium mt-0.5">
+                            {attendee.seat || "Select a seat above"}
+                          </p>
+                        </div>
+                        {!attendee.seat && <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />}
+                        {attendee.seat && <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

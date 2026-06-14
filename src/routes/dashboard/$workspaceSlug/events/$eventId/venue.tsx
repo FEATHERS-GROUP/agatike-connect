@@ -14,6 +14,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getEventById, updateEvent } from "@/api/events";
+import { getWorkspaceVenueProjects, assignVenueProjectToStop, saveVenueProject } from "@/api/venues";
+import { getEventAttendees } from "@/api/attendees";
+import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -34,6 +37,12 @@ function VenueView() {
     enabled: !!eventId,
   });
 
+  const { data: attendees = [] } = useQuery({
+    queryKey: ["event-attendees", eventId],
+    queryFn: () => getEventAttendees({ data: { event_id: eventId } } as any),
+    enabled: !!eventId,
+  });
+
   const [tourStops, setTourStops] = useState<any[]>([]);
 
   useEffect(() => {
@@ -46,6 +55,56 @@ function VenueView() {
     }));
     setTourStops(normalized);
   }, [event]);
+
+  const { data: workspaceVenueProjects, refetch: refetchVenueProjects } = useQuery({
+    queryKey: ["workspace-venues", workspaceSlug],
+    queryFn: () => getWorkspaceVenueProjects({ data: { workspace_id: event?.workspace_id } } as any),
+    enabled: !!event?.workspace_id,
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: async ({ venue_project_id, tour_stop_idx }: { venue_project_id: string, tour_stop_idx: number }) => {
+      return assignVenueProjectToStop({
+        data: { venue_project_id, event_id: eventId, tour_stop_idx }
+      } as any);
+    },
+    onSuccess: () => {
+      toast.success("Venue layout assigned!");
+      refetchVenueProjects();
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to assign layout");
+    }
+  });
+
+  const saveMappingMutation = useMutation({
+    mutationFn: async (updatedProject: any) => {
+      return saveVenueProject({
+        data: {
+          venue_project_id: updatedProject.id,
+          workspace_id: updatedProject.workspace_id,
+          name: updatedProject.name,
+          event_id: updatedProject.event_id,
+          tour_stop_idx: updatedProject.tour_stop_idx,
+          canvas_bg: updatedProject.canvas_bg,
+          boundary: {
+            shape: updatedProject.boundary_shape,
+            width: updatedProject.boundary_width,
+            height: updatedProject.boundary_height,
+            rx: updatedProject.boundary_rx,
+          },
+          sections: updatedProject.sections_data,
+        }
+      } as any);
+    },
+    onSuccess: () => {
+      toast.success("Ticket mapping saved!");
+      refetchVenueProjects();
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to save mapping");
+    }
+  });
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -134,6 +193,15 @@ function VenueView() {
       ) : (
         tourStops.map((stop: any, idx: number) => {
           const stopId = stop.id || idx;
+          const assignedProject = workspaceVenueProjects?.find(
+            (v) => v.event_id === eventId && v.tour_stop_idx === idx
+          );
+          const templates = workspaceVenueProjects?.filter((v) => v.id !== assignedProject?.id) || [];
+          const stopBookedSeats = attendees
+            ?.filter((a: any) => a.custom_fields?.tour_stop_idx === idx)
+            .map((a: any) => a.custom_fields?.seat)
+            .filter(Boolean) || [];
+
           return (
             <div
               key={stopId}
@@ -350,6 +418,95 @@ function VenueView() {
                         >
                           <Upload className="mr-2 h-4 w-4" /> Change Photo
                         </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Interactive Seating Layout */}
+                  <div className="mt-8 border-t border-border/50 pt-6">
+                    <h3 className="font-semibold flex items-center gap-2 mb-4">
+                      <Map className="h-5 w-5 text-primary" /> Interactive Seating Layout
+                    </h3>
+                    
+                    {!assignedProject ? (
+                      <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Assign a venue layout to enable interactive seat selection for this tour stop.
+                        </p>
+                        <div className="flex gap-2">
+                          <select
+                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val) {
+                                assignMutation.mutate({ venue_project_id: val, tour_stop_idx: idx });
+                              }
+                            }}
+                            defaultValue=""
+                          >
+                            <option value="" disabled>Select a layout template...</option>
+                            {templates.map(t => (
+                              <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between bg-secondary/30 p-3 rounded-lg border border-border">
+                          <div>
+                            <p className="text-sm font-medium">{assignedProject.name}</p>
+                            <p className="text-xs text-muted-foreground">Assigned Layout</p>
+                          </div>
+                          <Button variant="outline" size="sm" onClick={() => {
+                            window.open(`/dashboard/${workspaceSlug}/venue-designer/${assignedProject.id}`, '_blank');
+                          }}>
+                            Edit Layout
+                          </Button>
+                        </div>
+
+                        <div className="space-y-3 mt-4">
+                          <h4 className="text-sm font-medium">Map Tickets to Sections</h4>
+                          {(!assignedProject.sections_data || assignedProject.sections_data.length === 0) ? (
+                            <p className="text-sm text-muted-foreground italic">No sections defined in this layout.</p>
+                          ) : (
+                            assignedProject.sections_data.map((section: any, sIdx: number) => (
+                              <div key={section.id || sIdx} className="flex items-center justify-between gap-4 p-2 rounded-md hover:bg-secondary/20 border border-transparent hover:border-border/50 transition-colors">
+                                <span className="text-sm font-medium flex-1">{section.name || 'Unnamed Section'}</span>
+                                <select
+                                  className="flex h-9 w-[200px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                  value={section.ticketId || ""}
+                                  onChange={(e) => {
+                                    const newSections = [...assignedProject.sections_data];
+                                    newSections[sIdx] = { ...section, ticketId: e.target.value };
+                                    const updatedProject = { ...assignedProject, sections_data: newSections };
+                                    saveMappingMutation.mutate(updatedProject);
+                                  }}
+                                >
+                                  <option value="">No Ticket Mapped</option>
+                                  {event.event_tickets?.filter((t: any) => !t.deleted).map((t: any) => (
+                                    <option key={t.id} value={t.id}>{t.type} - {event.event_tickets?.[0]?.cost ? `${t.cost}` : 'Free'}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        
+                        {assignedProject.sections_data && assignedProject.sections_data.length > 0 && (
+                          <div className="mt-8 border-t border-border/50 pt-6">
+                            <h3 className="font-semibold mb-4 text-sm text-muted-foreground uppercase tracking-wider">Live Occupancy Map</h3>
+                            <VenueSeatSelector
+                              venueProject={assignedProject}
+                              eventTickets={event.event_tickets || []}
+                              bookedSeats={stopBookedSeats}
+                              selectedSeats={[]}
+                              maxSelectable={0}
+                              onSeatSelect={() => {}}
+                              onSeatDeselect={() => {}}
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
