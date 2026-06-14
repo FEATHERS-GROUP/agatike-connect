@@ -13,8 +13,8 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
     appUrl,
   } = ctx.data as any;
 
-  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
     : process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : import.meta.env.PROD
