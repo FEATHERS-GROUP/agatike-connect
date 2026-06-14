@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Calendar, Users, CheckCircle2, Ticket, ChevronUp } from "lucide-react";
+import { ChevronLeft, Calendar, Users, CheckCircle2, Ticket, ChevronUp, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
@@ -60,10 +60,16 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         if (parsed.nationality) setNationality(parsed.nationality);
         if (parsed.phone) setPhone(parsed.phone);
         if (parsed.step) setStep(parsed.step);
+      } else {
+        // Default first ticket tier to 1 if no saved session
+        const firstTierName = venue?.pricing_tiers?.[0]?.name || "Standard Entry";
+        setTicketsData({ [firstTierName]: 1 });
       }
-    } catch {}
+    } catch {
+      setTicketsData({ "Standard Entry": 1 });
+    }
     setIsHydrated(true);
-  }, [storageKey]);
+  }, [storageKey, venue]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -287,20 +293,33 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      {/* Header */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/40 px-4 py-3 pt-safe-top">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/venues/$venueId"
-            params={{ venueId: venue.id }}
-            className="w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center active:scale-95 transition-transform"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Link>
-          <div>
-            <h1 className="font-bold tracking-tight leading-tight">Checkout</h1>
-            <p className="text-xs text-muted-foreground">{venue.name}</p>
-          </div>
+      {/* Hero Image Header */}
+      <div className="relative h-48 w-full overflow-hidden bg-muted">
+        <img
+          src={venue.cover_url}
+          alt={venue.name}
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-black/25 to-black/55" />
+        
+        {/* Back Button */}
+        <Link
+          to="/venues/$venueId"
+          params={{ venueId: venue.id }}
+          className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white active:scale-95 transition-transform"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </Link>
+        
+        {/* Venue Info Overlay */}
+        <div className="absolute bottom-4 left-4 right-4 text-white">
+          <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/95 text-primary-foreground px-2 py-0.5 rounded-full">
+            Checkout
+          </span>
+          <h1 className="text-xl font-bold tracking-tight mt-1.5 drop-shadow-sm">{venue.name}</h1>
+          <p className="text-xs text-white/80 font-medium mt-0.5 line-clamp-1 drop-shadow-sm">
+            {venue.location || venue.address}
+          </p>
         </div>
       </div>
 
@@ -325,22 +344,31 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground mb-1.5 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" /> Date
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Date of Visit
                 </label>
-                <Input
-                  type="date"
-                  required
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
-                />
+                <div className="relative">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    type="date"
+                    required
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="h-12 w-full bg-secondary/30 border border-border/80 rounded-xl pl-11 pr-4 focus-visible:ring-1 focus-visible:ring-primary/50 cursor-pointer text-sm font-medium"
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground/80 mt-1.5">
+                  Tap anywhere on the field above to open the calendar and choose a date.
+                </p>
               </div>
 
               <div className="pt-2">
-                <label className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                <label className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
                   <Ticket className="w-4 h-4" /> Select Tickets
                 </label>
+                <p className="text-xs text-muted-foreground mb-3 leading-normal">
+                  Specify how many tickets you'd like to purchase for this visit using the selector buttons.
+                </p>
                 <div className="space-y-3">
                   {(venue?.pricing_tiers?.length > 0
                     ? venue.pricing_tiers
@@ -348,29 +376,56 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                   ).map((tier: any, idx: number) => (
                     <div
                       key={idx}
-                      className="relative overflow-hidden flex justify-between items-center bg-secondary/30 p-4 rounded-xl border border-border/40"
+                      className="relative overflow-hidden flex justify-between items-center bg-secondary/30 p-4 rounded-xl border border-border/40 hover:bg-secondary/40 transition-colors"
                     >
                       <div>
                         <p className="font-bold text-sm tracking-tight">
                           {tier.name || "Standard Entry"}
                         </p>
-                        <p className="text-sm font-semibold text-primary">
+                        <p className="text-sm font-semibold text-primary mt-0.5">
                           {tier.amount > 0
                             ? `${venue.currency} ${Number(tier.amount).toLocaleString()}`
                             : "Free"}
                         </p>
                       </div>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={ticketsData[tier.name || "Standard Entry"] || ""}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value) || 0;
-                          setTicketsData((p) => ({ ...p, [tier.name || "Standard Entry"]: val }));
-                        }}
-                        className="w-20 h-10 text-center font-bold bg-background border-transparent"
-                        placeholder="0"
-                      />
+                      <div className="flex items-center gap-1 bg-background border border-border/40 rounded-xl p-1 shadow-sm">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          disabled={(ticketsData[tier.name || "Standard Entry"] || 0) <= 0}
+                          onClick={() => {
+                            const val = ticketsData[tier.name || "Standard Entry"] || 0;
+                            if (val > 0) {
+                              setTicketsData((p) => ({
+                                ...p,
+                                [tier.name || "Standard Entry"]: val - 1,
+                              }));
+                            }
+                          }}
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-40 transition-all active:scale-95"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="w-10 text-center font-bold text-sm tracking-tight">
+                          {ticketsData[tier.name || "Standard Entry"] || 0}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            const val = ticketsData[tier.name || "Standard Entry"] || 0;
+                            setTicketsData((p) => ({
+                              ...p,
+                              [tier.name || "Standard Entry"]: val + 1,
+                            }));
+                          }}
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>

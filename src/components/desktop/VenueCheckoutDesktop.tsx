@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Calendar, Users, MapPin, CheckCircle2, Ticket } from "lucide-react";
+import { ChevronLeft, Calendar, Users, MapPin, CheckCircle2, Ticket, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/site/Navbar";
@@ -63,10 +63,16 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
         if (parsed.nationality) setNationality(parsed.nationality);
         if (parsed.phone) setPhone(parsed.phone);
         if (parsed.step) setStep(parsed.step);
+      } else {
+        // Default first ticket tier to 1 if no saved session
+        const firstTierName = venue?.pricing_tiers?.[0]?.name || "Standard Entry";
+        setTicketsData({ [firstTierName]: 1 });
       }
-    } catch {}
+    } catch {
+      setTicketsData({ "Standard Entry": 1 });
+    }
     setIsHydrated(true);
-  }, [storageKey]);
+  }, [storageKey, venue]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -401,22 +407,31 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
               {step === 1 && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        <Calendar className="w-4 h-4" /> Select Date
+                    <div className="space-y-2 max-w-sm">
+                      <label className="text-sm font-medium text-muted-foreground block">
+                        Select Date of Visit
                       </label>
-                      <Input
-                        type="date"
-                        required
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        className="h-12 bg-secondary/40 max-w-sm"
-                      />
+                      <div className="relative">
+                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                        <Input
+                          type="date"
+                          required
+                          value={date}
+                          onChange={(e) => setDate(e.target.value)}
+                          className="h-12 w-full bg-secondary/20 border border-border/85 rounded-xl pl-11 pr-4 focus-visible:ring-1 focus-visible:ring-primary/50 cursor-pointer text-sm font-medium"
+                        />
+                      </div>
+                      <p className="text-[11px] text-muted-foreground/80 mt-1">
+                        Click anywhere on the field above to open the calendar and choose a date.
+                      </p>
                     </div>
                   </div>
 
-                  <div className="border-t border-border/40 pt-6">
-                    <h3 className="text-xl font-semibold mb-4">Ticket Selection</h3>
+                   <div className="border-t border-border/40 pt-6">
+                    <h3 className="text-xl font-semibold mb-1">Ticket Selection</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Specify how many tickets you'd like to purchase for this visit using the selector buttons.
+                    </p>
                     <div className="space-y-3">
                       {(venue?.pricing_tiers?.length > 0
                         ? venue.pricing_tiers
@@ -424,31 +439,53 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                       ).map((tier: any, idx: number) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between bg-secondary/20 p-4 rounded-xl border border-border/50"
+                          className="flex items-center justify-between bg-secondary/20 p-4 rounded-xl border border-border/50 hover:bg-secondary/30 transition-colors"
                         >
                           <div>
                             <p className="font-semibold">{tier.name || "Standard Entry"}</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground mt-0.5">
                               {tier.amount > 0
                                 ? `${venue.currency} ${Number(tier.amount).toLocaleString()}`
                                 : "Free"}
                             </p>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <Input
-                              type="number"
-                              min="0"
-                              value={ticketsData[tier.name || "Standard Entry"] || ""}
-                              onChange={(e) => {
-                                const val = parseInt(e.target.value) || 0;
+                          <div className="flex items-center gap-1 bg-background border border-border/40 rounded-xl p-1 shadow-sm">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              disabled={(ticketsData[tier.name || "Standard Entry"] || 0) <= 0}
+                              onClick={() => {
+                                const val = ticketsData[tier.name || "Standard Entry"] || 0;
+                                if (val > 0) {
+                                  setTicketsData((p) => ({
+                                    ...p,
+                                    [tier.name || "Standard Entry"]: val - 1,
+                                  }));
+                                }
+                              }}
+                              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-40 transition-all active:scale-95"
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <span className="w-10 text-center font-bold text-sm tracking-tight">
+                              {ticketsData[tier.name || "Standard Entry"] || 0}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                const val = ticketsData[tier.name || "Standard Entry"] || 0;
                                 setTicketsData((p) => ({
                                   ...p,
-                                  [tier.name || "Standard Entry"]: val,
+                                  [tier.name || "Standard Entry"]: val + 1,
                                 }));
                               }}
-                              className="w-20 bg-background text-center"
-                              placeholder="0"
-                            />
+                              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                       ))}
