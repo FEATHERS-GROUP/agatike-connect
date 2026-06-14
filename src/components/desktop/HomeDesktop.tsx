@@ -429,8 +429,8 @@ export function HomeDesktop() {
                   className="group relative aspect-square overflow-hidden rounded-2xl"
                 >
                   <img
-                    src={p.image}
-                    alt={p.eventTitle}
+                    src={p.image ?? undefined}
+                    alt={p.caption || "Community moment"}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     loading="lazy"
                   />
