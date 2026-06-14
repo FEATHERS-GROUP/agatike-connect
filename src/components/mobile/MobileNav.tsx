@@ -81,23 +81,28 @@ export function MobileNav() {
             </DrawerHeader>
             <div className="flex flex-col gap-1 p-4 pt-0">
               {isLoggedIn ? (
-                <div className="flex items-center gap-4 p-4 mb-4 bg-secondary/50 rounded-2xl border border-border/40">
-                  <div className="h-12 w-12 rounded-full p-[2px] bg-gradient-to-tr from-primary to-primary/50 shrink-0">
-                    <img
-                      src={user?.profile || "https://i.pravatar.cc/150?u=me"}
-                      alt={user?.username || "Profile"}
-                      className="h-full w-full rounded-full object-cover bg-card"
-                    />
-                  </div>
-                  <div>
-                    <p className="font-bold text-foreground leading-tight">
-                      {user?.username || "User"}
-                    </p>
-                    <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                      {user?.email}
-                    </p>
-                  </div>
-                </div>
+                <DrawerClose asChild>
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-4 p-4 mb-4 bg-secondary/50 rounded-2xl border border-border/40 hover:bg-secondary/70 transition-colors"
+                  >
+                    <div className="h-12 w-12 rounded-full p-[2px] bg-gradient-to-tr from-primary to-primary/50 shrink-0">
+                      <img
+                        src={user?.profile || "https://i.pravatar.cc/150?u=me"}
+                        alt={user?.username || "Profile"}
+                        className="h-full w-full rounded-full object-cover bg-card"
+                      />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-bold text-foreground leading-tight">
+                        {user?.username || "User"}
+                      </p>
+                      <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </Link>
+                </DrawerClose>
               ) : (
                 <div className="mb-4">
                   <DrawerClose asChild>
