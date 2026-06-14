@@ -129,7 +129,7 @@ export function VenueCanvas({
   const [resizingSectionId, setResizingSectionId] = useState<string | null>(null);
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [initialSectionPos, setInitialSectionPos] = useState({ x: 0, y: 0 });
-  const [initialSectionSize, setInitialSectionSize] = useState({ w: 0, h: 0 });
+  const [initialSectionSize, setInitialSectionSize] = useState<{ w: number; h: number; points?: string }>({ w: 0, h: 0 });
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -158,12 +158,14 @@ export function VenueCanvas({
     });
     const cx = minX + (maxX - minX) / 2;
     const cy = minY + (maxY - minY) / 2;
+    const width = Math.max(20, maxX - minX);
+    const height = Math.max(20, maxY - minY);
 
     const normalizedPoints = drawingPoints
       .map(p => `${Math.round(p.x - cx)},${Math.round(p.y - cy)}`)
       .join(" ");
 
-    addSection("polygon", "reserved", normalizedPoints, undefined, undefined, { x: cx, y: cy });
+    addSection("polygon", "reserved", normalizedPoints, undefined, undefined, { x: cx, y: cy, width, height });
 
     setDrawingPoints([]);
     setToolMode("select");
@@ -272,7 +274,7 @@ export function VenueCanvas({
     const coords = getSvgCoordinates(e as any);
     setResizingSectionId(section.id);
     setDragStartPos(coords);
-    setInitialSectionSize({ w: section.width || 100, h: section.height || 50 });
+    setInitialSectionSize({ w: section.width || 100, h: section.height || 50, points: section.points });
 
     (e.target as Element).setPointerCapture(e.pointerId);
   };
@@ -289,10 +291,29 @@ export function VenueCanvas({
         const dx = coords.x - dragStartPos.x;
         const dy = coords.y - dragStartPos.y;
 
+        const section = sections.find(s => s.id === resizingSectionId);
+        if (!section) return;
+
         const newW = Math.max(20, Math.round((initialSectionSize.w + dx * 2) / 10) * 10);
         const newH = Math.max(20, Math.round((initialSectionSize.h + dy * 2) / 10) * 10);
 
-        updateSection(resizingSectionId, { width: newW, height: newH });
+        if (section.shape === "polygon" && initialSectionSize.points) {
+          const ratioX = newW / (initialSectionSize.w || 1);
+          const ratioY = newH / (initialSectionSize.h || 1);
+          const newPoints = initialSectionSize.points
+            .split(" ")
+            .map(pt => {
+              if (!pt.trim()) return "";
+              const [px, py] = pt.split(",").map(Number);
+              return `${Math.round(px * ratioX)},${Math.round(py * ratioY)}`;
+            })
+            .filter(Boolean)
+            .join(" ");
+          
+          updateSection(resizingSectionId, { width: newW, height: newH, points: newPoints });
+        } else {
+          updateSection(resizingSectionId, { width: newW, height: newH });
+        }
         return;
       }
 
@@ -500,8 +521,8 @@ export function VenueCanvas({
                     strokeDasharray="8 6"
                     className="animate-pulse"
                   />
-                  {/* Resize handle for rects/pitches */}
-                  {(!sec.shape || sec.shape === "rect" || sec.shape === "pitch") && (
+                  {/* Resize handle for rects/pitches/polygons */}
+                  {(!sec.shape || sec.shape === "rect" || sec.shape === "pitch" || sec.shape === "polygon") && (
                     <circle
                       cx={(sec.width || 100) / 2}
                       cy={(sec.height || 50) / 2}
@@ -556,7 +577,7 @@ export function VenueCanvas({
                     : ""
                 }
               >
-                {sec.name.split(" ")[0]}
+                {sec.name}
               </text>
             </g>
           );

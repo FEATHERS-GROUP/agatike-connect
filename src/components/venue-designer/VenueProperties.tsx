@@ -13,6 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Section } from "./types";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 function Panel({
   title,
@@ -365,10 +372,45 @@ export function VenueProperties({
 
               {sec.shape !== "pitch" && (
                 <div className="pt-2">
-                  <Button className="w-full" variant="outline">
-                    <Layers className="w-4 h-4 mr-2" />
-                    Preview Seat Grid
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="w-full" variant="outline">
+                        <Layers className="w-4 h-4 mr-2" />
+                        Preview Seat Grid
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl">
+                      <DialogHeader>
+                        <DialogTitle>{sec.name} - Seat Preview</DialogTitle>
+                      </DialogHeader>
+                      <div className="p-6 bg-secondary/10 rounded-lg overflow-auto max-h-[60vh] flex justify-center items-center">
+                        <div 
+                          className="grid gap-1.5 justify-center" 
+                          style={{ gridTemplateColumns: `repeat(${sec.cols || 0}, minmax(0, auto))` }}
+                        >
+                          {Array.from({ length: (sec.rows || 0) * (sec.cols || 0) }).map((_, i) => {
+                             const row = Math.floor(i / (sec.cols || 1));
+                             const col = i % (sec.cols || 1);
+                             return (
+                               <div
+                                 key={i}
+                                 className="w-7 h-7 rounded-t-lg rounded-b-sm flex items-center justify-center text-[9px] font-medium transition-colors hover:brightness-110 cursor-pointer shadow-sm"
+                                 style={{ backgroundColor: sec.color || "#0ea5e9", color: "#fff" }}
+                                 title={`Row ${row + 1}, Seat ${col + 1}`}
+                               >
+                                 {row + 1}-{col + 1}
+                               </div>
+                             );
+                          })}
+                          {(sec.rows === 0 || sec.cols === 0) && (
+                            <p className="text-sm text-muted-foreground text-center col-span-full">
+                              No seats defined. Increase rows and seats per row to generate a grid.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               )}
 
