@@ -43,11 +43,18 @@ export const submitEventFeedback = createServerFn({ method: "POST" }).handler(as
   // because the DB column is NON_NULL uuid and rejects explicit null values.
   // user_id is nullable in the DB — we intentionally omit it here to avoid FK
   // violations when the reviewer is not a registered platform user.
+  let finalRating = input.rating;
+  if (input.category_scores && Object.keys(input.category_scores).length > 0) {
+    const scores = Object.values(input.category_scores);
+    const total = scores.reduce((acc, val) => acc + val, 0);
+    finalRating = (input.rating + total) / (scores.length + 1);
+  }
+
   const insertObject: Record<string, any> = {
     event_id: input.event_id,
     reviewer_name: input.reviewer_name,
     reviewer_email: input.reviewer_email,
-    rating: input.rating,
+    rating: finalRating,
     title: input.title || null,
     body: input.body || null,
     category_scores: input.category_scores || null,
