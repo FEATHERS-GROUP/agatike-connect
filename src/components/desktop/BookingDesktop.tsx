@@ -115,9 +115,11 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         const seatIdx = availableSeats.findIndex(s => s.ticketId === tierId);
         let assignedSeat = undefined;
         let assignedSeatName = undefined;
+        let assignedSectionName = undefined;
         if (seatIdx !== -1) {
           assignedSeat = availableSeats[seatIdx].code;
           assignedSeatName = availableSeats[seatIdx].seatName;
+          assignedSectionName = availableSeats[seatIdx].sectionName;
           availableSeats.splice(seatIdx, 1);
         }
 
@@ -127,6 +129,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           tierId,
           seat: assignedSeat,
           seatName: assignedSeatName,
+          sectionName: assignedSectionName,
           firstName: "",
           lastName: "",
           email: user?.email || "",
@@ -151,6 +154,20 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     const newAttendees = [...attendees];
     newAttendees[index] = { ...newAttendees[index], [field]: value };
     setAttendees(newAttendees);
+  };
+
+  const formatSeatDisplay = (raw: any, sectionName?: string) => {
+    if (!raw) return "";
+    if (typeof raw !== 'string') raw = String(raw);
+    let str = raw.trim();
+    if (str.includes("-R") && str.includes("-C")) {
+      const match = str.match(/-R(\d+)-C(\d+)/);
+      if (match) str = `Row ${match[1]}, Seat ${match[2]}`;
+    }
+    if (sectionName && !str.includes(sectionName)) {
+      return `${sectionName}, ${str}`;
+    }
+    return str;
   };
 
   // Memoize countries to prevent massive re-rendering lag
@@ -266,7 +283,13 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           ticket_type: tier ? tier.type : "General Admission",
           type: "Booking",
           payment_method: paymentMethod,
-          custom_fields: { country: sourceAttendee.country, tour_stop_idx: a.stopIdx, seat: a.seat },
+          custom_fields: { 
+            country: sourceAttendee.country, 
+            tour_stop_idx: a.stopIdx, 
+            seat: a.seat,
+            seat_display: a.seat ? formatSeatDisplay(a.seatName || a.seat, a.sectionName) : undefined,
+            name: `${sourceAttendee.firstName} ${sourceAttendee.lastName}`.trim()
+          },
         };
       });
 
@@ -516,18 +539,8 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
                   // Calculate assigned seats to show
                   const seatsList = assignMode === "me" 
-                    ? attendees.filter(a => a.tierId === attendee.tierId && a.stopIdx === attendee.stopIdx).map(a => a.seatName || a.seat).filter(Boolean)
-                    : [attendee.seatName || attendee.seat].filter(Boolean);
-
-                  const formatSeatDisplay = (raw: any) => {
-                    if (typeof raw !== 'string') raw = String(raw);
-                    const str = raw.trim();
-                    if (str.includes("-R") && str.includes("-C")) {
-                      const match = str.match(/-R(\d+)-C(\d+)/);
-                      if (match) return `Row ${match[1]}, Seat ${match[2]}`;
-                    }
-                    return str;
-                  };
+                    ? attendees.filter(a => a.tierId === attendee.tierId && a.stopIdx === attendee.stopIdx).map(a => formatSeatDisplay(a.seatName || a.seat, a.sectionName)).filter(Boolean)
+                    : [formatSeatDisplay(attendee.seatName || attendee.seat, attendee.sectionName)].filter(Boolean);
 
                   return (
                     <div
@@ -564,7 +577,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                             <div className="flex gap-1.5 flex-wrap justify-end">
                               {seatsList.map((sName, sIdx) => (
                                 <span key={sIdx} className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-xs font-bold">
-                                  {formatSeatDisplay(sName)}
+                                  {sName}
                                 </span>
                               ))}
                             </div>
@@ -739,7 +752,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   subtitle={event.venue || ""}
                   date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
                   time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
-                  seat={`${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()}
+                  seat={ticket.attendee.seat ? formatSeatDisplay(ticket.attendee.seatName || ticket.attendee.seat, ticket.attendee.sectionName) : `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()}
                   price={
                     getTierDetails(ticket.attendee.tierId)?.cost?.toString() ||
                     getTierDetails(ticket.attendee.tierId)?.price?.toString() ||
