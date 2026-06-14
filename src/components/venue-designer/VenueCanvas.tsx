@@ -143,6 +143,33 @@ export function VenueCanvas({
   const [drawingPoints, setDrawingPoints] = useState<{ x: number; y: number }[]>([]);
   const [currentMousePos, setCurrentMousePos] = useState<{ x: number; y: number } | null>(null);
 
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
+  const [lastPanPos, setLastPanPos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.code === "Space" && !isSpacePressed) {
+        e.preventDefault();
+        setIsSpacePressed(true);
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        setIsSpacePressed(false);
+        setIsPanning(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [isSpacePressed]);
+
   const finishDrawing = useCallback(() => {
     if (drawingPoints.length < 3) {
       setDrawingPoints([]);
@@ -199,9 +226,17 @@ export function VenueCanvas({
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault(); // prevent browser zoom/scroll
-      // e.ctrlKey is true for pinch gestures on Mac trackpads
-      const sensitivity = e.ctrlKey ? 0.01 : 0.002;
-      setZoom((z) => Math.max(0.25, Math.min(3, z - e.deltaY * sensitivity)));
+      if (e.ctrlKey || e.metaKey) {
+        // e.ctrlKey is true for pinch gestures on Mac trackpads
+        const sensitivity = e.ctrlKey ? 0.01 : 0.002;
+        setZoom((z) => Math.max(0.25, Math.min(3, z - e.deltaY * sensitivity)));
+      } else {
+        // Pan
+        setPan((p) => ({
+          x: p.x - e.deltaX,
+          y: p.y - e.deltaY,
+        }));
+      }
     };
 
     let initialDist = 0;
@@ -248,8 +283,8 @@ export function VenueCanvas({
     const CTM = svgRef.current.getScreenCTM();
     if (!CTM) return { x: 0, y: 0 };
     return {
-      x: ((event.clientX - CTM.e) / CTM.a) / zoom,
-      y: ((event.clientY - CTM.f) / CTM.d) / zoom,
+      x: ((event.clientX - CTM.e) / CTM.a - pan.x) / zoom,
+      y: ((event.clientY - CTM.f) / CTM.d - pan.y) / zoom,
     };
   };
 
@@ -292,6 +327,14 @@ export function VenueCanvas({
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
+      if (isPanning) {
+        const dx = e.clientX - lastPanPos.x;
+        const dy = e.clientY - lastPanPos.y;
+        setPan(p => ({ x: p.x + dx, y: p.y + dy }));
+        setLastPanPos({ x: e.clientX, y: e.clientY });
+        return;
+      }
+
       if (toolMode === "draw") {
         setCurrentMousePos(getSvgCoordinates(e));
         return;
@@ -362,6 +405,10 @@ export function VenueCanvas({
   );
 
   const handlePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+      if (isPanning) {
+        setIsPanning(false);
+        return;
+      }
     if (draggingSectionId) {
       setDraggingSectionId(null);
       try {
@@ -390,7 +437,7 @@ export function VenueCanvas({
       <svg
         ref={svgRef}
         viewBox="-560 -480 1120 960"
-        className="w-full h-full cursor-crosshair select-none touch-none"
+        className={`w-full h-full select-none touch-none ${isSpacePressed || isPanning ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : toolMode === 'draw' ? 'cursor-crosshair' : ''}`}
         preserveAspectRatio="xMidYMid meet"
         onContextMenu={(e) => {
           if (toolMode === "draw") {
@@ -399,6 +446,11 @@ export function VenueCanvas({
           }
         }}
         onPointerDown={(e) => {
+          if (isSpacePressed || e.button === 1) { // Space + Drag or Middle Click
+            setIsPanning(true);
+            setLastPanPos({ x: e.clientX, y: e.clientY });
+            return;
+          }
           if (toolMode === "draw") {
             if (e.button === 2) return; // ignore right click for adding points
             const coords = getSvgCoordinates(e);
@@ -411,7 +463,7 @@ export function VenueCanvas({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        <g transform={`scale(${zoom})`}>
+        <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
           {/* Drawing Path Preview */}
           {toolMode === "draw" && drawingPoints.length > 0 && (
             <g>
