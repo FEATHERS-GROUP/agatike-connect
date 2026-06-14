@@ -9,6 +9,7 @@ import {
   Map as MapIcon,
   ChevronRight,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getWorkspaceEvents } from "@/api/events";
-import { getWorkspaceVenueProjects, createVenueProject } from "@/api/venues";
+import { getWorkspaceVenueProjects, createVenueProject, deleteVenueProject } from "@/api/venues";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
@@ -153,6 +154,15 @@ function VenueDesignerIndex() {
 
     createMutation.mutate();
   };
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteVenueProject({ data: { id } } as any),
+    onSuccess: () => {
+      toast.success("Venue map deleted.");
+      refetch();
+    },
+    onError: () => toast.error("Failed to delete venue map."),
+  });
 
   const openSetupModal = (templateId: string) => {
     setSelectedTemplate(templateId);
@@ -428,7 +438,21 @@ function VenueDesignerIndex() {
                     </div>
                     <div className="px-5 py-3 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors">
                       <span>Edit Map</span>
-                      <ChevronRight className="h-4 w-4" />
+                      <div className="flex items-center gap-2">
+                        <button 
+                          className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (window.confirm("Are you sure you want to delete this venue map? If it is linked to an event, it will be unlinked automatically.")) {
+                              deleteMutation.mutate(proj.id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                        <ChevronRight className="h-4 w-4" />
+                      </div>
                     </div>
                   </Link>
                 );

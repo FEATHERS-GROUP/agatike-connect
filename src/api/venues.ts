@@ -171,6 +171,8 @@ const GET_VENUE_PROJECT = `
     venue_projects_by_pk(id: $id) {
       workspace_id
       name
+      event_id
+      tour_stop_idx
       canvas_bg
       boundary_shape
       boundary_width
@@ -190,16 +192,37 @@ export const assignVenueProjectToStop = createServerFn({ method: "POST" }).handl
   
   if (!project) throw new Error("Venue project not found");
 
-  // 2. Delete any existing assigned project for this event/stop to ensure uniqueness
+  // If already exactly assigned here, do nothing
+  if (project.event_id === event_id && project.tour_stop_idx === tour_stop_idx) {
+    return { success: true, venue_project_id };
+  }
+
+  // 2. Delete any existing assigned project for this event/stop (but keep the one we are assigning if it belongs here)
   await hasuraRequest(`
-    mutation ClearExistingAssignments($event_id: uuid!, $tour_stop_idx: Int!) {
-      delete_venue_projects(where: { event_id: { _eq: $event_id }, tour_stop_idx: { _eq: $tour_stop_idx } }) {
+    mutation ClearExistingAssignments($event_id: uuid!, $tour_stop_idx: Int!, $keep_id: uuid!) {
+      delete_venue_projects(where: { 
+        event_id: { _eq: $event_id }, 
+        tour_stop_idx: { _eq: $tour_stop_idx },
+        id: { _neq: $keep_id }
+      }) {
         affected_rows
       }
     }
-  `, { event_id, tour_stop_idx });
+  `, { event_id, tour_stop_idx, keep_id: venue_project_id });
 
-  // 3. Create a duplicate linked to the event and stop
+  // 3. If it already belongs to this event, DO NOT COPY IT, just update its tour_stop_idx!
+  if (project.event_id === event_id) {
+    await hasuraRequest(`
+      mutation UpdateTourStop($id: uuid!, $tour_stop_idx: Int!) {
+        update_venue_projects_by_pk(pk_columns: {id: $id}, _set: {tour_stop_idx: $tour_stop_idx}) {
+          id
+        }
+      }
+    `, { id: venue_project_id, tour_stop_idx });
+    return { success: true, venue_project_id };
+  }
+
+  // 4. Create a duplicate linked to the event and stop
   const res = await hasuraRequest<{ insert_venue_projects_one: { id: string } }>(
     CREATE_VENUE_PROJECT,
     {
@@ -221,3 +244,16 @@ export const assignVenueProjectToStop = createServerFn({ method: "POST" }).handl
   return { success: true, venue_project_id: res.insert_venue_projects_one.id };
 });
 
+const DELETE_VENUE_PROJECT = `
+  mutation DeleteVenueProject($id: uuid!) {
+    delete_venue_projects_by_pk(id: $id) {
+      id
+    }
+  }
+`;
+
+export const deleteVenueProject = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as any;
+  await hasuraRequest(DELETE_VENUE_PROJECT, { id });
+  return { success: true };
+});
