@@ -144,7 +144,7 @@ export const addEventAttendees = createServerFn({ method: "POST" }).handler(asyn
       mutationStr += `
         update_${i}: update_event_tickets_by_pk(
           pk_columns: { id: "${u.id}" },
-          _set: { sold: ${u.new_sold} }
+          _set: { sold: "${u.new_sold}" }
         ) {
           id
         }
