@@ -277,9 +277,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
             await new Promise((r) => setTimeout(r, 100));
 
-            const imgData = await htmlToImage.toPng(el, {
-              pixelRatio: 2,
-              backgroundColor: "transparent",
+            const imgData = await htmlToImage.toJpeg(el, {
+              pixelRatio: 1.5,
+              quality: 0.8,
+              backgroundColor: "#ffffff",
               width: 720,
               height: 260,
             });
@@ -298,7 +299,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               unit: "px",
               format: [width, height],
             });
-            pdf.addImage(imgData, "PNG", 0, 0, width, height);
+            pdf.addImage(imgData, "JPEG", 0, 0, width, height);
             const base64 = pdf.output("datauristring").split(",")[1];
 
             attachments.push({

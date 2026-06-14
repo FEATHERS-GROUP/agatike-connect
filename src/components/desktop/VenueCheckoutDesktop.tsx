@@ -207,9 +207,10 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             const rectDebug = el.getBoundingClientRect();
             console.log("Ticket element dimensions:", rectDebug.width, rectDebug.height);
 
-            const imgData = await htmlToImage.toPng(el, {
-              pixelRatio: 2,
-              backgroundColor: "transparent",
+            const imgData = await htmlToImage.toJpeg(el, {
+              pixelRatio: 1.5,
+              quality: 0.8,
+              backgroundColor: "#ffffff",
               width: 720,
               height: 260,
             });
@@ -229,7 +230,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
               unit: "px",
               format: [width, height],
             });
-            pdf.addImage(imgData, "PNG", 0, 0, width, height);
+            pdf.addImage(imgData, "JPEG", 0, 0, width, height);
             const base64 = pdf.output("datauristring").split(",")[1];
 
             attachments.push({

@@ -175,9 +175,12 @@ export function ManualBookingDialog({
             const el = document.getElementById(`ticket-render-${ticket.id}`);
             if (!el) continue;
 
-            const imgData = await htmlToImage.toPng(el, {
-              pixelRatio: 2,
-              backgroundColor: "transparent",
+            const imgData = await htmlToImage.toJpeg(el, {
+              pixelRatio: 1.5,
+              quality: 0.8,
+              backgroundColor: "#ffffff",
+              width: 720,
+              height: 260,
             });
 
             const rect = el.getBoundingClientRect();
@@ -189,7 +192,7 @@ export function ManualBookingDialog({
               unit: "px",
               format: [width, height],
             });
-            pdf.addImage(imgData, "PNG", 0, 0, width, height);
+            pdf.addImage(imgData, "JPEG", 0, 0, width, height);
             const base64 = pdf.output("datauristring").split(",")[1];
 
             attachments.push({
