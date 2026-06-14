@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { formatCurrency } from "@/lib/currency";
-import { Search, Map as MapIcon, SlidersHorizontal, MapPin } from "lucide-react";
+import { Search, Map as MapIcon, SlidersHorizontal, MapPin, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +12,7 @@ import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { ExploreSearchOverlay } from "@/components/mobile/ExploreSearchOverlay";
 import { useState, useMemo } from "react";
 import { isWeekendEvent } from "@/lib/utils";
+import { mockSubscriptionPlans, mockBusTickets } from "@/lib/mock-data-search";
 
 // Stubbed mock data
 const categories: any[] = [];
@@ -80,7 +81,7 @@ function ExplorePage() {
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 readOnly
-                placeholder="Search events, artists, venues..."
+                placeholder="Search events, venues, buses, memberships..."
                 className="h-12 bg-secondary/50 border-transparent pl-10 rounded-2xl text-base shadow-sm focus-visible:ring-primary/50 cursor-pointer"
               />
             </div>
@@ -436,6 +437,8 @@ function ExplorePage() {
         dbOrganizers={dbOrganizers}
         dbEvents={publicEvents}
         dbVenues={dbVenues}
+        dbSubscriptions={mockSubscriptionPlans}
+        dbBusTickets={mockBusTickets}
         isFollowing={isFollowing}
         toggleFollow={toggleFollow}
       />

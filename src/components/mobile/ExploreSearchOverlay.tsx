@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
-import { Search, ArrowLeft, MapPin, Star, Users, Calendar, Map as MapIcon } from "lucide-react";
+import { Search, ArrowLeft, MapPin, Star, Users, Calendar, Map as MapIcon, Bus, Repeat } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +12,8 @@ interface ExploreSearchOverlayProps {
   dbOrganizers: any[];
   dbEvents: any[];
   dbVenues: any[];
+  dbSubscriptions?: any[];
+  dbBusTickets?: any[];
   isFollowing: (id: string) => boolean;
   toggleFollow: (id: string) => void;
 }
@@ -24,6 +26,8 @@ export function ExploreSearchOverlay({
   dbOrganizers,
   dbEvents,
   dbVenues,
+  dbSubscriptions = [],
+  dbBusTickets = [],
   isFollowing,
   toggleFollow,
 }: ExploreSearchOverlayProps) {
@@ -67,6 +71,30 @@ export function ExploreSearchOverlay({
       )
       .slice(0, 5);
   }, [dbVenues, query]);
+
+  const filteredSubscriptions = useMemo(() => {
+    if (!query) return [];
+    return dbSubscriptions
+      .filter(
+        (s) =>
+          s.title?.toLowerCase().includes(query) ||
+          s.venue?.toLowerCase().includes(query) ||
+          s.category?.toLowerCase().includes(query),
+      )
+      .slice(0, 5);
+  }, [dbSubscriptions, query]);
+
+  const filteredBusTickets = useMemo(() => {
+    if (!query) return [];
+    return dbBusTickets
+      .filter(
+        (b) =>
+          b.title?.toLowerCase().includes(query) ||
+          b.operator?.toLowerCase().includes(query) ||
+          b.category?.toLowerCase().includes(query),
+      )
+      .slice(0, 5);
+  }, [dbBusTickets, query]);
 
   const [recentSearches, setRecentSearches] = React.useState<{ type: string; data: any }[]>(() => {
     try {
@@ -229,11 +257,90 @@ export function ExploreSearchOverlay({
         </Link>
       );
     }
+
+    if (type === "subscription") {
+      return (
+        <Link
+          key={`recent-${data.id}`}
+          to="/subscriptions"
+          onClick={() => !isRecent && addRecentSearch("subscription", data)}
+          className="flex items-center gap-3 group active:scale-95 transition-transform"
+        >
+          <img
+            src={data.cover}
+            alt={data.title}
+            className="w-16 h-12 rounded-xl object-cover shrink-0 border border-border/40"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+              {data.title}
+            </p>
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
+              <span className="capitalize text-amber-500 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded-sm">{data.category || "Subscription"}</span>
+              <span>•</span>
+              <span className="flex items-center gap-0.5">
+                <MapPin className="h-3 w-3" /> {data.venue}
+              </span>
+            </div>
+          </div>
+          {isRecent && (
+            <button
+              onClick={(e) => removeRecentSearch(e, data.id)}
+              className="p-2 text-muted-foreground hover:text-foreground"
+            >
+              ✕
+            </button>
+          )}
+        </Link>
+      );
+    }
+
+    if (type === "bus") {
+      return (
+        <Link
+          key={`recent-${data.id}`}
+          to="/buses/mobile"
+          onClick={() => !isRecent && addRecentSearch("bus", data)}
+          className="flex items-center gap-3 group active:scale-95 transition-transform"
+        >
+          <img
+            src={data.cover}
+            alt={data.title}
+            className="w-16 h-12 rounded-xl object-cover shrink-0 border border-border/40"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+              {data.title}
+            </p>
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
+              <span className="capitalize text-blue-500 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded-sm">Bus Route</span>
+              <span>•</span>
+              <span className="flex items-center gap-0.5">
+                {data.operator}
+              </span>
+            </div>
+          </div>
+          {isRecent && (
+            <button
+              onClick={(e) => removeRecentSearch(e, data.id)}
+              className="p-2 text-muted-foreground hover:text-foreground"
+            >
+              ✕
+            </button>
+          )}
+        </Link>
+      );
+    }
+
     return null;
   };
 
   const hasResults =
-    filteredOrganizers.length > 0 || filteredEvents.length > 0 || filteredVenues.length > 0;
+    filteredOrganizers.length > 0 || 
+    filteredEvents.length > 0 || 
+    filteredVenues.length > 0 || 
+    filteredSubscriptions.length > 0 || 
+    filteredBusTickets.length > 0;
 
   if (!isOpen) return null;
 
@@ -323,6 +430,30 @@ export function ExploreSearchOverlay({
                 </h3>
                 <div className="space-y-3">
                   {filteredVenues.map((venue) => renderItem("venue", venue))}
+                </div>
+              </section>
+            )}
+
+            {/* Subscriptions Section */}
+            {filteredSubscriptions.length > 0 && (
+              <section>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                  <Repeat className="h-3.5 w-3.5" /> Subscriptions & Memberships
+                </h3>
+                <div className="space-y-3">
+                  {filteredSubscriptions.map((sub) => renderItem("subscription", sub))}
+                </div>
+              </section>
+            )}
+
+            {/* Bus Tickets Section */}
+            {filteredBusTickets.length > 0 && (
+              <section>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                  <Bus className="h-3.5 w-3.5" /> Bus Routes
+                </h3>
+                <div className="space-y-3">
+                  {filteredBusTickets.map((bus) => renderItem("bus", bus))}
                 </div>
               </section>
             )}
