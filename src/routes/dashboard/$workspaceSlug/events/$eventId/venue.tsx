@@ -15,7 +15,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getEventById, updateEvent } from "@/api/events";
-import { getWorkspaceVenueProjects, assignVenueProjectToStop, saveVenueProject } from "@/api/venues";
+import {
+  getWorkspaceVenueProjects,
+  assignVenueProjectToStop,
+  saveVenueProject,
+} from "@/api/venues";
 import { getEventAttendees } from "@/api/attendees";
 import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
@@ -61,14 +65,21 @@ function VenueView() {
 
   const { data: workspaceVenueProjects, refetch: refetchVenueProjects } = useQuery({
     queryKey: ["workspace-venues", workspaceSlug],
-    queryFn: () => getWorkspaceVenueProjects({ data: { workspace_id: event?.workspace_id } } as any),
+    queryFn: () =>
+      getWorkspaceVenueProjects({ data: { workspace_id: event?.workspace_id } } as any),
     enabled: !!event?.workspace_id,
   });
 
   const assignMutation = useMutation({
-    mutationFn: async ({ venue_project_id, tour_stop_idx }: { venue_project_id: string, tour_stop_idx: number }) => {
+    mutationFn: async ({
+      venue_project_id,
+      tour_stop_idx,
+    }: {
+      venue_project_id: string;
+      tour_stop_idx: number;
+    }) => {
       return assignVenueProjectToStop({
-        data: { venue_project_id, event_id: eventId, tour_stop_idx }
+        data: { venue_project_id, event_id: eventId, tour_stop_idx },
       } as any);
     },
     onSuccess: () => {
@@ -77,7 +88,7 @@ function VenueView() {
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to assign layout");
-    }
+    },
   });
 
   const saveMappingMutation = useMutation({
@@ -97,7 +108,7 @@ function VenueView() {
             rx: updatedProject.boundary_rx,
           },
           sections: updatedProject.sections_data,
-        }
+        },
       } as any);
     },
     onSuccess: () => {
@@ -106,7 +117,7 @@ function VenueView() {
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to save mapping");
-    }
+    },
   });
 
   const saveMutation = useMutation({
@@ -197,13 +208,15 @@ function VenueView() {
         tourStops.map((stop: any, idx: number) => {
           const stopId = stop.id || idx;
           const assignedProject = workspaceVenueProjects?.find(
-            (v) => v.event_id === eventId && v.tour_stop_idx === idx
+            (v) => v.event_id === eventId && v.tour_stop_idx === idx,
           );
-          const templates = workspaceVenueProjects?.filter((v) => v.id !== assignedProject?.id) || [];
-          const stopBookedSeats = attendees
-            ?.filter((a: any) => a.custom_fields?.tour_stop_idx === idx)
-            .map((a: any) => a.custom_fields?.seat)
-            .filter(Boolean) || [];
+          const templates =
+            workspaceVenueProjects?.filter((v) => v.id !== assignedProject?.id) || [];
+          const stopBookedSeats =
+            attendees
+              ?.filter((a: any) => a.custom_fields?.tour_stop_idx === idx)
+              .map((a: any) => a.custom_fields?.seat)
+              .filter(Boolean) || [];
 
           return (
             <div
@@ -424,24 +437,27 @@ function VenueView() {
                       </div>
                     )}
                   </div>
-
-                  </div>
                 </div>
+              </div>
 
-                {/* Interactive Seating Layout (Full Width, 2-Column inner grid) */}
+              {/* Interactive Seating Layout (Full Width, 2-Column inner grid) */}
               <div className="mt-8 border-t border-border/50 pt-8 px-6 pb-6">
                 <h3 className="font-semibold flex items-center gap-2 mb-6 text-lg">
                   <Map className="h-6 w-6 text-primary" /> Interactive Seating Layout
                 </h3>
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Left Column: Live Occupancy Map */}
                   <div className="flex flex-col">
-                    {!assignedProject || !assignedProject.sections_data || assignedProject.sections_data.length === 0 ? (
+                    {!assignedProject ||
+                    !assignedProject.sections_data ||
+                    assignedProject.sections_data.length === 0 ? (
                       <div className="h-full min-h-[400px] border-2 border-dashed border-border/60 rounded-2xl flex flex-col items-center justify-center bg-secondary/10 p-6 text-center">
                         <Map className="h-10 w-10 text-muted-foreground/50 mb-3" />
                         <h4 className="font-medium text-muted-foreground">No Layout Assigned</h4>
-                        <p className="text-sm text-muted-foreground/70 mt-1">Assign a venue layout to view the live occupancy map here.</p>
+                        <p className="text-sm text-muted-foreground/70 mt-1">
+                          Assign a venue layout to view the live occupancy map here.
+                        </p>
                       </div>
                     ) : (
                       <div className="bg-secondary/10 rounded-2xl border border-border/50 h-full">
@@ -464,7 +480,8 @@ function VenueView() {
                     {!assignedProject ? (
                       <div className="space-y-4">
                         <p className="text-sm text-muted-foreground">
-                          Assign a venue layout to enable interactive seat selection for this tour stop.
+                          Assign a venue layout to enable interactive seat selection for this tour
+                          stop.
                         </p>
                         <div className="flex gap-2">
                           <select
@@ -472,14 +489,21 @@ function VenueView() {
                             onChange={(e) => {
                               const val = e.target.value;
                               if (val) {
-                                assignMutation.mutate({ venue_project_id: val, tour_stop_idx: idx });
+                                assignMutation.mutate({
+                                  venue_project_id: val,
+                                  tour_stop_idx: idx,
+                                });
                               }
                             }}
                             defaultValue=""
                           >
-                            <option value="" disabled>Select a layout template...</option>
-                            {templates.map(t => (
-                              <option key={t.id} value={t.id}>{t.name}</option>
+                            <option value="" disabled>
+                              Select a layout template...
+                            </option>
+                            {templates.map((t) => (
+                              <option key={t.id} value={t.id}>
+                                {t.name}
+                              </option>
                             ))}
                           </select>
                         </div>
@@ -492,16 +516,27 @@ function VenueView() {
                             <p className="text-xs text-muted-foreground">Assigned Layout</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" onClick={() => {
-                              refetchVenueProjects();
-                              toast.success("Synced latest layout data from designer.");
-                            }}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                refetchVenueProjects();
+                                toast.success("Synced latest layout data from designer.");
+                              }}
+                            >
                               <RefreshCw className="mr-2 h-4 w-4" />
                               Sync Layout
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => {
-                              window.open(`/dashboard/${workspaceSlug}/venue-designer/${assignedProject.id}`, '_blank');
-                            }}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                window.open(
+                                  `/dashboard/${workspaceSlug}/venue-designer/${assignedProject.id}`,
+                                  "_blank",
+                                );
+                              }}
+                            >
                               Edit Layout
                             </Button>
                           </div>
@@ -509,28 +544,54 @@ function VenueView() {
 
                         <div className="space-y-3 mt-4">
                           <h4 className="text-sm font-medium">Map Tickets to Sections</h4>
-                          {(!assignedProject.sections_data || assignedProject.sections_data.filter((s: any) => s.shape !== "pitch").length === 0) ? (
-                            <p className="text-sm text-muted-foreground italic">No mappable sections defined in this layout.</p>
+                          {!assignedProject.sections_data ||
+                          assignedProject.sections_data.filter((s: any) => s.shape !== "pitch")
+                            .length === 0 ? (
+                            <p className="text-sm text-muted-foreground italic">
+                              No mappable sections defined in this layout.
+                            </p>
                           ) : (
                             assignedProject.sections_data.map((section: any, sIdx: number) => {
                               if (section.shape === "pitch") return null;
                               return (
-                                <div key={section.id || sIdx} className="flex items-center justify-between gap-4 p-2 rounded-md hover:bg-secondary/20 border border-transparent hover:border-border/50 transition-colors">
-                                  <span className="text-sm font-medium flex-1">{section.name || 'Unnamed Section'}</span>
+                                <div
+                                  key={section.id || sIdx}
+                                  className="flex items-center justify-between gap-4 p-2 rounded-md hover:bg-secondary/20 border border-transparent hover:border-border/50 transition-colors"
+                                >
+                                  <span className="text-sm font-medium flex-1">
+                                    {section.name || "Unnamed Section"}
+                                  </span>
                                   <select
                                     className="flex h-9 w-[200px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     value={section.ticketId || ""}
                                     onChange={(e) => {
                                       const newSections = [...assignedProject.sections_data];
                                       newSections[sIdx] = { ...section, ticketId: e.target.value };
-                                      const updatedProject = { ...assignedProject, sections_data: newSections };
+                                      const updatedProject = {
+                                        ...assignedProject,
+                                        sections_data: newSections,
+                                      };
                                       saveMappingMutation.mutate(updatedProject);
                                     }}
                                   >
                                     <option value="">No Ticket Mapped</option>
-                                    {event.event_tickets?.filter((t: any) => !t.deleted && (tourStops.length > 1 ? t.tour_stop_idx === idx : true)).map((t: any) => (
-                                      <option key={t.id} value={t.id}>{t.type} - {t.cost ? formatCurrency(t.cost, activeWorkspace?.currency || "RWF") : 'Free'}</option>
-                                    ))}
+                                    {event.event_tickets
+                                      ?.filter(
+                                        (t: any) =>
+                                          !t.deleted &&
+                                          (tourStops.length > 1 ? t.tour_stop_idx === idx : true),
+                                      )
+                                      .map((t: any) => (
+                                        <option key={t.id} value={t.id}>
+                                          {t.type} -{" "}
+                                          {t.cost
+                                            ? formatCurrency(
+                                                t.cost,
+                                                activeWorkspace?.currency || "RWF",
+                                              )
+                                            : "Free"}
+                                        </option>
+                                      ))}
                                   </select>
                                 </div>
                               );

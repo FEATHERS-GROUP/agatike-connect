@@ -303,26 +303,33 @@ function VenueDesignerPage() {
 
         {/* Center Toolbar */}
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 bg-secondary/30 p-1 rounded-lg border border-border/60 shadow-sm">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className={`h-8 px-2.5 ${toolMode === "select" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
             onClick={() => setToolMode("select")}
           >
             <MousePointer2 className="h-4 w-4 mr-1.5" /> Select
           </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
-            onClick={() => addSection("rect", "reserved", undefined, undefined, undefined, { name: "Text", width: 150, height: 40, color: "transparent" })}
+            onClick={() =>
+              addSection("rect", "reserved", undefined, undefined, undefined, {
+                name: "Text",
+                width: 150,
+                height: 40,
+                color: "transparent",
+              })
+            }
           >
             <Type className="h-4 w-4 mr-1.5" /> Text
           </Button>
           <div className="w-px h-4 bg-border/60 mx-1"></div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className={`h-8 px-2.5 ${toolMode === "draw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
             onClick={() => {
               setToolMode("draw");
@@ -331,7 +338,11 @@ function VenueDesignerPage() {
           >
             <PenTool className="h-4 w-4 mr-1.5" /> Draw
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 px-2.5 text-muted-foreground hover:text-foreground">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
+          >
             <Share2 className="h-4 w-4 mr-1.5" /> Share
           </Button>
         </div>

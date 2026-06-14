@@ -1,5 +1,3 @@
-
-
 const QUERY = `
   query {
     __type(name: "event_attendees") {
@@ -29,7 +27,7 @@ async function main() {
     body: JSON.stringify({ query: QUERY }),
   });
   const data = await res.json();
-  console.log(data.data.__type.fields.map(f => `${f.name}: ${f.type.name || f.type.kind}`));
+  console.log(data.data.__type.fields.map((f) => `${f.name}: ${f.type.name || f.type.kind}`));
 }
 
 main().catch(console.error);

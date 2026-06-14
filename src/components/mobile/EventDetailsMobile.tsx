@@ -34,12 +34,7 @@ import { checkUserAttendance, getEventAttendees } from "@/api/attendees";
 import { getEventVenueProjects } from "@/api/venues";
 import { formatCurrency } from "@/lib/currency";
 import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 
@@ -119,33 +114,33 @@ export function EventDetailsMobile({
       ? ev.lineup
       : isMock
         ? [
-          { id: "1", name: "DJ Nala", role: "Main DJ", instagram: "djnala" },
-          { id: "2", name: "Burna Sound", role: "Guest Artist" },
-          { id: "3", name: "Amapiano Live", role: "Set", instagram: "amapianolive" },
-          { id: "4", name: "Surprise Guest", role: "Special Appearance" },
-        ]
+            { id: "1", name: "DJ Nala", role: "Main DJ", instagram: "djnala" },
+            { id: "2", name: "Burna Sound", role: "Guest Artist" },
+            { id: "3", name: "Amapiano Live", role: "Set", instagram: "amapianolive" },
+            { id: "4", name: "Surprise Guest", role: "Special Appearance" },
+          ]
         : [];
 
   const allTicketTiers = isMock
     ? ticketTiers
     : (ev.event_tickets?.length
-      ? ev.event_tickets
-      : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100, sold: 0 }]
-    ).map((t: any) => {
-      const sold = parseInt(t.sold) || 0;
-      const capacity = parseInt(t.remaining) || 0;
-      const ticketsLeft = Math.max(0, capacity - sold);
-      return {
-        id: t.id,
-        name: t.type,
-        price: parseFloat(t.cost) || 0,
-        perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
-        remaining: ticketsLeft,
-        sold,
-        sale_ends_at: t.sale_ends_at,
-        tour_stop_idx: t.tour_stop_idx || 0,
-      };
-    });
+        ? ev.event_tickets
+        : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100, sold: 0 }]
+      ).map((t: any) => {
+        const sold = parseInt(t.sold) || 0;
+        const capacity = parseInt(t.remaining) || 0;
+        const ticketsLeft = Math.max(0, capacity - sold);
+        return {
+          id: t.id,
+          name: t.type,
+          price: parseFloat(t.cost) || 0,
+          perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
+          remaining: ticketsLeft,
+          sold,
+          sale_ends_at: t.sale_ends_at,
+          tour_stop_idx: t.tour_stop_idx || 0,
+        };
+      });
 
   const activeTicketTiers = allTicketTiers.filter((t: any) => {
     // Filter by tour stop
@@ -161,11 +156,11 @@ export function EventDetailsMobile({
   const activeMerch = isMock
     ? merch
     : (ev.merchandises || []).map((m: any) => ({
-      id: m.id,
-      name: m.name,
-      price: m.price,
-      image: m.image_url || ev.cover,
-    }));
+        id: m.id,
+        name: m.name,
+        price: m.price,
+        image: m.image_url || ev.cover,
+      }));
 
   const [cart, setCart] = useState<Record<string, number>>({});
   const [selectedSeatsObj, setSelectedSeatsObj] = useState<any[]>([]);
@@ -216,7 +211,7 @@ export function EventDetailsMobile({
   });
 
   const currentVenueProject = eventVenueProjects?.find(
-    (p: any) => p.tour_stop_idx === selectedStopIdx
+    (p: any) => p.tour_stop_idx === selectedStopIdx,
   );
 
   const { data: rawAttendeesList = [] } = useQuery({
@@ -528,10 +523,10 @@ export function EventDetailsMobile({
                 search={
                   attendeeRecord
                     ? {
-                      attendeeId: attendeeRecord.id,
-                      name: attendeeRecord.names,
-                      email: attendeeRecord.email,
-                    }
+                        attendeeId: attendeeRecord.id,
+                        name: attendeeRecord.names,
+                        email: attendeeRecord.email,
+                      }
                     : undefined
                 }
               >
@@ -607,7 +602,9 @@ export function EventDetailsMobile({
       )}
 
       {/* Sticky Bottom Action & Collapsible Tickets Drawer */}
-      <div className={`fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-xl border-t border-border/50 z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)] transition-transform duration-300 ${isSeatModalOpen ? 'hidden' : ''}`}>
+      <div
+        className={`fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-xl border-t border-border/50 z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)] transition-transform duration-300 ${isSeatModalOpen ? "hidden" : ""}`}
+      >
         <div className="max-w-md mx-auto w-full">
           {/* Collapsible Header/Toggle */}
           <div
@@ -640,14 +637,19 @@ export function EventDetailsMobile({
                     <button
                       key={idx}
                       onClick={() => setSelectedStopIdx(idx)}
-                      className={`relative snap-start flex flex-col items-start min-w-[160px] p-3.5 rounded-2xl border transition-all duration-300 shrink-0 text-left ${isSelected
+                      className={`relative snap-start flex flex-col items-start min-w-[160px] p-3.5 rounded-2xl border transition-all duration-300 shrink-0 text-left ${
+                        isSelected
                           ? "bg-primary/10 border-primary shadow-[0_4px_20px_rgba(var(--primary),0.15)] ring-1 ring-primary/20"
                           : "bg-card border-border/40 hover:border-border hover:bg-secondary/30"
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center gap-2 mb-1 w-full">
-                        <MapPin className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
-                        <span className={`text-sm font-bold truncate ${isSelected ? 'text-foreground' : 'text-foreground/80'}`}>
+                        <MapPin
+                          className={`h-3.5 w-3.5 shrink-0 ${isSelected ? "text-primary" : "text-muted-foreground"}`}
+                        />
+                        <span
+                          className={`text-sm font-bold truncate ${isSelected ? "text-foreground" : "text-foreground/80"}`}
+                        >
                           {stop.venue || stop.city || `Stop ${idx + 1}`}
                         </span>
                       </div>
@@ -681,7 +683,9 @@ export function EventDetailsMobile({
                 const itemQty = cart[cartKey] || 0;
                 const isSelected = itemQty > 0;
 
-                const isMapped = currentVenueProject?.sections_data?.some((s: any) => s.ticketId === t.id);
+                const isMapped = currentVenueProject?.sections_data?.some(
+                  (s: any) => s.ticketId === t.id,
+                );
 
                 return (
                   <div
@@ -716,7 +720,10 @@ export function EventDetailsMobile({
                           </div>
                         )
                       ) : (
-                        <div className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm border border-border/20" onClick={e => e.stopPropagation()}>
+                        <div
+                          className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm border border-border/20"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <button
                             className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
                             onClick={() =>
@@ -750,7 +757,9 @@ export function EventDetailsMobile({
                 const cartKey = `${selectedStopIdx}_${t.id}`;
                 const itemQty = cart[cartKey] || 0;
                 const isSelected = itemQty > 0;
-                const isMapped = currentVenueProject?.sections_data?.some((s: any) => s.ticketId === t.id);
+                const isMapped = currentVenueProject?.sections_data?.some(
+                  (s: any) => s.ticketId === t.id,
+                );
 
                 return (
                   <div
@@ -785,7 +794,10 @@ export function EventDetailsMobile({
                           </div>
                         )
                       ) : (
-                        <div className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm border border-border/20" onClick={e => e.stopPropagation()}>
+                        <div
+                          className="flex items-center gap-3 bg-background rounded-full px-2 py-1 shadow-sm border border-border/20"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <button
                             className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
                             onClick={() =>
@@ -833,7 +845,10 @@ export function EventDetailsMobile({
               }}
               onClick={() => {
                 localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
-                localStorage.setItem(`event_checkout_seats_${ev.id}`, JSON.stringify(selectedSeatsObj));
+                localStorage.setItem(
+                  `event_checkout_seats_${ev.id}`,
+                  JSON.stringify(selectedSeatsObj),
+                );
               }}
             >
               <Link
@@ -851,10 +866,7 @@ export function EventDetailsMobile({
       {/* Seat Selection Modal */}
       {currentVenueProject && activeTicketIdForMap && (
         <>
-          <Drawer
-            open={isSeatModalOpen}
-            onOpenChange={setIsSeatModalOpen}
-          >
+          <Drawer open={isSeatModalOpen} onOpenChange={setIsSeatModalOpen}>
             <DrawerContent className="h-[95vh] flex flex-col bg-background/95 backdrop-blur-xl px-0 pb-safe border-border/40">
               {!isSectionActive && (
                 <DrawerHeader className="border-b border-border/40 flex items-center justify-between p-4 shrink-0 text-left">
@@ -870,10 +882,12 @@ export function EventDetailsMobile({
                 <VenueSeatSelector
                   venueProject={currentVenueProject}
                   eventTickets={activeTicketTiers}
-                  bookedSeats={rawAttendeesList
-                    ?.filter((a: any) => a.custom_fields?.tour_stop_idx === selectedStopIdx)
-                    .map((a: any) => a.custom_fields?.seat)
-                    .filter(Boolean) || []}
+                  bookedSeats={
+                    rawAttendeesList
+                      ?.filter((a: any) => a.custom_fields?.tour_stop_idx === selectedStopIdx)
+                      .map((a: any) => a.custom_fields?.seat)
+                      .filter(Boolean) || []
+                  }
                   selectedSeats={selectedSeatsObj.map((s) => s.code)}
                   onSeatSelect={handleSeatSelect}
                   onSeatDeselect={handleSeatDeselect}
@@ -891,17 +905,26 @@ export function EventDetailsMobile({
             <div className="fixed bottom-0 left-0 right-0 p-4 border-t border-border bg-background flex items-center justify-between shadow-[0_-8px_30px_rgb(0,0,0,0.12)] z-[60] pb-safe animate-in slide-in-from-bottom-full duration-300">
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-foreground">
-                  {selectedSeatsObj.length} Seat{selectedSeatsObj.length !== 1 ? 's' : ''} Selected
+                  {selectedSeatsObj.length} Seat{selectedSeatsObj.length !== 1 ? "s" : ""} Selected
                 </span>
                 <span className="text-xs text-muted-foreground max-w-[150px] truncate">
-                  {selectedSeatsObj.length > 0 ? selectedSeatsObj.map(s => s.seatName || s.code).join(", ") : "None"}
+                  {selectedSeatsObj.length > 0
+                    ? selectedSeatsObj.map((s) => s.seatName || s.code).join(", ")
+                    : "None"}
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <Button variant="outline" className="h-12 px-6 rounded-2xl text-base font-bold" onClick={() => setIsSeatModalOpen(false)}>
+                <Button
+                  variant="outline"
+                  className="h-12 px-6 rounded-2xl text-base font-bold"
+                  onClick={() => setIsSeatModalOpen(false)}
+                >
                   Cancle
                 </Button>
-                <Button className="h-12 px-8 rounded-2xl text-base font-bold" onClick={() => setIsSeatModalOpen(false)}>
+                <Button
+                  className="h-12 px-8 rounded-2xl text-base font-bold"
+                  onClick={() => setIsSeatModalOpen(false)}
+                >
                   Confirm
                 </Button>
               </div>

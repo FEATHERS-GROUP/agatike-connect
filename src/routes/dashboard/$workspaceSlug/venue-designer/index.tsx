@@ -370,16 +370,20 @@ function VenueDesignerIndex() {
             <DialogHeader>
               <DialogTitle>Delete Venue Map</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete this venue map? This action cannot be undone. 
-                If it is linked to an event, the event will automatically be unlinked.
+                Are you sure you want to delete this venue map? This action cannot be undone. If it
+                is linked to an event, the event will automatically be unlinked.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="mt-4">
-              <Button variant="outline" onClick={() => setProjectToDelete(null)} disabled={deleteMutation.isPending}>
+              <Button
+                variant="outline"
+                onClick={() => setProjectToDelete(null)}
+                disabled={deleteMutation.isPending}
+              >
                 Cancel
               </Button>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={() => {
                   if (projectToDelete) {
                     deleteMutation.mutate(projectToDelete);
@@ -387,7 +391,9 @@ function VenueDesignerIndex() {
                 }}
                 disabled={deleteMutation.isPending}
               >
-                {deleteMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {deleteMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
                 Delete
               </Button>
             </DialogFooter>
@@ -471,7 +477,7 @@ function VenueDesignerIndex() {
                     <div className="px-5 py-3 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors">
                       <span>Edit Map</span>
                       <div className="flex items-center gap-2">
-                        <button 
+                        <button
                           className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
                           onClick={(e) => {
                             e.preventDefault();

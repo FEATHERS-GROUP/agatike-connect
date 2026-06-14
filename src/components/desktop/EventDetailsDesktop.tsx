@@ -226,7 +226,7 @@ export function EventDetailsDesktop({
   });
 
   const currentVenueProject = eventVenueProjects?.find(
-    (p: any) => p.tour_stop_idx === selectedStopIdx
+    (p: any) => p.tour_stop_idx === selectedStopIdx,
   );
 
   const { data: rawAttendeesList = [] } = useQuery({
@@ -761,7 +761,9 @@ export function EventDetailsDesktop({
                 const itemQty = cart[cartKey] || 0;
                 const isSelected = itemQty > 0;
 
-                const isMapped = currentVenueProject?.sections_data?.some((s: any) => s.ticketId === t.id);
+                const isMapped = currentVenueProject?.sections_data?.some(
+                  (s: any) => s.ticketId === t.id,
+                );
 
                 return (
                   <div
@@ -779,7 +781,7 @@ export function EventDetailsDesktop({
                         <p className="font-medium">{t.name}</p>
                         <p className="font-semibold">{formatCurrency(t.price, currencyCode)}</p>
                       </div>
-                      
+
                       {isMapped ? (
                         itemQty > 0 && (
                           <div className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
@@ -787,7 +789,10 @@ export function EventDetailsDesktop({
                           </div>
                         )
                       ) : (
-                        <div className="flex items-center gap-2 bg-background rounded-full border p-1 shadow-sm" onClick={e => e.stopPropagation()}>
+                        <div
+                          className="flex items-center gap-2 bg-background rounded-full border p-1 shadow-sm"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Button
                             variant="ghost"
                             size="icon"
@@ -835,7 +840,10 @@ export function EventDetailsDesktop({
               }}
               onClick={() => {
                 localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
-                localStorage.setItem(`event_checkout_seats_${ev.id}`, JSON.stringify(selectedSeatsObj));
+                localStorage.setItem(
+                  `event_checkout_seats_${ev.id}`,
+                  JSON.stringify(selectedSeatsObj),
+                );
               }}
             >
               <Link to="/book/$eventId" params={{ eventId: ev.id }} className="w-full block">
@@ -868,7 +876,10 @@ export function EventDetailsDesktop({
               <div className="p-4 border-b flex items-center justify-between bg-card shrink-0">
                 <div>
                   <h2 className="text-xl font-bold">Select Seats</h2>
-                  <p className="text-sm text-muted-foreground">Pick your seats for {activeTicketTiers.find((t: any) => t.id === activeTicketIdForMap)?.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Pick your seats for{" "}
+                    {activeTicketTiers.find((t: any) => t.id === activeTicketIdForMap)?.name}
+                  </p>
                 </div>
               </div>
             )}
@@ -876,11 +887,13 @@ export function EventDetailsDesktop({
               <VenueSeatSelector
                 venueProject={currentVenueProject}
                 eventTickets={activeTicketTiers}
-                bookedSeats={rawAttendeesList
-                  ?.filter((a: any) => a.custom_fields?.tour_stop_idx === selectedStopIdx)
-                  .map((a: any) => a.custom_fields?.seat)
-                  .filter(Boolean) || []}
-                selectedSeats={selectedSeatsObj.map(s => s.code)}
+                bookedSeats={
+                  rawAttendeesList
+                    ?.filter((a: any) => a.custom_fields?.tour_stop_idx === selectedStopIdx)
+                    .map((a: any) => a.custom_fields?.seat)
+                    .filter(Boolean) || []
+                }
+                selectedSeats={selectedSeatsObj.map((s) => s.code)}
                 onSeatSelect={handleSeatSelect}
                 onSeatDeselect={handleSeatDeselect}
                 maxSelectable={10}
@@ -894,17 +907,22 @@ export function EventDetailsDesktop({
               <div className="p-4 border-t flex items-center justify-between bg-background shrink-0">
                 <div className="flex flex-col">
                   <span className="text-base font-bold text-foreground">
-                  {selectedSeatsObj.length} Seat{selectedSeatsObj.length !== 1 ? 's' : ''} Selected
-                </span>
-                <span className="text-sm text-muted-foreground max-w-[300px] truncate">
-                  {selectedSeatsObj.length > 0 ? selectedSeatsObj.map(s => s.seatName || s.code).join(", ") : "None"}
-                </span>
+                    {selectedSeatsObj.length} Seat{selectedSeatsObj.length !== 1 ? "s" : ""}{" "}
+                    Selected
+                  </span>
+                  <span className="text-sm text-muted-foreground max-w-[300px] truncate">
+                    {selectedSeatsObj.length > 0
+                      ? selectedSeatsObj.map((s) => s.seatName || s.code).join(", ")
+                      : "None"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button variant="outline" onClick={() => setIsSeatModalOpen(false)}>
+                    Back
+                  </Button>
+                  <Button onClick={() => setIsSeatModalOpen(false)}>Confirm Selection</Button>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Button variant="outline" onClick={() => setIsSeatModalOpen(false)}>Back</Button>
-                <Button onClick={() => setIsSeatModalOpen(false)}>Confirm Selection</Button>
-              </div>
-            </div>
             )}
           </div>
         </div>

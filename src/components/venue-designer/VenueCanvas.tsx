@@ -117,7 +117,14 @@ export function VenueCanvas({
   canvasBg: string;
   removeSection: (id: string) => void;
   duplicateSection: (id: string) => void;
-  addSection: (shape: any, type?: any, customPoints?: any, customPathData?: any, pitchType?: any, config?: any) => void;
+  addSection: (
+    shape: any,
+    type?: any,
+    customPoints?: any,
+    customPathData?: any,
+    pitchType?: any,
+    config?: any,
+  ) => void;
   toolMode: "select" | "draw" | "text";
   setToolMode: (m: "select" | "draw" | "text") => void;
 }) {
@@ -130,7 +137,11 @@ export function VenueCanvas({
   const [rotatingSectionId, setRotatingSectionId] = useState<string | null>(null);
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const [initialSectionPos, setInitialSectionPos] = useState({ x: 0, y: 0 });
-  const [initialSectionSize, setInitialSectionSize] = useState<{ w: number; h: number; points?: string }>({ w: 0, h: 0 });
+  const [initialSectionSize, setInitialSectionSize] = useState<{
+    w: number;
+    h: number;
+    points?: string;
+  }>({ w: 0, h: 0 });
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -177,8 +188,11 @@ export function VenueCanvas({
       return;
     }
 
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    drawingPoints.forEach(p => {
+    let minX = Infinity,
+      maxX = -Infinity,
+      minY = Infinity,
+      maxY = -Infinity;
+    drawingPoints.forEach((p) => {
       if (p.x < minX) minX = p.x;
       if (p.x > maxX) maxX = p.x;
       if (p.y < minY) minY = p.y;
@@ -190,10 +204,15 @@ export function VenueCanvas({
     const height = Math.max(20, maxY - minY);
 
     const normalizedPoints = drawingPoints
-      .map(p => `${Math.round(p.x - cx)},${Math.round(p.y - cy)}`)
+      .map((p) => `${Math.round(p.x - cx)},${Math.round(p.y - cy)}`)
       .join(" ");
 
-    addSection("polygon", "reserved", normalizedPoints, undefined, undefined, { x: cx, y: cy, width, height });
+    addSection("polygon", "reserved", normalizedPoints, undefined, undefined, {
+      x: cx,
+      y: cy,
+      width,
+      height,
+    });
 
     setDrawingPoints([]);
     setToolMode("select");
@@ -310,7 +329,11 @@ export function VenueCanvas({
     const coords = getSvgCoordinates(e as any);
     setResizingSectionId(section.id);
     setDragStartPos(coords);
-    setInitialSectionSize({ w: section.width || 100, h: section.height || 50, points: section.points });
+    setInitialSectionSize({
+      w: section.width || 100,
+      h: section.height || 50,
+      points: section.points,
+    });
 
     (e.target as Element).setPointerCapture(e.pointerId);
   };
@@ -330,7 +353,7 @@ export function VenueCanvas({
       if (isPanning) {
         const dx = e.clientX - lastPanPos.x;
         const dy = e.clientY - lastPanPos.y;
-        setPan(p => ({ x: p.x + dx, y: p.y + dy }));
+        setPan((p) => ({ x: p.x + dx, y: p.y + dy }));
         setLastPanPos({ x: e.clientX, y: e.clientY });
         return;
       }
@@ -342,15 +365,15 @@ export function VenueCanvas({
 
       if (rotatingSectionId) {
         const coords = getSvgCoordinates(e);
-        const section = sections.find(s => s.id === rotatingSectionId);
+        const section = sections.find((s) => s.id === rotatingSectionId);
         if (!section) return;
 
         const dx = coords.x - section.x;
         const dy = coords.y - section.y;
-        
+
         let angle = Math.atan2(dy, dx) * (180 / Math.PI);
         let rotation = angle + 90;
-        
+
         // Snap to 5 degrees for cleaner UI
         rotation = Math.round(rotation / 5) * 5;
 
@@ -363,7 +386,7 @@ export function VenueCanvas({
         const dx = coords.x - dragStartPos.x;
         const dy = coords.y - dragStartPos.y;
 
-        const section = sections.find(s => s.id === resizingSectionId);
+        const section = sections.find((s) => s.id === resizingSectionId);
         if (!section) return;
 
         const newW = Math.max(20, Math.round((initialSectionSize.w + dx * 2) / 10) * 10);
@@ -374,14 +397,14 @@ export function VenueCanvas({
           const ratioY = newH / (initialSectionSize.h || 1);
           const newPoints = initialSectionSize.points
             .split(" ")
-            .map(pt => {
+            .map((pt) => {
               if (!pt.trim()) return "";
               const [px, py] = pt.split(",").map(Number);
               return `${Math.round(px * ratioX)},${Math.round(py * ratioY)}`;
             })
             .filter(Boolean)
             .join(" ");
-          
+
           updateSection(resizingSectionId, { width: newW, height: newH, points: newPoints });
         } else {
           updateSection(resizingSectionId, { width: newW, height: newH });
@@ -401,14 +424,23 @@ export function VenueCanvas({
 
       updateSection(draggingSectionId, { x: newX, y: newY });
     },
-    [toolMode, draggingSectionId, resizingSectionId, dragStartPos, initialSectionPos, initialSectionSize, updateSection, zoom],
+    [
+      toolMode,
+      draggingSectionId,
+      resizingSectionId,
+      dragStartPos,
+      initialSectionPos,
+      initialSectionSize,
+      updateSection,
+      zoom,
+    ],
   );
 
   const handlePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
-      if (isPanning) {
-        setIsPanning(false);
-        return;
-      }
+    if (isPanning) {
+      setIsPanning(false);
+      return;
+    }
     if (draggingSectionId) {
       setDraggingSectionId(null);
       try {
@@ -437,7 +469,7 @@ export function VenueCanvas({
       <svg
         ref={svgRef}
         viewBox="-560 -480 1120 960"
-        className={`w-full h-full select-none touch-none ${isSpacePressed || isPanning ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : toolMode === 'draw' ? 'cursor-crosshair' : ''}`}
+        className={`w-full h-full select-none touch-none ${isSpacePressed || isPanning ? (isPanning ? "cursor-grabbing" : "cursor-grab") : toolMode === "draw" ? "cursor-crosshair" : ""}`}
         preserveAspectRatio="xMidYMid meet"
         onContextMenu={(e) => {
           if (toolMode === "draw") {
@@ -446,7 +478,8 @@ export function VenueCanvas({
           }
         }}
         onPointerDown={(e) => {
-          if (isSpacePressed || e.button === 1) { // Space + Drag or Middle Click
+          if (isSpacePressed || e.button === 1) {
+            // Space + Drag or Middle Click
             setIsPanning(true);
             setLastPanPos({ x: e.clientX, y: e.clientY });
             return;
@@ -454,7 +487,7 @@ export function VenueCanvas({
           if (toolMode === "draw") {
             if (e.button === 2) return; // ignore right click for adding points
             const coords = getSvgCoordinates(e);
-            setDrawingPoints(prev => [...prev, coords]);
+            setDrawingPoints((prev) => [...prev, coords]);
           } else {
             setActiveSection(null);
           }
@@ -468,7 +501,7 @@ export function VenueCanvas({
           {toolMode === "draw" && drawingPoints.length > 0 && (
             <g>
               <path
-                d={`M ${drawingPoints.map(p => `${p.x},${p.y}`).join(" L ")} ${currentMousePos ? `L ${currentMousePos.x},${currentMousePos.y}` : ""}`}
+                d={`M ${drawingPoints.map((p) => `${p.x},${p.y}`).join(" L ")} ${currentMousePos ? `L ${currentMousePos.x},${currentMousePos.y}` : ""}`}
                 fill="none"
                 stroke="#0ea5e9"
                 strokeWidth="2"
@@ -496,217 +529,232 @@ export function VenueCanvas({
           )}
 
           {/* Arena Outer Boundary Wall */}
-        {template.boundaryWidth && template.boundaryHeight && (
-          <>
-            {/* Outer shadow/glow */}
-            <path
-              d={getBoundaryPath(
-                template.boundaryShape || "rect",
-                template.boundaryWidth + 8,
-                template.boundaryHeight + 8,
-                (template.boundaryRx || 60) + 4,
-              )}
-              fill="none"
-              stroke="rgba(100,120,150,0.15)"
-              strokeWidth="12"
-            />
-            {/* Main boundary wall */}
-            <path
-              d={getBoundaryPath(
-                template.boundaryShape || "rect",
-                template.boundaryWidth,
-                template.boundaryHeight,
-                template.boundaryRx || 60,
-              )}
-              fill="rgba(255,255,255,0.02)"
-              stroke="rgba(150,170,200,0.5)"
-              strokeWidth="3"
-            />
-          </>
-        )}
+          {template.boundaryWidth && template.boundaryHeight && (
+            <>
+              {/* Outer shadow/glow */}
+              <path
+                d={getBoundaryPath(
+                  template.boundaryShape || "rect",
+                  template.boundaryWidth + 8,
+                  template.boundaryHeight + 8,
+                  (template.boundaryRx || 60) + 4,
+                )}
+                fill="none"
+                stroke="rgba(100,120,150,0.15)"
+                strokeWidth="12"
+              />
+              {/* Main boundary wall */}
+              <path
+                d={getBoundaryPath(
+                  template.boundaryShape || "rect",
+                  template.boundaryWidth,
+                  template.boundaryHeight,
+                  template.boundaryRx || 60,
+                )}
+                fill="rgba(255,255,255,0.02)"
+                stroke="rgba(150,170,200,0.5)"
+                strokeWidth="3"
+              />
+            </>
+          )}
 
-        {/* Background Stage Fallback removed per user request */}
+          {/* Background Stage Fallback removed per user request */}
 
-        {/* Sections */}
-        {sections.map((sec) => {
-          if (sec.visible === false) return null;
-          const isActive = activeSection === sec.id;
-          const isDragging = draggingSectionId === sec.id;
+          {/* Sections */}
+          {sections.map((sec) => {
+            if (sec.visible === false) return null;
+            const isActive = activeSection === sec.id;
+            const isDragging = draggingSectionId === sec.id;
 
-          // Generate Path Data
-          let d = "";
-          let textX = sec.x;
-          let textY = sec.y;
+            // Generate Path Data
+            let d = "";
+            let textX = sec.x;
+            let textY = sec.y;
 
-          if (sec.shape === "arc") {
-            const ir = sec.innerRadius || 100;
-            const or = sec.outerRadius || 150;
-            const sa = sec.startAngle || 0;
-            const ea = sec.endAngle || 90;
-            d = describeArc(0, 0, ir, or, sa, ea); // Centered at 0,0 for translation
+            if (sec.shape === "arc") {
+              const ir = sec.innerRadius || 100;
+              const or = sec.outerRadius || 150;
+              const sa = sec.startAngle || 0;
+              const ea = sec.endAngle || 90;
+              d = describeArc(0, 0, ir, or, sa, ea); // Centered at 0,0 for translation
 
-            const midAngle = sa + (ea - sa) / 2;
-            const midRadius = ir + (or - ir) / 2;
-            const pos = polarToCartesian(0, 0, midRadius, midAngle);
-            textX = pos.x;
-            textY = pos.y;
-          } else if (sec.shape === "polygon") {
-            const pts = (sec.points || "").trim().split(/\s+/);
-            if (pts.length > 0) {
-              d =
-                `M ${pts[0].replace(",", " ")} ` +
-                pts
-                  .slice(1)
-                  .map((p) => `L ${p.replace(",", " ")}`)
-                  .join(" ") +
-                " Z";
+              const midAngle = sa + (ea - sa) / 2;
+              const midRadius = ir + (or - ir) / 2;
+              const pos = polarToCartesian(0, 0, midRadius, midAngle);
+              textX = pos.x;
+              textY = pos.y;
+            } else if (sec.shape === "polygon") {
+              const pts = (sec.points || "").trim().split(/\s+/);
+              if (pts.length > 0) {
+                d =
+                  `M ${pts[0].replace(",", " ")} ` +
+                  pts
+                    .slice(1)
+                    .map((p) => `L ${p.replace(",", " ")}`)
+                    .join(" ") +
+                  " Z";
+              }
+              textX = 0;
+              textY = 0;
+            } else if (sec.shape === "path") {
+              d = sec.pathData || "";
+              textX = 0;
+              textY = 0;
+            } else {
+              const w = sec.width || 100;
+              const h = sec.height || 50;
+              const hw = w / 2;
+              const hh = h / 2;
+              // Rect centered at 0,0 (will be translated later)
+              d = `M ${-hw} ${-hh} L ${hw} ${-hh} L ${hw} ${hh} L ${-hw} ${hh} Z`;
+              // Text remains at 0,0 inside the group
+              textX = 0;
+              textY = 0;
             }
-            textX = 0;
-            textY = 0;
-          } else if (sec.shape === "path") {
-            d = sec.pathData || "";
-            textX = 0;
-            textY = 0;
-          } else {
-            const w = sec.width || 100;
-            const h = sec.height || 50;
-            const hw = w / 2;
-            const hh = h / 2;
-            // Rect centered at 0,0 (will be translated later)
-            d = `M ${-hw} ${-hh} L ${hw} ${-hh} L ${hw} ${hh} L ${-hw} ${hh} Z`;
-            // Text remains at 0,0 inside the group
-            textX = 0;
-            textY = 0;
-          }
 
-          return (
-            <g
-              key={sec.id}
-              id={sec.id}
-              className="venue-section"
-              transform={`translate(${sec.x}, ${sec.y}) rotate(${sec.rotation || 0}) scale(${sec.scaleX ?? 1}, ${sec.scaleY ?? 1})`}
-              onPointerDown={(e) => handlePointerDown(e, sec)}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setActiveSection(sec.id);
-                setContextMenu({ x: e.clientX, y: e.clientY, sectionId: sec.id });
-              }}
-              style={{
-                transformOrigin: `0px 0px`,
-                cursor: isDragging ? "grabbing" : "grab",
-              }}
-            >
-              {/* Canva-style Selection Box & Resize Handles */}
-              {isActive && (
-                <g pointerEvents="none">
+            return (
+              <g
+                key={sec.id}
+                id={sec.id}
+                className="venue-section"
+                transform={`translate(${sec.x}, ${sec.y}) rotate(${sec.rotation || 0}) scale(${sec.scaleX ?? 1}, ${sec.scaleY ?? 1})`}
+                onPointerDown={(e) => handlePointerDown(e, sec)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActiveSection(sec.id);
+                  setContextMenu({ x: e.clientX, y: e.clientY, sectionId: sec.id });
+                }}
+                style={{
+                  transformOrigin: `0px 0px`,
+                  cursor: isDragging ? "grabbing" : "grab",
+                }}
+              >
+                {/* Canva-style Selection Box & Resize Handles */}
+                {isActive && (
+                  <g pointerEvents="none">
+                    <path
+                      d={d}
+                      fill="none"
+                      stroke="#3b82f6"
+                      strokeWidth="4"
+                      strokeDasharray="8 6"
+                      className="animate-pulse"
+                    />
+                    {/* Rotation Handle */}
+                    {(() => {
+                      let topY = -50;
+                      if (
+                        sec.shape === "rect" ||
+                        sec.shape === "pitch" ||
+                        sec.shape === "polygon"
+                      ) {
+                        topY = -((sec.height || 100) / 2);
+                      } else if (sec.shape === "arc") {
+                        topY = -(sec.outerRadius || 150);
+                      }
+                      return (
+                        <g>
+                          <line
+                            x1="0"
+                            y1={topY - 5}
+                            x2="0"
+                            y2={topY - 30}
+                            stroke="#3b82f6"
+                            strokeWidth="2"
+                          />
+                          <circle
+                            cx="0"
+                            cy={topY - 30}
+                            r="6"
+                            fill="#ffffff"
+                            stroke="#3b82f6"
+                            strokeWidth="3"
+                            style={{ cursor: "grab", pointerEvents: "all" }}
+                            onPointerDown={(e) => handleRotatePointerDown(e, sec)}
+                          />
+                        </g>
+                      );
+                    })()}
+                    {/* Resize handle for rects/pitches/polygons */}
+                    {(!sec.shape ||
+                      sec.shape === "rect" ||
+                      sec.shape === "pitch" ||
+                      sec.shape === "polygon") && (
+                      <circle
+                        cx={(sec.width || 100) / 2}
+                        cy={(sec.height || 50) / 2}
+                        r="8"
+                        fill="#ffffff"
+                        stroke="#3b82f6"
+                        strokeWidth="3"
+                        style={{ cursor: "nwse-resize", pointerEvents: "all" }}
+                        onPointerDown={(e) => handleResizePointerDown(e, sec)}
+                      />
+                    )}
+                  </g>
+                )}
+
+                {/* Main Shape */}
+                {sec.shape === "pitch" ? (
+                  <PitchRenderer type={sec.pitchType || "none"} />
+                ) : (
                   <path
                     d={d}
-                    fill="none"
-                    stroke="#3b82f6"
-                    strokeWidth="4"
-                    strokeDasharray="8 6"
-                    className="animate-pulse"
+                    fill={sec.color}
+                    stroke={isActive ? "#ffffff" : "rgba(255,255,255,0.15)"}
+                    strokeWidth={isActive ? "3" : "1"}
+                    className={`transition-all duration-100 ${isActive ? "brightness-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" : "hover:brightness-125 opacity-90"}`}
                   />
-                  {/* Rotation Handle */}
-                  {(() => {
-                    let topY = -50;
-                    if (sec.shape === "rect" || sec.shape === "pitch" || sec.shape === "polygon") {
-                      topY = -((sec.height || 100) / 2);
-                    } else if (sec.shape === "arc") {
-                      topY = -(sec.outerRadius || 150);
-                    }
-                    return (
-                      <g>
-                        <line 
-                          x1="0" 
-                          y1={topY - 5} 
-                          x2="0" 
-                          y2={topY - 30} 
-                          stroke="#3b82f6" 
-                          strokeWidth="2" 
-                        />
-                        <circle
-                          cx="0"
-                          cy={topY - 30}
-                          r="6"
-                          fill="#ffffff"
-                          stroke="#3b82f6"
-                          strokeWidth="3"
-                          style={{ cursor: "grab", pointerEvents: "all" }}
-                          onPointerDown={(e) => handleRotatePointerDown(e, sec)}
-                        />
-                      </g>
-                    );
-                  })()}
-                  {/* Resize handle for rects/pitches/polygons */}
-                  {(!sec.shape || sec.shape === "rect" || sec.shape === "pitch" || sec.shape === "polygon") && (
-                    <circle
-                      cx={(sec.width || 100) / 2}
-                      cy={(sec.height || 50) / 2}
-                      r="8"
-                      fill="#ffffff"
-                      stroke="#3b82f6"
-                      strokeWidth="3"
-                      style={{ cursor: "nwse-resize", pointerEvents: "all" }}
-                      onPointerDown={(e) => handleResizePointerDown(e, sec)}
-                    />
-                  )}
-                </g>
-              )}
+                )}
 
-              {/* Main Shape */}
-              {sec.shape === "pitch" ? (
-                <PitchRenderer type={sec.pitchType || "none"} />
-              ) : (
-                <path
-                  d={d}
-                  fill={sec.color}
-                  stroke={isActive ? "#ffffff" : "rgba(255,255,255,0.15)"}
-                  strokeWidth={isActive ? "3" : "1"}
-                  className={`transition-all duration-100 ${isActive ? "brightness-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" : "hover:brightness-125 opacity-90"}`}
-                />
-              )}
-
-              {/* Section Name Text */}
-              <text
-                x={textX}
-                y={textY}
-                fill="#ffffff"
-                fontSize="12"
-                fontWeight="bold"
-                textAnchor="middle"
-                alignmentBaseline="middle"
-                pointerEvents="none"
-                className="drop-shadow-md"
-                transform={
-                  sec.shape === "arc"
-                    ? (() => {
-                        const midAngle =
-                          (sec.startAngle || 0) +
-                          ((sec.endAngle || 90) - (sec.startAngle || 0)) / 2;
-                        let rotateAngle = midAngle;
-                        // Flip text if it's upside down (bottom half of circle)
-                        if (rotateAngle > 90 && rotateAngle < 270) {
-                          rotateAngle += 180;
-                        }
-                        return `rotate(${rotateAngle}, ${textX}, ${textY})`;
-                      })()
-                    : ""
-                }
-              >
-                {sec.name}
-              </text>
-            </g>
-          );
-        })}
+                {/* Section Name Text */}
+                <text
+                  x={textX}
+                  y={textY}
+                  fill="#ffffff"
+                  fontSize="12"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  pointerEvents="none"
+                  className="drop-shadow-md"
+                  transform={
+                    sec.shape === "arc"
+                      ? (() => {
+                          const midAngle =
+                            (sec.startAngle || 0) +
+                            ((sec.endAngle || 90) - (sec.startAngle || 0)) / 2;
+                          let rotateAngle = midAngle;
+                          // Flip text if it's upside down (bottom half of circle)
+                          if (rotateAngle > 90 && rotateAngle < 270) {
+                            rotateAngle += 180;
+                          }
+                          return `rotate(${rotateAngle}, ${textX}, ${textY})`;
+                        })()
+                      : ""
+                  }
+                >
+                  {sec.name}
+                </text>
+              </g>
+            );
+          })}
         </g>
       </svg>
 
       {/* Drawing Mode Hint */}
       {toolMode === "draw" && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg text-sm font-medium pointer-events-none z-50">
-          Click to add points. <span className="font-bold border border-primary-foreground/30 px-1 rounded mx-1">Right-click</span> or <span className="font-bold border border-primary-foreground/30 px-1 rounded mx-1">Enter</span> to finish.
+          Click to add points.{" "}
+          <span className="font-bold border border-primary-foreground/30 px-1 rounded mx-1">
+            Right-click
+          </span>{" "}
+          or{" "}
+          <span className="font-bold border border-primary-foreground/30 px-1 rounded mx-1">
+            Enter
+          </span>{" "}
+          to finish.
         </div>
       )}
 

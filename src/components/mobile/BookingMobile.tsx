@@ -85,7 +85,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   // Fetch venue projects and booked attendees
   const { data: venueProjects } = useQuery({
     queryKey: ["workspace-venues", event?.workspace_id],
-    queryFn: () => getWorkspaceVenueProjects({ data: { workspace_id: event?.workspace_id! } } as any),
+    queryFn: () =>
+      getWorkspaceVenueProjects({ data: { workspace_id: event?.workspace_id! } } as any),
     enabled: !!event?.workspace_id,
   });
 
@@ -119,15 +120,15 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
     const availableSeats = [...selectedSeats];
     const initialAttendees: any[] = [];
-    
+
     Object.entries(cart).forEach(([cartKey, qty]) => {
       if (qty <= 0) return;
       const [stopIdxStr, tierId] = cartKey.split("_");
       const stopIdx = parseInt(stopIdxStr);
-      
+
       for (let i = 0; i < qty; i++) {
         // Assign pre-selected seat for this tier if available
-        const seatIdx = availableSeats.findIndex(s => s.ticketId === tierId);
+        const seatIdx = availableSeats.findIndex((s) => s.ticketId === tierId);
         let assignedSeat = undefined;
         let assignedSeatName = undefined;
         let assignedSectionName = undefined;
@@ -204,20 +205,24 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   }, [cart]);
 
   const stopsWithVenues = useMemo(() => {
-    return activeStopIndices.map((stopIdx) => {
-      const project = venueProjects?.find(
-        (v) => v.event_id === event?.id && v.tour_stop_idx === stopIdx
-      );
-      return { stopIdx, project };
-    }).filter((s) => s.project);
+    return activeStopIndices
+      .map((stopIdx) => {
+        const project = venueProjects?.find(
+          (v) => v.event_id === event?.id && v.tour_stop_idx === stopIdx,
+        );
+        return { stopIdx, project };
+      })
+      .filter((s) => s.project);
   }, [activeStopIndices, venueProjects, event?.id]);
 
   const handleSeatSelect = (stopIdx: number, seat: { code: string; ticketId: string }) => {
     const attendeeIdx = attendees.findIndex(
-      (a) => a.stopIdx === stopIdx && a.tierId === seat.ticketId && !a.seat
+      (a) => a.stopIdx === stopIdx && a.tierId === seat.ticketId && !a.seat,
     );
     if (attendeeIdx === -1) {
-      toast.error(`All ${getTierDetails(seat.ticketId)?.type || 'selected'} tickets in your cart already have seats assigned.`);
+      toast.error(
+        `All ${getTierDetails(seat.ticketId)?.type || "selected"} tickets in your cart already have seats assigned.`,
+      );
       return;
     }
     const newAttendees = [...attendees];
@@ -236,7 +241,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
   const formatSeatDisplay = (raw: any, sectionName?: string) => {
     if (!raw) return "";
-    if (typeof raw !== 'string') raw = String(raw);
+    if (typeof raw !== "string") raw = String(raw);
     let str = raw.trim();
     if (str.includes("-R") && str.includes("-C")) {
       const match = str.match(/-R(\d+)-C(\d+)/);
@@ -260,7 +265,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     attendees.every((a) => {
       const projectForStop = stopsWithVenues.find((s) => s.stopIdx === a.stopIdx)?.project;
       const isSeatRequired = projectForStop?.sections_data?.some(
-        (s: any) => s.ticketId === a.tierId
+        (s: any) => s.ticketId === a.tierId,
       );
       return !isSeatRequired || !!a.seat;
     });
@@ -295,12 +300,14 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           ticket_type: tier ? tier.type : "General Admission",
           type: "Booking",
           payment_method: paymentMethod,
-          custom_fields: { 
-            country: sourceAttendee.country, 
-            tour_stop_idx: a.stopIdx, 
+          custom_fields: {
+            country: sourceAttendee.country,
+            tour_stop_idx: a.stopIdx,
             seat: a.seat,
-            seat_display: a.seat ? formatSeatDisplay(a.seatName || a.seat, a.sectionName) : undefined,
-            name: `${sourceAttendee.firstName} ${sourceAttendee.lastName}`.trim()
+            seat_display: a.seat
+              ? formatSeatDisplay(a.seatName || a.seat, a.sectionName)
+              : undefined,
+            name: `${sourceAttendee.firstName} ${sourceAttendee.lastName}`.trim(),
           },
         };
       });
@@ -572,13 +579,23 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               const tier = getTierDetails(attendee.tierId);
               const stop = getStopDetails(attendee.stopIdx);
 
-              const projectForStop = stopsWithVenues.find((s) => s.stopIdx === attendee.stopIdx)?.project;
-              const isSeatRequired = projectForStop?.sections_data?.some((s: any) => s.ticketId === attendee.tierId);
+              const projectForStop = stopsWithVenues.find(
+                (s) => s.stopIdx === attendee.stopIdx,
+              )?.project;
+              const isSeatRequired = projectForStop?.sections_data?.some(
+                (s: any) => s.ticketId === attendee.tierId,
+              );
 
               // Calculate assigned seats to show
-              const seatsList = assignMode === "me" 
-                ? attendees.filter(a => a.tierId === attendee.tierId && a.stopIdx === attendee.stopIdx).map(a => formatSeatDisplay(a.seatName || a.seat, a.sectionName)).filter(Boolean)
-                : [formatSeatDisplay(attendee.seatName || attendee.seat, attendee.sectionName)].filter(Boolean);
+              const seatsList =
+                assignMode === "me"
+                  ? attendees
+                      .filter((a) => a.tierId === attendee.tierId && a.stopIdx === attendee.stopIdx)
+                      .map((a) => formatSeatDisplay(a.seatName || a.seat, a.sectionName))
+                      .filter(Boolean)
+                  : [
+                      formatSeatDisplay(attendee.seatName || attendee.seat, attendee.sectionName),
+                    ].filter(Boolean);
 
               return (
                 <div
@@ -608,11 +625,14 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                     {isSeatRequired && seatsList.length > 0 && (
                       <div className="flex flex-col items-end">
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">
-                          Assigned Seat{seatsList.length > 1 ? 's' : ''}
+                          Assigned Seat{seatsList.length > 1 ? "s" : ""}
                         </span>
                         <div className="flex gap-1 flex-wrap justify-end">
                           {seatsList.map((sName, sIdx) => (
-                            <span key={sIdx} className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-xs font-bold">
+                            <span
+                              key={sIdx}
+                              className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-xs font-bold"
+                            >
                               {sName}
                             </span>
                           ))}
@@ -756,7 +776,14 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   subtitle={event.venue || ""}
                   date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
                   time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
-                  seat={ticket.attendee.seat ? formatSeatDisplay(ticket.attendee.seatName || ticket.attendee.seat, ticket.attendee.sectionName) : `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()}
+                  seat={
+                    ticket.attendee.seat
+                      ? formatSeatDisplay(
+                          ticket.attendee.seatName || ticket.attendee.seat,
+                          ticket.attendee.sectionName,
+                        )
+                      : `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()
+                  }
                   price={
                     getTierDetails(ticket.attendee.tierId)?.cost?.toString() ||
                     getTierDetails(ticket.attendee.tierId)?.price?.toString() ||

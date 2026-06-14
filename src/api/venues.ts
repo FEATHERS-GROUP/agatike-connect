@@ -216,11 +216,13 @@ const GET_VENUE_PROJECT = `
 
 export const assignVenueProjectToStop = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { venue_project_id, event_id, tour_stop_idx } = ctx.data as any;
-  
+
   // 1. Fetch the source project
-  const projectRes = await hasuraRequest<{ venue_projects_by_pk: any }>(GET_VENUE_PROJECT, { id: venue_project_id });
+  const projectRes = await hasuraRequest<{ venue_projects_by_pk: any }>(GET_VENUE_PROJECT, {
+    id: venue_project_id,
+  });
   const project = projectRes.venue_projects_by_pk;
-  
+
   if (!project) throw new Error("Venue project not found");
 
   // If already exactly assigned here, do nothing
@@ -229,7 +231,8 @@ export const assignVenueProjectToStop = createServerFn({ method: "POST" }).handl
   }
 
   // 2. Delete any existing assigned project for this event/stop (but keep the one we are assigning if it belongs here)
-  await hasuraRequest(`
+  await hasuraRequest(
+    `
     mutation ClearExistingAssignments($event_id: uuid!, $tour_stop_idx: Int!, $keep_id: uuid!) {
       delete_venue_projects(where: { 
         event_id: { _eq: $event_id }, 
@@ -239,17 +242,22 @@ export const assignVenueProjectToStop = createServerFn({ method: "POST" }).handl
         affected_rows
       }
     }
-  `, { event_id, tour_stop_idx, keep_id: venue_project_id });
+  `,
+    { event_id, tour_stop_idx, keep_id: venue_project_id },
+  );
 
   // 3. If it already belongs to this event, DO NOT COPY IT, just update its tour_stop_idx!
   if (project.event_id === event_id) {
-    await hasuraRequest(`
+    await hasuraRequest(
+      `
       mutation UpdateTourStop($id: uuid!, $tour_stop_idx: Int!) {
         update_venue_projects_by_pk(pk_columns: {id: $id}, _set: {tour_stop_idx: $tour_stop_idx}) {
           id
         }
       }
-    `, { id: venue_project_id, tour_stop_idx });
+    `,
+      { id: venue_project_id, tour_stop_idx },
+    );
     return { success: true, venue_project_id };
   }
 
@@ -271,7 +279,7 @@ export const assignVenueProjectToStop = createServerFn({ method: "POST" }).handl
       },
     },
   );
-  
+
   return { success: true, venue_project_id: res.insert_venue_projects_one.id };
 });
 

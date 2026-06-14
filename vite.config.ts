@@ -17,8 +17,8 @@ export default defineConfig({
       "date-fns/locale",
       "recharts",
       "react-day-picker",
-      "react-quill-new"
-    ]
+      "react-quill-new",
+    ],
   },
   plugins: [
     tanstackStart({

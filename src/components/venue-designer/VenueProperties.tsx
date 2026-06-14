@@ -388,33 +388,41 @@ export function VenueProperties({
                           const pitch = sections.find((s) => s.shape === "pitch");
                           return (
                             <div className="flex flex-col gap-6 items-center justify-center w-full">
-                              <div 
-                                className="grid gap-1.5 justify-center" 
-                                style={{ gridTemplateColumns: `repeat(${sec.cols || 0}, minmax(0, auto))` }}
+                              <div
+                                className="grid gap-1.5 justify-center"
+                                style={{
+                                  gridTemplateColumns: `repeat(${sec.cols || 0}, minmax(0, auto))`,
+                                }}
                               >
-                                {Array.from({ length: (sec.rows || 0) * (sec.cols || 0) }).map((_, i) => {
-                                  const visualRow = Math.floor(i / (sec.cols || 1));
-                                  const visualCol = i % (sec.cols || 1);
-                                  
-                                  // Stage is at the bottom, so Row 1 is at the bottom of the visual grid
-                                  const rowLabel = (sec.rows || 1) - visualRow;
-                                  const colLabel = visualCol + 1;
+                                {Array.from({ length: (sec.rows || 0) * (sec.cols || 0) }).map(
+                                  (_, i) => {
+                                    const visualRow = Math.floor(i / (sec.cols || 1));
+                                    const visualCol = i % (sec.cols || 1);
 
-                                  return (
-                                    <div
-                                      key={i}
-                                      className="w-7 h-7 rounded-t-lg rounded-b-sm flex flex-col items-center justify-center text-[9px] font-medium transition-colors hover:brightness-110 cursor-pointer shadow-sm leading-none gap-0.5"
-                                      style={{ backgroundColor: sec.color || "#0ea5e9", color: "#fff" }}
-                                      title={`Row ${rowLabel}, Seat ${colLabel}`}
-                                    >
-                                      <span>R{rowLabel}</span>
-                                      <span className="opacity-80">S{colLabel}</span>
-                                    </div>
-                                  );
-                                })}
+                                    // Stage is at the bottom, so Row 1 is at the bottom of the visual grid
+                                    const rowLabel = (sec.rows || 1) - visualRow;
+                                    const colLabel = visualCol + 1;
+
+                                    return (
+                                      <div
+                                        key={i}
+                                        className="w-7 h-7 rounded-t-lg rounded-b-sm flex flex-col items-center justify-center text-[9px] font-medium transition-colors hover:brightness-110 cursor-pointer shadow-sm leading-none gap-0.5"
+                                        style={{
+                                          backgroundColor: sec.color || "#0ea5e9",
+                                          color: "#fff",
+                                        }}
+                                        title={`Row ${rowLabel}, Seat ${colLabel}`}
+                                      >
+                                        <span>R{rowLabel}</span>
+                                        <span className="opacity-80">S{colLabel}</span>
+                                      </div>
+                                    );
+                                  },
+                                )}
                                 {(sec.rows === 0 || sec.cols === 0) && (
                                   <p className="text-sm text-muted-foreground text-center col-span-full">
-                                    No seats defined. Increase rows and seats per row to generate a grid.
+                                    No seats defined. Increase rows and seats per row to generate a
+                                    grid.
                                   </p>
                                 )}
                               </div>
