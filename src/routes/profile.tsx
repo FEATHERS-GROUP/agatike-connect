@@ -22,7 +22,7 @@ import {
   Repeat,
   CreditCard,
 } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -177,6 +177,45 @@ type Tab = "upcoming" | "history" | "following" | "subscriptions";
 
 /* ─── Ticket Components ─── */
 function TicketCard({ ticket }: { ticket: any }) {
+  const handleAddToCalendar = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const startDate = new Date(ticket.eventDate || ticket.date);
+    if (isNaN(startDate.getTime())) {
+      startDate.setTime(Date.now());
+    }
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+
+    const title = ticket.title || "Agatike Event";
+    const location = ticket.venueName ? `${ticket.venueName}, ${ticket.city || ''}` : ticket.city || "";
+
+    const formatDateForCal = (date: Date) => {
+      return date.toISOString().replace(/-|:|\.\d+/g, "");
+    };
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if (isIOS) {
+      const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${formatDateForCal(startDate)}\nDTEND:${formatDateForCal(endDate)}\nSUMMARY:${title}\nLOCATION:${location}\nEND:VEVENT\nEND:VCALENDAR`;
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${title.replace(/\s+/g, '_')}.ics`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const url = new URL('https://calendar.google.com/calendar/render');
+      url.searchParams.append('action', 'TEMPLATE');
+      url.searchParams.append('text', title);
+      url.searchParams.append('dates', `${formatDateForCal(startDate)}/${formatDateForCal(endDate)}`);
+      if (location) url.searchParams.append('location', location);
+      window.open(url.toString(), '_blank');
+    }
+  };
+
   return (
     <Link
       to="/ticket/$ticketId"
@@ -211,14 +250,25 @@ function TicketCard({ ticket }: { ticket: any }) {
             <p className="text-xs text-muted-foreground">{ticket.seat}</p>
             <p className="text-xs font-mono text-primary mt-0.5">{ticket.orderId}</p>
           </div>
-          <Button
-            size="sm"
-            className="h-8 px-3 rounded-full text-xs font-bold"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            <QrCode className="h-3.5 w-3.5 mr-1" />
-            Show
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-8 w-8 rounded-full bg-transparent hover:bg-secondary border-border/60"
+              onClick={handleAddToCalendar}
+              title="Add to Calendar"
+            >
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 px-3 rounded-full text-xs font-bold"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <QrCode className="h-3.5 w-3.5 mr-1" />
+              Show
+            </Button>
+          </div>
         </div>
       </div>
     </Link>
