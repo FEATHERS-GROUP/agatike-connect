@@ -21,6 +21,7 @@ export type Section = {
   type: "reserved" | "general_admission" | "vip";
   priceZone: string;
   visible: boolean;
+  ticketId?: string;
 
   // Geometry configuration
   shape: "rect" | "arc" | "polygon" | "path" | "pitch";
