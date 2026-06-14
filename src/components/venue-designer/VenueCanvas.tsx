@@ -240,13 +240,13 @@ export function VenueCanvas({
   }, []);
 
   // Convert screen coordinates to SVG viewBox coordinates
-  const getSvgCoordinates = (event: React.PointerEvent<SVGSVGElement>) => {
+  const getSvgCoordinates = (event: React.PointerEvent<SVGSVGElement> | React.MouseEvent) => {
     if (!svgRef.current) return { x: 0, y: 0 };
     const CTM = svgRef.current.getScreenCTM();
     if (!CTM) return { x: 0, y: 0 };
     return {
-      x: (event.clientX - CTM.e) / CTM.a,
-      y: (event.clientY - CTM.f) / CTM.d,
+      x: ((event.clientX - CTM.e) / CTM.a) / zoom,
+      y: ((event.clientY - CTM.f) / CTM.d) / zoom,
     };
   };
 
@@ -286,8 +286,8 @@ export function VenueCanvas({
 
       if (resizingSectionId) {
         const coords = getSvgCoordinates(e);
-        const dx = (coords.x - dragStartPos.x) / zoom;
-        const dy = (coords.y - dragStartPos.y) / zoom;
+        const dx = coords.x - dragStartPos.x;
+        const dy = coords.y - dragStartPos.y;
 
         const newW = Math.max(20, Math.round((initialSectionSize.w + dx * 2) / 10) * 10);
         const newH = Math.max(20, Math.round((initialSectionSize.h + dy * 2) / 10) * 10);
@@ -299,8 +299,8 @@ export function VenueCanvas({
       if (!draggingSectionId) return;
 
       const coords = getSvgCoordinates(e);
-      const dx = (coords.x - dragStartPos.x) / zoom;
-      const dy = (coords.y - dragStartPos.y) / zoom;
+      const dx = coords.x - dragStartPos.x;
+      const dy = coords.y - dragStartPos.y;
 
       // Snap to grid (10px increments)
       const newX = Math.round((initialSectionPos.x + dx) / 10) * 10;
