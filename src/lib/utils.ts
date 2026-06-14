@@ -80,3 +80,61 @@ export function formatMessageDate(dateParam: string | Date | number): string {
     return date.toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" });
   }
 }
+
+export function mapDbEventToEvent(e: any): any {
+  if (!e) return null;
+  const isMock = !!e.organizer || !!e.host || !!e.cinema;
+  if (isMock) return e;
+
+  const date = Array.isArray(e.tour_stops) && e.tour_stops[0]
+    ? e.tour_stops[0].date
+    : "TBD";
+  const time = Array.isArray(e.tour_stops) && e.tour_stops[0]
+    ? e.tour_stops[0].time
+    : "";
+  const city = Array.isArray(e.tour_stops) && e.tour_stops[0]
+    ? e.tour_stops[0].city
+    : e.workspaces?.city || "TBD";
+  const venue = Array.isArray(e.tour_stops) && e.tour_stops[0]
+    ? e.tour_stops[0].venue
+    : "";
+
+  const attendees = e.event_tickets?.reduce((acc: number, t: any) => acc + (t.sold || 0), 0) || 0;
+  
+  const price = e.event_tickets && e.event_tickets.length > 0 
+    ? Math.min(...e.event_tickets.map((t: any) => t.cost || 0)) 
+    : 0;
+
+  const currency = e.workspaces?.currency || e.workspaces?.wallet?.currency || "$";
+  const organizer = e.workspaces?.organizer?.name || e.workspaces?.name || "Organizer";
+  const organizerId = e.workspaces?.organizer?.id || e.workspaces?.orgnizer_id;
+
+  return {
+    id: e.id,
+    title: e.title,
+    cover: e.cover || "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800",
+    image: e.cover || "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800",
+    date,
+    time,
+    city,
+    location: venue ? `${venue}, ${city}` : city,
+    price,
+    currency,
+    category: e.category || "Event",
+    attendees,
+    rating: e.workspaces?.organizer?.rating || 4.8,
+    organizer,
+    organizerId,
+    allowed_public: e.allowed_public,
+    deleted: e.deleted,
+  };
+}
+
+export function isWeekendEvent(dateStr: string): boolean {
+  if (!dateStr) return false;
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return false;
+  const day = date.getDay();
+  return day === 0 || day === 5 || day === 6;
+}
+

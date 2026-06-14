@@ -13,9 +13,10 @@ import { useFirestoreUserMessages } from "@/hooks/useFirestoreUserMessages";
 import { useEffect, useState, useMemo, Fragment } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { getPublicEvents } from "@/api/events";
+import { mapDbEventToEvent, isWeekendEvent } from "@/lib/utils";
 
 // Stubbed mock data
-const events: any[] = [];
 const movies: any[] = [
   {
     id: "m1",
@@ -281,6 +282,24 @@ export function HomeMobile() {
     queryFn: () => getOrganizersRatings(),
   });
 
+  const { data: dbEvents = [] } = useQuery({
+    queryKey: ["public-events"],
+    queryFn: () => getPublicEvents(),
+  });
+
+  const mappedEvents = useMemo(() => {
+    const publicEvents = dbEvents.filter((e: any) => e.allowed_public === true && e.deleted !== true);
+    return publicEvents.map(mapDbEventToEvent).filter(Boolean);
+  }, [dbEvents]);
+
+  const weekendEvents = useMemo(() => {
+    let filtered = mappedEvents.filter((e: any) => isWeekendEvent(e.date));
+    if (filtered.length === 0) {
+      filtered = mappedEvents;
+    }
+    return filtered;
+  }, [mappedEvents]);
+
   // On home page, hide organizers the user already follows
   const unfollowedOrganizers = dbOrganizers.filter((org: any) => !isFollowing(org.id));
   const allFollowed = dbOrganizers.length > 0 && unfollowedOrganizers.length === 0;
@@ -320,11 +339,16 @@ export function HomeMobile() {
       setUnreadCount(count);
     });
 
-    const handleReadEvent = () => setUnreadCount(0);
-    window.addEventListener("activityRead", handleReadEvent);
+    return () => unsubscribe();
+  }, [user?.id]);
 
+  useEffect(() => {
+    const handleReadEvent = () => {
+      setUnreadCount(0);
+    };
+
+    window.addEventListener("activityRead", handleReadEvent);
     return () => {
-      unsubscribe();
       window.removeEventListener("activityRead", handleReadEvent);
     };
   }, [user?.id]);
@@ -340,46 +364,18 @@ export function HomeMobile() {
   }, []);
 
   const sortedPosts = useMemo(() => {
-    const now = new Date().getTime();
+    const filteredPosts = isLoggedIn
+      ? dbPosts.filter((post: any) => isFollowing(post.organizerId))
+      : dbPosts;
 
-    const postsWithRand = dbPosts.map((p: any) => ({ ...p, _rand: Math.random() * 50 }));
+    const postsWithRand = filteredPosts.map((p: any) => ({ ...p, _rand: Math.random() * 50 }));
 
     return postsWithRand.sort((a: any, b: any) => {
-      const aIsFollowing = isFollowing(a.organizerId);
-      const bIsFollowing = isFollowing(b.organizerId);
-
       const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-
-      const aIsNew = now - aTime < 48 * 60 * 60 * 1000;
-      const bIsNew = now - bTime < 48 * 60 * 60 * 1000;
-
-      let aScore = a._rand;
-      let bScore = b._rand;
-
-      if (aIsFollowing) {
-        if (aIsNew) {
-          aScore += 10000 - (a.likes || 0);
-        } else {
-          aScore += 5000 + (a.likes || 0);
-        }
-      } else {
-        aScore += (a.likes || 0) * 10;
-      }
-
-      if (bIsFollowing) {
-        if (bIsNew) {
-          bScore += 10000 - (b.likes || 0);
-        } else {
-          bScore += 5000 + (b.likes || 0);
-        }
-      } else {
-        bScore += (b.likes || 0) * 10;
-      }
-
-      return bScore - aScore;
+      return bTime - aTime;
     });
-  }, [dbPosts, followedIds]);
+  }, [dbPosts, followedIds, isLoggedIn]);
 
   // Show loading spinner while checking session
   if (isLoading) {
@@ -448,7 +444,7 @@ export function HomeMobile() {
                     Follow organizers to see their updates here.
                   </p>
                 </div>
-                <UpcomingEvents events={events} />
+                <UpcomingEvents events={weekendEvents} />
                 <PopularOrganizers
                   organizersLoading={organizersLoading}
                   allFollowed={allFollowed}
@@ -473,7 +469,7 @@ export function HomeMobile() {
                   <Fragment key={`${item.id}-${index}`}>
                     <FeedCard post={item} />
 
-                    {isFirstCarousel && <UpcomingEvents events={events} />}
+                    {isFirstCarousel && <UpcomingEvents events={weekendEvents} />}
                     {isSecondCarousel && (
                       <PopularOrganizers
                         organizersLoading={organizersLoading}
@@ -490,7 +486,7 @@ export function HomeMobile() {
               })}
 
               {/* Catch-all to ensure carousels always render if the feed is too short */}
-              {sortedPosts.length <= carouselPositions[0] && <UpcomingEvents events={events} />}
+              {sortedPosts.length <= carouselPositions[0] && <UpcomingEvents events={weekendEvents} />}
               {sortedPosts.length <= carouselPositions[1] && (
                 <PopularOrganizers
                   organizersLoading={organizersLoading}

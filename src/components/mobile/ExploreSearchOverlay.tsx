@@ -49,7 +49,9 @@ export function ExploreSearchOverlay({
         (e) =>
           e.title?.toLowerCase().includes(query) ||
           e.category?.toLowerCase().includes(query) ||
-          e.workspaces?.city?.toLowerCase().includes(query),
+          e.workspaces?.name?.toLowerCase().includes(query) ||
+          e.workspaces?.city?.toLowerCase().includes(query) ||
+          e.tour_stops?.some((stop: any) => stop.city?.toLowerCase().includes(query)),
       )
       .slice(0, 5);
   }, [dbEvents, query]);

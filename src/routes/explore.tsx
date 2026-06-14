@@ -10,7 +10,8 @@ import { getPublicEvents } from "@/api/events";
 import { getPublicVenues } from "@/api/venues";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { ExploreSearchOverlay } from "@/components/mobile/ExploreSearchOverlay";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { isWeekendEvent } from "@/lib/utils";
 
 // Stubbed mock data
 const categories: any[] = [];
@@ -40,12 +41,34 @@ function ExplorePage() {
     queryFn: () => getPublicVenues(),
   });
 
-  const trendingEvents = dbEvents.slice(0, 4);
-  const upcomingEvents = dbEvents.slice(0, 8);
-  const dbExperiences = dbEvents.filter(
-    (e) =>
-      e.category?.toLowerCase() === "experience" || e.event_type?.toLowerCase() === "experience",
-  );
+  const publicEvents = useMemo(() => {
+    return dbEvents.filter((e: any) => e.allowed_public === true && e.deleted !== true);
+  }, [dbEvents]);
+
+  const trendingEvents = useMemo(() => {
+    const getTicketsSold = (e: any) => e.event_tickets?.reduce((acc: number, t: any) => acc + (t.sold || 0), 0) || 0;
+    return [...publicEvents]
+      .sort((a, b) => getTicketsSold(b) - getTicketsSold(a))
+      .slice(0, 4);
+  }, [publicEvents]);
+
+  const upcomingEvents = useMemo(() => {
+    let filtered = publicEvents.filter((e: any) => {
+      const dateStr = e.tour_stops?.[0]?.date || e.created_at;
+      return isWeekendEvent(dateStr);
+    });
+    if (filtered.length === 0) {
+      filtered = publicEvents;
+    }
+    return filtered.slice(0, 8);
+  }, [publicEvents]);
+
+  const dbExperiences = useMemo(() => {
+    return publicEvents.filter(
+      (e: any) =>
+        e.category?.toLowerCase() === "experience" || e.event_type?.toLowerCase() === "experience",
+    );
+  }, [publicEvents]);
 
   return (
     <div className="min-h-screen bg-background pb-20 md:max-w-md md:mx-auto md:border-x md:border-border/40 md:min-h-[100dvh] md:pb-8 shadow-xl">
@@ -403,7 +426,7 @@ function ExplorePage() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         dbOrganizers={dbOrganizers}
-        dbEvents={dbEvents}
+        dbEvents={publicEvents}
         dbVenues={dbVenues}
         isFollowing={isFollowing}
         toggleFollow={toggleFollow}

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { Search, MapPin, Sparkles, ArrowRight, Star } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
@@ -12,116 +13,15 @@ import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
 import { getOrganizersRatings } from "@/api/feedback";
 import { getGlobalFeedPosts } from "@/api/experience";
+import { getPublicEvents } from "@/api/events";
+import { mapDbEventToEvent, isWeekendEvent } from "@/lib/utils";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 
 // Stubbed mock data
 const categories: any[] = [
   "🎵 Music", "🎭 Theatre", "🏀 Sports", "🎨 Art", "🍔 Food", "🎤 Comedy", "🎬 Film", "🌍 Culture",
 ];
 
-const events: any[] = [
-  {
-    id: "e1",
-    title: "Afro Nation Ghana 2025",
-    cover: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800",
-    image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800",
-    date: "Jul 18, 2025",
-    time: "6:00 PM",
-    city: "Accra, Ghana",
-    location: "Accra, Ghana",
-    price: 85,
-    currency: "$",
-    category: "Music",
-    attendees: 12400,
-    rating: 4.9,
-    organizer: "Afro Nation",
-    organizerId: "org1",
-  },
-  {
-    id: "e2",
-    title: "Lagos Jazz Festival",
-    cover: "https://images.unsplash.com/photo-1511735111819-9a3efd16269a?w=800",
-    image: "https://images.unsplash.com/photo-1511735111819-9a3efd16269a?w=800",
-    date: "Jul 25, 2025",
-    time: "7:00 PM",
-    city: "Lagos, Nigeria",
-    location: "Lagos, Nigeria",
-    price: 45,
-    currency: "$",
-    category: "Music",
-    attendees: 5800,
-    rating: 4.7,
-    organizer: "LagosArts",
-    organizerId: "org2",
-  },
-  {
-    id: "e3",
-    title: "Cape Town Comedy Night",
-    cover: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800",
-    image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800",
-    date: "Jul 20, 2025",
-    time: "8:00 PM",
-    city: "Cape Town, SA",
-    location: "Cape Town, South Africa",
-    price: 30,
-    currency: "$",
-    category: "Comedy",
-    attendees: 2200,
-    rating: 4.6,
-    organizer: "CapeLaughs",
-    organizerId: "org3",
-  },
-  {
-    id: "e4",
-    title: "Nairobi Food & Culture Fest",
-    cover: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800",
-    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800",
-    date: "Jul 19, 2025",
-    time: "12:00 PM",
-    city: "Nairobi, Kenya",
-    location: "Nairobi, Kenya",
-    price: 20,
-    currency: "$",
-    category: "Food",
-    attendees: 3100,
-    rating: 4.5,
-    organizer: "NairobiEats",
-    organizerId: "org4",
-  },
-  {
-    id: "e5",
-    title: "Kigali Art Week",
-    cover: "https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=800",
-    image: "https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=800",
-    date: "Jul 21, 2025",
-    time: "10:00 AM",
-    city: "Kigali, Rwanda",
-    location: "Kigali, Rwanda",
-    price: 15,
-    currency: "$",
-    category: "Art",
-    attendees: 1800,
-    rating: 4.8,
-    organizer: "KigaliCreative",
-    organizerId: "org5",
-  },
-  {
-    id: "e6",
-    title: "Dakar Beats Open Air",
-    cover: "https://images.unsplash.com/photo-1501386761578-eaa54b8b9f8f?w=800",
-    image: "https://images.unsplash.com/photo-1501386761578-eaa54b8b9f8f?w=800",
-    date: "Jul 26, 2025",
-    time: "5:00 PM",
-    city: "Dakar, Senegal",
-    location: "Dakar, Senegal",
-    price: 25,
-    currency: "$",
-    category: "Music",
-    attendees: 4300,
-    rating: 4.7,
-    organizer: "DakarSounds",
-    organizerId: "org6",
-  },
-];
 
 const movies: any[] = [
   {
@@ -220,6 +120,7 @@ const organizers: any[] = [];
 
 export function HomeDesktop() {
   const { toggleFollow, isFollowing, followedIds } = useFollowedOrganizers();
+  const { isLoggedIn } = useUserAuth();
 
   const { data: dbOrganizers } = useQuery({
     queryKey: ["organizers"],
@@ -236,12 +137,34 @@ export function HomeDesktop() {
     queryFn: () => getOrganizersRatings(),
   });
 
+  const { data: dbEvents = [] } = useQuery({
+    queryKey: ["public-events"],
+    queryFn: () => getPublicEvents(),
+  });
+
+  const mappedEvents = useMemo(() => {
+    const publicEvents = dbEvents.filter((e: any) => e.allowed_public === true && e.deleted !== true);
+    return publicEvents.map(mapDbEventToEvent).filter(Boolean);
+  }, [dbEvents]);
+
+  const trending = useMemo(() => {
+    return [...mappedEvents]
+      .sort((a: any, b: any) => (b.attendees || 0) - (a.attendees || 0))
+      .slice(0, 6);
+  }, [mappedEvents]);
+
+  const weekend = useMemo(() => {
+    let filtered = mappedEvents.filter((e: any) => isWeekendEvent(e.date));
+    if (filtered.length === 0) {
+      filtered = mappedEvents;
+    }
+    return filtered.slice(0, 4);
+  }, [mappedEvents]);
+
   const allOrganizers = dbOrganizers && dbOrganizers.length > 0 ? dbOrganizers : organizers;
   // On home, hide organizers the user is already following
   const list = allOrganizers.filter((org: any) => !isFollowing(org.id));
 
-  const trending = events.slice(0, 6);
-  const weekend = events.slice(1, 5);
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
@@ -484,7 +407,9 @@ export function HomeDesktop() {
           </Link>
         </div>
         {(() => {
-          const filteredPosts = dbPosts.filter((post) => isFollowing(post.organizerId));
+          const filteredPosts = isLoggedIn
+            ? dbPosts.filter((post) => isFollowing(post.organizerId))
+            : dbPosts;
 
           if (filteredPosts.length === 0) {
             return (
