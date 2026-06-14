@@ -20,7 +20,6 @@ import {
   LogOut,
   User,
 } from "lucide-react";
-import { events, organizers, movies, experiences } from "@/lib/mock-data";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/site/Navbar";
@@ -29,6 +28,12 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { getUserAllTickets } from "@/api/user_tickets";
+
+// Stubbed mock data
+const events: any[] = [];
+const organizers: any[] = [];
+const movies: any[] = [];
+const experiences: any[] = [];
 
 export const Route = createFileRoute("/profile")({
   head: () => ({

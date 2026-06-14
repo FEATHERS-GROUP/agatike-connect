@@ -1,4 +1,3 @@
-import { experienceCategories } from "@/lib/mock-data";
 import {
   Mountain,
   Waves,
@@ -11,6 +10,21 @@ import {
   Utensils,
   Footprints,
 } from "lucide-react";
+
+// Stubbed mock data
+const experienceCategories = [
+  "Hiking",
+  "Running",
+  "Surf",
+  "Wellness",
+  "Drawing",
+  "Art",
+  "Trips",
+  "Bike Rides",
+  "Yoga",
+  "Book Clubs",
+  "Tourism",
+];
 
 const categoryIcons: Record<string, any> = {
   Hiking: Mountain,

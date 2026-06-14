@@ -1,8 +1,12 @@
 import { createFileRoute, notFound, useParams } from "@tanstack/react-router";
-import { events, experiences, movies } from "@/lib/mock-data";
 import { EventDetailsMobile } from "@/components/mobile/EventDetailsMobile";
 import { EventDetailsDesktop } from "@/components/desktop/EventDetailsDesktop";
 import { getEventById } from "@/api/events";
+
+// Stubbed mock data
+const events: any[] = [];
+const experiences: any[] = [];
+const movies: any[] = [];
 
 export const Route = createFileRoute("/events/$eventId")({
   loader: async ({ params }) => {

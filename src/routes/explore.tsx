@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { formatCurrency } from "@/lib/currency";
 import { Search, Map as MapIcon, SlidersHorizontal, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { categories, movies } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +11,10 @@ import { getPublicVenues } from "@/api/venues";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { ExploreSearchOverlay } from "@/components/mobile/ExploreSearchOverlay";
 import { useState } from "react";
+
+// Stubbed mock data
+const categories: any[] = [];
+const movies: any[] = [];
 
 export const Route = createFileRoute("/explore")({
   component: ExplorePage,

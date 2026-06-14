@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Ticket, QrCode, Clock, Share } from "lucide-react";
-import { events } from "@/lib/mock-data";
+
+// Stubbed mock data
+const events: any[] = [];
 
 export const Route = createFileRoute("/wallet")({
   component: WalletPage,

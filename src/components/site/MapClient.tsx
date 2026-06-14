@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { events, Event } from "@/lib/mock-data";
 import { ArrowLeft, CheckCircle2, ChevronRight, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@tanstack/react-router";
+
+// Stubbed mock data
+const events: any[] = [];
+type Event = any;
 
 // Custom component to handle map centering when an event is selected
 function MapController({ selectedEvent }: { selectedEvent: Event | null }) {

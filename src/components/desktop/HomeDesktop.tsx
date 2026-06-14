@@ -6,13 +6,217 @@ import { EventCard } from "@/components/site/EventCard";
 import { Stories } from "@/components/site/Stories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { categories, events, feedPosts, movies, movieStories, organizers } from "@/lib/mock-data";
 import hero from "@/assets/hero-event.jpg";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
 import { getOrganizersRatings } from "@/api/feedback";
 import { getGlobalFeedPosts } from "@/api/experience";
+
+// Stubbed mock data
+const categories: any[] = [
+  "🎵 Music", "🎭 Theatre", "🏀 Sports", "🎨 Art", "🍔 Food", "🎤 Comedy", "🎬 Film", "🌍 Culture",
+];
+
+const events: any[] = [
+  {
+    id: "e1",
+    title: "Afro Nation Ghana 2025",
+    cover: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800",
+    image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800",
+    date: "Jul 18, 2025",
+    time: "6:00 PM",
+    city: "Accra, Ghana",
+    location: "Accra, Ghana",
+    price: 85,
+    currency: "$",
+    category: "Music",
+    attendees: 12400,
+    rating: 4.9,
+    organizer: "Afro Nation",
+    organizerId: "org1",
+  },
+  {
+    id: "e2",
+    title: "Lagos Jazz Festival",
+    cover: "https://images.unsplash.com/photo-1511735111819-9a3efd16269a?w=800",
+    image: "https://images.unsplash.com/photo-1511735111819-9a3efd16269a?w=800",
+    date: "Jul 25, 2025",
+    time: "7:00 PM",
+    city: "Lagos, Nigeria",
+    location: "Lagos, Nigeria",
+    price: 45,
+    currency: "$",
+    category: "Music",
+    attendees: 5800,
+    rating: 4.7,
+    organizer: "LagosArts",
+    organizerId: "org2",
+  },
+  {
+    id: "e3",
+    title: "Cape Town Comedy Night",
+    cover: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800",
+    image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800",
+    date: "Jul 20, 2025",
+    time: "8:00 PM",
+    city: "Cape Town, SA",
+    location: "Cape Town, South Africa",
+    price: 30,
+    currency: "$",
+    category: "Comedy",
+    attendees: 2200,
+    rating: 4.6,
+    organizer: "CapeLaughs",
+    organizerId: "org3",
+  },
+  {
+    id: "e4",
+    title: "Nairobi Food & Culture Fest",
+    cover: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800",
+    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800",
+    date: "Jul 19, 2025",
+    time: "12:00 PM",
+    city: "Nairobi, Kenya",
+    location: "Nairobi, Kenya",
+    price: 20,
+    currency: "$",
+    category: "Food",
+    attendees: 3100,
+    rating: 4.5,
+    organizer: "NairobiEats",
+    organizerId: "org4",
+  },
+  {
+    id: "e5",
+    title: "Kigali Art Week",
+    cover: "https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=800",
+    image: "https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=800",
+    date: "Jul 21, 2025",
+    time: "10:00 AM",
+    city: "Kigali, Rwanda",
+    location: "Kigali, Rwanda",
+    price: 15,
+    currency: "$",
+    category: "Art",
+    attendees: 1800,
+    rating: 4.8,
+    organizer: "KigaliCreative",
+    organizerId: "org5",
+  },
+  {
+    id: "e6",
+    title: "Dakar Beats Open Air",
+    cover: "https://images.unsplash.com/photo-1501386761578-eaa54b8b9f8f?w=800",
+    image: "https://images.unsplash.com/photo-1501386761578-eaa54b8b9f8f?w=800",
+    date: "Jul 26, 2025",
+    time: "5:00 PM",
+    city: "Dakar, Senegal",
+    location: "Dakar, Senegal",
+    price: 25,
+    currency: "$",
+    category: "Music",
+    attendees: 4300,
+    rating: 4.7,
+    organizer: "DakarSounds",
+    organizerId: "org6",
+  },
+];
+
+const movies: any[] = [
+  {
+    id: "m1",
+    title: "Black Panther: Wakanda Forever",
+    genre: "Action / Sci-Fi",
+    duration: "2h 41m",
+    rating: "PG-13",
+    cover: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
+    cinema: "IMAX Nairobi",
+    price: 12,
+    currency: "USD",
+  },
+  {
+    id: "m2",
+    title: "The Woman King",
+    genre: "Drama / History",
+    duration: "2h 15m",
+    rating: "PG-13",
+    cover: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600",
+    cinema: "Silverbird Lagos",
+    price: 10,
+    currency: "USD",
+  },
+  {
+    id: "m3",
+    title: "Lionheart",
+    genre: "Comedy / Drama",
+    duration: "1h 35m",
+    rating: "PG",
+    cover: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=600",
+    cinema: "Nu Metro Accra",
+    price: 9,
+    currency: "USD",
+  },
+  {
+    id: "m4",
+    title: "Atlantics",
+    genre: "Drama / Fantasy",
+    duration: "1h 46m",
+    rating: "NR",
+    cover: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600",
+    cinema: "IMAX Nairobi",
+    price: 10,
+    currency: "USD",
+  },
+];
+
+const movieStories: any[] = [
+  {
+    id: "cs1",
+    name: "IMAX Nairobi",
+    avatar: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=150&h=150&fit=crop",
+    items: [
+      { id: "cs1i1", image: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800" },
+      { id: "cs1i2", image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800" },
+    ],
+  },
+  {
+    id: "cs2",
+    name: "Silverbird Lagos",
+    avatar: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=150&h=150&fit=crop",
+    items: [
+      { id: "cs2i1", image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800" },
+    ],
+  },
+  {
+    id: "cs3",
+    name: "Ster-Kinekor CPT",
+    avatar: "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?w=150&h=150&fit=crop",
+    items: [
+      { id: "cs3i1", image: "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?w=800" },
+      { id: "cs3i2", image: "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=800" },
+    ],
+  },
+  {
+    id: "cs4",
+    name: "Nu Metro Accra",
+    avatar: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=150&h=150&fit=crop",
+    items: [
+      { id: "cs4i1", image: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800" },
+    ],
+  },
+  {
+    id: "cs5",
+    name: "CineVis Kigali",
+    avatar: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=150&h=150&fit=crop",
+    items: [
+      { id: "cs5i1", image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800" },
+    ],
+  },
+];
+
+const feedPosts: any[] = [];
+const organizers: any[] = [];
 
 export function HomeDesktop() {
   const { toggleFollow, isFollowing, followedIds } = useFollowedOrganizers();

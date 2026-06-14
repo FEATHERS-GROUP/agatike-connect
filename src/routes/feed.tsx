@@ -6,11 +6,14 @@ import { Stories } from "@/components/site/Stories";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FeedCard } from "@/components/site/FeedCard";
-import { events, feedPosts } from "@/lib/mock-data";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { getOrganizers } from "@/api/organizers";
 import { getGlobalFeedPosts } from "@/api/experience";
 import { useQuery } from "@tanstack/react-query";
+
+// Stubbed mock data
+const events: any[] = [];
+const feedPosts: any[] = [];
 
 export const Route = createFileRoute("/feed")({
   head: () => ({

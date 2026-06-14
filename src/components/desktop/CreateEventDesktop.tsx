@@ -21,12 +21,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { eventCategories } from "@/lib/mock-data";
 import { createEvent } from "@/api/events";
 import { getCoordinates, getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { uploadFile } from "@/api/storage";
+
+// Stubbed mock data
+const eventCategories: any[] = [];
 
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {

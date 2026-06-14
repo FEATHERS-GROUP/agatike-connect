@@ -37,7 +37,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { updateDatabaseWorkspace, disableDatabaseWorkspace } from "@/api/workspaces";
-import { stories as defaultStories } from "@/lib/mock-data";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
   Dialog,
@@ -48,6 +47,9 @@ import {
 } from "@/components/ui/dialog";
 import { StoryViewer } from "@/components/site/StoryViewer";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
+
+// Stubbed mock data
+const defaultStories: any[] = [];
 
 export const Route = createFileRoute("/dashboard/settings")({
   head: () => ({

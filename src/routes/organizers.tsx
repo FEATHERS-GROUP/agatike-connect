@@ -4,7 +4,6 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { organizers, Organizer } from "@/lib/mock-data";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
@@ -25,6 +24,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+
+// Stubbed mock data
+const organizers: any[] = [];
+type Organizer = any;
 
 export const Route = createFileRoute("/organizers")({
   head: () => ({

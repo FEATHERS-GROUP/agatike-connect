@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { rentableVenues } from "@/lib/mock-data";
 import { useQuery } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
 import { getVenueBookings } from "@/api/venue_bookings";
@@ -17,6 +16,9 @@ import { Calendar, dateFnsLocalizer, View } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+
+// Stubbed mock data
+const rentableVenues: any[] = [];
 
 const locales = {
   "en-US": enUS,

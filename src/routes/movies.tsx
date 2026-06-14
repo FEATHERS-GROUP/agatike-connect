@@ -17,7 +17,6 @@ import { Footer } from "@/components/site/Footer";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cinemas, movies } from "@/lib/mock-data";
 import {
   Drawer,
   DrawerContent,
@@ -26,6 +25,87 @@ import {
   DrawerDescription,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+
+// Stubbed mock data
+const cinemas: any[] = [
+  { id: "c1", name: "IMAX Nairobi", city: "Nairobi", screens: 4, image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800" },
+  { id: "c2", name: "Silverbird Lagos", city: "Lagos", screens: 6, image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800" },
+  { id: "c3", name: "Ster-Kinekor Cape Town", city: "Cape Town", screens: 8, image: "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?w=800" },
+  { id: "c4", name: "Nu Metro Accra", city: "Accra", screens: 5, image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800" },
+];
+
+const movies: any[] = [
+  {
+    id: "m1",
+    title: "Black Panther: Wakanda Forever",
+    genre: "Action / Sci-Fi",
+    duration: "2h 41m",
+    rating: "PG-13",
+    cover: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
+    cinema: "IMAX Nairobi",
+    city: "Nairobi",
+    showtimes: ["10:00 AM", "1:30 PM", "5:00 PM", "8:30 PM"],
+    synopsis: "The people of Wakanda fight to protect their home from intervening world powers as they mourn the death of King T'Challa.",
+    price: 12,
+    currency: "USD",
+  },
+  {
+    id: "m2",
+    title: "The Woman King",
+    genre: "Drama / History",
+    duration: "2h 15m",
+    rating: "PG-13",
+    cover: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600",
+    cinema: "Silverbird Lagos",
+    city: "Lagos",
+    showtimes: ["11:00 AM", "2:00 PM", "6:00 PM"],
+    synopsis: "A story of the Agojie, the all-female unit of warriors who protected the African Kingdom of Dahomey.",
+    price: 10,
+    currency: "USD",
+  },
+  {
+    id: "m3",
+    title: "Shayda",
+    genre: "Drama",
+    duration: "1h 57m",
+    rating: "R",
+    cover: "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=600",
+    cinema: "Ster-Kinekor Cape Town",
+    city: "Cape Town",
+    showtimes: ["12:00 PM", "3:30 PM", "7:00 PM"],
+    synopsis: "An Iranian woman living in an Australian refuge finds unexpected joy while fiercely protecting her daughter.",
+    price: 11,
+    currency: "USD",
+  },
+  {
+    id: "m4",
+    title: "Lionheart",
+    genre: "Comedy / Drama",
+    duration: "1h 35m",
+    rating: "PG",
+    cover: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=600",
+    cinema: "Nu Metro Accra",
+    city: "Accra",
+    showtimes: ["10:30 AM", "1:00 PM", "4:30 PM", "8:00 PM"],
+    synopsis: "A young woman is forced to team up with her late father's business partner to save their family business.",
+    price: 9,
+    currency: "USD",
+  },
+  {
+    id: "m5",
+    title: "Atlantics",
+    genre: "Drama / Fantasy",
+    duration: "1h 46m",
+    rating: "NR",
+    cover: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600",
+    cinema: "IMAX Nairobi",
+    city: "Nairobi",
+    showtimes: ["2:30 PM", "6:00 PM", "9:00 PM"],
+    synopsis: "In a Dakar suburb, young people disappear into the sea and come back to seek revenge on those who wronged them.",
+    price: 10,
+    currency: "USD",
+  },
+];
 
 export const Route = createFileRoute("/movies")({
   head: () => ({
@@ -43,7 +123,7 @@ export const Route = createFileRoute("/movies")({
 });
 
 function Movies() {
-  const [active, setActive] = useState(movies[0].id);
+  const [active, setActive] = useState(movies[0]?.id ?? "");
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0">
@@ -140,7 +220,7 @@ function DesktopMoviesView({
               <div className="mb-8">
                 <h3 className="text-sm font-semibold mb-3 text-white/90">Select Showtime</h3>
                 <div className="flex gap-3">
-                  {activeMovie.showtimes.map((t, i) => (
+                  {activeMovie.showtimes.map((t: string, i: number) => (
                     <button
                       key={t}
                       className={`shrink-0 rounded-xl px-6 py-3 text-sm font-bold border transition-all ${
@@ -275,7 +355,9 @@ function MobileMoviesView() {
   const router = useRouter();
   const [selectedMovie, setSelectedMovie] = useState<(typeof movies)[0] | null>(null);
 
-  const featuredMovie = movies[0]; // Display the biggest blockbuster at the top
+  const featuredMovie = movies[0];
+
+  if (!featuredMovie) return null;
 
   return (
     <div className="pb-safe">
@@ -433,7 +515,7 @@ function MobileMoviesView() {
                   <div className="border-t border-border/60 pt-3">
                     <p className="text-xs font-semibold mb-2">Today's Showtimes</p>
                     <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-                      {selectedMovie.showtimes.map((t, i) => (
+                      {selectedMovie.showtimes.map((t: string, i: number) => (
                         <button
                           key={t}
                           className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold border ${i === 0 ? "bg-primary border-primary text-primary-foreground" : "bg-background border-border/60"}`}

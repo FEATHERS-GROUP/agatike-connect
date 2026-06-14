@@ -23,12 +23,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ticketProjects } from "@/lib/mock-data";
 import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects } from "@/api/events";
 import { getRentableVenues } from "@/api/rentable_venues";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
+
+// Stubbed mock data
+const ticketProjects: any[] = [];
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/ticket-designer/")({
   component: TicketDesignerIndex,

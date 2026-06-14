@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
-import { rentableVenues } from "@/lib/mock-data";
 import { getVenueBookings, updateTicketStatus } from "@/api/venue_bookings";
 import {
   DropdownMenu,
@@ -24,6 +23,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+
+// Stubbed mock data
+const rentableVenues: any[] = [];
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/bookings")({
   component: VenueBookingsPage,

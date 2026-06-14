@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { experienceCategories } from "@/lib/mock-data";
 import { COUNTRIES } from "@/lib/countries";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -19,6 +18,9 @@ import { ExperienceVenueStep } from "./CreateExperience/ExperienceVenueStep";
 import { ExperienceItineraryStep } from "./CreateExperience/ExperienceItineraryStep";
 import { ExperienceDurationStep } from "./CreateExperience/ExperienceDurationStep";
 import { Save, Trash2, Plus } from "lucide-react";
+
+// Stubbed mock data
+const experienceCategories: any[] = [];
 
 function generateId() {
   if (typeof window !== "undefined" && window.crypto && window.crypto.randomUUID) {

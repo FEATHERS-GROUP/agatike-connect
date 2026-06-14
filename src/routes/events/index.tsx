@@ -7,8 +7,10 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { categories, events as mockEvents } from "@/lib/mock-data";
 import { getPublicEvents } from "@/api/events";
+
+// Stubbed mock data
+const categories: any[] = [];
 
 export const Route = createFileRoute("/events/")({
   head: () => ({
@@ -119,7 +121,7 @@ function EventsBrowse() {
   });
 
   const allEvents = useMemo(() => {
-    return [...dbEvents, ...mockEvents];
+    return [...dbEvents, ];
   }, [dbEvents]);
 
   const filtered = useMemo(() => {

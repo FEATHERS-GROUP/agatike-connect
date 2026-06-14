@@ -1,7 +1,61 @@
 import { useState } from "react";
-import { stories as defaultStories } from "@/lib/mock-data";
 import { StoryViewer } from "@/components/site/StoryViewer";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Stubbed mock data
+const defaultStories: any[] = [
+  {
+    id: "s1",
+    name: "AfroBeat Fest",
+    avatar: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=150&h=150&fit=crop",
+    items: [
+      { id: "s1i1", image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800" },
+      { id: "s1i2", image: "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800" },
+    ],
+  },
+  {
+    id: "s2",
+    name: "Lagos Nights",
+    avatar: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=150&h=150&fit=crop",
+    items: [
+      { id: "s2i1", image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800" },
+    ],
+  },
+  {
+    id: "s3",
+    name: "Cape Jazz",
+    avatar: "https://images.unsplash.com/photo-1511735111819-9a3efd16269a?w=150&h=150&fit=crop",
+    items: [
+      { id: "s3i1", image: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800" },
+      { id: "s3i2", image: "https://images.unsplash.com/photo-1501386761578-eaa54b8b9f8f?w=800" },
+    ],
+  },
+  {
+    id: "s4",
+    name: "Nairobi FC",
+    avatar: "https://images.unsplash.com/photo-1459865264687-595d652de67e?w=150&h=150&fit=crop",
+    items: [
+      { id: "s4i1", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800" },
+    ],
+  },
+  {
+    id: "s5",
+    name: "Accra Vibes",
+    avatar: "https://images.unsplash.com/photo-1545484152-c8e5b50c6fce?w=150&h=150&fit=crop",
+    items: [
+      { id: "s5i1", image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800" },
+      { id: "s5i2", image: "https://images.unsplash.com/photo-1563841930606-67e2bce48b78?w=800" },
+    ],
+  },
+  {
+    id: "s6",
+    name: "Kigali Art",
+    avatar: "https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=150&h=150&fit=crop",
+    items: [
+      { id: "s6i1", image: "https://images.unsplash.com/photo-1504680177321-2e6a879aac86?w=800" },
+    ],
+  },
+];
 
 type Story = { id: string; name: string; avatar: string; items: { id: string; image: string }[] };
 

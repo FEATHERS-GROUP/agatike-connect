@@ -5,7 +5,6 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
-import { cinemas, movies } from "@/lib/mock-data";
 import {
   Drawer,
   DrawerContent,
@@ -13,6 +12,10 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
+
+// Stubbed mock data
+const cinemas: any[] = [];
+const movies: any[] = [];
 
 export const Route = createFileRoute("/cinemas/$cinemaId")({
   head: ({ params }) => {

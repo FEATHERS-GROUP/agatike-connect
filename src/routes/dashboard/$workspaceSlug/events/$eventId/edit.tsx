@@ -21,12 +21,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { categories } from "@/lib/mock-data";
 import { getEventById, updateEvent } from "@/api/events";
 import { getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+
+// Stubbed mock data
+const categories: any[] = [];
 
 function generateId() {
   if (typeof window !== "undefined" && window.crypto && window.crypto.randomUUID) {

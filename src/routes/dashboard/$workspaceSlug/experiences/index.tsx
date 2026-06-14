@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceEvents } from "@/api/events";
-import { experienceCategories } from "@/lib/mock-data";
+
+// Stubbed mock data
+const experienceCategories: any[] = [];
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/experiences/")({
   component: DashboardExperiences,

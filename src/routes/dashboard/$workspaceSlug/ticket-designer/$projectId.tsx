@@ -34,7 +34,6 @@ import { Button } from "@/components/ui/button";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ticketProjects } from "@/lib/mock-data";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getRentableVenues } from "@/api/rentable_venues";
@@ -73,6 +72,9 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/ticket-designer/
 });
 
 import { Template } from "@/components/desktop/dashboard/ticket-designer/templates/types";
+
+// Stubbed mock data
+const ticketProjects: any[] = [];
 
 const templates: { id: Template; label: string; icon: any; accent: string }[] = [
   { id: "concert-1", label: "Concert (Classic)", icon: TicketIcon, accent: "#f97316" },
