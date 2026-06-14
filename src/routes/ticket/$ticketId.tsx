@@ -92,7 +92,7 @@ function TicketViewer() {
   }
 
   return (
-    <div className="relative min-h-screen font-sans overflow-hidden">
+    <div className="relative min-h-screen font-sans overflow-hidden flex flex-col items-center justify-between text-foreground">
       {/* Ambient background — blurred cover image */}
       {ticket.cover && (
         <>
@@ -107,17 +107,17 @@ function TicketViewer() {
         </>
       )}
 
-      {/* Page content sits above the ambient bg */}
-      <div className="relative z-10 px-5 pt-14 pb-36">
+      {/* Centered responsive container */}
+      <div className="relative z-10 w-full max-w-md px-4 flex flex-col justify-between min-h-screen py-5 md:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between">
           <Link
             to="/profile"
-            className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center hover:bg-white/30 transition-colors"
+            className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center hover:bg-white/30 transition-colors"
           >
-            <ChevronLeft className="w-6 h-6 text-white" />
+            <ChevronLeft className="w-5 h-5 text-white" />
           </Link>
-          <span className="font-bold text-lg text-white">
+          <span className="font-bold text-sm text-white tracking-wide">
             Upcoming{" "}
             {ticket.ticketCategory === "movie"
               ? "Movie"
@@ -129,37 +129,42 @@ function TicketViewer() {
                     ? "Venue Booking"
                     : "Event"}
           </span>
-          <div className="w-12" />
+          <div className="w-10" />
         </div>
 
-        {/* Event Meta */}
-        <div className="mb-6 px-1">
-          <p className="text-white/60 text-sm mb-1">
-            {ticket.date}, {ticket.time || ticket.showtimes?.[0]}
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-md">
-            {ticket.title}
-          </h1>
+        {/* Content area: Title + Pass card */}
+        <div className="flex-1 flex flex-col justify-center my-3">
+          {/* Event Meta */}
+          <div className="mb-4 text-center">
+            <p className="text-white/75 text-xs font-semibold uppercase tracking-wider mb-0.5">
+              {ticket.date}, {ticket.time || ticket.showtimes?.[0]}
+            </p>
+            <h1 className="text-2xl font-black tracking-tight text-white drop-shadow-md line-clamp-2 leading-tight">
+              {ticket.title}
+            </h1>
+          </div>
+
+          {/* Dynamic Ticket Card */}
+          <div className="transform scale-[0.9] sm:scale-100 origin-center transition-transform">
+            <DynamicPass ticket={ticket} />
+          </div>
         </div>
 
-        {/* Dynamic Ticket Card */}
-        <DynamicPass ticket={ticket} />
-      </div>
-
-      {/* Download Button */}
-      <div className="fixed bottom-8 left-0 right-0 flex justify-center px-5 z-50">
-        <button
-          onClick={handleDownload}
-          disabled={isDownloading}
-          className="bg-orange-500 text-white font-bold py-4 px-8 rounded-2xl w-full flex items-center justify-center gap-2 shadow-[0_8px_30px_rgb(249,115,22,0.4)] hover:bg-orange-600 transition-colors text-lg disabled:opacity-70 disabled:cursor-not-allowed"
-        >
-          {isDownloading ? (
-            <Loader2 className="w-6 h-6 animate-spin" />
-          ) : (
-            <Download className="w-6 h-6" />
-          )}
-          {isDownloading ? "Generating PDF..." : "Download PDF"}
-        </button>
+        {/* Download Button */}
+        <div className="w-full">
+          <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="bg-orange-500 text-white font-bold py-3.5 px-6 rounded-2xl w-full flex items-center justify-center gap-2 shadow-[0_8px_30px_rgb(249,115,22,0.4)] hover:bg-orange-600 transition-colors text-base disabled:opacity-70 disabled:cursor-not-allowed active:scale-[0.98]"
+          >
+            {isDownloading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Download className="w-5 h-5" />
+            )}
+            {isDownloading ? "Generating PDF..." : "Download PDF"}
+          </button>
+        </div>
       </div>
 
       {/* Hidden PDF Printable Layer */}
@@ -171,7 +176,7 @@ function TicketViewer() {
 function DynamicPass({ ticket }: { ticket: any }) {
   // Shared Barcode Generator
   const Barcode = () => (
-    <div className="mt-14 w-full h-16 flex items-center justify-center px-2">
+    <div className="mt-6 w-full h-16 flex items-center justify-center px-2">
       {Array.from({ length: 45 }).map((_, i) => {
         // Deterministic but varied widths
         const w = (i * 13) % 4 === 0 ? "4px" : (i * 7) % 3 === 0 ? "1px" : "2px";
@@ -186,7 +191,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
     return (
       <div className="bg-white text-black rounded-[2rem] p-7 relative overflow-hidden pb-8 shadow-2xl">
         <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">Moviegoer</p>
-        <p className="text-2xl font-bold mb-8">{ticket.passengerName || "Guest"}</p>
+        <p className="text-2xl font-bold mb-4">{ticket.passengerName || "Guest"}</p>
 
         {/* Timeline Component */}
         <div className="flex justify-between items-center mb-6 relative">
@@ -201,7 +206,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
             </div>
           </div>
         </div>
-        <div className="flex justify-between items-end mb-8">
+        <div className="flex justify-between items-end mb-4">
           <div>
             <p className="font-bold text-lg">{ticket.showtimes?.[0] || "18:30"}</p>
             <p className="text-gray-500 text-xs font-medium mt-1">Start Time</p>
@@ -215,9 +220,9 @@ function DynamicPass({ ticket }: { ticket: any }) {
         <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">
           Booking Reference
         </p>
-        <p className="text-xl font-bold tracking-wide mb-8">{ticket.orderId}</p>
+        <p className="text-xl font-bold tracking-wide mb-4">{ticket.orderId}</p>
 
-        <div className="grid grid-cols-3 gap-4 border-b border-dashed border-gray-200 pb-10">
+        <div className="grid grid-cols-3 gap-4 border-b border-dashed border-gray-200 pb-5">
           <div>
             <p className="text-gray-500 text-xs font-medium mb-1">Cinema</p>
             <p className="font-bold text-sm truncate">{ticket.cinema}</p>
@@ -232,9 +237,9 @@ function DynamicPass({ ticket }: { ticket: any }) {
           </div>
         </div>
 
-        <div className="absolute -left-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
-        <div className="absolute -right-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
-        <div className="absolute left-6 right-6 bottom-[132px] border-t-2 border-dashed border-gray-200" />
+        <div className="absolute -left-5 bottom-20 w-10 h-10 bg-gray-100 rounded-full" />
+        <div className="absolute -right-5 bottom-20 w-10 h-10 bg-gray-100 rounded-full" />
+        <div className="absolute left-6 right-6 bottom-[100px] border-t-2 border-dashed border-gray-200" />
 
         <Barcode />
       </div>
@@ -244,7 +249,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
   if (ticket.ticketCategory === "conference") {
     return (
       <div className="bg-white text-black rounded-[2rem] p-7 relative overflow-hidden pb-8 shadow-2xl">
-        <div className="flex justify-between items-start mb-8">
+        <div className="flex justify-between items-start mb-4">
           <div>
             <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">
               Attendee
@@ -277,7 +282,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
             </div>
           </div>
         </div>
-        <div className="flex justify-between items-end mb-8">
+        <div className="flex justify-between items-end mb-4">
           <div>
             <p className="font-bold text-lg">{ticket.venue || ticket.city || "Kigali"}</p>
             <p className="text-gray-500 text-xs font-medium mt-1 truncate max-w-[120px]">
@@ -293,9 +298,9 @@ function DynamicPass({ ticket }: { ticket: any }) {
         <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">
           Registration ID
         </p>
-        <p className="text-xl font-bold tracking-wide mb-8">{ticket.orderId}</p>
+        <p className="text-xl font-bold tracking-wide mb-4">{ticket.orderId}</p>
 
-        <div className="grid grid-cols-3 gap-4 border-b border-dashed border-gray-200 pb-10">
+        <div className="grid grid-cols-3 gap-4 border-b border-dashed border-gray-200 pb-5">
           <div>
             <p className="text-gray-500 text-xs font-medium mb-1">Pass Type</p>
             <p className="font-bold text-sm">All Access</p>
@@ -310,9 +315,9 @@ function DynamicPass({ ticket }: { ticket: any }) {
           </div>
         </div>
 
-        <div className="absolute -left-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
-        <div className="absolute -right-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
-        <div className="absolute left-6 right-6 bottom-[132px] border-t-2 border-dashed border-gray-200" />
+        <div className="absolute -left-5 bottom-20 w-10 h-10 bg-gray-100 rounded-full" />
+        <div className="absolute -right-5 bottom-20 w-10 h-10 bg-gray-100 rounded-full" />
+        <div className="absolute left-6 right-6 bottom-[100px] border-t-2 border-dashed border-gray-200" />
 
         <Barcode />
       </div>
@@ -325,7 +330,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
       <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">
         {ticket.ticketCategory === "free" ? "Guest" : "Passenger"}
       </p>
-      <p className="text-2xl font-bold mb-8">{ticket.passengerName || "Guest"}</p>
+      <p className="text-2xl font-bold mb-4">{ticket.passengerName || "Guest"}</p>
 
       {/* Timeline Component */}
       <div className="flex justify-between items-center mb-6 relative">
@@ -346,7 +351,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
           </div>
         </div>
       </div>
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex justify-between items-end mb-4">
         <div>
           <p className="font-bold text-lg max-w-[140px] leading-tight truncate">
             {ticket.venue || ticket.city || "Kigali"}
@@ -362,9 +367,9 @@ function DynamicPass({ ticket }: { ticket: any }) {
       <p className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">
         Booking Reference
       </p>
-      <p className="text-xl font-bold tracking-wide mb-8">{ticket.orderId}</p>
+      <p className="text-xl font-bold tracking-wide mb-4">{ticket.orderId}</p>
 
-      <div className="grid grid-cols-3 gap-4 border-b border-dashed border-gray-200 pb-10">
+      <div className="grid grid-cols-3 gap-4 border-b border-dashed border-gray-200 pb-5">
         <div>
           <p className="text-gray-500 text-xs font-medium mb-1">Category</p>
           <p className="font-bold text-sm truncate">{ticket.ticketType}</p>
@@ -381,9 +386,9 @@ function DynamicPass({ ticket }: { ticket: any }) {
         </div>
       </div>
 
-      <div className="absolute -left-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
-      <div className="absolute -right-5 bottom-28 w-10 h-10 bg-gray-100 rounded-full" />
-      <div className="absolute left-6 right-6 bottom-[132px] border-t-2 border-dashed border-gray-200" />
+      <div className="absolute -left-5 bottom-20 w-10 h-10 bg-gray-100 rounded-full" />
+      ,      <div className="absolute -right-5 bottom-20 w-10 h-10 bg-gray-100 rounded-full" />
+      <div className="absolute left-6 right-6 bottom-[100px] border-t-2 border-dashed border-gray-200" />
 
       <Barcode />
     </div>
