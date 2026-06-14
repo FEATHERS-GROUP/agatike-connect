@@ -115,6 +115,13 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
   const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
   const isStep1Valid = date !== "" && totalTickets > 0;
+  const isStep2Valid =
+    name.trim() !== "" &&
+    email.trim() !== "" &&
+    idPassport.trim() !== "" &&
+    nationality.trim() !== "" &&
+    phone.trim() !== "" &&
+    attendees.every((att) => att.name.trim() !== "");
 
   const total =
     (venue.pricing_tiers?.length > 0
@@ -256,6 +263,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isStep1Valid || !isStep2Valid) return;
     if (!user) {
       navigate({ to: "/signin", search: { redirect: `/venues/checkout/${venue.id}` } as any });
       return;
@@ -354,6 +362,16 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
+                    onClick={(e) => {
+                      try {
+                        e.currentTarget.showPicker();
+                      } catch {}
+                    }}
+                    onFocus={(e) => {
+                      try {
+                        e.currentTarget.showPicker();
+                      } catch {}
+                    }}
                     className="h-12 w-full bg-secondary/30 border border-border/80 rounded-xl pl-11 pr-4 focus-visible:ring-1 focus-visible:ring-primary/50 cursor-pointer text-sm font-medium"
                   />
                 </div>
@@ -431,16 +449,6 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 </div>
               </div>
             </div>
-            <div className="pt-4">
-              <Button
-                type="button"
-                disabled={!isStep1Valid}
-                onClick={() => setStep(2)}
-                className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-              >
-                Continue to Details
-              </Button>
-            </div>
           </div>
         )}
 
@@ -471,7 +479,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={!!user}
-                    className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="h-12 bg-secondary/30 border border-border/80 focus-visible:ring-1 focus-visible:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                 </div>
 
@@ -485,7 +493,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                     placeholder="e.g. jane@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
+                    className="h-12 bg-secondary/30 border border-border/80 focus-visible:ring-1 focus-visible:ring-primary/50"
                   />
                 </div>
 
@@ -498,7 +506,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                     placeholder="Enter ID/Passport"
                     value={idPassport}
                     onChange={(e) => setIdPassport(e.target.value)}
-                    className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50"
+                    className="h-12 bg-secondary/30 border border-border/80 focus-visible:ring-1 focus-visible:ring-primary/50"
                   />
                 </div>
 
@@ -511,7 +519,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                     value={nationality}
                     onChange={(e) => setNationality(e.target.value)}
                     disabled={!!user?.country}
-                    className="flex h-12 w-full rounded-md border border-input bg-secondary/40 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex h-12 w-full rounded-md border border-border/80 bg-secondary/30 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <option value="" disabled>
                       Select Country
@@ -535,7 +543,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     disabled={!!user}
-                    className="h-12 bg-secondary/40 border-transparent focus-visible:ring-1 focus-visible:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="h-12 bg-secondary/30 border border-border/80 focus-visible:ring-1 focus-visible:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -573,7 +581,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                             newArr[idx].name = e.target.value;
                             setAttendees(newArr);
                           }}
-                          className="h-10 text-sm bg-secondary/40 border-transparent"
+                          className="h-10 text-sm bg-secondary/30 border border-border/80"
                         />
                       </div>
                       <div>
@@ -588,7 +596,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                             newArr[idx].id_document = e.target.value;
                             setAttendees(newArr);
                           }}
-                          className="h-10 text-sm bg-secondary/40 border-transparent"
+                          className="h-10 text-sm bg-secondary/30 border border-border/80"
                         />
                       </div>
                     </div>
@@ -600,7 +608,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         )}
 
         {/* Fixed Bottom Action Bar */}
-        {step === 2 && (
+        {(step === 1 || step === 2) && (
           <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe-bottom bg-background/95 backdrop-blur-xl border-t border-border/50 z-30 shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
             <div className="max-w-md mx-auto">
               <div
@@ -649,7 +657,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                           amount: 0,
                         };
                         return (
-                          <div key={i} className="flex justify-between">
+                           <div key={i} className="flex justify-between">
                             <span className="text-muted-foreground">
                               {name} <span className="text-xs opacity-70">x{qty}</span>
                             </span>
@@ -665,7 +673,17 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 </div>
               )}
 
-              {isGenerating || isCheckingOut ? (
+              {step === 1 ? (
+                <Button
+                  type="button"
+                  disabled={!isStep1Valid}
+                  onClick={() => setStep(2)}
+                  className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  Continue to Details
+                </Button>
+              ) : isGenerating || isCheckingOut ? (
                 <Button
                   type="button"
                   disabled
@@ -689,8 +707,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
               ) : (
                 <Button
                   type="submit"
-                  disabled={totalTickets === 0}
-                  className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                  disabled={totalTickets === 0 || !isStep2Valid}
+                  className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] disabled:opacity-45 disabled:cursor-not-allowed"
                   style={{ background: "var(--gradient-primary)" }}
                 >
                   Pay{" "}

@@ -125,6 +125,13 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
   const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
   const isStep1Valid = date !== "" && totalTickets > 0;
+  const isStep2Valid =
+    name.trim() !== "" &&
+    email.trim() !== "" &&
+    idPassport.trim() !== "" &&
+    nationality.trim() !== "" &&
+    phone.trim() !== "" &&
+    attendees.every((att) => att.name.trim() !== "");
 
   const total =
     (venue.pricing_tiers?.length > 0
@@ -266,6 +273,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isStep1Valid || !isStep2Valid) return;
     if (!user) {
       sessionStorage.setItem(`returning_from_login_${venue?.id}`, "true");
       navigate({ to: "/signin", search: { redirect: `/venues/checkout/${venue.id}` } as any });
@@ -418,6 +426,16 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                           required
                           value={date}
                           onChange={(e) => setDate(e.target.value)}
+                          onClick={(e) => {
+                            try {
+                              e.currentTarget.showPicker();
+                            } catch {}
+                          }}
+                          onFocus={(e) => {
+                            try {
+                              e.currentTarget.showPicker();
+                            } catch {}
+                          }}
                           className="h-12 w-full bg-secondary/20 border border-border/85 rounded-xl pl-11 pr-4 focus-visible:ring-1 focus-visible:ring-primary/50 cursor-pointer text-sm font-medium"
                         />
                       </div>
@@ -665,8 +683,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                     ) : (
                       <Button
                         type="submit"
-                        disabled={totalTickets === 0}
-                        className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                        disabled={totalTickets === 0 || !isStep2Valid}
+                        className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] disabled:opacity-45 disabled:cursor-not-allowed"
                         style={{ background: "var(--gradient-primary)" }}
                       >
                         Pay{" "}

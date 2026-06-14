@@ -1,9 +1,24 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, MapPin, Clock, Star, Heart, Share2, Users } from "lucide-react";
+import { ChevronLeft, MapPin, Clock, Star, Heart, Share2, Users, ChevronUp } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
+import { useState, useEffect } from "react";
 
 export function VenueDetailsMobile({ venue }: { venue: any }) {
   if (!venue) return null;
+
+  const [isTicketsExpanded, setIsTicketsExpanded] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 30) {
+        setIsTicketsExpanded(false);
+      } else if (window.scrollY < 10) {
+        setIsTicketsExpanded(true);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background pb-28">
@@ -155,26 +170,69 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
       </div>
 
       {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe-bottom bg-background/80 backdrop-blur-xl border-t border-border/40 z-30">
-        <div className="flex items-center justify-between gap-4 max-w-md mx-auto">
-          <div className="flex flex-col">
-            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-              Tickets from
-            </span>
-            <span className="text-xl font-bold text-foreground">
-              {venue.pricing_tiers?.[0]?.amount > 0
-                ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency)
-                : "Free"}
-            </span>
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe-bottom bg-background/95 backdrop-blur-xl border-t border-border/50 z-30 shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+        <div className="max-w-md mx-auto">
+          {/* Collapsible Header/Toggle */}
+          <div
+            className="flex items-center justify-between gap-4 mb-3 cursor-pointer active:opacity-70 transition-opacity"
+            onClick={() => setIsTicketsExpanded(!isTicketsExpanded)}
+          >
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm text-muted-foreground font-semibold">Entry Ticket Prices</span>
+              <ChevronUp
+                className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${isTicketsExpanded ? "rotate-180" : ""}`}
+              />
+            </div>
+            {!isTicketsExpanded && (
+              <span className="text-xs text-primary font-bold">
+                View All
+              </span>
+            )}
           </div>
-          <Link to="/venues/checkout/$venueId" params={{ venueId: venue.id }} className="flex-1">
-            <button
-              className="w-full h-12 rounded-xl text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              Book Ticket
-            </button>
-          </Link>
+
+          {/* Pricing Tiers List (Expanded) */}
+          {isTicketsExpanded && (
+            <div className="mb-4 space-y-2 max-h-48 overflow-y-auto pr-1 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
+              {(venue.pricing_tiers?.length > 0
+                ? venue.pricing_tiers
+                : [{ name: "Standard Entry", amount: 0 }]
+              ).map((tier: any, idx: number) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150"
+                >
+                  <span className="text-muted-foreground font-medium">
+                    {tier.name || "Standard Entry"}
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {tier.amount > 0 ? formatCurrency(tier.amount, venue.currency) : "Free"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Action Row */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                Tickets from
+              </span>
+              <span className="text-xl font-bold text-foreground">
+                {venue.pricing_tiers?.[0]?.amount > 0
+                  ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency)
+                  : "Free"}
+              </span>
+            </div>
+            <Link to="/venues/checkout/$venueId" params={{ venueId: venue.id }} className="flex-1">
+              <button
+                className="w-full h-12 rounded-xl text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                Book Ticket
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
