@@ -100,6 +100,9 @@ export function VenueCanvas({
   canvasBg,
   removeSection,
   duplicateSection,
+  addSection,
+  toolMode,
+  setToolMode,
 }: {
   venueName: string;
   eventName: string;
@@ -114,6 +117,9 @@ export function VenueCanvas({
   canvasBg: string;
   removeSection: (id: string) => void;
   duplicateSection: (id: string) => void;
+  addSection: (shape: any, type?: any, customPoints?: any, customPathData?: any, pitchType?: any, config?: any) => void;
+  toolMode: "select" | "draw" | "text";
+  setToolMode: (m: "select" | "draw" | "text") => void;
 }) {
   const stageWidth = template.stageWidth || 200;
   const stageHeight = template.stageHeight || 100;
@@ -132,6 +138,49 @@ export function VenueCanvas({
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [zoom, setZoom] = useState(1);
+
+  const [drawingPoints, setDrawingPoints] = useState<{ x: number; y: number }[]>([]);
+  const [currentMousePos, setCurrentMousePos] = useState<{ x: number; y: number } | null>(null);
+
+  const finishDrawing = useCallback(() => {
+    if (drawingPoints.length < 3) {
+      setDrawingPoints([]);
+      setToolMode("select");
+      return;
+    }
+
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    drawingPoints.forEach(p => {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    });
+    const cx = minX + (maxX - minX) / 2;
+    const cy = minY + (maxY - minY) / 2;
+
+    const normalizedPoints = drawingPoints
+      .map(p => `${Math.round(p.x - cx)},${Math.round(p.y - cy)}`)
+      .join(" ");
+
+    addSection("polygon", "reserved", normalizedPoints, undefined, undefined, { x: cx, y: cy });
+
+    setDrawingPoints([]);
+    setToolMode("select");
+  }, [drawingPoints, addSection, setToolMode]);
+
+  useEffect(() => {
+    if (toolMode !== "draw") return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter") finishDrawing();
+      else if (e.key === "Escape") {
+        setDrawingPoints([]);
+        setToolMode("select");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toolMode, finishDrawing]);
 
   // Close context menu on outside click
   useEffect(() => {
@@ -202,6 +251,7 @@ export function VenueCanvas({
   };
 
   const handlePointerDown = (e: React.PointerEvent<SVGGElement>, section: Section) => {
+    if (toolMode === "draw") return;
     e.stopPropagation();
     saveHistory(); // Save history before drag starts
     setActiveSection(section.id);
@@ -215,6 +265,7 @@ export function VenueCanvas({
   };
 
   const handleResizePointerDown = (e: React.PointerEvent<SVGCircleElement>, section: Section) => {
+    if (toolMode === "draw") return;
     e.stopPropagation();
     saveHistory();
     setActiveSection(section.id);
@@ -228,6 +279,11 @@ export function VenueCanvas({
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
+      if (toolMode === "draw") {
+        setCurrentMousePos(getSvgCoordinates(e));
+        return;
+      }
+
       if (resizingSectionId) {
         const coords = getSvgCoordinates(e);
         const dx = (coords.x - dragStartPos.x) / zoom;
@@ -252,7 +308,7 @@ export function VenueCanvas({
 
       updateSection(draggingSectionId, { x: newX, y: newY });
     },
-    [draggingSectionId, resizingSectionId, dragStartPos, initialSectionPos, initialSectionSize, updateSection, zoom],
+    [toolMode, draggingSectionId, resizingSectionId, dragStartPos, initialSectionPos, initialSectionSize, updateSection, zoom],
   );
 
   const handlePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -280,12 +336,57 @@ export function VenueCanvas({
         viewBox="-560 -480 1120 960"
         className="w-full h-full cursor-crosshair select-none touch-none"
         preserveAspectRatio="xMidYMid meet"
-        onPointerDown={() => setActiveSection(null)}
+        onContextMenu={(e) => {
+          if (toolMode === "draw") {
+            e.preventDefault();
+            finishDrawing();
+          }
+        }}
+        onPointerDown={(e) => {
+          if (toolMode === "draw") {
+            if (e.button === 2) return; // ignore right click for adding points
+            const coords = getSvgCoordinates(e);
+            setDrawingPoints(prev => [...prev, coords]);
+          } else {
+            setActiveSection(null);
+          }
+        }}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
         <g transform={`scale(${zoom})`}>
+          {/* Drawing Path Preview */}
+          {toolMode === "draw" && drawingPoints.length > 0 && (
+            <g>
+              <path
+                d={`M ${drawingPoints.map(p => `${p.x},${p.y}`).join(" L ")} ${currentMousePos ? `L ${currentMousePos.x},${currentMousePos.y}` : ""}`}
+                fill="none"
+                stroke="#0ea5e9"
+                strokeWidth="2"
+                strokeDasharray="4 4"
+              />
+              {drawingPoints.map((p, i) => (
+                <circle
+                  key={i}
+                  cx={p.x}
+                  cy={p.y}
+                  r="6"
+                  fill={i === 0 ? "#f59e0b" : "#ffffff"}
+                  stroke="#0ea5e9"
+                  strokeWidth="2"
+                  style={{ cursor: i === 0 ? "pointer" : "default", pointerEvents: "all" }}
+                  onPointerDown={(e) => {
+                    if (i === 0 && drawingPoints.length > 2) {
+                      e.stopPropagation();
+                      finishDrawing();
+                    }
+                  }}
+                />
+              ))}
+            </g>
+          )}
+
           {/* Arena Outer Boundary Wall */}
         {template.boundaryWidth && template.boundaryHeight && (
           <>
@@ -462,6 +563,13 @@ export function VenueCanvas({
         })}
         </g>
       </svg>
+
+      {/* Drawing Mode Hint */}
+      {toolMode === "draw" && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg text-sm font-medium pointer-events-none z-50">
+          Click to add points. <span className="font-bold border border-primary-foreground/30 px-1 rounded mx-1">Right-click</span> or <span className="font-bold border border-primary-foreground/30 px-1 rounded mx-1">Enter</span> to finish.
+        </div>
+      )}
 
       {/* Right-click Context Menu */}
       {contextMenu && (

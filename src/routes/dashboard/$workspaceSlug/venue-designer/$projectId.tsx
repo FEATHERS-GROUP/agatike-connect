@@ -9,6 +9,10 @@ import {
   Square,
   LayoutDashboard,
   Loader2,
+  MousePointer2,
+  Type,
+  Share2,
+  PenTool,
 } from "lucide-react";
 
 import { VenueCanvas } from "@/components/venue-designer/VenueCanvas";
@@ -69,6 +73,7 @@ function VenueDesignerPage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [canvasBg, setCanvasBg] = useState<string>("#ffffff");
+  const [toolMode, setToolMode] = useState<"select" | "draw" | "text">("select");
 
   // Load project or initialize from template
   useEffect(() => {
@@ -295,6 +300,42 @@ function VenueDesignerPage() {
             </h1>
           </div>
         </div>
+
+        {/* Center Toolbar */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 bg-secondary/30 p-1 rounded-lg border border-border/60 shadow-sm">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={`h-8 px-2.5 ${toolMode === "select" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setToolMode("select")}
+          >
+            <MousePointer2 className="h-4 w-4 mr-1.5" /> Select
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
+            onClick={() => addSection("rect", "reserved", undefined, undefined, undefined, { name: "Text", width: 150, height: 40, color: "transparent" })}
+          >
+            <Type className="h-4 w-4 mr-1.5" /> Text
+          </Button>
+          <div className="w-px h-4 bg-border/60 mx-1"></div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={`h-8 px-2.5 ${toolMode === "draw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => {
+              setToolMode("draw");
+              setActiveSection(null);
+            }}
+          >
+            <PenTool className="h-4 w-4 mr-1.5" /> Draw
+          </Button>
+          <Button variant="ghost" size="sm" className="h-8 px-2.5 text-muted-foreground hover:text-foreground">
+            <Share2 className="h-4 w-4 mr-1.5" /> Share
+          </Button>
+        </div>
+
         <div className="flex items-center gap-3">
           <div className="text-xs font-medium text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full flex items-center gap-2 border">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -361,6 +402,9 @@ function VenueDesignerPage() {
               setActiveSection(null);
             }}
             duplicateSection={duplicateSection}
+            addSection={addSection}
+            toolMode={toolMode}
+            setToolMode={setToolMode}
           />
         </div>
 
