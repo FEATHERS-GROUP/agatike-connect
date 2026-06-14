@@ -119,9 +119,7 @@ function UserMessagesPage() {
     // Check if chatId corresponds to an organizerId
     const org = dbOrganizers.find((o: any) => o.id === chatId);
     if (org) {
-      const existingChannel = channels.find(
-        (c) => c.type === "user" && c.organizerId === org.id
-      );
+      const existingChannel = channels.find((c) => c.type === "user" && c.organizerId === org.id);
       if (existingChannel) {
         setActiveChatId(existingChannel.id);
       } else {
@@ -129,7 +127,7 @@ function UserMessagesPage() {
           org.id,
           org.name || "Organizer",
           org.image || org.avatar || "",
-          user?.username || "User"
+          user?.username || "User",
         );
       }
     }
@@ -154,10 +152,11 @@ function UserMessagesPage() {
   useEffect(() => {
     if (eventId) {
       import("@/lib/mock-data").then(async ({ events, experiences, movies }) => {
-        let ev: any = events.find((e) => e.id === eventId) ||
-                   experiences.find((x) => x.id === eventId) ||
-                   movies.find((m) => m.id === eventId);
-        
+        let ev: any =
+          events.find((e) => e.id === eventId) ||
+          experiences.find((x) => x.id === eventId) ||
+          movies.find((m) => m.id === eventId);
+
         if (!ev) {
           try {
             const { getEventById } = await import("@/api/events");
@@ -171,7 +170,10 @@ function UserMessagesPage() {
           setPendingEventCard({
             eventId: ev.id,
             title: ev.title || ev.name || "Event",
-            image: ev.cover || ev.image_url || "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
+            image:
+              ev.cover ||
+              ev.image_url ||
+              "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
             info: ev.date || "Event Details",
           });
         }
@@ -634,10 +636,20 @@ function UserMessagesPage() {
                               />
                             )}
                             {msg.eventCard && (
-                              <Link to="/events/$eventId" params={{ eventId: msg.eventCard.eventId }} className="block mb-2 w-64 border border-border/50 rounded-xl overflow-hidden bg-card/50 hover:border-primary/50 transition-colors cursor-pointer">
-                                <img src={msg.eventCard.image} alt={msg.eventCard.title} className="w-full h-32 object-cover" />
+                              <Link
+                                to="/events/$eventId"
+                                params={{ eventId: msg.eventCard.eventId }}
+                                className="block mb-2 w-64 border border-border/50 rounded-xl overflow-hidden bg-card/50 hover:border-primary/50 transition-colors cursor-pointer"
+                              >
+                                <img
+                                  src={msg.eventCard.image}
+                                  alt={msg.eventCard.title}
+                                  className="w-full h-32 object-cover"
+                                />
                                 <div className="p-3">
-                                  <p className="font-bold text-sm truncate">{msg.eventCard.title}</p>
+                                  <p className="font-bold text-sm truncate">
+                                    {msg.eventCard.title}
+                                  </p>
                                   <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                                     <Calendar className="h-3 w-3" />
                                     <span>{msg.eventCard.info}</span>
@@ -664,16 +676,30 @@ function UserMessagesPage() {
               {pendingEventCard && (
                 <div className="mb-3 max-w-3xl mx-auto flex items-center justify-between bg-card/80 border border-border/50 p-2 rounded-xl">
                   <div className="flex items-center gap-3">
-                    <img src={pendingEventCard.image} alt="Event" className="h-10 w-10 rounded-md object-cover" />
+                    <img
+                      src={pendingEventCard.image}
+                      alt="Event"
+                      className="h-10 w-10 rounded-md object-cover"
+                    />
                     <div>
                       <p className="font-semibold text-xs leading-none mb-1">Attaching Event</p>
-                      <p className="text-xs text-muted-foreground truncate max-w-[200px]">{pendingEventCard.title}</p>
+                      <p className="text-xs text-muted-foreground truncate max-w-[200px]">
+                        {pendingEventCard.title}
+                      </p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => {
-                    setPendingEventCard(null);
-                    navigate({ search: { chatId: activeChatId || undefined } as any, replace: true });
-                  }}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 rounded-full"
+                    onClick={() => {
+                      setPendingEventCard(null);
+                      navigate({
+                        search: { chatId: activeChatId || undefined } as any,
+                        replace: true,
+                      });
+                    }}
+                  >
                     <X className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </div>

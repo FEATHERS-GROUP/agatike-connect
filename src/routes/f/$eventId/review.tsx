@@ -84,7 +84,7 @@ function FeedbackForm() {
   const { eventId } = Route.useParams();
   const search = useSearch({ strict: false }) as any;
   const { user } = useUserAuth();
-  
+
   const attendeeId = search?.attendeeId || "";
   const prefillEmail = search?.email || user?.email || "";
   const prefillName = search?.name || user?.username || "";

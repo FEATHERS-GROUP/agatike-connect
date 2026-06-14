@@ -19,9 +19,15 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 
 // Stubbed mock data
 const categories: any[] = [
-  "🎵 Music", "🎭 Theatre", "🏀 Sports", "🎨 Art", "🍔 Food", "🎤 Comedy", "🎬 Film", "🌍 Culture",
+  "🎵 Music",
+  "🎭 Theatre",
+  "🏀 Sports",
+  "🎨 Art",
+  "🍔 Food",
+  "🎤 Comedy",
+  "🎬 Film",
+  "🌍 Culture",
 ];
-
 
 const movies: any[] = [
   {
@@ -143,7 +149,9 @@ export function HomeDesktop() {
   });
 
   const mappedEvents = useMemo(() => {
-    const publicEvents = dbEvents.filter((e: any) => e.allowed_public === true && e.deleted !== true);
+    const publicEvents = dbEvents.filter(
+      (e: any) => e.allowed_public === true && e.deleted !== true,
+    );
     return publicEvents.map(mapDbEventToEvent).filter(Boolean);
   }, [dbEvents]);
 

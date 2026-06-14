@@ -1,7 +1,15 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, SlidersHorizontal, ArrowLeft, Loader2, Calendar, MapPin, Users } from "lucide-react";
+import {
+  Search,
+  SlidersHorizontal,
+  ArrowLeft,
+  Loader2,
+  Calendar,
+  MapPin,
+  Users,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
@@ -101,7 +109,12 @@ function EventCard({ event }: { event: any }) {
                 {city}
               </span>
               <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" /> People going · {(event.event_attendees_aggregate?.aggregate?.count ?? event.attendees ?? 0).toLocaleString()}
+                <Users className="h-3 w-3" /> People going ·{" "}
+                {(
+                  event.event_attendees_aggregate?.aggregate?.count ??
+                  event.attendees ??
+                  0
+                ).toLocaleString()}
               </span>
             </div>
           )}
@@ -126,7 +139,7 @@ function EventsBrowse() {
   });
 
   const allEvents = useMemo(() => {
-    return [...dbEvents, ];
+    return [...dbEvents];
   }, [dbEvents]);
 
   const filtered = useMemo(() => {

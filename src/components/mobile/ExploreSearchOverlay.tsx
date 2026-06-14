@@ -1,6 +1,16 @@
 import React, { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
-import { Search, ArrowLeft, MapPin, Star, Users, Calendar, Map as MapIcon, Bus, Repeat } from "lucide-react";
+import {
+  Search,
+  ArrowLeft,
+  MapPin,
+  Star,
+  Users,
+  Calendar,
+  Map as MapIcon,
+  Bus,
+  Repeat,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -276,7 +286,9 @@ export function ExploreSearchOverlay({
               {data.title}
             </p>
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
-              <span className="capitalize text-amber-500 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded-sm">{data.category || "Subscription"}</span>
+              <span className="capitalize text-amber-500 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded-sm">
+                {data.category || "Subscription"}
+              </span>
               <span>•</span>
               <span className="flex items-center gap-0.5">
                 <MapPin className="h-3 w-3" /> {data.venue}
@@ -313,11 +325,11 @@ export function ExploreSearchOverlay({
               {data.title}
             </p>
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
-              <span className="capitalize text-blue-500 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded-sm">Bus Route</span>
-              <span>•</span>
-              <span className="flex items-center gap-0.5">
-                {data.operator}
+              <span className="capitalize text-blue-500 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded-sm">
+                Bus Route
               </span>
+              <span>•</span>
+              <span className="flex items-center gap-0.5">{data.operator}</span>
             </div>
           </div>
           {isRecent && (
@@ -336,10 +348,10 @@ export function ExploreSearchOverlay({
   };
 
   const hasResults =
-    filteredOrganizers.length > 0 || 
-    filteredEvents.length > 0 || 
-    filteredVenues.length > 0 || 
-    filteredSubscriptions.length > 0 || 
+    filteredOrganizers.length > 0 ||
+    filteredEvents.length > 0 ||
+    filteredVenues.length > 0 ||
+    filteredSubscriptions.length > 0 ||
     filteredBusTickets.length > 0;
 
   if (!isOpen) return null;

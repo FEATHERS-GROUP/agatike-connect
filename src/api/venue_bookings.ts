@@ -181,13 +181,16 @@ export const getVenueBookingByOtp = createServerFn({ method: "POST" })
     const res = await hasuraRequest<{ venue_bookings: any[] }>(VALIDATE_TICKET_OTP, { otp });
     const booking = res.venue_bookings[0] || null;
     if (booking && booking.venue_id) {
-      const venueRes = await hasuraRequest<{ rentable_venues_by_pk: any }>(`
+      const venueRes = await hasuraRequest<{ rentable_venues_by_pk: any }>(
+        `
         query GetVenueName($id: uuid!) {
           rentable_venues_by_pk(id: $id) {
             name
           }
         }
-      `, { id: booking.venue_id });
+      `,
+        { id: booking.venue_id },
+      );
       booking.venue_name = venueRes?.rentable_venues_by_pk?.name || "Venue";
     }
     return booking;

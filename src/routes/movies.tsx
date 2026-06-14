@@ -28,10 +28,34 @@ import {
 
 // Stubbed mock data
 const cinemas: any[] = [
-  { id: "c1", name: "IMAX Nairobi", city: "Nairobi", screens: 4, image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800" },
-  { id: "c2", name: "Silverbird Lagos", city: "Lagos", screens: 6, image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800" },
-  { id: "c3", name: "Ster-Kinekor Cape Town", city: "Cape Town", screens: 8, image: "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?w=800" },
-  { id: "c4", name: "Nu Metro Accra", city: "Accra", screens: 5, image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800" },
+  {
+    id: "c1",
+    name: "IMAX Nairobi",
+    city: "Nairobi",
+    screens: 4,
+    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800",
+  },
+  {
+    id: "c2",
+    name: "Silverbird Lagos",
+    city: "Lagos",
+    screens: 6,
+    image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800",
+  },
+  {
+    id: "c3",
+    name: "Ster-Kinekor Cape Town",
+    city: "Cape Town",
+    screens: 8,
+    image: "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?w=800",
+  },
+  {
+    id: "c4",
+    name: "Nu Metro Accra",
+    city: "Accra",
+    screens: 5,
+    image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800",
+  },
 ];
 
 const movies: any[] = [
@@ -45,7 +69,8 @@ const movies: any[] = [
     cinema: "IMAX Nairobi",
     city: "Nairobi",
     showtimes: ["10:00 AM", "1:30 PM", "5:00 PM", "8:30 PM"],
-    synopsis: "The people of Wakanda fight to protect their home from intervening world powers as they mourn the death of King T'Challa.",
+    synopsis:
+      "The people of Wakanda fight to protect their home from intervening world powers as they mourn the death of King T'Challa.",
     price: 12,
     currency: "USD",
   },
@@ -59,7 +84,8 @@ const movies: any[] = [
     cinema: "Silverbird Lagos",
     city: "Lagos",
     showtimes: ["11:00 AM", "2:00 PM", "6:00 PM"],
-    synopsis: "A story of the Agojie, the all-female unit of warriors who protected the African Kingdom of Dahomey.",
+    synopsis:
+      "A story of the Agojie, the all-female unit of warriors who protected the African Kingdom of Dahomey.",
     price: 10,
     currency: "USD",
   },
@@ -73,7 +99,8 @@ const movies: any[] = [
     cinema: "Ster-Kinekor Cape Town",
     city: "Cape Town",
     showtimes: ["12:00 PM", "3:30 PM", "7:00 PM"],
-    synopsis: "An Iranian woman living in an Australian refuge finds unexpected joy while fiercely protecting her daughter.",
+    synopsis:
+      "An Iranian woman living in an Australian refuge finds unexpected joy while fiercely protecting her daughter.",
     price: 11,
     currency: "USD",
   },
@@ -87,7 +114,8 @@ const movies: any[] = [
     cinema: "Nu Metro Accra",
     city: "Accra",
     showtimes: ["10:30 AM", "1:00 PM", "4:30 PM", "8:00 PM"],
-    synopsis: "A young woman is forced to team up with her late father's business partner to save their family business.",
+    synopsis:
+      "A young woman is forced to team up with her late father's business partner to save their family business.",
     price: 9,
     currency: "USD",
   },
@@ -101,7 +129,8 @@ const movies: any[] = [
     cinema: "IMAX Nairobi",
     city: "Nairobi",
     showtimes: ["2:30 PM", "6:00 PM", "9:00 PM"],
-    synopsis: "In a Dakar suburb, young people disappear into the sea and come back to seek revenge on those who wronged them.",
+    synopsis:
+      "In a Dakar suburb, young people disappear into the sea and come back to seek revenge on those who wronged them.",
     price: 10,
     currency: "USD",
   },

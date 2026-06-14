@@ -173,7 +173,8 @@ function ExplorePage() {
                             <MapPin className="h-3 w-3" /> {city}
                           </span>
                           <span className="flex items-center gap-1">
-                            <Users className="h-3 w-3" /> People going · {(e.event_attendees_aggregate?.aggregate?.count ?? 0).toLocaleString()}
+                            <Users className="h-3 w-3" /> People going ·{" "}
+                            {(e.event_attendees_aggregate?.aggregate?.count ?? 0).toLocaleString()}
                           </span>
                         </div>
                       </div>
@@ -297,7 +298,10 @@ function ExplorePage() {
                           <span className="truncate">{city}</span>
                         </div>
                         <div className="mt-1 text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                          <Users className="h-3 w-3" /> People going · {(event.event_attendees_aggregate?.aggregate?.count ?? 0).toLocaleString()}
+                          <Users className="h-3 w-3" /> People going ·{" "}
+                          {(
+                            event.event_attendees_aggregate?.aggregate?.count ?? 0
+                          ).toLocaleString()}
                         </div>
                       </div>
                     </Link>

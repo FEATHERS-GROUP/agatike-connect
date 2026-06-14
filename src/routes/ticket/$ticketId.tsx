@@ -41,9 +41,7 @@ function TicketViewer() {
 
       const isCustomDesign = !!ticket?.design;
       const width = isCustomDesign ? 720 : 800;
-      const height = isCustomDesign
-        ? getCustomTemplateHeight(ticket.design.template)
-        : 300;
+      const height = isCustomDesign ? getCustomTemplateHeight(ticket.design.template) : 300;
 
       // Capture front
       const imgDataFront = await htmlToImage.toPng(elementFront, {
@@ -329,7 +327,9 @@ function DynamicPass({ ticket }: { ticket: any }) {
               Attendee
             </p>
             <p className="text-2xl font-bold">{ticket.passengerName || "Guest"}</p>
-            <p className="text-[#2dd4bf] font-bold text-sm mt-1">{ticket.ticketType || "Attendee"}</p>
+            <p className="text-[#2dd4bf] font-bold text-sm mt-1">
+              {ticket.ticketType || "Attendee"}
+            </p>
           </div>
           {ticket.passengerProfile ? (
             <img
@@ -450,8 +450,10 @@ function DynamicPass({ ticket }: { ticket: any }) {
         </div>
         <div className="text-center">
           <p className="text-gray-500 text-xs font-medium mb-1">Gate</p>
-          <p className={`font-bold ${ticket.ticketCategory === "sports" ? "text-sm" : "text-[11px]"}`}>
-            {ticket.ticketCategory === "sports" ? (ticket.gate || "Gate 3") : "Main Entrance"}
+          <p
+            className={`font-bold ${ticket.ticketCategory === "sports" ? "text-sm" : "text-[11px]"}`}
+          >
+            {ticket.ticketCategory === "sports" ? ticket.gate || "Gate 3" : "Main Entrance"}
           </p>
         </div>
         <div className="text-right">

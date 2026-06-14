@@ -110,7 +110,9 @@ export const addEventAttendees = createServerFn({ method: "POST" }).handler(asyn
         }
       }
     `;
-    const ticketsData = await hasuraRequest<{ event_tickets: any[] }>(GET_TICKETS, { ids: ticketIds });
+    const ticketsData = await hasuraRequest<{ event_tickets: any[] }>(GET_TICKETS, {
+      ids: ticketIds,
+    });
     const dbTickets = ticketsData.event_tickets || [];
 
     // Verify inventory and prepare updates
@@ -118,11 +120,11 @@ export const addEventAttendees = createServerFn({ method: "POST" }).handler(asyn
     for (const tid of ticketIds) {
       const dbTier = dbTickets.find((t: any) => t.id === tid);
       if (!dbTier) throw new Error(`Ticket tier not found.`);
-      
+
       const currentSold = parseInt(dbTier.sold) || 0;
       const capacity = parseInt(dbTier.remaining) || 0;
       const newSold = currentSold + qtyByTier[tid];
-      
+
       if (newSold > capacity) {
         throw new Error(`Sold out! Not enough tickets remaining.`);
       }
@@ -138,7 +140,7 @@ export const addEventAttendees = createServerFn({ method: "POST" }).handler(asyn
         returning { id }
       }
     `;
-    
+
     // Add an update for each ticket tier
     updates.forEach((u, i) => {
       mutationStr += `
@@ -150,7 +152,7 @@ export const addEventAttendees = createServerFn({ method: "POST" }).handler(asyn
         }
       `;
     });
-    
+
     mutationStr += `\n}`;
 
     return hasuraRequest(mutationStr, { objects });

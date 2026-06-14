@@ -104,7 +104,7 @@ export function EventDetailsMobile({
     : [];
   const attendeesCount = isMock
     ? ev.attendees || ev.spots || 0
-    : ev.event_attendees_aggregate?.aggregate?.count ?? 0;
+    : (ev.event_attendees_aggregate?.aggregate?.count ?? 0);
 
   const lineup =
     Array.isArray(ev.lineup) && ev.lineup.length > 0
@@ -139,18 +139,16 @@ export function EventDetailsMobile({
         };
       });
 
-  const activeTicketTiers = allTicketTiers.filter(
-    (t: any) => {
-      // Filter by tour stop
-      const rightStop = t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
-      // Hide sold-out tiers
-      const hasInventory = t.remaining > 0;
-      // Hide expired tiers
-      const isNotExpired = !t.sale_ends_at || new Date(t.sale_ends_at) > new Date();
+  const activeTicketTiers = allTicketTiers.filter((t: any) => {
+    // Filter by tour stop
+    const rightStop = t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
+    // Hide sold-out tiers
+    const hasInventory = t.remaining > 0;
+    // Hide expired tiers
+    const isNotExpired = !t.sale_ends_at || new Date(t.sale_ends_at) > new Date();
 
-      return rightStop && hasInventory && isNotExpired;
-    }
-  );
+    return rightStop && hasInventory && isNotExpired;
+  });
 
   const activeMerch = isMock
     ? merch
@@ -272,7 +270,11 @@ export function EventDetailsMobile({
           <div className="flex gap-2">
             {organizerId && following && isLoggedIn && (
               <Button asChild size="icon" variant="outline" className="rounded-full h-8 w-8">
-                <Link to="/$userId/message" params={{ userId: user?.id }} search={{ chatId: organizerId, eventId: ev.id }}>
+                <Link
+                  to="/$userId/message"
+                  params={{ userId: user?.id }}
+                  search={{ chatId: organizerId, eventId: ev.id }}
+                >
                   <MessageCircle className="h-4 w-4" />
                 </Link>
               </Button>
@@ -302,7 +304,14 @@ export function EventDetailsMobile({
                   </div>
                 }
               >
-                <VenueMap lat={lat} lng={lng} venue={venue} city={city} tourStops={tourStops} selectedStopIdx={selectedStopIdx} />
+                <VenueMap
+                  lat={lat}
+                  lng={lng}
+                  venue={venue}
+                  city={city}
+                  tourStops={tourStops}
+                  selectedStopIdx={selectedStopIdx}
+                />
               </Suspense>
             ) : (
               <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground text-sm font-medium">
@@ -424,7 +433,10 @@ export function EventDetailsMobile({
                   const name = att.users?.handle ? `@${att.users.handle}` : att.names;
                   if (!name) return null;
                   return (
-                    <span key={att.id || i} className="text-[10px] bg-secondary/50 text-muted-foreground px-2 py-1 rounded-md border border-border/30 font-medium">
+                    <span
+                      key={att.id || i}
+                      className="text-[10px] bg-secondary/50 text-muted-foreground px-2 py-1 rounded-md border border-border/30 font-medium"
+                    >
                       {name}
                     </span>
                   );
@@ -512,7 +524,11 @@ export function EventDetailsMobile({
                     </span>
                   </div>
                   <div className="text-[10px] text-muted-foreground mt-0.5 mb-2">
-                    {new Date(r.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                    {new Date(r.created_at).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </div>
                   {r.title && <p className="mt-2 text-sm font-semibold">{r.title}</p>}
                   {r.body && (
@@ -523,7 +539,10 @@ export function EventDetailsMobile({
                   {r.tags && r.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-3">
                       {r.tags.map((tag: string) => (
-                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-secondary text-muted-foreground font-medium capitalize">
+                        <span
+                          key={tag}
+                          className="text-[10px] px-2 py-0.5 rounded-md bg-secondary text-muted-foreground font-medium capitalize"
+                        >
                           {tag.replace(/_/g, " ")}
                         </span>
                       ))}
@@ -564,7 +583,9 @@ export function EventDetailsMobile({
           {/* Tour Stops selection as Tabs inside the bottom sheet (Visible when expanded) */}
           {isTicketsExpanded && tourStops.length > 1 && (
             <div className="mb-3 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Select Tour Stop</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                Select Tour Stop
+              </p>
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                 {tourStops.map((stop: any, idx: number) => (
                   <button
@@ -598,8 +619,12 @@ export function EventDetailsMobile({
                         {formatCurrency(t.price, currencyCode)}
                       </p>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-snug">{t.perks.join(" · ")}</p>
-                    <p className="text-[11px] font-medium text-primary mt-1 mb-3">{t.remaining} left</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug">
+                      {t.perks.join(" · ")}
+                    </p>
+                    <p className="text-[11px] font-medium text-primary mt-1 mb-3">
+                      {t.remaining} left
+                    </p>
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
                       <span className="text-xs font-medium text-muted-foreground">Quantity</span>
@@ -648,8 +673,12 @@ export function EventDetailsMobile({
                         {formatCurrency(t.price, currencyCode)}
                       </p>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-snug">{t.perks.join(" · ")}</p>
-                    <p className="text-[11px] font-medium text-primary mt-1 mb-3">{t.remaining} left</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug">
+                      {t.perks.join(" · ")}
+                    </p>
+                    <p className="text-[11px] font-medium text-primary mt-1 mb-3">
+                      {t.remaining} left
+                    </p>
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
                       <span className="text-xs font-medium text-muted-foreground">Quantity</span>
@@ -702,7 +731,11 @@ export function EventDetailsMobile({
                 localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
               }}
             >
-              <Link to="/book/$eventId" params={{ eventId: ev.id }} className="w-full block text-center leading-[48px]">
+              <Link
+                to="/book/$eventId"
+                params={{ eventId: ev.id }}
+                className="w-full block text-center leading-[48px]"
+              >
                 {total === 0 && totalTickets > 0 ? "Register for Free" : "Get Tickets"}
               </Link>
             </Button>

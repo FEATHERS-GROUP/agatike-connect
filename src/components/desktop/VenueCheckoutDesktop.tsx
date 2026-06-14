@@ -1,5 +1,14 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Calendar, Users, MapPin, CheckCircle2, Ticket, Minus, Plus } from "lucide-react";
+import {
+  ChevronLeft,
+  Calendar,
+  Users,
+  MapPin,
+  CheckCircle2,
+  Ticket,
+  Minus,
+  Plus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/site/Navbar";
@@ -445,10 +454,11 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                     </div>
                   </div>
 
-                   <div className="border-t border-border/40 pt-6">
+                  <div className="border-t border-border/40 pt-6">
                     <h3 className="text-xl font-semibold mb-1">Ticket Selection</h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Specify how many tickets you'd like to purchase for this visit using the selector buttons.
+                      Specify how many tickets you'd like to purchase for this visit using the
+                      selector buttons.
                     </p>
                     <div className="space-y-3">
                       {(venue?.pricing_tiers?.length > 0

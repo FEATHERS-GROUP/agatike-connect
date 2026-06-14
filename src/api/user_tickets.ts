@@ -181,27 +181,37 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
     }
 
     const baseProject = event?.ticket_projects?.[0];
-    const mergedProject = baseProject ? getMergedProjectDesign(baseProject, stopIdx, att.ticket_id) : null;
-    const design = mergedProject ? {
-      template: mergedProject.template || "default",
-      palette: mergedProject.palette || null,
-      font: mergedProject.font || null,
-      coverImage: mergedProject.coverImage || null,
-      logoText: mergedProject.logoText !== undefined && mergedProject.logoText !== null ? mergedProject.logoText : null,
-      logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
-      logoImage: mergedProject.logoImage || null,
-      logoColorMode: mergedProject.logoColorMode || null,
-      logoOpacity: mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null ? Number(mergedProject.logoOpacity) : null,
-      layout: mergedProject.design_overrides?.layout || null,
-      back: mergedProject.design_overrides?.back || null,
-    } : null;
+    const mergedProject = baseProject
+      ? getMergedProjectDesign(baseProject, stopIdx, att.ticket_id)
+      : null;
+    const design = mergedProject
+      ? {
+          template: mergedProject.template || "default",
+          palette: mergedProject.palette || null,
+          font: mergedProject.font || null,
+          coverImage: mergedProject.coverImage || null,
+          logoText:
+            mergedProject.logoText !== undefined && mergedProject.logoText !== null
+              ? mergedProject.logoText
+              : null,
+          logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+          logoImage: mergedProject.logoImage || null,
+          logoColorMode: mergedProject.logoColorMode || null,
+          logoOpacity:
+            mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
+              ? Number(mergedProject.logoOpacity)
+              : null,
+          layout: mergedProject.design_overrides?.layout || null,
+          back: mergedProject.design_overrides?.back || null,
+        }
+      : null;
 
     tickets.push({
       id: att.id,
       title: event?.title || "Event Ticket",
       cover: event?.cover || "/afrobeats_night.png",
-      date: stop?.date || (event?.tour_stops?.[0]?.date || "Date TBA"),
-      time: stop?.time || (event?.tour_stops?.[0]?.time || "Time TBA"),
+      date: stop?.date || event?.tour_stops?.[0]?.date || "Date TBA",
+      time: stop?.time || event?.tour_stops?.[0]?.time || "Time TBA",
       seat: att.names || "General Admission",
       passengerName: att.names || user.username || "Guest",
       passengerProfile: user.profile || null,
@@ -229,20 +239,30 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
 
     if (issuedTickets.length > 0) {
       for (const t of issuedTickets) {
-        const mergedProject = baseProject ? getMergedProjectDesign(baseProject, 0, t.tier || "") : null;
-        const design = mergedProject ? {
-          template: mergedProject.template || "default",
-          palette: mergedProject.palette || null,
-          font: mergedProject.font || null,
-          coverImage: mergedProject.coverImage || null,
-          logoText: mergedProject.logoText !== undefined && mergedProject.logoText !== null ? mergedProject.logoText : null,
-          logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
-          logoImage: mergedProject.logoImage || null,
-          logoColorMode: mergedProject.logoColorMode || null,
-          logoOpacity: mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null ? Number(mergedProject.logoOpacity) : null,
-          layout: mergedProject.design_overrides?.layout || null,
-          back: mergedProject.design_overrides?.back || null,
-        } : null;
+        const mergedProject = baseProject
+          ? getMergedProjectDesign(baseProject, 0, t.tier || "")
+          : null;
+        const design = mergedProject
+          ? {
+              template: mergedProject.template || "default",
+              palette: mergedProject.palette || null,
+              font: mergedProject.font || null,
+              coverImage: mergedProject.coverImage || null,
+              logoText:
+                mergedProject.logoText !== undefined && mergedProject.logoText !== null
+                  ? mergedProject.logoText
+                  : null,
+              logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+              logoImage: mergedProject.logoImage || null,
+              logoColorMode: mergedProject.logoColorMode || null,
+              logoOpacity:
+                mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
+                  ? Number(mergedProject.logoOpacity)
+                  : null,
+              layout: mergedProject.design_overrides?.layout || null,
+              back: mergedProject.design_overrides?.back || null,
+            }
+          : null;
 
         tickets.push({
           id: t.id,
@@ -276,19 +296,27 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       }
     } else {
       const mergedProject = baseProject ? getMergedProjectDesign(baseProject, 0, "") : null;
-      const design = mergedProject ? {
-        template: mergedProject.template || "default",
-        palette: mergedProject.palette || null,
-        font: mergedProject.font || null,
-        coverImage: mergedProject.coverImage || null,
-        logoText: mergedProject.logoText !== undefined && mergedProject.logoText !== null ? mergedProject.logoText : null,
-        logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
-        logoImage: mergedProject.logoImage || null,
-        logoColorMode: mergedProject.logoColorMode || null,
-        logoOpacity: mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null ? Number(mergedProject.logoOpacity) : null,
-        layout: mergedProject.design_overrides?.layout || null,
-        back: mergedProject.design_overrides?.back || null,
-      } : null;
+      const design = mergedProject
+        ? {
+            template: mergedProject.template || "default",
+            palette: mergedProject.palette || null,
+            font: mergedProject.font || null,
+            coverImage: mergedProject.coverImage || null,
+            logoText:
+              mergedProject.logoText !== undefined && mergedProject.logoText !== null
+                ? mergedProject.logoText
+                : null,
+            logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+            logoImage: mergedProject.logoImage || null,
+            logoColorMode: mergedProject.logoColorMode || null,
+            logoOpacity:
+              mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
+                ? Number(mergedProject.logoOpacity)
+                : null,
+            layout: mergedProject.design_overrides?.layout || null,
+            back: mergedProject.design_overrides?.back || null,
+          }
+        : null;
 
       tickets.push({
         id: booking.id,

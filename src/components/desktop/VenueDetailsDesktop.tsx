@@ -132,10 +132,7 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                 )}
               </div>
               <Button asChild variant="outline" size="sm" className="rounded-full">
-                <Link
-                  to="/f/$eventId/review"
-                  params={{ eventId: venue.id }}
-                >
+                <Link to="/f/$eventId/review" params={{ eventId: venue.id }}>
                   Leave a Review
                 </Link>
               </Button>
@@ -170,17 +167,28 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                             />
                           ))}
                           <span className="ml-2 text-[10px]">
-                            {new Date(r.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                            {new Date(r.created_at).toLocaleDateString(undefined, {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })}
                           </span>
                         </div>
                       </div>
                     </div>
                     {r.title && <p className="mt-3 font-semibold text-foreground">{r.title}</p>}
-                    {r.body && <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{r.body}</p>}
+                    {r.body && (
+                      <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+                        {r.body}
+                      </p>
+                    )}
                     {r.tags && r.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {r.tags.map((tag: string) => (
-                          <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-secondary text-muted-foreground font-medium capitalize">
+                          <span
+                            key={tag}
+                            className="text-[10px] px-2 py-0.5 rounded-md bg-secondary text-muted-foreground font-medium capitalize"
+                          >
                             {tag.replace(/_/g, " ")}
                           </span>
                         ))}

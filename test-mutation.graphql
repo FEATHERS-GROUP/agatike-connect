@@ -1,5 +1,7 @@
 mutation TestMutation {
-  insert_event_feedback_one(object: { venue_id: "00000000-0000-0000-0000-000000000000", rating: 5 }) {
+  insert_event_feedback_one(
+    object: { venue_id: "00000000-0000-0000-0000-000000000000", rating: 5 }
+  ) {
     id
   }
 }

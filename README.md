@@ -1569,24 +1569,25 @@ flowchart TD
 
 **Key state in `create-organizer.tsx`:**
 
-| State         | Type      | Purpose                                            |
-| ------------- | --------- | -------------------------------------------------- |
-| `otpStep`     | `boolean` | Whether we're showing the OTP confirmation view    |
-| `otpToken`    | `string`  | JWT token returned from `sendSignupOtp`            |
-| `otpInput`    | `string`  | The user-typed 6-digit verification code           |
-| `isSendingOtp`| `boolean` | Loading state while waiting for the email to send  |
+| State          | Type      | Purpose                                           |
+| -------------- | --------- | ------------------------------------------------- |
+| `otpStep`      | `boolean` | Whether we're showing the OTP confirmation view   |
+| `otpToken`     | `string`  | JWT token returned from `sendSignupOtp`           |
+| `otpInput`     | `string`  | The user-typed 6-digit verification code          |
+| `isSendingOtp` | `boolean` | Loading state while waiting for the email to send |
 
 ### Server Functions
 
-| Function                 | File             | Description                                                                               |
-| ------------------------ | ---------------- | ----------------------------------------------------------------------------------------- |
-| `sendSignupOtp`          | `api/auth.ts`    | Generates OTP, hashes it, signs a 15-min JWT, sends email via Resend, returns the token  |
-| `signupUser`             | `api/auth.ts`    | Validates `otpToken` + `otp` via JWT + bcrypt before creating the user account            |
-| `createOrganizerAccount` | `api/organizers.ts` | Validates `otpToken` + `otp` via JWT + bcrypt before creating the organizer account    |
+| Function                 | File                | Description                                                                             |
+| ------------------------ | ------------------- | --------------------------------------------------------------------------------------- |
+| `sendSignupOtp`          | `api/auth.ts`       | Generates OTP, hashes it, signs a 15-min JWT, sends email via Resend, returns the token |
+| `signupUser`             | `api/auth.ts`       | Validates `otpToken` + `otp` via JWT + bcrypt before creating the user account          |
+| `createOrganizerAccount` | `api/organizers.ts` | Validates `otpToken` + `otp` via JWT + bcrypt before creating the organizer account     |
 
 ### OTP Email Template
 
 The OTP email is a branded HTML email sent via the **Resend API** with:
+
 - An orange header matching the Agatike brand color (`#F2571D`)
 - The 6-digit code displayed large and bold in the center
 - A 15-minute expiry notice in the footer
@@ -1602,11 +1603,11 @@ Users can delete their account from the **Settings → Danger Zone** section. Fo
 
 ### Soft-Delete vs Hard-Delete
 
-| Scenario              | `active` | `banned` | Login behaviour                                                                    |
-| --------------------- | -------- | -------- | ---------------------------------------------------------------------------------- |
-| Normal account        | `true`   | `false`  | Login succeeds                                                                     |
-| Self-deleted account  | `false`  | `false`  | Login returns: `"This account no longer exists."`                                  |
-| Admin-banned account  | `false`  | `true`   | Login returns: `"Your account has been suspended. Please contact support at..."`   |
+| Scenario             | `active` | `banned` | Login behaviour                                                                  |
+| -------------------- | -------- | -------- | -------------------------------------------------------------------------------- |
+| Normal account       | `true`   | `false`  | Login succeeds                                                                   |
+| Self-deleted account | `false`  | `false`  | Login returns: `"This account no longer exists."`                                |
+| Admin-banned account | `false`  | `true`   | Login returns: `"Your account has been suspended. Please contact support at..."` |
 
 This distinction is critical: a banned user gets a specific message so they understand why they cannot log in, while a self-deleted user just sees a generic "not found" style error.
 
@@ -1614,10 +1615,10 @@ This distinction is critical: a banned user gets a specific message so they unde
 
 Both columns must exist on the `users` table:
 
-| Column   | Type      | Default | Purpose                                                          |
-| -------- | --------- | ------- | ---------------------------------------------------------------- |
-| `active` | `boolean` | `true`  | Whether the account is accessible. Set to `false` on deletion    |
-| `banned` | `boolean` | `false` | Whether the account was banned by an admin. Read-only for users  |
+| Column   | Type      | Default | Purpose                                                         |
+| -------- | --------- | ------- | --------------------------------------------------------------- |
+| `active` | `boolean` | `true`  | Whether the account is accessible. Set to `false` on deletion   |
+| `banned` | `boolean` | `false` | Whether the account was banned by an admin. Read-only for users |
 
 > The `add_banned_column.js` migration script in the project root adds the `banned` column (`NOT NULL DEFAULT false`) to the `users` table via the Hasura SQL API.
 
@@ -1669,7 +1670,7 @@ export const deactivateUserAccount = createServerFn({ method: "POST" }).handler(
     `mutation DeactivateUser($id: uuid!) {
       update_users_by_pk(pk_columns: { id: $id }, _set: { active: false }) { id }
     }`,
-    { id: payload.sub }
+    { id: payload.sub },
   );
 
   // 4. Destroy the session — user is immediately logged out

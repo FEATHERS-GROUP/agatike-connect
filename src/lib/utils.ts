@@ -86,25 +86,21 @@ export function mapDbEventToEvent(e: any): any {
   const isMock = !!e.organizer || !!e.host || !!e.cinema;
   if (isMock) return e;
 
-  const date = Array.isArray(e.tour_stops) && e.tour_stops[0]
-    ? e.tour_stops[0].date
-    : "TBD";
-  const time = Array.isArray(e.tour_stops) && e.tour_stops[0]
-    ? e.tour_stops[0].time
-    : "";
-  const city = Array.isArray(e.tour_stops) && e.tour_stops[0]
-    ? e.tour_stops[0].city
-    : e.workspaces?.city || "TBD";
-  const venue = Array.isArray(e.tour_stops) && e.tour_stops[0]
-    ? e.tour_stops[0].venue
-    : "";
+  const date = Array.isArray(e.tour_stops) && e.tour_stops[0] ? e.tour_stops[0].date : "TBD";
+  const time = Array.isArray(e.tour_stops) && e.tour_stops[0] ? e.tour_stops[0].time : "";
+  const city =
+    Array.isArray(e.tour_stops) && e.tour_stops[0]
+      ? e.tour_stops[0].city
+      : e.workspaces?.city || "TBD";
+  const venue = Array.isArray(e.tour_stops) && e.tour_stops[0] ? e.tour_stops[0].venue : "";
 
   // Count unique people going (distinct by email) — not ticket count
   const attendees = e.event_attendees_aggregate?.aggregate?.count ?? 0;
-  
-  const price = e.event_tickets && e.event_tickets.length > 0 
-    ? Math.min(...e.event_tickets.map((t: any) => t.cost || 0)) 
-    : 0;
+
+  const price =
+    e.event_tickets && e.event_tickets.length > 0
+      ? Math.min(...e.event_tickets.map((t: any) => t.cost || 0))
+      : 0;
 
   const currency = e.workspaces?.currency || e.workspaces?.wallet?.currency || "$";
   const organizer = e.workspaces?.organizer?.name || e.workspaces?.name || "Organizer";
@@ -138,4 +134,3 @@ export function isWeekendEvent(dateStr: string): boolean {
   const day = date.getDay();
   return day === 0 || day === 5 || day === 6;
 }
-

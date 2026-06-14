@@ -124,25 +124,22 @@ export default function VenueMap({
       };
     })
     .filter(
-      (stop) =>
-        !isNaN(stop.lat) &&
-        !isNaN(stop.lng) &&
-        isFinite(stop.lat) &&
-        isFinite(stop.lng)
+      (stop) => !isNaN(stop.lat) && !isNaN(stop.lng) && isFinite(stop.lat) && isFinite(stop.lng),
     );
 
-  const points = validStops.length > 0
-    ? validStops
-    : [
-        {
-          id: "default",
-          lat: parsedLat,
-          lng: parsedLng,
-          venue: venue || "",
-          city: city || "",
-          address: "",
-        },
-      ];
+  const points =
+    validStops.length > 0
+      ? validStops
+      : [
+          {
+            id: "default",
+            lat: parsedLat,
+            lng: parsedLng,
+            venue: venue || "",
+            city: city || "",
+            address: "",
+          },
+        ];
 
   let mapCenter: [number, number] = [parsedLat, parsedLng];
   let mapBounds: [[number, number], [number, number]] | undefined = undefined;
@@ -162,9 +159,8 @@ export default function VenueMap({
     mapCenter = [validStops[0].lat, validStops[0].lng];
   }
 
-  const activeStop = validStops.length > 0
-    ? validStops[selectedStopIdx] || validStops[0]
-    : points[0];
+  const activeStop =
+    validStops.length > 0 ? validStops[selectedStopIdx] || validStops[0] : points[0];
 
   const activeLat = activeStop.lat;
   const activeLng = activeStop.lng;
@@ -173,12 +169,7 @@ export default function VenueMap({
 
   return (
     <>
-      <MapContainer
-        center={mapCenter}
-        zoom={15}
-        className="h-full w-full z-0"
-        zoomControl={false}
-      >
+      <MapContainer center={mapCenter} zoom={15} className="h-full w-full z-0" zoomControl={false}>
         <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
         <MapUpdater center={[activeLat, activeLng]} bounds={mapBounds} />
         {points.map((pt, idx) => {
@@ -193,7 +184,9 @@ export default function VenueMap({
                 <div className="p-1 text-foreground">
                   <p className="font-bold text-sm">{pt.venue || "Venue"}</p>
                   {pt.city && <p className="text-xs text-muted-foreground mt-0.5">{pt.city}</p>}
-                  {pt.address && <p className="text-xs text-muted-foreground mt-0.5">{pt.address}</p>}
+                  {pt.address && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{pt.address}</p>
+                  )}
                 </div>
               </Popup>
             </Marker>

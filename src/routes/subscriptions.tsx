@@ -19,7 +19,8 @@ const mockSubscriptions = [
     status: "Active",
     nextBilling: "2026-07-14",
     price: "$50.00",
-    cover: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=400&auto=format&fit=crop",
+    cover:
+      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "sub_2",
@@ -29,7 +30,8 @@ const mockSubscriptions = [
     status: "Expiring Soon",
     nextBilling: "2026-06-20",
     price: "$30.00",
-    cover: "https://images.unsplash.com/photo-1519315901367-f34f9274ceb3?q=80&w=400&auto=format&fit=crop",
+    cover:
+      "https://images.unsplash.com/photo-1519315901367-f34f9274ceb3?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "sub_3",
@@ -39,7 +41,8 @@ const mockSubscriptions = [
     status: "Active",
     nextBilling: "2026-07-01",
     price: "$150.00",
-    cover: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=400&auto=format&fit=crop",
+    cover:
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=400&auto=format&fit=crop",
   },
 ];
 
@@ -82,7 +85,8 @@ function SubscriptionCard({ sub }: { sub: any }) {
               </p>
             </div>
             <div className="text-xs font-bold text-primary mt-1.5">
-              {sub.price} <span className="text-muted-foreground font-normal text-[10px]">/ {sub.type}</span>
+              {sub.price}{" "}
+              <span className="text-muted-foreground font-normal text-[10px]">/ {sub.type}</span>
             </div>
           </div>
         </div>
@@ -150,9 +154,7 @@ function SubscriptionCard({ sub }: { sub: any }) {
         <DialogContent className="max-w-sm rounded-3xl w-[90vw]">
           <DialogHeader>
             <DialogTitle>Renew Subscription</DialogTitle>
-            <DialogDescription>
-              You are renewing {sub.title} for another month.
-            </DialogDescription>
+            <DialogDescription>You are renewing {sub.title} for another month.</DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="bg-secondary/40 p-4 rounded-2xl flex justify-between items-center">
@@ -176,9 +178,7 @@ function SubscriptionCard({ sub }: { sub: any }) {
         <DialogContent className="max-w-xs rounded-3xl w-[90vw]">
           <DialogHeader className="text-center pb-2">
             <DialogTitle className="text-center">{sub.title}</DialogTitle>
-            <DialogDescription className="text-center">
-              Show this at {sub.venue}
-            </DialogDescription>
+            <DialogDescription className="text-center">Show this at {sub.venue}</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center py-6 space-y-6">
             <div className="bg-white p-4 rounded-2xl">

@@ -187,7 +187,12 @@ export function useFirestoreUserMessages(
     return () => unsubscribeMessages();
   }, [activeChatId, currentUserId]);
 
-  const sendMessage = async (text: string, activeChat: ChatChannel, mediaUrl?: string, eventCard?: any) => {
+  const sendMessage = async (
+    text: string,
+    activeChat: ChatChannel,
+    mediaUrl?: string,
+    eventCard?: any,
+  ) => {
     if (!activeChatId) return;
 
     let senderId = currentUserId;

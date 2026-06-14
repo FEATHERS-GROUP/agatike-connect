@@ -1,5 +1,14 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Calendar, Users, CheckCircle2, Ticket, ChevronUp, Minus, Plus } from "lucide-react";
+import {
+  ChevronLeft,
+  Calendar,
+  Users,
+  CheckCircle2,
+  Ticket,
+  ChevronUp,
+  Minus,
+  Plus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
@@ -303,13 +312,9 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     <div className="min-h-screen bg-background pb-28">
       {/* Hero Image Header */}
       <div className="relative h-48 w-full overflow-hidden bg-muted">
-        <img
-          src={venue.cover_url}
-          alt={venue.name}
-          className="h-full w-full object-cover"
-        />
+        <img src={venue.cover_url} alt={venue.name} className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-black/25 to-black/55" />
-        
+
         {/* Back Button */}
         <Link
           to="/venues/$venueId"
@@ -318,7 +323,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         >
           <ChevronLeft className="h-6 w-6" />
         </Link>
-        
+
         {/* Venue Info Overlay */}
         <div className="absolute bottom-4 left-4 right-4 text-white">
           <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/95 text-primary-foreground px-2 py-0.5 rounded-full">
@@ -385,7 +390,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                   <Ticket className="w-4 h-4" /> Select Tickets
                 </label>
                 <p className="text-xs text-muted-foreground mb-3 leading-normal">
-                  Specify how many tickets you'd like to purchase for this visit using the selector buttons.
+                  Specify how many tickets you'd like to purchase for this visit using the selector
+                  buttons.
                 </p>
                 <div className="space-y-3">
                   {(venue?.pricing_tiers?.length > 0
@@ -657,7 +663,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                           amount: 0,
                         };
                         return (
-                           <div key={i} className="flex justify-between">
+                          <div key={i} className="flex justify-between">
                             <span className="text-muted-foreground">
                               {name} <span className="text-xs opacity-70">x{qty}</span>
                             </span>

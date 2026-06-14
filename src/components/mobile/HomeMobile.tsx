@@ -28,7 +28,8 @@ const movies: any[] = [
     cinema: "IMAX Nairobi",
     city: "Nairobi",
     showtimes: ["10:00 AM", "1:30 PM", "5:00 PM", "8:30 PM"],
-    synopsis: "The people of Wakanda fight to protect their home from intervening world powers as they mourn the death of King T'Challa.",
+    synopsis:
+      "The people of Wakanda fight to protect their home from intervening world powers as they mourn the death of King T'Challa.",
     price: 12,
     currency: "USD",
   },
@@ -42,7 +43,8 @@ const movies: any[] = [
     cinema: "Silverbird Lagos",
     city: "Lagos",
     showtimes: ["11:00 AM", "2:00 PM", "6:00 PM"],
-    synopsis: "A story of the Agojie, the all-female unit of warriors who protected the African Kingdom of Dahomey.",
+    synopsis:
+      "A story of the Agojie, the all-female unit of warriors who protected the African Kingdom of Dahomey.",
     price: 10,
     currency: "USD",
   },
@@ -56,7 +58,8 @@ const movies: any[] = [
     cinema: "Nu Metro Accra",
     city: "Accra",
     showtimes: ["10:30 AM", "1:00 PM", "4:30 PM", "8:00 PM"],
-    synopsis: "A young woman is forced to team up with her late father's business partner to save their family business.",
+    synopsis:
+      "A young woman is forced to team up with her late father's business partner to save their family business.",
     price: 9,
     currency: "USD",
   },
@@ -70,7 +73,8 @@ const movies: any[] = [
     cinema: "IMAX Nairobi",
     city: "Nairobi",
     showtimes: ["2:30 PM", "6:00 PM", "9:00 PM"],
-    synopsis: "In a Dakar suburb, young people disappear into the sea and come back to seek revenge on those who wronged them.",
+    synopsis:
+      "In a Dakar suburb, young people disappear into the sea and come back to seek revenge on those who wronged them.",
     price: 10,
     currency: "USD",
   },
@@ -89,7 +93,9 @@ const stories: any[] = [
     id: "s2",
     name: "Lagos Nights",
     avatar: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=150&h=150&fit=crop",
-    items: [{ id: "s2i1", image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800" }],
+    items: [
+      { id: "s2i1", image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800" },
+    ],
   },
   {
     id: "s3",
@@ -103,13 +109,17 @@ const stories: any[] = [
     id: "s4",
     name: "Nairobi FC",
     avatar: "https://images.unsplash.com/photo-1459865264687-595d652de67e?w=150&h=150&fit=crop",
-    items: [{ id: "s4i1", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800" }],
+    items: [
+      { id: "s4i1", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800" },
+    ],
   },
   {
     id: "s5",
     name: "Accra Vibes",
     avatar: "https://images.unsplash.com/photo-1545484152-c8e5b50c6fce?w=150&h=150&fit=crop",
-    items: [{ id: "s5i1", image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800" }],
+    items: [
+      { id: "s5i1", image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800" },
+    ],
   },
 ];
 
@@ -223,7 +233,8 @@ function UpcomingEvents({ events }: any) {
                 <span className="truncate">{event.city}</span>
               </div>
               <div className="mt-1 text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                <Users className="h-3 w-3" /> People going · {(event.attendees || 0).toLocaleString()}
+                <Users className="h-3 w-3" /> People going ·{" "}
+                {(event.attendees || 0).toLocaleString()}
               </div>
             </div>
           </Link>
@@ -291,7 +302,9 @@ export function HomeMobile() {
   });
 
   const mappedEvents = useMemo(() => {
-    const publicEvents = dbEvents.filter((e: any) => e.allowed_public === true && e.deleted !== true);
+    const publicEvents = dbEvents.filter(
+      (e: any) => e.allowed_public === true && e.deleted !== true,
+    );
     return publicEvents.map(mapDbEventToEvent).filter(Boolean);
   }, [dbEvents]);
 
@@ -489,7 +502,9 @@ export function HomeMobile() {
               })}
 
               {/* Catch-all to ensure carousels always render if the feed is too short */}
-              {sortedPosts.length <= carouselPositions[0] && <UpcomingEvents events={weekendEvents} />}
+              {sortedPosts.length <= carouselPositions[0] && (
+                <UpcomingEvents events={weekendEvents} />
+              )}
               {sortedPosts.length <= carouselPositions[1] && (
                 <PopularOrganizers
                   organizersLoading={organizersLoading}

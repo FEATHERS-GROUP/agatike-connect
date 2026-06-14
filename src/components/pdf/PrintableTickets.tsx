@@ -50,9 +50,7 @@ export function PrintableTicket({
 }) {
   const isCustomDesign = !!ticket.design;
   const width = isCustomDesign ? "720px" : "800px";
-  const height = isCustomDesign
-    ? `${getCustomTemplateHeight(ticket.design.template)}px`
-    : "300px";
+  const height = isCustomDesign ? `${getCustomTemplateHeight(ticket.design.template)}px` : "300px";
 
   return (
     <div className="absolute top-0 left-0 -z-50 opacity-0 pointer-events-none flex flex-col gap-4">
@@ -78,7 +76,7 @@ export function PrintableTicket({
             time={ticket.time}
             seat={ticket.passengerName}
             price={ticket.price?.toString() || "0"}
-            currency={ticket.isVenueBooking ? (ticket.currency || "RWF") : "RWF"}
+            currency={ticket.isVenueBooking ? ticket.currency || "RWF" : "RWF"}
             cover={ticket.design.coverImage || ticket.cover || ""}
             logoText={ticket.design.logoText || "Agatike"}
             logoImage={ticket.design.logoImage}
@@ -134,7 +132,7 @@ export function PrintableTicket({
             time={ticket.time}
             seat={ticket.passengerName}
             price={ticket.price?.toString() || "0"}
-            currency={ticket.isVenueBooking ? (ticket.currency || "RWF") : "RWF"}
+            currency={ticket.isVenueBooking ? ticket.currency || "RWF" : "RWF"}
             cover={ticket.design.coverImage || ticket.cover || ""}
             logoText={ticket.design.logoText || "Agatike"}
             logoImage={ticket.design.logoImage}
@@ -171,16 +169,19 @@ export function PrintableTicket({
   );
 }
 
-function DynamicPrintablePassBack({ ticket, config }: { ticket: any; config?: TicketTemplateConfig }) {
+function DynamicPrintablePassBack({
+  ticket,
+  config,
+}: {
+  ticket: any;
+  config?: TicketTemplateConfig;
+}) {
   const bgColor = config?.bgColor || "#1a1a1a";
   const textColor = config?.textColor || "#ffffff";
   const accentColor = config?.accentColor || "#ea580c";
 
   return (
-    <div
-      className="w-full h-full flex"
-      style={{ backgroundColor: bgColor, color: textColor }}
-    >
+    <div className="w-full h-full flex" style={{ backgroundColor: bgColor, color: textColor }}>
       {/* Left stub: similar to front but styled for back */}
       <div className="w-[120px] bg-white text-black flex flex-col items-center justify-between py-6 border-r-2 border-dashed border-gray-400">
         <div className="rounded bg-gray-100 p-2 flex flex-col items-center gap-1.5">
@@ -209,7 +210,7 @@ function DynamicPrintablePassBack({ ticket, config }: { ticket: any; config?: Ti
             dangerouslySetInnerHTML={{ __html: DEFAULT_TERMS_HTML }}
           />
         </div>
-        
+
         <div className="relative z-10 text-[10px] opacity-60 flex justify-between border-t border-white/10 pt-3">
           <p>Organized by Agatike Connect Partners</p>
           <p>Support: support@agatike.com</p>
@@ -508,8 +509,10 @@ function DynamicPrintablePass({ ticket, config }: { ticket: any; config?: Ticket
             <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">
               {labels.gate || "Gate"}
             </p>
-            <p className={`font-black ${ticket.ticketCategory === "sports" ? "text-2xl" : "text-xs"}`}>
-              {ticket.ticketCategory === "sports" ? (ticket.gate || "Gate 3") : "Main Entrance"}
+            <p
+              className={`font-black ${ticket.ticketCategory === "sports" ? "text-2xl" : "text-xs"}`}
+            >
+              {ticket.ticketCategory === "sports" ? ticket.gate || "Gate 3" : "Main Entrance"}
             </p>
           </div>
           <div>

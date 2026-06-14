@@ -89,7 +89,7 @@ export function EventDetailsDesktop({
   const category = ev.category || ev.genre || "Event";
   const attendeesCount = isMock
     ? ev.attendees || ev.spots || 0
-    : ev.event_attendees_aggregate?.aggregate?.count ?? 0;
+    : (ev.event_attendees_aggregate?.aggregate?.count ?? 0);
 
   const isExperience = experienceCategories.includes(category);
 
@@ -155,7 +155,9 @@ export function EventDetailsDesktop({
 
   const activeTicketTiers = allTicketTiers.filter((t: any) => {
     // Filter by tour stop
-    const rightStop = isExperience ? true : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
+    const rightStop = isExperience
+      ? true
+      : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
     // Hide sold-out tiers
     const hasInventory = t.remaining > 0;
     // Hide expired tiers
@@ -279,7 +281,11 @@ export function EventDetailsDesktop({
               </Button>
               {organizerId && following && isLoggedIn && (
                 <Button asChild variant="outline" size="icon" className="rounded-full">
-                  <Link to="/$userId/message" params={{ userId: user?.id }} search={{ chatId: organizerId, eventId: ev.id }}>
+                  <Link
+                    to="/$userId/message"
+                    params={{ userId: user?.id }}
+                    search={{ chatId: organizerId, eventId: ev.id }}
+                  >
                     <MessageCircle className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -355,7 +361,8 @@ export function EventDetailsDesktop({
               <div className="mt-4 flex flex-col gap-3">
                 <div className="flex -space-x-3 overflow-hidden">
                   {attendeesList.slice(0, 8).map((att: any, i: number) => {
-                    const avatarUrl = att.users?.profile || `https://i.pravatar.cc/100?img=${i + 20}`;
+                    const avatarUrl =
+                      att.users?.profile || `https://i.pravatar.cc/100?img=${i + 20}`;
                     return (
                       <img
                         key={att.id || i}
@@ -376,7 +383,10 @@ export function EventDetailsDesktop({
                     const name = att.users?.handle ? `@${att.users.handle}` : att.names;
                     if (!name) return null;
                     return (
-                      <span key={att.id || i} className="text-xs bg-secondary/50 text-muted-foreground px-2.5 py-1 rounded-full border border-border/30 font-medium">
+                      <span
+                        key={att.id || i}
+                        className="text-xs bg-secondary/50 text-muted-foreground px-2.5 py-1 rounded-full border border-border/30 font-medium"
+                      >
                         {name}
                       </span>
                     );
@@ -533,7 +543,14 @@ export function EventDetailsDesktop({
                       </div>
                     }
                   >
-                    <VenueMap lat={lat} lng={lng} venue={venue} city={city} tourStops={tourStops} selectedStopIdx={selectedStopIdx} />
+                    <VenueMap
+                      lat={lat}
+                      lng={lng}
+                      venue={venue}
+                      city={city}
+                      tourStops={tourStops}
+                      selectedStopIdx={selectedStopIdx}
+                    />
                   </Suspense>
                 ) : (
                   <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground">
@@ -596,7 +613,11 @@ export function EventDetailsDesktop({
                       </span>
                     </div>
                     <div className="text-[10px] text-muted-foreground mt-0.5 mb-2">
-                      {new Date(r.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                      {new Date(r.created_at).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </div>
                     {r.title && <p className="mt-2 text-sm font-semibold">{r.title}</p>}
                     {r.body && (
@@ -605,7 +626,10 @@ export function EventDetailsDesktop({
                     {r.tags && r.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {r.tags.map((tag: string) => (
-                          <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-secondary text-muted-foreground font-medium capitalize">
+                          <span
+                            key={tag}
+                            className="text-[10px] px-2 py-0.5 rounded-md bg-secondary text-muted-foreground font-medium capitalize"
+                          >
                             {tag.replace(/_/g, " ")}
                           </span>
                         ))}

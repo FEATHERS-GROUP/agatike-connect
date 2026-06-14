@@ -709,5 +709,3 @@ export const getWorkspaceTicketProjects = createServerFn({ method: "POST" }).han
     return data.ticket_projects || [];
   },
 );
-
-

@@ -178,10 +178,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
               )}
             </div>
             <Button asChild variant="outline" size="sm" className="rounded-full h-8">
-              <Link
-                to="/f/$eventId/review"
-                params={{ eventId: venue.id }}
-              >
+              <Link to="/f/$eventId/review" params={{ eventId: venue.id }}>
                 Leave a Review
               </Link>
             </Button>
@@ -210,7 +207,11 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                     </span>
                   </div>
                   <div className="text-[10px] text-muted-foreground mt-0.5 mb-2">
-                    {new Date(r.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                    {new Date(r.created_at).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </div>
                   {r.title && <p className="mt-2 text-sm font-semibold">{r.title}</p>}
                   {r.body && (
@@ -221,7 +222,10 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                   {r.tags && r.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-3">
                       {r.tags.map((tag: string) => (
-                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-secondary text-muted-foreground font-medium capitalize">
+                        <span
+                          key={tag}
+                          className="text-[10px] px-2 py-0.5 rounded-md bg-secondary text-muted-foreground font-medium capitalize"
+                        >
                           {tag.replace(/_/g, " ")}
                         </span>
                       ))}
@@ -262,16 +266,14 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
             onClick={() => setIsTicketsExpanded(!isTicketsExpanded)}
           >
             <div className="flex items-center gap-1.5">
-              <span className="text-sm text-muted-foreground font-semibold">Entry Ticket Prices</span>
+              <span className="text-sm text-muted-foreground font-semibold">
+                Entry Ticket Prices
+              </span>
               <ChevronUp
                 className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${isTicketsExpanded ? "rotate-180" : ""}`}
               />
             </div>
-            {!isTicketsExpanded && (
-              <span className="text-xs text-primary font-bold">
-                View All
-              </span>
-            )}
+            {!isTicketsExpanded && <span className="text-xs text-primary font-bold">View All</span>}
           </div>
 
           {/* Pricing Tiers List (Expanded) */}

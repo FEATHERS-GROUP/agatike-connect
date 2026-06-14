@@ -1,11 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  ChevronLeft,
-  Lock,
-  MapPin,
-  Calendar,
-  CheckCircle2,
-} from "lucide-react";
+import { ChevronLeft, Lock, MapPin, Calendar, CheckCircle2 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
@@ -77,7 +71,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         const parsedCart = JSON.parse(saved);
         setCart(parsedCart);
       }
-    } catch { }
+    } catch {}
     setIsHydrated(true);
   }, [storageKey]);
 
@@ -152,10 +146,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const isFormValid =
     assignMode === "me"
       ? attendees.length > 0 &&
-      !!attendees[0].firstName &&
-      !!attendees[0].lastName &&
-      !!attendees[0].email &&
-      !!attendees[0].country
+        !!attendees[0].firstName &&
+        !!attendees[0].lastName &&
+        !!attendees[0].email &&
+        !!attendees[0].country
       : attendees.every((a) => a.firstName && a.lastName && a.email && a.country);
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
@@ -167,13 +161,13 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         const sourceAttendee =
           assignMode === "me"
             ? {
-              ...a,
-              firstName: attendees[0].firstName,
-              lastName: attendees[0].lastName,
-              email: attendees[0].email,
-              phone: attendees[0].phone,
-              country: attendees[0].country,
-            }
+                ...a,
+                firstName: attendees[0].firstName,
+                lastName: attendees[0].lastName,
+                email: attendees[0].email,
+                phone: attendees[0].phone,
+                country: attendees[0].country,
+              }
             : a;
 
         return {
@@ -205,13 +199,13 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         const sourceAttendee =
           assignMode === "me"
             ? {
-              ...a,
-              firstName: attendees[0].firstName,
-              lastName: attendees[0].lastName,
-              email: attendees[0].email,
-              phone: attendees[0].phone,
-              country: attendees[0].country,
-            }
+                ...a,
+                firstName: attendees[0].firstName,
+                lastName: attendees[0].lastName,
+                email: attendees[0].email,
+                phone: attendees[0].phone,
+                country: attendees[0].country,
+              }
             : a;
         return {
           id: returned[idx]?.id || `temp_${idx}`,
@@ -406,19 +400,21 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                 <div className="flex bg-muted/50 p-1 rounded-xl mb-6 w-fit">
                   <button
                     onClick={() => setAssignMode("me")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${assignMode === "me"
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      assignMode === "me"
                         ? "bg-background shadow text-foreground"
                         : "text-muted-foreground hover:text-foreground"
-                      }`}
+                    }`}
                   >
                     Assign to Me (Faster)
                   </button>
                   <button
                     onClick={() => setAssignMode("others")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${assignMode === "others"
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      assignMode === "others"
                         ? "bg-background shadow text-foreground"
                         : "text-muted-foreground hover:text-foreground"
-                      }`}
+                    }`}
                   >
                     Assign Individually
                   </button>
