@@ -15,8 +15,8 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
 
   // Header with Agatike Logo
   const agatikeIconUrl = import.meta.env.PROD
-    ? "https://agatike.rw/agatike-logo-white.svg"
-    : `${appUrl}/agatike-logo-white.svg`;
+    ? "https://agatike.rw/agatike-icon.png"
+    : `${appUrl}/agatike-icon.png`;
 
   // Build Social Links HTML if available
   let socialsHtml = "";
@@ -148,9 +148,17 @@ export const sendTicketsEmail = createServerFn({ method: "POST" }).handler(async
     attachments, // Array of { filename: string, content: string (base64) }
   } = ctx.data as any;
 
+  const appUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:5173";
+  const agatikeIconUrl = import.meta.env.PROD
+    ? "https://agatike.rw/agatike-icon.png"
+    : `${appUrl}/agatike-icon.png`;
+
   const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
+          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Your Tickets are Here!</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">for ${venueName}</p>
       </div>
@@ -162,7 +170,8 @@ export const sendTicketsEmail = createServerFn({ method: "POST" }).handler(async
         <p>Enjoy your visit!</p>
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
-        <p style="font-size: 13px; color: #666; margin: 0;">Powered securely by <strong>Agatike Connect</strong></p>
+        <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
+        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -192,9 +201,17 @@ export const sendTicketsEmail = createServerFn({ method: "POST" }).handler(async
 export const sendProfileUpdateOTP = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { to, otp } = ctx.data as any;
 
+  const appUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:5173";
+  const agatikeIconUrl = import.meta.env.PROD
+    ? "https://agatike.rw/agatike-icon.png"
+    : `${appUrl}/agatike-icon.png`;
+
   const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
+          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Profile Update Verification</h2>
       </div>
       <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6; text-align: center;">
@@ -206,7 +223,8 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" }).handler(a
         <p style="font-size: 14px; color: #666;">If you did not request this change, please ignore this email.</p>
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
-        <p style="font-size: 13px; color: #666; margin: 0;">Powered securely by <strong>Agatike Connect</strong></p>
+        <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
+        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
