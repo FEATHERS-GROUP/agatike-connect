@@ -46,9 +46,9 @@ function ExplorePage() {
   }, [dbEvents]);
 
   const trendingEvents = useMemo(() => {
-    const getTicketsSold = (e: any) => e.event_tickets?.reduce((acc: number, t: any) => acc + (t.sold || 0), 0) || 0;
+    const getUniqueAttendees = (e: any) => e.event_attendees_aggregate?.aggregate?.count ?? 0;
     return [...publicEvents]
-      .sort((a, b) => getTicketsSold(b) - getTicketsSold(a))
+      .sort((a, b) => getUniqueAttendees(b) - getUniqueAttendees(a))
       .slice(0, 4);
   }, [publicEvents]);
 
@@ -167,8 +167,13 @@ function ExplorePage() {
                         <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2">
                           {e.title}
                         </h3>
-                        <div className="text-white/80 text-[10px] mt-1 flex items-center gap-1">
-                          <MapPin className="h-3 w-3" /> {city}
+                        <div className="text-white/80 text-[10px] mt-1 flex flex-col gap-1">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" /> {city}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Users className="h-3 w-3" /> People going · {(e.event_attendees_aggregate?.aggregate?.count ?? 0).toLocaleString()}
+                          </span>
                         </div>
                       </div>
                     </Link>
@@ -289,6 +294,9 @@ function ExplorePage() {
                           <span className="truncate">{new Date(date).toLocaleDateString()}</span>
                           <span>•</span>
                           <span className="truncate">{city}</span>
+                        </div>
+                        <div className="mt-1 text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                          <Users className="h-3 w-3" /> People going · {(event.event_attendees_aggregate?.aggregate?.count ?? 0).toLocaleString()}
                         </div>
                       </div>
                     </Link>

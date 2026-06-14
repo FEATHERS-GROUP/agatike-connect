@@ -99,7 +99,8 @@ export function mapDbEventToEvent(e: any): any {
     ? e.tour_stops[0].venue
     : "";
 
-  const attendees = e.event_tickets?.reduce((acc: number, t: any) => acc + (t.sold || 0), 0) || 0;
+  // Count unique people going (distinct by email) — not ticket count
+  const attendees = e.event_attendees_aggregate?.aggregate?.count ?? 0;
   
   const price = e.event_tickets && e.event_tickets.length > 0 
     ? Math.min(...e.event_tickets.map((t: any) => t.cost || 0)) 

@@ -35,7 +35,7 @@ export function EventCard({ event }: { event: Event }) {
               <MapPin className="h-3 w-3" /> {event.city}
             </span>
             <span className="inline-flex items-center gap-1">
-              <Users className="h-3 w-3" /> {event.attendees.toLocaleString()}
+              <Users className="h-3 w-3" /> People going · {(event.attendees || 0).toLocaleString()}
             </span>
           </div>
         </div>

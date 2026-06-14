@@ -150,6 +150,11 @@ const GET_PUBLIC_EVENTS = `
         updated_at
         form_id
       }
+      event_attendees_aggregate {
+        aggregate {
+          count(columns: email, distinct: true)
+        }
+      }
       ticket_projects {
         coverImage
         id
@@ -273,6 +278,11 @@ const GET_EVENT_BY_ID = `
         tour_stop_idx
         type
         updated_at
+      }
+      event_attendees_aggregate {
+        aggregate {
+          count(columns: email, distinct: true)
+        }
       }
       ticket_projects {
         coverImage

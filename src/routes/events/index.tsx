@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, SlidersHorizontal, ArrowLeft, Loader2, Calendar, MapPin } from "lucide-react";
+import { Search, SlidersHorizontal, ArrowLeft, Loader2, Calendar, MapPin, Users } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
@@ -94,10 +94,15 @@ function EventCard({ event }: { event: any }) {
           </p>
           <h3 className="mt-1 text-lg font-semibold leading-tight line-clamp-2">{event.title}</h3>
           {(venue || city) && (
-            <div className="mt-2 flex items-center gap-1 text-xs opacity-90">
-              <MapPin className="h-3 w-3" />
-              {venue ? `${venue}, ` : ""}
-              {city}
+            <div className="mt-2 flex flex-col gap-1 text-xs opacity-90">
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {venue ? `${venue}, ` : ""}
+                {city}
+              </span>
+              <span className="flex items-center gap-1">
+                <Users className="h-3 w-3" /> People going · {(event.event_attendees_aggregate?.aggregate?.count ?? event.attendees ?? 0).toLocaleString()}
+              </span>
             </div>
           )}
         </div>

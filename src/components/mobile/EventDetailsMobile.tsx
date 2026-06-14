@@ -15,7 +15,7 @@ import {
   CheckCircle2,
   MessageCircle,
 } from "lucide-react";
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
@@ -27,6 +27,7 @@ import {
   merch,
   experienceCategories,
 } from "@/lib/mock-data";
+
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 import { checkUserAttendance, getEventAttendees } from "@/api/attendees";
@@ -103,7 +104,7 @@ export function EventDetailsMobile({
     : [];
   const attendeesCount = isMock
     ? ev.attendees || ev.spots || 0
-    : ev.event_tickets?.reduce((acc: number, t: any) => acc + (parseInt(t.sold) || 0), 0) || 0;
+    : ev.event_attendees_aggregate?.aggregate?.count ?? 0;
 
   const lineup =
     Array.isArray(ev.lineup) && ev.lineup.length > 0
@@ -165,10 +166,21 @@ export function EventDetailsMobile({
     queryFn: () => checkUserAttendance({ data: { event_id: eventId } } as any),
   });
 
-  const { data: attendeesList = [] } = useQuery({
+  const { data: rawAttendeesList = [] } = useQuery({
     queryKey: ["event-attendees", eventId],
     queryFn: () => getEventAttendees({ data: { event_id: eventId } } as any),
   });
+
+  // Deduplicate by email so a user who bought multiple tickets only appears once
+  const attendeesList = useMemo(() => {
+    const seen = new Set<string>();
+    return rawAttendeesList.filter((att: any) => {
+      const key = att.email || att.user_id || att.id;
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [rawAttendeesList]);
 
   const reviews = feedbackData?.reviews || [];
   const avgRating = feedbackData?.aggregate?.avg?.rating

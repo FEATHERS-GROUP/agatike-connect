@@ -222,6 +222,9 @@ function UpcomingEvents({ events }: any) {
                 <span>•</span>
                 <span className="truncate">{event.city}</span>
               </div>
+              <div className="mt-1 text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                <Users className="h-3 w-3" /> People going · {(event.attendees || 0).toLocaleString()}
+              </div>
             </div>
           </Link>
         ))}
