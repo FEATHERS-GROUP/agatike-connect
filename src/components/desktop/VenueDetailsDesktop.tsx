@@ -17,6 +17,9 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
   });
 
   const reviews = feedbackData?.reviews || [];
+  const avgRating = feedbackData?.aggregate?.avg?.rating
+    ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1)
+    : "N/A";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -118,7 +121,16 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
           {/* Community Reviews */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Community reviews</h2>
+              <div>
+                <h2 className="text-xl font-semibold">Community reviews</h2>
+                {feedbackData?.aggregate?.count > 0 && (
+                  <div className="flex items-center gap-1.5 mt-0.5 text-sm font-medium text-muted-foreground">
+                    <Star className="h-4 w-4 fill-primary text-primary" />
+                    <span className="text-foreground">{avgRating}</span>
+                    <span>({feedbackData.aggregate.count} reviews)</span>
+                  </div>
+                )}
+              </div>
               <Button asChild variant="outline" size="sm" className="rounded-full">
                 <Link
                   to="/f/$eventId/review"
@@ -144,6 +156,11 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                               Verified
                             </span>
                           )}
+                          {r.is_featured && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-semibold tracking-wide uppercase">
+                              Featured
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-1 mt-0.5 text-xs text-muted-foreground">
                           {Array.from({ length: 5 }).map((_, i) => (
@@ -152,11 +169,23 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                               className={`h-3 w-3 ${i < Math.floor(r.rating) ? "fill-primary text-primary" : "text-muted"}`}
                             />
                           ))}
+                          <span className="ml-2 text-[10px]">
+                            {new Date(r.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                          </span>
                         </div>
                       </div>
                     </div>
                     {r.title && <p className="mt-3 font-semibold text-foreground">{r.title}</p>}
                     {r.body && <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{r.body}</p>}
+                    {r.tags && r.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {r.tags.map((tag: string) => (
+                          <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-secondary text-muted-foreground font-medium capitalize">
+                            {tag.replace(/_/g, " ")}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (

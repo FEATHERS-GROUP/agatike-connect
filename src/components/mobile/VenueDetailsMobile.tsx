@@ -17,6 +17,9 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
   });
 
   const reviews = feedbackData?.reviews || [];
+  const avgRating = feedbackData?.aggregate?.avg?.rating
+    ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1)
+    : "N/A";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -164,7 +167,16 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
         {/* Community Reviews */}
         <div className="border-t border-border/40 pt-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold">Community reviews</h2>
+            <div>
+              <h2 className="text-lg font-bold">Community reviews</h2>
+              {feedbackData?.aggregate?.count > 0 && (
+                <div className="flex items-center gap-1.5 mt-0.5 text-sm font-medium text-muted-foreground">
+                  <Star className="h-4 w-4 fill-primary text-primary" />
+                  <span className="text-foreground">{avgRating}</span>
+                  <span>({feedbackData.aggregate.count} reviews)</span>
+                </div>
+              )}
+            </div>
             <Button asChild variant="outline" size="sm" className="rounded-full h-8">
               <Link
                 to="/f/$eventId/review"
@@ -184,19 +196,36 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                   <div className="flex items-center gap-2 text-sm font-medium">
                     {r.reviewer_name}
                     {r.is_verified && (
-                      <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-semibold">
+                      <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-semibold tracking-wide uppercase">
                         Verified
+                      </span>
+                    )}
+                    {r.is_featured && (
+                      <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-semibold tracking-wide uppercase">
+                        Featured
                       </span>
                     )}
                     <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
                       <Star className="h-3 w-3 fill-primary text-primary" /> {r.rating.toFixed(1)}
                     </span>
                   </div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5 mb-2">
+                    {new Date(r.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                  </div>
                   {r.title && <p className="mt-2 text-sm font-semibold">{r.title}</p>}
                   {r.body && (
                     <p className="mt-1 text-sm text-muted-foreground leading-relaxed line-clamp-3">
                       {r.body}
                     </p>
+                  )}
+                  {r.tags && r.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {r.tags.map((tag: string) => (
+                        <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-secondary text-muted-foreground font-medium capitalize">
+                          {tag.replace(/_/g, " ")}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
               ))

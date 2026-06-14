@@ -1,4 +1,4 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useSearch, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { submitEventFeedback, checkFeedbackExists } from "@/api/feedback";
@@ -102,7 +102,7 @@ function FeedbackForm() {
   });
 
   const { data: attendanceData, isLoading: isLoadingAttendance } = useQuery({
-    queryKey: ["attendance", eventId, user?.uid],
+    queryKey: ["attendance", eventId, user?.id],
     queryFn: () => checkUserAttendance({ data: { event_id: eventId } } as any),
     enabled: !!user && !attendeeId, // only check if logged in and attendeeId wasn't given
   });
@@ -211,6 +211,14 @@ function FeedbackForm() {
             />
           ))}
         </div>
+        <Button asChild className="mt-8 rounded-full" size="lg">
+          <Link
+            to={event ? "/events/$eventId" : "/venues/$venueId"}
+            params={event ? { eventId } : ({ venueId: eventId } as any)}
+          >
+            Return to {event ? "Event" : "Venue"}
+          </Link>
+        </Button>
       </div>
     );
   }
