@@ -278,7 +278,7 @@ function SubscriptionCard({ sub }: { sub: any }) {
         <img
           src={sub.cover}
           alt={sub.title}
-          className="w-20 h-20 object-cover rounded-xl shrink-0"
+          className="w-16 h-16 object-cover rounded-xl shrink-0"
         />
         <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
           <div>

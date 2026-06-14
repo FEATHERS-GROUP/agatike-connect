@@ -985,7 +985,17 @@ function SettingsPage() {
                 { id: "avatar", label: "Avatar", desc: "Change your profile picture", icon: ImageIcon, color: "bg-blue-500/10 text-blue-500" },
                 { id: "interests", label: "Interests", desc: "Manage event categories", icon: Heart, color: "bg-rose-500/10 text-rose-500" },
               ].map((item) => (
-                <button key={item.id} onClick={() => setActiveModal(item.id)} className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors text-left">
+                <button 
+                  key={item.id} 
+                  onClick={() => {
+                    if (item.id === "delete") {
+                      setShowDelete(true);
+                    } else {
+                      setActiveModal(item.id);
+                    }
+                  }} 
+                  className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors text-left"
+                >
                   <div className="flex items-center gap-4">
                     <div className={`h-10 w-10 rounded-full flex items-center justify-center ${item.color}`}><item.icon className="h-5 w-5" /></div>
                     <div>

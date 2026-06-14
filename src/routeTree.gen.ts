@@ -13,6 +13,7 @@ import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as VenueDesignerRouteImport } from './routes/venue-designer'
 import { Route as TicketDesignerRouteImport } from './routes/ticket-designer'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SubscriptionsRouteImport } from './routes/subscriptions'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -118,6 +119,11 @@ const TicketDesignerRoute = TicketDesignerRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubscriptionsRoute = SubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -616,6 +622,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/subscriptions': typeof SubscriptionsRoute
   '/terms': typeof TermsRoute
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
@@ -708,6 +715,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/subscriptions': typeof SubscriptionsRoute
   '/terms': typeof TermsRoute
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
@@ -801,6 +809,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/subscriptions': typeof SubscriptionsRoute
   '/terms': typeof TermsRoute
   '/ticket-designer': typeof TicketDesignerRoute
   '/venue-designer': typeof VenueDesignerRoute
@@ -895,6 +904,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signin'
     | '/signup'
+    | '/subscriptions'
     | '/terms'
     | '/ticket-designer'
     | '/venue-designer'
@@ -987,6 +997,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signin'
     | '/signup'
+    | '/subscriptions'
     | '/terms'
     | '/ticket-designer'
     | '/venue-designer'
@@ -1079,6 +1090,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signin'
     | '/signup'
+    | '/subscriptions'
     | '/terms'
     | '/ticket-designer'
     | '/venue-designer'
@@ -1172,6 +1184,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
+  SubscriptionsRoute: typeof SubscriptionsRoute
   TermsRoute: typeof TermsRoute
   TicketDesignerRoute: typeof TicketDesignerRoute
   VenueDesignerRoute: typeof VenueDesignerRoute
@@ -1226,6 +1239,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subscriptions': {
+      id: '/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/subscriptions'
+      preLoaderRoute: typeof SubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -2009,6 +2029,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
+  SubscriptionsRoute: SubscriptionsRoute,
   TermsRoute: TermsRoute,
   TicketDesignerRoute: TicketDesignerRoute,
   VenueDesignerRoute: VenueDesignerRoute,

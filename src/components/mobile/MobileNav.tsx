@@ -8,6 +8,7 @@ import {
   Menu,
   Film,
   CalendarDays,
+  Repeat,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -34,7 +35,8 @@ export function MobileNav() {
   const moreMenuLinks = [
     { name: "Events", href: "/events", icon: CalendarDays },
     { name: "Movies & Cinemas", href: "/movies", icon: Film },
-    { name: "Profile Settings", href: "/profile", icon: User, requiresAuth: true },
+    { name: "Subscriptions", href: "/subscriptions", icon: Repeat, requiresAuth: true },
+    { name: "Profile Settings", href: "/settings", icon: User, requiresAuth: true },
   ];
 
   return (
