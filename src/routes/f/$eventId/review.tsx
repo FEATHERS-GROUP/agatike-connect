@@ -3,7 +3,10 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { submitEventFeedback, checkFeedbackExists } from "@/api/feedback";
 import { getEventById } from "@/api/events";
+import { getRentableVenueById } from "@/api/rentable_venues";
+import { checkUserAttendance } from "@/api/attendees";
 import { useQuery } from "@tanstack/react-query";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -80,15 +83,31 @@ function StarPicker({
 function FeedbackForm() {
   const { eventId } = Route.useParams();
   const search = useSearch({ strict: false }) as any;
+  const { user } = useUserAuth();
+  
   const attendeeId = search?.attendeeId || "";
-  const prefillEmail = search?.email || "";
-  const prefillName = search?.name || "";
+  const prefillEmail = search?.email || user?.email || "";
+  const prefillName = search?.name || user?.name || "";
 
   const { data: event, isLoading: isLoadingEvent } = useQuery({
     queryKey: ["event", eventId],
     queryFn: () => getEventById({ data: { id: eventId } } as any),
     enabled: !!eventId,
   });
+
+  const { data: venue, isLoading: isLoadingVenue } = useQuery({
+    queryKey: ["venue", eventId],
+    queryFn: () => getRentableVenueById({ data: { id: eventId } } as any),
+    enabled: !!eventId && !event, // only if it's not an event
+  });
+
+  const { data: attendanceData, isLoading: isLoadingAttendance } = useQuery({
+    queryKey: ["attendance", eventId, user?.uid],
+    queryFn: () => checkUserAttendance({ data: { event_id: eventId } } as any),
+    enabled: !!user && !attendeeId, // only check if logged in and attendeeId wasn't given
+  });
+
+  const verifiedAttendeeId = attendeeId || attendanceData?.id || "";
 
   const [step, setStep] = useState<"form" | "success">("form");
   const [rating, setRating] = useState(0);
@@ -142,7 +161,7 @@ function FeedbackForm() {
       return submitEventFeedback({
         data: {
           event_id: eventId,
-          attendee_id: attendeeId || undefined,
+          attendee_id: verifiedAttendeeId || undefined,
           reviewer_name: name,
           reviewer_email: email,
           rating,
@@ -151,7 +170,7 @@ function FeedbackForm() {
           category_scores: Object.keys(categoryScores).length > 0 ? categoryScores : undefined,
           tags: selectedTags,
           media_urls: mediaUrls,
-          source: attendeeId ? "email_link" : "web",
+          source: verifiedAttendeeId ? "email_link" : "web",
         },
       } as any);
     },
@@ -159,9 +178,9 @@ function FeedbackForm() {
     onError: (err: any) => toast.error(err.message || "Failed to submit feedback"),
   });
 
-  const isVerified = !!attendeeId;
+  const isVerified = !!verifiedAttendeeId;
 
-  if (isLoadingEvent) {
+  if (isLoadingEvent || isLoadingVenue || isLoadingAttendance) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -203,7 +222,7 @@ function FeedbackForm() {
         <div className="max-w-2xl mx-auto">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">Feedback</p>
           <h1 className="font-bold text-lg leading-tight line-clamp-1">
-            {event?.title || "Event Review"}
+            {event?.title || venue?.name || "Event/Venue Review"}
           </h1>
         </div>
       </div>
