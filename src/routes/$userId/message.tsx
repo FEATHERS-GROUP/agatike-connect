@@ -104,6 +104,41 @@ function UserMessagesPage() {
     }
   }, [activeChatId, navigate]);
 
+  // Automatically resolve organizerId search param to DM channel or create one
+  useEffect(() => {
+    if (!chatId || chatLoading || dbOrganizers.length === 0) return;
+
+    // Check if the chatId is already an active channel ID
+    const hasChannel = channels.some((c) => c.id === chatId);
+    if (hasChannel) return;
+
+    // Check if chatId corresponds to an organizerId
+    const org = dbOrganizers.find((o: any) => o.id === chatId);
+    if (org) {
+      const existingChannel = channels.find(
+        (c) => c.type === "user" && c.organizerId === org.id
+      );
+      if (existingChannel) {
+        setActiveChatId(existingChannel.id);
+      } else {
+        createDirectMessageWithOrganizer(
+          org.id,
+          org.name || "Organizer",
+          org.image || org.avatar || "",
+          user?.username || "User"
+        );
+      }
+    }
+  }, [
+    chatId,
+    channels,
+    dbOrganizers,
+    chatLoading,
+    user,
+    createDirectMessageWithOrganizer,
+    setActiveChatId,
+  ]);
+
   const [messageInput, setMessageInput] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [isNewMessageModalOpen, setIsNewMessageModalOpen] = useState(false);

@@ -12,11 +12,14 @@ import {
   Shield,
   Instagram,
   CheckCircle2,
+  MessageCircle,
 } from "lucide-react";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
+import { useUserAuth } from "@/contexts/UserAuthContext";
+import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import {
   events,
   experiences,
@@ -70,10 +73,16 @@ export function EventDetailsDesktop({
   if (isNaN(lat)) lat = -1.9441;
   if (isNaN(lng)) lng = 30.0619;
 
+  const { isLoggedIn, user } = useUserAuth();
+  const { isFollowing, toggleFollow } = useFollowedOrganizers();
+
   const organizerName = isMock
     ? ev.organizer || ev.host || ev.cinema
     : ev.workspaces?.organizer?.name || ev.workspaces?.name || "Organizer";
   const organizerHandle = isMock ? ev.organizerHandle : ev.workspaces?.organizer?.handle || "host";
+
+  const organizerId = ev.workspaces?.organizer?.id || ev.workspaces?.orgnizer_id || ev.workspace_id;
+  const following = organizerId ? isFollowing(organizerId) : false;
   const currencyCode = isMock ? ev.currency : ev.workspaces?.currency;
   const description = ev.description || ev.synopsis || "";
   const category = ev.category || ev.genre || "Event";
@@ -221,7 +230,7 @@ export function EventDetailsDesktop({
           <div className="flex items-center justify-between rounded-2xl border border-border/60 bg-card p-4">
             <div className="flex items-center gap-3">
               <img
-                src={ev.cover}
+                src={ev.workspaces?.organizer?.image || ev.cover}
                 className="h-12 w-12 rounded-full object-cover"
                 alt={organizerName}
               />
@@ -242,7 +251,22 @@ export function EventDetailsDesktop({
               <Button variant="outline" size="icon" className="rounded-full">
                 <Share2 className="h-4 w-4" />
               </Button>
-              <Button className="rounded-full">Follow</Button>
+              {organizerId && following && isLoggedIn && (
+                <Button asChild variant="outline" className="rounded-full gap-1.5">
+                  <Link to="/$userId/message" params={{ userId: user?.id }} search={{ chatId: organizerId }}>
+                    <MessageCircle className="h-4 w-4" /> Message
+                  </Link>
+                </Button>
+              )}
+              {organizerId && (
+                <Button
+                  variant={following ? "secondary" : "default"}
+                  className="rounded-full"
+                  onClick={() => toggleFollow(organizerId)}
+                >
+                  {following ? "Following" : "Follow"}
+                </Button>
+              )}
             </div>
           </div>
 
