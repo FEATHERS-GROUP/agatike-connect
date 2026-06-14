@@ -210,23 +210,6 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     },
     onSuccess: (data: any) => {
       const { res, attendeesPayload } = data;
-
-      // Increment sold count per ticket tier (grouped by tierId)
-      const qtByTier: Record<string, number> = {};
-      attendees.forEach((a) => { qtByTier[a.tierId] = (qtByTier[a.tierId] || 0) + 1; });
-      Object.entries(qtByTier).forEach(([tierId, qty]) => {
-        if (tierId && tierId !== "ga") {
-          const tier = getTierDetails(tierId);
-          if (tier) {
-            const currentSold = parseInt(tier.sold) || 0;
-            const new_sold = currentSold + qty;
-            incrementTicketSold({ data: { ticket_id: tierId, new_sold } } as any).catch((e) =>
-              console.error("Failed to update sold for", tierId, e),
-            );
-          }
-        }
-      });
-
       const returned = res?.insert_event_attendees?.returning || [];
 
       const ticketsToIssue = attendees.map((a, idx) => {

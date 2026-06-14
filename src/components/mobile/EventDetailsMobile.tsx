@@ -570,7 +570,8 @@ export function EventDetailsMobile({
                         {formatCurrency(t.price, currencyCode)}
                       </p>
                     </div>
-                    <p className="text-[11px] text-muted-foreground mb-3 leading-snug">{t.perks.join(" · ")}</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug">{t.perks.join(" · ")}</p>
+                    <p className="text-[11px] font-medium text-primary mt-1 mb-3">{t.remaining} left</p>
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
                       <span className="text-xs font-medium text-muted-foreground">Quantity</span>
@@ -586,8 +587,9 @@ export function EventDetailsMobile({
                         </button>
                         <span className="w-4 text-center font-bold text-xs">{itemQty}</span>
                         <button
-                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground"
+                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
                           onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                          disabled={itemQty >= t.remaining}
                         >
                           <Plus className="h-3 w-3" />
                         </button>
@@ -618,7 +620,8 @@ export function EventDetailsMobile({
                         {formatCurrency(t.price, currencyCode)}
                       </p>
                     </div>
-                    <p className="text-[11px] text-muted-foreground mb-3 leading-snug">{t.perks.join(" · ")}</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug">{t.perks.join(" · ")}</p>
+                    <p className="text-[11px] font-medium text-primary mt-1 mb-3">{t.remaining} left</p>
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
                       <span className="text-xs font-medium text-muted-foreground">Quantity</span>
@@ -634,8 +637,9 @@ export function EventDetailsMobile({
                         </button>
                         <span className="w-4 text-center font-bold text-xs">{itemQty}</span>
                         <button
-                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground"
+                          className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
                           onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                          disabled={itemQty >= t.remaining}
                         >
                           <Plus className="h-3 w-3" />
                         </button>

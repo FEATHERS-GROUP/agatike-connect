@@ -704,6 +704,7 @@ export function EventDetailsDesktop({
                           size="icon"
                           className="h-7 w-7 rounded-full"
                           onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                          disabled={itemQty >= t.remaining}
                         >
                           <Plus className="h-3.5 w-3.5" />
                         </Button>

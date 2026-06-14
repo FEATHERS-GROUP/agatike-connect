@@ -710,26 +710,4 @@ export const getWorkspaceTicketProjects = createServerFn({ method: "POST" }).han
   },
 );
 
-// Update the sold count on a ticket tier after a successful booking
-// Note: using _set (not _inc) because Hasura's inc_input does not expose the sold column
-const INCREMENT_TICKET_SOLD = `
-  mutation UpdateTicketSold($ticket_id: uuid!, $new_sold: Int!) {
-    update_event_tickets_by_pk(
-      pk_columns: { id: $ticket_id },
-      _set: { sold: $new_sold }
-    ) {
-      id
-      sold
-      remaining
-    }
-  }
-`;
 
-export const incrementTicketSold = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { ticket_id, new_sold } = ctx.data as unknown as { ticket_id: string; new_sold: number };
-  const data = await hasuraRequest<{ update_event_tickets_by_pk: any }>(INCREMENT_TICKET_SOLD, {
-    ticket_id,
-    new_sold,
-  });
-  return data.update_event_tickets_by_pk;
-});

@@ -87,6 +87,76 @@ const ADD_EVENT_ATTENDEES = `
 
 export const addEventAttendees = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { objects } = ctx.data as any;
+
+  // 1. Group by ticket_id to calculate requested quantities
+  const qtyByTier: Record<string, number> = {};
+  objects.forEach((obj: any) => {
+    const tid = obj.ticket_id;
+    if (tid && tid !== "ga") {
+      qtyByTier[tid] = (qtyByTier[tid] || 0) + 1;
+    }
+  });
+
+  const ticketIds = Object.keys(qtyByTier);
+
+  // 2. If there are real tickets, verify capacity
+  if (ticketIds.length > 0) {
+    const GET_TICKETS = `
+      query GetTickets($ids: [uuid!]!) {
+        event_tickets(where: { id: { _in: $ids } }) {
+          id
+          sold
+          remaining
+        }
+      }
+    `;
+    const ticketsData = await hasuraRequest<{ event_tickets: any[] }>(GET_TICKETS, { ids: ticketIds });
+    const dbTickets = ticketsData.event_tickets || [];
+
+    // Verify inventory and prepare updates
+    const updates: { id: string; new_sold: number }[] = [];
+    for (const tid of ticketIds) {
+      const dbTier = dbTickets.find((t: any) => t.id === tid);
+      if (!dbTier) throw new Error(`Ticket tier not found.`);
+      
+      const currentSold = parseInt(dbTier.sold) || 0;
+      const capacity = parseInt(dbTier.remaining) || 0;
+      const newSold = currentSold + qtyByTier[tid];
+      
+      if (newSold > capacity) {
+        throw new Error(`Sold out! Not enough tickets remaining.`);
+      }
+      updates.push({ id: tid, new_sold: newSold });
+    }
+
+    // Dynamically build a single GraphQL mutation with all operations.
+    // Hasura executes these sequentially in a transaction.
+    let mutationStr = `mutation ProcessBooking($objects: [event_attendees_insert_input!]!) {\n`;
+    mutationStr += `
+      insert_event_attendees(objects: $objects) {
+        affected_rows
+        returning { id }
+      }
+    `;
+    
+    // Add an update for each ticket tier
+    updates.forEach((u, i) => {
+      mutationStr += `
+        update_${i}: update_event_tickets_by_pk(
+          pk_columns: { id: "${u.id}" },
+          _set: { sold: ${u.new_sold} }
+        ) {
+          id
+        }
+      `;
+    });
+    
+    mutationStr += `\n}`;
+
+    return hasuraRequest(mutationStr, { objects });
+  }
+
+  // Fallback for "ga" or free events without specific DB ticket ids
   return hasuraRequest(ADD_EVENT_ATTENDEES, { objects });
 });
 
