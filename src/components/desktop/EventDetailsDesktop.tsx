@@ -873,7 +873,10 @@ export function EventDetailsDesktop({
               <VenueSeatSelector
                 venueProject={currentVenueProject}
                 eventTickets={activeTicketTiers}
-                bookedSeats={[]}
+                bookedSeats={rawAttendeesList
+                  ?.filter((a: any) => a.custom_fields?.tour_stop_idx === selectedStopIdx)
+                  .map((a: any) => a.custom_fields?.seat)
+                  .filter(Boolean) || []}
                 selectedSeats={selectedSeatsObj.map(s => s.code)}
                 onSeatSelect={handleSeatSelect}
                 onSeatDeselect={handleSeatDeselect}
