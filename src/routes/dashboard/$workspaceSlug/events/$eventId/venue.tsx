@@ -10,6 +10,7 @@ import {
   Trash2,
   Loader2,
   Upload,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -458,11 +459,20 @@ function VenueView() {
                             <p className="text-sm font-medium">{assignedProject.name}</p>
                             <p className="text-xs text-muted-foreground">Assigned Layout</p>
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => {
-                            window.open(`/dashboard/${workspaceSlug}/venue-designer/${assignedProject.id}`, '_blank');
-                          }}>
-                            Edit Layout
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" onClick={() => {
+                              refetchVenueProjects();
+                              toast.success("Synced latest layout data from designer.");
+                            }}>
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Sync Layout
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => {
+                              window.open(`/dashboard/${workspaceSlug}/venue-designer/${assignedProject.id}`, '_blank');
+                            }}>
+                              Edit Layout
+                            </Button>
+                          </div>
                         </div>
 
                         <div className="space-y-3 mt-4">
