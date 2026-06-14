@@ -63,6 +63,7 @@ interface VenueSeatSelectorProps {
   currency?: string;
   activeTicketId?: string;
   hideLegend?: boolean;
+  onSectionActive?: (isActive: boolean) => void;
 }
 
 export function VenueSeatSelector({
@@ -76,6 +77,7 @@ export function VenueSeatSelector({
   currency,
   activeTicketId,
   hideLegend,
+  onSectionActive,
 }: VenueSeatSelectorProps) {
   const sections: Section[] = venueProject.sections_data || [];
   
@@ -87,6 +89,11 @@ export function VenueSeatSelector({
   const dragStartPos = useRef({ x: 0, y: 0 });
   
   const [activeSectionForModal, setActiveSectionForModal] = useState<Section | null>(null);
+
+  // Call the prop when internal state changes
+  useEffect(() => {
+    onSectionActive?.(!!activeSectionForModal);
+  }, [activeSectionForModal, onSectionActive]);
 
   useEffect(() => {
     if (activeTicketId && sections.length > 0) {
@@ -254,6 +261,142 @@ export function VenueSeatSelector({
     if (activeTicketId && sec.ticketId !== activeTicketId) return;
     setActiveSectionForModal(sec);
   };
+
+  if (activeSectionForModal) {
+    const sec = activeSectionForModal;
+    const pitch = sections.find((s) => s.shape === "pitch");
+    
+    const isGA = !sec.rows || sec.rows === 0 || !sec.cols || sec.cols === 0;
+
+    const ticket = ticketMap[sec.ticketId || ""];
+    const mappedSections = sections.filter(s => s.ticketId === sec.ticketId);
+    
+    const tierTotalCapacity = ticket ? (ticket.remaining + ticket.sold) : (sec.capacity || 0);
+    const sectionCapacity = mappedSections.length > 0 
+      ? Math.floor(tierTotalCapacity / mappedSections.length) 
+      : (isGA ? (sec.capacity || 0) : (sec.rows || 0) * (sec.cols || 0));
+
+    const actualSeatCount = sectionCapacity;
+
+    const cols = Math.min(20, Math.max(1, Math.ceil(Math.sqrt(actualSeatCount * 1.5))));
+    
+    const isDense = cols > 10;
+    const isVeryDense = cols > 16;
+
+    // Seat dimensions for SVG
+    const size = isVeryDense ? 32 : isDense ? 40 : 50;
+    const half = size / 2;
+    const gapSize = isVeryDense ? "gap-1" : isDense ? "gap-1.5" : "gap-2 sm:gap-3";
+
+    const gaBookedCount = isGA ? bookedSeats.filter(c => c === `GA-${sec.id}` || c.startsWith(`${sec.id}-`) || c.startsWith(`GA-${sec.id}-`)).length : 0;
+    const remainingCount = Math.max(0, actualSeatCount - (isGA ? gaBookedCount : bookedSeats.filter(c => c.startsWith(`${sec.id}-`)).length));
+
+    const totalCells = Math.ceil(actualSeatCount / cols) * cols;
+    const seats = Array.from({ length: totalCells }).map((_, i) => i < actualSeatCount ? i : null);
+    
+    const rowsArray = [];
+    for (let i = 0; i < seats.length; i += cols) {
+      rowsArray.push(seats.slice(i, i + cols));
+    }
+    const visuallyOrderedSeats = rowsArray.reverse().flat();
+
+    return (
+      <div className="w-full h-full relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
+        <div className="p-4 border-b border-border/40 flex items-center justify-between bg-card z-10 shadow-sm shrink-0">
+          <div>
+            <h2 className="text-xl font-bold">{sec.name} - Select Seats</h2>
+            <p className="text-sm text-muted-foreground">Tap to select your seats</p>
+          </div>
+          <button 
+            className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary font-bold rounded-xl transition-colors text-sm"
+            onClick={() => setActiveSectionForModal(null)}
+          >
+            Back to Map
+          </button>
+        </div>
+        <div className="flex-1 overflow-auto p-4 custom-scrollbar flex justify-center bg-secondary/10 relative">
+          <div className="flex flex-col gap-6 items-center w-full pb-8 pt-4">
+            <div className="flex flex-col items-center gap-1 mb-2">
+              <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                {isGA ? "General Admission" : "Reserved Seating"}
+              </span>
+              <span className="text-lg font-bold text-primary bg-primary/10 px-4 py-1.5 rounded-full">
+                {remainingCount} Seats Available
+              </span>
+            </div>
+            
+            <div 
+              className={`grid justify-center ${gapSize} w-full px-2`} 
+              style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, ${size}px))` }}
+            >
+              {visuallyOrderedSeats.map((i, index) => {
+                if (i === null) return <div key={`empty-${index}`} />;
+                
+                const seatNum = i + 1;
+                let code = "";
+                
+                if (isGA) {
+                  code = `GA-${sec.id}-${seatNum}`;
+                } else {
+                  const originalCols = sec.cols || 1;
+                  const originalRow = Math.floor(i / originalCols);
+                  const originalCol = i % originalCols;
+                  code = `${sec.id}-R${originalRow + 1}-C${originalCol + 1}`.replace(/\s+/g, '-');
+                }
+                
+                const isBooked = isGA ? (i < gaBookedCount) : bookedSeats.includes(code);
+                const isSelected = selectedSeats.includes(code);
+                const isLockedByOther = lockedSeats.includes(code) && !isSelected;
+                
+                let bgColor = sec.color || "#0ea5e9";
+                if (isBooked) bgColor = "rgba(128,128,128,0.3)";
+                if (isSelected) bgColor = "var(--primary)";
+                if (isLockedByOther) bgColor = "#fbbf24";
+
+                return (
+                  <div key={i} className="aspect-square flex items-center justify-center">
+                    <svg
+                      width="100%"
+                      height="100%"
+                      viewBox={`0 0 ${size} ${size}`}
+                      className={`transition-all duration-200 ${isBooked || isLockedByOther ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:-translate-y-0.5'} ${isSelected ? 'drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]' : (!isBooked && !isLockedByOther) ? 'hover:brightness-125' : ''}`}
+                      onClick={() => {
+                        if (!isBooked && !isLockedByOther) handleSeatClick(code, sec, isBooked, isSelected, seatNum, isGA);
+                      }}
+                    >
+                      <title>{isGA ? `Ticket ${seatNum}` : `Seat ${seatNum}`}{isBooked ? ' (Sold)' : isLockedByOther ? ' (Locked by another user)' : ''}</title>
+                      <g transform={`translate(${half}, ${half})`}>
+                        <path 
+                          d={`M ${-half * 0.7} ${half * 0.1} C ${-half * 0.7} ${-half * 0.8}, ${half * 0.7} ${-half * 0.8}, ${half * 0.7} ${half * 0.1}`} 
+                          fill="none" 
+                          stroke={bgColor} 
+                          strokeWidth={size * 0.15} 
+                          strokeLinecap="round" 
+                          opacity={0.6} 
+                        />
+                        <circle cx="0" cy={size * 0.1} r={size * 0.35} fill={bgColor} opacity={isBooked || isLockedByOther ? 0.4 : 1} />
+                        {isSelected && <circle cx="0" cy={size * 0.1} r={size * 0.45} fill="none" stroke="var(--primary)" strokeWidth={2} />}
+                        {isLockedByOther && <circle cx="0" cy={size * 0.1} r={size * 0.45} fill="none" stroke="#fbbf24" strokeWidth={2} strokeDasharray="2 2" className="animate-[spin_4s_linear_infinite]" />}
+                        <text x="0" y={size * 0.1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={size * 0.3} fontWeight="bold">
+                          {seatNum}
+                        </text>
+                      </g>
+                    </svg>
+                  </div>
+                );
+              })}
+            </div>
+
+            {pitch && !isGA && (
+              <div className="bg-primary/10 border border-primary/30 flex items-center justify-center text-xs font-bold tracking-widest text-primary rounded-xl w-full max-w-md h-12 mt-4 shadow-sm">
+                 <span>STAGE / FRONT</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
@@ -499,289 +642,7 @@ export function VenueSeatSelector({
         </svg>
       </div>
 
-      {isMobile ? (
-        <Drawer open={!!activeSectionForModal} onOpenChange={(open) => !open && setActiveSectionForModal(null)}>
-          <DrawerContent className="max-h-[90vh] bg-card border-border px-1 pb-safe">
-            <DrawerHeader className="pb-2">
-              <DrawerTitle className="text-center">{activeSectionForModal?.name} - Select Seats</DrawerTitle>
-            </DrawerHeader>
-            <div className="p-4 bg-secondary/20 overflow-auto flex justify-center custom-scrollbar w-full">
-              {activeSectionForModal && (() => {
-                const sec = activeSectionForModal;
-                const pitch = sections.find((s) => s.shape === "pitch");
-                
-                const isGA = !sec.rows || sec.rows === 0 || !sec.cols || sec.cols === 0;
 
-                const ticket = ticketMap[sec.ticketId || ""];
-                const mappedSections = sections.filter(s => s.ticketId === sec.ticketId);
-                
-                const tierTotalCapacity = ticket ? (ticket.remaining + ticket.sold) : (sec.capacity || 0);
-                const sectionCapacity = mappedSections.length > 0 
-                  ? Math.floor(tierTotalCapacity / mappedSections.length) 
-                  : (isGA ? (sec.capacity || 0) : (sec.rows || 0) * (sec.cols || 0));
-
-                const actualSeatCount = sectionCapacity;
-
-                const cols = Math.min(20, Math.max(1, Math.ceil(Math.sqrt(actualSeatCount * 1.5))));
-                
-                const isDense = cols > 10;
-                const isVeryDense = cols > 16;
-
-                // Seat dimensions for SVG
-                const size = isVeryDense ? 32 : isDense ? 40 : 50;
-                const half = size / 2;
-                const gapSize = isVeryDense ? "gap-1" : isDense ? "gap-1.5" : "gap-2 sm:gap-3";
-
-                const gaBookedCount = isGA ? bookedSeats.filter(c => c === `GA-${sec.id}` || c.startsWith(`${sec.id}-`) || c.startsWith(`GA-${sec.id}-`)).length : 0;
-                const remainingCount = Math.max(0, actualSeatCount - (isGA ? gaBookedCount : bookedSeats.filter(c => c.startsWith(`${sec.id}-`)).length));
-
-                const totalCells = Math.ceil(actualSeatCount / cols) * cols;
-                const seats = Array.from({ length: totalCells }).map((_, i) => i < actualSeatCount ? i : null);
-                
-                const rowsArray = [];
-                for (let i = 0; i < seats.length; i += cols) {
-                  rowsArray.push(seats.slice(i, i + cols));
-                }
-                const visuallyOrderedSeats = rowsArray.reverse().flat();
-
-                return (
-                  <div className="flex flex-col gap-6 items-center justify-center w-full min-w-max pb-8">
-                    <div className="flex flex-col items-center gap-1 mb-2">
-                      <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                        {isGA ? "General Admission" : "Reserved Seating"}
-                      </span>
-                      <span className="text-lg font-bold text-primary bg-primary/10 px-4 py-1.5 rounded-full">
-                        {remainingCount} Seats Available
-                      </span>
-                    </div>
-                    
-                    <div 
-                      className={`grid justify-center ${gapSize}`} 
-                      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, auto))` }}
-                    >
-                      {visuallyOrderedSeats.map((i, index) => {
-                        if (i === null) return <div key={`empty-${index}`} />;
-                        
-                        const seatNum = i + 1;
-                        let code = "";
-                        
-                        if (isGA) {
-                          code = `GA-${sec.id}-${seatNum}`;
-                        } else {
-                          const originalCols = sec.cols || 1;
-                          const originalRow = Math.floor(i / originalCols);
-                          const originalCol = i % originalCols;
-                          code = `${sec.id}-R${originalRow + 1}-C${originalCol + 1}`.replace(/\s+/g, '-');
-                        }
-                        
-                        const isBooked = isGA ? (i < gaBookedCount) : bookedSeats.includes(code);
-                        const isSelected = selectedSeats.includes(code);
-                        const isLockedByOther = lockedSeats.includes(code) && !isSelected;
-                        
-                        let bgColor = sec.color || "#0ea5e9";
-                        if (isBooked) bgColor = "rgba(128,128,128,0.3)";
-                        if (isSelected) bgColor = "var(--primary)";
-                        if (isLockedByOther) bgColor = "#fbbf24"; // Amber color for locked
-
-                        return (
-                          <svg
-                            key={i}
-                            width={size}
-                            height={size}
-                            viewBox={`0 0 ${size} ${size}`}
-                            className={`transition-all duration-200 ${isBooked || isLockedByOther ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:-translate-y-0.5'} ${isSelected ? 'drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]' : (!isBooked && !isLockedByOther) ? 'hover:brightness-125' : ''}`}
-                            onClick={() => {
-                              if (!isBooked && !isLockedByOther) handleSeatClick(code, sec, isBooked, isSelected, seatNum, isGA);
-                            }}
-                          >
-                            <title>{isGA ? `Ticket ${seatNum}` : `Seat ${seatNum}`}{isBooked ? ' (Sold)' : isLockedByOther ? ' (Locked by another user)' : ''}</title>
-                            <g transform={`translate(${half}, ${half})`}>
-                              {/* Chair Backrest */}
-                              <path 
-                                d={`M ${-half * 0.7} ${half * 0.1} C ${-half * 0.7} ${-half * 0.8}, ${half * 0.7} ${-half * 0.8}, ${half * 0.7} ${half * 0.1}`} 
-                                fill="none" 
-                                stroke={bgColor} 
-                                strokeWidth={size * 0.15} 
-                                strokeLinecap="round" 
-                                opacity={0.6} 
-                              />
-                              {/* Chair Cushion */}
-                              <circle cx="0" cy={size * 0.1} r={size * 0.35} fill={bgColor} opacity={isBooked || isLockedByOther ? 0.4 : 1} />
-                              
-                              {/* Selection Highlight */}
-                              {isSelected && <circle cx="0" cy={size * 0.1} r={size * 0.45} fill="none" stroke="var(--primary)" strokeWidth={2} />}
-                              {isLockedByOther && <circle cx="0" cy={size * 0.1} r={size * 0.45} fill="none" stroke="#fbbf24" strokeWidth={2} strokeDasharray="2 2" className="animate-[spin_4s_linear_infinite]" />}
-                              
-                              {/* Seat Number */}
-                              {!isVeryDense && (
-                                <text x="0" y={size * 0.1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={size * 0.3} fontWeight="bold">
-                                  {seatNum}
-                                </text>
-                              )}
-                            </g>
-                          </svg>
-                        );
-                      })}
-                    </div>
-
-                    {pitch && !isGA && (
-                      <div className="bg-primary/10 border border-primary/30 flex items-center justify-center text-xs font-bold tracking-widest text-primary rounded-xl w-full max-w-md h-12 mt-4 shadow-sm">
-                         <span>STAGE / FRONT</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-            </div>
-          </DrawerContent>
-        </Drawer>
-      ) : (
-        activeSectionForModal && (
-          <div className="absolute inset-0 z-50 flex flex-col bg-card/95 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="p-4 border-b border-border/40 flex items-center justify-between bg-background z-10 shadow-sm">
-              <div>
-                <h2 className="text-xl font-bold">{activeSectionForModal.name} - Select Seats</h2>
-                <p className="text-sm text-muted-foreground">Click the seats you want to book.</p>
-              </div>
-              <button 
-                className="px-4 py-2 hover:bg-secondary rounded-lg transition-colors"
-                onClick={() => setActiveSectionForModal(null)}
-              >
-                Close
-              </button>
-            </div>
-            
-            <div className="flex-1 p-4 md:p-8 overflow-auto flex justify-center items-center custom-scrollbar">
-              {(() => {
-                const sec = activeSectionForModal;
-                const pitch = sections.find((s) => s.shape === "pitch");
-                
-                const isGA = !sec.rows || sec.rows === 0 || !sec.cols || sec.cols === 0;
-
-                const ticket = ticketMap[sec.ticketId || ""];
-                const mappedSections = sections.filter(s => s.ticketId === sec.ticketId);
-                
-                const tierTotalCapacity = ticket ? (ticket.remaining + ticket.sold) : (sec.capacity || 0);
-                const sectionCapacity = mappedSections.length > 0 
-                  ? Math.floor(tierTotalCapacity / mappedSections.length) 
-                  : (isGA ? (sec.capacity || 0) : (sec.rows || 0) * (sec.cols || 0));
-
-                const actualSeatCount = sectionCapacity;
-
-                const cols = Math.min(20, Math.max(1, Math.ceil(Math.sqrt(actualSeatCount * 1.5))));
-                
-                const isDense = cols > 10;
-                const isVeryDense = cols > 16;
-
-                // Seat dimensions for SVG
-                const size = isVeryDense ? 32 : isDense ? 40 : 50;
-                const half = size / 2;
-                const gapSize = isVeryDense ? "gap-1" : isDense ? "gap-1.5" : "gap-2 sm:gap-3";
-
-                const gaBookedCount = isGA ? bookedSeats.filter(c => c === `GA-${sec.id}` || c.startsWith(`${sec.id}-`) || c.startsWith(`GA-${sec.id}-`)).length : 0;
-                const remainingCount = Math.max(0, actualSeatCount - (isGA ? gaBookedCount : bookedSeats.filter(c => c.startsWith(`${sec.id}-`)).length));
-
-                const totalCells = Math.ceil(actualSeatCount / cols) * cols;
-                const seats = Array.from({ length: totalCells }).map((_, i) => i < actualSeatCount ? i : null);
-                
-                const rowsArray = [];
-                for (let i = 0; i < seats.length; i += cols) {
-                  rowsArray.push(seats.slice(i, i + cols));
-                }
-                const visuallyOrderedSeats = rowsArray.reverse().flat();
-
-                return (
-                  <div className="flex flex-col gap-6 items-center justify-center w-full min-w-max pb-4">
-                    <div className="flex flex-col items-center gap-1 mb-4">
-                      <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                        {isGA ? "General Admission" : "Reserved Seating"}
-                      </span>
-                      <span className="text-xl font-bold text-primary bg-primary/10 px-5 py-2 rounded-full">
-                        {remainingCount} Seats Available
-                      </span>
-                    </div>
-                    
-                    <div 
-                      className={`grid justify-center ${gapSize} bg-secondary/10 p-6 rounded-2xl`} 
-                      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, auto))` }}
-                    >
-                      {visuallyOrderedSeats.map((i, index) => {
-                        if (i === null) return <div key={`empty-${index}`} />;
-                        
-                        const seatNum = i + 1;
-                        let code = "";
-                        
-                        if (isGA) {
-                          code = `GA-${sec.id}-${seatNum}`;
-                        } else {
-                          const originalCols = sec.cols || 1;
-                          const originalRow = Math.floor(i / originalCols);
-                          const originalCol = i % originalCols;
-                          code = `${sec.id}-R${originalRow + 1}-C${originalCol + 1}`.replace(/\s+/g, '-');
-                        }
-                        
-                        const isBooked = isGA ? (i < gaBookedCount) : bookedSeats.includes(code);
-                        const isSelected = selectedSeats.includes(code);
-                        const isLockedByOther = lockedSeats.includes(code) && !isSelected;
-                        
-                        let bgColor = sec.color || "#0ea5e9";
-                        if (isBooked) bgColor = "rgba(128,128,128,0.3)";
-                        if (isSelected) bgColor = "var(--primary)";
-                        if (isLockedByOther) bgColor = "#fbbf24"; // Amber color for locked
-
-                        return (
-                          <svg
-                            key={i}
-                            width={size}
-                            height={size}
-                            viewBox={`0 0 ${size} ${size}`}
-                            className={`transition-all duration-200 ${isBooked || isLockedByOther ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:-translate-y-0.5'} ${isSelected ? 'drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]' : (!isBooked && !isLockedByOther) ? 'hover:brightness-125' : ''}`}
-                            onClick={() => {
-                              if (!isBooked && !isLockedByOther) handleSeatClick(code, sec, isBooked, isSelected, seatNum, isGA);
-                            }}
-                          >
-                            <title>{isGA ? `Ticket ${seatNum}` : `Seat ${seatNum}`}{isBooked ? ' (Sold)' : isLockedByOther ? ' (Locked by another user)' : ''}</title>
-                            <g transform={`translate(${half}, ${half})`}>
-                              {/* Chair Backrest */}
-                              <path 
-                                d={`M ${-half * 0.7} ${half * 0.1} C ${-half * 0.7} ${-half * 0.8}, ${half * 0.7} ${-half * 0.8}, ${half * 0.7} ${half * 0.1}`} 
-                                fill="none" 
-                                stroke={bgColor} 
-                                strokeWidth={size * 0.15} 
-                                strokeLinecap="round" 
-                                opacity={0.6} 
-                              />
-                              {/* Chair Cushion */}
-                              <circle cx="0" cy={size * 0.1} r={size * 0.35} fill={bgColor} opacity={isBooked || isLockedByOther ? 0.4 : 1} />
-                              
-                              {/* Selection Highlight */}
-                              {isSelected && <circle cx="0" cy={size * 0.1} r={size * 0.45} fill="none" stroke="var(--primary)" strokeWidth={2} />}
-                              {isLockedByOther && <circle cx="0" cy={size * 0.1} r={size * 0.45} fill="none" stroke="#fbbf24" strokeWidth={2} strokeDasharray="2 2" className="animate-[spin_4s_linear_infinite]" />}
-                              
-                              {/* Seat Number */}
-                              {!isVeryDense && (
-                                <text x="0" y={size * 0.1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={size * 0.3} fontWeight="bold">
-                                  {seatNum}
-                                </text>
-                              )}
-                            </g>
-                          </svg>
-                        );
-                      })}
-                    </div>
-
-                    {pitch && !isGA && (
-                      <div className="bg-primary/10 border border-primary/30 flex items-center justify-center text-xs font-bold tracking-widest text-primary rounded-xl w-full max-w-md h-12 mt-4 shadow-sm">
-                         <span>STAGE / FRONT</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-        )
-      )}
     </div>
   );
 }

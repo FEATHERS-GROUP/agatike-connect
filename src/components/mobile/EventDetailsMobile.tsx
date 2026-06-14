@@ -170,6 +170,7 @@ export function EventDetailsMobile({
   const [cart, setCart] = useState<Record<string, number>>({});
   const [selectedSeatsObj, setSelectedSeatsObj] = useState<any[]>([]);
   const [isSeatModalOpen, setIsSeatModalOpen] = useState(false);
+  const [isSectionActive, setIsSectionActive] = useState(false);
   const [activeTicketIdForMap, setActiveTicketIdForMap] = useState<string | undefined>();
 
   const handleSeatSelect = (seat: any) => {
@@ -598,7 +599,7 @@ export function EventDetailsMobile({
       </div>
 
       {/* Sticky Bottom Action & Collapsible Tickets Drawer */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-xl border-t border-border/50 z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+      <div className={`fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-xl border-t border-border/50 z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)] ${isSeatModalOpen ? 'hidden' : ''}`}>
         <div className="max-w-md mx-auto w-full">
           {/* Collapsible Header/Toggle */}
           <div
@@ -849,14 +850,16 @@ export function EventDetailsMobile({
             snapPoints={[0.7, 1]}
           >
             <DrawerContent className="h-[95vh] flex flex-col bg-background/95 backdrop-blur-xl px-0 pb-safe border-border/40">
-              <DrawerHeader className="border-b border-border/40 flex items-center justify-between p-4 shrink-0 text-left">
-                <div>
-                  <DrawerTitle className="text-lg font-bold">Select Seats</DrawerTitle>
-                  <p className="text-xs text-muted-foreground">
-                    For {activeTicketTiers.find((t: any) => t.id === activeTicketIdForMap)?.name}
-                  </p>
-                </div>
-              </DrawerHeader>
+              {!isSectionActive && (
+                <DrawerHeader className="border-b border-border/40 flex items-center justify-between p-4 shrink-0 text-left">
+                  <div>
+                    <DrawerTitle className="text-lg font-bold">Select Seats</DrawerTitle>
+                    <p className="text-xs text-muted-foreground">
+                      For {activeTicketTiers.find((t: any) => t.id === activeTicketIdForMap)?.name}
+                    </p>
+                  </div>
+                </DrawerHeader>
+              )}
               <div className="flex-1 w-full bg-secondary/30 relative overflow-hidden pb-24">
                 <VenueSeatSelector
                   venueProject={currentVenueProject}
@@ -872,12 +875,13 @@ export function EventDetailsMobile({
                   currency={currencyCode}
                   activeTicketId={activeTicketIdForMap}
                   hideLegend={true}
+                  onSectionActive={setIsSectionActive}
                 />
               </div>
             </DrawerContent>
           </Drawer>
 
-          {isSeatModalOpen && (
+          {isSeatModalOpen && !isSectionActive && (
             <div className="fixed bottom-0 left-0 right-0 p-4 border-t border-border bg-background flex items-center justify-between shadow-[0_-8px_30px_rgb(0,0,0,0.12)] z-[60] pb-safe animate-in slide-in-from-bottom-full duration-300">
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-foreground">
