@@ -7,6 +7,19 @@ import { nitro } from "nitro/vite";
 
 export default defineConfig({
   envPrefix: ["FIREBASE_", "GIPHY_", "GOOGLE_", "SUPABASE_"],
+  optimizeDeps: {
+    include: [
+      "react-hook-form",
+      "@hookform/resolvers/zod",
+      "@radix-ui/react-dropdown-menu",
+      "react-big-calendar",
+      "date-fns",
+      "date-fns/locale",
+      "recharts",
+      "react-day-picker",
+      "react-quill-new"
+    ]
+  },
   plugins: [
     tanstackStart({
       server: { entry: "server" },
