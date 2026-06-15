@@ -128,65 +128,61 @@ export function VenueSeatSelector({
   }, [activeSectionForModal, onSectionActive]);
 
   useEffect(() => {
-    if (activeTicketId && sections.length > 0) {
-      const targetSections = sections.filter((s) => s.ticketId === activeTicketId);
-      if (targetSections.length > 0) {
-        let minX = Infinity,
-          minY = Infinity,
-          maxX = -Infinity,
-          maxY = -Infinity;
-        targetSections.forEach((sec) => {
-          const x = sec.x || 0;
-          const y = sec.y || 0;
-          const w = sec.width || 100;
-          const h = sec.height || 100;
-          if (x - w / 2 < minX) minX = x - w / 2;
-          if (x + w / 2 > maxX) maxX = x + w / 2;
-          if (y - h / 2 < minY) minY = y - h / 2;
-          if (y + h / 2 > maxY) maxY = y + h / 2;
-        });
+    // Reset manual zoom/pan whenever the active tier changes — the SVG
+    // viewBox below auto-fits to the targeted sections like an image.
+    setZoomScale(1);
+    setPanPos({ x: 0, y: 0 });
+  }, [activeTicketId]);
 
-        if (minX !== Infinity) {
-          const bbW = maxX - minX;
-          const bbH = maxY - minY;
-          const cx = minX + bbW / 2;
-          const cy = minY + bbH / 2;
+  // Compute a bounding-box-driven viewBox so the active tier (or whole
+  // venue) is rendered fitted to the container like an SVG illustration.
+  const fittedViewBox = useMemo(() => {
+    const bw = venueProject.boundary_width || 800;
+    const bh = venueProject.boundary_height || 600;
+    const defaultPad = Math.max(bw, bh) * 0.02;
+    const fullVB = {
+      x: -(bw / 2) - defaultPad,
+      y: -(bh / 2) - defaultPad,
+      w: bw + defaultPad * 2,
+      h: bh + defaultPad * 2,
+    };
 
-          const bw = venueProject.boundary_width || 800;
-          const bh = venueProject.boundary_height || 600;
-          const padding = Math.max(bw, bh) * 0.02;
-          const viewBoxW = bw + padding * 2;
-          const viewBoxH = bh + padding * 2;
+    if (!activeTicketId) return fullVB;
+    const targets = sections.filter((s) => s.ticketId === activeTicketId);
+    if (targets.length === 0) return fullVB;
 
-          const scaleX = viewBoxW / (bbW * 1.5);
-          const scaleY = viewBoxH / (bbH * 1.5);
-          let targetScale = Math.min(scaleX, scaleY);
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+    targets.forEach((sec) => {
+      const x = sec.x || 0;
+      const y = sec.y || 0;
+      const w = (sec.width || sec.outerRadius ? (sec.outerRadius || 0) * 2 : sec.width) || 120;
+      const h = (sec.height || sec.outerRadius ? (sec.outerRadius || 0) * 2 : sec.height) || 120;
+      const sx = sec.scaleX || 1;
+      const sy = sec.scaleY || 1;
+      const halfW = (w * sx) / 2;
+      const halfH = (h * sy) / 2;
+      if (x - halfW < minX) minX = x - halfW;
+      if (x + halfW > maxX) maxX = x + halfW;
+      if (y - halfH < minY) minY = y - halfH;
+      if (y + halfH > maxY) maxY = y + halfH;
+    });
+    if (!isFinite(minX)) return fullVB;
 
-          const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-          if (isMobile) {
-            targetScale *= 1.4; // Zoom a bit more aggressively on small screens
-          }
-
-          targetScale = Math.max(1, Math.min(targetScale, 4));
-
-          const targetPanX = (-cx * targetScale) / (viewBoxW / 800);
-          const targetPanY = (-cy * targetScale) / (viewBoxH / 600);
-
-          setZoomScale(targetScale);
-          setPanPos({ x: targetPanX, y: targetPanY });
-          return;
-        }
-      }
-    }
-
-    // Default fallback
-    if (typeof window !== "undefined") {
-      if (window.innerWidth < 768) {
-        setZoomScale(1.5);
-        setPanPos({ x: 0, y: 150 });
-      }
-    }
-  }, [activeTicketId, sections, venueProject]);
+    const bbW = Math.max(50, maxX - minX);
+    const bbH = Math.max(50, maxY - minY);
+    // Generous padding so chips/legends don't overlap focused area
+    const padX = bbW * 0.45;
+    const padY = bbH * 0.55;
+    return {
+      x: minX - padX,
+      y: minY - padY,
+      w: bbW + padX * 2,
+      h: bbH + padY * 2,
+    };
+  }, [activeTicketId, sections, venueProject.boundary_width, venueProject.boundary_height]);
 
   // REALTIME SYNC (Mocking WebSocket behavior across tabs)
   const [lockedSeats, setLockedSeats] = useState<string[]>([]);
@@ -303,12 +299,9 @@ export function VenueSeatSelector({
     }
   };
 
-  const bw = venueProject.boundary_width || 800;
-  const bh = venueProject.boundary_height || 600;
-  const padding = Math.max(bw, bh) * 0.02; // Reduced padding to 2%
-  const viewBoxW = bw + padding * 2;
-  const viewBoxH = bh + padding * 2;
-  const viewBoxStr = `${-(bw / 2) - padding} ${-(bh / 2) - padding} ${viewBoxW} ${viewBoxH}`;
+  const viewBoxW = fittedViewBox.w;
+  const viewBoxH = fittedViewBox.h;
+  const viewBoxStr = `${fittedViewBox.x} ${fittedViewBox.y} ${viewBoxW} ${viewBoxH}`;
 
   const handleSectionAutoZoom = (sec: Section) => {
     if (activeTicketId && sec.ticketId !== activeTicketId) return;
