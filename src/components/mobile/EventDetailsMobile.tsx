@@ -898,38 +898,36 @@ export function EventDetailsMobile({
                   onSectionActive={setIsSectionActive}
                 />
               </div>
+
+              <div className="mt-auto p-4 border-t border-border bg-background flex items-center justify-between shadow-[0_-8px_30px_rgb(0,0,0,0.12)] pb-safe shrink-0">
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-foreground">
+                    {selectedSeatsObj.length} Seat{selectedSeatsObj.length !== 1 ? "s" : ""} Selected
+                  </span>
+                  <span className="text-xs text-muted-foreground max-w-[150px] truncate">
+                    {selectedSeatsObj.length > 0
+                      ? selectedSeatsObj.map((s) => s.seatName || s.code).join(", ")
+                      : "None"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    className="h-12 px-6 rounded-2xl text-base font-bold"
+                    onClick={() => setIsSeatModalOpen(false)}
+                  >
+                    Cancle
+                  </Button>
+                  <Button
+                    className="h-12 px-8 rounded-2xl text-base font-bold"
+                    onClick={() => setIsSeatModalOpen(false)}
+                  >
+                    Confirm
+                  </Button>
+                </div>
+              </div>
             </DrawerContent>
           </Drawer>
-
-          {isSeatModalOpen && !isSectionActive && (
-            <div className="fixed bottom-0 left-0 right-0 p-4 border-t border-border bg-background flex items-center justify-between shadow-[0_-8px_30px_rgb(0,0,0,0.12)] z-[60] pb-safe animate-in slide-in-from-bottom-full duration-300">
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-foreground">
-                  {selectedSeatsObj.length} Seat{selectedSeatsObj.length !== 1 ? "s" : ""} Selected
-                </span>
-                <span className="text-xs text-muted-foreground max-w-[150px] truncate">
-                  {selectedSeatsObj.length > 0
-                    ? selectedSeatsObj.map((s) => s.seatName || s.code).join(", ")
-                    : "None"}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  className="h-12 px-6 rounded-2xl text-base font-bold"
-                  onClick={() => setIsSeatModalOpen(false)}
-                >
-                  Cancle
-                </Button>
-                <Button
-                  className="h-12 px-8 rounded-2xl text-base font-bold"
-                  onClick={() => setIsSeatModalOpen(false)}
-                >
-                  Confirm
-                </Button>
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>

@@ -587,16 +587,6 @@ export function VenueSeatSelector({
 
           </div>
 
-          {/* Bottom Confirm Button */}
-          <div className="pointer-events-none sticky bottom-4 left-0 right-0 flex justify-center px-4 z-20 mt-4">
-            <Button
-              className="pointer-events-auto h-12 px-8 rounded-full shadow-lg gap-2 text-sm font-bold"
-              onClick={() => setActiveSectionForModal(null)}
-            >
-              <Check className="h-4 w-4" />
-              Confirm {selectedSeats.length > 0 ? `(${selectedSeats.length})` : ""}
-            </Button>
-          </div>
         </div>
       </div>
     );
@@ -789,7 +779,7 @@ export function VenueSeatSelector({
                   for (let row = 0; row < sec.rows; row++) {
                     for (let col = 0; col < sec.cols; col++) {
                       const cx = -w / 2 + (col + 0.5) * spX;
-                      const cy = -h / 2 + (row + 0.5) * spY;
+                      const cy = h / 2 - (row + 0.5) * spY;
                       const code = `${sec.id}-R${row + 1}-C${col + 1}`.replace(/\s+/g, "-");
                       seatsToRender.push({
                         cx,
