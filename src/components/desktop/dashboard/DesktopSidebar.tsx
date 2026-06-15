@@ -6,6 +6,7 @@ import { usePlatformModules } from "@/hooks/usePlatformModules";
 import * as LucideIcons from "lucide-react";
 import { useState } from "react";
 import { CommunityBadge } from "./CommunityBadge";
+import { ExperienceBadge } from "./ExperienceBadge";
 
 export function DesktopSidebar() {
   const location = useRouterState({ select: (s) => s.location });
@@ -83,12 +84,14 @@ export function DesktopSidebar() {
         <n.icon className="h-4 w-4 shrink-0" />
         <span className="truncate flex-1">{n.label}</span>
         {n.label === "Community" && <CommunityBadge />}
+        {n.label === "Events" && <ExperienceBadge />}
       </Link>
     ) : (
       <button key={n.id} className={cls}>
         <n.icon className="h-4 w-4 shrink-0" />
         <span className="truncate flex-1">{n.label}</span>
         {n.label === "Community" && <CommunityBadge />}
+        {n.label === "Events" && <ExperienceBadge />}
       </button>
     );
   };

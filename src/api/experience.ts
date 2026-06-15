@@ -223,6 +223,7 @@ export const createEventPost = createServerFn({ method: "POST" }).handler(async 
             await addDoc(collection(db, "agatike_notifications"), {
               type: "new_post",
               postId: result.id,
+              eventId: input.event_id,
               organizerId: input.workspace_id,
               actorId: session.sub,
               content: input.content.slice(0, 50),
@@ -463,6 +464,7 @@ export const likeEventPost = createServerFn({ method: "POST" })
         id
         likes_count
         workspace_id
+        event_id
       }
     }
   `;
@@ -484,6 +486,7 @@ export const likeEventPost = createServerFn({ method: "POST" })
         await addDoc(collection(db, "agatike_notifications"), {
           type: "like",
           postId: post_id,
+          eventId: updatedPost.event_id,
           organizerId: updatedPost.workspace_id,
           actorId: session.id,
           createdAt: new Date().toISOString(),
@@ -628,6 +631,7 @@ export const addPostComment = createServerFn({ method: "POST" })
           created_at
           event_post {
             workspace_id
+            event_id
             event_post_comments {
               user_id
             }
@@ -651,6 +655,7 @@ export const addPostComment = createServerFn({ method: "POST" })
     if (insertedComment) {
       try {
         const workspaceId = insertedComment.event_post?.workspace_id;
+        const eventId = insertedComment.event_post?.event_id;
         const allComments = insertedComment.event_post?.event_post_comments || [];
         const targetUsers = Array.from(
           new Set(allComments.map((c: any) => c.user_id).filter((id: string) => id !== session.id)),
@@ -660,6 +665,7 @@ export const addPostComment = createServerFn({ method: "POST" })
           await addDoc(collection(db, "agatike_notifications"), {
             type: "comment",
             postId: post_id,
+            eventId: eventId,
             organizerId: workspaceId,
             targetUsers: targetUsers,
             actorId: session.id,

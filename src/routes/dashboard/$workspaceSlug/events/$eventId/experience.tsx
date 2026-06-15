@@ -1,5 +1,5 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventFeedback, updateFeedback } from "@/api/feedback";
 import {
@@ -81,6 +81,15 @@ function ExperienceDashboard() {
   const { eventId, workspaceSlug } = useParams({ strict: false });
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
+
+  // Mark experience as read
+  useEffect(() => {
+    if (eventId) {
+      localStorage.setItem(`experience_read_${eventId}`, Date.now().toString());
+      localStorage.setItem("experience_read_all", Date.now().toString());
+      window.dispatchEvent(new Event("experience_read_updated"));
+    }
+  }, [eventId]);
 
   // ── Feedback ──────────────────────────────────────────────────────────────
   const { data: feedbackData, isLoading: isLoadingFeedback } = useQuery({

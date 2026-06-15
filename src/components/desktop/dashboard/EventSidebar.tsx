@@ -13,6 +13,7 @@ import {
   Mic,
   Layers,
 } from "lucide-react";
+import { ExperienceBadge } from "./ExperienceBadge";
 
 const steps = ["Details", "Tickets", "Venue", "Media", "Products", "VIP", "Publish"] as const;
 
@@ -153,7 +154,8 @@ export function EventSidebar() {
               return (
                 <Link key={n.label} to={n.href} className={cls}>
                   <n.icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{n.label}</span>
+                  <span className="truncate flex-1">{n.label}</span>
+                  {n.label === "Experience" && <ExperienceBadge eventId={eventId} />}
                 </Link>
               );
             })}
