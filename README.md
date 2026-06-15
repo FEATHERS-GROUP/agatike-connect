@@ -99,6 +99,29 @@ flowchart TD
 
 ---
 
+## 4.1 Venue Designer & Dynamic Stage Orientation
+
+**Logic:**
+
+- **Canvas Placement:** When organizers map out their event seating in the Venue Designer, they place Sections and a Stage (Pitch). 
+- **Dynamic Orientation:** The system automatically calculates the geometric angle between the center of each seating section and the Stage on the canvas (taking into account any manual rotation). 
+- **Row Alignment:** Based on this angle, the system determines which physical side of the section is facing the stage (Top, Bottom, Left, or Right).
+  - On the **Canvas Map**, the generated dots (`cx`, `cy`) are dynamically pivoted so that **Row 1** always physically faces the stage.
+  - When a user clicks a section to select a seat, the **Booking Modal** displays a standardized view: the camera is "rotated" so the Stage marker is always at the top of the screen, and Row 1 is at the top of the grid. This ensures an intuitive, Ticketmaster-style booking experience regardless of where the section is located on the main map.
+
+```mermaid
+flowchart TD
+  Canvas[Venue Designer Canvas] -->|Draw| Stage[Stage/Pitch]
+  Canvas -->|Draw| Sec[Seating Section]
+  Stage & Sec --> Calc{getSectionOrientation}
+  Calc -->|Top/Bottom/Left/Right| MapRender[Canvas Map Renderer]
+  MapRender --> R1[Row 1 physically closest to stage]
+  Calc --> Booking[Booking Modal]
+  Booking --> Standard[Standardized View: Stage & Row 1 at Top]
+```
+
+---
+
 ## 5. Staff Management (Import & Add)
 
 **Logic:**
