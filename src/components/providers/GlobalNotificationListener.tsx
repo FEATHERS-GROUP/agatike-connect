@@ -41,8 +41,7 @@ export function GlobalNotificationListener() {
           const permission = await Notification.requestPermission();
           if (permission === "granted" && activeWorkspace?.orgnizer_id) {
             // Note: The VAPID key should be placed here or in environment variables
-            // This requires the user to add FIREBASE_VAPID_KEY to their env
-            const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+            const vapidKey = import.meta.env.FIREBASE_VAPID_KEY;
             
             // Register the service worker manually so we can pass config or just ensure it's loaded
             const registration = await navigator.serviceWorker.register(
