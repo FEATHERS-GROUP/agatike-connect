@@ -323,18 +323,21 @@ export function VenueSeatSelector({
         ? Math.floor(tierTotalCapacity / mappedSections.length)
         : isGA
           ? sec.capacity || 0
-          : (sec.rows || 0) * (sec.cols || 0);
+          : sec.capacity || (sec.rows || 0) * (sec.cols || 0);
 
     const actualSeatCount = sectionCapacity;
 
-    // On mobile, cap columns more aggressively so seats stay tappable.
-    const colCap = isMobile ? 12 : 20;
-    const cols = Math.min(colCap, Math.max(1, Math.ceil(Math.sqrt(actualSeatCount * 1.5))));
+    // For reserved seating, respect the designed grid. For GA, fallback to auto-calculation.
+    const cols = !isGA && sec.cols && sec.cols > 0 
+      ? sec.cols 
+      : Math.min(isMobile ? 12 : 20, Math.max(1, Math.ceil(Math.sqrt(actualSeatCount * 1.5))));
 
     const isDense = cols > (isMobile ? 8 : 10);
     const isVeryDense = cols > (isMobile ? 10 : 16);
 
-    const totalCells = Math.ceil(actualSeatCount / cols) * cols;
+    const totalCells = !isGA && sec.rows && sec.cols && sec.rows > 0 && sec.cols > 0
+      ? sec.rows * sec.cols
+      : Math.ceil(actualSeatCount / cols) * cols;
     const maxRender = 3000;
     if (totalCells > maxRender) {
       return (
@@ -501,7 +504,7 @@ export function VenueSeatSelector({
                   const originalCols = sec.cols || 1;
                   const originalRow = Math.floor(i / originalCols);
                   const originalCol = i % originalCols;
-                  code = `${sec.id}-R${originalRow + 1}-C${originalCol + 1}`.replace(/\s+/g, "-");
+                  code = `${sec.id}-R${originalRow + 1}-S${originalCol + 1}`.replace(/\s+/g, "-");
                 }
 
                 const isBooked = isGA ? i < gaBookedCount : bookedSeats.includes(code);
@@ -780,7 +783,7 @@ export function VenueSeatSelector({
                     for (let col = 0; col < sec.cols; col++) {
                       const cx = -w / 2 + (col + 0.5) * spX;
                       const cy = h / 2 - (row + 0.5) * spY;
-                      const code = `${sec.id}-R${row + 1}-C${col + 1}`.replace(/\s+/g, "-");
+                      const code = `${sec.id}-R${row + 1}-S${col + 1}`.replace(/\s+/g, "-");
                       seatsToRender.push({
                         cx,
                         cy,
@@ -803,7 +806,7 @@ export function VenueSeatSelector({
                       const rad = ir + (or - ir) * ((row + 0.5) / sec.rows);
                       const ang = sa + (ea - sa) * ((col + 0.5) / sec.cols);
                       const pos = polarToCartesian(0, 0, rad, ang);
-                      const code = `${sec.id}-R${row + 1}-C${col + 1}`.replace(/\s+/g, "-");
+                      const code = `${sec.id}-R${row + 1}-S${col + 1}`.replace(/\s+/g, "-");
                       seatsToRender.push({
                         cx: pos.x,
                         cy: pos.y,

@@ -72,8 +72,8 @@ function VenueDesignerPage() {
   const currentEvent = events.find((e: any) => e.id === currentProject?.event_id);
   const targetStopIdx = currentProject?.tour_stop_idx ?? 0;
   const targetCapacity = currentEvent?.event_tickets
-    ?.filter((t: any) => t.tour_stop_idx === targetStopIdx)
-    .reduce((sum: number, t: any) => sum + (parseInt(t.remaining) || 0), 0) || 0;
+    ?.filter((t: any) => t.tour_stop_idx === targetStopIdx || t.tour_stop_idx == null)
+    .reduce((sum: number, t: any) => sum + (parseInt(t.remaining) || 0) + (parseInt(t.sold) || 0), 0) || 0;
 
   // Global State for the Venue Template
   const [template, setTemplate] = useState<VenueTemplate>(getTemplate(search.template || "blank"));
