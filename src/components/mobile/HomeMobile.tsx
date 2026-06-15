@@ -321,11 +321,12 @@ export function HomeMobile() {
   const allFollowed = dbOrganizers.length > 0 && unfollowedOrganizers.length === 0;
 
   const { channels } = useFirestoreUserMessages(user?.id || "", followedIds);
-  const unreadChatsCount = channels.filter(
-    (c) =>
+  const unreadChatsCount = channels.filter((c) => {
+    const isUnread =
       c.lastMessageSenderId !== user?.id &&
-      c.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${c.id}`) || "0", 10),
-  ).length;
+      c.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${c.id}`) || "0", 10);
+    return c.lastMessageSenderId !== user?.id && (c.unread > 0 || isUnread);
+  }).length;
 
   const [unreadCount, setUnreadCount] = useState(0);
 

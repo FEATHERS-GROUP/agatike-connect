@@ -142,6 +142,16 @@ function RootComponent() {
 
   const location = useRouterState({ select: (s) => s.location });
 
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(registration => {
+        console.log('SW registered: ', registration);
+      }).catch(registrationError => {
+        console.log('SW registration failed: ', registrationError);
+      });
+    }
+  }, []);
+
   // Hide bottom nav on detail/booking/community/ticket/f/b pages, dashboard, and auth pages
   const hideNav =
     location.pathname.match(/^\/(events|venues|book|community|ticket|f|b)\/.+/) ||

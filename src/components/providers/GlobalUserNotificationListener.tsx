@@ -79,20 +79,41 @@ export function GlobalUserNotificationListener() {
           } else if (data.type === "new_message") {
             title = "New Message";
             body = data.content ? `New message: "${data.content}"` : "You have a new message.";
-            targetPath = `/${currentUserId}/message`;
+            targetPath = `/${currentUserId}/message?chatId=${data.postId}`;
             Icon = MessageCircle;
           }
 
           if ("Notification" in window && Notification.permission === "granted") {
-            const notif = new Notification(title, {
-              body,
-              icon: "/icon.svg",
-              tag: `user-notif-${notifId}`,
-            });
-            notif.onclick = () => {
-              window.focus();
-              navigate({ to: targetPath });
-            };
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker.ready.then((registration) => {
+                registration.showNotification(title, {
+                  body,
+                  icon: "/icon.svg",
+                  tag: `user-notif-${notifId}`,
+                  data: { url: targetPath }
+                });
+              }).catch(() => {
+                const notif = new Notification(title, {
+                  body,
+                  icon: "/icon.svg",
+                  tag: `user-notif-${notifId}`,
+                });
+                notif.onclick = () => {
+                  window.focus();
+                  navigate({ to: targetPath });
+                };
+              });
+            } else {
+              const notif = new Notification(title, {
+                body,
+                icon: "/icon.svg",
+                tag: `user-notif-${notifId}`,
+              });
+              notif.onclick = () => {
+                window.focus();
+                navigate({ to: targetPath });
+              };
+            }
           }
 
           toast(title, {

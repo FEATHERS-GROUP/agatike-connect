@@ -42,7 +42,7 @@ export function CommunityBadge() {
     if (data.lastMessage && data.lastMessageSenderId !== currentUserId) {
       const rawTimeMillis = data.lastMessageTime?.toMillis?.() || 0;
       const readTime = parseInt(localStorage.getItem(`chat_read_${data.id}`) || "0", 10);
-      if (rawTimeMillis > readTime) {
+      if (rawTimeMillis > readTime || data.unreadCount > 0) {
         unreadCount++;
       }
     }

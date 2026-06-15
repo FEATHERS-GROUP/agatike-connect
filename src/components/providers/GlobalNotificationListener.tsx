@@ -106,15 +106,37 @@ export function GlobalNotificationListener() {
 
           // Trigger System Notification
           if ("Notification" in window && Notification.permission === "granted") {
-            const notif = new Notification(title, {
-              body,
-              icon: avatar || "/icon.svg",
-              tag: `msg-${channelId}`, // Helps prevent duplicates at OS level
-            });
-            notif.onclick = () => {
-              window.focus();
-              navigate({ to: `/dashboard/${activeWorkspace.slug}/community` });
-            };
+            const targetUrl = `/dashboard/${activeWorkspace.slug}/community?chatId=${channelId}`;
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker.ready.then((registration) => {
+                registration.showNotification(title, {
+                  body,
+                  icon: avatar || "/icon.svg",
+                  tag: `msg-${channelId}`, // Helps prevent duplicates at OS level
+                  data: { url: targetUrl }
+                });
+              }).catch(() => {
+                const notif = new Notification(title, {
+                  body,
+                  icon: avatar || "/icon.svg",
+                  tag: `msg-${channelId}`,
+                });
+                notif.onclick = () => {
+                  window.focus();
+                  navigate({ to: targetUrl });
+                };
+              });
+            } else {
+              const notif = new Notification(title, {
+                body,
+                icon: avatar || "/icon.svg",
+                tag: `msg-${channelId}`,
+              });
+              notif.onclick = () => {
+                window.focus();
+                navigate({ to: targetUrl });
+              };
+            }
           }
 
           // Trigger In-App Toast
@@ -123,7 +145,7 @@ export function GlobalNotificationListener() {
             icon: <MessageCircle className="text-primary h-5 w-5" />,
             action: {
               label: "View",
-              onClick: () => navigate({ to: `/dashboard/${activeWorkspace.slug}/community` }),
+              onClick: () => navigate({ to: `/dashboard/${activeWorkspace.slug}/community?chatId=${channelId}` as any }),
             },
             actionButtonStyle: {
               backgroundColor: "var(--primary)",
@@ -177,14 +199,35 @@ export function GlobalNotificationListener() {
           }
 
           if ("Notification" in window && Notification.permission === "granted") {
-            const notif = new Notification(title, {
-              body,
-              icon: "/icon.svg",
-              tag: `notif-${notifId}`,
-            });
-            notif.onclick = () => {
-              window.focus();
-            };
+            const targetUrl = "/dashboard";
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker.ready.then((registration) => {
+                registration.showNotification(title, {
+                  body,
+                  icon: "/icon.svg",
+                  tag: `notif-${notifId}`,
+                  data: { url: targetUrl }
+                });
+              }).catch(() => {
+                const notif = new Notification(title, {
+                  body,
+                  icon: "/icon.svg",
+                  tag: `notif-${notifId}`,
+                });
+                notif.onclick = () => {
+                  window.focus();
+                };
+              });
+            } else {
+              const notif = new Notification(title, {
+                body,
+                icon: "/icon.svg",
+                tag: `notif-${notifId}`,
+              });
+              notif.onclick = () => {
+                window.focus();
+              };
+            }
           }
 
           toast(title, {

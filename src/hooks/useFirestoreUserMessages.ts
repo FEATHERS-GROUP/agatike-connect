@@ -8,6 +8,7 @@ import {
   serverTimestamp,
   updateDoc,
   doc,
+  increment,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { formatMessageTime } from "@/lib/utils";
@@ -147,6 +148,19 @@ export function useFirestoreUserMessages(
   // 2. Listen to Messages for the Active Chat
   useEffect(() => {
     if (!activeChatId) return;
+    const activeChannel = channels.find((c) => c.id === activeChatId);
+    if (
+      activeChannel &&
+      activeChannel.unread > 0 &&
+      activeChannel.lastMessageSenderId !== currentUserId
+    ) {
+      const channelRef = doc(db, "agatike_channels", activeChatId);
+      updateDoc(channelRef, { unreadCount: 0 }).catch(console.error);
+    }
+  }, [activeChatId, channels, currentUserId]);
+
+  useEffect(() => {
+    if (!activeChatId) return;
 
     const q = query(collection(db, "agatike_messages"), where("channelId", "==", activeChatId));
 
@@ -214,6 +228,7 @@ export function useFirestoreUserMessages(
       lastMessage: text || (eventCard ? `Shared event: ${eventCard.title}` : "Sent an attachment"),
       lastMessageTime: serverTimestamp(),
       lastMessageSenderId: senderId,
+      unreadCount: increment(1),
     });
   };
 

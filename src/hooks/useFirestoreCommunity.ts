@@ -9,6 +9,7 @@ import {
   updateDoc,
   doc,
   setDoc,
+  increment,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getUsersByIds } from "@/api/users";
@@ -49,10 +50,17 @@ export type ChatChannel = {
   lastMessageSenderId?: string;
 };
 
-export function useFirestoreCommunity(workspaceId: string, currentUserId: string) {
+export function useFirestoreCommunity(workspaceId: string, currentUserId: string, initialChatId?: string | null) {
   const [channels, setChannels] = useState<ChatChannel[]>([]);
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [activeChatId, setActiveChatId] = useState<string | null>(initialChatId || null);
   const [loading, setLoading] = useState(true);
+
+  // Sync state if URL search param changes via back button
+  useEffect(() => {
+    if (initialChatId !== undefined && initialChatId !== activeChatId) {
+      setActiveChatId(initialChatId || null);
+    }
+  }, [initialChatId]);
 
   // 1. Listen to Channels for this Workspace/Organizer
   useEffect(() => {
@@ -148,6 +156,19 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
   // 2. Listen to Messages for the Active Chat
   useEffect(() => {
     if (!activeChatId) return;
+    const activeChannel = channels.find((c) => c.id === activeChatId);
+    if (
+      activeChannel &&
+      activeChannel.unread > 0 &&
+      activeChannel.lastMessageSenderId !== workspaceId
+    ) {
+      const channelRef = doc(db, "agatike_channels", activeChatId);
+      updateDoc(channelRef, { unreadCount: 0 }).catch(console.error);
+    }
+  }, [activeChatId, channels, workspaceId]);
+
+  useEffect(() => {
+    if (!activeChatId) return;
 
     const q = query(collection(db, "agatike_messages"), where("channelId", "==", activeChatId));
 
@@ -214,6 +235,7 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
       lastMessage: text || "Sent an attachment",
       lastMessageTime: serverTimestamp(),
       lastMessageSenderId: senderId,
+      unreadCount: increment(1),
     });
 
     try {

@@ -40,7 +40,16 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
+type CommunitySearch = {
+  chatId?: string;
+};
+
 export const Route = createFileRoute("/dashboard/$workspaceSlug/community")({
+  validateSearch: (search: Record<string, unknown>): CommunitySearch => {
+    return {
+      chatId: search.chatId as string | undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Community — Agatike" },
@@ -92,6 +101,9 @@ function CommunityPage() {
   const currentUserId = "me";
   const organizerId = activeWorkspace?.orgnizer_id || "";
 
+  const { chatId } = Route.useSearch();
+  const navigate = Route.useNavigate();
+
   const {
     channels,
     activeChatId,
@@ -100,7 +112,12 @@ function CommunityPage() {
     loading,
     createDirectMessageChannel,
     createFirebaseGroupChannel,
-  } = useFirestoreCommunity(organizerId, currentUserId);
+  } = useFirestoreCommunity(organizerId, currentUserId, chatId);
+
+  // Sync activeChatId to URL
+  useEffect(() => {
+    navigate({ search: { chatId: activeChatId || undefined } as any, replace: true });
+  }, [activeChatId, navigate]);
 
   const { data: followers = [] } = useQuery({
     queryKey: ["organizerFollowers", organizerId],
@@ -481,10 +498,15 @@ function CommunityPage() {
                   .filter((c) => !(c.type === "user" && !c.lastMessage))
                   .map((chat) => {
                     const isUnread =
-                      chat.lastMessageSenderId !== currentUserId &&
+                      chat.lastMessageSenderId !== organizerId &&
                       chat.rawTimeMillis >
                         parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
-                    const displayUnread = chat.unread > 0 ? chat.unread : isUnread ? 1 : 0;
+                    const displayUnread =
+                      chat.lastMessageSenderId !== organizerId && chat.unread > 0
+                        ? chat.unread
+                        : isUnread
+                          ? 1
+                          : 0;
                     return (
                       <button
                         key={chat.id}
@@ -651,12 +673,18 @@ function CommunityPage() {
                         </div>
                         <div className="flex justify-between items-center">
                           <p
-                            className={`text-xs truncate pr-2 ${channels.find((c) => c.id === mainChannel.id)?.unread ? "text-foreground font-medium" : "text-muted-foreground"}`}
+                            className={`text-xs truncate pr-2 ${
+                              channels.find((c) => c.id === mainChannel.id)?.lastMessageSenderId !==
+                                organizerId && channels.find((c) => c.id === mainChannel.id)?.unread
+                                ? "text-foreground font-medium"
+                                : "text-muted-foreground"
+                            }`}
                           >
                             {channels.find((c) => c.id === mainChannel.id)?.lastMessage ||
                               "Tap to chat"}
                           </p>
-                          {channels.find((c) => c.id === mainChannel.id)?.unread ? (
+                          {channels.find((c) => c.id === mainChannel.id)?.lastMessageSenderId !==
+                            organizerId && channels.find((c) => c.id === mainChannel.id)?.unread ? (
                             <Badge
                               className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
                               style={{ background: "var(--gradient-primary)" }}
@@ -731,11 +759,15 @@ function CommunityPage() {
                             </div>
                             <div className="flex justify-between items-center">
                               <p
-                                className={`text-xs truncate pr-2 ${fc?.unread ? "text-foreground font-medium" : "text-muted-foreground"}`}
+                                className={`text-xs truncate pr-2 ${
+                                  fc?.lastMessageSenderId !== organizerId && fc?.unread
+                                    ? "text-foreground font-medium"
+                                    : "text-muted-foreground"
+                                }`}
                               >
                                 {fc?.lastMessage || "Tap to chat"}
                               </p>
-                              {fc?.unread ? (
+                              {fc?.lastMessageSenderId !== organizerId && fc?.unread ? (
                                 <Badge
                                   className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
                                   style={{ background: "var(--gradient-primary)" }}

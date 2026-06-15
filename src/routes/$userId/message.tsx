@@ -398,7 +398,12 @@ function UserMessagesPage() {
                       chat.lastMessageSenderId !== user?.id &&
                       chat.rawTimeMillis >
                         parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
-                    const displayUnread = chat.unread > 0 ? chat.unread : isUnread ? 1 : 0;
+                    const displayUnread =
+                      chat.lastMessageSenderId !== user?.id && chat.unread > 0
+                        ? chat.unread
+                        : isUnread
+                          ? 1
+                          : 0;
 
                     return (
                       <button
@@ -478,7 +483,12 @@ function UserMessagesPage() {
                         chat.lastMessageSenderId !== user?.id &&
                         chat.rawTimeMillis >
                           parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
-                      const displayUnread = chat.unread > 0 ? chat.unread : isUnread ? 1 : 0;
+                      const displayUnread =
+                        chat.lastMessageSenderId !== user?.id && chat.unread > 0
+                          ? chat.unread
+                          : isUnread
+                            ? 1
+                            : 0;
 
                       return (
                         <button
