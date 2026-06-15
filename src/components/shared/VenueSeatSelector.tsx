@@ -327,10 +327,12 @@ export function VenueSeatSelector({
 
     const actualSeatCount = sectionCapacity;
 
-    const cols = Math.min(20, Math.max(1, Math.ceil(Math.sqrt(actualSeatCount * 1.5))));
+    // On mobile, cap columns more aggressively so seats stay tappable.
+    const colCap = isMobile ? 12 : 20;
+    const cols = Math.min(colCap, Math.max(1, Math.ceil(Math.sqrt(actualSeatCount * 1.5))));
 
-    const isDense = cols > 10;
-    const isVeryDense = cols > 16;
+    const isDense = cols > (isMobile ? 8 : 10);
+    const isVeryDense = cols > (isMobile ? 10 : 16);
 
     const totalCells = Math.ceil(actualSeatCount / cols) * cols;
     const maxRender = 3000;
@@ -359,10 +361,25 @@ export function VenueSeatSelector({
       );
     }
 
-    // Seat dimensions for SVG
-    const size = isVeryDense ? 32 : isDense ? 40 : 50;
+    // Seat dimensions for SVG. Bumped up so seats stay legible & tappable
+    // on mobile (Apple HIG minimum target ~44px).
+    const size = isMobile
+      ? isVeryDense
+        ? 44
+        : isDense
+          ? 52
+          : 60
+      : isVeryDense
+        ? 36
+        : isDense
+          ? 44
+          : 54;
     const half = size / 2;
-    const gapSize = isVeryDense ? "gap-1" : isDense ? "gap-1.5" : "gap-2 sm:gap-3";
+    const gapSize = isVeryDense
+      ? "gap-1 sm:gap-1"
+      : isDense
+        ? "gap-1.5 sm:gap-1.5"
+        : "gap-2 sm:gap-3";
 
     const gaBookedCount = isGA
       ? bookedSeats.filter(
