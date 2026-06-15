@@ -395,28 +395,85 @@ export function VenueSeatSelector({
 
     return (
       <div className="w-full h-full relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
-        <div className="p-4 border-b border-border/40 flex items-center justify-between bg-card z-10 shadow-sm shrink-0">
-          <div>
-            <h2 className="text-xl font-bold">{sec.name} - Select Seats</h2>
-            <p className="text-sm text-muted-foreground">Tap to select your seats</p>
-          </div>
-          <button
-            className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary font-bold rounded-xl transition-colors text-sm"
-            onClick={() => setActiveSectionForModal(null)}
-          >
-            Back to Map
-          </button>
-        </div>
-        <div className="flex-1 overflow-auto p-4 custom-scrollbar flex justify-center bg-secondary/10 relative">
-          <div className="flex flex-col gap-6 items-center w-full pb-8 pt-4">
-            <div className="flex flex-col items-center gap-1 mb-2">
-              <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                {isGA ? "General Admission" : "Reserved Seating"}
-              </span>
-              <span className="text-lg font-bold text-primary bg-primary/10 px-4 py-1.5 rounded-full">
-                {remainingCount} Seats Available
-              </span>
+        {/* Premium gradient header */}
+        <div
+          className="relative shrink-0 overflow-hidden"
+          style={{
+            background: `linear-gradient(135deg, ${sec.color || "#0ea5e9"}22, transparent 70%), linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%)`,
+          }}
+        >
+          <div className="absolute inset-0 opacity-40" style={{
+            background: `radial-gradient(circle at 20% 0%, ${sec.color || "#0ea5e9"}33, transparent 50%)`,
+          }} />
+          <div className="relative p-4 sm:p-5 flex items-center justify-between gap-3 border-b border-border/40">
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className="h-11 w-11 shrink-0 rounded-2xl grid place-items-center text-white shadow-lg"
+                style={{ background: sec.color || "#0ea5e9" }}
+              >
+                <MapIcon className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+                  {isGA ? "General Admission" : "Reserved Seating"}
+                </p>
+                <h2 className="text-lg sm:text-xl font-bold truncate">{sec.name}</h2>
+              </div>
             </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {ticket && (
+                <div className="hidden sm:flex flex-col items-end px-3 py-1.5 rounded-xl bg-background/80 backdrop-blur border border-border/60">
+                  <span className="text-[9px] uppercase tracking-widest text-muted-foreground">From</span>
+                  <span className="text-sm font-bold text-primary leading-none">
+                    {formatCurrency(ticket.cost, currency || "RWF")}
+                  </span>
+                </div>
+              )}
+              <button
+                className="px-3 sm:px-4 py-2 bg-background hover:bg-secondary border border-border/60 text-foreground font-semibold rounded-xl transition-colors text-xs sm:text-sm shadow-sm flex items-center gap-1.5"
+                onClick={() => setActiveSectionForModal(null)}
+              >
+                <X className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Back to Map</span><span className="sm:hidden">Close</span>
+              </button>
+            </div>
+          </div>
+          {/* Capacity bar */}
+          <div className="relative px-5 pb-4 flex items-center gap-3">
+            <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${Math.min(100, (remainingCount / Math.max(1, actualSeatCount)) * 100)}%`,
+                  background: `linear-gradient(90deg, ${sec.color || "#0ea5e9"}, ${sec.color || "#0ea5e9"}aa)`,
+                }}
+              />
+            </div>
+            <span className="text-xs font-bold text-muted-foreground tabular-nums">
+              <span className="text-foreground">{remainingCount}</span> / {actualSeatCount} left
+            </span>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto p-4 custom-scrollbar flex justify-center bg-gradient-to-b from-secondary/5 via-secondary/10 to-secondary/20 relative">
+          <div className="flex flex-col gap-6 items-center w-full pb-24 pt-2 max-w-5xl">
+            {/* Curved stage marker */}
+            {!isGA && (
+              <div className="w-full max-w-2xl flex flex-col items-center gap-1.5">
+                <svg viewBox="0 0 400 40" className="w-full h-8" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="stageGrad" x1="0" x2="1" y1="0" y2="0">
+                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
+                      <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M 0 35 Q 200 0 400 35" fill="none" stroke="url(#stageGrad)" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+                <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-semibold">
+                  {pitch ? "Stage / Front" : "Screen / Stage"}
+                </span>
+              </div>
+            )}
 
             <div
               className={`grid justify-center ${gapSize} w-full px-2`}
