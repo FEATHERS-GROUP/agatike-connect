@@ -75,6 +75,30 @@ function getBoundaryPath(shape: string, w: number, h: number, rx: number) {
 
 export type SeatCode = string;
 
+export function getSectionOrientation(sec: Section, sections: Section[]): "top" | "bottom" | "left" | "right" {
+  const stage = sections.find(s => s.shape === "pitch");
+  if (!stage) return "bottom";
+
+  const sx = sec.x || 0;
+  const sy = sec.y || 0;
+  const stx = stage.x || 0;
+  const sty = stage.y || 0;
+
+  const dx = stx - sx;
+  const dy = sty - sy;
+
+  let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+  angle -= (sec.rotation || 0);
+
+  while (angle <= -180) angle += 360;
+  while (angle > 180) angle -= 360;
+
+  if (angle >= -45 && angle <= 45) return "right";
+  if (angle > 45 && angle < 135) return "bottom";
+  if (angle >= 135 || angle <= -135) return "left";
+  return "top";
+}
+
 interface VenueSeatSelectorProps {
   venueProject: any;
   eventTickets: any[];
@@ -328,16 +352,20 @@ export function VenueSeatSelector({
     const actualSeatCount = sectionCapacity;
 
     // For reserved seating, respect the designed grid. For GA, fallback to auto-calculation.
-    const cols = !isGA && sec.cols && sec.cols > 0 
-      ? sec.cols 
+    // In the modal, we standardize the view so the stage is ALWAYS at the top.
+    // Therefore, visualCols is always sec.cols, and visualRows is always sec.rows.
+    const visualCols = !isGA && sec.cols && sec.cols > 0 
+      ? sec.cols
       : Math.min(isMobile ? 12 : 20, Math.max(1, Math.ceil(Math.sqrt(actualSeatCount * 1.5))));
 
-    const isDense = cols > (isMobile ? 8 : 10);
-    const isVeryDense = cols > (isMobile ? 10 : 16);
+    const isDense = visualCols > (isMobile ? 8 : 10);
+    const isVeryDense = visualCols > (isMobile ? 10 : 16);
 
-    const totalCells = !isGA && sec.rows && sec.cols && sec.rows > 0 && sec.cols > 0
-      ? sec.rows * sec.cols
-      : Math.ceil(actualSeatCount / cols) * cols;
+    const visualRows = !isGA && sec.rows && sec.cols && sec.rows > 0 && sec.cols > 0
+      ? sec.rows
+      : Math.ceil(actualSeatCount / visualCols);
+
+    const totalCells = visualRows * visualCols;
     const maxRender = 3000;
     if (totalCells > maxRender) {
       return (
@@ -396,15 +424,9 @@ export function VenueSeatSelector({
         (isGA ? gaBookedCount : bookedSeats.filter((c) => c.startsWith(`${sec.id}-`)).length),
     );
 
-    const seats = Array.from({ length: totalCells }).map((_, i) =>
+    const visuallyOrderedSeats = Array.from({ length: totalCells }).map((_, i) =>
       i < actualSeatCount ? i : null,
     );
-
-    const rowsArray = [];
-    for (let i = 0; i < seats.length; i += cols) {
-      rowsArray.push(seats.slice(i, i + cols));
-    }
-    const visuallyOrderedSeats = rowsArray.reverse().flat();
 
     return (
       <div className="w-full h-full relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
@@ -490,7 +512,7 @@ export function VenueSeatSelector({
 
             <div
               className={`grid justify-center ${gapSize} w-full px-2`}
-              style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, ${size}px))` }}
+              style={{ gridTemplateColumns: `repeat(${visualCols}, minmax(0, ${size}px))` }}
             >
               {visuallyOrderedSeats.map((i, index) => {
                 if (i === null) return <div key={`empty-${index}`} />;
@@ -775,14 +797,30 @@ export function VenueSeatSelector({
                 if (sec.shape === "rect") {
                   const w = sec.width || 100;
                   const h = sec.height || 50;
-                  const spX = w / sec.cols;
-                  const spY = h / sec.rows;
+                  const orientation = getSectionOrientation(sec, sections);
+                  const isSide = orientation === "left" || orientation === "right";
+                  
+                  const spX = w / (isSide ? sec.rows : sec.cols);
+                  const spY = h / (isSide ? sec.cols : sec.rows);
                   const r = Math.min(spX, spY) * 0.35;
 
                   for (let row = 0; row < sec.rows; row++) {
                     for (let col = 0; col < sec.cols; col++) {
-                      const cx = -w / 2 + (col + 0.5) * spX;
-                      const cy = h / 2 - (row + 0.5) * spY;
+                      let cx, cy;
+                      if (orientation === "top") {
+                        cx = -w / 2 + (col + 0.5) * spX;
+                        cy = -h / 2 + (row + 0.5) * spY;
+                      } else if (orientation === "bottom") {
+                        cx = -w / 2 + (col + 0.5) * spX;
+                        cy = h / 2 - (row + 0.5) * spY;
+                      } else if (orientation === "left") {
+                        cx = -w / 2 + (row + 0.5) * spX;
+                        cy = h / 2 - (col + 0.5) * spY;
+                      } else { // right
+                        cx = w / 2 - (row + 0.5) * spX;
+                        cy = -h / 2 + (col + 0.5) * spY;
+                      }
+
                       const code = `${sec.id}-R${row + 1}-S${col + 1}`.replace(/\s+/g, "-");
                       seatsToRender.push({
                         cx,
