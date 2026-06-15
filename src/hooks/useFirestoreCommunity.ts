@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { sendPushNotification } from "@/api/push";
 import {
   collection,
   query,
@@ -269,6 +270,23 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
           targetUsers,
           createdAt: new Date().toISOString(),
         });
+
+        // Trigger the backend push notification API
+        try {
+          await sendPushNotification({
+            data: {
+              userIds: targetUsers,
+              title: activeChat.type === "group" ? `New message in ${activeChat.name}` : "New message",
+              body: text || "Sent an attachment",
+              data: {
+                url: `/dashboard/${workspaceId}/community?chatId=${activeChatId}`,
+                chatId: activeChatId
+              }
+            }
+          });
+        } catch (pushErr) {
+          console.error("Failed to trigger push notification", pushErr);
+        }
       }
     } catch (e) {
       console.error("Failed to create notification for message", e);

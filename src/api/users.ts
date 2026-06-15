@@ -101,3 +101,45 @@ export const getOrganizerFollowersProfiles = createServerFn({ method: "POST" })
     const uResult = await hasuraRequest<{ users: any[] }>(usersQuery, { ids });
     return uResult.users || [];
   });
+
+export const saveFCMToken = createServerFn({ method: "POST" })
+  .handler(async (ctx) => {
+    const { userId, token } = ctx.data as any;
+    if (!userId || !token) return { success: false };
+
+    // Fetch user to update profile
+    const query = `
+      query GetUserProfile($id: uuid!) {
+        users_by_pk(id: $id) {
+          profile
+        }
+      }
+    `;
+    const getResult = await hasuraRequest<{ users_by_pk: any }>(query, { id: userId });
+    let profile = getResult?.users_by_pk?.profile || {};
+
+    if (typeof profile === "string") {
+      try { profile = JSON.parse(profile); } catch (e) { profile = {}; }
+    }
+
+    // Initialize fcm_tokens array if not present
+    const tokens = new Set(profile.fcm_tokens || []);
+    tokens.add(token);
+    profile.fcm_tokens = Array.from(tokens);
+
+    const updateQuery = `
+      mutation UpdateUserFCMToken($id: uuid!, $profile: jsonb!) {
+        update_users_by_pk(pk_columns: {id: $id}, _set: {profile: $profile}) {
+          id
+        }
+      }
+    `;
+
+    try {
+      await hasuraRequest(updateQuery, { id: userId, profile });
+      return { success: true };
+    } catch (err) {
+      console.error("Failed to save FCM token", err);
+      return { success: false };
+    }
+  });

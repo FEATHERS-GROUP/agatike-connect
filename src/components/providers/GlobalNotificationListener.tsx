@@ -1,9 +1,10 @@
 import { useEffect, useRef } from "react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getMessaging, getToken } from "firebase/messaging";
+import app, { db } from "@/lib/firebase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
-import { getUsersByIds } from "@/api/users";
+import { getUsersByIds, saveFCMToken } from "@/api/users";
 import { useNavigate } from "@tanstack/react-router";
 import { MessageCircle, Bell } from "lucide-react";
 
@@ -33,13 +34,39 @@ export function GlobalNotificationListener() {
   const isFirstLoadRef = useRef(true);
 
   useEffect(() => {
-    // Request permission once on mount
-    if (typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "default") {
-        Notification.requestPermission();
+    // Request permission and get FCM token on mount
+    const setupFCM = async () => {
+      if (typeof window !== "undefined" && "Notification" in window && "serviceWorker" in navigator) {
+        try {
+          const permission = await Notification.requestPermission();
+          if (permission === "granted" && activeWorkspace?.orgnizer_id) {
+            // Note: The VAPID key should be placed here or in environment variables
+            // This requires the user to add FIREBASE_VAPID_KEY to their env
+            const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+            
+            // Register the service worker manually so we can pass config or just ensure it's loaded
+            const registration = await navigator.serviceWorker.register(
+              `/firebase-messaging-sw.js?apiKey=${import.meta.env.FIREBASE_API_KEY}&projectId=${import.meta.env.FIREBASE_PROJECT_ID}&messagingSenderId=${import.meta.env.FIREBASE_MESSAGING_SENDER_ID}&appId=${import.meta.env.FIREBASE_APP_ID}`
+            );
+            
+            const messaging = getMessaging(app);
+            const token = await getToken(messaging, { 
+              vapidKey: vapidKey,
+              serviceWorkerRegistration: registration 
+            });
+            
+            if (token) {
+              await saveFCMToken({ data: { userId: activeWorkspace.orgnizer_id, token } });
+            }
+          }
+        } catch (error) {
+          console.warn("FCM Token generation failed. Push notifications may not work in background.", error);
+        }
       }
-    }
-  }, []);
+    };
+    
+    setupFCM();
+  }, [activeWorkspace?.orgnizer_id]);
 
   useEffect(() => {
     if (!activeWorkspace?.orgnizer_id) return;

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { sendPushNotification } from "@/api/push";
 import {
   collection,
   query,
@@ -230,6 +231,24 @@ export function useFirestoreUserMessages(
       lastMessageSenderId: senderId,
       unreadCount: increment(1),
     });
+
+    try {
+      if (receiverId) {
+        await sendPushNotification({
+          data: {
+            userIds: [receiverId],
+            title: "New message",
+            body: text || (eventCard ? `Shared event: ${eventCard.title}` : "Sent an attachment"),
+            data: {
+              url: `/${receiverId}/message?chatId=${activeChatId}`,
+              chatId: activeChatId
+            }
+          }
+        });
+      }
+    } catch (pushErr) {
+      console.error("Failed to trigger push notification", pushErr);
+    }
   };
 
   const createDirectMessageWithOrganizer = async (
