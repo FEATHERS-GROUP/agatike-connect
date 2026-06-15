@@ -148,6 +148,7 @@ function Stat({ label, value }: { label: string; value: number | string }) {
 
 export function VenueProperties({
   stats,
+  targetCapacity = 0,
   activeSection,
   sections,
   updateSection,
@@ -157,6 +158,7 @@ export function VenueProperties({
   setCanvasBg,
 }: {
   stats: { total: number; vip: number; acc: number; blocked: number; revenue: number };
+  targetCapacity?: number;
   activeSection: string | null;
   sections: Section[];
   updateSection: (id: string, patch: Partial<Section>) => void;
@@ -232,8 +234,14 @@ export function VenueProperties({
             label="Total capacity"
             value={sections.reduce((acc, s) => acc + (s.capacity || 0), 0).toLocaleString()}
           />
-          <Stat label="Sections" value={sections.filter((s) => s.shape !== "pitch").length} />
+          <Stat label="Target Capacity" value={targetCapacity > 0 ? targetCapacity.toLocaleString() : "N/A"} />
         </div>
+        {targetCapacity > 0 && stats.total > targetCapacity && (
+          <div className="mt-3 bg-destructive/10 text-destructive border border-destructive/20 p-2.5 rounded-lg text-xs font-medium flex items-start gap-2">
+            <Users className="h-4 w-4 shrink-0 mt-0.5" />
+            <p>Your designed venue capacity ({stats.total.toLocaleString()}) exceeds the event target capacity ({targetCapacity.toLocaleString()}). You may want to reduce some sections.</p>
+          </div>
+        )}
       </Panel>
 
       {!activeSection && (
@@ -305,6 +313,32 @@ export function VenueProperties({
                         <span>{sec.capacity || 0}</span>
                         <CheckCircle2 className="w-5 h-5 text-green-500" />
                       </div>
+                    </Field>
+                  </div>
+                  <div className="pt-2 border-t border-border/50">
+                    <Field label="Auto-calculate grid from Target Capacity">
+                      <Input
+                        type="number"
+                        placeholder="e.g. 32"
+                        onBlur={(e) => {
+                          const cap = parseInt(e.target.value);
+                          if (!isNaN(cap) && cap > 0) {
+                            // Try to make a grid that is roughly 1.5x wider than tall
+                            const cols = Math.ceil(Math.sqrt(cap * 1.5));
+                            const rows = Math.ceil(cap / cols);
+                            updateSection(sec.id, { rows, cols, capacity: rows * cols });
+                            e.target.value = ""; // Clear the input after applying
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            (e.target as HTMLInputElement).blur();
+                          }
+                        }}
+                      />
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        Enter a target capacity to automatically configure the optimal number of rows and seats for this section.
+                      </p>
                     </Field>
                   </div>
                 </div>
