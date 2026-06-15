@@ -17,6 +17,7 @@ if (!admin.apps.length) {
 }
 
 export const sendPushNotification = createServerFn({ method: "POST" })
+  .inputValidator((d: { userIds: string[]; title: string; body: string; data?: any }) => d)
   .handler(async (ctx) => {
     const { userIds, title, body, data } = ctx.data as any;
 

@@ -103,6 +103,7 @@ export const getOrganizerFollowersProfiles = createServerFn({ method: "POST" })
   });
 
 export const saveFCMToken = createServerFn({ method: "POST" })
+  .inputValidator((d: { userId: string; token: string }) => d)
   .handler(async (ctx) => {
     const { userId, token } = ctx.data as any;
     if (!userId || !token) return { success: false };
