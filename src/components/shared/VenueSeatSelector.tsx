@@ -587,7 +587,16 @@ export function VenueSeatSelector({
 
           </div>
 
-          {/* Sticky selected-seats summary removed per request */}
+          {/* Bottom Confirm Button */}
+          <div className="pointer-events-none sticky bottom-4 left-0 right-0 flex justify-center px-4 z-20 mt-4">
+            <Button
+              className="pointer-events-auto h-12 px-8 rounded-full shadow-lg gap-2 text-sm font-bold"
+              onClick={() => setActiveSectionForModal(null)}
+            >
+              <Check className="h-4 w-4" />
+              Confirm {selectedSeats.length > 0 ? `(${selectedSeats.length})` : ""}
+            </Button>
+          </div>
         </div>
       </div>
     );
