@@ -169,6 +169,7 @@ function CommunityPage() {
   useEffect(() => {
     if (activeChatId) {
       localStorage.setItem(`chat_read_${activeChatId}`, Date.now().toString());
+      window.dispatchEvent(new Event("chat_read_updated"));
     }
     scrollToBottom();
   }, [activeChat?.messages, activeChatId]);
