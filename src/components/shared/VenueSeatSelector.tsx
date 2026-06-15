@@ -575,12 +575,37 @@ export function VenueSeatSelector({
               })}
             </div>
 
-            {pitch && !isGA && (
-              <div className="bg-primary/10 border border-primary/30 flex items-center justify-center text-xs font-bold tracking-widest text-primary rounded-xl w-full max-w-md h-12 mt-4 shadow-sm">
-                <span>STAGE / FRONT</span>
-              </div>
-            )}
           </div>
+
+          {/* Sticky selected-seats summary */}
+          {selectedSeats.length > 0 && (
+            <div className="pointer-events-none sticky bottom-3 left-0 right-0 flex justify-center px-4 z-20">
+              <div className="pointer-events-auto flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-foreground text-background shadow-2xl border border-foreground/10 backdrop-blur animate-in slide-in-from-bottom-4 fade-in duration-300">
+                <div className="flex -space-x-1.5">
+                  {selectedSeats.slice(0, 3).map((c) => (
+                    <div
+                      key={c}
+                      className="h-7 w-7 rounded-full grid place-items-center text-[10px] font-bold ring-2 ring-foreground"
+                      style={{ background: sec.color || "var(--primary)" }}
+                    >
+                      <Check className="h-3 w-3 text-white" />
+                    </div>
+                  ))}
+                  {selectedSeats.length > 3 && (
+                    <div className="h-7 w-7 rounded-full grid place-items-center text-[10px] font-bold ring-2 ring-foreground bg-background/20 text-background">
+                      +{selectedSeats.length - 3}
+                    </div>
+                  )}
+                </div>
+                <div className="text-xs leading-tight">
+                  <p className="font-bold">
+                    {selectedSeats.length} {selectedSeats.length === 1 ? "seat" : "seats"} selected
+                  </p>
+                  <p className="opacity-70">Tap a seat to remove · scroll up for more</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -589,75 +614,100 @@ export function VenueSeatSelector({
   return (
     <div className="w-full h-full relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
       {!hideLegend && (
-        <div className="absolute top-4 left-4 z-10 bg-card/90 backdrop-blur-md border p-3 rounded-xl shadow-lg w-64 text-sm">
-          <h3 className="font-semibold flex items-center gap-2 mb-2">
-            <MapIcon className="h-4 w-4 text-primary" /> Legend
-          </h3>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-primary ring-2 ring-primary ring-offset-2 ring-offset-background"></div>
-              <span className="text-xs">Your Selection</span>
+        <>
+          {/* Top-left header pill */}
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-2 px-3 py-2 rounded-2xl bg-card/95 backdrop-blur-xl border border-border/60 shadow-lg">
+            <div className="h-7 w-7 rounded-xl grid place-items-center bg-primary/10 text-primary">
+              <MapIcon className="h-3.5 w-3.5" />
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-muted-foreground/30"></div>
-              <span className="text-xs">Unavailable / Sold</span>
+            <div className="text-xs">
+              <p className="font-bold leading-tight">Tap a section</p>
+              <p className="text-muted-foreground leading-tight text-[10px]">to pick your seats</p>
             </div>
           </div>
-          <div className="mt-3 pt-3 border-t">
-            <p className="text-xs text-muted-foreground font-medium mb-2">Ticket Sections</p>
-            <div className="space-y-1.5 max-h-32 overflow-y-auto custom-scrollbar">
+
+          {/* Bottom section legend dock */}
+          <div className="absolute bottom-3 left-3 right-3 z-10 flex justify-center pointer-events-none">
+            <div className="pointer-events-auto max-w-full flex items-center gap-2 px-3 py-2 rounded-2xl bg-card/95 backdrop-blur-xl border border-border/60 shadow-lg overflow-x-auto custom-scrollbar">
+              <div className="flex items-center gap-1.5 shrink-0 pr-3 mr-1 border-r border-border/60">
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold whitespace-nowrap">
+                  Sections
+                </span>
+              </div>
+              {sections.filter((s) => s.shape !== "pitch" && s.ticketId).length === 0 && (
+                <span className="text-xs text-muted-foreground px-2">No sections configured</span>
+              )}
               {sections.map((s) => {
                 if (s.shape === "pitch" || !s.ticketId) return null;
                 const t = ticketMap[s.ticketId];
+                const isFocused = activeTicketId && s.ticketId === activeTicketId;
                 return (
-                  <div key={s.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: s.color }}
-                      ></div>
-                      <span className="text-xs truncate max-w-[100px]" title={s.name}>
-                        {s.name}
-                      </span>
-                    </div>
-                    <span className="text-xs font-semibold">
-                      {t ? formatCurrency(t.cost, currency || "RWF") : "-"}
+                  <button
+                    key={s.id}
+                    onClick={() => handleSectionAutoZoom(s)}
+                    className={`shrink-0 flex items-center gap-2 px-2.5 py-1.5 rounded-xl border transition-all ${
+                      isFocused
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                        : "border-border/60 hover:bg-secondary hover:border-border"
+                    }`}
+                  >
+                    <span
+                      className="h-3 w-3 rounded-full shrink-0 ring-2 ring-background"
+                      style={{ backgroundColor: s.color }}
+                    />
+                    <span className="text-xs font-semibold truncate max-w-[110px]" title={s.name}>
+                      {s.name}
                     </span>
-                  </div>
+                    {t && (
+                      <span className="text-[10px] font-bold text-primary tabular-nums">
+                        {formatCurrency(t.cost, currency || "RWF")}
+                      </span>
+                    )}
+                  </button>
                 );
               })}
+              {maxSelectable > 0 && (
+                <div className="shrink-0 ml-1 pl-3 border-l border-border/60 flex items-center gap-1.5">
+                  <Check className="h-3 w-3 text-primary" />
+                  <span className="text-[10px] font-bold tabular-nums">
+                    {selectedSeats.length} / {maxSelectable}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
-          <div className="mt-3 pt-2 text-xs text-center text-muted-foreground">
-            Selected: {selectedSeats.length} / {maxSelectable || "∞"}
-          </div>
-        </div>
+        </>
       )}
 
-      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-card/90 backdrop-blur-md border border-border p-1.5 rounded-xl shadow-lg">
+      {/* Horizontal zoom dock */}
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-0.5 bg-card/95 backdrop-blur-xl border border-border/60 p-1 rounded-2xl shadow-lg">
         <button
           onClick={() => setZoomScale((s) => Math.min(s + 0.2, 5))}
-          className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+          className="p-2 hover:bg-secondary rounded-xl transition-colors text-muted-foreground hover:text-foreground"
           title="Zoom In"
         >
-          <Plus className="h-4 w-4" />
+          <ZoomIn className="h-4 w-4" />
         </button>
+        <span className="px-1.5 text-[10px] font-bold tabular-nums text-muted-foreground min-w-[2.5rem] text-center">
+          {Math.round(zoomScale * 100)}%
+        </span>
         <button
           onClick={() => setZoomScale((s) => Math.max(s - 0.2, 0.5))}
-          className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+          className="p-2 hover:bg-secondary rounded-xl transition-colors text-muted-foreground hover:text-foreground"
           title="Zoom Out"
         >
-          <Minus className="h-4 w-4" />
+          <ZoomOut className="h-4 w-4" />
         </button>
+        <div className="w-px h-5 bg-border/60 mx-0.5" />
         <button
           onClick={() => {
             setZoomScale(1);
             setPanPos({ x: 0, y: 0 });
           }}
-          className="p-1.5 hover:bg-secondary rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+          className="p-2 hover:bg-secondary rounded-xl transition-colors text-muted-foreground hover:text-foreground"
           title="Reset View"
         >
-          <MapIcon className="h-4 w-4" />
+          <RotateCcw className="h-4 w-4" />
         </button>
       </div>
 
