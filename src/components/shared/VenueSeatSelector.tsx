@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { Section, VenueTemplate } from "../venue-designer/types";
 import { PitchRenderer } from "../venue-designer/PitchRenderer";
-import { Info, Map as MapIcon, Minus, Plus, RotateCcw } from "lucide-react";
+import { Info, Map as MapIcon, Minus, Plus, RotateCcw, Check, X, ZoomIn, ZoomOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
