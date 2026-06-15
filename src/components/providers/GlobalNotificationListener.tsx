@@ -42,12 +42,11 @@ export function GlobalNotificationListener() {
   }, []);
 
   useEffect(() => {
-    if (!activeWorkspace?.id) return;
+    if (!activeWorkspace?.orgnizer_id) return;
 
-    const organizerId = activeWorkspace.id;
-    // For the dashboard, the "current user" acting is the organizer itself (workspaceId)
-    // Wait, the organizer sends messages as the workspace.
-    const currentUserId = activeWorkspace.id;
+    const organizerId = activeWorkspace.orgnizer_id;
+    // For the dashboard, the "current user" acting is the organizer itself
+    const currentUserId = activeWorkspace.orgnizer_id;
 
     const q = query(collection(db, "agatike_channels"), where("organizerId", "==", organizerId));
 
@@ -136,7 +135,7 @@ export function GlobalNotificationListener() {
     });
 
     return () => unsubscribe();
-  }, [activeWorkspace?.id, activeWorkspace?.slug, navigate]);
+  }, [activeWorkspace?.orgnizer_id, activeWorkspace?.slug, navigate]);
 
   useEffect(() => {
     if (!activeWorkspace?.orgnizer_id) return;
@@ -154,6 +153,8 @@ export function GlobalNotificationListener() {
         if (change.type === "added") {
           const data = change.doc.data();
           const notifId = change.doc.id;
+
+          if (data.actorId === organizerId) return;
 
           const rawTimeMillis = data.createdAt ? new Date(data.createdAt).getTime() : 0;
 
