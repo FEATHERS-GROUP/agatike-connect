@@ -587,35 +587,7 @@ export function VenueSeatSelector({
 
           </div>
 
-          {/* Sticky selected-seats summary */}
-          {selectedSeats.length > 0 && (
-            <div className="pointer-events-none sticky bottom-3 left-0 right-0 flex justify-center px-4 z-20">
-              <div className="pointer-events-auto flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-foreground text-background shadow-2xl border border-foreground/10 backdrop-blur animate-in slide-in-from-bottom-4 fade-in duration-300">
-                <div className="flex -space-x-1.5">
-                  {selectedSeats.slice(0, 3).map((c) => (
-                    <div
-                      key={c}
-                      className="h-7 w-7 rounded-full grid place-items-center text-[10px] font-bold ring-2 ring-foreground"
-                      style={{ background: sec.color || "var(--primary)" }}
-                    >
-                      <Check className="h-3 w-3 text-white" />
-                    </div>
-                  ))}
-                  {selectedSeats.length > 3 && (
-                    <div className="h-7 w-7 rounded-full grid place-items-center text-[10px] font-bold ring-2 ring-foreground bg-background/20 text-background">
-                      +{selectedSeats.length - 3}
-                    </div>
-                  )}
-                </div>
-                <div className="text-xs leading-tight">
-                  <p className="font-bold">
-                    {selectedSeats.length} {selectedSeats.length === 1 ? "seat" : "seats"} selected
-                  </p>
-                  <p className="opacity-70">Tap a seat to remove · scroll up for more</p>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Sticky selected-seats summary removed per request */}
         </div>
       </div>
     );
