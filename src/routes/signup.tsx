@@ -22,6 +22,8 @@ import { toast } from "sonner";
 import { useGoogleLogin } from "@react-oauth/google";
 import hero from "@/assets/hero-event.jpg";
 import { COUNTRIES } from "@/lib/countries";
+import PhoneInput, { parsePhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -40,7 +42,10 @@ function SignUp() {
   const navigate = useNavigate();
   const router = useRouter();
   const { refresh } = useUserAuth();
-  
+
+  const maxDate = new Date();
+  maxDate.setFullYear(maxDate.getFullYear() - 18);
+  const maxDateString = maxDate.toISOString().split("T")[0];
   const [step, setStep] = useState(0); // 0: Method, 1: Personal, 2: Security
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
@@ -52,8 +57,7 @@ function SignUp() {
   const [gender, setGender] = useState("prefer_not_to_say");
   
   // Step 2 Details
-  const [countryCode, setCountryCode] = useState("+250");
-  const [rawPhone, setRawPhone] = useState("");
+  const [phone, setPhone] = useState<string | undefined>("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -80,7 +84,7 @@ function SignUp() {
     setError("");
 
     if (!otpStep) {
-      if (!countryCode || !rawPhone || !password || !confirmPassword) {
+      if (!phone || !password || !confirmPassword) {
         setError("Please fill out all fields.");
         return;
       }
@@ -124,8 +128,8 @@ function SignUp() {
     setIsLoading(true);
 
     try {
-      const fullPhone = `${countryCode} ${rawPhone}`;
-      const countryName = COUNTRIES.find(c => c.dialCode === countryCode)?.name || "Unknown";
+      const parsed = parsePhoneNumber(phone || "");
+      const countryName = COUNTRIES.find((c) => c.code === parsed?.country)?.name || "Unknown";
 
       await signupUser({
         data: {
@@ -135,7 +139,7 @@ function SignUp() {
           dateOfBirth: dateOfBirth || null,
           gender,
           country: countryName,
-          phone: fullPhone,
+          phone,
           agreed_to_terms: agreed,
           otpToken,
           otp: otpInput,
@@ -374,9 +378,15 @@ function SignUp() {
                           id="signup-dob"
                           type="date"
                           required
+                          max={maxDateString}
                           value={dateOfBirth}
                           onChange={(e) => setDateOfBirth(e.target.value)}
-                          className="pl-9 text-sm h-11"
+                          onClick={(e) => {
+                            if (typeof e.currentTarget.showPicker === 'function') {
+                              e.currentTarget.showPicker();
+                            }
+                          }}
+                          className="pl-9 text-sm h-11 w-full"
                           disabled={isLoading}
                         />
                       </div>
@@ -429,34 +439,20 @@ function SignUp() {
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 mt-6">
                   <div>
                     <Label htmlFor="signup-phone">Phone Number</Label>
-                    <div className="flex gap-2 mt-1">
-                      <select
-                        id="signup-country"
-                        required
-                        value={countryCode}
-                        onChange={(e) => setCountryCode(e.target.value)}
-                        className="flex h-11 w-[110px] items-center justify-between rounded-md border border-input bg-background px-2 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        disabled={isLoading}
-                      >
-                        {COUNTRIES.map((c) => (
-                          <option key={c.code} value={c.dialCode}>
-                            {c.code} ({c.dialCode})
-                          </option>
-                        ))}
-                      </select>
-                      <div className="relative flex-1">
-                        <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          id="signup-phone"
-                          type="tel"
-                          required
-                          value={rawPhone}
-                          onChange={(e) => setRawPhone(e.target.value.replace(/[^0-9\s]/g, ''))}
-                          placeholder="788 000 000"
-                          className="pl-9 text-sm h-11 w-full"
-                          disabled={isLoading}
-                        />
-                      </div>
+                    <div className="relative mt-1">
+                      <PhoneInput
+                        id="signup-phone"
+                        international
+                        defaultCountry="RW"
+                        limitMaxLength
+                        value={phone}
+                        onChange={setPhone}
+                        className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        numberInputProps={{
+                          className: "flex-1 bg-transparent border-none outline-none focus:ring-0 text-sm ml-2",
+                          disabled: isLoading
+                        }}
+                      />
                     </div>
                   </div>
 
