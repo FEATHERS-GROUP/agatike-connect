@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { createOrganizerAccount, checkOrganizerHandle } from "@/api/organizers";
 import { sendSignupOtp } from "@/api/auth";
 import { getUserByHandle } from "@/api/users";
+import { uploadFile } from "@/api/storage";
 import {
   Building2,
   User,
@@ -195,8 +196,51 @@ function CreateOrganizerPage() {
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const { terms, confirm_password, instagram, tiktok, youtube, ...restValues } = values;
+      
+      let finalBusinessCert = restValues.business_cert;
+      if (finalBusinessCert && finalBusinessCert.startsWith("data:")) {
+        const match = finalBusinessCert.match(/^data:(.+);base64,(.+)$/);
+        if (match) {
+          try {
+            const res = await uploadFile({
+              data: {
+                base64: match[2],
+                contentType: match[1],
+                folder: "organizers/certs",
+                ext: match[1].split("/")[1] || "bin",
+              },
+            } as any);
+            finalBusinessCert = res.url;
+          } catch (err) {
+            console.error("Failed to upload business cert", err);
+          }
+        }
+      }
+
+      let finalNationalId = restValues.national_id;
+      if (finalNationalId && finalNationalId.startsWith("data:")) {
+        const match = finalNationalId.match(/^data:(.+);base64,(.+)$/);
+        if (match) {
+          try {
+            const res = await uploadFile({
+              data: {
+                base64: match[2],
+                contentType: match[1],
+                folder: "organizers/ids",
+                ext: match[1].split("/")[1] || "bin",
+              },
+            } as any);
+            finalNationalId = res.url;
+          } catch (err) {
+            console.error("Failed to upload national ID", err);
+          }
+        }
+      }
+
       const payload = {
         ...restValues,
+        business_cert: finalBusinessCert,
+        national_id: finalNationalId,
         field: values.field.join(", "),
         user_id: syncUserId,
         speciality:
