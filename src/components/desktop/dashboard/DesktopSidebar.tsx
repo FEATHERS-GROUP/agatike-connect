@@ -48,7 +48,13 @@ export function DesktopSidebar() {
     return legacyId && userModuleIds.includes(legacyId);
   });
 
-  const studioLabels = ["Badge Designer", "Venue Designer", "Tickets", "VIP Access", "Page Builder"];
+  const studioLabels = [
+    "Badge Designer",
+    "Venue Designer",
+    "Tickets",
+    "VIP Access",
+    "Page Builder",
+  ];
   const mainNav = nav.filter((m) => !studioLabels.includes(m.label));
   const studioNav = nav.filter((m) => studioLabels.includes(m.label));
 

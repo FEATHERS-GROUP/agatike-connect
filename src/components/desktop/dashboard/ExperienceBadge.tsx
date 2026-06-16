@@ -56,8 +56,8 @@ export function ExperienceBadge({ eventId }: { eventId?: string }) {
   if (unreadCount === 0) return null;
 
   return (
-    <Badge 
-      variant="destructive" 
+    <Badge
+      variant="destructive"
       className="ml-auto h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
     >
       {unreadCount}

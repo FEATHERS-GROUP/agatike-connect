@@ -235,25 +235,33 @@ export function VenueProperties({
             label="Total capacity"
             value={sections.reduce((acc, s) => acc + (s.capacity || 0), 0).toLocaleString()}
           />
-          <Stat label="Target Capacity" value={targetCapacity > 0 ? targetCapacity.toLocaleString() : "N/A"} />
+          <Stat
+            label="Target Capacity"
+            value={targetCapacity > 0 ? targetCapacity.toLocaleString() : "N/A"}
+          />
         </div>
         {targetCapacity > 0 && stats.total > targetCapacity && (
           <div className="mt-3 bg-destructive/10 text-destructive border border-destructive/20 p-3 rounded-lg text-xs font-medium space-y-3">
             <div className="flex items-start gap-2">
               <Users className="h-4 w-4 shrink-0 mt-0.5" />
-              <p>Your designed venue capacity ({stats.total.toLocaleString()}) exceeds the event target capacity ({targetCapacity.toLocaleString()}).</p>
+              <p>
+                Your designed venue capacity ({stats.total.toLocaleString()}) exceeds the event
+                target capacity ({targetCapacity.toLocaleString()}).
+              </p>
             </div>
             <Button
               size="sm"
               variant="outline"
               className="w-full border-destructive/30 hover:bg-destructive/20 text-destructive"
               onClick={() => {
-                const seatingSections = sections.filter(s => s.shape !== "pitch" && (s.capacity || 0) > 0);
+                const seatingSections = sections.filter(
+                  (s) => s.shape !== "pitch" && (s.capacity || 0) > 0,
+                );
                 if (seatingSections.length === 0) return;
-                
+
                 let remainingTarget = targetCapacity;
                 const currentTotal = seatingSections.reduce((acc, s) => acc + (s.capacity || 0), 0);
-                
+
                 seatingSections.forEach((sec, index) => {
                   let allocated = 0;
                   if (index === seatingSections.length - 1) {
@@ -262,12 +270,12 @@ export function VenueProperties({
                     allocated = Math.floor(((sec.capacity || 0) / currentTotal) * targetCapacity);
                     remainingTarget -= allocated;
                   }
-                  
+
                   if (allocated <= 0) allocated = 1;
-                  
+
                   let newCols = sec.cols || 1;
                   let newRows = sec.rows || 1;
-                  
+
                   if (sec.cols && sec.rows && sec.rows > 0) {
                     const ratio = sec.cols / sec.rows;
                     newCols = Math.max(1, Math.round(Math.sqrt(allocated * ratio)));
@@ -279,11 +287,11 @@ export function VenueProperties({
                     newCols = Math.max(1, Math.ceil(Math.sqrt(allocated * 1.5)));
                     newRows = Math.max(1, Math.ceil(allocated / newCols));
                   }
-                  
+
                   updateSection(sec.id, {
                     rows: newRows,
                     cols: newCols,
-                    capacity: allocated
+                    capacity: allocated,
                   });
                 });
               }}
@@ -388,7 +396,8 @@ export function VenueProperties({
                         }}
                       />
                       <p className="text-[10px] text-muted-foreground mt-1">
-                        Enter a target capacity to automatically configure the optimal number of rows and seats for this section.
+                        Enter a target capacity to automatically configure the optimal number of
+                        rows and seats for this section.
                       </p>
                     </Field>
                   </div>
@@ -482,9 +491,9 @@ export function VenueProperties({
                                 {(() => {
                                   const totalCells = (sec.rows || 0) * (sec.cols || 0);
                                   const capacity = sec.capacity || totalCells;
-                                  
+
                                   const seats = Array.from({ length: totalCells }).map((_, i) =>
-                                    i < capacity ? i : null
+                                    i < capacity ? i : null,
                                   );
 
                                   const cols = sec.cols || 1;
@@ -492,37 +501,35 @@ export function VenueProperties({
                                   for (let i = 0; i < seats.length; i += cols) {
                                     rowsArray.push(seats.slice(i, i + cols));
                                   }
-                                  
+
                                   const visuallyOrderedSeats = rowsArray.reverse().flat();
 
-                                  return visuallyOrderedSeats.map(
-                                    (seatIndex, idx) => {
-                                      if (seatIndex === null) {
-                                        return <div key={`empty-${idx}`} className="w-7 h-7" />;
-                                      }
-                                      
-                                      const originalRow = Math.floor(seatIndex / cols);
-                                      const originalCol = seatIndex % cols;
+                                  return visuallyOrderedSeats.map((seatIndex, idx) => {
+                                    if (seatIndex === null) {
+                                      return <div key={`empty-${idx}`} className="w-7 h-7" />;
+                                    }
 
-                                      const rowLabel = originalRow + 1;
-                                      const colLabel = originalCol + 1;
+                                    const originalRow = Math.floor(seatIndex / cols);
+                                    const originalCol = seatIndex % cols;
 
-                                      return (
-                                        <div
-                                          key={`seat-${idx}`}
-                                          className="w-7 h-7 rounded-t-lg rounded-b-sm flex flex-col items-center justify-center text-[9px] font-medium transition-colors hover:brightness-110 cursor-pointer shadow-sm leading-none gap-0.5"
-                                          style={{
-                                            backgroundColor: sec.color || "#0ea5e9",
-                                            color: "#fff",
-                                          }}
-                                          title={`Row ${rowLabel}, Seat ${colLabel}`}
-                                        >
-                                          <span>R{rowLabel}</span>
-                                          <span className="opacity-80">S{colLabel}</span>
-                                        </div>
-                                      );
-                                    },
-                                  );
+                                    const rowLabel = originalRow + 1;
+                                    const colLabel = originalCol + 1;
+
+                                    return (
+                                      <div
+                                        key={`seat-${idx}`}
+                                        className="w-7 h-7 rounded-t-lg rounded-b-sm flex flex-col items-center justify-center text-[9px] font-medium transition-colors hover:brightness-110 cursor-pointer shadow-sm leading-none gap-0.5"
+                                        style={{
+                                          backgroundColor: sec.color || "#0ea5e9",
+                                          color: "#fff",
+                                        }}
+                                        title={`Row ${rowLabel}, Seat ${colLabel}`}
+                                      >
+                                        <span>R{rowLabel}</span>
+                                        <span className="opacity-80">S{colLabel}</span>
+                                      </div>
+                                    );
+                                  });
                                 })()}
                                 {(sec.rows === 0 || sec.cols === 0) && (
                                   <p className="text-sm text-muted-foreground text-center col-span-full">

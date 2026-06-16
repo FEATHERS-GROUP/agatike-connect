@@ -124,7 +124,11 @@ export const saveFCMToken = createServerFn({ method: "POST" })
     let profile = getResult?.users_by_pk?.profile || {};
 
     if (typeof profile === "string") {
-      try { profile = JSON.parse(profile); } catch (e) { profile = {}; }
+      try {
+        profile = JSON.parse(profile);
+      } catch (e) {
+        profile = {};
+      }
     }
 
     // Initialize fcm_tokens array if not present

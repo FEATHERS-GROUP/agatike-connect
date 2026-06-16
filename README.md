@@ -103,8 +103,8 @@ flowchart TD
 
 **Logic:**
 
-- **Canvas Placement:** When organizers map out their event seating in the Venue Designer, they place Sections and a Stage (Pitch). 
-- **Dynamic Orientation:** The system automatically calculates the geometric angle between the center of each seating section and the Stage on the canvas (taking into account any manual rotation). 
+- **Canvas Placement:** When organizers map out their event seating in the Venue Designer, they place Sections and a Stage (Pitch).
+- **Dynamic Orientation:** The system automatically calculates the geometric angle between the center of each seating section and the Stage on the canvas (taking into account any manual rotation).
 - **Row Alignment:** Based on this angle, the system determines which physical side of the section is facing the stage (Top, Bottom, Left, or Right).
   - On the **Canvas Map**, the generated dots (`cx`, `cy`) are dynamically pivoted so that **Row 1** always physically faces the stage.
   - When a user clicks a section to select a seat, the **Booking Modal** displays a standardized view: the camera is "rotated" so the Stage marker is always at the top of the screen, and Row 1 is at the top of the grid. This ensures an intuitive, Ticketmaster-style booking experience regardless of where the section is located on the main map.
@@ -1034,9 +1034,10 @@ flowchart TD
 The true power of the Venue Designer is how it bridges visual shapes with actual sellable inventory. This is done through a seamless mapping flow where visual shapes on the canvas are connected to **Ticket Tiers** created in the Event Dashboard.
 
 **Logic:**
+
 1. **Create Tickets:** The organizer creates Ticket Tiers (e.g., "VIP", "General Admission") under the event's `products & add-ons` settings.
 2. **Design Venue:** In the Venue Designer, the organizer draws shapes (rectangles, polygons, arcs, or a pitch) representing physical zones.
-3. **Assign Tickets to Zones:** Clicking any shape in the canvas opens the Venue Properties sidebar. Here, the organizer selects a **Linked Ticket Tier** from a dropdown. 
+3. **Assign Tickets to Zones:** Clicking any shape in the canvas opens the Venue Properties sidebar. Here, the organizer selects a **Linked Ticket Tier** from a dropdown.
 4. **Capacity Calculation:** The shape is assigned a `capacity` (for GA) or specific `rows` and `cols` (for assigned seating). The system uses this to validate if the physical section holds enough seats to match the ticket inventory.
 
 ```mermaid
@@ -1046,7 +1047,7 @@ flowchart TD
     Shape -->|Selects| Sidebar[Properties Sidebar]
     Sidebar -->|Assigns Ticket| Map[Link Shape to Ticket ID]
     Map -->|Save| JSONB[(venue_projects.sections_data)]
-    
+
     style Map fill:#bbf,stroke:#333,stroke-width:2px
 ```
 
@@ -1055,6 +1056,7 @@ flowchart TD
 When a customer attempts to buy tickets on the public event page (`/events/$eventId`), the system dynamically determines whether to show a standard quantity selector or an interactive Seat Map.
 
 **Logic:**
+
 - **Matching:** The public event details page queries `getEventVenueProjects`. It checks if any ticket in the user's cart (or available tickets) has a matching `ticketId` inside the mapped `sections_data` of the venue project.
 - **Seat Map Trigger:** If a ticket is mapped to a section, a "Select Seats" button appears instead of the standard +/- quantity controls.
 - **Grid Auto-Generation:** Clicking the button opens the `VenueSeatSelector` modal. The system automatically reads the `rows` and `cols` from the JSON configuration and generates a precise CSS grid (e.g., R1-C1, R1-C2).

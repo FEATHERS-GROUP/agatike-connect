@@ -83,7 +83,8 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   // Fetch VIP Privileges
   const { data: vipPrivileges = [] } = useQuery({
     queryKey: ["workspace-vip-privileges", event?.workspace_id],
-    queryFn: () => getWorkspaceVipPrivileges({ data: { workspace_id: event?.workspace_id! } } as any),
+    queryFn: () =>
+      getWorkspaceVipPrivileges({ data: { workspace_id: event?.workspace_id! } } as any),
     enabled: !!event?.workspace_id,
   });
 
@@ -168,7 +169,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const updateDynamicField = (index: number, fieldId: string, value: string) => {
     const newAttendees = [...attendees];
     const currentDynamics = newAttendees[index].dynamic_fields || {};
-    newAttendees[index] = { ...newAttendees[index], dynamic_fields: { ...currentDynamics, [fieldId]: value } };
+    newAttendees[index] = {
+      ...newAttendees[index],
+      dynamic_fields: { ...currentDynamics, [fieldId]: value },
+    };
     setAttendees(newAttendees);
   };
 
@@ -256,17 +260,20 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   };
 
   const totalTickets = attendees.length;
-  
+
   const validateAttendeeDynamicFields = (a: any) => {
     const tier = getTierDetails(a.tierId);
-    const tierPrivileges = tier?.vip_privilege_ids?.map((pid: string) => 
-      vipPrivileges.find((vp: any) => vp.id === pid)
-    ).filter(Boolean) || [];
-    const requiredFields = tierPrivileges.flatMap((p: any) => p.fields || []).filter((f: any) => f.required);
-    
+    const tierPrivileges =
+      tier?.vip_privilege_ids
+        ?.map((pid: string) => vipPrivileges.find((vp: any) => vp.id === pid))
+        .filter(Boolean) || [];
+    const requiredFields = tierPrivileges
+      .flatMap((p: any) => p.fields || [])
+      .filter((f: any) => f.required);
+
     return requiredFields.every((f: any) => {
-       const val = a.dynamic_fields?.[f.id];
-       return val && val.trim() !== "";
+      const val = a.dynamic_fields?.[f.id];
+      return val && val.trim() !== "";
     });
   };
 
@@ -278,7 +285,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         !!attendees[0].email &&
         !!attendees[0].country &&
         validateAttendeeDynamicFields(attendees[0])
-      : attendees.every((a) => a.firstName && a.lastName && a.email && a.country && validateAttendeeDynamicFields(a))) &&
+      : attendees.every(
+          (a) =>
+            a.firstName && a.lastName && a.email && a.country && validateAttendeeDynamicFields(a),
+        )) &&
     attendees.every((a) => {
       const projectForStop = stopsWithVenues.find((s) => s.stopIdx === a.stopIdx)?.project;
       const isSeatRequired = projectForStop?.sections_data?.some(
@@ -581,9 +591,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   );
 
                   // Calculate VIP Perks and Inputs
-                  const tierPrivileges = tier?.vip_privilege_ids?.map((pid: string) => 
-                     vipPrivileges.find((vp: any) => vp.id === pid)
-                  ).filter(Boolean) || [];
+                  const tierPrivileges =
+                    tier?.vip_privilege_ids
+                      ?.map((pid: string) => vipPrivileges.find((vp: any) => vp.id === pid))
+                      .filter(Boolean) || [];
                   const dynamicFields = tierPrivileges.flatMap((p: any) => p.fields || []);
 
                   // Calculate assigned seats to show
@@ -710,25 +721,39 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                             {dynamicFields.map((field: any) => (
                               <div key={field.id} className="space-y-2">
                                 <Label>
-                                  {field.name} {field.required && <span className="text-red-500">*</span>}
+                                  {field.name}{" "}
+                                  {field.required && <span className="text-red-500">*</span>}
                                 </Label>
-                                {field.type === 'text' || field.type === 'license_plate' ? (
+                                {field.type === "text" || field.type === "license_plate" ? (
                                   <Input
                                     value={attendee.dynamic_fields?.[field.id] || ""}
-                                    onChange={(e) => updateDynamicField(idx, field.id, e.target.value)}
-                                    placeholder={field.type === 'license_plate' ? "e.g. RAA 123 A" : ""}
+                                    onChange={(e) =>
+                                      updateDynamicField(idx, field.id, e.target.value)
+                                    }
+                                    placeholder={
+                                      field.type === "license_plate" ? "e.g. RAA 123 A" : ""
+                                    }
                                     required={field.required}
                                   />
-                                ) : field.type === 'boolean' ? (
+                                ) : field.type === "boolean" ? (
                                   <div className="flex items-center space-x-2 h-10 px-3 border rounded-md">
                                     <input
                                       type="checkbox"
                                       id={`${idx}-${field.id}`}
-                                      checked={attendee.dynamic_fields?.[field.id] === 'true'}
-                                      onChange={(e) => updateDynamicField(idx, field.id, e.target.checked ? 'true' : '')}
+                                      checked={attendee.dynamic_fields?.[field.id] === "true"}
+                                      onChange={(e) =>
+                                        updateDynamicField(
+                                          idx,
+                                          field.id,
+                                          e.target.checked ? "true" : "",
+                                        )
+                                      }
                                       className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                                     />
-                                    <label htmlFor={`${idx}-${field.id}`} className="text-sm text-foreground cursor-pointer">
+                                    <label
+                                      htmlFor={`${idx}-${field.id}`}
+                                      className="text-sm text-foreground cursor-pointer"
+                                    >
                                       Yes
                                     </label>
                                   </div>

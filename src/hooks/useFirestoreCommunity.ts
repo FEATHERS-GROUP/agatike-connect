@@ -51,7 +51,11 @@ export type ChatChannel = {
   lastMessageSenderId?: string;
 };
 
-export function useFirestoreCommunity(workspaceId: string, currentUserId: string, initialChatId?: string | null) {
+export function useFirestoreCommunity(
+  workspaceId: string,
+  currentUserId: string,
+  initialChatId?: string | null,
+) {
   const [channels, setChannels] = useState<ChatChannel[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(initialChatId || null);
   const [loading, setLoading] = useState(true);
@@ -276,13 +280,14 @@ export function useFirestoreCommunity(workspaceId: string, currentUserId: string
           await sendPushNotification({
             data: {
               userIds: targetUsers,
-              title: activeChat.type === "group" ? `New message in ${activeChat.name}` : "New message",
+              title:
+                activeChat.type === "group" ? `New message in ${activeChat.name}` : "New message",
               body: text || "Sent an attachment",
               data: {
                 url: `/dashboard/${workspaceId}/community?chatId=${activeChatId}`,
-                chatId: activeChatId
-              }
-            }
+                chatId: activeChatId,
+              },
+            },
           });
         } catch (pushErr) {
           console.error("Failed to trigger push notification", pushErr);

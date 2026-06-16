@@ -241,9 +241,9 @@ export function useFirestoreUserMessages(
             body: text || (eventCard ? `Shared event: ${eventCard.title}` : "Sent an attachment"),
             data: {
               url: `/${receiverId}/message?chatId=${activeChatId}`,
-              chatId: activeChatId
-            }
-          }
+              chatId: activeChatId,
+            },
+          },
         });
       }
     } catch (pushErr) {

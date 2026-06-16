@@ -583,7 +583,7 @@ function VenueView() {
                                       )
                                       .map((t: any) => (
                                         <option key={t.id} value={t.id}>
-                                          {t.type} -{" "}
+                                          {t.name || t.type} -{" "}
                                           {t.cost
                                             ? formatCurrency(
                                                 t.cost,

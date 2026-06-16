@@ -196,7 +196,7 @@ function CreateOrganizerPage() {
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const { terms, confirm_password, instagram, tiktok, youtube, ...restValues } = values;
-      
+
       let finalBusinessCert = restValues.business_cert;
       if (finalBusinessCert && finalBusinessCert.startsWith("data:")) {
         const match = finalBusinessCert.match(/^data:(.+);base64,(.+)$/);
@@ -323,10 +323,18 @@ function CreateOrganizerPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <img src="/icon.svg" alt="Agatike" className="h-10 w-10 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
+            <img
+              src="/icon.svg"
+              alt="Agatike"
+              className="h-10 w-10 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+            />
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white">Create Organizer Profile</h1>
-              <p className="text-sm text-white/60">Join Agatike and start managing premium events.</p>
+              <h1 className="text-2xl font-bold tracking-tight text-white">
+                Create Organizer Profile
+              </h1>
+              <p className="text-sm text-white/60">
+                Join Agatike and start managing premium events.
+              </p>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-2 text-sm font-medium text-white/50 bg-white/5 px-4 py-1.5 rounded-full border border-white/10">
@@ -336,17 +344,14 @@ function CreateOrganizerPage() {
 
         {/* Glassmorphism Card */}
         <div className="relative w-full rounded-[2.5rem] border border-white/10 bg-black/40 backdrop-blur-2xl p-8 sm:p-12 shadow-2xl">
-          
           {/* Animated Progress Bars */}
           <div className="flex gap-2 mb-10">
             {Array.from({ length: totalSteps }).map((_, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className={`h-1.5 flex-1 rounded-full transition-all duration-700 ease-in-out ${
-                  i + 1 <= step 
-                    ? "bg-primary shadow-[0_0_12px_rgba(242,87,29,0.8)]" 
-                    : "bg-white/10"
-                }`} 
+                  i + 1 <= step ? "bg-primary shadow-[0_0_12px_rgba(242,87,29,0.8)]" : "bg-white/10"
+                }`}
               />
             ))}
           </div>
@@ -371,13 +376,19 @@ function CreateOrganizerPage() {
                     }`}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-xl ${!isBusiness ? "bg-primary text-white shadow-[0_0_15px_rgba(242,87,29,0.4)]" : "bg-white/10 text-white/50"}`}>
+                      <div
+                        className={`p-3 rounded-xl ${!isBusiness ? "bg-primary text-white shadow-[0_0_15px_rgba(242,87,29,0.4)]" : "bg-white/10 text-white/50"}`}
+                      >
                         <User className="h-6 w-6" />
                       </div>
-                      {!isBusiness && <CheckCircle2 className="h-6 w-6 text-primary drop-shadow-[0_0_10px_rgba(242,87,29,0.6)]" />}
+                      {!isBusiness && (
+                        <CheckCircle2 className="h-6 w-6 text-primary drop-shadow-[0_0_10px_rgba(242,87,29,0.6)]" />
+                      )}
                     </div>
                     <h3 className="text-xl font-bold mb-2 text-white">Personal</h3>
-                    <p className="text-sm text-white/60">For individuals, freelancers, and independent event organizers.</p>
+                    <p className="text-sm text-white/60">
+                      For individuals, freelancers, and independent event organizers.
+                    </p>
                   </div>
 
                   {/* Business */}
@@ -390,13 +401,19 @@ function CreateOrganizerPage() {
                     }`}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-xl ${isBusiness ? "bg-primary text-white shadow-[0_0_15px_rgba(242,87,29,0.4)]" : "bg-white/10 text-white/50"}`}>
+                      <div
+                        className={`p-3 rounded-xl ${isBusiness ? "bg-primary text-white shadow-[0_0_15px_rgba(242,87,29,0.4)]" : "bg-white/10 text-white/50"}`}
+                      >
                         <Building2 className="h-6 w-6" />
                       </div>
-                      {isBusiness && <CheckCircle2 className="h-6 w-6 text-primary drop-shadow-[0_0_10px_rgba(242,87,29,0.6)]" />}
+                      {isBusiness && (
+                        <CheckCircle2 className="h-6 w-6 text-primary drop-shadow-[0_0_10px_rgba(242,87,29,0.6)]" />
+                      )}
                     </div>
                     <h3 className="text-xl font-bold mb-2 text-white">Registered Business</h3>
-                    <p className="text-sm text-white/60">For registered companies, venues, and professional agencies.</p>
+                    <p className="text-sm text-white/60">
+                      For registered companies, venues, and professional agencies.
+                    </p>
                   </div>
                 </div>
 
@@ -421,8 +438,8 @@ function CreateOrganizerPage() {
                   </div>
                   <h2 className="text-3xl font-bold mb-3 text-white">Already on Agatike?</h2>
                   <p className="text-white/60 max-w-md mx-auto">
-                    If you already have a standard user account, you can sync it to your new organizer
-                    profile. This is completely optional.
+                    If you already have a standard user account, you can sync it to your new
+                    organizer profile. This is completely optional.
                   </p>
                 </div>
 
@@ -463,7 +480,7 @@ function CreateOrganizerPage() {
 
                   {syncUserId && linkedUser && (
                     <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl flex items-center justify-center gap-3 font-medium">
-                      <CheckCircle2 className="h-6 w-6 drop-shadow-[0_0_10px_rgba(34,197,94,0.6)]" /> 
+                      <CheckCircle2 className="h-6 w-6 drop-shadow-[0_0_10px_rgba(34,197,94,0.6)]" />
                       Successfully linked with {linkedUser.username}
                     </div>
                   )}
@@ -528,7 +545,9 @@ function CreateOrganizerPage() {
                         <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/50 animate-spin" />
                       )}
                     </div>
-                    {errors.handle && <p className="text-xs text-red-400">{errors.handle.message}</p>}
+                    {errors.handle && (
+                      <p className="text-xs text-red-400">{errors.handle.message}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -646,7 +665,9 @@ function CreateOrganizerPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3 md:col-span-2">
                     <Label className="text-white/80">Primary Fields *</Label>
-                    <p className="text-sm text-white/50 mt-0">Select all that apply to your events.</p>
+                    <p className="text-sm text-white/50 mt-0">
+                      Select all that apply to your events.
+                    </p>
                     <div className="flex flex-wrap gap-2.5 pt-2">
                       {AVAILABLE_FIELDS.map((f) => {
                         const currentFields = watch("field") || [];
@@ -656,7 +677,11 @@ function CreateOrganizerPage() {
                             key={f}
                             onClick={() => {
                               if (isSelected) {
-                                setValue("field", currentFields.filter((item) => item !== f), { shouldValidate: true });
+                                setValue(
+                                  "field",
+                                  currentFields.filter((item) => item !== f),
+                                  { shouldValidate: true },
+                                );
                               } else {
                                 setValue("field", [...currentFields, f], { shouldValidate: true });
                               }
@@ -672,12 +697,16 @@ function CreateOrganizerPage() {
                         );
                       })}
                     </div>
-                    {errors.field && <p className="text-xs text-red-400 mt-2">{errors.field.message}</p>}
+                    {errors.field && (
+                      <p className="text-xs text-red-400 mt-2">{errors.field.message}</p>
+                    )}
                   </div>
 
                   <div className="space-y-3 md:col-span-2">
                     <Label className="text-white/80">Speciality Tags (Optional)</Label>
-                    <p className="text-sm text-white/50 mt-0">Select specific niches you excel in.</p>
+                    <p className="text-sm text-white/50 mt-0">
+                      Select specific niches you excel in.
+                    </p>
                     <div className="flex flex-wrap gap-2.5 pt-2">
                       {AVAILABLE_SPECIALITIES.map((s) => {
                         const currentSpecs = watch("speciality") || [];
@@ -687,9 +716,15 @@ function CreateOrganizerPage() {
                             key={s}
                             onClick={() => {
                               if (isSelected) {
-                                setValue("speciality", currentSpecs.filter((item) => item !== s), { shouldValidate: true });
+                                setValue(
+                                  "speciality",
+                                  currentSpecs.filter((item) => item !== s),
+                                  { shouldValidate: true },
+                                );
                               } else {
-                                setValue("speciality", [...currentSpecs, s], { shouldValidate: true });
+                                setValue("speciality", [...currentSpecs, s], {
+                                  shouldValidate: true,
+                                });
                               }
                             }}
                             className={`px-5 py-2.5 rounded-full text-sm font-medium cursor-pointer transition-all duration-300 border ${
@@ -707,7 +742,9 @@ function CreateOrganizerPage() {
 
                   <div className="space-y-2 md:col-span-2">
                     <Label className="text-white/80">Estimated Events Per Year *</Label>
-                    <Select onValueChange={(v) => setValue("numberOfEvents", v, { shouldValidate: true })}>
+                    <Select
+                      onValueChange={(v) => setValue("numberOfEvents", v, { shouldValidate: true })}
+                    >
                       <SelectTrigger className="h-12 rounded-xl bg-white/5 border-white/10 text-white focus:ring-primary focus:border-transparent">
                         <SelectValue placeholder="Select volume" />
                       </SelectTrigger>
@@ -717,7 +754,9 @@ function CreateOrganizerPage() {
                         <SelectItem value="50+">50+ events</SelectItem>
                       </SelectContent>
                     </Select>
-                    {errors.numberOfEvents && <p className="text-xs text-red-400">{errors.numberOfEvents.message}</p>}
+                    {errors.numberOfEvents && (
+                      <p className="text-xs text-red-400">{errors.numberOfEvents.message}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2 md:col-span-2 mt-2">
@@ -761,7 +800,9 @@ function CreateOrganizerPage() {
 
                   {isBusiness && (
                     <div className="space-y-2 md:col-span-2 mt-4">
-                      <Label className="text-white/80">Business Certificate (Upload Document/Image)</Label>
+                      <Label className="text-white/80">
+                        Business Certificate (Upload Document/Image)
+                      </Label>
                       <label className="flex h-20 w-full cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-white/20 bg-white/5 hover:bg-white/10 transition-colors">
                         <input
                           type="file"
@@ -781,7 +822,8 @@ function CreateOrganizerPage() {
                         <span className="text-sm font-medium text-white/70 flex items-center gap-2">
                           {watch("business_cert") ? (
                             <>
-                              <CheckCircle2 className="h-5 w-5 text-green-400" /> Certificate Attached
+                              <CheckCircle2 className="h-5 w-5 text-green-400" /> Certificate
+                              Attached
                             </>
                           ) : (
                             "Click to upload certificate"
@@ -844,7 +886,10 @@ function CreateOrganizerPage() {
                     <div className="max-w-xs mx-auto pt-6 flex gap-3">
                       <Button
                         variant="outline"
-                        onClick={() => { setOtpStep(false); setOtpInput(""); }}
+                        onClick={() => {
+                          setOtpStep(false);
+                          setOtpInput("");
+                        }}
                         className="h-14 flex-1 rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
                         disabled={mutation.isPending}
                       >
@@ -856,7 +901,11 @@ function CreateOrganizerPage() {
                         style={{ background: "var(--gradient-primary)" }}
                         disabled={mutation.isPending || otpInput.length < 6}
                       >
-                        {mutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify & Create"}
+                        {mutation.isPending ? (
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                          "Verify & Create"
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -881,7 +930,9 @@ function CreateOrganizerPage() {
                           className="h-12 rounded-xl bg-white/5 border-white/10 text-white placeholder-white/30 focus-visible:ring-primary focus-visible:border-primary"
                           placeholder="••••••••"
                         />
-                        {errors.password && <p className="text-xs text-red-400">{errors.password.message}</p>}
+                        {errors.password && (
+                          <p className="text-xs text-red-400">{errors.password.message}</p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -892,24 +943,33 @@ function CreateOrganizerPage() {
                           className="h-12 rounded-xl bg-white/5 border-white/10 text-white placeholder-white/30 focus-visible:ring-primary focus-visible:border-primary"
                           placeholder="••••••••"
                         />
-                        {errors.confirm_password && <p className="text-xs text-red-400">{errors.confirm_password.message}</p>}
+                        {errors.confirm_password && (
+                          <p className="text-xs text-red-400">{errors.confirm_password.message}</p>
+                        )}
                       </div>
 
                       <div className="md:col-span-2 flex items-start space-x-3 mt-6 bg-white/5 p-4 rounded-xl border border-white/10">
                         <Checkbox
                           id="terms"
                           checked={watch("terms")}
-                          onCheckedChange={(checked) => setValue("terms", checked as boolean, { shouldValidate: true })}
+                          onCheckedChange={(checked) =>
+                            setValue("terms", checked as boolean, { shouldValidate: true })
+                          }
                           className="mt-1 data-[state=checked]:bg-primary data-[state=checked]:border-primary border-white/30"
                         />
                         <div className="space-y-1 leading-none">
-                          <label htmlFor="terms" className="text-sm font-medium leading-none text-white/80 cursor-pointer">
+                          <label
+                            htmlFor="terms"
+                            className="text-sm font-medium leading-none text-white/80 cursor-pointer"
+                          >
                             Accept Terms and Conditions
                           </label>
                           <p className="text-sm text-white/50">
                             You agree to our Terms of Service and Privacy Policy.
                           </p>
-                          {errors.terms && <p className="text-xs text-red-400 mt-2">{errors.terms.message}</p>}
+                          {errors.terms && (
+                            <p className="text-xs text-red-400 mt-2">{errors.terms.message}</p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -929,7 +989,11 @@ function CreateOrganizerPage() {
                         style={{ background: "var(--gradient-primary)" }}
                         disabled={isSendingOtp}
                       >
-                        {isSendingOtp ? <Loader2 className="h-5 w-5 animate-spin" /> : "Create Profile"}
+                        {isSendingOtp ? (
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                          "Create Profile"
+                        )}
                       </Button>
                     </div>
                   </>
@@ -937,11 +1001,14 @@ function CreateOrganizerPage() {
               </div>
             )}
           </form>
-          
+
           <div className="mt-8 text-center">
             <p className="text-sm text-white/60">
               Already have an organizer account?{" "}
-              <Link to="/dashboard/login" className="font-semibold text-primary hover:text-primary/80 transition-colors drop-shadow-[0_0_5px_rgba(242,87,29,0.3)]">
+              <Link
+                to="/dashboard/login"
+                className="font-semibold text-primary hover:text-primary/80 transition-colors drop-shadow-[0_0_5px_rgba(242,87,29,0.3)]"
+              >
                 Sign in
               </Link>
             </p>

@@ -53,18 +53,21 @@ async function run() {
 
   // 2. Track vip_privileges table in Hasura
   console.log("Tracking `vip_privileges` table...");
-  const trackTableRes = await fetch(process.env.HASURA_ADMIN_API.replace("/v1/graphql", "/v1/metadata"), {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      type: "pg_track_table",
-      args: {
-        source: "default",
-        schema: "public",
-        name: "vip_privileges"
-      },
-    }),
-  });
+  const trackTableRes = await fetch(
+    process.env.HASURA_ADMIN_API.replace("/v1/graphql", "/v1/metadata"),
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        type: "pg_track_table",
+        args: {
+          source: "default",
+          schema: "public",
+          name: "vip_privileges",
+        },
+      }),
+    },
+  );
   console.log("Track table result:", await trackTableRes.json());
 
   // 3. Add `vip_privilege_ids` to `event_tickets` (Already added successfully, but we can keep it as IF NOT EXISTS)
@@ -83,17 +86,20 @@ async function run() {
 
   // 4. Reload metadata
   console.log("Reloading Hasura metadata...");
-  const metadataRes = await fetch(process.env.HASURA_ADMIN_API.replace("/v1/graphql", "/v1/metadata"), {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      type: "reload_metadata",
-      args: {
-        reload_remote_schemas: true,
-        reload_sources: true,
-      },
-    }),
-  });
+  const metadataRes = await fetch(
+    process.env.HASURA_ADMIN_API.replace("/v1/graphql", "/v1/metadata"),
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        type: "reload_metadata",
+        args: {
+          reload_remote_schemas: true,
+          reload_sources: true,
+        },
+      }),
+    },
+  );
   console.log("Metadata result:", await metadataRes.json());
 
   console.log("Database migration complete!");

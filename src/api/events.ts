@@ -283,6 +283,8 @@ const GET_EVENT_BY_ID = `
         tour_stop_idx
         type
         updated_at
+        form_id
+        vip_privilege_ids
       }
       event_attendees_aggregate {
         aggregate {
@@ -482,6 +484,8 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
         remaining: t.remaining,
         sold: t.sold || "0",
         form_id: t.form_id || null,
+        vip_privilege_ids: t.vip_privilege_ids || null,
+        tour_stop_idx: t.tour_stop_idx !== undefined ? t.tour_stop_idx : null,
       };
       if (t.id && isValidUUID(t.id)) {
         ticketObj.id = t.id;
@@ -498,7 +502,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
               objects: $objects,
               on_conflict: {
                 constraint: event_tickets_pkey,
-                update_columns: [name, type, cost, remaining, form_id, vip_privilege_ids]
+                update_columns: [name, type, cost, remaining, form_id, vip_privilege_ids, tour_stop_idx]
               }
             ) {
               affected_rows

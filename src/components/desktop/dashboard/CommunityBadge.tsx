@@ -13,10 +13,7 @@ export function CommunityBadge() {
     if (!activeWorkspace?.orgnizer_id) return;
     const organizerId = activeWorkspace.orgnizer_id;
 
-    const q = query(
-      collection(db, "agatike_channels"),
-      where("organizerId", "==", organizerId)
-    );
+    const q = query(collection(db, "agatike_channels"), where("organizerId", "==", organizerId));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newDocs: any[] = [];
@@ -51,8 +48,8 @@ export function CommunityBadge() {
   if (unreadCount === 0) return null;
 
   return (
-    <Badge 
-      variant="destructive" 
+    <Badge
+      variant="destructive"
       className="ml-auto h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
     >
       {unreadCount}

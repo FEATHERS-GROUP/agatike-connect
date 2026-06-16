@@ -85,24 +85,26 @@ export function GlobalUserNotificationListener() {
 
           if ("Notification" in window && Notification.permission === "granted") {
             if ("serviceWorker" in navigator) {
-              navigator.serviceWorker.ready.then((registration) => {
-                registration.showNotification(title, {
-                  body,
-                  icon: "/icon.svg",
-                  tag: `user-notif-${notifId}`,
-                  data: { url: targetPath }
+              navigator.serviceWorker.ready
+                .then((registration) => {
+                  registration.showNotification(title, {
+                    body,
+                    icon: "/icon.svg",
+                    tag: `user-notif-${notifId}`,
+                    data: { url: targetPath },
+                  });
+                })
+                .catch(() => {
+                  const notif = new Notification(title, {
+                    body,
+                    icon: "/icon.svg",
+                    tag: `user-notif-${notifId}`,
+                  });
+                  notif.onclick = () => {
+                    window.focus();
+                    navigate({ to: targetPath });
+                  };
                 });
-              }).catch(() => {
-                const notif = new Notification(title, {
-                  body,
-                  icon: "/icon.svg",
-                  tag: `user-notif-${notifId}`,
-                });
-                notif.onclick = () => {
-                  window.focus();
-                  navigate({ to: targetPath });
-                };
-              });
             } else {
               const notif = new Notification(title, {
                 body,

@@ -132,7 +132,7 @@ export function EventDetailsMobile({
         const ticketsLeft = Math.max(0, capacity - sold);
         return {
           id: t.id,
-          name: t.type,
+          name: t.name || t.type,
           price: parseFloat(t.cost) || 0,
           perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
           remaining: ticketsLeft,
@@ -902,7 +902,8 @@ export function EventDetailsMobile({
               <div className="mt-auto p-4 border-t border-border bg-background flex items-center justify-between shadow-[0_-8px_30px_rgb(0,0,0,0.12)] pb-safe shrink-0">
                 <div className="flex flex-col">
                   <span className="text-sm font-bold text-foreground">
-                    {selectedSeatsObj.length} Seat{selectedSeatsObj.length !== 1 ? "s" : ""} Selected
+                    {selectedSeatsObj.length} Seat{selectedSeatsObj.length !== 1 ? "s" : ""}{" "}
+                    Selected
                   </span>
                   <span className="text-xs text-muted-foreground max-w-[150px] truncate">
                     {selectedSeatsObj.length > 0

@@ -145,7 +145,7 @@ export function EventDetailsDesktop({
         const ticketsLeft = Math.max(0, capacity - sold);
         return {
           id: t.id,
-          name: t.type,
+          name: t.name || t.type,
           price: parseFloat(t.cost) || 0,
           perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
           remaining: ticketsLeft,

@@ -1,7 +1,17 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { Section, VenueTemplate } from "../venue-designer/types";
 import { PitchRenderer } from "../venue-designer/PitchRenderer";
-import { Info, Map as MapIcon, Minus, Plus, RotateCcw, Check, X, ZoomIn, ZoomOut } from "lucide-react";
+import {
+  Info,
+  Map as MapIcon,
+  Minus,
+  Plus,
+  RotateCcw,
+  Check,
+  X,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
@@ -75,8 +85,11 @@ function getBoundaryPath(shape: string, w: number, h: number, rx: number) {
 
 export type SeatCode = string;
 
-export function getSectionOrientation(sec: Section, sections: Section[]): "top" | "bottom" | "left" | "right" {
-  const stage = sections.find(s => s.shape === "pitch");
+export function getSectionOrientation(
+  sec: Section,
+  sections: Section[],
+): "top" | "bottom" | "left" | "right" {
+  const stage = sections.find((s) => s.shape === "pitch");
   if (!stage) return "bottom";
 
   const sx = sec.x || 0;
@@ -88,7 +101,7 @@ export function getSectionOrientation(sec: Section, sections: Section[]): "top" 
   const dy = sty - sy;
 
   let angle = Math.atan2(dy, dx) * (180 / Math.PI);
-  angle -= (sec.rotation || 0);
+  angle -= sec.rotation || 0;
 
   while (angle <= -180) angle += 360;
   while (angle > 180) angle -= 360;
@@ -251,6 +264,7 @@ export function VenueSeatSelector({
     isSelected: boolean,
     seatNum?: number,
     isGA?: boolean,
+    displaySeatName?: string,
   ) => {
     if (isBooked || lockedSeats.includes(code)) return;
 
@@ -274,7 +288,7 @@ export function VenueSeatSelector({
       onSeatSelect({
         code,
         sectionName: section.name,
-        seatName: seatNum ? (isGA ? `GA ${seatNum}` : `Seat ${seatNum}`) : code,
+        seatName: displaySeatName || (seatNum ? (isGA ? `GA ${seatNum}` : `Seat ${seatNum}`) : code),
         ticketId,
         cost: ticket ? ticket.cost : 0,
         type: ticket ? ticket.type : "Unmapped",
@@ -354,16 +368,18 @@ export function VenueSeatSelector({
     // For reserved seating, respect the designed grid. For GA, fallback to auto-calculation.
     // In the modal, we standardize the view so the stage is ALWAYS at the top.
     // Therefore, visualCols is always sec.cols, and visualRows is always sec.rows.
-    const visualCols = !isGA && sec.cols && sec.cols > 0 
-      ? sec.cols
-      : Math.min(isMobile ? 12 : 20, Math.max(1, Math.ceil(Math.sqrt(actualSeatCount * 1.5))));
+    const visualCols =
+      !isGA && sec.cols && sec.cols > 0
+        ? sec.cols
+        : Math.min(isMobile ? 12 : 20, Math.max(1, Math.ceil(Math.sqrt(actualSeatCount * 1.5))));
 
     const isDense = visualCols > (isMobile ? 8 : 10);
     const isVeryDense = visualCols > (isMobile ? 10 : 16);
 
-    const visualRows = !isGA && sec.rows && sec.cols && sec.rows > 0 && sec.cols > 0
-      ? sec.rows
-      : Math.ceil(actualSeatCount / visualCols);
+    const visualRows =
+      !isGA && sec.rows && sec.cols && sec.rows > 0 && sec.cols > 0
+        ? sec.rows
+        : Math.ceil(actualSeatCount / visualCols);
 
     const totalCells = visualRows * visualCols;
     const maxRender = 3000;
@@ -437,9 +453,12 @@ export function VenueSeatSelector({
             background: `linear-gradient(135deg, ${sec.color || "#0ea5e9"}22, transparent 70%), linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%)`,
           }}
         >
-          <div className="absolute inset-0 opacity-40" style={{
-            background: `radial-gradient(circle at 20% 0%, ${sec.color || "#0ea5e9"}33, transparent 50%)`,
-          }} />
+          <div
+            className="absolute inset-0 opacity-40"
+            style={{
+              background: `radial-gradient(circle at 20% 0%, ${sec.color || "#0ea5e9"}33, transparent 50%)`,
+            }}
+          />
           <div className="relative p-4 sm:p-5 flex items-center justify-between gap-3 border-b border-border/40">
             <div className="flex items-center gap-3 min-w-0">
               <div
@@ -458,7 +477,9 @@ export function VenueSeatSelector({
             <div className="flex items-center gap-2 shrink-0">
               {ticket && (
                 <div className="hidden sm:flex flex-col items-end px-3 py-1.5 rounded-xl bg-background/80 backdrop-blur border border-border/60">
-                  <span className="text-[9px] uppercase tracking-widest text-muted-foreground">From</span>
+                  <span className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                    From
+                  </span>
                   <span className="text-sm font-bold text-primary leading-none">
                     {formatCurrency(ticket.cost, currency || "RWF")}
                   </span>
@@ -468,7 +489,8 @@ export function VenueSeatSelector({
                 className="px-3 sm:px-4 py-2 bg-background hover:bg-secondary border border-border/60 text-foreground font-semibold rounded-xl transition-colors text-xs sm:text-sm shadow-sm flex items-center gap-1.5"
                 onClick={() => setActiveSectionForModal(null)}
               >
-                <X className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Back to Map</span><span className="sm:hidden">Close</span>
+                <X className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Back to Map</span>
+                <span className="sm:hidden">Close</span>
               </button>
             </div>
           </div>
@@ -502,7 +524,13 @@ export function VenueSeatSelector({
                       <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
                     </linearGradient>
                   </defs>
-                  <path d="M 0 35 Q 200 0 400 35" fill="none" stroke="url(#stageGrad)" strokeWidth="3" strokeLinecap="round" />
+                  <path
+                    d="M 0 35 Q 200 0 400 35"
+                    fill="none"
+                    stroke="url(#stageGrad)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
                 </svg>
                 <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-semibold">
                   {pitch ? "Stage / Front" : "Screen / Stage"}
@@ -520,14 +548,19 @@ export function VenueSeatSelector({
                 const seatNum = i + 1;
                 let code = "";
 
+                let originalRow = 0;
+                let originalCol = 0;
+
                 if (isGA) {
                   code = `GA-${sec.id}-${seatNum}`;
                 } else {
                   const originalCols = sec.cols || 1;
-                  const originalRow = Math.floor(i / originalCols);
-                  const originalCol = i % originalCols;
+                  originalRow = Math.floor(i / originalCols);
+                  originalCol = i % originalCols;
                   code = `${sec.id}-R${originalRow + 1}-S${originalCol + 1}`.replace(/\s+/g, "-");
                 }
+                
+                const displaySeatName = isGA ? `GA ${seatNum}` : `R${originalRow + 1} S${originalCol + 1}`;
 
                 const isBooked = isGA ? i < gaBookedCount : bookedSeats.includes(code);
                 const isSelected = selectedSeats.includes(code);
@@ -547,11 +580,11 @@ export function VenueSeatSelector({
                       className={`transition-all duration-200 ${isBooked || isLockedByOther ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:-translate-y-0.5"} ${isSelected ? "drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" : !isBooked && !isLockedByOther ? "hover:brightness-125" : ""}`}
                       onClick={() => {
                         if (!isBooked && !isLockedByOther)
-                          handleSeatClick(code, sec, isBooked, isSelected, seatNum, isGA);
+                          handleSeatClick(code, sec, isBooked, isSelected, seatNum, isGA, displaySeatName);
                       }}
                     >
                       <title>
-                        {isGA ? `Ticket ${seatNum}` : `Seat ${seatNum}`}
+                        {displaySeatName}
                         {isBooked ? " (Sold)" : isLockedByOther ? " (Locked by another user)" : ""}
                       </title>
                       <g transform={`translate(${half}, ${half})`}>
@@ -598,10 +631,17 @@ export function VenueSeatSelector({
                           textAnchor="middle"
                           dominantBaseline="central"
                           fill="#fff"
-                          fontSize={size * 0.3}
+                          fontSize={size * (isGA ? 0.3 : 0.22)}
                           fontWeight="bold"
                         >
-                          {seatNum}
+                          {isGA ? (
+                            seatNum
+                          ) : (
+                            <>
+                              <tspan x="0" dy="-0.3em">R{originalRow + 1}</tspan>
+                              <tspan x="0" dy="1.1em">S{originalCol + 1}</tspan>
+                            </>
+                          )}
                         </text>
                       </g>
                     </svg>
@@ -609,9 +649,7 @@ export function VenueSeatSelector({
                 );
               })}
             </div>
-
           </div>
-
         </div>
       </div>
     );
@@ -799,7 +837,7 @@ export function VenueSeatSelector({
                   const h = sec.height || 50;
                   const orientation = getSectionOrientation(sec, sections);
                   const isSide = orientation === "left" || orientation === "right";
-                  
+
                   const spX = w / (isSide ? sec.rows : sec.cols);
                   const spY = h / (isSide ? sec.cols : sec.rows);
                   const r = Math.min(spX, spY) * 0.35;
@@ -816,7 +854,8 @@ export function VenueSeatSelector({
                       } else if (orientation === "left") {
                         cx = -w / 2 + (row + 0.5) * spX;
                         cy = h / 2 - (col + 0.5) * spY;
-                      } else { // right
+                      } else {
+                        // right
                         cx = w / 2 - (row + 0.5) * spX;
                         cy = -h / 2 + (col + 0.5) * spY;
                       }

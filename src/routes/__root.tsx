@@ -144,12 +144,15 @@ function RootComponent() {
   const location = useRouterState({ select: (s) => s.location });
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then(registration => {
-        console.log('SW registered: ', registration);
-      }).catch(registrationError => {
-        console.log('SW registration failed: ', registrationError);
-      });
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => {
+          console.log("SW registered: ", registration);
+        })
+        .catch((registrationError) => {
+          console.log("SW registration failed: ", registrationError);
+        });
     }
   }, []);
 
@@ -166,35 +169,35 @@ function RootComponent() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.GOOGLE_AUTH_CLIENT_ID || ""}>
       <ThemeProvider defaultTheme="system" storageKey="agatike-theme">
-      <AppProvider>
-        <QueryClientProvider client={queryClient}>
-          <UserAuthProvider>
-            <AuthRedirect />
-            <WorkspaceProvider>
-              <LoaderProvider>
-                <GlobalNotificationListener />
-                <GlobalUserNotificationListener />
-                {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
-                <div className={`min-h-[100dvh] md:pb-0 ${hideNav ? "" : "pb-24"}`}>
-                  <Outlet />
-                </div>
-
-                {/* Floating Mobile Navigation - Hidden on Desktop */}
-                {!hideNav && (
-                  <div className="md:hidden">
-                    <MobileNav />
+        <AppProvider>
+          <QueryClientProvider client={queryClient}>
+            <UserAuthProvider>
+              <AuthRedirect />
+              <WorkspaceProvider>
+                <LoaderProvider>
+                  <GlobalNotificationListener />
+                  <GlobalUserNotificationListener />
+                  {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
+                  <div className={`min-h-[100dvh] md:pb-0 ${hideNav ? "" : "pb-24"}`}>
+                    <Outlet />
                   </div>
-                )}
 
-                <InstallPrompt />
-                <SplashLoader />
-                <Toaster position="top-center" />
-              </LoaderProvider>
-            </WorkspaceProvider>
-          </UserAuthProvider>
-        </QueryClientProvider>
-      </AppProvider>
-    </ThemeProvider>
+                  {/* Floating Mobile Navigation - Hidden on Desktop */}
+                  {!hideNav && (
+                    <div className="md:hidden">
+                      <MobileNav />
+                    </div>
+                  )}
+
+                  <InstallPrompt />
+                  <SplashLoader />
+                  <Toaster position="top-center" />
+                </LoaderProvider>
+              </WorkspaceProvider>
+            </UserAuthProvider>
+          </QueryClientProvider>
+        </AppProvider>
+      </ThemeProvider>
     </GoogleOAuthProvider>
   );
 }

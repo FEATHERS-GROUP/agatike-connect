@@ -138,13 +138,14 @@ function EditEventPage() {
 
   // Tickets
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [sameTicketsForAllLocations, setSameTicketsForAllLocations] = useState(true);
+  const [sameTicketsForAllLocations, setSameTicketsForAllLocations] = useState(false);
   const [activeTourStopIdx, setActiveTourStopIdx] = useState(0);
 
   // Additional Queries
   const { data: vipPrivileges = [] } = useQuery({
     queryKey: ["vip_privileges", activeWorkspace?.id],
-    queryFn: () => getWorkspaceVipPrivileges({ data: { workspace_id: activeWorkspace!.id } } as any),
+    queryFn: () =>
+      getWorkspaceVipPrivileges({ data: { workspace_id: activeWorkspace!.id } } as any),
     enabled: !!activeWorkspace,
   });
 
@@ -181,15 +182,38 @@ function EditEventPage() {
     });
 
     if (event.event_tickets) {
-      setTickets(
-        event.event_tickets.map((t: any) => ({
+      const parsedTickets = event.event_tickets.map((t: any) => {
+        let originalType = (t.type || "").toLowerCase();
+        let inferredType = originalType;
+        const lowerName = (t.name || "").toLowerCase();
+        
+        if (lowerName.includes("vip")) inferredType = "vip";
+        else if (lowerName.includes("early")) inferredType = "early";
+        else if (lowerName.includes("free") || Number(t.cost) === 0) inferredType = "free";
+        else if (originalType !== "vip" && originalType !== "early" && originalType !== "free") inferredType = "paid";
+
+        return {
           ...t,
-          name: t.name || t.type, // Fallback to type if name was null (old data)
-          type: t.name ? t.type : (Number(t.cost) === 0 ? "free" : "paid"), // Deduce type for old data
+          name: t.name || t.type || "Ticket",
+          type: inferredType,
           price: Number(t.cost || 0),
           quantity: Number(t.remaining || 0) + Number(t.sold || 0),
-        }))
-      );
+        };
+      });
+
+      const isMultiLocation = event.tour_stops && event.tour_stops.length > 1;
+      const hasNullLocation = parsedTickets.some((t: any) => t.tour_stop_idx == null);
+
+      if (isMultiLocation && hasNullLocation) {
+        setSameTicketsForAllLocations(true);
+        setTickets(parsedTickets);
+      } else {
+        setSameTicketsForAllLocations(false);
+        setTickets(parsedTickets.map((t: any) => ({
+          ...t,
+          tour_stop_idx: t.tour_stop_idx ?? 0
+        })));
+      }
     }
   }, [event]);
 
@@ -213,13 +237,23 @@ function EditEventPage() {
           event_requency: event?.event_requency || {},
           allowed_public: form.allowed_public,
           event_tickets: {
-            data: tickets.map((t) => ({
-              ...t,
-              name: t.name,
-              type: t.type,
-              cost: String(t.price),
-              remaining: String(t.quantity),
-            })),
+            data: tickets.map((t) => {
+              let finalType = (t.type || "").toLowerCase();
+              const lowerName = (t.name || "").toLowerCase();
+              
+              if (lowerName.includes("vip")) finalType = "vip";
+              else if (lowerName.includes("early")) finalType = "early";
+              else if (lowerName.includes("free") || Number(t.price) === 0) finalType = "free";
+              else if (finalType !== "vip" && finalType !== "early" && finalType !== "free") finalType = "paid";
+
+              return {
+                ...t,
+                name: t.name,
+                type: finalType,
+                cost: String(t.price),
+                remaining: String(t.quantity),
+              };
+            }),
           },
         },
       } as any);
@@ -510,7 +544,9 @@ function EditEventPage() {
         <div className="flex items-center justify-between mb-2">
           <div>
             <h2 className="font-semibold text-lg flex items-center gap-2">Tickets</h2>
-            <p className="text-sm text-muted-foreground">Manage tickets and assign VIP Privileges</p>
+            <p className="text-sm text-muted-foreground">
+              Manage tickets and assign VIP Privileges
+            </p>
           </div>
         </div>
         <TicketEditor

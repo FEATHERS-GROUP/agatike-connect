@@ -1,11 +1,11 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
 fetch(process.env.HASURA_ADMIN_API, {
-  method: 'POST',
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json',
-    'x-hasura-admin-secret': process.env.HASURA_ADMIN_SECRETE
+    "Content-Type": "application/json",
+    "x-hasura-admin-secret": process.env.HASURA_ADMIN_SECRETE,
   },
   body: JSON.stringify({
     query: `
@@ -17,12 +17,14 @@ fetch(process.env.HASURA_ADMIN_API, {
           }
         }
       }
-    `
+    `,
+  }),
+})
+  .then((res) => res.json())
+  .then((data) => {
+    const tables = data.data.__schema.types.filter(
+      (t) => t.kind === "OBJECT" && !t.name.startsWith("_"),
+    );
+    console.log(tables.map((t) => t.name).join(", "));
   })
-})
-.then(res => res.json())
-.then(data => {
-  const tables = data.data.__schema.types.filter(t => t.kind === 'OBJECT' && !t.name.startsWith('_'));
-  console.log(tables.map(t => t.name).join(', '));
-})
-.catch(console.error);
+  .catch(console.error);

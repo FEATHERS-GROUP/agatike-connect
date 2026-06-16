@@ -188,31 +188,38 @@ function TicketCard({ ticket }: { ticket: any }) {
     const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
 
     const title = ticket.title || "Agatike Event";
-    const location = ticket.venueName ? `${ticket.venueName}, ${ticket.city || ''}` : ticket.city || "";
+    const location = ticket.venueName
+      ? `${ticket.venueName}, ${ticket.city || ""}`
+      : ticket.city || "";
 
     const formatDateForCal = (date: Date) => {
       return date.toISOString().replace(/-|:|\.\d+/g, "");
     };
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
     if (isIOS) {
       const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${formatDateForCal(startDate)}\nDTEND:${formatDateForCal(endDate)}\nSUMMARY:${title}\nLOCATION:${location}\nEND:VEVENT\nEND:VCALENDAR`;
-      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `${title.replace(/\s+/g, '_')}.ics`);
+      link.setAttribute("download", `${title.replace(/\s+/g, "_")}.ics`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } else {
-      const url = new URL('https://calendar.google.com/calendar/render');
-      url.searchParams.append('action', 'TEMPLATE');
-      url.searchParams.append('text', title);
-      url.searchParams.append('dates', `${formatDateForCal(startDate)}/${formatDateForCal(endDate)}`);
-      if (location) url.searchParams.append('location', location);
-      window.open(url.toString(), '_blank');
+      const url = new URL("https://calendar.google.com/calendar/render");
+      url.searchParams.append("action", "TEMPLATE");
+      url.searchParams.append("text", title);
+      url.searchParams.append(
+        "dates",
+        `${formatDateForCal(startDate)}/${formatDateForCal(endDate)}`,
+      );
+      if (location) url.searchParams.append("location", location);
+      window.open(url.toString(), "_blank");
     }
   };
 

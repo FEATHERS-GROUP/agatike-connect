@@ -158,7 +158,10 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
       await hasuraRequest(linkMutation, { orgId: newOrgId, userId: payload.user_id });
     } catch (err) {
       // Soft fail in case the developer hasn't created or tracked the table in Hasura yet
-      console.warn("Failed to insert into organizer_users. Is the table created and tracked in Hasura?", err);
+      console.warn(
+        "Failed to insert into organizer_users. Is the table created and tracked in Hasura?",
+        err,
+      );
     }
   }
 

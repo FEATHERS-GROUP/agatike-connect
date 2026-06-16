@@ -8,7 +8,7 @@ import { hasuraRequest } from "./graphql.server";
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_AUTH_CLIENT_ID,
   process.env.GOOGLE_AUTH_SECRET,
-  "postmessage"
+  "postmessage",
 );
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
@@ -212,14 +212,7 @@ export const sendSignupOtp = createServerFn({ method: "POST" }).handler(async (c
 });
 
 export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const {
-    username,
-    email,
-    password,
-    agreed_to_terms,
-    otpToken,
-    otp,
-  } = ctx.data as unknown as {
+  const { username, email, password, agreed_to_terms, otpToken, otp } = ctx.data as unknown as {
     username: string;
     email: string;
     password: string;
@@ -412,7 +405,7 @@ export const updateUserOnboarding = createServerFn({ method: "POST" }).handler(a
       dateOfBirth,
       gender,
       phone,
-      country
+      country,
     });
 
     return { success: true };
@@ -588,13 +581,17 @@ export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (
     }
   `;
   const existing = await hasuraRequest<{ users: any[] }>(checkQuery, { email });
-  
+
   let user = existing.users[0];
 
   if (!user) {
     const hashedPassword = await bcrypt.hash("GOOGLE_AUTH_USER", 10);
-    const handle = username.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20) + Math.floor(Math.random() * 1000);
-    
+    const handle =
+      username
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "")
+        .slice(0, 20) + Math.floor(Math.random() * 1000);
+
     const insertQuery = `
       mutation InsertGoogleUser($username: String!, $email: String!, $password: String!, $handle: String!) {
         insert_users_one(object: {
@@ -624,7 +621,7 @@ export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (
       password: hashedPassword,
       handle,
     });
-    
+
     user = res.insert_users_one;
   }
 
@@ -689,4 +686,3 @@ export const googleAuthOrganizer = createServerFn({ method: "POST" }).handler(as
 
   return { success: true, id: organizer.id };
 });
-

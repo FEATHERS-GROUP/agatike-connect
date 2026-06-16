@@ -35,7 +35,11 @@ export function GlobalNotificationListener() {
   useEffect(() => {
     // Request permission and get FCM token on mount
     const setupFCM = async () => {
-      if (typeof window !== "undefined" && "Notification" in window && "serviceWorker" in navigator) {
+      if (
+        typeof window !== "undefined" &&
+        "Notification" in window &&
+        "serviceWorker" in navigator
+      ) {
         try {
           const permission = await Notification.requestPermission();
           if (permission === "granted" && activeWorkspace?.orgnizer_id) {
@@ -44,13 +48,13 @@ export function GlobalNotificationListener() {
 
             // Register the service worker manually so we can pass config or just ensure it's loaded
             const registration = await navigator.serviceWorker.register(
-              `/firebase-messaging-sw.js?apiKey=${import.meta.env.FIREBASE_API_KEY}&projectId=${import.meta.env.FIREBASE_PROJECT_ID}&messagingSenderId=${import.meta.env.FIREBASE_MESSAGING_SENDER_ID}&appId=${import.meta.env.FIREBASE_APP_ID}`
+              `/firebase-messaging-sw.js?apiKey=${import.meta.env.FIREBASE_API_KEY}&projectId=${import.meta.env.FIREBASE_PROJECT_ID}&messagingSenderId=${import.meta.env.FIREBASE_MESSAGING_SENDER_ID}&appId=${import.meta.env.FIREBASE_APP_ID}`,
             );
 
             const messaging = getMessaging(app);
             const token = await getToken(messaging, {
               vapidKey: vapidKey,
-              serviceWorkerRegistration: registration
+              serviceWorkerRegistration: registration,
             });
 
             if (token) {
@@ -58,7 +62,10 @@ export function GlobalNotificationListener() {
             }
           }
         } catch (error) {
-          console.warn("FCM Token generation failed. Push notifications may not work in background.", error);
+          console.warn(
+            "FCM Token generation failed. Push notifications may not work in background.",
+            error,
+          );
         }
       }
     };
@@ -133,24 +140,26 @@ export function GlobalNotificationListener() {
           if ("Notification" in window && Notification.permission === "granted") {
             const targetUrl = `/dashboard/${activeWorkspace.slug}/community?chatId=${channelId}`;
             if ("serviceWorker" in navigator) {
-              navigator.serviceWorker.ready.then((registration) => {
-                registration.showNotification(title, {
-                  body,
-                  icon: avatar || "/icon.svg",
-                  tag: `msg-${channelId}`, // Helps prevent duplicates at OS level
-                  data: { url: targetUrl }
+              navigator.serviceWorker.ready
+                .then((registration) => {
+                  registration.showNotification(title, {
+                    body,
+                    icon: avatar || "/icon.svg",
+                    tag: `msg-${channelId}`, // Helps prevent duplicates at OS level
+                    data: { url: targetUrl },
+                  });
+                })
+                .catch(() => {
+                  const notif = new Notification(title, {
+                    body,
+                    icon: avatar || "/icon.svg",
+                    tag: `msg-${channelId}`,
+                  });
+                  notif.onclick = () => {
+                    window.focus();
+                    navigate({ to: targetUrl });
+                  };
                 });
-              }).catch(() => {
-                const notif = new Notification(title, {
-                  body,
-                  icon: avatar || "/icon.svg",
-                  tag: `msg-${channelId}`,
-                });
-                notif.onclick = () => {
-                  window.focus();
-                  navigate({ to: targetUrl });
-                };
-              });
             } else {
               const notif = new Notification(title, {
                 body,
@@ -170,7 +179,10 @@ export function GlobalNotificationListener() {
             icon: <MessageCircle className="text-primary h-5 w-5" />,
             action: {
               label: "View",
-              onClick: () => navigate({ to: `/dashboard/${activeWorkspace.slug}/community?chatId=${channelId}` as any }),
+              onClick: () =>
+                navigate({
+                  to: `/dashboard/${activeWorkspace.slug}/community?chatId=${channelId}` as any,
+                }),
             },
             actionButtonStyle: {
               backgroundColor: "var(--primary)",
@@ -226,23 +238,25 @@ export function GlobalNotificationListener() {
           if ("Notification" in window && Notification.permission === "granted") {
             const targetUrl = "/dashboard";
             if ("serviceWorker" in navigator) {
-              navigator.serviceWorker.ready.then((registration) => {
-                registration.showNotification(title, {
-                  body,
-                  icon: "/icon.svg",
-                  tag: `notif-${notifId}`,
-                  data: { url: targetUrl }
+              navigator.serviceWorker.ready
+                .then((registration) => {
+                  registration.showNotification(title, {
+                    body,
+                    icon: "/icon.svg",
+                    tag: `notif-${notifId}`,
+                    data: { url: targetUrl },
+                  });
+                })
+                .catch(() => {
+                  const notif = new Notification(title, {
+                    body,
+                    icon: "/icon.svg",
+                    tag: `notif-${notifId}`,
+                  });
+                  notif.onclick = () => {
+                    window.focus();
+                  };
                 });
-              }).catch(() => {
-                const notif = new Notification(title, {
-                  body,
-                  icon: "/icon.svg",
-                  tag: `notif-${notifId}`,
-                });
-                notif.onclick = () => {
-                  window.focus();
-                };
-              });
             } else {
               const notif = new Notification(title, {
                 body,

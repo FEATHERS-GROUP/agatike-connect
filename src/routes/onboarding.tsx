@@ -67,15 +67,15 @@ function OnboardingPage() {
   const maxDateString = maxDate.toISOString().split("T")[0];
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  
+
   // Step 1: Personal Details
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [gender, setGender] = useState("prefer_not_to_say");
   const [phone, setPhone] = useState<string | undefined>("");
-  
+
   // Step 2: Interests
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  
+
   // Step 3: Avatar
   const [selectedStyle, setSelectedStyle] = useState("micah");
   const [seed, setSeed] = useState(Math.random().toString(36).substring(7));
@@ -121,15 +121,15 @@ function OnboardingPage() {
       const countryName = COUNTRIES.find((c) => c.code === parsed?.country)?.name || "Unknown";
 
       const finalAvatar = selectedAvatar || generatedAvatars[0];
-      
+
       await updateUserOnboarding({
-        data: { 
-          interests: selectedInterests, 
+        data: {
+          interests: selectedInterests,
           profile: finalAvatar,
           dateOfBirth,
           gender,
           phone,
-          country: countryName
+          country: countryName,
         },
       } as any);
 
@@ -162,17 +162,14 @@ function OnboardingPage() {
 
       {/* Glassmorphism Card Container */}
       <div className="relative z-10 w-full max-w-2xl mx-auto rounded-[2.5rem] border border-white/10 bg-black/40 backdrop-blur-2xl p-8 sm:p-12 shadow-2xl overflow-hidden">
-        
         {/* Animated Progress Bars */}
         <div className="flex gap-2 mb-10">
           {[1, 2, 3].map((s) => (
-            <div 
-              key={s} 
+            <div
+              key={s}
               className={`h-1.5 flex-1 rounded-full transition-all duration-700 ease-in-out ${
-                step >= s 
-                  ? "bg-primary shadow-[0_0_12px_rgba(242,87,29,0.8)]" 
-                  : "bg-white/10"
-              }`} 
+                step >= s ? "bg-primary shadow-[0_0_12px_rgba(242,87,29,0.8)]" : "bg-white/10"
+              }`}
             />
           ))}
         </div>
@@ -185,14 +182,17 @@ function OnboardingPage() {
                   Welcome, {user?.username?.split(" ")[0]}!
                 </h1>
                 <p className="text-base text-white/60 max-w-md mx-auto">
-                  Let's finish setting up your profile. This helps us keep the community safe and personalized just for you.
+                  Let's finish setting up your profile. This helps us keep the community safe and
+                  personalized just for you.
                 </p>
               </div>
 
               <div className="space-y-5 max-w-md mx-auto">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="onboarding-dob" className="text-white/80">Date of Birth</Label>
+                    <Label htmlFor="onboarding-dob" className="text-white/80">
+                      Date of Birth
+                    </Label>
                     <div className="relative">
                       <Calendar className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
                       <Input
@@ -203,7 +203,7 @@ function OnboardingPage() {
                         value={dateOfBirth}
                         onChange={(e) => setDateOfBirth(e.target.value)}
                         onClick={(e) => {
-                          if (typeof e.currentTarget.showPicker === 'function') {
+                          if (typeof e.currentTarget.showPicker === "function") {
                             e.currentTarget.showPicker();
                           }
                         }}
@@ -212,23 +212,35 @@ function OnboardingPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="onboarding-gender" className="text-white/80">Gender</Label>
+                    <Label htmlFor="onboarding-gender" className="text-white/80">
+                      Gender
+                    </Label>
                     <select
                       id="onboarding-gender"
                       value={gender}
                       onChange={(e) => setGender(e.target.value)}
                       className="h-12 w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all [color-scheme:dark]"
                     >
-                      <option value="prefer_not_to_say" className="bg-[#111]">Prefer not to say</option>
-                      <option value="female" className="bg-[#111]">Female</option>
-                      <option value="male" className="bg-[#111]">Male</option>
-                      <option value="other" className="bg-[#111]">Other</option>
+                      <option value="prefer_not_to_say" className="bg-[#111]">
+                        Prefer not to say
+                      </option>
+                      <option value="female" className="bg-[#111]">
+                        Female
+                      </option>
+                      <option value="male" className="bg-[#111]">
+                        Male
+                      </option>
+                      <option value="other" className="bg-[#111]">
+                        Other
+                      </option>
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="onboarding-phone" className="text-white/80">Phone Number</Label>
+                  <Label htmlFor="onboarding-phone" className="text-white/80">
+                    Phone Number
+                  </Label>
                   <div className="relative">
                     <PhoneInput
                       id="onboarding-phone"
@@ -239,7 +251,8 @@ function OnboardingPage() {
                       onChange={setPhone}
                       className="flex h-12 w-full rounded-xl border border-white/10 bg-white/5 px-3 text-white focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-all"
                       numberInputProps={{
-                        className: "flex-1 bg-transparent border-none outline-none focus:ring-0 text-base ml-3 text-white placeholder-white/30",
+                        className:
+                          "flex-1 bg-transparent border-none outline-none focus:ring-0 text-base ml-3 text-white placeholder-white/30",
                       }}
                     />
                   </div>
@@ -263,7 +276,8 @@ function OnboardingPage() {
                   What are you into?
                 </h1>
                 <p className="text-base text-white/60 max-w-lg mx-auto">
-                  Select the categories you love. We'll use these to recommend events, drops, and organizers specifically for you.
+                  Select the categories you love. We'll use these to recommend events, drops, and
+                  organizers specifically for you.
                 </p>
               </div>
 
@@ -342,8 +356,8 @@ function OnboardingPage() {
                       key={style}
                       onClick={() => setSelectedStyle(style)}
                       className={`text-sm px-4 py-2 rounded-full whitespace-nowrap capitalize transition-colors ${
-                        selectedStyle === style 
-                          ? "bg-primary text-white font-semibold shadow-[0_0_10px_rgba(242,87,29,0.3)]" 
+                        selectedStyle === style
+                          ? "bg-primary text-white font-semibold shadow-[0_0_10px_rgba(242,87,29,0.3)]"
                           : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
                       }`}
                     >

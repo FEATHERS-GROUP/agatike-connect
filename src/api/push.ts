@@ -36,9 +36,9 @@ export const sendPushNotification = createServerFn({ method: "POST" })
         }
       `;
       const result = await hasuraRequest<{ users: any[] }>(query, { ids: userIds });
-      
+
       const tokens: string[] = [];
-      result?.users?.forEach(user => {
+      result?.users?.forEach((user) => {
         const profile = typeof user.profile === "string" ? JSON.parse(user.profile) : user.profile;
         if (profile?.fcm_tokens && Array.isArray(profile.fcm_tokens)) {
           tokens.push(...profile.fcm_tokens);
@@ -59,7 +59,7 @@ export const sendPushNotification = createServerFn({ method: "POST" })
       };
 
       const response = await getMessaging().sendEachForMulticast(message);
-      
+
       // Clean up invalid tokens if needed
       const failedTokens: string[] = [];
       response.responses.forEach((resp, idx) => {
@@ -68,11 +68,11 @@ export const sendPushNotification = createServerFn({ method: "POST" })
         }
       });
 
-      return { 
-        success: true, 
-        successCount: response.successCount, 
+      return {
+        success: true,
+        successCount: response.successCount,
         failureCount: response.failureCount,
-        failedTokens 
+        failedTokens,
       };
     } catch (error: any) {
       console.error("Error sending push notification:", error);

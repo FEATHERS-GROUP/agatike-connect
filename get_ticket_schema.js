@@ -1,11 +1,11 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
 fetch(process.env.HASURA_ADMIN_API, {
-  method: 'POST',
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json',
-    'x-hasura-admin-secret': process.env.HASURA_ADMIN_SECRETE
+    "Content-Type": "application/json",
+    "x-hasura-admin-secret": process.env.HASURA_ADMIN_SECRETE,
   },
   body: JSON.stringify({
     query: `
@@ -24,9 +24,9 @@ fetch(process.env.HASURA_ADMIN_API, {
           }
         }
       }
-    `
-  })
+    `,
+  }),
 })
-.then(res => res.json())
-.then(data => console.log(JSON.stringify(data, null, 2)))
-.catch(console.error);
+  .then((res) => res.json())
+  .then((data) => console.log(JSON.stringify(data, null, 2)))
+  .catch(console.error);

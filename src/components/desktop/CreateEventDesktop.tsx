@@ -377,15 +377,25 @@ export function CreateEventDesktop() {
           ? { type: data.recurrenceType, count: data.recurrenceCount }
           : {},
         event_tickets: {
-          data: tickets.map((t) => ({
-            name: t.name,
-            type: t.type,
-            cost: t.price.toString(),
-            remaining: t.quantity.toString(),
-            sold: "0",
-            sale_ends_at: t.type === "early" ? t.sale_ends_at || null : null,
-            tour_stop_idx: sameTicketsForAllLocations ? null : t.tour_stop_idx,
-          })),
+          data: tickets.map((t) => {
+            let finalType = (t.type || "").toLowerCase();
+            const lowerName = (t.name || "").toLowerCase();
+            
+            if (lowerName.includes("vip")) finalType = "vip";
+            else if (lowerName.includes("early")) finalType = "early";
+            else if (lowerName.includes("free") || Number(t.price) === 0) finalType = "free";
+            else if (finalType !== "vip" && finalType !== "early" && finalType !== "free") finalType = "paid";
+
+            return {
+              name: t.name,
+              type: finalType,
+              cost: t.price.toString(),
+              remaining: t.quantity.toString(),
+              sold: "0",
+              sale_ends_at: finalType === "early" ? t.sale_ends_at || null : null,
+              tour_stop_idx: sameTicketsForAllLocations ? null : t.tour_stop_idx,
+            };
+          }),
         },
         merchandises: {
           data: uploadedMerch.map((m) => ({

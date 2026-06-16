@@ -245,7 +245,9 @@ export function TicketEditor({
             )}
             {vipPrivileges.length > 0 && (
               <div className="md:col-span-full mt-2 border-t border-border/40 pt-2">
-                <Label className="text-xs text-muted-foreground mb-1 block">VIP Privileges & Perks</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">
+                  VIP Privileges & Perks
+                </Label>
                 <div className="flex flex-wrap gap-2">
                   {vipPrivileges.map((privilege: any) => {
                     const isSelected = t.vip_privilege_ids?.includes(privilege.id);
@@ -260,7 +262,9 @@ export function TicketEditor({
                         onClick={() => {
                           const currentIds = t.vip_privilege_ids || [];
                           if (isSelected) {
-                            update(t.id, { vip_privilege_ids: currentIds.filter((id) => id !== privilege.id) });
+                            update(t.id, {
+                              vip_privilege_ids: currentIds.filter((id) => id !== privilege.id),
+                            });
                           } else {
                             update(t.id, { vip_privilege_ids: [...currentIds, privilege.id] });
                           }

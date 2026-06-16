@@ -309,7 +309,9 @@ export function ScannerMobile() {
 
             {result === "vip" && (
               <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
-                <p className="text-xs uppercase tracking-widest text-white/50 mb-2 font-bold">VIP Privileges</p>
+                <p className="text-xs uppercase tracking-widest text-white/50 mb-2 font-bold">
+                  VIP Privileges
+                </p>
                 <div className="bg-white/5 rounded-xl p-3 space-y-2 border border-white/10">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-white/70">Parking Access</span>
@@ -317,7 +319,9 @@ export function ScannerMobile() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-white/70">License Plate</span>
-                    <span className="font-mono bg-black/50 px-2 py-0.5 rounded text-[#FFD700]">RAA 123 A</span>
+                    <span className="font-mono bg-black/50 px-2 py-0.5 rounded text-[#FFD700]">
+                      RAA 123 A
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-white/70">Backstage Pass</span>
