@@ -186,11 +186,12 @@ function EditEventPage() {
         let originalType = (t.type || "").toLowerCase();
         let inferredType = originalType;
         const lowerName = (t.name || "").toLowerCase();
-        
+
         if (lowerName.includes("vip")) inferredType = "vip";
         else if (lowerName.includes("early")) inferredType = "early";
         else if (lowerName.includes("free") || Number(t.cost) === 0) inferredType = "free";
-        else if (originalType !== "vip" && originalType !== "early" && originalType !== "free") inferredType = "paid";
+        else if (originalType !== "vip" && originalType !== "early" && originalType !== "free")
+          inferredType = "paid";
 
         return {
           ...t,
@@ -209,10 +210,12 @@ function EditEventPage() {
         setTickets(parsedTickets);
       } else {
         setSameTicketsForAllLocations(false);
-        setTickets(parsedTickets.map((t: any) => ({
-          ...t,
-          tour_stop_idx: t.tour_stop_idx ?? 0
-        })));
+        setTickets(
+          parsedTickets.map((t: any) => ({
+            ...t,
+            tour_stop_idx: t.tour_stop_idx ?? 0,
+          })),
+        );
       }
     }
   }, [event]);
@@ -240,11 +243,12 @@ function EditEventPage() {
             data: tickets.map((t) => {
               let finalType = (t.type || "").toLowerCase();
               const lowerName = (t.name || "").toLowerCase();
-              
+
               if (lowerName.includes("vip")) finalType = "vip";
               else if (lowerName.includes("early")) finalType = "early";
               else if (lowerName.includes("free") || Number(t.price) === 0) finalType = "free";
-              else if (finalType !== "vip" && finalType !== "early" && finalType !== "free") finalType = "paid";
+              else if (finalType !== "vip" && finalType !== "early" && finalType !== "free")
+                finalType = "paid";
 
               return {
                 ...t,

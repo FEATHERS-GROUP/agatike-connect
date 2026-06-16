@@ -823,6 +823,18 @@ export function CreateEventDesktop() {
   );
 }
 
+function TicketStep({
+  tickets,
+  setTickets,
+  currencySymbol,
+  locations,
+  sameTicketsForAllLocations,
+  setSameTicketsForAllLocations,
+  activeTourStopIdx,
+  setActiveTourStopIdx,
+  forms,
+  vipPrivileges,
+}: {
   tickets: Ticket[];
   setTickets: (t: Ticket[]) => void;
   currencySymbol: string;
@@ -833,7 +845,7 @@ export function CreateEventDesktop() {
   setActiveTourStopIdx: (val: number) => void;
   forms?: any[];
   vipPrivileges?: any[];
-}) {
+}): React.ReactElement {
   const displayedTickets = tickets.filter((t) =>
     sameTicketsForAllLocations ? true : t.tour_stop_idx === activeTourStopIdx,
   );

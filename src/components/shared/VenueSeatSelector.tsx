@@ -287,9 +287,7 @@ export function VenueSeatSelector({
                 .filter((s) => s.ticketId === ticketId)
                 .some(
                   (s) =>
-                    c.startsWith(`${s.id}-`) ||
-                    c === `GA-${s.id}` ||
-                    c.startsWith(`GA-${s.id}-`),
+                    c.startsWith(`${s.id}-`) || c === `GA-${s.id}` || c.startsWith(`GA-${s.id}-`),
                 );
             });
         }).length;
@@ -312,7 +310,8 @@ export function VenueSeatSelector({
       onSeatSelect({
         code,
         sectionName: section.name,
-        seatName: displaySeatName || (seatNum ? (isGA ? `GA ${seatNum}` : `Seat ${seatNum}`) : code),
+        seatName:
+          displaySeatName || (seatNum ? (isGA ? `GA ${seatNum}` : `Seat ${seatNum}`) : code),
         ticketId,
         cost: ticket ? ticket.cost : 0,
         type: ticket ? ticket.type : "Unmapped",
@@ -466,9 +465,7 @@ export function VenueSeatSelector({
         .filter((s) => s.ticketId === sec.ticketId)
         .some(
           (s) =>
-            code.startsWith(`${s.id}-`) ||
-            code === `GA-${s.id}` ||
-            code.startsWith(`GA-${s.id}-`),
+            code.startsWith(`${s.id}-`) || code === `GA-${s.id}` || code.startsWith(`GA-${s.id}-`),
         ),
     ).length;
     // How many can still be taken: inventory minus what's already selected
@@ -512,7 +509,9 @@ export function VenueSeatSelector({
         const isLockedByOther = lockedSeats.includes(code) && !isSelected;
 
         if (!isBooked && !isLockedByOther && !isSelected) {
-          const displaySeatName = isGA ? `GA ${seatNum}` : `R${originalRow + 1} S${originalCol + 1}`;
+          const displaySeatName = isGA
+            ? `GA ${seatNum}`
+            : `R${originalRow + 1} S${originalCol + 1}`;
           onSeatSelect({
             code,
             sectionName: sec.name,
@@ -575,7 +574,9 @@ export function VenueSeatSelector({
                 >
                   <span className="hidden sm:inline">Take All</span>
                   <span className="sm:hidden">All</span>
-                  <span className="bg-background/20 px-1.5 py-0.5 rounded-md text-[10px] ml-0.5">{remainingCount}</span>
+                  <span className="bg-background/20 px-1.5 py-0.5 rounded-md text-[10px] ml-0.5">
+                    {remainingCount}
+                  </span>
                 </button>
               )}
               <button
@@ -652,8 +653,10 @@ export function VenueSeatSelector({
                   originalCol = i % originalCols;
                   code = `${sec.id}-R${originalRow + 1}-S${originalCol + 1}`.replace(/\s+/g, "-");
                 }
-                
-                const displaySeatName = isGA ? `GA ${seatNum}` : `R${originalRow + 1} S${originalCol + 1}`;
+
+                const displaySeatName = isGA
+                  ? `GA ${seatNum}`
+                  : `R${originalRow + 1} S${originalCol + 1}`;
 
                 const isBooked = isGA ? i < gaBookedCount : bookedSeats.includes(code);
                 const isSelected = selectedSeats.includes(code);
@@ -673,7 +676,15 @@ export function VenueSeatSelector({
                       className={`transition-all duration-200 ${isBooked || isLockedByOther ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:-translate-y-0.5"} ${isSelected ? "drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" : !isBooked && !isLockedByOther ? "hover:brightness-125" : ""}`}
                       onClick={() => {
                         if (!isBooked && !isLockedByOther)
-                          handleSeatClick(code, sec, isBooked, isSelected, seatNum, isGA, displaySeatName);
+                          handleSeatClick(
+                            code,
+                            sec,
+                            isBooked,
+                            isSelected,
+                            seatNum,
+                            isGA,
+                            displaySeatName,
+                          );
                       }}
                     >
                       <title>
@@ -731,8 +742,12 @@ export function VenueSeatSelector({
                             seatNum
                           ) : (
                             <>
-                              <tspan x="0" dy="-0.3em">R{originalRow + 1}</tspan>
-                              <tspan x="0" dy="1.1em">S{originalCol + 1}</tspan>
+                              <tspan x="0" dy="-0.3em">
+                                R{originalRow + 1}
+                              </tspan>
+                              <tspan x="0" dy="1.1em">
+                                S{originalCol + 1}
+                              </tspan>
                             </>
                           )}
                         </text>
@@ -990,13 +1005,16 @@ export function VenueSeatSelector({
                 }
               }
 
-              const isGA = sec.shape !== "pitch" && (!sec.rows || sec.rows === 0 || !sec.cols || sec.cols === 0);
+              const isGA =
+                sec.shape !== "pitch" &&
+                (!sec.rows || sec.rows === 0 || !sec.cols || sec.cols === 0);
               const ticket = ticketMap[sec.ticketId || ""];
-              const isSectionFull = 
-                sec.shape !== "pitch" && sec.ticketId && (
-                  (seatsToRender.length > 0 && seatsToRender.every((s: any) => bookedSeats.includes(s.code))) || 
-                  (isGA && ticket && ticket.remaining <= 0)
-                );
+              const isSectionFull =
+                sec.shape !== "pitch" &&
+                sec.ticketId &&
+                ((seatsToRender.length > 0 &&
+                  seatsToRender.every((s: any) => bookedSeats.includes(s.code))) ||
+                  (isGA && ticket && ticket.remaining <= 0));
 
               const isActive = !activeTicketId || sec.ticketId === activeTicketId;
               const isTarget = activeTicketId && sec.ticketId === activeTicketId;
@@ -1081,8 +1099,27 @@ export function VenueSeatSelector({
                   {/* Section Full Stamp */}
                   {isSectionFull && (
                     <g transform={`rotate(-15)`}>
-                      <rect x="-40" y="-12" width="80" height="24" rx="4" fill="rgba(239, 68, 68, 0.95)" stroke="#fff" strokeWidth="2" />
-                      <text x="0" y="0" fill="#fff" fontSize="12" fontWeight="900" fontFamily="sans-serif" textAnchor="middle" dominantBaseline="central" letterSpacing="1">
+                      <rect
+                        x="-40"
+                        y="-12"
+                        width="80"
+                        height="24"
+                        rx="4"
+                        fill="rgba(239, 68, 68, 0.95)"
+                        stroke="#fff"
+                        strokeWidth="2"
+                      />
+                      <text
+                        x="0"
+                        y="0"
+                        fill="#fff"
+                        fontSize="12"
+                        fontWeight="900"
+                        fontFamily="sans-serif"
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        letterSpacing="1"
+                      >
                         FULL
                       </text>
                     </g>
