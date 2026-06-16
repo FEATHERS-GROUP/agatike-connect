@@ -9,8 +9,8 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
 import { getWorkspaceVenueProjects } from "@/api/venues";
+import { getWorkspaceVipPrivileges } from "@/api/vip";
 import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import * as htmlToImage from "html-to-image";
@@ -80,6 +80,13 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     enabled: !!eventId,
   });
 
+  // Fetch VIP Privileges
+  const { data: vipPrivileges = [] } = useQuery({
+    queryKey: ["workspace-vip-privileges", event?.workspace_id],
+    queryFn: () => getWorkspaceVipPrivileges({ data: { workspace_id: event?.workspace_id! } } as any),
+    enabled: !!event?.workspace_id,
+  });
+
   // Load cart and init attendees
   useEffect(() => {
     try {
@@ -136,6 +143,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           email: user?.email || "",
           phone: user?.phone || "",
           country: user?.country || "",
+          dynamic_fields: {}, // Store dynamically generated vip privilege answers here
         });
       }
     });
@@ -154,6 +162,13 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const updateAttendee = (index: number, field: string, value: string) => {
     const newAttendees = [...attendees];
     newAttendees[index] = { ...newAttendees[index], [field]: value };
+    setAttendees(newAttendees);
+  };
+
+  const updateDynamicField = (index: number, fieldId: string, value: string) => {
+    const newAttendees = [...attendees];
+    const currentDynamics = newAttendees[index].dynamic_fields || {};
+    newAttendees[index] = { ...newAttendees[index], dynamic_fields: { ...currentDynamics, [fieldId]: value } };
     setAttendees(newAttendees);
   };
 
@@ -241,14 +256,29 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   };
 
   const totalTickets = attendees.length;
+  
+  const validateAttendeeDynamicFields = (a: any) => {
+    const tier = getTierDetails(a.tierId);
+    const tierPrivileges = tier?.vip_privilege_ids?.map((pid: string) => 
+      vipPrivileges.find((vp: any) => vp.id === pid)
+    ).filter(Boolean) || [];
+    const requiredFields = tierPrivileges.flatMap((p: any) => p.fields || []).filter((f: any) => f.required);
+    
+    return requiredFields.every((f: any) => {
+       const val = a.dynamic_fields?.[f.id];
+       return val && val.trim() !== "";
+    });
+  };
+
   const isFormValid =
     (assignMode === "me"
       ? attendees.length > 0 &&
         !!attendees[0].firstName &&
         !!attendees[0].lastName &&
         !!attendees[0].email &&
-        !!attendees[0].country
-      : attendees.every((a) => a.firstName && a.lastName && a.email && a.country)) &&
+        !!attendees[0].country &&
+        validateAttendeeDynamicFields(attendees[0])
+      : attendees.every((a) => a.firstName && a.lastName && a.email && a.country && validateAttendeeDynamicFields(a))) &&
     attendees.every((a) => {
       const projectForStop = stopsWithVenues.find((s) => s.stopIdx === a.stopIdx)?.project;
       const isSeatRequired = projectForStop?.sections_data?.some(
@@ -272,6 +302,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                 email: attendees[0].email,
                 phone: attendees[0].phone,
                 country: attendees[0].country,
+                dynamic_fields: attendees[0].dynamic_fields,
               }
             : a;
 
@@ -296,6 +327,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
               ? formatSeatDisplay(a.seatName || a.seat, a.sectionName)
               : undefined,
             name: `${sourceAttendee.firstName} ${sourceAttendee.lastName}`.trim(),
+            ...sourceAttendee.dynamic_fields,
           },
         };
       });
@@ -548,6 +580,12 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                     (s: any) => s.ticketId === attendee.tierId,
                   );
 
+                  // Calculate VIP Perks and Inputs
+                  const tierPrivileges = tier?.vip_privilege_ids?.map((pid: string) => 
+                     vipPrivileges.find((vp: any) => vp.id === pid)
+                  ).filter(Boolean) || [];
+                  const dynamicFields = tierPrivileges.flatMap((p: any) => p.fields || []);
+
                   // Calculate assigned seats to show
                   const seatsList =
                     assignMode === "me"
@@ -662,6 +700,44 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                           </Select>
                         </div>
                       </div>
+
+                      {dynamicFields.length > 0 && (
+                        <div className="pt-4 border-t border-border/60">
+                          <h4 className="text-sm font-semibold mb-4 text-primary flex items-center gap-2">
+                            Ticket Privileges Required Info
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {dynamicFields.map((field: any) => (
+                              <div key={field.id} className="space-y-2">
+                                <Label>
+                                  {field.name} {field.required && <span className="text-red-500">*</span>}
+                                </Label>
+                                {field.type === 'text' || field.type === 'license_plate' ? (
+                                  <Input
+                                    value={attendee.dynamic_fields?.[field.id] || ""}
+                                    onChange={(e) => updateDynamicField(idx, field.id, e.target.value)}
+                                    placeholder={field.type === 'license_plate' ? "e.g. RAA 123 A" : ""}
+                                    required={field.required}
+                                  />
+                                ) : field.type === 'boolean' ? (
+                                  <div className="flex items-center space-x-2 h-10 px-3 border rounded-md">
+                                    <input
+                                      type="checkbox"
+                                      id={`${idx}-${field.id}`}
+                                      checked={attendee.dynamic_fields?.[field.id] === 'true'}
+                                      onChange={(e) => updateDynamicField(idx, field.id, e.target.checked ? 'true' : '')}
+                                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                    <label htmlFor={`${idx}-${field.id}`} className="text-sm text-foreground cursor-pointer">
+                                      Yes
+                                    </label>
+                                  </div>
+                                ) : null}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}

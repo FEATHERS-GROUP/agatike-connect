@@ -149,6 +149,7 @@ const GET_PUBLIC_EVENTS = `
         type
         updated_at
         form_id
+        vip_privilege_ids
       }
       event_attendees_aggregate {
         aggregate {
@@ -219,6 +220,7 @@ const GET_WORKSPACE_EVENTS = `
         sold
         tour_stop_idx
         form_id
+        vip_privilege_ids
       }
       schedules {
         id
@@ -492,7 +494,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
               objects: $objects,
               on_conflict: {
                 constraint: event_tickets_pkey,
-                update_columns: [type, cost, remaining, form_id]
+                update_columns: [type, cost, remaining, form_id, vip_privilege_ids]
               }
             ) {
               affected_rows
@@ -692,6 +694,7 @@ const GET_WORKSPACE_TICKET_PROJECTS = `
           updated_at
           tour_stop_idx
           form_id
+          vip_privilege_ids
         }
       }
       created_at

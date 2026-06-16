@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createEvent } from "@/api/events";
+import { getWorkspaceVipPrivileges } from "@/api/vip";
 import { getCoordinates, getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -127,6 +128,7 @@ type Ticket = {
   tour_stop_idx?: number | null;
   includes?: string[];
   form_id?: string;
+  vip_privilege_ids?: string[];
 };
 type Merch = { id: string; name: string; price: number; image?: string };
 
@@ -223,6 +225,12 @@ export function CreateEventDesktop() {
   const { data: forms = [] } = useQuery({
     queryKey: ["workspace_forms", activeWorkspace?.id],
     queryFn: () => getWorkspaceForms({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
+  const { data: vipPrivileges = [] } = useQuery({
+    queryKey: ["workspace-vip-privileges", activeWorkspace?.id],
+    queryFn: () => getWorkspaceVipPrivileges({ data: { workspace_id: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
 
@@ -564,6 +572,8 @@ export function CreateEventDesktop() {
             setSameTicketsForAllLocations={setSameTicketsForAllLocations}
             activeTourStopIdx={activeTourStopIdx}
             setActiveTourStopIdx={setActiveTourStopIdx}
+            forms={forms}
+            vipPrivileges={vipPrivileges}
           />
         )}
 
@@ -821,6 +831,8 @@ function TicketEditor({
   setSameTicketsForAllLocations,
   activeTourStopIdx,
   setActiveTourStopIdx,
+  forms = [],
+  vipPrivileges = [],
 }: {
   tickets: Ticket[];
   setTickets: (t: Ticket[]) => void;
@@ -830,6 +842,8 @@ function TicketEditor({
   setSameTicketsForAllLocations: (val: boolean) => void;
   activeTourStopIdx: number;
   setActiveTourStopIdx: (val: number) => void;
+  forms?: any[];
+  vipPrivileges?: any[];
 }) {
   const displayedTickets = tickets.filter((t) =>
     sameTicketsForAllLocations ? true : t.tour_stop_idx === activeTourStopIdx,
@@ -1026,6 +1040,36 @@ function TicketEditor({
                     </option>
                   ))}
                 </select>
+              </div>
+            )}
+            {vipPrivileges.length > 0 && (
+              <div className="md:col-span-full mt-2 border-t border-border/40 pt-2">
+                <Label className="text-xs text-muted-foreground mb-1 block">VIP Privileges & Perks</Label>
+                <div className="flex flex-wrap gap-2">
+                  {vipPrivileges.map((privilege: any) => {
+                    const isSelected = t.vip_privilege_ids?.includes(privilege.id);
+                    return (
+                      <div
+                        key={privilege.id}
+                        className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                          isSelected
+                            ? "bg-primary/20 border-primary text-primary"
+                            : "bg-background border-border/60 text-muted-foreground hover:border-primary/50"
+                        }`}
+                        onClick={() => {
+                          const currentIds = t.vip_privilege_ids || [];
+                          if (isSelected) {
+                            update(t.id, { vip_privilege_ids: currentIds.filter((id) => id !== privilege.id) });
+                          } else {
+                            update(t.id, { vip_privilege_ids: [...currentIds, privilege.id] });
+                          }
+                        }}
+                      >
+                        {privilege.name}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
             <Button

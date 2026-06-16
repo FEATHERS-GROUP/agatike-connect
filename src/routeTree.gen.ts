@@ -58,6 +58,7 @@ import { Route as VenuesCheckoutVenueIdRouteImport } from './routes/venues/check
 import { Route as PublicBadgeBadgeIdRouteImport } from './routes/public/badge/$badgeId'
 import { Route as FEventIdReviewRouteImport } from './routes/f/$eventId/review'
 import { Route as DashboardWorkspaceSlugWithdrawalsRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals'
+import { Route as DashboardWorkspaceSlugVipAccessRouteImport } from './routes/dashboard.$workspaceSlug.vip-access'
 import { Route as DashboardWorkspaceSlugVenueRentRouteImport } from './routes/dashboard/$workspaceSlug/venue-rent'
 import { Route as DashboardWorkspaceSlugSettingsRouteImport } from './routes/dashboard/$workspaceSlug/settings'
 import { Route as DashboardWorkspaceSlugScannerRouteImport } from './routes/dashboard/$workspaceSlug/scanner'
@@ -347,6 +348,12 @@ const DashboardWorkspaceSlugWithdrawalsRoute =
   DashboardWorkspaceSlugWithdrawalsRouteImport.update({
     id: '/$workspaceSlug/withdrawals',
     path: '/$workspaceSlug/withdrawals',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugVipAccessRoute =
+  DashboardWorkspaceSlugVipAccessRouteImport.update({
+    id: '/$workspaceSlug/vip-access',
+    path: '/$workspaceSlug/vip-access',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardWorkspaceSlugVenueRentRoute =
@@ -655,6 +662,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
   '/dashboard/$workspaceSlug/settings': typeof DashboardWorkspaceSlugSettingsRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
+  '/dashboard/$workspaceSlug/vip-access': typeof DashboardWorkspaceSlugVipAccessRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
@@ -748,6 +756,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
   '/dashboard/$workspaceSlug/settings': typeof DashboardWorkspaceSlugSettingsRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
+  '/dashboard/$workspaceSlug/vip-access': typeof DashboardWorkspaceSlugVipAccessRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
@@ -842,6 +851,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/scanner': typeof DashboardWorkspaceSlugScannerRoute
   '/dashboard/$workspaceSlug/settings': typeof DashboardWorkspaceSlugSettingsRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
+  '/dashboard/$workspaceSlug/vip-access': typeof DashboardWorkspaceSlugVipAccessRoute
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
@@ -937,6 +947,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/scanner'
     | '/dashboard/$workspaceSlug/settings'
     | '/dashboard/$workspaceSlug/venue-rent'
+    | '/dashboard/$workspaceSlug/vip-access'
     | '/dashboard/$workspaceSlug/withdrawals'
     | '/f/$eventId/review'
     | '/public/badge/$badgeId'
@@ -1030,6 +1041,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/scanner'
     | '/dashboard/$workspaceSlug/settings'
     | '/dashboard/$workspaceSlug/venue-rent'
+    | '/dashboard/$workspaceSlug/vip-access'
     | '/dashboard/$workspaceSlug/withdrawals'
     | '/f/$eventId/review'
     | '/public/badge/$badgeId'
@@ -1123,6 +1135,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/scanner'
     | '/dashboard/$workspaceSlug/settings'
     | '/dashboard/$workspaceSlug/venue-rent'
+    | '/dashboard/$workspaceSlug/vip-access'
     | '/dashboard/$workspaceSlug/withdrawals'
     | '/f/$eventId/review'
     | '/public/badge/$badgeId'
@@ -1556,6 +1569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugWithdrawalsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/vip-access': {
+      id: '/dashboard/$workspaceSlug/vip-access'
+      path: '/$workspaceSlug/vip-access'
+      fullPath: '/dashboard/$workspaceSlug/vip-access'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVipAccessRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/venue-rent': {
       id: '/dashboard/$workspaceSlug/venue-rent'
       path: '/$workspaceSlug/venue-rent'
@@ -1886,6 +1906,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugScannerRoute: typeof DashboardWorkspaceSlugScannerRoute
   DashboardWorkspaceSlugSettingsRoute: typeof DashboardWorkspaceSlugSettingsRoute
   DashboardWorkspaceSlugVenueRentRoute: typeof DashboardWorkspaceSlugVenueRentRoute
+  DashboardWorkspaceSlugVipAccessRoute: typeof DashboardWorkspaceSlugVipAccessRoute
   DashboardWorkspaceSlugWithdrawalsRoute: typeof DashboardWorkspaceSlugWithdrawalsRoute
   DashboardWorkspaceSlugIndexRoute: typeof DashboardWorkspaceSlugIndexRoute
   DashboardWorkspaceSlugBadgeDesignerProjectIdRoute: typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
@@ -1937,6 +1958,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardWorkspaceSlugScannerRoute: DashboardWorkspaceSlugScannerRoute,
   DashboardWorkspaceSlugSettingsRoute: DashboardWorkspaceSlugSettingsRoute,
   DashboardWorkspaceSlugVenueRentRoute: DashboardWorkspaceSlugVenueRentRoute,
+  DashboardWorkspaceSlugVipAccessRoute: DashboardWorkspaceSlugVipAccessRoute,
   DashboardWorkspaceSlugWithdrawalsRoute:
     DashboardWorkspaceSlugWithdrawalsRoute,
   DashboardWorkspaceSlugIndexRoute: DashboardWorkspaceSlugIndexRoute,
