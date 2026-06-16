@@ -272,6 +272,33 @@ export function VenueSeatSelector({
       onSeatDeselect(code);
       channelRef.current?.postMessage({ type: "UNLOCK", code, sessionId: mySessionId.current });
     } else {
+      const ticketId = section.ticketId || "";
+      const ticket = ticketMap[ticketId];
+
+      // Count how many seats are already selected for THIS ticket tier
+      if (ticket) {
+        const tierSelected = selectedSeats.filter((c) => {
+          // Find which section this code belongs to
+          return eventTickets
+            .filter((t) => t.id === ticketId)
+            .some(() => {
+              // Check if the selected code belongs to a section mapped to this ticket
+              return sections
+                .filter((s) => s.ticketId === ticketId)
+                .some(
+                  (s) =>
+                    c.startsWith(`${s.id}-`) ||
+                    c === `GA-${s.id}` ||
+                    c.startsWith(`GA-${s.id}-`),
+                );
+            });
+        }).length;
+
+        if (tierSelected >= ticket.remaining) {
+          return; // Silently block — no more inventory
+        }
+      }
+
       if (selectedSeats.length >= maxSelectable && maxSelectable > 0) {
         const removedCode = selectedSeats[0];
         onSeatDeselect(removedCode);
@@ -281,9 +308,6 @@ export function VenueSeatSelector({
           sessionId: mySessionId.current,
         });
       }
-
-      const ticketId = section.ticketId || "";
-      const ticket = ticketMap[ticketId];
 
       onSeatSelect({
         code,
@@ -434,15 +458,74 @@ export function VenueSeatSelector({
             c === `GA-${sec.id}` || c.startsWith(`${sec.id}-`) || c.startsWith(`GA-${sec.id}-`),
         ).length
       : 0;
-    const remainingCount = Math.max(
-      0,
-      actualSeatCount -
-        (isGA ? gaBookedCount : bookedSeats.filter((c) => c.startsWith(`${sec.id}-`)).length),
-    );
+
+    // True remaining is always the ticket inventory, not the section grid size
+    const ticketRemaining = ticket ? Math.max(0, ticket.remaining) : 0;
+    const tierAlreadySelected = selectedSeats.filter((code) =>
+      sections
+        .filter((s) => s.ticketId === sec.ticketId)
+        .some(
+          (s) =>
+            code.startsWith(`${s.id}-`) ||
+            code === `GA-${s.id}` ||
+            code.startsWith(`GA-${s.id}-`),
+        ),
+    ).length;
+    // How many can still be taken: inventory minus what's already selected
+    const availableToTake = Math.max(0, ticketRemaining - tierAlreadySelected);
+
+    // For the capacity bar, use ticket total capacity vs ticket remaining
+    const tierTotalCapacity2 = ticket ? ticket.remaining + (ticket.sold || 0) : actualSeatCount;
+    const remainingCount = availableToTake;
 
     const visuallyOrderedSeats = Array.from({ length: totalCells }).map((_, i) =>
       i < actualSeatCount ? i : null,
     );
+
+    const handleSelectAllRemaining = () => {
+      const ticketId = sec.ticketId || "";
+      const ticket = ticketMap[ticketId];
+      // maxToTake is already computed in outer scope from ticket inventory
+      const maxToTake = availableToTake;
+
+      let added = 0;
+      for (let i = 0; i < actualSeatCount; i++) {
+        if (maxSelectable > 0 && selectedSeats.length + added >= maxSelectable) break;
+        if (added >= maxToTake) break;
+
+        const seatNum = i + 1;
+        let code = "";
+        let originalRow = 0;
+        let originalCol = 0;
+
+        if (isGA) {
+          code = `GA-${sec.id}-${seatNum}`;
+        } else {
+          const originalCols = sec.cols || 1;
+          originalRow = Math.floor(i / originalCols);
+          originalCol = i % originalCols;
+          code = `${sec.id}-R${originalRow + 1}-S${originalCol + 1}`.replace(/\s+/g, "-");
+        }
+
+        const isBooked = isGA ? i < gaBookedCount : bookedSeats.includes(code);
+        const isSelected = selectedSeats.includes(code);
+        const isLockedByOther = lockedSeats.includes(code) && !isSelected;
+
+        if (!isBooked && !isLockedByOther && !isSelected) {
+          const displaySeatName = isGA ? `GA ${seatNum}` : `R${originalRow + 1} S${originalCol + 1}`;
+          onSeatSelect({
+            code,
+            sectionName: sec.name,
+            seatName: displaySeatName,
+            ticketId,
+            cost: ticket ? ticket.cost : 0,
+            type: ticket ? ticket.type : "Unmapped",
+          });
+          channelRef.current?.postMessage({ type: "LOCK", code, sessionId: mySessionId.current });
+          added++;
+        }
+      }
+    };
 
     return (
       <div className="w-full h-full relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
@@ -485,6 +568,16 @@ export function VenueSeatSelector({
                   </span>
                 </div>
               )}
+              {remainingCount > 0 && (
+                <button
+                  className="px-3 sm:px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-colors text-xs sm:text-sm shadow-sm flex items-center gap-1.5"
+                  onClick={handleSelectAllRemaining}
+                >
+                  <span className="hidden sm:inline">Take All</span>
+                  <span className="sm:hidden">All</span>
+                  <span className="bg-background/20 px-1.5 py-0.5 rounded-md text-[10px] ml-0.5">{remainingCount}</span>
+                </button>
+              )}
               <button
                 className="px-3 sm:px-4 py-2 bg-background hover:bg-secondary border border-border/60 text-foreground font-semibold rounded-xl transition-colors text-xs sm:text-sm shadow-sm flex items-center gap-1.5"
                 onClick={() => setActiveSectionForModal(null)}
@@ -500,13 +593,13 @@ export function VenueSeatSelector({
               <div
                 className="h-full rounded-full transition-all"
                 style={{
-                  width: `${Math.min(100, (remainingCount / Math.max(1, actualSeatCount)) * 100)}%`,
+                  width: `${Math.min(100, (ticketRemaining / Math.max(1, tierTotalCapacity2)) * 100)}%`,
                   background: `linear-gradient(90deg, ${sec.color || "#0ea5e9"}, ${sec.color || "#0ea5e9"}aa)`,
                 }}
               />
             </div>
             <span className="text-xs font-bold text-muted-foreground tabular-nums">
-              <span className="text-foreground">{remainingCount}</span> / {actualSeatCount} left
+              <span className="text-foreground">{ticketRemaining}</span> / {tierTotalCapacity2} left
             </span>
           </div>
         </div>
@@ -897,6 +990,14 @@ export function VenueSeatSelector({
                 }
               }
 
+              const isGA = sec.shape !== "pitch" && (!sec.rows || sec.rows === 0 || !sec.cols || sec.cols === 0);
+              const ticket = ticketMap[sec.ticketId || ""];
+              const isSectionFull = 
+                sec.shape !== "pitch" && sec.ticketId && (
+                  (seatsToRender.length > 0 && seatsToRender.every((s: any) => bookedSeats.includes(s.code))) || 
+                  (isGA && ticket && ticket.remaining <= 0)
+                );
+
               const isActive = !activeTicketId || sec.ticketId === activeTicketId;
               const isTarget = activeTicketId && sec.ticketId === activeTicketId;
               const baseScaleX = sec.scaleX || 1;
@@ -907,12 +1008,13 @@ export function VenueSeatSelector({
                   key={sec.id}
                   transform={`translate(${sec.x || 0}, ${sec.y || 0}) rotate(${sec.rotation || 0}) scale(${baseScaleX}, ${baseScaleY})`}
                   style={{
-                    opacity: isActive ? 1 : 0.2,
-                    pointerEvents: isActive ? "auto" : "none",
-                    cursor: sec.ticketId ? "pointer" : "default",
+                    opacity: isActive ? (isSectionFull ? 0.6 : 1) : 0.2,
+                    pointerEvents: isActive && !isSectionFull ? "auto" : "none",
+                    cursor: sec.ticketId && !isSectionFull ? "pointer" : "default",
                     transition: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)", // Bouncy bubble effect
                   }}
                   onClick={(e) => {
+                    if (isSectionFull) return;
                     e.stopPropagation();
                     handleSectionAutoZoom(sec);
                   }}
@@ -975,6 +1077,16 @@ export function VenueSeatSelector({
                       </g>
                     );
                   })}
+
+                  {/* Section Full Stamp */}
+                  {isSectionFull && (
+                    <g transform={`rotate(-15)`}>
+                      <rect x="-40" y="-12" width="80" height="24" rx="4" fill="rgba(239, 68, 68, 0.95)" stroke="#fff" strokeWidth="2" />
+                      <text x="0" y="0" fill="#fff" fontSize="12" fontWeight="900" fontFamily="sans-serif" textAnchor="middle" dominantBaseline="central" letterSpacing="1">
+                        FULL
+                      </text>
+                    </g>
+                  )}
                 </g>
               );
             })}

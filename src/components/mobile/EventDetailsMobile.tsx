@@ -891,7 +891,7 @@ export function EventDetailsMobile({
                   selectedSeats={selectedSeatsObj.map((s) => s.code)}
                   onSeatSelect={handleSeatSelect}
                   onSeatDeselect={handleSeatDeselect}
-                  maxSelectable={10}
+                  maxSelectable={0}
                   currency={currencyCode}
                   activeTicketId={activeTicketIdForMap}
                   hideLegend={true}
