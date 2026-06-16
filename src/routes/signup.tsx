@@ -18,9 +18,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { signupUser, sendSignupOtp } from "@/api/auth";
+import { signupUser, sendSignupOtp, googleAuthUser } from "@/api/auth";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { toast } from "sonner";
+import { useGoogleLogin } from "@react-oauth/google";
 import hero from "@/assets/hero-event.jpg";
 import { COUNTRIES } from "@/lib/countries";
 
@@ -125,6 +126,30 @@ function SignUp() {
     }
   };
 
+  const googleLogin = useGoogleLogin({
+    flow: "auth-code",
+    onSuccess: async ({ code }) => {
+      setIsLoading(true);
+      setError("");
+      try {
+        await googleAuthUser({ data: { code } } as any);
+        toast.success("Account ready! Let's personalize your experience.");
+        await refresh();
+        await router.invalidate();
+        navigate({ to: "/onboarding" });
+      } catch (err: any) {
+        const message = err?.message || "Google Signup Failed";
+        setError(message);
+        toast.error(message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: () => {
+      toast.error("Google Signup Failed");
+    },
+  });
+
   return (
     <div className="flex min-h-[100dvh] flex-col bg-background text-foreground lg:block lg:min-h-screen">
       <div className="flex flex-1 flex-col lg:mx-auto lg:grid lg:min-h-screen lg:max-w-7xl lg:grid-cols-2 lg:items-center lg:gap-10 lg:px-6 lg:py-10">
@@ -165,6 +190,8 @@ function SignUp() {
               <Button
                 variant="outline"
                 type="button"
+                onClick={() => googleLogin()}
+                disabled={isLoading}
                 className="h-11 rounded-xl bg-background hover:bg-accent/50 border-border/60 transition-colors shadow-sm text-sm font-medium"
               >
                 <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">

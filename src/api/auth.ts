@@ -2,7 +2,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { setCookie, getCookie, deleteCookie } from "@tanstack/react-start/server";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
+import { OAuth2Client } from "google-auth-library";
 import { hasuraRequest } from "./graphql.server";
+
+const googleClient = new OAuth2Client(
+  process.env.GOOGLE_AUTH_CLIENT_ID,
+  process.env.GOOGLE_AUTH_SECRET,
+  "postmessage"
+);
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
 
@@ -536,4 +543,120 @@ export const deactivateUserAccount = createServerFn({ method: "POST" }).handler(
   } catch (e: any) {
     throw new Error(e.message || "Failed to deactivate account");
   }
+});
+
+export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { code } = ctx.data as unknown as { code: string };
+  const { tokens } = await googleClient.getToken(code);
+  const ticket = await googleClient.verifyIdToken({
+    idToken: tokens.id_token!,
+    audience: process.env.GOOGLE_AUTH_CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+  if (!payload || !payload.email) throw new Error("Invalid Google token");
+
+  const email = payload.email;
+  const username = payload.name || email.split("@")[0];
+
+  const checkQuery = `
+    query CheckUser($email: String!) {
+      users(where: { email: { _ilike: $email } }) {
+        id
+        username
+        handle
+        email
+        active
+        banned
+      }
+    }
+  `;
+  const existing = await hasuraRequest<{ users: any[] }>(checkQuery, { email });
+  
+  let user = existing.users[0];
+
+  if (!user) {
+    const handle = username.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20) + Math.floor(Math.random() * 1000);
+    const insertQuery = `
+      mutation InsertUser($username: String!, $email: String!, $handle: String!) {
+        insert_users_one(object: {
+          username: $username,
+          email: $email,
+          password: "GOOGLE_AUTH_USER",
+          handle: $handle,
+          active: true,
+          agreed_to_terms: true
+        }) {
+          id
+          username
+          handle
+          email
+          active
+          banned
+        }
+      }
+    `;
+    const result = await hasuraRequest<{ insert_users_one: any }>(insertQuery, { username, email, handle });
+    user = result.insert_users_one;
+  }
+
+  if (!user.active) {
+    if (user.banned) throw new Error("Your account has been suspended.");
+    throw new Error("This account no longer exists.");
+  }
+
+  const token = await new SignJWT({ sub: user.id, type: "user", handle: user.handle })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("30d")
+    .sign(SECRET);
+
+  setCookie("agatike_user_auth", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+
+  return { success: true, id: user.id, username: user.username, handle: user.handle };
+});
+
+export const googleAuthOrganizer = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { code } = ctx.data as unknown as { code: string };
+  const { tokens } = await googleClient.getToken(code);
+  const ticket = await googleClient.verifyIdToken({
+    idToken: tokens.id_token!,
+    audience: process.env.GOOGLE_AUTH_CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+  if (!payload || !payload.email) throw new Error("Invalid Google token");
+
+  const email = payload.email;
+
+  const query = `
+      query GetOrganizer($email: String!) {
+        organizers(where: { email: { _ilike: $email } }) {
+          id
+        }
+      }
+    `;
+
+  const result = await hasuraRequest<{ organizers: { id: string }[] }>(query, { email });
+  const organizer = result.organizers[0];
+
+  if (!organizer) {
+    throw new Error("Organizer not found. Please create a profile first.");
+  }
+
+  const token = await new SignJWT({ sub: organizer.id, type: "organizer" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("7d")
+    .sign(SECRET);
+
+  setCookie("agatike_auth", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  });
+
+  return { success: true, id: organizer.id };
 });

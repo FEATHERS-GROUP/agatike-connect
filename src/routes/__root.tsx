@@ -23,6 +23,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { GlobalNotificationListener } from "@/components/providers/GlobalNotificationListener";
 import { GlobalUserNotificationListener } from "@/components/providers/GlobalUserNotificationListener";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -163,7 +164,8 @@ function RootComponent() {
     location.pathname === "/onboarding";
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="agatike-theme">
+    <GoogleOAuthProvider clientId={import.meta.env.GOOGLE_AUTH_CLIENT_ID || ""}>
+      <ThemeProvider defaultTheme="system" storageKey="agatike-theme">
       <AppProvider>
         <QueryClientProvider client={queryClient}>
           <UserAuthProvider>
@@ -193,6 +195,7 @@ function RootComponent() {
         </QueryClientProvider>
       </AppProvider>
     </ThemeProvider>
+    </GoogleOAuthProvider>
   );
 }
 

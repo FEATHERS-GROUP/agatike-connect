@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Building2, Mail, Lock, Loader2 } from "lucide-react";
-import { loginOrganizer } from "@/api/auth";
+import { loginOrganizer, googleAuthOrganizer } from "@/api/auth";
+import { useGoogleLogin } from "@react-oauth/google";
 
 export const Route = createFileRoute("/dashboard/login")({
   component: DashboardLoginPage,
@@ -59,6 +60,29 @@ function DashboardLoginPage() {
   const onSubmit = (values: LoginValues) => {
     mutation.mutate(values);
   };
+
+  const googleLogin = useGoogleLogin({
+    flow: "auth-code",
+    onSuccess: async ({ code }) => {
+      setIsRedirecting(true);
+      try {
+        await googleAuthOrganizer({ data: { code } } as any);
+        toast.success("Welcome back!");
+        queryClient.clear();
+        setTimeout(async () => {
+          await router.invalidate();
+          navigate({ to: "/dashboard" });
+        }, 1000);
+      } catch (err: any) {
+        toast.error(err?.message || "Google Login Failed");
+        setIsRedirecting(false);
+      }
+    },
+    onError: () => {
+      toast.error("Google Login Failed");
+      setIsRedirecting(false);
+    },
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
@@ -141,7 +165,8 @@ function DashboardLoginPage() {
               variant="outline"
               type="button"
               className="h-11 rounded-xl bg-background hover:bg-accent/50 border-border/60 transition-colors shadow-sm text-sm font-medium"
-              onClick={() => toast.info("Coming soon!")}
+              onClick={() => googleLogin()}
+              disabled={isRedirecting || mutation.isPending}
             >
               <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                 <path

@@ -1,24 +1,24 @@
 import { createServerFn } from "@tanstack/react-start";
-import admin from "firebase-admin";
+import type { MulticastMessage } from "firebase-admin/messaging";
 import { hasuraRequest } from "./graphql.server";
-
-// Initialize Firebase Admin (Only once)
-if (!admin.apps.length) {
-  try {
-    // If you have a service account JSON, you would load it here.
-    // We assume the environment has GOOGLE_APPLICATION_CREDENTIALS set, or you provide cert variables.
-    // For local development without service account, this will log a warning or use default.
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-    });
-  } catch (error) {
-    console.warn("Firebase Admin Initialization Warning:", error);
-  }
-}
 
 export const sendPushNotification = createServerFn({ method: "POST" })
   .inputValidator((d: { userIds: string[]; title: string; body: string; data?: any }) => d)
   .handler(async (ctx) => {
+    const { default: admin } = await import("firebase-admin");
+    const { getMessaging } = await import("firebase-admin/messaging");
+
+    // Initialize Firebase Admin (Only once)
+    if (admin.getApps().length === 0) {
+      try {
+        admin.initializeApp({
+          credential: admin.credential.applicationDefault(),
+        });
+      } catch (error) {
+        console.warn("Firebase Admin Initialization Warning:", error);
+      }
+    }
+
     const { userIds, title, body, data } = ctx.data as any;
 
     if (!userIds || userIds.length === 0) {
@@ -49,7 +49,7 @@ export const sendPushNotification = createServerFn({ method: "POST" })
         return { success: false, error: "No FCM tokens found for provided users" };
       }
 
-      const message: admin.messaging.MulticastMessage = {
+      const message: MulticastMessage = {
         notification: {
           title,
           body,
@@ -58,7 +58,7 @@ export const sendPushNotification = createServerFn({ method: "POST" })
         tokens: tokens,
       };
 
-      const response = await admin.messaging().sendEachForMulticast(message);
+      const response = await getMessaging().sendEachForMulticast(message);
       
       // Clean up invalid tokens if needed
       const failedTokens: string[] = [];
