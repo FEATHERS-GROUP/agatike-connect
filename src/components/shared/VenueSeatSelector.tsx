@@ -901,12 +901,11 @@ export function VenueSeatSelector({
               const isTarget = activeTicketId && sec.ticketId === activeTicketId;
               const baseScaleX = sec.scaleX || 1;
               const baseScaleY = sec.scaleY || 1;
-              const popScale = isTarget ? 1.4 : 1;
 
               return (
                 <g
                   key={sec.id}
-                  transform={`translate(${sec.x || 0}, ${sec.y || 0}) rotate(${sec.rotation || 0}) scale(${baseScaleX * popScale}, ${baseScaleY * popScale})`}
+                  transform={`translate(${sec.x || 0}, ${sec.y || 0}) rotate(${sec.rotation || 0}) scale(${baseScaleX}, ${baseScaleY})`}
                   style={{
                     opacity: isActive ? 1 : 0.2,
                     pointerEvents: isActive ? "auto" : "none",
@@ -925,9 +924,11 @@ export function VenueSeatSelector({
                     <path
                       d={d}
                       fill={sec.color}
-                      stroke="rgba(255,255,255,0.15)"
-                      strokeWidth="1"
-                      className={`transition-all duration-200 ${sec.ticketId ? "hover:opacity-50" : "opacity-20"} ${selectedSeats.includes(`GA-${sec.id}`) ? "opacity-60 ring-2 ring-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" : "opacity-20"}`}
+                      stroke="hsl(var(--background))"
+                      strokeWidth="6"
+                      strokeLinejoin="round"
+                      className={`transition-all duration-200 ${sec.ticketId ? "hover:brightness-125" : "opacity-40"} ${selectedSeats.includes(`GA-${sec.id}`) ? "brightness-125 drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" : ""}`}
+                      fillOpacity={0.2}
                     >
                       <title>{sec.name}</title>
                     </path>
@@ -952,41 +953,20 @@ export function VenueSeatSelector({
                         className={`transition-all duration-200 ${isBooked ? "opacity-50" : "hover:brightness-125"} ${isSelected ? "drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" : ""}`}
                       >
                         <title>{`Seat ${seat.num}${isBooked ? " (Sold)" : ""}`}</title>
-                        {/* Chair base outline */}
-                        <rect
-                          x={-half}
-                          y={-half}
-                          width={size}
-                          height={size}
-                          rx={size * 0.2}
-                          fill="rgba(0,0,0,0.15)"
-                        />
-                        {/* Chair Backrest */}
-                        <path
-                          d={`M ${-half + size * 0.1} ${-half + size * 0.15} Q 0 ${-half - size * 0.2} ${half - size * 0.1} ${-half + size * 0.15}`}
-                          fill="none"
-                          stroke={fill}
-                          strokeWidth={size * 0.3}
-                          strokeLinecap="round"
-                        />
-                        {/* Chair Cushion */}
-                        <rect
-                          x={-half + size * 0.15}
-                          y={-half + size * 0.3}
-                          width={size * 0.7}
-                          height={size * 0.6}
-                          rx={size * 0.15}
+                        <circle
+                          cx="0"
+                          cy="0"
+                          r={size * 0.45}
                           fill={fill}
-                          opacity={isBooked ? 0.3 : 0.9}
+                          stroke="hsl(var(--background))"
+                          strokeWidth={size * 0.1}
+                          opacity={isBooked ? 0.3 : 1}
                         />
-                        {/* Selection Highlight */}
                         {isSelected && (
-                          <rect
-                            x={-half}
-                            y={-half}
-                            width={size}
-                            height={size}
-                            rx={size * 0.2}
+                          <circle
+                            cx="0"
+                            cy="0"
+                            r={size * 0.55}
                             fill="none"
                             stroke="var(--primary)"
                             strokeWidth={size * 0.15}
