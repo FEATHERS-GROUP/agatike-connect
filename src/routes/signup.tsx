@@ -5,13 +5,11 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Apple,
   ArrowLeft,
   User,
   Loader2,
   Calendar,
   Phone,
-  MapPin,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -42,6 +40,8 @@ function SignUp() {
   const navigate = useNavigate();
   const router = useRouter();
   const { refresh } = useUserAuth();
+  
+  const [step, setStep] = useState(1);
   const [showPw, setShowPw] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -53,20 +53,29 @@ function SignUp() {
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  
   const [otpStep, setOtpStep] = useState(false);
   const [otpInput, setOtpInput] = useState("");
   const [otpToken, setOtpToken] = useState("");
+
+  const handleNextStep = () => {
+    if (!name || !email || !password) {
+      setError("Please fill out all fields.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    setError("");
+    setStep(2);
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (!otpStep) {
-      if (password.length < 6) {
-        setError("Password must be at least 6 characters");
-        return;
-      }
-
       if (!agreed) {
         setError("You must agree to the Terms, Privacy Policy, and Identity Verification.");
         return;
@@ -179,69 +188,76 @@ function SignUp() {
             <div className="hidden lg:flex justify-center">
               <img src="/icon.svg" alt="Agatike" className="h-12 w-12 object-contain" />
             </div>
-            <h1 className="text-2xl font-semibold tracking-tight lg:mt-6 lg:text-center">
-              Create your account
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground lg:text-center">
-              Join thousands discovering events worldwide.
+            
+            <div className="flex items-center justify-between lg:mt-6">
+              <h1 className="text-2xl font-semibold tracking-tight">
+                {otpStep ? "Verify email" : step === 1 ? "Create your account" : "Personal details"}
+              </h1>
+              {/* Step indicator */}
+              {!otpStep && (
+                <div className="flex items-center gap-1.5">
+                  <div className={`h-2 w-2 rounded-full transition-colors ${step === 1 ? "bg-primary" : "bg-muted"}`} />
+                  <div className={`h-2 w-2 rounded-full transition-colors ${step === 2 ? "bg-primary" : "bg-muted"}`} />
+                </div>
+              )}
+            </div>
+            
+            <p className="mt-1 text-sm text-muted-foreground">
+              {otpStep 
+                ? "Almost there! Let's verify your email." 
+                : step === 1 
+                  ? "Join thousands discovering events worldwide."
+                  : "We need a few more details to set up your profile."
+              }
             </p>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => googleLogin()}
-                disabled={isLoading}
-                className="h-11 rounded-xl bg-background hover:bg-accent/50 border-border/60 transition-colors shadow-sm text-sm font-medium"
-              >
-                <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
-                  <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335"
-                  />
-                </svg>
-                Google
-              </Button>
-              <Button
-                variant="outline"
-                type="button"
-                className="h-11 rounded-xl bg-background hover:bg-accent/50 border-border/60 transition-colors shadow-sm text-sm font-medium"
-              >
-                <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.15 2.95.97 3.67 2.22-3.41 1.95-2.88 6.55.33 7.82-.76 1.83-1.6 3.02-2.65 4.02zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-                </svg>
-                Apple
-              </Button>
-            </div>
+            {/* Social Logins - Only on Step 1 */}
+            {!otpStep && step === 1 && (
+              <>
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => googleLogin()}
+                    disabled={isLoading}
+                    className="h-11 rounded-xl bg-background hover:bg-accent/50 border-border/60 transition-colors shadow-sm text-sm font-medium"
+                  >
+                    <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Google
+                  </Button>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    className="h-11 rounded-xl bg-background hover:bg-accent/50 border-border/60 transition-colors shadow-sm text-sm font-medium"
+                  >
+                    <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.15 2.95.97 3.67 2.22-3.41 1.95-2.88 6.55.33 7.82-.76 1.83-1.6 3.02-2.65 4.02zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                    </svg>
+                    Apple
+                  </Button>
+                </div>
 
-            <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="h-px flex-1 bg-border" /> or with email{" "}
-              <span className="h-px flex-1 bg-border" />
-            </div>
+                <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="h-px flex-1 bg-border" /> or with email{" "}
+                  <span className="h-px flex-1 bg-border" />
+                </div>
+              </>
+            )}
 
             <form onSubmit={onSubmit} className="space-y-4">
               {otpStep ? (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500 mt-6">
                   <div className="text-center space-y-2">
                     <div className="mx-auto w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
                       <Mail className="h-6 w-6" />
                     </div>
-                    <h3 className="text-lg font-semibold">Verify your email</h3>
                     <p className="text-sm text-muted-foreground">
-                      We've sent a 6-digit code to <strong>{email}</strong>. Please enter it below
-                      to create your account.
+                      We've sent a 6-digit code to <strong>{email}</strong>. Please enter it below.
                     </p>
                   </div>
                   <div>
@@ -286,8 +302,8 @@ function SignUp() {
                     </Button>
                   </div>
                 </div>
-              ) : (
-                <>
+              ) : step === 1 ? (
+                <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500">
                   <div>
                     <Label htmlFor="signup-name">Full name</Label>
                     <div className="relative mt-1">
@@ -298,7 +314,7 @@ function SignUp() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Amaka Okafor"
-                        className="pl-9"
+                        className="pl-9 h-11"
                         disabled={isLoading}
                       />
                     </div>
@@ -314,12 +330,52 @@ function SignUp() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@agatike.com"
-                        className="pl-9"
+                        className="pl-9 h-11"
                         disabled={isLoading}
                       />
                     </div>
                   </div>
+                  <div>
+                    <Label htmlFor="signup-pw">Password</Label>
+                    <div className="relative mt-1">
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="signup-pw"
+                        required
+                        type={showPw ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Min 6 characters"
+                        className="pl-9 pr-10 h-11"
+                        disabled={isLoading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPw(!showPw)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
 
+                  {error && (
+                    <p className="rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs text-destructive">
+                      {error}
+                    </p>
+                  )}
+
+                  <Button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="h-11 w-full rounded-xl shadow-[var(--shadow-glow)] mt-4"
+                    style={{ background: "var(--gradient-primary)" }}
+                  >
+                    Next
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 mt-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="signup-dob">Date of Birth</Label>
@@ -328,9 +384,10 @@ function SignUp() {
                         <Input
                           id="signup-dob"
                           type="date"
+                          required
                           value={dateOfBirth}
                           onChange={(e) => setDateOfBirth(e.target.value)}
-                          className="pl-9 text-sm"
+                          className="pl-9 text-sm h-11"
                           disabled={isLoading}
                         />
                       </div>
@@ -341,7 +398,7 @@ function SignUp() {
                         id="signup-gender"
                         value={gender}
                         onChange={(e) => setGender(e.target.value)}
-                        className="mt-1 flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="mt-1 flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         disabled={isLoading}
                       >
                         <option value="prefer_not_to_say">Prefer not to say</option>
@@ -356,6 +413,7 @@ function SignUp() {
                     <Label htmlFor="signup-country">Country</Label>
                     <select
                       id="signup-country"
+                      required
                       value={country}
                       onChange={(e) => {
                         const selectedCountryName = e.target.value;
@@ -367,7 +425,7 @@ function SignUp() {
                           setPhone(selectedCountry.dialCode + " ");
                         }
                       }}
-                      className="mt-1 flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="mt-1 flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={isLoading}
                     >
                       <option value="" disabled>
@@ -387,43 +445,15 @@ function SignUp() {
                       <Input
                         id="signup-phone"
                         type="tel"
+                        required
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="+250..."
-                        className="pl-9 text-sm"
+                        className="pl-9 text-sm h-11"
                         disabled={isLoading}
                       />
                     </div>
                   </div>
-                  <div>
-                    <Label htmlFor="signup-pw">Password</Label>
-                    <div className="relative mt-1">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        id="signup-pw"
-                        required
-                        type={showPw ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Min 6 characters"
-                        className="pl-9 pr-10"
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPw(!showPw)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {error && (
-                    <p className="rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs text-destructive">
-                      {error}
-                    </p>
-                  )}
 
                   <div className="flex items-start space-x-3 py-2">
                     <Checkbox
@@ -450,20 +480,37 @@ function SignUp() {
                       >
                         Privacy Policy
                       </Link>
-                      , and to provide valid government-issued identification for verification
-                      purposes.
+                      , and to provide valid identification for verification.
                     </label>
                   </div>
 
-                  <Button
-                    type="submit"
-                    className="h-11 w-full rounded-xl shadow-[var(--shadow-glow)]"
-                    style={{ background: "var(--gradient-primary)" }}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Create account"}
-                  </Button>
-                </>
+                  {error && (
+                    <p className="rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs text-destructive">
+                      {error}
+                    </p>
+                  )}
+
+                  <div className="flex gap-3 mt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setStep(1)}
+                      className="h-11 flex-1 rounded-xl"
+                      disabled={isLoading}
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Back
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="h-11 flex-[2] rounded-xl shadow-[var(--shadow-glow)]"
+                      style={{ background: "var(--gradient-primary)" }}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sign up"}
+                    </Button>
+                  </div>
+                </div>
               )}
             </form>
 

@@ -575,28 +575,7 @@ export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (
   let user = existing.users[0];
 
   if (!user) {
-    const handle = username.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20) + Math.floor(Math.random() * 1000);
-    const insertQuery = `
-      mutation InsertUser($username: String!, $email: String!, $handle: String!) {
-        insert_users_one(object: {
-          username: $username,
-          email: $email,
-          password: "GOOGLE_AUTH_USER",
-          handle: $handle,
-          active: true,
-          agreed_to_terms: true
-        }) {
-          id
-          username
-          handle
-          email
-          active
-          banned
-        }
-      }
-    `;
-    const result = await hasuraRequest<{ insert_users_one: any }>(insertQuery, { username, email, handle });
-    user = result.insert_users_one;
+    throw new Error("Account not found. Please sign up to create your account.");
   }
 
   if (!user.active) {
