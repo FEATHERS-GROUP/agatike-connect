@@ -16,7 +16,11 @@ export const getUserByHandle = createServerFn({ method: "GET" })
 
     const query = `
       query GetUserByHandle($handle: String!) {
-        users(where: {handle: {_eq: $handle}}) {
+        users(where: {_or: [
+          {handle: {_eq: $handle}},
+          {username: {_eq: $handle}},
+          {email: {_eq: $handle}}
+        ]}) {
           id
           handle
           username

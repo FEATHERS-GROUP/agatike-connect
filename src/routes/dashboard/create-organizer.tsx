@@ -111,8 +111,9 @@ function CreateOrganizerPage() {
     isFetching: isLookingUpUser,
     refetch: lookupUser,
   } = useQuery({
-    queryKey: ["userLookup", syncHandle],
-    queryFn: async () => await getUserByHandle({ data: { handle: syncHandle } } as any),
+    queryKey: ["userLookup", syncHandle.replace(/^@/, "").trim()],
+    queryFn: async () =>
+      await getUserByHandle({ data: { handle: syncHandle.replace(/^@/, "").trim() } } as any),
     enabled: false,
   });
 

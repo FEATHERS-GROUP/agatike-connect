@@ -113,7 +113,9 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
           updated_on: "now()", 
           user_id: $user_id
         }) {
-          affected_rows
+          returning {
+            id
+          }
         }
       }
     `;
@@ -132,11 +134,35 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
   if (!payload.socials) payload.socials = {};
   if (!payload.speciality) payload.speciality = {};
 
-  const result = await hasuraRequest<{ insert_organizers: { affected_rows: number } }>(
+  const result = await hasuraRequest<{ insert_organizers: { returning: { id: string }[] } }>(
     mutation,
     payload,
   );
-  return result.insert_organizers;
+
+  const newOrgId = result.insert_organizers?.returning?.[0]?.id;
+
+  // If the user synced an account, link them as 'owner' in the new mapping table
+  if (payload.user_id && newOrgId) {
+    try {
+      const linkMutation = `
+        mutation LinkOrganizerUser($orgId: uuid!, $userId: uuid!) {
+          insert_organizer_users_one(object: {
+            organizer_id: $orgId,
+            user_id: $userId,
+            role: "owner"
+          }) {
+            id
+          }
+        }
+      `;
+      await hasuraRequest(linkMutation, { orgId: newOrgId, userId: payload.user_id });
+    } catch (err) {
+      // Soft fail in case the developer hasn't created or tracked the table in Hasura yet
+      console.warn("Failed to insert into organizer_users. Is the table created and tracked in Hasura?", err);
+    }
+  }
+
+  return { affected_rows: result.insert_organizers?.returning?.length || 0 };
 });
 
 export const getOrganizerProfile = createServerFn({ method: "GET" }).handler(async () => {
