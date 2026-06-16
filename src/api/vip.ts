@@ -22,7 +22,7 @@ export interface VipPrivilege {
   updated_at: string;
 }
 
-export const getWorkspaceVipPrivileges = createServerFn({ method: "GET" })
+export const getWorkspaceVipPrivileges = createServerFn({ method: "POST" })
   
   .handler(async (ctx) => {
     const session = await getSession();
@@ -47,7 +47,7 @@ export const getWorkspaceVipPrivileges = createServerFn({ method: "GET" })
     `;
 
     const data = await hasuraRequest<{ vip_privileges: VipPrivilege[] }>(query, {
-      workspace_id: ctx.data.workspace_id,
+      workspace_id: ctx.data?.workspace_id,
     });
     return data.vip_privileges || [];
   });
@@ -133,4 +133,37 @@ export const deleteVipPrivilege = createServerFn({ method: "POST" })
       id: ctx.data.id,
     });
     return data.delete_vip_privileges_by_pk;
+  });
+
+export const getVipTicketsUsage = createServerFn({ method: "POST" })
+  .handler(async (ctx) => {
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
+
+    const query = `
+      query GetVipTicketsUsage($workspace_id: uuid!) {
+        event_tickets(where: {
+          event: { workspace_id: { _eq: $workspace_id } }
+        }) {
+          id
+          type
+          cost
+          vip_privilege_ids
+          event {
+            id
+            title
+            cover
+          }
+        }
+      }
+    `;
+
+    const data = await hasuraRequest<{ event_tickets: any[] }>(query, {
+      workspace_id: ctx.data?.workspace_id,
+    });
+    
+    // Filter out tickets that do not have any vip privileges
+    return (data.event_tickets || []).filter(
+      t => Array.isArray(t.vip_privilege_ids) && t.vip_privilege_ids.length > 0
+    );
   });

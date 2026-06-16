@@ -22,10 +22,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { getEventById, updateEvent } from "@/api/events";
+import { getWorkspaceVipPrivileges } from "@/api/vip";
 import { getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { TicketEditor, Ticket } from "@/components/desktop/TicketEditor";
 
 // Stubbed mock data
 const categories: any[] = [];
@@ -134,6 +136,23 @@ function EditEventPage() {
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
 
+  // Tickets
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [sameTicketsForAllLocations, setSameTicketsForAllLocations] = useState(true);
+  const [activeTourStopIdx, setActiveTourStopIdx] = useState(0);
+
+  // Additional Queries
+  const { data: vipPrivileges = [] } = useQuery({
+    queryKey: ["vip_privileges", activeWorkspace?.id],
+    queryFn: () => getWorkspaceVipPrivileges({ data: { workspace_id: activeWorkspace!.id } }),
+    enabled: !!activeWorkspace,
+  });
+
+  // Reusing a stub or actual getWorkspaceForms call if available
+  // Here we'll fallback to empty array since getWorkspaceForms doesn't exist in events.ts yet
+  // We'll stub forms for now.
+  const forms: any[] = [];
+
   // Populate form once event loads
   useEffect(() => {
     if (!event) return;
@@ -160,6 +179,18 @@ function EditEventPage() {
       coverPreview: event.cover || "",
       allowed_public: !!event.allowed_public,
     });
+
+    if (event.event_tickets) {
+      setTickets(
+        event.event_tickets.map((t: any) => ({
+          ...t,
+          name: t.name || t.type, // Fallback to type if name was null (old data)
+          type: t.name ? t.type : (Number(t.cost) === 0 ? "free" : "paid"), // Deduce type for old data
+          price: Number(t.cost || 0),
+          quantity: Number(t.remaining || 0) + Number(t.sold || 0),
+        }))
+      );
+    }
   }, [event]);
 
   const updateField = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
@@ -181,6 +212,15 @@ function EditEventPage() {
           vipPerks: form.vipPerks,
           event_requency: event?.event_requency || {},
           allowed_public: form.allowed_public,
+          event_tickets: {
+            data: tickets.map((t) => ({
+              ...t,
+              name: t.name,
+              type: t.type,
+              cost: String(t.price),
+              remaining: String(t.quantity),
+            })),
+          },
         },
       } as any);
     },
@@ -463,6 +503,28 @@ function EditEventPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Tickets */}
+      <div className="rounded-[2rem] border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] space-y-4">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h2 className="font-semibold text-lg flex items-center gap-2">Tickets</h2>
+            <p className="text-sm text-muted-foreground">Manage tickets and assign VIP Privileges</p>
+          </div>
+        </div>
+        <TicketEditor
+          tickets={tickets}
+          setTickets={setTickets}
+          currencySymbol={activeWorkspace?.currency || "$"}
+          locations={form.locations}
+          sameTicketsForAllLocations={sameTicketsForAllLocations}
+          setSameTicketsForAllLocations={setSameTicketsForAllLocations}
+          activeTourStopIdx={activeTourStopIdx}
+          setActiveTourStopIdx={setActiveTourStopIdx}
+          forms={forms}
+          vipPrivileges={vipPrivileges}
+        />
       </div>
 
       {/* VIP Perks */}

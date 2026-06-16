@@ -118,18 +118,6 @@ function getCurrencySymbol(currencyStr?: string) {
 const steps = ["Details", "Venue", "Tickets", "Media", "Products", "VIP", "Publish"] as const;
 type Step = (typeof steps)[number];
 
-type Ticket = {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  type: "free" | "paid" | "vip" | "early";
-  sale_ends_at?: string;
-  tour_stop_idx?: number | null;
-  includes?: string[];
-  form_id?: string;
-  vip_privilege_ids?: string[];
-};
 type Merch = { id: string; name: string; price: number; image?: string };
 
 function AddressAutocomplete({
@@ -213,6 +201,8 @@ function generateId() {
   }
   return Math.random().toString(36).substring(2, 15);
 }
+
+import { TicketEditor, Ticket } from "./TicketEditor";
 
 export function CreateEventDesktop() {
   const navigate = useNavigate();
@@ -388,7 +378,8 @@ export function CreateEventDesktop() {
           : {},
         event_tickets: {
           data: tickets.map((t) => ({
-            type: t.name,
+            name: t.name,
+            type: t.type,
             cost: t.price.toString(),
             remaining: t.quantity.toString(),
             sold: "0",
@@ -822,18 +813,6 @@ export function CreateEventDesktop() {
   );
 }
 
-function TicketEditor({
-  tickets,
-  setTickets,
-  currencySymbol,
-  locations,
-  sameTicketsForAllLocations,
-  setSameTicketsForAllLocations,
-  activeTourStopIdx,
-  setActiveTourStopIdx,
-  forms = [],
-  vipPrivileges = [],
-}: {
   tickets: Ticket[];
   setTickets: (t: Ticket[]) => void;
   currencySymbol: string;

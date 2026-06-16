@@ -136,6 +136,7 @@ const GET_PUBLIC_EVENTS = `
       vipPerks
       workspace_id
       event_tickets {
+        name
         cost
         created_at
         deleted
@@ -214,6 +215,7 @@ const GET_WORKSPACE_EVENTS = `
       created_at
       event_tickets {
         id
+        name
         type
         cost
         remaining
@@ -268,6 +270,7 @@ const GET_EVENT_BY_ID = `
         created_at
       }
       event_tickets {
+        name
         cost
         created_at
         deleted
@@ -473,6 +476,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
     const ticketsToInsert = tickets.map((t: any) => {
       const ticketObj: any = {
         event_id: id,
+        name: t.name,
         type: t.type,
         cost: t.cost,
         remaining: t.remaining,
@@ -494,7 +498,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
               objects: $objects,
               on_conflict: {
                 constraint: event_tickets_pkey,
-                update_columns: [type, cost, remaining, form_id, vip_privilege_ids]
+                update_columns: [name, type, cost, remaining, form_id, vip_privilege_ids]
               }
             ) {
               affected_rows
@@ -682,6 +686,7 @@ const GET_WORKSPACE_TICKET_PROJECTS = `
         vipPerks
         workspace_id
         event_tickets {
+          name
           cost
           created_at
           deleted

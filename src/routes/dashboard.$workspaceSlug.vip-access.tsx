@@ -9,8 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getWorkspaceVipPrivileges, createVipPrivilege, updateVipPrivilege, deleteVipPrivilege, VipPrivilege, VipField } from "@/api/vip";
+import { getWorkspaceVipPrivileges, createVipPrivilege, updateVipPrivilege, deleteVipPrivilege, getVipTicketsUsage, VipPrivilege, VipField } from "@/api/vip";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/vip-access")({
   component: VipAccessPage,
@@ -71,6 +72,12 @@ function VipAccessPage() {
   const { data: privileges = [], isLoading } = useQuery({
     queryKey: ["vip_privileges", activeWorkspace?.id],
     queryFn: () => getWorkspaceVipPrivileges({ data: { workspace_id: activeWorkspace!.id } }),
+    enabled: !!activeWorkspace,
+  });
+
+  const { data: usageTickets = [], isLoading: isLoadingUsage } = useQuery({
+    queryKey: ["vip_tickets_usage", activeWorkspace?.id],
+    queryFn: () => getVipTicketsUsage({ data: { workspace_id: activeWorkspace!.id } }),
     enabled: !!activeWorkspace,
   });
 
@@ -164,16 +171,23 @@ function VipAccessPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {isLoading && <div className="text-sm text-muted-foreground">Loading privileges...</div>}
-        {!isLoading && privileges.length === 0 && (
-          <div className="col-span-full border border-dashed rounded-xl p-12 text-center text-muted-foreground">
-            <Crown className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-medium text-foreground">No privileges defined</h3>
-            <p className="text-sm mt-1 mb-4">You haven't set up any VIP privileges yet.</p>
-            <Button variant="outline" onClick={openNew}>Create your first privilege</Button>
-          </div>
-        )}
+      <Tabs defaultValue="privileges" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="privileges">Privilege Configurations</TabsTrigger>
+          <TabsTrigger value="usage">Usage Monitoring</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="privileges" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {isLoading && <div className="text-sm text-muted-foreground">Loading privileges...</div>}
+            {!isLoading && privileges.length === 0 && (
+              <div className="col-span-full border border-dashed rounded-xl p-12 text-center text-muted-foreground">
+                <Crown className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <h3 className="text-lg font-medium text-foreground">No privileges defined</h3>
+                <p className="text-sm mt-1 mb-4">You haven't set up any VIP privileges yet.</p>
+                <Button variant="outline" onClick={openNew}>Create your first privilege</Button>
+              </div>
+            )}
         
         {privileges.map((p) => (
           <Card key={p.id} className="relative group overflow-hidden border-border/50 hover:border-border transition-colors">
@@ -214,7 +228,78 @@ function VipAccessPage() {
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
+        </TabsContent>
+
+        <TabsContent value="usage" className="space-y-6">
+          {isLoadingUsage && <div className="text-sm text-muted-foreground">Loading usage data...</div>}
+          {!isLoadingUsage && privileges.length === 0 && (
+            <div className="text-sm text-muted-foreground">Create some privileges first to monitor usage.</div>
+          )}
+          {!isLoadingUsage && privileges.map(privilege => {
+            // Find all tickets that have this privilege assigned
+            const associatedTickets = usageTickets.filter((t: any) => 
+              Array.isArray(t.vip_privilege_ids) && t.vip_privilege_ids.includes(privilege.id)
+            );
+
+            // Group tickets by event
+            const eventsMap = new Map<string, { event: any, tickets: any[] }>();
+            associatedTickets.forEach((t: any) => {
+              if (!t.event) return;
+              if (!eventsMap.has(t.event.id)) {
+                eventsMap.set(t.event.id, { event: t.event, tickets: [] });
+              }
+              eventsMap.get(t.event.id)!.tickets.push(t);
+            });
+            const groupedEvents = Array.from(eventsMap.values());
+
+            return (
+              <div key={privilege.id} className="rounded-[2rem] border border-border/60 bg-card p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    {ICONS[privilege.icon] || <Crown className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold">{privilege.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {groupedEvents.length === 0 ? "Not used in any active events." : `Used in ${groupedEvents.length} event(s)`}
+                    </p>
+                  </div>
+                </div>
+
+                {groupedEvents.length > 0 && (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {groupedEvents.map(({ event, tickets }) => (
+                      <div key={event.id} className="rounded-xl border border-border/40 bg-secondary/10 p-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          {event.cover ? (
+                            <img src={event.cover} alt={event.title} className="w-10 h-10 rounded-md object-cover" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-md bg-secondary flex items-center justify-center">
+                              <Ticket className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 truncate">
+                            <p className="text-sm font-medium truncate">{event.title || "Untitled Event"}</p>
+                            <p className="text-xs text-muted-foreground">{tickets.length} ticket tier(s)</p>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {tickets.map((t: any) => (
+                            <span key={t.id} className="px-2 py-1 bg-background border border-border/50 text-xs rounded-md shadow-sm">
+                              {t.type === "vip" ? "VIP" : t.type === "early" ? "Early Bird" : t.type === "paid" ? "Paid" : "Free"} - {t.cost} {activeWorkspace?.currency}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-3xl border-border/40 p-0 overflow-hidden">
