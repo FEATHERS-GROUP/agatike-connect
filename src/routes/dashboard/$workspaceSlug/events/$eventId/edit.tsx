@@ -144,7 +144,7 @@ function EditEventPage() {
   // Additional Queries
   const { data: vipPrivileges = [] } = useQuery({
     queryKey: ["vip_privileges", activeWorkspace?.id],
-    queryFn: () => getWorkspaceVipPrivileges({ data: { workspace_id: activeWorkspace!.id } }),
+    queryFn: () => getWorkspaceVipPrivileges({ data: { workspace_id: activeWorkspace!.id } } as any),
     enabled: !!activeWorkspace,
   });
 

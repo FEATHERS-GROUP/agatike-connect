@@ -19,7 +19,6 @@ const COUNTRY_FLAGS: Record<string, string> = {
   Uganda: "🇺🇬",
   Tanzania: "🇹🇿",
   Nigeria: "🇳🇬",
-  "South Africa": "🇿🇦",
 };
 
 const getCountryFlag = (countryName?: string) => {
@@ -42,18 +41,18 @@ export function GlobalNotificationListener() {
           if (permission === "granted" && activeWorkspace?.orgnizer_id) {
             // Note: The VAPID key should be placed here or in environment variables
             const vapidKey = import.meta.env.FIREBASE_VAPID_KEY;
-            
+
             // Register the service worker manually so we can pass config or just ensure it's loaded
             const registration = await navigator.serviceWorker.register(
               `/firebase-messaging-sw.js?apiKey=${import.meta.env.FIREBASE_API_KEY}&projectId=${import.meta.env.FIREBASE_PROJECT_ID}&messagingSenderId=${import.meta.env.FIREBASE_MESSAGING_SENDER_ID}&appId=${import.meta.env.FIREBASE_APP_ID}`
             );
-            
+
             const messaging = getMessaging(app);
-            const token = await getToken(messaging, { 
+            const token = await getToken(messaging, {
               vapidKey: vapidKey,
-              serviceWorkerRegistration: registration 
+              serviceWorkerRegistration: registration
             });
-            
+
             if (token) {
               await saveFCMToken({ data: { userId: activeWorkspace.orgnizer_id, token } });
             }
@@ -63,7 +62,7 @@ export function GlobalNotificationListener() {
         }
       }
     };
-    
+
     setupFCM();
   }, [activeWorkspace?.orgnizer_id]);
 

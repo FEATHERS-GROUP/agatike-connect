@@ -71,18 +71,18 @@ function VipAccessPage() {
 
   const { data: privileges = [], isLoading } = useQuery({
     queryKey: ["vip_privileges", activeWorkspace?.id],
-    queryFn: () => getWorkspaceVipPrivileges({ data: { workspace_id: activeWorkspace!.id } }),
+    queryFn: () => getWorkspaceVipPrivileges({ data: { workspace_id: activeWorkspace!.id } } as any),
     enabled: !!activeWorkspace,
   });
 
   const { data: usageTickets = [], isLoading: isLoadingUsage } = useQuery({
     queryKey: ["vip_tickets_usage", activeWorkspace?.id],
-    queryFn: () => getVipTicketsUsage({ data: { workspace_id: activeWorkspace!.id } }),
+    queryFn: () => getVipTicketsUsage({ data: { workspace_id: activeWorkspace!.id } } as any),
     enabled: !!activeWorkspace,
   });
 
   const createMut = useMutation({
-    mutationFn: (data: any) => createVipPrivilege({ data }),
+    mutationFn: (data: any) => createVipPrivilege({ data } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vip_privileges"] });
       toast.success("Privilege created successfully!");
@@ -91,7 +91,7 @@ function VipAccessPage() {
   });
 
   const updateMut = useMutation({
-    mutationFn: (data: any) => updateVipPrivilege({ data }),
+    mutationFn: (data: any) => updateVipPrivilege({ data } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vip_privileges"] });
       toast.success("Privilege updated successfully!");
@@ -100,7 +100,7 @@ function VipAccessPage() {
   });
 
   const deleteMut = useMutation({
-    mutationFn: (data: { id: string }) => deleteVipPrivilege({ data }),
+    mutationFn: (data: { id: string }) => deleteVipPrivilege({ data } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vip_privileges"] });
       toast.success("Privilege deleted.");
