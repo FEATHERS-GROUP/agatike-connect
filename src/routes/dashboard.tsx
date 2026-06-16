@@ -144,7 +144,7 @@ function DashboardLayout() {
             ))}
 
           {/* Main Content Area */}
-          <main className={`flex-1 min-w-0 ${isDesigner ? "" : "p-6 lg:p-10"}`}>
+          <main className={`flex-1 min-w-0 ${isDesigner || location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" ? "" : "p-6 lg:p-10"}`}>
             <Outlet />
           </main>
         </div>

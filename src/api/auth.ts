@@ -216,10 +216,6 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
     username,
     email,
     password,
-    dateOfBirth,
-    gender,
-    country,
-    phone,
     agreed_to_terms,
     otpToken,
     otp,
@@ -227,10 +223,6 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
     username: string;
     email: string;
     password: string;
-    dateOfBirth: string;
-    gender: string;
-    country: string;
-    phone: string;
     agreed_to_terms: boolean;
     otpToken: string;
     otp: string;
@@ -308,10 +300,10 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
     email,
     password: hashedPassword,
     handle,
-    dateOfBirth,
-    gender,
-    country,
-    phone,
+    dateOfBirth: "1900-01-01",
+    gender: "prefer_not_to_say",
+    country: "Unknown",
+    phone: "0000000000",
     agreed_to_terms,
   });
 
@@ -386,17 +378,42 @@ export const updateUserOnboarding = createServerFn({ method: "POST" }).handler(a
     const { payload } = await jwtVerify(token, SECRET);
     if (payload.type !== "user") throw new Error("Unauthorized");
 
-    const { interests, profile } = ctx.data as unknown as { interests: any; profile: string };
+    const { interests, profile, dateOfBirth, gender, phone, country } = ctx.data as unknown as {
+      interests: any;
+      profile: string;
+      dateOfBirth?: string;
+      gender?: string;
+      phone?: string;
+      country?: string;
+    };
 
     const updateQuery = `
-      mutation UpdateUserOnboarding($id: uuid!, $interests: jsonb, $profile: String) {
-        update_users_by_pk(pk_columns: { id: $id }, _set: { interests: $interests, profile: $profile }) {
+      mutation UpdateUserOnboarding($id: uuid!, $interests: jsonb, $profile: String, $dateOfBirth: date, $gender: String, $phone: String, $country: String) {
+        update_users_by_pk(
+          pk_columns: { id: $id }, 
+          _set: { 
+            interests: $interests, 
+            profile: $profile,
+            dateOfBirth: $dateOfBirth,
+            gender: $gender,
+            phone: $phone,
+            country: $country
+          }
+        ) {
           id
         }
       }
     `;
 
-    await hasuraRequest(updateQuery, { id: payload.sub, interests, profile });
+    await hasuraRequest(updateQuery, {
+      id: payload.sub,
+      interests,
+      profile,
+      dateOfBirth,
+      gender,
+      phone,
+      country
+    });
 
     return { success: true };
   } catch (e) {
@@ -575,7 +592,40 @@ export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (
   let user = existing.users[0];
 
   if (!user) {
-    throw new Error("Account not found. Please sign up to create your account.");
+    const hashedPassword = await bcrypt.hash("GOOGLE_AUTH_USER", 10);
+    const handle = username.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20) + Math.floor(Math.random() * 1000);
+    
+    const insertQuery = `
+      mutation InsertGoogleUser($username: String!, $email: String!, $password: String!, $handle: String!) {
+        insert_users_one(object: {
+          username: $username,
+          email: $email,
+          password: $password,
+          handle: $handle,
+          dateOfBirth: "1900-01-01",
+          gender: "prefer_not_to_say",
+          country: "Unknown",
+          phone: "0000000000",
+          active: true,
+          agreed_to_terms: true
+        }) {
+          id
+          username
+          handle
+          email
+          active
+        }
+      }
+    `;
+
+    const res = await hasuraRequest<{ insert_users_one: any }>(insertQuery, {
+      username,
+      email,
+      password: hashedPassword,
+      handle,
+    });
+    
+    user = res.insert_users_one;
   }
 
   if (!user.active) {
@@ -639,3 +689,4 @@ export const googleAuthOrganizer = createServerFn({ method: "POST" }).handler(as
 
   return { success: true, id: organizer.id };
 });
+

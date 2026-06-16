@@ -8,8 +8,6 @@ import {
   ArrowLeft,
   User,
   Loader2,
-  Calendar,
-  Phone,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -21,9 +19,6 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { toast } from "sonner";
 import { useGoogleLogin } from "@react-oauth/google";
 import hero from "@/assets/hero-event.jpg";
-import { COUNTRIES } from "@/lib/countries";
-import PhoneInput, { parsePhoneNumber } from "react-phone-number-input";
-import "react-phone-number-input/style.css";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -43,23 +38,13 @@ function SignUp() {
   const router = useRouter();
   const { refresh } = useUserAuth();
 
-  const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() - 18);
-  const maxDateString = maxDate.toISOString().split("T")[0];
-  const [step, setStep] = useState(0); // 0: Method, 1: Personal, 2: Security
+  const [step, setStep] = useState(0); // 0: Method, 1: Details
   const [showPw, setShowPw] = useState(false);
-  const [showConfirmPw, setShowConfirmPw] = useState(false);
   
-  // Step 1 Details
+  // Details
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("");
-  const [gender, setGender] = useState("prefer_not_to_say");
-  
-  // Step 2 Details
-  const [phone, setPhone] = useState<string | undefined>("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
   
   const [isLoading, setIsLoading] = useState(false);
@@ -70,21 +55,12 @@ function SignUp() {
   const [otpInput, setOtpInput] = useState("");
   const [otpToken, setOtpToken] = useState("");
 
-  const handleNextStep1 = () => {
-    if (!name || !email || !dateOfBirth || !gender) {
-      setError("Please fill out all fields.");
-      return;
-    }
-    setError("");
-    setStep(2);
-  };
-
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (!otpStep) {
-      if (!phone || !password || !confirmPassword) {
+      if (!name || !email || !password) {
         setError("Please fill out all fields.");
         return;
       }
@@ -92,12 +68,8 @@ function SignUp() {
         setError("Password must be at least 6 characters.");
         return;
       }
-      if (password !== confirmPassword) {
-        setError("Passwords do not match.");
-        return;
-      }
       if (!agreed) {
-        setError("You must agree to the Terms, Privacy Policy, and Identity Verification.");
+        setError("You must agree to the Terms and Privacy Policy.");
         return;
       }
 
@@ -128,24 +100,17 @@ function SignUp() {
     setIsLoading(true);
 
     try {
-      const parsed = parsePhoneNumber(phone || "");
-      const countryName = COUNTRIES.find((c) => c.code === parsed?.country)?.name || "Unknown";
-
       await signupUser({
         data: {
           username: name,
           email,
           password,
-          dateOfBirth: dateOfBirth || null,
-          gender,
-          country: countryName,
-          phone,
           agreed_to_terms: agreed,
           otpToken,
           otp: otpInput,
         },
       } as any);
-      toast.success("Account created! Let's personalize your experience.");
+      toast.success("Account created! Let's set up your profile.");
       await refresh();
       await router.invalidate();
       navigate({ to: "/onboarding" });
@@ -214,15 +179,8 @@ function SignUp() {
             
             <div className="flex items-center justify-between lg:mt-6">
               <h1 className="text-2xl font-semibold tracking-tight">
-                {otpStep ? "Verify email" : step === 0 ? "Create your account" : step === 1 ? "Personal details" : "Contact & Security"}
+                {otpStep ? "Verify email" : step === 0 ? "Create your account" : "Your details"}
               </h1>
-              {/* Step indicator */}
-              {!otpStep && step > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <div className={`h-2 w-2 rounded-full transition-colors ${step === 1 ? "bg-primary" : "bg-muted"}`} />
-                  <div className={`h-2 w-2 rounded-full transition-colors ${step === 2 ? "bg-primary" : "bg-muted"}`} />
-                </div>
-              )}
             </div>
             
             <p className="mt-1 text-sm text-muted-foreground">
@@ -230,9 +188,7 @@ function SignUp() {
                 ? "Almost there! Let's verify your email." 
                 : step === 0 
                   ? "Join thousands discovering events worldwide."
-                  : step === 1
-                  ? "Tell us a bit about yourself."
-                  : "We need a few more details to set up your profile."
+                  : "We need just a few details to get you started."
               }
             </p>
 
@@ -299,13 +255,17 @@ function SignUp() {
                       disabled={isLoading}
                       className="h-12 w-full rounded-xl bg-background hover:bg-accent/50 border-border/60 transition-colors shadow-sm text-sm font-medium flex justify-center items-center"
                     >
-                      <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                      </svg>
-                      Sign up with Google
+                      {isLoading ? (
+                        <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                      ) : (
+                        <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
+                          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                      )}
+                      {isLoading ? "Signing up..." : "Sign up with Google"}
                     </Button>
                     <Button
                       variant="outline"
@@ -336,7 +296,7 @@ function SignUp() {
                     Create account with Email
                   </Button>
                 </div>
-              ) : step === 1 ? (
+              ) : (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 mt-6">
                   <div>
                     <Label htmlFor="signup-name">Full name</Label>
@@ -369,92 +329,6 @@ function SignUp() {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="signup-dob">Date of Birth</Label>
-                      <div className="relative mt-1">
-                        <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          id="signup-dob"
-                          type="date"
-                          required
-                          max={maxDateString}
-                          value={dateOfBirth}
-                          onChange={(e) => setDateOfBirth(e.target.value)}
-                          onClick={(e) => {
-                            if (typeof e.currentTarget.showPicker === 'function') {
-                              e.currentTarget.showPicker();
-                            }
-                          }}
-                          className="pl-9 text-sm h-11 w-full"
-                          disabled={isLoading}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="signup-gender">Gender</Label>
-                      <select
-                        id="signup-gender"
-                        value={gender}
-                        onChange={(e) => setGender(e.target.value)}
-                        className="mt-1 flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        disabled={isLoading}
-                      >
-                        <option value="prefer_not_to_say">Prefer not to say</option>
-                        <option value="female">Female</option>
-                        <option value="male">Male</option>
-                        <option value="other">Other</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {error && (
-                    <p className="rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs text-destructive">
-                      {error}
-                    </p>
-                  )}
-
-                  <div className="flex gap-3 mt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setStep(0)}
-                      className="h-11 flex-1 rounded-xl"
-                      disabled={isLoading}
-                    >
-                      <ArrowLeft className="w-4 h-4 mr-2" />
-                      Back
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handleNextStep1}
-                      className="h-11 flex-[2] rounded-xl shadow-[var(--shadow-glow)]"
-                      style={{ background: "var(--gradient-primary)" }}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 mt-6">
-                  <div>
-                    <Label htmlFor="signup-phone">Phone Number</Label>
-                    <div className="relative mt-1">
-                      <PhoneInput
-                        id="signup-phone"
-                        international
-                        defaultCountry="RW"
-                        limitMaxLength
-                        value={phone}
-                        onChange={setPhone}
-                        className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        numberInputProps={{
-                          className: "flex-1 bg-transparent border-none outline-none focus:ring-0 text-sm ml-2",
-                          disabled: isLoading
-                        }}
-                      />
-                    </div>
-                  </div>
 
                   <div>
                     <Label htmlFor="signup-pw">Password</Label>
@@ -476,30 +350,6 @@ function SignUp() {
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
                         {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="signup-confirm-pw">Confirm Password</Label>
-                    <div className="relative mt-1">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        id="signup-confirm-pw"
-                        required
-                        type={showConfirmPw ? "text" : "password"}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Re-enter password"
-                        className="pl-9 pr-10 h-11"
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPw(!showConfirmPw)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showConfirmPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </div>
@@ -543,7 +393,7 @@ function SignUp() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setStep(1)}
+                      onClick={() => setStep(0)}
                       className="h-11 flex-1 rounded-xl"
                       disabled={isLoading}
                     >
