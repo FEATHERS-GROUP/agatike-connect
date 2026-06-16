@@ -1024,7 +1024,7 @@ function TicketStep({
                 <Plus className="mr-1 h-3.5 w-3.5" /> Add included item
               </Button>
             </div>
-            {(t.price === 0 || t.type === "free") && forms.length > 0 && (
+            {(t.price === 0 || t.type === "free") && (forms?.length ?? 0) > 0 && (
               <div className="md:col-span-full">
                 <Label className="text-xs text-muted-foreground mb-1 block">
                   Attach Registration Form (Optional)
@@ -1035,7 +1035,7 @@ function TicketStep({
                   onChange={(e) => update(t.id, { form_id: e.target.value })}
                 >
                   <option value="">No form (Standard checkout)</option>
-                  {forms.map((f: any) => (
+                  {(forms ?? []).map((f: any) => (
                     <option key={f.id} value={f.id}>
                       {f.title}
                     </option>
@@ -1043,11 +1043,11 @@ function TicketStep({
                 </select>
               </div>
             )}
-            {vipPrivileges.length > 0 && (
+            {(vipPrivileges?.length ?? 0) > 0 && (
               <div className="md:col-span-full mt-2 border-t border-border/40 pt-2">
                 <Label className="text-xs text-muted-foreground mb-1 block">VIP Privileges & Perks</Label>
                 <div className="flex flex-wrap gap-2">
-                  {vipPrivileges.map((privilege: any) => {
+                  {(vipPrivileges ?? []).map((privilege: any) => {
                     const isSelected = t.vip_privilege_ids?.includes(privilege.id);
                     return (
                       <div
