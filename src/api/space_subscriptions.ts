@@ -586,3 +586,190 @@ export const removeLinkedGroupSubscription = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+// ── Renew a subscription ─────────────────────────────────────────────────────
+// Creates a "pending" renewal invoice and advances the next_billing_date.
+export const renewSpaceSubscription = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { subscription_id } = ctx.data as { subscription_id: string };
+    if (!subscription_id) throw new Error("subscription_id required");
+
+    // 1. Fetch current subscription
+    const fetchQuery = `
+      query GetSubscriptionForRenew($id: uuid!) {
+        space_subscriptions_by_pk(id: $id) {
+          id
+          billing_cycle
+          next_billing_date
+          start_date
+          status
+          price
+          plan_name
+          customer_name
+          customer_email
+          space {
+            id
+            name
+            currency
+          }
+        }
+      }
+    `;
+    const fetchData = await hasuraRequest<{ space_subscriptions_by_pk: any }>(fetchQuery, { id: subscription_id });
+    const sub = fetchData?.space_subscriptions_by_pk;
+    if (!sub) throw new Error("Subscription not found");
+
+    // 2. Calculate new next_billing_date based on billing_cycle
+    const baseDate = sub.next_billing_date
+      ? new Date(sub.next_billing_date)
+      : new Date();
+
+    const cycle = (sub.billing_cycle || "").toLowerCase();
+    const newBillingDate = new Date(baseDate);
+    if (cycle === "daily") {
+      newBillingDate.setDate(newBillingDate.getDate() + 1);
+    } else if (cycle === "weekly") {
+      newBillingDate.setDate(newBillingDate.getDate() + 7);
+    } else if (cycle === "monthly") {
+      newBillingDate.setMonth(newBillingDate.getMonth() + 1);
+    } else if (cycle === "annually" || cycle === "yearly") {
+      newBillingDate.setFullYear(newBillingDate.getFullYear() + 1);
+    } else {
+      // Default: monthly
+      newBillingDate.setMonth(newBillingDate.getMonth() + 1);
+    }
+
+    // 3. Create a renewal invoice (status: "pending")
+    const { generateInvoiceNumber } = await import("./invoices");
+    const invoiceNumber = generateInvoiceNumber();
+
+    const invoiceMutation = `
+      mutation CreateRenewalInvoice(
+        $invoice_number: String!
+        $type: String!
+        $reference_id: uuid
+        $space_id: uuid
+        $space_subscription_id: uuid
+        $customer_name: String!
+        $customer_email: String!
+        $amount: String!
+        $currency: String!
+        $plan_name: String
+        $billing_cycle: String
+        $status: String!
+      ) {
+        insert_invoices_one(object: {
+          invoice_number: $invoice_number
+          type: $type
+          reference_id: $reference_id
+          space_id: $space_id
+          space_subscription_id: $space_subscription_id
+          customer_name: $customer_name
+          customer_email: $customer_email
+          amount: $amount
+          currency: $currency
+          plan_name: $plan_name
+          billing_cycle: $billing_cycle
+          status: $status
+        }) {
+          id
+          invoice_number
+        }
+      }
+    `;
+    await hasuraRequest(invoiceMutation, {
+      invoice_number: invoiceNumber,
+      type: "space_subscription_renewal",
+      reference_id: subscription_id,
+      space_id: sub.space?.id || null,
+      space_subscription_id: subscription_id,
+      customer_name: sub.customer_name,
+      customer_email: sub.customer_email,
+      amount: String(sub.price || "0"),
+      currency: sub.space?.currency || "RWF",
+      plan_name: sub.plan_name,
+      billing_cycle: sub.billing_cycle,
+      status: "pending",
+    });
+
+    // 4. Update the subscription: advance next_billing_date + set active
+    const updateMutation = `
+      mutation RenewSubscription($id: uuid!, $next_billing_date: timestamptz!, $status: String!) {
+        update_space_subscriptions_by_pk(
+          pk_columns: { id: $id }
+          _set: {
+            next_billing_date: $next_billing_date
+            status: $status
+          }
+        ) {
+          id
+          status
+          next_billing_date
+        }
+      }
+    `;
+    const updated = await hasuraRequest<{ update_space_subscriptions_by_pk: any }>(updateMutation, {
+      id: subscription_id,
+      next_billing_date: newBillingDate.toISOString(),
+      status: "active",
+    });
+
+    return {
+      success: true,
+      invoiceNumber,
+      newNextBillingDate: newBillingDate.toISOString(),
+      subscription: updated.update_space_subscriptions_by_pk,
+    };
+  });
+
+// ── Cancel a subscription ────────────────────────────────────────────────────
+export const cancelSpaceSubscription = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { subscription_id } = ctx.data as { subscription_id: string };
+    if (!subscription_id) throw new Error("subscription_id required");
+
+    const mutation = `
+      mutation CancelSubscription($id: uuid!) {
+        update_space_subscriptions_by_pk(
+          pk_columns: { id: $id }
+          _set: { status: "cancelled" }
+        ) {
+          id
+          status
+        }
+      }
+    `;
+    const data = await hasuraRequest<{ update_space_subscriptions_by_pk: any }>(mutation, { id: subscription_id });
+    return { success: true, subscription: data.update_space_subscriptions_by_pk };
+  });
+
+// ── Mark overdue subscriptions as on_hold ────────────────────────────────────
+// Called by the daily cron job at 11:00 UTC.
+// Finds subscriptions where next_billing_date is more than 7 days in the past
+// AND status is not already "on_hold" or "cancelled".
+export const markOverdueSubscriptionsOnHold = createServerFn({ method: "POST" })
+  .handler(async () => {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const mutation = `
+      mutation MarkOverdueOnHold($cutoff: timestamptz!) {
+        update_space_subscriptions(
+          where: {
+            _and: [
+              { next_billing_date: { _lt: $cutoff } },
+              { status: { _nin: ["on_hold", "cancelled"] } }
+            ]
+          }
+          _set: { status: "on_hold" }
+        ) {
+          affected_rows
+        }
+      }
+    `;
+    const data = await hasuraRequest<{ update_space_subscriptions: { affected_rows: number } }>(mutation, {
+      cutoff: sevenDaysAgo.toISOString(),
+    });
+    return { success: true, affected_rows: data.update_space_subscriptions?.affected_rows ?? 0 };
+  });
