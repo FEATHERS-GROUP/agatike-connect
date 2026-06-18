@@ -93,53 +93,59 @@ function CheckoutPage() {
         }
       });
 
-      // 2. Generate Invoice PDF and save to DB
-      const invoice = await createInvoiceAndGeneratePdf({
-        data: {
-          spaceName: space?.name || "Our Space",
-          customerName: formData.name,
-          customerEmail: formData.email,
-          planName,
-          amount: planPrice,
-          currency,
-          billingCycle,
-          startDate: formData.startDate,
-          spaceId,
-          referenceId: subscription?.id,
+      // 2. Fire and forget the heavy PDF/Email tasks in the background
+      (async () => {
+        try {
+          const invoice = await createInvoiceAndGeneratePdf({
+            data: {
+              spaceName: space?.name || "Our Space",
+              customerName: formData.name,
+              customerEmail: formData.email,
+              planName,
+              amount: planPrice,
+              currency,
+              billingCycle,
+              startDate: formData.startDate,
+              spaceId,
+              referenceId: subscription?.id,
+            }
+          });
+
+          const invoiceNumber = invoice?.invoiceNumber || `AGT-${Date.now()}`;
+          const pdfBase64 = invoice?.pdfBase64 || null;
+
+          // Send emails concurrently to save time
+          await Promise.all([
+            sendSubscriptionConfirmationEmail({
+              data: {
+                to: formData.email,
+                customerName: formData.name,
+                spaceName: space?.name || "Our Space",
+                planName,
+                price: `${currency} ${planPrice}`,
+                billingCycle,
+              }
+            }),
+            sendSubscriptionInvoiceEmail({
+              data: {
+                to: formData.email,
+                customerName: formData.name,
+                spaceName: space?.name || "Our Space",
+                planName,
+                price: `${currency} ${planPrice}`,
+                billingCycle,
+                invoiceDate: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
+                invoiceNumber,
+                pdfBase64,
+              }
+            })
+          ]);
+        } catch (bgErr) {
+          console.error("Background processing failed:", bgErr);
         }
-      });
+      })();
 
-      const invoiceNumber = invoice?.invoiceNumber || `AGT-${Date.now()}`;
-      const pdfBase64 = invoice?.pdfBase64 || null;
-
-      // 3. Send Confirmation Email
-      await sendSubscriptionConfirmationEmail({
-        data: {
-          to: formData.email,
-          customerName: formData.name,
-          spaceName: space?.name || "Our Space",
-          planName,
-          price: `${currency} ${planPrice}`,
-          billingCycle,
-        }
-      });
-
-      // 4. Send Invoice Email with PDF attached
-      await sendSubscriptionInvoiceEmail({
-        data: {
-          to: formData.email,
-          customerName: formData.name,
-          spaceName: space?.name || "Our Space",
-          planName,
-          price: `${currency} ${planPrice}`,
-          billingCycle,
-          invoiceDate: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
-          invoiceNumber,
-          pdfBase64,
-        }
-      });
-
-      // 5. Redirect to Success
+      // 3. Redirect immediately to Success (frontend feels instant)
       navigate({ to: `/spaces/success/${spaceId}`, search: { email: formData.email } });
 
     } catch (err: any) {
