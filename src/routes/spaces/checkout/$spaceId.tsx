@@ -42,6 +42,7 @@ function CheckoutPage() {
     email: user?.email || "",
     phone: user?.phone || "",
     gender: user?.gender || "",
+    address: "",
     startDate: new Date().toISOString().split("T")[0],
   });
 
@@ -283,60 +284,130 @@ function CheckoutPage() {
                   <div className="bg-card border border-border/40 rounded-2xl p-6 shadow-sm">
                     <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                       <span className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
-                      Your Details
+                      {bookingType === "group" ? "Company / Group Details" : "Your Details"}
                     </h2>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Full Name</Label>
-                        <Input
-                          id="name"
-                          placeholder="John Doe"
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          required
-                          className="bg-secondary/50"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    {/* ── INDIVIDUAL FORM ── */}
+                    {bookingType === "individual" && (
+                      <div className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="email">Email Address</Label>
+                          <Label htmlFor="name">Full Name</Label>
                           <Input
-                            id="email"
-                            type="email"
-                            placeholder="john@example.com"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            id="name"
+                            placeholder="John Doe"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             required
                             className="bg-secondary/50"
                           />
                         </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="email">Email Address</Label>
+                            <Input
+                              id="email"
+                              type="email"
+                              placeholder="john@example.com"
+                              value={formData.email}
+                              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                              required
+                              className="bg-secondary/50"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="phone">Phone Number</Label>
+                            <Input
+                              id="phone"
+                              type="tel"
+                              placeholder="+250 788 000 000"
+                              value={formData.phone}
+                              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                              required
+                              className="bg-secondary/50"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/40">
+                          <div className="space-y-2">
+                            <Label htmlFor="gender">Gender</Label>
+                            <select
+                              id="gender"
+                              value={formData.gender}
+                              onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                              className="flex h-9 w-full rounded-md border border-input bg-secondary/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <option value="">Select gender</option>
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="startDate">When do you want to start?</Label>
+                            <Input
+                              id="startDate"
+                              type="date"
+                              value={formData.startDate}
+                              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                              min={new Date().toISOString().split("T")[0]}
+                              required
+                              className="bg-secondary/50 w-full"
+                            />
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Your billing cycle will renew relative to your chosen start date.</p>
+                      </div>
+                    )}
+
+                    {/* ── COMPANY / GROUP FORM ── */}
+                    {bookingType === "group" && (
+                      <div className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="phone">Phone Number</Label>
+                          <Label htmlFor="name">Company / Group Name</Label>
                           <Input
-                            id="phone"
-                            type="tel"
-                            placeholder="+250 788 000 000"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            id="name"
+                            placeholder="Acme Inc."
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             required
                             className="bg-secondary/50"
                           />
                         </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/40">
-                        <div className="space-y-2">
-                          <Label htmlFor="gender">Gender</Label>
-                          <select
-                            id="gender"
-                            value={formData.gender}
-                            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                            className="flex h-9 w-full rounded-md border border-input bg-secondary/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            <option value="">Select gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                          </select>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="email">Company Email</Label>
+                            <Input
+                              id="email"
+                              type="email"
+                              placeholder="billing@company.com"
+                              value={formData.email}
+                              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                              required
+                              className="bg-secondary/50"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="phone">Phone Number</Label>
+                            <Input
+                              id="phone"
+                              type="tel"
+                              placeholder="+250 788 000 000"
+                              value={formData.phone}
+                              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                              required
+                              className="bg-secondary/50"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2 pt-2 border-t border-border/40">
+                          <Label htmlFor="address">Company Address</Label>
+                          <Input
+                            id="address"
+                            placeholder="123 Business Ave, Kigali"
+                            value={formData.address}
+                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                            className="bg-secondary/50"
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="startDate">When do you want to start?</Label>
@@ -350,9 +421,9 @@ function CheckoutPage() {
                             className="bg-secondary/50 w-full"
                           />
                         </div>
+                        <p className="text-xs text-muted-foreground mt-1">Invoices will be billed to the company email above. Your billing cycle renews relative to the start date.</p>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">Your billing cycle will renew relative to your chosen start date.</p>
-                    </div>
+                    )}
                   </div>
 
                   {bookingType === "group" && (
