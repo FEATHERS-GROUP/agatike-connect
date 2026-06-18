@@ -284,11 +284,15 @@ export function HomeMobile() {
   const { data: dbOrganizers = [], isLoading: organizersLoading } = useQuery({
     queryKey: ["organizers"],
     queryFn: () => getOrganizers(),
+    retry: false,
+    staleTime: 1000 * 60 * 2,
   });
 
   const { data: dbPosts = [] } = useQuery({
     queryKey: ["global-feed-posts"],
     queryFn: () => getGlobalFeedPosts(),
+    retry: false,
+    staleTime: 1000 * 60 * 2,
   });
 
   const { data: ratingsMap = {} } = useQuery({
@@ -299,6 +303,8 @@ export function HomeMobile() {
   const { data: dbEvents = [] } = useQuery({
     queryKey: ["public-events"],
     queryFn: () => getPublicEvents(),
+    retry: false,
+    staleTime: 1000 * 60 * 2,
   });
 
   const mappedEvents = useMemo(() => {
