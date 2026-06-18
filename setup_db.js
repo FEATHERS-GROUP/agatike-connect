@@ -80,8 +80,10 @@ async function run() {
           );
           
           ALTER TABLE public.space_subscriptions ADD COLUMN IF NOT EXISTS customer_gender text;
+          ALTER TABLE public.space_subscriptions ADD COLUMN IF NOT EXISTS customer_address text;
           ALTER TABLE public.space_subscriptions ADD COLUMN IF NOT EXISTS booking_type text DEFAULT 'individual';
           ALTER TABLE public.space_subscriptions ADD COLUMN IF NOT EXISTS team_members jsonb DEFAULT '[]'::jsonb;
+          ALTER TABLE public.space_subscriptions ADD COLUMN IF NOT EXISTS membership_id text UNIQUE;
         `,
       },
     }),

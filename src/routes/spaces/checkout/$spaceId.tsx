@@ -3,8 +3,8 @@ import { useState, useEffect, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
 import { createSpaceSubscription } from "@/api/space_subscriptions";
-import { sendSubscriptionConfirmationEmail, sendSubscriptionInvoiceEmail } from "@/api/email";
-import { createInvoiceAndGeneratePdf } from "@/api/invoices";
+import { sendSubscriptionConfirmationEmail, sendSubscriptionInvoiceEmail, sendCompanyRosterEmail, sendMemberWelcomeEmail } from "@/api/email";
+import { generateMemberRosterPdf, createInvoiceAndGeneratePdf } from "@/api/invoices";
 import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +66,7 @@ function CheckoutPage() {
   const [bookingType, setBookingType] = useState<"individual" | "group">("individual");
   const [teamMembers, setTeamMembers] = useState([{ name: "", email: "", phone: "", gender: "", handle: "" }]);
 
+  const [sendMemberEmails, setSendMemberEmails] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -108,7 +109,7 @@ function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      // 1. Save Subscription to Database
+      // 1. Save Subscription to Database (with membership IDs generated server-side)
       const subscription = await createSpaceSubscription({
         data: {
           space_id: spaceId,
@@ -116,7 +117,8 @@ function CheckoutPage() {
           customer_name: formData.name,
           customer_email: formData.email,
           customer_phone: formData.phone,
-          customer_gender: formData.gender,
+          customer_gender: bookingType === "individual" ? formData.gender : undefined,
+          customer_address: bookingType === "group" ? formData.address : undefined,
           plan_name: planName,
           price: finalPriceString,
           billing_cycle: billingCycle,
@@ -126,6 +128,11 @@ function CheckoutPage() {
         }
       });
 
+      // Members now have membership_ids assigned by the server
+      const savedMembers: any[] = subscription?.team_members || [];
+      const invoiceDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
+      const groupPlanName = bookingType === "group" ? `${planName} (Group of ${teamMembers.length})` : planName;
+
       // 2. Fire and forget the heavy PDF/Email tasks in the background
       (async () => {
         try {
@@ -134,7 +141,7 @@ function CheckoutPage() {
               spaceName: space?.name || "Our Space",
               customerName: formData.name,
               customerEmail: formData.email,
-              planName: bookingType === "group" ? `${planName} (Group of ${teamMembers.length})` : planName,
+              planName: groupPlanName,
               amount: finalPriceString.replace(`${currency} `, ""),
               currency,
               billingCycle,
@@ -145,35 +152,89 @@ function CheckoutPage() {
           });
 
           const invoiceNumber = invoice?.invoiceNumber || `AGT-${Date.now()}`;
-          const pdfBase64 = invoice?.pdfBase64 || null;
+          const invoicePdfBase64 = invoice?.pdfBase64 || null;
+          const formattedStart = formData.startDate
+            ? new Date(formData.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })
+            : formData.startDate;
 
-          // Send emails concurrently to save time
-          await Promise.all([
-            sendSubscriptionConfirmationEmail({
+          if (bookingType === "group") {
+            // Generate the member roster PDF
+            const rosterPdfBase64 = await generateMemberRosterPdf({
+              companyName: formData.name,
+              spaceName: space?.name || "Our Space",
+              planName,
+              startDate: formattedStart,
+              members: savedMembers,
+            });
+
+            // Send one company email with both PDFs attached
+            await sendCompanyRosterEmail({
               data: {
                 to: formData.email,
-                customerName: formData.name,
+                companyName: formData.name,
                 spaceName: space?.name || "Our Space",
-                planName: bookingType === "group" ? `${planName} (Group of ${teamMembers.length})` : planName,
+                planName: groupPlanName,
                 price: finalPriceString,
                 billingCycle,
-                startDate: formData.startDate,
-              }
-            }),
-            sendSubscriptionInvoiceEmail({
-              data: {
-                to: formData.email,
-                customerName: formData.name,
-                spaceName: space?.name || "Our Space",
-                planName: bookingType === "group" ? `${planName} (Group of ${teamMembers.length})` : planName,
-                price: finalPriceString,
-                billingCycle,
-                invoiceDate: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
+                startDate: formattedStart,
                 invoiceNumber,
-                pdfBase64,
+                invoiceDate,
+                memberCount: savedMembers.length,
+                invoicePdfBase64,
+                rosterPdfBase64,
               }
-            })
-          ]);
+            });
+
+            // Optionally send individual welcome emails to each member
+            if (sendMemberEmails) {
+              await Promise.all(
+                savedMembers
+                  .filter((m: any) => m.email)
+                  .map((m: any) =>
+                    sendMemberWelcomeEmail({
+                      data: {
+                        to: m.email,
+                        memberName: m.name,
+                        companyName: formData.name,
+                        spaceName: space?.name || "Our Space",
+                        planName,
+                        startDate: formattedStart,
+                        membershipId: m.membership_id || "—",
+                      }
+                    })
+                  )
+              );
+            }
+          } else {
+            // Individual booking — send confirmation + invoice as before
+            await Promise.all([
+              sendSubscriptionConfirmationEmail({
+                data: {
+                  to: formData.email,
+                  customerName: formData.name,
+                  spaceName: space?.name || "Our Space",
+                  planName,
+                  price: finalPriceString,
+                  billingCycle,
+                  startDate: formData.startDate,
+                }
+              }),
+              sendSubscriptionInvoiceEmail({
+                data: {
+                  to: formData.email,
+                  customerName: formData.name,
+                  spaceName: space?.name || "Our Space",
+                  planName,
+                  price: finalPriceString,
+                  billingCycle,
+                  invoiceDate,
+                  invoiceNumber,
+                  pdfBase64: invoicePdfBase64,
+                  startDate: formData.startDate,
+                }
+              })
+            ]);
+          }
         } catch (bgErr) {
           console.error("Background processing failed:", bgErr);
         }
@@ -495,6 +556,27 @@ function CheckoutPage() {
                         <Button type="button" variant="outline" onClick={handleAddMember} className="w-full border-dashed">
                           <Plus className="w-4 h-4 mr-2" /> Add Another Member
                         </Button>
+
+                        {/* Email toggle */}
+                        <div
+                          className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${sendMemberEmails ? "border-primary/50 bg-primary/5" : "border-border/50 bg-secondary/20"}`}
+                          onClick={() => setSendMemberEmails((v) => !v)}
+                        >
+                          <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${sendMemberEmails ? "border-primary bg-primary" : "border-border"}`}>
+                            {sendMemberEmails && (
+                              <svg viewBox="0 0 12 10" fill="none" className="w-3 h-3">
+                                <path d="M1 5l3.5 3.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">Also send welcome emails to each team member</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Each member will receive their personal Membership ID by email. 
+                              By default, only the company email receives the invoice + full member roster.
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}

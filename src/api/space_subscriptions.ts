@@ -1,6 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 
+// Generate a unique membership ID: YYYYMM + 6 random uppercase alphanumeric (no O, 0, I, 1)
+function generateMembershipId(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous chars
+  let rand = "";
+  for (let i = 0; i < 6; i++) {
+    rand += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `${year}${month}${rand}`;
+}
+
 export const createSpaceSubscription = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const {
     space_id,
@@ -9,6 +22,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
     customer_email,
     customer_phone,
     customer_gender,
+    customer_address,
     plan_name,
     price,
     billing_cycle,
@@ -33,6 +47,9 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
       nextBillingDate = now.toISOString();
     }
   }
+
+  // Generate membership ID for this subscription
+  const membershipId = generateMembershipId();
 
   let finalTeamMembers = team_members || [];
 
@@ -69,6 +86,12 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
         console.error("Failed to lookup handles:", err);
       }
     }
+
+    // Assign a unique membership_id to each team member
+    finalTeamMembers = finalTeamMembers.map((m: any) => ({
+      ...m,
+      membership_id: generateMembershipId(),
+    }));
   }
 
   const query = `
@@ -79,6 +102,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
       $customer_email: String!,
       $customer_phone: String!,
       $customer_gender: String,
+      $customer_address: String,
       $plan_name: String!,
       $price: String!,
       $billing_cycle: String!,
@@ -86,7 +110,8 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
       $start_date: timestamptz,
       $next_billing_date: timestamptz,
       $booking_type: String!,
-      $team_members: jsonb
+      $team_members: jsonb,
+      $membership_id: String
     ) {
       insert_space_subscriptions_one(
         object: {
@@ -96,6 +121,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
           customer_email: $customer_email,
           customer_phone: $customer_phone,
           customer_gender: $customer_gender,
+          customer_address: $customer_address,
           plan_name: $plan_name,
           price: $price,
           billing_cycle: $billing_cycle,
@@ -103,13 +129,16 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
           start_date: $start_date,
           next_billing_date: $next_billing_date,
           booking_type: $booking_type,
-          team_members: $team_members
+          team_members: $team_members,
+          membership_id: $membership_id
         }
       ) {
         id
         status
         start_date
         next_billing_date
+        membership_id
+        team_members
       }
     }
   `;
@@ -121,6 +150,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
     customer_email,
     customer_phone,
     customer_gender,
+    customer_address: customer_address || null,
     plan_name,
     price: String(price),
     billing_cycle,
@@ -129,6 +159,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
     next_billing_date: nextBillingDate,
     booking_type: booking_type || "individual",
     team_members: finalTeamMembers,
+    membership_id: membershipId,
   };
 
   const data = await hasuraRequest<{ insert_space_subscriptions_one: any }>(query, variables);

@@ -417,3 +417,166 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).h
   return data;
 });
 
+// Sends the company email with invoice PDF + member roster PDF attached
+export const sendCompanyRosterEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const {
+    to,
+    companyName,
+    spaceName,
+    planName,
+    price,
+    billingCycle,
+    startDate,
+    invoiceNumber,
+    invoiceDate,
+    memberCount,
+    invoicePdfBase64,
+    rosterPdfBase64,
+  } = ctx.data as any;
+
+  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://agatike.rw";
+
+  const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+
+  const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
+          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Group Booking Confirmed!</h2>
+        <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0 0; font-size: 15px;">${spaceName}</p>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
+        <p>Hi <strong>${companyName}</strong>,</p>
+        <p>Your group booking for <strong>${spaceName}</strong> has been confirmed. We've attached two documents to this email:</p>
+        <ul style="margin: 16px 0; padding-left: 20px; color: #475569;">
+          <li style="margin-bottom: 8px;">📄 <strong>Invoice PDF</strong> — your payment receipt</li>
+          <li style="margin-bottom: 8px;">👥 <strong>Member Roster PDF</strong> — the full list of your ${memberCount} team member(s) with their individual Membership IDs</li>
+        </ul>
+        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border: 1px solid #e2e8f0;">
+          <h3 style="margin: 0 0 16px 0; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Booking Summary</h3>
+          <p style="margin: 8px 0;"><strong>Plan:</strong> ${planName}</p>
+          <p style="margin: 8px 0;"><strong>Members:</strong> ${memberCount}</p>
+          <p style="margin: 8px 0;"><strong>Billing Cycle:</strong> ${billingCycle}</p>
+          <p style="margin: 8px 0;"><strong>Total:</strong> ${price}</p>
+          <p style="margin: 8px 0;"><strong>Start Date:</strong> ${startDate}</p>
+          <p style="margin: 8px 0;"><strong>Invoice #:</strong> ${invoiceNumber}</p>
+          <p style="margin: 8px 0;"><strong>Invoice Date:</strong> ${invoiceDate}</p>
+        </div>
+        <p style="color: #64748b; font-size: 14px;">Each team member's Membership ID is in the attached roster. They can use it when checking in at the space.</p>
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
+        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
+      </div>
+    </div>
+  `;
+
+  const attachments: any[] = [];
+  if (invoicePdfBase64) {
+    attachments.push({ filename: `Invoice-${invoiceNumber}.pdf`, content: invoicePdfBase64 });
+  }
+  if (rosterPdfBase64) {
+    attachments.push({ filename: `MemberRoster-${invoiceNumber}.pdf`, content: rosterPdfBase64 });
+  }
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `Group Booking Confirmed: ${spaceName} — ${memberCount} Member(s)`,
+      html,
+      attachments,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to send company roster email");
+  return data;
+});
+
+// Sends a personal welcome email to each individual team member
+export const sendMemberWelcomeEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const {
+    to,
+    memberName,
+    companyName,
+    spaceName,
+    planName,
+    startDate,
+    membershipId,
+  } = ctx.data as any;
+
+  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://agatike.rw";
+
+  const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+
+  const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
+          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Welcome to ${spaceName}!</h2>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">Your membership is ready</p>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
+        <p>Hi <strong>${memberName}</strong>,</p>
+        <p><strong>${companyName}</strong> has added you to their group membership at <strong>${spaceName}</strong>. Your membership starts on <strong>${startDate}</strong>.</p>
+
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px; padding: 24px; margin: 28px 0; text-align: center;">
+          <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.1em;">Your Membership ID</p>
+          <p style="color: #F2571D; font-size: 28px; font-weight: 800; letter-spacing: 4px; margin: 0; font-family: monospace;">${membershipId}</p>
+          <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 12px 0 0 0;">Show this at the front desk when you arrive</p>
+        </div>
+
+        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border: 1px solid #e2e8f0;">
+          <p style="margin: 8px 0;"><strong>Space:</strong> ${spaceName}</p>
+          <p style="margin: 8px 0;"><strong>Plan:</strong> ${planName}</p>
+          <p style="margin: 8px 0;"><strong>Start Date:</strong> ${startDate}</p>
+        </div>
+        <p style="color: #64748b; font-size: 14px;">Your membership is managed by <strong>${companyName}</strong>. If you have any questions, reach out to your team organizer.</p>
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
+        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
+      </div>
+    </div>
+  `;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `Your Membership at ${spaceName} — ID: ${membershipId}`,
+      html,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to send member welcome email");
+  return data;
+});
+
+
