@@ -9,6 +9,7 @@ import { DesktopSidebar } from "@/components/desktop/dashboard/DesktopSidebar";
 import { EventSidebar } from "@/components/desktop/dashboard/EventSidebar";
 import { ExperienceSidebar } from "@/components/desktop/dashboard/ExperienceSidebar";
 import { VenueSidebar } from "@/components/desktop/dashboard/VenueSidebar";
+import { SpaceSidebar } from "@/components/desktop/dashboard/SpaceSidebar";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useEffect } from "react";
 import { getSession } from "@/api/auth";
@@ -53,6 +54,7 @@ function DashboardLayout() {
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isExperienceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/experiences\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
+  const isSpaceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/[^/]+/) && !location.pathname.includes("create-space");
   const search = location.search as any;
   const isDesigningVenue = !!location.pathname.match(/^\/dashboard\/[^/]+\/venue-designer\/[^/]+/);
 
@@ -141,6 +143,8 @@ function DashboardLayout() {
               <ExperienceSidebar />
             ) : isVenueWorkspace ? (
               <VenueSidebar />
+            ) : isSpaceWorkspace ? (
+              <SpaceSidebar />
             ) : (
               <DesktopSidebar />
             ))}

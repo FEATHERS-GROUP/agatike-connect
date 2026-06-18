@@ -387,3 +387,35 @@
   font-weight: 600;
   color: var(--color-foreground);
 }
+
+/* ─── Recharts – dark-mode SVG text fix ──────────────────────────────────── */
+/* Recharts renders SVG <text> with no fill, which defaults to browser black.  */
+/* We override all text inside recharts containers to follow the theme.        */
+.recharts-cartesian-axis-tick-value,
+.recharts-legend-item-text,
+.recharts-label,
+.recharts-text {
+  fill: var(--color-muted-foreground) !important;
+}
+
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: var(--color-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+  color: var(--color-foreground) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+.recharts-tooltip-item {
+  color: var(--color-foreground) !important;
+}
+
+.recharts-tooltip-label {
+  color: var(--color-foreground) !important;
+  font-weight: 600;
+}
+
+/* Active dot glow in primary orange */
+.recharts-active-dot circle {
+  filter: drop-shadow(0 0 6px oklch(0.65 0.25 35 / 0.7));
+}
