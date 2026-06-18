@@ -158,7 +158,7 @@ function RootComponent() {
 
   // Hide bottom nav on detail/booking/community/ticket/f/b pages, dashboard, and auth pages
   const hideNav =
-    location.pathname.match(/^\/(events|venues|book|community|ticket|f|b)\/.+/) ||
+    location.pathname.match(/^\/(events|venues|spaces|book|community|ticket|f|b)\/.+/) ||
     (location.pathname.match(/^\/.+\/message$/) && !!(location.search as any)?.chatId) ||
     (location.pathname.startsWith("/buses/") && location.pathname !== "/buses/mobile") ||
     location.pathname.startsWith("/dashboard") ||
