@@ -119,7 +119,7 @@ function CheckoutPage() {
       const subscription = await createSpaceSubscription({
         data: {
           space_id: spaceId,
-          user_id: user?.id,
+          user_id: bookingType === "individual" ? user?.id : null,
           customer_name: formData.name,
           customer_email: formData.email,
           customer_phone: formData.phone,
@@ -269,7 +269,7 @@ function CheckoutPage() {
         <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 md:py-12">
           {/* Back button skeleton */}
           <div className="w-24 h-6 bg-secondary/60 animate-pulse rounded-md mb-8" />
-          
+
           {/* Stepper skeleton */}
           <div className="mb-12 flex items-center justify-between max-w-lg mx-auto relative px-2">
             <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-secondary/60 animate-pulse rounded-full -z-10"></div>
@@ -350,13 +350,13 @@ function CheckoutPage() {
           <span className="text-muted-foreground">Start Date</span>
           <span className="font-medium">{formData.startDate || "Not selected"}</span>
         </div>
-        
+
         <div className="pt-3 mt-3 border-t border-border flex justify-between items-center">
           <span className="font-semibold">Total Due Today</span>
           <span className="text-xl font-bold text-primary">{finalPriceString}</span>
         </div>
       </div>
-      
+
       <div className="mt-8 flex items-start gap-3 bg-card p-4 rounded-xl border border-border/40">
         <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground">
@@ -369,7 +369,7 @@ function CheckoutPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col pb-28 lg:pb-0">
       <Navbar hideOnMobile />
-      
+
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 md:py-12">
         <button
           onClick={() => {
@@ -388,7 +388,7 @@ function CheckoutPage() {
         <div className="mb-12 flex items-center justify-between max-w-lg mx-auto relative px-2">
           <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-secondary rounded-full -z-10"></div>
           <div className={`absolute top-5 left-[10%] h-1 bg-primary rounded-full transition-all duration-500 -z-10`} style={{ width: `${((step - 1) / 2) * 80}%` }}></div>
-          
+
           {STEPS.map((s) => (
             <div key={s.id} className="flex flex-col items-center gap-2 relative z-10 w-24">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 ring-4 ring-background ${step >= s.id ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)] scale-110" : "bg-secondary text-muted-foreground border border-border"}`}>
@@ -402,7 +402,7 @@ function CheckoutPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 lg:gap-12 items-start">
-          
+
           {/* Left Column: Form Steps */}
           <div className="space-y-8">
             <div>
@@ -411,7 +411,7 @@ function CheckoutPage() {
             </div>
 
             <form id="checkout-form" onSubmit={handlePayment} className="space-y-8">
-              
+
               {/* STEP 1: Booking Type */}
               {step === 1 && (
                 <div className="bg-card border border-border/40 rounded-2xl p-6 shadow-sm animate-in fade-in slide-in-from-right-8 duration-300">
@@ -602,7 +602,7 @@ function CheckoutPage() {
                           {teamMembers.length} member{teamMembers.length !== 1 ? 's' : ''}
                         </span>
                       </div>
-                      
+
                       <div className="space-y-6">
                         {teamMembers.map((member, index) => (
                           <div key={index} className="p-4 bg-secondary/30 border border-border/50 rounded-xl relative">
@@ -616,7 +616,7 @@ function CheckoutPage() {
                               </button>
                             )}
                             <h3 className="font-medium mb-4 text-sm text-muted-foreground uppercase tracking-wider">Member {index + 1}</h3>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
                                 <Label>Full Name *</Label>
@@ -645,18 +645,18 @@ function CheckoutPage() {
                               </div>
                               <div className="space-y-2 md:col-span-2">
                                 <Label>Agatike Handle (Optional)</Label>
-                                <Input 
-                                  placeholder="@username" 
-                                  value={member.handle} 
-                                  onChange={(e) => updateMember(index, "handle", e.target.value)} 
-                                  className="bg-background font-mono text-sm" 
+                                <Input
+                                  placeholder="@username"
+                                  value={member.handle}
+                                  onChange={(e) => updateMember(index, "handle", e.target.value)}
+                                  className="bg-background font-mono text-sm"
                                 />
                                 <p className="text-xs text-muted-foreground">If they have an Agatike account, this connects the booking to their profile.</p>
                               </div>
                             </div>
                           </div>
                         ))}
-                        
+
                         <Button type="button" variant="outline" onClick={handleAddMember} className="w-full border-dashed">
                           <Plus className="w-4 h-4 mr-2" /> Add Another Member
                         </Button>
@@ -669,14 +669,14 @@ function CheckoutPage() {
                           <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${sendMemberEmails ? "border-primary bg-primary" : "border-border"}`}>
                             {sendMemberEmails && (
                               <svg viewBox="0 0 12 10" fill="none" className="w-3 h-3">
-                                <path d="M1 5l3.5 3.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M1 5l3.5 3.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                               </svg>
                             )}
                           </div>
                           <div>
                             <p className="font-medium text-sm">Also send welcome emails to each team member</p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              Each member will receive their personal Membership ID by email. 
+                              Each member will receive their personal Membership ID by email.
                               By default, only the company email receives the invoice + full member roster.
                             </p>
                           </div>
@@ -685,9 +685,9 @@ function CheckoutPage() {
                     </div>
                   )}
 
-                  <Button 
-                    type="button" 
-                    onClick={validateAndNext} 
+                  <Button
+                    type="button"
+                    onClick={validateAndNext}
                     className="hidden lg:flex w-full h-12 text-md"
                   >
                     Continue to Payment
@@ -703,7 +703,7 @@ function CheckoutPage() {
                     <span className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
                     Payment Option
                   </h2>
-                  
+
                   <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 flex items-center gap-4 mb-6">
                     <div className="bg-orange-500 w-12 h-12 rounded-lg flex items-center justify-center shrink-0">
                       <CreditCard className="w-6 h-6 text-white" />
@@ -755,9 +755,9 @@ function CheckoutPage() {
       {/* Mobile Bottom Action Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/50 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)] transition-transform duration-300">
         <div className="max-w-md mx-auto p-4">
-          
+
           {/* Collapsible Order Summary */}
-          <div 
+          <div
             className="flex items-center justify-between gap-4 mb-3 cursor-pointer active:opacity-70 transition-opacity"
             onClick={() => setSummaryExpanded(!summaryExpanded)}
           >
@@ -773,20 +773,20 @@ function CheckoutPage() {
           {/* Expanded Summary */}
           {summaryExpanded && (
             <div className="mb-4 text-sm animate-in slide-in-from-bottom-2 fade-in duration-200 border-t border-border/40 pt-4 max-h-[50vh] overflow-y-auto scrollbar-hide">
-               <OrderSummaryContent />
+              <OrderSummaryContent />
             </div>
           )}
 
-          <Button 
+          <Button
             type="button"
             disabled={isProcessing}
             className="w-full h-12 text-md font-bold rounded-xl shadow-[var(--shadow-glow)]"
             onClick={() => {
               if (step < 3) {
-                 validateAndNext();
+                validateAndNext();
               } else {
-                 const form = document.getElementById("checkout-form") as HTMLFormElement;
-                 if (form) form.requestSubmit();
+                const form = document.getElementById("checkout-form") as HTMLFormElement;
+                if (form) form.requestSubmit();
               }
             }}
           >
