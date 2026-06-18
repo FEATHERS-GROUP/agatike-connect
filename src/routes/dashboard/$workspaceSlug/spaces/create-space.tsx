@@ -23,6 +23,8 @@ import {
   MessageCircle,
   Eye,
   Globe,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,34 +96,41 @@ function NewSpaceWizard() {
     name: "",
     type: "",
     description: "",
-    locations: [{ name: "Main Location", city: "", country: "RW", address: "", lat: "", lng: "" }],
-    plans: [{ name: "Day Pass", price: "", description: "", features: ["Access to space"] }],
+    locations: [{ 
+      name: "Main Location", city: "", country: "RW", address: "", lat: "", lng: "",
+      opening_hours: {
+        monday:    { open: "08:00", close: "18:00", closed: false, is24Hours: false },
+        tuesday:   { open: "08:00", close: "18:00", closed: false, is24Hours: false },
+        wednesday: { open: "08:00", close: "18:00", closed: false, is24Hours: false },
+        thursday:  { open: "08:00", close: "18:00", closed: false, is24Hours: false },
+        friday:    { open: "08:00", close: "18:00", closed: false, is24Hours: false },
+        saturday:  { open: "09:00", close: "15:00", closed: false, is24Hours: false },
+        sunday:    { open: "09:00", close: "15:00", closed: true, is24Hours: false },
+      }
+    }],
+    plans: [{ name: "Day Pass", price: "", billing_cycle: "Daily", description: "", features: ["Access to space"] }],
     cover_url: "",
     socials: { instagram: "", whatsapp: "", phone: "" },
-    opening_hours: {
-      monday:    { open: "08:00", close: "18:00", closed: false, is24Hours: false },
-      tuesday:   { open: "08:00", close: "18:00", closed: false, is24Hours: false },
-      wednesday: { open: "08:00", close: "18:00", closed: false, is24Hours: false },
-      thursday:  { open: "08:00", close: "18:00", closed: false, is24Hours: false },
-      friday:    { open: "08:00", close: "18:00", closed: false, is24Hours: false },
-      saturday:  { open: "09:00", close: "15:00", closed: false, is24Hours: false },
-      sunday:    { open: "09:00", close: "15:00", closed: true, is24Hours: false },
-    },
   };
 
   const [isUploading, setIsUploading] = useState(false);
+  const [expandedHoursLoc, setExpandedHoursLoc] = useState<number>(0);
 
   const [formData, setFormData] = useState(() => {
     const saved = localStorage.getItem(DRAFT_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved).formData;
+        const legacyHours = parsed?.opening_hours;
+        
         return {
           ...DEFAULT_FORM_DATA,
           ...parsed,
-          // Always ensure nested objects have defaults in case old drafts are missing them
           socials: { ...DEFAULT_FORM_DATA.socials, ...(parsed?.socials || {}) },
-          opening_hours: parsed?.opening_hours || DEFAULT_FORM_DATA.opening_hours,
+          locations: (parsed?.locations || DEFAULT_FORM_DATA.locations).map((loc: any) => ({
+            ...loc,
+            opening_hours: loc.opening_hours || legacyHours || DEFAULT_FORM_DATA.locations[0].opening_hours
+          }))
         };
       } catch (e) {
         console.error("Failed to parse draft", e);
@@ -159,7 +168,6 @@ function NewSpaceWizard() {
           description: formData.description,
           currency: activeWorkspace?.currency || "RWF",
           cover_url: formData.cover_url || "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=800",
-          opening_hours: formData.opening_hours,
           socials: formData.socials,
           locations: formData.locations.map((loc: any, idx: number) => ({ ...loc, id: `loc-${idx + 1}` })),
           plans: formData.plans,
@@ -194,18 +202,24 @@ function NewSpaceWizard() {
     setStep(Math.max(step - 1, 0));
   };
 
-  const updateHours = (day: string, field: string, val: any) => {
+  const updateLocationHours = (locIdx: number, day: string, field: string, val: any) => {
     setFormData((p: any) => ({
       ...p,
-      opening_hours: {
-        ...p.opening_hours,
-        [day]: { ...p.opening_hours[day], [field]: val },
-      },
+      locations: p.locations.map((loc: any, i: number) => {
+        if (i !== locIdx) return loc;
+        return {
+          ...loc,
+          opening_hours: {
+            ...loc.opening_hours,
+            [day]: { ...loc.opening_hours[day], [field]: val },
+          }
+        };
+      })
     }));
   };
 
   const addPlan = () => {
-    setFormData((p) => ({ ...p, plans: [...p.plans, { name: "", price: "", description: "", features: [""] }] }));
+    setFormData((p) => ({ ...p, plans: [...p.plans, { name: "", price: "", billing_cycle: "Monthly", description: "", features: [""] }] }));
   };
 
   const updatePlan = (idx: number, field: string, val: any) => {
@@ -251,7 +265,13 @@ function NewSpaceWizard() {
   };
 
   const addLocation = () => {
-    setFormData((p) => ({ ...p, locations: [...p.locations, { name: "", city: "", country: "RW", address: "", lat: "", lng: "" }] }));
+    setFormData((p) => ({ 
+      ...p, 
+      locations: [...p.locations, { 
+        name: "", city: "", country: "RW", address: "", lat: "", lng: "",
+        opening_hours: DEFAULT_FORM_DATA.locations[0].opening_hours 
+      }] 
+    }));
   };
 
   const updateLocation = (idx: number, field: string, val: any) => {
@@ -575,8 +595,8 @@ function NewSpaceWizard() {
               <div className="space-y-6 mt-8">
                 {formData.plans.map((plan, idx) => (
                   <div key={idx} className="p-6 bg-secondary/20 rounded-2xl border border-border/60 relative space-y-4">
-                    {/* Plan Name & Price */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Plan Name, Price, Cycle */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label>Plan Name</Label>
                         <Input
@@ -593,6 +613,20 @@ function NewSpaceWizard() {
                           onChange={(e) => updatePlan(idx, "price", e.target.value)}
                           placeholder="Amount"
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Billing Cycle</Label>
+                        <select
+                          className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          value={plan.billing_cycle || "Monthly"}
+                          onChange={(e) => updatePlan(idx, "billing_cycle", e.target.value)}
+                        >
+                          <option value="One-time">One-time</option>
+                          <option value="Daily">Daily</option>
+                          <option value="Weekly">Weekly</option>
+                          <option value="Monthly">Monthly</option>
+                          <option value="Annually">Annually</option>
+                        </select>
                       </div>
                     </div>
 
@@ -666,80 +700,99 @@ function NewSpaceWizard() {
                   Set your weekly schedule — when is your space open?
                 </p>
               </div>
-              <div className="space-y-3 mt-8">
-                {([
-                  ["monday",    "Monday"],
-                  ["tuesday",   "Tuesday"],
-                  ["wednesday", "Wednesday"],
-                  ["thursday",  "Thursday"],
-                  ["friday",    "Friday"],
-                  ["saturday",  "Saturday"],
-                  ["sunday",    "Sunday"],
-                ] as [string, string][]).map(([day, label]) => {
-                  const h = formData.opening_hours[day];
-                  return (
-                    <div key={day} className={cn(
-                      "flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-2xl border transition-colors",
-                      h.closed ? "bg-secondary/10 border-border/40 opacity-60" : "bg-secondary/20 border-border/60"
-                    )}>
-                      <div className="w-28 font-semibold text-sm shrink-0">{label}</div>
-                      
-                      <div className="flex items-center gap-4 shrink-0">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={h.closed}
-                            onChange={(e) => {
-                              updateHours(day, "closed", e.target.checked);
-                              if (e.target.checked) updateHours(day, "is24Hours", false);
-                            }}
-                            className="w-4 h-4 rounded accent-primary"
-                          />
-                          <span className="text-sm text-muted-foreground">Closed</span>
-                        </label>
-
-                        {!h.closed && (
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={h.is24Hours}
-                              onChange={(e) => updateHours(day, "is24Hours", e.target.checked)}
-                              className="w-4 h-4 rounded accent-primary"
-                            />
-                            <span className="text-sm text-muted-foreground">24 Hours</span>
-                          </label>
-                        )}
+              <div className="space-y-4 mt-8">
+                {formData.locations.map((loc: any, locIdx: number) => (
+                  <div key={locIdx} className="border border-border/60 rounded-2xl overflow-hidden bg-secondary/10">
+                    <button
+                      className="w-full flex items-center justify-between p-4 bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                      onClick={() => setExpandedHoursLoc(expandedHoursLoc === locIdx ? -1 : locIdx)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-5 w-5 text-primary" />
+                        <span className="font-bold text-lg">{loc.name || `Location ${locIdx + 1}`}</span>
                       </div>
+                      {expandedHoursLoc === locIdx ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+                    </button>
+                    
+                    {expandedHoursLoc === locIdx && (
+                      <div className="p-4 space-y-3 bg-background/50 border-t border-border/60">
+                        {([
+                          ["monday",    "Monday"],
+                          ["tuesday",   "Tuesday"],
+                          ["wednesday", "Wednesday"],
+                          ["thursday",  "Thursday"],
+                          ["friday",    "Friday"],
+                          ["saturday",  "Saturday"],
+                          ["sunday",    "Sunday"],
+                        ] as [string, string][]).map(([day, label]) => {
+                          const h = loc.opening_hours[day];
+                          return (
+                            <div key={day} className={cn(
+                              "flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border transition-colors",
+                              h.closed ? "bg-secondary/10 border-border/40 opacity-60" : "bg-secondary/20 border-border/60"
+                            )}>
+                              <div className="w-28 font-semibold text-sm shrink-0">{label}</div>
+                              
+                              <div className="flex items-center gap-4 shrink-0">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={h.closed}
+                                    onChange={(e) => {
+                                      updateLocationHours(locIdx, day, "closed", e.target.checked);
+                                      if (e.target.checked) updateLocationHours(locIdx, day, "is24Hours", false);
+                                    }}
+                                    className="w-4 h-4 rounded accent-primary"
+                                  />
+                                  <span className="text-sm text-muted-foreground">Closed</span>
+                                </label>
 
-                      {!h.closed && !h.is24Hours && (
-                        <div className="flex items-center gap-3 flex-1">
-                          <div className="flex items-center gap-2 flex-1">
-                            <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                            <Input
-                              type="time"
-                              value={h.open}
-                              onChange={(e) => updateHours(day, "open", e.target.value)}
-                              className="h-10 rounded-xl flex-1"
-                            />
-                          </div>
-                          <span className="text-muted-foreground text-sm">to</span>
-                          <Input
-                            type="time"
-                            value={h.close}
-                            onChange={(e) => updateHours(day, "close", e.target.value)}
-                            className="h-10 rounded-xl flex-1"
-                          />
-                        </div>
-                      )}
-                      
-                      {!h.closed && h.is24Hours && (
-                        <div className="flex items-center gap-3 flex-1 text-sm font-medium text-primary bg-primary/10 px-4 py-2 rounded-xl justify-center">
-                          Open All Day
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                                {!h.closed && (
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={h.is24Hours}
+                                      onChange={(e) => updateLocationHours(locIdx, day, "is24Hours", e.target.checked)}
+                                      className="w-4 h-4 rounded accent-primary"
+                                    />
+                                    <span className="text-sm text-muted-foreground">24 Hours</span>
+                                  </label>
+                                )}
+                              </div>
+
+                              {!h.closed && !h.is24Hours && (
+                                <div className="flex items-center gap-3 flex-1">
+                                  <div className="flex items-center gap-2 flex-1">
+                                    <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                                    <Input
+                                      type="time"
+                                      value={h.open}
+                                      onChange={(e) => updateLocationHours(locIdx, day, "open", e.target.value)}
+                                      className="h-10 rounded-xl flex-1"
+                                    />
+                                  </div>
+                                  <span className="text-muted-foreground text-sm">to</span>
+                                  <Input
+                                    type="time"
+                                    value={h.close}
+                                    onChange={(e) => updateLocationHours(locIdx, day, "close", e.target.value)}
+                                    className="h-10 rounded-xl flex-1"
+                                  />
+                                </div>
+                              )}
+                              
+                              {!h.closed && h.is24Hours && (
+                                <div className="flex items-center gap-3 flex-1 text-sm font-medium text-primary bg-primary/10 px-4 py-2 rounded-xl justify-center">
+                                  Open All Day
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -783,14 +836,29 @@ function NewSpaceWizard() {
                 </div>
               </div>
 
-              {/* Locations */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Locations</h3>
-                <div className="space-y-2">
+              {/* Locations & Opening Hours */}
+              <div className="space-y-4">
+                <h3 className="font-bold text-lg flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Locations & Hours</h3>
+                <div className="space-y-4">
                   {formData.locations.map((loc: any, i: number) => (
-                    <div key={i} className="px-4 py-3 bg-secondary/20 rounded-2xl border border-border/60 text-sm">
-                      <p className="font-semibold">{loc.name}</p>
-                      <p className="text-muted-foreground">{loc.address}, {loc.city}</p>
+                    <div key={i} className="bg-secondary/20 rounded-2xl border border-border/60 overflow-hidden">
+                      <div className="px-5 py-4 border-b border-border/60 bg-secondary/30">
+                        <p className="font-semibold text-lg">{loc.name}</p>
+                        <p className="text-muted-foreground text-sm">{loc.address}, {loc.city}</p>
+                      </div>
+                      <div className="p-5">
+                        <p className="font-medium text-sm text-muted-foreground mb-3 flex items-center gap-1.5"><Clock className="h-4 w-4" /> Operating Hours</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {Object.entries(loc.opening_hours).map(([day, h]: any) => (
+                            <div key={day} className="flex justify-between items-center px-4 py-2 bg-background rounded-lg border border-border/40 text-sm">
+                              <span className="font-medium capitalize">{day}</span>
+                              <span className={h.closed ? "text-muted-foreground" : "text-foreground font-medium"}>
+                                {h.closed ? "Closed" : h.is24Hours ? "Open 24 Hours" : `${h.open} – ${h.close}`}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -803,28 +871,16 @@ function NewSpaceWizard() {
                   {formData.plans.map((plan: any, i: number) => (
                     <div key={i} className="p-4 bg-secondary/20 rounded-2xl border border-border/60">
                       <p className="font-bold">{plan.name}</p>
-                      <p className="text-primary font-semibold text-sm">{plan.price} {activeWorkspace?.currency}</p>
+                      <p className="text-primary font-semibold text-sm">
+                        {plan.price} {activeWorkspace?.currency}
+                        {plan.billing_cycle && plan.billing_cycle !== "One-time" && ` / ${plan.billing_cycle}`}
+                      </p>
                       {plan.description && <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>}
                       <ul className="mt-2 space-y-0.5">
                         {(plan.features || []).filter(Boolean).map((f: string, fi: number) => (
                           <li key={fi} className="text-xs text-muted-foreground flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-primary" />{f}</li>
                         ))}
                       </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Opening Hours */}
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Opening Hours</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {Object.entries(formData.opening_hours).map(([day, h]: any) => (
-                    <div key={day} className="flex justify-between items-center px-4 py-2.5 bg-secondary/20 rounded-xl border border-border/60 text-sm">
-                      <span className="font-medium capitalize">{day}</span>
-                      <span className={h.closed ? "text-muted-foreground" : "text-foreground"}>
-                        {h.closed ? "Closed" : h.is24Hours ? "Open 24 Hours" : `${h.open} – ${h.close}`}
-                      </span>
                     </div>
                   ))}
                 </div>

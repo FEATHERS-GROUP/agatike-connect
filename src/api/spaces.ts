@@ -22,7 +22,6 @@ export const createSpace = createServerFn({ method: "POST" })
       socials,
       locations,
       plans,
-      opening_hours,
       status,
     } = ctx.data;
 
@@ -37,7 +36,6 @@ export const createSpace = createServerFn({ method: "POST" })
         socials,
         locations,
         plans,
-        opening_hours,
         status: status || "Active",
       },
     });
