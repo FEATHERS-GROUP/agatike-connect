@@ -179,7 +179,7 @@ function SubscriptionCard({ sub, userEmail, linkedCreds }: { sub: any; userEmail
                 </p>
               )}
             </div>
-            {!isTeamMemberOnly && (
+            {!isGroupSub && (
               <div className="text-xs font-bold text-primary mt-1.5">
                 {sub.price} {currency}{" "}
                 <span className="text-muted-foreground font-normal text-[10px]">/ {sub.billing_cycle}</span>
@@ -192,14 +192,14 @@ function SubscriptionCard({ sub, userEmail, linkedCreds }: { sub: any; userEmail
             <CalendarDays className="h-3.5 w-3.5" />
             {sub.billing_cycle?.toLowerCase() === "one-time" || sub.billing_cycle?.toLowerCase() === "onetime" ? (
               <>Start date: <span className="font-bold text-foreground">{formatDate(sub.start_date)}</span></>
-            ) : isTeamMemberOnly ? (
-              <>Member since: <span className="font-bold text-foreground">{formatDate(sub.start_date)}</span></>
+            ) : isGroupSub ? (
+              <>{isTeamMemberOnly ? "Member since" : "Start date"}: <span className="font-bold text-foreground">{formatDate(sub.start_date)}</span></>
             ) : (
               <>Next billing: <span className="font-bold text-foreground">{nextBillingDisplay}</span></>
             )}
           </div>
           <div className="flex gap-2">
-            {!isTeamMemberOnly && (
+            {!isGroupSub && (
               <>
                 {latestInvoice && (
                   <Button
@@ -244,8 +244,8 @@ function SubscriptionCard({ sub, userEmail, linkedCreds }: { sub: any; userEmail
         </div>
       </div>
 
-      {/* Invoice Modal — purchaser only */}
-      {!isTeamMemberOnly && (
+      {/* Invoice Modal — individual only */}
+      {!isGroupSub && (
         <Dialog open={showInvoice} onOpenChange={setShowInvoice}>
           <DialogContent className="max-w-sm rounded-3xl w-[90vw]">
             <DialogHeader>
@@ -283,8 +283,8 @@ function SubscriptionCard({ sub, userEmail, linkedCreds }: { sub: any; userEmail
         </Dialog>
       )}
 
-      {/* Renew Modal — purchaser only */}
-      {!isTeamMemberOnly && (
+      {/* Renew Modal — individual only */}
+      {!isGroupSub && (
         <Dialog open={showRenew} onOpenChange={setShowRenew}>
           <DialogContent className="max-w-sm rounded-3xl w-[90vw]">
             <DialogHeader>

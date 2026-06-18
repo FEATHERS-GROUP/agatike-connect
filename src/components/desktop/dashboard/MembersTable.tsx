@@ -13,8 +13,11 @@ export interface SpaceMember {
   id: string;
   name: string;
   email?: string;
+  phone?: string;
+  membershipId?: string;
   type: MemberType;
   category: MemberCategory;
+  organization?: string;
   plan?: string;
   employees?: number;
   status: MemberStatus;
@@ -146,6 +149,8 @@ export function MembersTable({
             <thead className="text-xs text-muted-foreground uppercase bg-secondary/10 border-b border-border/40">
               <tr>
                 <th className="px-5 py-3.5 font-semibold">Name</th>
+                <th className="px-5 py-3.5 font-semibold">Member ID</th>
+                <th className="px-5 py-3.5 font-semibold">Phone</th>
                 <th className="px-5 py-3.5 font-semibold">Category</th>
                 <th className="px-5 py-3.5 font-semibold">Entity</th>
                 {showSpaceColumn && <th className="px-5 py-3.5 font-semibold">Space</th>}
@@ -160,7 +165,7 @@ export function MembersTable({
             <tbody className="divide-y divide-border/30">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={showSpaceColumn ? 10 : 9} className="px-5 py-12 text-center text-muted-foreground">
+                  <td colSpan={showSpaceColumn ? 13 : 12} className="px-5 py-12 text-center text-muted-foreground">
                     No members match your filters.
                   </td>
                 </tr>
@@ -172,6 +177,14 @@ export function MembersTable({
                         <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{m.name}</p>
                         {m.email && <p className="text-xs text-muted-foreground mt-0.5">{m.email}</p>}
                       </div>
+                    </td>
+                    <td className="px-5 py-3.5 text-muted-foreground text-xs whitespace-nowrap">
+                      {m.membershipId ? (
+                        <span className="font-mono bg-secondary/40 px-1.5 py-0.5 rounded text-foreground font-semibold">{m.membershipId}</span>
+                      ) : "—"}
+                    </td>
+                    <td className="px-5 py-3.5 text-muted-foreground text-xs whitespace-nowrap">
+                      {m.phone ?? "—"}
                     </td>
                     <td className="px-5 py-3.5">
                       <span className={cn(
@@ -191,6 +204,9 @@ export function MembersTable({
                         {m.type === "Individual" ? <Users className="h-3 w-3" /> : <Building2 className="h-3 w-3" />}
                         {m.type}
                       </span>
+                      {m.organization && (
+                        <p className="text-[10px] text-muted-foreground mt-1 font-medium">{m.organization}</p>
+                      )}
                     </td>
                     {showSpaceColumn && (
                       <td className="px-5 py-3.5 text-muted-foreground text-xs">{m.space ?? "—"}</td>

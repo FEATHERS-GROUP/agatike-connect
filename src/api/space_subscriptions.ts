@@ -461,6 +461,93 @@ export const getLinkedCredentials = createServerFn({ method: "GET" })
     return creds;
   });
 
+const GET_WORKSPACE_SUBSCRIPTIONS = `
+  query GetWorkspaceSubscriptionsByWorkspaceId($workspace_id: uuid!) {
+    space_subscriptions(
+      where: { space: { workspace_id: { _eq: $workspace_id } } },
+      order_by: { created_at: desc }
+    ) {
+      id
+      plan_name
+      price
+      status
+      billing_cycle
+      start_date
+      next_billing_date
+      booking_type
+      customer_name
+      customer_email
+      customer_phone
+      team_members
+      created_at
+      space {
+        name
+      }
+    }
+  }
+`;
+
+export const getWorkspaceSubscriptionsByWorkspaceId = createServerFn({ method: "POST" })
+  .inputValidator((d: { workspace_id: string }) => d)
+  .handler(async (ctx) => {
+    const { workspace_id } = ctx.data;
+    if (!workspace_id) return [];
+    try {
+      const data = await hasuraRequest<{ space_subscriptions: any[] }>(GET_WORKSPACE_SUBSCRIPTIONS, { workspace_id });
+      return data.space_subscriptions || [];
+    } catch(e) {
+      console.error(e);
+      return [];
+    }
+  });
+
+const GET_SPACE_SUBSCRIPTIONS = `
+  query GetSpaceSubscriptionsBySpaceId($space_id: uuid!) {
+    space_subscriptions(
+      where: { space_id: { _eq: $space_id } },
+      order_by: { created_at: desc }
+    ) {
+      id
+      plan_name
+      price
+      status
+      billing_cycle
+      start_date
+      next_billing_date
+      booking_type
+      customer_name
+      customer_email
+      customer_phone
+      team_members
+      created_at
+      space {
+        name
+      }
+      invoices(order_by: { created_at: desc }) {
+        id
+        invoice_number
+        amount
+        status
+        created_at
+      }
+    }
+  }
+`;
+
+export const getSpaceSubscriptionsBySpaceId = createServerFn({ method: "POST" })
+  .inputValidator((d: { space_id: string }) => d)
+  .handler(async (ctx) => {
+    const { space_id } = ctx.data;
+    if (!space_id) return [];
+    try {
+      const data = await hasuraRequest<{ space_subscriptions: any[] }>(GET_SPACE_SUBSCRIPTIONS, { space_id });
+      return data.space_subscriptions || [];
+    } catch(e) {
+      console.error(e);
+      return [];
+    }
+  });
+
 export const addLinkedGroupSubscription = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
