@@ -70,9 +70,9 @@ async function generateVisitorPassPdf(data: VisitorPassData, qrBase64: string): 
   if (qrBase64) {
     try {
       doc.addImage(qrBase64, "PNG", (W - 35) / 2, y, 35, 35);
-    } catch (_) {}
+    } catch (_) { }
   }
-  
+
   y += 42;
   doc.setFontSize(8);
   doc.setTextColor(...mutedColor);
@@ -89,15 +89,15 @@ export const processVisitorPass = createServerFn({ method: "POST" })
     const { to, visitorName, visitorId, spaceName, visitDate, hostedBy } = ctx.data as any;
     const { Buffer } = await import("buffer");
 
-    const verificationUrl = \`https://agatike.rw/verify/visitor/\${visitorId}\`;
+    const verificationUrl = `https://agatike.rw/verify/visitor/${visitorId}`;
     let qrBase64 = "";
-    
+
     try {
-      const qrUrl = \`https://api.qrserver.com/v1/create-qr-code/?size=140x140&format=png&data=\${encodeURIComponent(verificationUrl)}\`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&format=png&data=${encodeURIComponent(verificationUrl)}`;
       const qrRes = await fetch(qrUrl);
       if (qrRes.ok) {
         const qrBuffer = await qrRes.arrayBuffer();
-        qrBase64 = \`data:image/png;base64,\${Buffer.from(qrBuffer).toString("base64")}\`;
+        qrBase64 = `data:image/png;base64,${Buffer.from(qrBuffer).toString("base64")}`;
       }
     } catch (err) {
       console.warn("Visitor QR fetch failed:", err);
