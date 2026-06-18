@@ -391,50 +391,8 @@ function NewSpaceWizard() {
         </div>
       </div>
 
-      {/* Right Sidebar - Sticky Progress */}
-      <div className="hidden lg:flex w-80 flex-col border-l border-border/60 bg-secondary/10 p-6 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
-        <h3 className="font-bold text-lg mb-6">Setup Progress</h3>
-        <div className="space-y-6 flex-1">
-          {[
-            { label: "Space Type", desc: "Category" },
-            { label: "Details", desc: "Name & info" },
-            { label: "Location", desc: "Main address" },
-            { label: "Plans", desc: "Pricing setup" },
-          ].map((s, i) => (
-            <div key={i} className="flex gap-4 relative">
-              {i !== 3 && (
-                <div
-                  className={cn(
-                    "absolute left-[11px] top-8 bottom-[-16px] w-[2px]",
-                    step > i ? "bg-primary" : "bg-border",
-                  )}
-                />
-              )}
-              <div
-                className={cn(
-                  "h-6 w-6 rounded-full flex items-center justify-center shrink-0 z-10 font-bold text-[11px] transition-colors shadow-sm",
-                  step > i
-                    ? "bg-primary text-primary-foreground"
-                    : step === i
-                      ? "bg-background border-2 border-primary text-primary"
-                      : "bg-secondary text-muted-foreground border border-border",
-                )}
-              >
-                {step > i ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
-              </div>
-              <div className="-mt-1">
-                <p className={cn("font-semibold text-sm", step === i ? "text-primary" : "")}>
-                  {s.label}
-                </p>
-                <p className="text-xs text-muted-foreground">{s.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 lg:left-64 right-0 lg:right-80 bg-background/80 backdrop-blur-xl border-t border-border/60 p-4 px-6 flex justify-between items-center z-50">
+      <div className="fixed bottom-0 left-0 lg:left-64 right-0 bg-background/80 backdrop-blur-xl border-t border-border/60 p-4 px-6 flex justify-between items-center z-50">
         <Button variant="ghost" onClick={prevStep} disabled={step === 0} className="gap-2 rounded-xl">
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
