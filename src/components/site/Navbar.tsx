@@ -49,7 +49,7 @@ export function Navbar({ hideOnMobile }: { hideOnMobile?: boolean } = {}) {
             className="hover:text-foreground transition-colors"
             activeProps={{ className: "text-foreground font-medium" }}
           >
-            Bus Tickets
+            Trips
           </Link>
           <Link
             to="/venues"
@@ -101,7 +101,7 @@ export function Navbar({ hideOnMobile }: { hideOnMobile?: boolean } = {}) {
               </div>
             </Link>
           )}
-          <Link to="/buses/mobile" className="md:hidden ml-2" aria-label="Bus tickets">
+          <Link to="/buses/mobile" className="md:hidden ml-2" aria-label="Trips">
             <Bus className="h-5 w-5 text-foreground/80 hover:text-foreground" />
           </Link>
           <Button

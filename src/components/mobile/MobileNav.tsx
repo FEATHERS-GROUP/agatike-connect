@@ -23,7 +23,7 @@ export function MobileNav() {
   ];
 
   const moreMenuLinks = [
-    { name: "Bus Tickets", href: "/buses/mobile", icon: Bus },
+    { name: "Trips", href: "/buses/mobile", icon: Bus },
     { name: "Movies & Cinemas", href: "/movies", icon: Film },
     { name: "Subscriptions", href: "/subscriptions", icon: Repeat, requiresAuth: true },
     { name: "Profile Settings", href: "/settings", icon: User, requiresAuth: true },
