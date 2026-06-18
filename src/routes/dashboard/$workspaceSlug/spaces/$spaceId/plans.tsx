@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -77,8 +77,13 @@ function PlanModal({ open, onOpenChange, initial, currency, onSave }: PlanModalP
   const [isSaving, setIsSaving] = useState(false);
 
   // Reset form whenever the modal opens with new data
+  useEffect(() => {
+    if (open) {
+      setForm(initial ?? EMPTY_PLAN);
+    }
+  }, [open, initial]);
+
   const handleOpenChange = (v: boolean) => {
-    if (v) setForm(initial ?? EMPTY_PLAN);
     onOpenChange(v);
   };
 
