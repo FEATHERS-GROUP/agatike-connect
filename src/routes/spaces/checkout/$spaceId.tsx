@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
 import { createSpaceSubscription } from "@/api/space_subscriptions";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ChevronLeft, CheckCircle2, Building2, CreditCard, Loader2 } from "lucide-react";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 import { z } from "zod";
 
 const checkoutSearchSchema = z.object({
@@ -33,11 +34,28 @@ function CheckoutPage() {
     enabled: !!spaceId,
   });
 
+  const { user } = useUserAuth();
+
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
+    name: user?.name || user?.username || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    gender: user?.gender || "",
+    startDate: new Date().toISOString().split("T")[0],
   });
+
+  // Pre-fill form if user data loads later
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || user.name || user.username || "",
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.phone || "",
+        gender: prev.gender || user.gender || "",
+      }));
+    }
+  }, [user]);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -45,13 +63,14 @@ function CheckoutPage() {
   const planName = search.plan || "Custom Plan";
   const planPrice = search.price || "Contact for price";
   const billingCycle = search.cycle || "Monthly";
+  const currency = space?.currency || "RWF";
 
-  const handlePayment = async (e: React.FormEvent) => {
+  const handlePayment = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMsg("");
 
-    if (!formData.name || !formData.email || !formData.phone) {
-      setErrorMsg("Please fill in all details.");
+    if (!formData.name || !formData.email || !formData.phone || !formData.startDate) {
+      setErrorMsg("Please fill in all details including the start date.");
       return;
     }
 
@@ -65,9 +84,11 @@ function CheckoutPage() {
           customer_name: formData.name,
           customer_email: formData.email,
           customer_phone: formData.phone,
+          customer_gender: formData.gender,
           plan_name: planName,
           price: planPrice,
           billing_cycle: billingCycle,
+          start_date: formData.startDate,
         }
       });
 
@@ -98,7 +119,7 @@ function CheckoutPage() {
       });
 
       // 4. Redirect to Success
-      navigate({ to: `/spaces/${spaceId}/success`, search: { email: formData.email } });
+      navigate({ to: `/spaces/success/${spaceId}`, search: { email: formData.email } });
 
     } catch (err: any) {
       console.error(err);
@@ -191,6 +212,35 @@ function CheckoutPage() {
                       />
                     </div>
                   </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/40">
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">Gender</Label>
+                      <select
+                        id="gender"
+                        value={formData.gender}
+                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                        className="flex h-9 w-full rounded-md border border-input bg-secondary/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="">Select gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="startDate">When do you want to start?</Label>
+                      <Input
+                        id="startDate"
+                        type="date"
+                        value={formData.startDate}
+                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                        min={new Date().toISOString().split("T")[0]}
+                        required
+                        className="bg-secondary/50 w-full"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Your billing cycle will renew relative to your chosen start date.</p>
                 </div>
               </div>
 
@@ -228,7 +278,7 @@ function CheckoutPage() {
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing Payment...
                     </>
                   ) : (
-                    `Pay ${planPrice}`
+                    `Pay ${currency} ${planPrice}`
                   )}
                 </Button>
                 <p className="text-center text-xs text-muted-foreground mt-4">
@@ -267,13 +317,13 @@ function CheckoutPage() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Price</span>
-                <span className="font-medium">{planPrice}</span>
+                <span className="font-medium">{currency} {planPrice}</span>
               </div>
             </div>
 
             <div className="flex justify-between items-center text-lg font-bold">
               <span>Total Due</span>
-              <span className="text-primary">{planPrice}</span>
+              <span className="text-primary">{currency} {planPrice}</span>
             </div>
             
             <div className="mt-8 flex items-start gap-3 bg-card p-4 rounded-xl border border-border/40">

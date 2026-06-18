@@ -78,6 +78,8 @@ async function run() {
               next_billing_date timestamp with time zone,
               created_at timestamp with time zone DEFAULT now() NOT NULL
           );
+          
+          ALTER TABLE public.space_subscriptions ADD COLUMN IF NOT EXISTS customer_gender text;
         `,
       },
     }),

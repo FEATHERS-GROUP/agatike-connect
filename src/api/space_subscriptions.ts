@@ -11,12 +11,16 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
     plan_name,
     price,
     billing_cycle,
+    start_date, // Added start_date from client
   } = ctx.data as any;
+
+  // Use provided start_date or fallback to now
+  const baseDate = start_date ? new Date(start_date) : new Date();
 
   // Calculate next billing date if not a one-off (Daily/Monthly/Yearly)
   let nextBillingDate = null;
   if (billing_cycle) {
-    const now = new Date();
+    const now = new Date(baseDate);
     if (billing_cycle.toLowerCase() === "daily") {
       now.setDate(now.getDate() + 1);
       nextBillingDate = now.toISOString();
@@ -40,6 +44,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
       $price: String!,
       $billing_cycle: String!,
       $status: String!,
+      $start_date: timestamptz,
       $next_billing_date: timestamptz
     ) {
       insert_space_subscriptions_one(
@@ -53,6 +58,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
           price: $price,
           billing_cycle: $billing_cycle,
           status: $status,
+          start_date: $start_date,
           next_billing_date: $next_billing_date
         }
       ) {
@@ -74,6 +80,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
     price,
     billing_cycle,
     status: "active",
+    start_date: baseDate.toISOString(),
     next_billing_date: nextBillingDate,
   };
 
