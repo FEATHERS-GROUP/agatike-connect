@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import { jsPDF } from "jspdf";
+import fs from "fs";
+import path from "path";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -40,7 +42,19 @@ async function generateInvoicePdf(data: InvoiceData, qrBase64: string): Promise<
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
-  doc.text("INVOICE", 14, 18);
+  
+  // Try to load and add the logo
+  try {
+    const logoPath = path.join(process.cwd(), "public", "agatike-logo.png");
+    const logoBuffer = fs.readFileSync(logoPath);
+    const logoBase64 = `data:image/png;base64,${logoBuffer.toString("base64")}`;
+    doc.addImage(logoBase64, "PNG", 14, 10, 36, 12);
+    // If logo added, move the INVOICE text to the right
+    doc.text("INVOICE", 56, 18);
+  } catch (err) {
+    // Fallback if logo not found
+    doc.text("INVOICE", 14, 18);
+  }
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
