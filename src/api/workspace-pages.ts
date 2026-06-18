@@ -3,6 +3,26 @@ import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
 import { deleteFiles } from "./storage";
 
+export const getPublicWorkspacePageById = createServerFn({ method: "GET" }).handler(async (ctx) => {
+  const { id } = ctx.data as unknown as { id: string };
+
+  const query = `
+    query GetPublicPageById($id: uuid!) {
+      workspace_pages_by_pk(id: $id) {
+        id
+        slug
+        title
+        is_published
+      }
+    }
+  `;
+
+  const data = await hasuraRequest<{ workspace_pages_by_pk: any }>(query, { id });
+  const page = data.workspace_pages_by_pk;
+  // Only return if published
+  return page?.is_published ? page : null;
+});
+
 export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(async (ctx) => {
   const { slug } = ctx.data as unknown as { slug: string };
 

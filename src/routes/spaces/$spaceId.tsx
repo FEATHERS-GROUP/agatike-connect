@@ -14,11 +14,13 @@ import {
   ChevronLeft,
   Building2,
   ChevronDown,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
+import { getPublicWorkspacePageById } from "@/api/workspace-pages";
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 
 const DAY_KEYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"] as const;
@@ -91,6 +93,12 @@ function SpaceDetails() {
     queryKey: ["space", spaceId],
     queryFn: () => getSpaceById({ data: { id: spaceId } }),
     enabled: !!spaceId,
+  });
+
+  const { data: linkedPage } = useQuery({
+    queryKey: ["linked-page", space?.page_id],
+    queryFn: () => getPublicWorkspacePageById({ data: { id: space!.page_id } } as any),
+    enabled: !!space?.page_id,
   });
 
   // ── Loading skeleton ──────────────────────────────────────────
@@ -315,6 +323,16 @@ function SpaceDetails() {
                 </Button>
               )
               : null}
+            {linkedPage && (
+              <Button
+                variant="outline"
+                className="h-10 px-6 rounded-full font-bold bg-background/50 backdrop-blur"
+                onClick={() => window.open(`/p/${linkedPage.slug}`, "_blank")}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Visit our page
+              </Button>
+            )}
           </div>
         </div>
       </section>
