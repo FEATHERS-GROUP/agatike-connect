@@ -45,7 +45,7 @@ const tooltipStyle = {
 };
 
 function SpaceOverviewPage() {
-  const { spaceId } = useParams({ strict: false }) as any;
+  const { spaceId, workspaceSlug } = useParams({ strict: false }) as any;
 
   const { data: space, isLoading } = useQuery({
     queryKey: ["space", spaceId],
@@ -84,14 +84,12 @@ function SpaceOverviewPage() {
     { name: "Re-using", value: 89,  color: EMERALD   },
   ];
 
-  // ── Recent subscriptions ───────────────────────────────────────
-  const recentSubscriptions = [
-    { id: "sub-1", user: "Alice Johnson",       plan: "Monthly Hot Desk",  status: "Active",  date: "Oct 12, 2026", type: "returning" },
-    { id: "sub-2", user: "Mark Smith",          plan: "Day Pass",          status: "Expired", date: "Oct 11, 2026", type: "new"       },
-    { id: "sub-3", user: "Jane Doe",            plan: "Dedicated Desk",    status: "Active",  date: "Oct 10, 2026", type: "returning" },
-    { id: "sub-4", user: "Kigali Tech Hub",     plan: "Private Office",    status: "Active",  date: "Oct 08, 2026", type: "returning" },
-    { id: "sub-5", user: "AfriTech Solutions",  plan: "Private Office",    status: "Active",  date: "Oct 05, 2026", type: "new"       },
-    { id: "sub-6", user: "Hinga Collective",    plan: "Dedicated Desk",    status: "Active",  date: "Oct 02, 2026", type: "new"       },
+  // ── Recent subscriptions summary ───────────────────────────────
+  const recentPlansData = [
+    { name: "Private Office", subscriptions: 2 },
+    { name: "Dedicated Desk", subscriptions: 2 },
+    { name: "Monthly Hot Desk", subscriptions: 1 },
+    { name: "Day Pass", subscriptions: 1 },
   ];
 
   const tickStyle = { fontSize: 11, fill: "hsl(var(--muted-foreground))" };
@@ -192,50 +190,36 @@ function SpaceOverviewPage() {
             </div>
           </div>
 
-          {/* Subscriptions Table */}
-          <div className="bg-card border border-border/60 rounded-3xl overflow-hidden shadow-sm">
-            <div className="p-5 border-b border-border/60 flex items-center justify-between">
-              <h3 className="font-bold text-lg">Recent Subscriptions</h3>
-              <span className="text-xs text-muted-foreground bg-secondary/50 px-3 py-1 rounded-full">Latest 6</span>
+          {/* Recent Subscriptions Chart */}
+          <div className="bg-card border border-border/60 rounded-3xl overflow-hidden shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-lg">Recent Subscriptions</h3>
+                <span className="text-xs text-muted-foreground bg-secondary/50 px-3 py-1 rounded-full">Latest 6</span>
+              </div>
+              <Link 
+                to="/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions"
+                params={{ workspaceSlug, spaceId }}
+                className="text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors"
+              >
+                View all
+              </Link>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-muted-foreground uppercase bg-secondary/10 border-b border-border/40">
-                  <tr>
-                    <th className="px-6 py-3 font-semibold">Customer</th>
-                    <th className="px-6 py-3 font-semibold">Plan</th>
-                    <th className="px-6 py-3 font-semibold">Type</th>
-                    <th className="px-6 py-3 font-semibold">Date</th>
-                    <th className="px-6 py-3 font-semibold">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/30">
-                  {recentSubscriptions.map((sub) => (
-                    <tr key={sub.id} className="hover:bg-secondary/5 transition-colors">
-                      <td className="px-6 py-3.5 font-medium text-foreground">{sub.user}</td>
-                      <td className="px-6 py-3.5 text-muted-foreground">{sub.plan}</td>
-                      <td className="px-6 py-3.5">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
-                          sub.type === "returning"
-                            ? "bg-emerald-500/10 text-emerald-500"
-                            : "bg-orange-500/10 text-orange-500"
-                        }`}>
-                          {sub.type === "returning" ? <RefreshCw className="h-3 w-3" /> : <UserCheck className="h-3 w-3" />}
-                          {sub.type === "returning" ? "Re-using" : "New"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3.5 text-muted-foreground text-xs">{sub.date}</td>
-                      <td className="px-6 py-3.5">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
-                          sub.status === "Active" ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"
-                        }`}>
-                          {sub.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="h-[220px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={recentPlansData} 
+                  layout="vertical" 
+                  margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                  barSize={20}
+                >
+                  <CartesianGrid horizontal={false} stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={tickStyle} />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ ...tickStyle, fontSize: 12, fill: "hsl(var(--foreground))" }} />
+                  <RechartsTooltip {...tooltipStyle} />
+                  <Bar dataKey="subscriptions" name="Subscriptions" fill={EMERALD} radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 

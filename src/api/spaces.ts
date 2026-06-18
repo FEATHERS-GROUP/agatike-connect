@@ -54,6 +54,11 @@ const GET_SPACES = `
       locations
       plans
       status
+      rsvp_form_id
+      page_id
+      show_rsvp_form_button
+      rsvp_form_button_text
+      connected_forms
       created_at
     }
   }
@@ -67,6 +72,27 @@ export const getSpaces = createServerFn({ method: "POST" })
     const res = await hasuraRequest<{ spaces: any[] }>(GET_SPACES, {
       workspace_id,
     });
+    return res.spaces;
+  });
+
+const GET_PUBLIC_SPACES = `
+  query GetPublicSpaces {
+    spaces(where: { status: { _eq: "Active" } }, order_by: { created_at: desc }) {
+      id
+      name
+      type
+      description
+      currency
+      cover_url
+      locations
+      plans
+    }
+  }
+`;
+
+export const getPublicSpaces = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const res = await hasuraRequest<{ spaces: any[] }>(GET_PUBLIC_SPACES);
     return res.spaces;
   });
 
@@ -84,6 +110,11 @@ const GET_SPACE_BY_ID = `
       locations
       plans
       status
+      rsvp_form_id
+      page_id
+      show_rsvp_form_button
+      rsvp_form_button_text
+      connected_forms
       created_at
     }
   }

@@ -1,5 +1,5 @@
 import { Link, useRouterState, useParams } from "@tanstack/react-router";
-import { LayoutDashboard, MapPin, Users, Settings, ArrowLeft, CreditCard } from "lucide-react";
+import { LayoutDashboard, MapPin, Users, Settings, ArrowLeft, CreditCard, ListChecks, Link as LinkIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,11 @@ export function SpaceSidebar() {
       icon: LayoutDashboard,
     },
     {
+      label: "Subscriptions",
+      href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/subscriptions`,
+      icon: ListChecks,
+    },
+    {
       label: "Locations",
       href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/locations`,
       icon: MapPin,
@@ -34,6 +39,11 @@ export function SpaceSidebar() {
       label: "Membership Plans",
       href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/plans`,
       icon: CreditCard,
+    },
+    {
+      label: "Integrations",
+      href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/integrations`,
+      icon: LinkIcon,
     },
     {
       label: "Settings",

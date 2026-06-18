@@ -48,6 +48,30 @@ async function run() {
     }),
   });
   console.log("Track table:", await trackRes.json());
+  console.log("3. Updating spaces table...");
+  const updateSpacesRes = await fetch(`${API_BASE}/v2/query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-hasura-admin-secret": SECRET },
+    body: JSON.stringify({
+      type: "run_sql",
+      args: {
+        source: "default",
+        sql: `
+          ALTER TABLE public.spaces ADD COLUMN IF NOT EXISTS rsvp_form_id uuid;
+          ALTER TABLE public.spaces ADD COLUMN IF NOT EXISTS page_id uuid;
+          ALTER TABLE public.spaces ADD COLUMN IF NOT EXISTS show_rsvp_form_button boolean DEFAULT true;
+          ALTER TABLE public.spaces ADD COLUMN IF NOT EXISTS rsvp_form_button_text text DEFAULT 'Fill out our form';
+          ALTER TABLE public.spaces ADD COLUMN IF NOT EXISTS connected_forms jsonb DEFAULT '[]'::jsonb;
+        `,
+      },
+    }),
+  });
+  const updateSpacesData = await updateSpacesRes.json();
+  if (updateSpacesData.error) {
+    console.error("Error updating spaces table:", updateSpacesData.error);
+  } else {
+    console.log("Spaces table updated!");
+  }
 }
 
 run();
