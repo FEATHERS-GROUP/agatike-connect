@@ -52,7 +52,6 @@ export function DesktopSidebar() {
     "Badge Designer",
     "Venue Designer",
     "Tickets",
-    "VIP Access",
     "Page Builder",
   ];
   const mainNav = nav.filter((m) => !studioLabels.includes(m.label));
