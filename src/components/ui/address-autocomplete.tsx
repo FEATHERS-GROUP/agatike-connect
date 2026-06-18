@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Input } from "./input";
 
 interface AddressAutocompleteProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  onAddressSelect?: (address: string) => void;
+  onAddressSelect?: (address: string, lat?: string, lng?: string) => void;
 }
 
 export function AddressAutocomplete({
@@ -32,7 +32,7 @@ export function AddressAutocomplete({
       return () => clearInterval(checkInterval);
     }
 
-    const apiKey = import.meta.env.GOOGLE_MAP_API;
+    const apiKey = import.meta.env.GOOGLE_MAP_API || import.meta.env.VITE_GOOGLE_MAP_API;
     if (!apiKey) {
       console.warn("GOOGLE_MAP_API is missing in environment variables.");
       return;
@@ -51,7 +51,7 @@ export function AddressAutocomplete({
     if (!isScriptLoaded || !inputRef.current) return;
 
     const autocomplete = new (window as any).google.maps.places.Autocomplete(inputRef.current, {
-      fields: ["formatted_address"],
+      fields: ["formatted_address", "geometry"],
     });
 
     // Disable default browser autocomplete so it doesn't overlap with Google's
@@ -61,7 +61,9 @@ export function AddressAutocomplete({
       const place = autocomplete.getPlace();
       if (place.formatted_address) {
         if (onAddressSelect) {
-          onAddressSelect(place.formatted_address);
+          const lat = place.geometry?.location?.lat()?.toString();
+          const lng = place.geometry?.location?.lng()?.toString();
+          onAddressSelect(place.formatted_address, lat, lng);
         } else if (onChange) {
           // Simulate a change event
           const event = {

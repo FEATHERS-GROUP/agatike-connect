@@ -37,18 +37,47 @@ export const getPlacesAutocomplete = createServerFn({ method: "POST" }).handler(
   const config = getServerConfig();
   const apiKey = config.googleApiKey;
 
-  if (!apiKey || !query) return [];
+  if (!query) return [];
 
+  // Try Google Places first if we have an API key
+  if (apiKey) {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
+          query,
+        )}&key=${apiKey}`,
+      );
+      const data = await response.json();
+      // Only use Google results if the request was OK (billing enabled)
+      if (data.status === "OK" && data.predictions?.length > 0) {
+        return data.predictions;
+      }
+    } catch (error) {
+      console.error("Google Places error:", error);
+    }
+  }
+
+  // Fallback: OpenStreetMap Nominatim (free, no billing required)
   try {
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
-        query,
-      )}&key=${apiKey}`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=6`,
+      { headers: { "User-Agent": "AgatikeConnect/1.0" } },
     );
     const data = await response.json();
-    return data.predictions || [];
-  } catch (error) {
-    console.error("Error fetching places:", error);
+    // Normalize to match Google's prediction shape so LocationSearchInput doesn't need changes
+    return (data || []).map((item: any) => ({
+      place_id: item.place_id,
+      description: item.display_name,
+      structured_formatting: {
+        main_text: item.name || item.display_name.split(",")[0],
+        secondary_text: item.display_name.split(",").slice(1).join(",").trim(),
+      },
+      // Attach lat/lng directly so we don't need a second lookup
+      _lat: item.lat,
+      _lng: item.lon,
+    }));
+  } catch (err) {
+    console.error("Nominatim fallback error:", err);
     return [];
   }
 });

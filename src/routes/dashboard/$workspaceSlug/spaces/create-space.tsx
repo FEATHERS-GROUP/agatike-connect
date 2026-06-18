@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, useParams, Link, useSearch } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { LocationSearchInput } from "@/components/desktop/LocationSearchInput";
 import {
   ArrowLeft,
   ArrowRight,
@@ -87,7 +88,7 @@ function NewSpaceWizard() {
     name: "",
     type: "",
     description: "",
-    locations: [{ name: "Main Location", city: "", country: "RW", address: "" }],
+    locations: [{ name: "Main Location", city: "", country: "RW", address: "", lat: "", lng: "" }],
     plans: [{ name: "Day Pass", price: "", features: ["Access to space"] }],
     cover_url: "",
     socials: { instagram: "", whatsapp: "", phone: "" },
@@ -190,7 +191,7 @@ function NewSpaceWizard() {
   };
 
   const addLocation = () => {
-    setFormData((p) => ({ ...p, locations: [...p.locations, { name: "", city: "", country: "RW", address: "" }] }));
+    setFormData((p) => ({ ...p, locations: [...p.locations, { name: "", city: "", country: "RW", address: "", lat: "", lng: "" }] }));
   };
 
   const updateLocation = (idx: number, field: string, val: any) => {
@@ -468,10 +469,16 @@ function NewSpaceWizard() {
                     </div>
                     <div className="space-y-2">
                       <Label className="text-base">Street Address <span className="text-red-500">*</span></Label>
-                      <Input
-                        className="h-12 text-lg rounded-xl"
+                      <LocationSearchInput
+                        className="h-12 text-lg rounded-xl flex items-center px-3"
                         value={loc.address}
-                        onChange={(e) => updateLocation(idx, "address", e.target.value)}
+                        onChange={(val) => updateLocation(idx, "address", val)}
+                        onSelectCoordinates={(lat, lng) => {
+                          if (lat && lng) {
+                            updateLocation(idx, "lat", lat);
+                            updateLocation(idx, "lng", lng);
+                          }
+                        }}
                         placeholder="e.g. KG 11 Ave"
                       />
                     </div>
@@ -545,41 +552,44 @@ function NewSpaceWizard() {
             </div>
           )}
 
+          {/* Bottom Actions */}
+          <div className="mt-12 flex justify-between items-center pt-6 border-t border-border/60">
+            <div>
+              <Button variant="ghost" onClick={prevStep} disabled={step === 0} className="gap-2 rounded-xl px-6">
+                <ArrowLeft className="h-4 w-4" /> Back
+              </Button>
+            </div>
+            
+            <div>
+              {step < 3 ? (
+                <Button
+                  onClick={nextStep}
+                  className="gap-2 rounded-xl shadow-[var(--shadow-glow)] px-8"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  Continue <ArrowRight className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => handleCreateSpace()}
+                  disabled={isPending}
+                  className="gap-2 rounded-xl shadow-[var(--shadow-glow)] px-8"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" /> Complete Setup
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 lg:left-80 right-0 bg-background/80 backdrop-blur-xl border-t border-border/60 p-4 px-6 flex justify-between items-center z-50">
-        <Button variant="ghost" onClick={prevStep} disabled={step === 0} className="gap-2 rounded-xl">
-          <ArrowLeft className="h-4 w-4" /> Back
-        </Button>
-
-        {step < 3 ? (
-          <Button
-            onClick={nextStep}
-            className="gap-2 rounded-xl shadow-[var(--shadow-glow)]"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            Continue <ArrowRight className="h-4 w-4" />
-          </Button>
-        ) : (
-          <Button
-            onClick={() => handleCreateSpace()}
-            disabled={isPending}
-            className="gap-2 rounded-xl shadow-[var(--shadow-glow)]"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" /> Saving...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" /> Complete Setup
-              </>
-            )}
-          </Button>
-        )}
       </div>
     </div>
   );
