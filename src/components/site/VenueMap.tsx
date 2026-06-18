@@ -96,6 +96,7 @@ export default function VenueMap({
   city,
   tourStops = [],
   selectedStopIdx = 0,
+  onMarkerClick,
 }: {
   lat?: number;
   lng?: number;
@@ -103,6 +104,7 @@ export default function VenueMap({
   city?: string;
   tourStops?: any[];
   selectedStopIdx?: number;
+  onMarkerClick?: (idx: number) => void;
 }) {
   let parsedLat = parseFloat(lat as any);
   let parsedLng = parseFloat(lng as any);
@@ -179,6 +181,11 @@ export default function VenueMap({
               key={pt.id}
               position={[pt.lat, pt.lng]}
               icon={isSelected ? activeVenueIcon : venueIcon}
+              eventHandlers={{
+                click: () => {
+                  if (onMarkerClick) onMarkerClick(idx);
+                }
+              }}
             >
               <Popup className="rounded-xl">
                 <div className="p-1 text-foreground">
