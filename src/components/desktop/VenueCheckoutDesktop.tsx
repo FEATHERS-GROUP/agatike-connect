@@ -197,6 +197,22 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       const generatePDFs = async () => {
         try {
           const attachments = [];
+
+          // Pre-load cover image so it's cached before the first ticket renders
+          const coverUrl = venueProject.coverImage;
+          if (coverUrl) {
+            await new Promise<void>((resolve) => {
+              const img = new Image();
+              img.crossOrigin = "anonymous";
+              img.onload = () => resolve();
+              img.onerror = () => resolve(); // don't block on failure
+              img.src = coverUrl;
+            });
+          }
+
+          // Extra settle time for React DOM + fonts
+          await new Promise((r) => setTimeout(r, 600));
+
           for (const ticket of issuedTickets) {
             const el = document.getElementById(`ticket-render-${ticket.id}`);
             if (!el) continue;

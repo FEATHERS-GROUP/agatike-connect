@@ -10,6 +10,13 @@ import { getEventFeedbackPublic } from "@/api/feedback";
 export function VenueDetailsDesktop({ venue }: { venue: any }) {
   if (!venue) return null;
 
+  /** Strip Quill's inline color/background-color so dark theme takes over */
+  const sanitizeWysiwyg = (html: string) =>
+    html
+      .replace(/background-color\s*:\s*[^;"']+[;"']/gi, "")
+      .replace(/(?<![\-a-z])color\s*:\s*[^;"']+[;"']/gi, "")
+      .replace(/style=""/gi, "");
+
   const { data: feedbackData } = useQuery({
     queryKey: ["eventFeedback", venue.id],
     queryFn: () => getEventFeedbackPublic({ data: { event_id: venue.id } } as any),
@@ -57,6 +64,24 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
             <h2 className="text-xl font-semibold">About this venue</h2>
             <p className="mt-3 text-muted-foreground leading-relaxed">{venue.description}</p>
           </div>
+
+          {/* Map — shown above amenities */}
+          {venue.latitude && venue.longitude && (
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Location</h2>
+              <div className="h-[350px] rounded-2xl overflow-hidden bg-secondary/30 relative border border-border/40 shadow-sm">
+                <iframe
+                  title="Location Map"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src={`https://www.google.com/maps?q=${venue.latitude},${venue.longitude}&output=embed`}
+                ></iframe>
+              </div>
+            </div>
+          )}
 
           <div>
             <h2 className="text-xl font-semibold mb-4">Amenities & Features</h2>
@@ -109,11 +134,32 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
           </div>
 
           {venue.instructions && (
-            <div className="prose prose-neutral dark:prose-invert max-w-none break-words overflow-hidden">
+            <div className="min-w-0 overflow-hidden">
               <h2 className="text-xl font-semibold mb-4">Instructions</h2>
               <div
-                className="text-muted-foreground leading-relaxed [&>p]:mb-4"
-                dangerouslySetInnerHTML={{ __html: venue.instructions }}
+                className={[
+                  "text-foreground leading-relaxed break-words overflow-hidden max-w-full min-w-0",
+                  "[&_p]:mb-4 [&_p]:leading-relaxed [&_p]:text-muted-foreground [&_p]:break-words",
+                  "[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h1]:text-foreground",
+                  "[&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mb-3 [&_h2]:mt-5 [&_h2]:text-foreground",
+                  "[&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-3 [&_h3]:mt-4 [&_h3]:text-foreground",
+                  "[&_h4]:text-base [&_h4]:font-semibold [&_h4]:mb-2 [&_h4]:mt-4 [&_h4]:text-foreground",
+                  "[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ul]:space-y-1",
+                  "[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_ol]:space-y-1",
+                  "[&_li]:text-muted-foreground [&_li]:leading-relaxed",
+                  "[&_strong]:font-semibold [&_strong]:text-foreground",
+                  "[&_em]:italic [&_em]:text-muted-foreground",
+                  "[&_u]:underline",
+                  "[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 [&_a]:hover:text-primary/80 [&_a]:transition-colors",
+                  "[&_blockquote]:border-l-4 [&_blockquote]:border-primary/40 [&_blockquote]:pl-4 [&_blockquote]:my-4 [&_blockquote]:text-muted-foreground [&_blockquote]:italic",
+                  "[&_pre]:bg-secondary [&_pre]:rounded-xl [&_pre]:p-4 [&_pre]:mb-4 [&_pre]:overflow-x-auto [&_pre]:text-sm",
+                  "[&_code]:bg-secondary [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-sm [&_code]:font-mono [&_code]:text-foreground",
+                  "[&_.ql-align-center]:text-center [&_.ql-align-right]:text-right [&_.ql-align-justify]:text-justify",
+                  "[&_.ql-indent-1]:pl-8 [&_.ql-indent-2]:pl-16 [&_.ql-indent-3]:pl-24",
+                  "[&_img]:rounded-xl [&_img]:max-w-full [&_img]:my-4",
+                  "[&_hr]:border-border/40 [&_hr]:my-6",
+                ].join(" ")}
+                dangerouslySetInnerHTML={{ __html: sanitizeWysiwyg(venue.instructions) }}
               />
             </div>
           )}
@@ -202,22 +248,6 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
             </div>
           </div>
 
-          {venue.latitude && venue.longitude && (
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Location</h2>
-              <div className="h-[350px] rounded-2xl overflow-hidden bg-secondary/30 relative border border-border/40 shadow-sm">
-                <iframe
-                  title="Location Map"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  allowFullScreen
-                  src={`https://www.google.com/maps?q=${venue.latitude},${venue.longitude}&output=embed`}
-                ></iframe>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Right Column: CTA Widget */}
