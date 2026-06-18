@@ -17,6 +17,12 @@ import {
   Plus,
   Loader2,
   UploadCloud,
+  Clock,
+  Phone,
+  Instagram,
+  MessageCircle,
+  Eye,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,9 +95,18 @@ function NewSpaceWizard() {
     type: "",
     description: "",
     locations: [{ name: "Main Location", city: "", country: "RW", address: "", lat: "", lng: "" }],
-    plans: [{ name: "Day Pass", price: "", features: ["Access to space"] }],
+    plans: [{ name: "Day Pass", price: "", description: "", features: ["Access to space"] }],
     cover_url: "",
     socials: { instagram: "", whatsapp: "", phone: "" },
+    opening_hours: {
+      monday:    { open: "08:00", close: "18:00", closed: false, is24Hours: false },
+      tuesday:   { open: "08:00", close: "18:00", closed: false, is24Hours: false },
+      wednesday: { open: "08:00", close: "18:00", closed: false, is24Hours: false },
+      thursday:  { open: "08:00", close: "18:00", closed: false, is24Hours: false },
+      friday:    { open: "08:00", close: "18:00", closed: false, is24Hours: false },
+      saturday:  { open: "09:00", close: "15:00", closed: false, is24Hours: false },
+      sunday:    { open: "09:00", close: "15:00", closed: true, is24Hours: false },
+    },
   };
 
   const [isUploading, setIsUploading] = useState(false);
@@ -104,6 +119,9 @@ function NewSpaceWizard() {
         return {
           ...DEFAULT_FORM_DATA,
           ...parsed,
+          // Always ensure nested objects have defaults in case old drafts are missing them
+          socials: { ...DEFAULT_FORM_DATA.socials, ...(parsed?.socials || {}) },
+          opening_hours: parsed?.opening_hours || DEFAULT_FORM_DATA.opening_hours,
         };
       } catch (e) {
         console.error("Failed to parse draft", e);
@@ -141,6 +159,7 @@ function NewSpaceWizard() {
           description: formData.description,
           currency: activeWorkspace?.currency || "RWF",
           cover_url: formData.cover_url || "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=800",
+          opening_hours: formData.opening_hours,
           socials: formData.socials,
           locations: formData.locations.map((loc: any, idx: number) => ({ ...loc, id: `loc-${idx + 1}` })),
           plans: formData.plans,
@@ -168,21 +187,62 @@ function NewSpaceWizard() {
     if (step === 2 && formData.locations.some((l: any) => !l.city || !l.address || !l.name))
       return toast.error("Please fill in all details for your locations");
 
-    setStep(Math.min(step + 1, 4));
+    setStep(Math.min(step + 1, 5));
   };
 
   const prevStep = () => {
     setStep(Math.max(step - 1, 0));
   };
 
+  const updateHours = (day: string, field: string, val: any) => {
+    setFormData((p: any) => ({
+      ...p,
+      opening_hours: {
+        ...p.opening_hours,
+        [day]: { ...p.opening_hours[day], [field]: val },
+      },
+    }));
+  };
+
   const addPlan = () => {
-    setFormData((p) => ({ ...p, plans: [...p.plans, { name: "", price: "", features: [""] }] }));
+    setFormData((p) => ({ ...p, plans: [...p.plans, { name: "", price: "", description: "", features: [""] }] }));
   };
 
   const updatePlan = (idx: number, field: string, val: any) => {
     setFormData((p) => ({
       ...p,
       plans: p.plans.map((t, i) => (i === idx ? { ...t, [field]: val } : t)),
+    }));
+  };
+
+  const addFeature = (planIdx: number) => {
+    setFormData((p) => ({
+      ...p,
+      plans: p.plans.map((t, i) =>
+        i === planIdx ? { ...t, features: [...(t.features || []), ""] } : t
+      ),
+    }));
+  };
+
+  const updateFeature = (planIdx: number, featIdx: number, val: string) => {
+    setFormData((p) => ({
+      ...p,
+      plans: p.plans.map((t, i) =>
+        i === planIdx
+          ? { ...t, features: (t.features || []).map((f: string, fi: number) => fi === featIdx ? val : f) }
+          : t
+      ),
+    }));
+  };
+
+  const removeFeature = (planIdx: number, featIdx: number) => {
+    setFormData((p) => ({
+      ...p,
+      plans: p.plans.map((t, i) =>
+        i === planIdx
+          ? { ...t, features: (t.features || []).filter((_: string, fi: number) => fi !== featIdx) }
+          : t
+      ),
     }));
   };
 
@@ -227,15 +287,17 @@ function NewSpaceWizard() {
       {/* Left Sidebar - Sticky Progress */}
       <div className="hidden lg:flex w-80 flex-col border-r border-border/60 bg-secondary/10 p-6 shadow-[4px_0_24px_rgba(0,0,0,0.02)] h-full shrink-0">
         <h3 className="font-bold text-lg mb-6">Setup Progress</h3>
-        <div className="space-y-6 flex-1">
+        <div className="space-y-5 flex-1">
           {[
             { label: "Space Type", desc: "Category" },
             { label: "Details", desc: "Name & info" },
-            { label: "Location", desc: "Main address" },
+            { label: "Locations", desc: "Addresses" },
             { label: "Plans", desc: "Pricing setup" },
+            { label: "Opening Hours", desc: "Weekly schedule" },
+            { label: "Review", desc: "Final check" },
           ].map((s, i) => (
             <div key={i} className="flex gap-4 relative">
-              {i !== 3 && (
+              {i !== 5 && (
                 <div
                   className={cn(
                     "absolute left-[11px] top-8 bottom-[-16px] w-[2px]",
@@ -507,12 +569,13 @@ function NewSpaceWizard() {
               <div>
                 <h2 className="text-3xl font-bold">Membership Plans</h2>
                 <p className="text-muted-foreground mt-2 text-lg">
-                  Set up the basic pricing plans for your space.
+                  Define your pricing plans and what's included in each.
                 </p>
               </div>
               <div className="space-y-6 mt-8">
                 {formData.plans.map((plan, idx) => (
-                  <div key={idx} className="p-6 bg-secondary/20 rounded-2xl border border-border/60 relative">
+                  <div key={idx} className="p-6 bg-secondary/20 rounded-2xl border border-border/60 relative space-y-4">
+                    {/* Plan Name & Price */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Plan Name</Label>
@@ -532,6 +595,49 @@ function NewSpaceWizard() {
                         />
                       </div>
                     </div>
+
+                    {/* Description */}
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea
+                        className="min-h-[80px] rounded-xl resize-none text-sm p-3"
+                        value={plan.description || ""}
+                        onChange={(e) => updatePlan(idx, "description", e.target.value)}
+                        placeholder="What makes this plan special? Who is it for?"
+                      />
+                    </div>
+
+                    {/* Features / What's Included */}
+                    <div className="space-y-2">
+                      <Label>What's Included</Label>
+                      <div className="space-y-2">
+                        {(plan.features || []).map((feature: string, featIdx: number) => (
+                          <div key={featIdx} className="flex gap-2 items-center">
+                            <Input
+                              value={feature}
+                              onChange={(e) => updateFeature(idx, featIdx, e.target.value)}
+                              placeholder="e.g. High-speed WiFi"
+                              className="flex-1"
+                            />
+                            {(plan.features || []).length > 1 && (
+                              <button
+                                onClick={() => removeFeature(idx, featIdx)}
+                                className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => addFeature(idx)}
+                          className="flex items-center gap-1.5 text-sm text-primary hover:underline mt-1"
+                        >
+                          <Plus className="h-3.5 w-3.5" /> Add feature
+                        </button>
+                      </div>
+                    </div>
+
                     {formData.plans.length > 1 && (
                       <Button
                         variant="destructive"
@@ -552,6 +658,180 @@ function NewSpaceWizard() {
             </div>
           )}
 
+          {step === 4 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div>
+                <h2 className="text-3xl font-bold">Opening Hours</h2>
+                <p className="text-muted-foreground mt-2 text-lg">
+                  Set your weekly schedule — when is your space open?
+                </p>
+              </div>
+              <div className="space-y-3 mt-8">
+                {([
+                  ["monday",    "Monday"],
+                  ["tuesday",   "Tuesday"],
+                  ["wednesday", "Wednesday"],
+                  ["thursday",  "Thursday"],
+                  ["friday",    "Friday"],
+                  ["saturday",  "Saturday"],
+                  ["sunday",    "Sunday"],
+                ] as [string, string][]).map(([day, label]) => {
+                  const h = formData.opening_hours[day];
+                  return (
+                    <div key={day} className={cn(
+                      "flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-2xl border transition-colors",
+                      h.closed ? "bg-secondary/10 border-border/40 opacity-60" : "bg-secondary/20 border-border/60"
+                    )}>
+                      <div className="w-28 font-semibold text-sm shrink-0">{label}</div>
+                      
+                      <div className="flex items-center gap-4 shrink-0">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={h.closed}
+                            onChange={(e) => {
+                              updateHours(day, "closed", e.target.checked);
+                              if (e.target.checked) updateHours(day, "is24Hours", false);
+                            }}
+                            className="w-4 h-4 rounded accent-primary"
+                          />
+                          <span className="text-sm text-muted-foreground">Closed</span>
+                        </label>
+
+                        {!h.closed && (
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={h.is24Hours}
+                              onChange={(e) => updateHours(day, "is24Hours", e.target.checked)}
+                              className="w-4 h-4 rounded accent-primary"
+                            />
+                            <span className="text-sm text-muted-foreground">24 Hours</span>
+                          </label>
+                        )}
+                      </div>
+
+                      {!h.closed && !h.is24Hours && (
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="flex items-center gap-2 flex-1">
+                            <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <Input
+                              type="time"
+                              value={h.open}
+                              onChange={(e) => updateHours(day, "open", e.target.value)}
+                              className="h-10 rounded-xl flex-1"
+                            />
+                          </div>
+                          <span className="text-muted-foreground text-sm">to</span>
+                          <Input
+                            type="time"
+                            value={h.close}
+                            onChange={(e) => updateHours(day, "close", e.target.value)}
+                            className="h-10 rounded-xl flex-1"
+                          />
+                        </div>
+                      )}
+                      
+                      {!h.closed && h.is24Hours && (
+                        <div className="flex items-center gap-3 flex-1 text-sm font-medium text-primary bg-primary/10 px-4 py-2 rounded-xl justify-center">
+                          Open All Day
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div>
+                <h2 className="text-3xl font-bold">Review Your Space</h2>
+                <p className="text-muted-foreground mt-2 text-lg">
+                  Everything looks good? Hit Complete Setup to publish.
+                </p>
+              </div>
+
+              {/* Type */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-lg flex items-center gap-2"><Globe className="h-5 w-5 text-primary" /> Space Type</h3>
+                <div className="px-4 py-3 bg-secondary/20 rounded-2xl border border-border/60 text-sm">{formData.type || "—"}</div>
+              </div>
+
+              {/* Cover + Details */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-lg flex items-center gap-2"><Eye className="h-5 w-5 text-primary" /> Details</h3>
+                <div className="bg-secondary/20 rounded-2xl border border-border/60 overflow-hidden">
+                  {formData.cover_url && (
+                    <img src={formData.cover_url} alt="Cover" className="w-full h-40 object-cover" />
+                  )}
+                  <div className="p-4 space-y-1">
+                    <p className="font-bold text-lg">{formData.name || "—"}</p>
+                    <p className="text-sm text-muted-foreground">{formData.description || "No description"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Socials */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-lg flex items-center gap-2"><Phone className="h-5 w-5 text-primary" /> Contact & Socials</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {formData.socials.phone && <div className="px-4 py-3 bg-secondary/20 rounded-2xl border border-border/60 text-sm flex items-center gap-2"><Phone className="h-4 w-4" />{formData.socials.phone}</div>}
+                  {formData.socials.whatsapp && <div className="px-4 py-3 bg-secondary/20 rounded-2xl border border-border/60 text-sm flex items-center gap-2"><MessageCircle className="h-4 w-4" />{formData.socials.whatsapp}</div>}
+                  {formData.socials.instagram && <div className="px-4 py-3 bg-secondary/20 rounded-2xl border border-border/60 text-sm flex items-center gap-2"><Instagram className="h-4 w-4" />{formData.socials.instagram}</div>}
+                </div>
+              </div>
+
+              {/* Locations */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-lg flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Locations</h3>
+                <div className="space-y-2">
+                  {formData.locations.map((loc: any, i: number) => (
+                    <div key={i} className="px-4 py-3 bg-secondary/20 rounded-2xl border border-border/60 text-sm">
+                      <p className="font-semibold">{loc.name}</p>
+                      <p className="text-muted-foreground">{loc.address}, {loc.city}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Plans */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-lg flex items-center gap-2"><Save className="h-5 w-5 text-primary" /> Plans ({formData.plans.length})</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {formData.plans.map((plan: any, i: number) => (
+                    <div key={i} className="p-4 bg-secondary/20 rounded-2xl border border-border/60">
+                      <p className="font-bold">{plan.name}</p>
+                      <p className="text-primary font-semibold text-sm">{plan.price} {activeWorkspace?.currency}</p>
+                      {plan.description && <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>}
+                      <ul className="mt-2 space-y-0.5">
+                        {(plan.features || []).filter(Boolean).map((f: string, fi: number) => (
+                          <li key={fi} className="text-xs text-muted-foreground flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-primary" />{f}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Opening Hours */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-lg flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Opening Hours</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {Object.entries(formData.opening_hours).map(([day, h]: any) => (
+                    <div key={day} className="flex justify-between items-center px-4 py-2.5 bg-secondary/20 rounded-xl border border-border/60 text-sm">
+                      <span className="font-medium capitalize">{day}</span>
+                      <span className={h.closed ? "text-muted-foreground" : "text-foreground"}>
+                        {h.closed ? "Closed" : h.is24Hours ? "Open 24 Hours" : `${h.open} – ${h.close}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Bottom Actions */}
           <div className="mt-12 flex justify-between items-center pt-6 border-t border-border/60">
             <div>
@@ -559,9 +839,8 @@ function NewSpaceWizard() {
                 <ArrowLeft className="h-4 w-4" /> Back
               </Button>
             </div>
-            
             <div>
-              {step < 3 ? (
+              {step < 5 ? (
                 <Button
                   onClick={nextStep}
                   className="gap-2 rounded-xl shadow-[var(--shadow-glow)] px-8"
@@ -577,13 +856,9 @@ function NewSpaceWizard() {
                   style={{ background: "var(--gradient-primary)" }}
                 >
                   {isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Saving...
-                    </>
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>
                   ) : (
-                    <>
-                      <Save className="h-4 w-4" /> Complete Setup
-                    </>
+                    <><Save className="h-4 w-4" /> Complete Setup</>
                   )}
                 </Button>
               )}
