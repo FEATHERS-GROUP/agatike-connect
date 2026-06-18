@@ -25,8 +25,6 @@ export function MobileNav() {
   const moreMenuLinks = [
     { name: "Bus Tickets", href: "/buses/mobile", icon: Bus },
     { name: "Movies & Cinemas", href: "/movies", icon: Film },
-    { name: "Offices & Co-working (Mock)", href: "/venues?type=office", icon: Building2 },
-    { name: "Gyms & Fitness (Mock)", href: "/venues?type=gym", icon: Dumbbell },
     { name: "Subscriptions", href: "/subscriptions", icon: Repeat, requiresAuth: true },
     { name: "Profile Settings", href: "/settings", icon: User, requiresAuth: true },
   ];
