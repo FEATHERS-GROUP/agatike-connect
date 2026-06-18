@@ -327,7 +327,6 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
 
 export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { to, customerName, spaceName, planName, price, billingCycle, invoiceDate, invoiceNumber, startDate, pdfBase64 } = ctx.data as any;
-  console.log("[sendSubscriptionInvoiceEmail] Sending to:", to, "| invoiceNumber:", invoiceNumber, "| pdfBase64 present:", !!pdfBase64);
 
   const baseUrl = process.env.PROJECT_PRODUCTION_URL
     ? `https://${process.env.PROJECT_PRODUCTION_URL}`
@@ -397,9 +396,6 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).h
       filename: `Invoice-${invoiceNumber}.pdf`,
       content: pdfBase64,
     });
-    console.log("[sendSubscriptionInvoiceEmail] PDF attached, base64 length:", pdfBase64.length);
-  } else {
-    console.warn("[sendSubscriptionInvoiceEmail] No pdfBase64 provided, sending without attachment");
   }
 
   const res = await fetch("https://api.resend.com/emails", {
@@ -412,7 +408,6 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).h
   });
 
   const data = await res.json();
-  console.log("[sendSubscriptionInvoiceEmail] Resend response:", { status: res.status, ok: res.ok, data });
   if (!res.ok) {
     throw new Error(data.message || "Failed to send invoice email");
   }
@@ -425,7 +420,6 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" }).handler
     to, companyName, spaceName, planName, price, billingCycle, startDate,
     invoiceNumber, invoiceDate, memberCount, members, pdfBase64,
   } = ctx.data as any;
-  console.log("[sendCompanyRosterEmail] Sending to:", to, "| invoiceNumber:", invoiceNumber, "| members:", members?.length, "| pdfBase64 present:", !!pdfBase64);
 
   const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -471,19 +465,43 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" }).handler
   if (members && members.length > 0) {
     try {
       const { Buffer } = await import("buffer");
-      const csvHeader = "#,Full Name,Email,Phone,Membership ID\n";
-      const csvRows = members.map((m: any, i: number) =>
-        `${i + 1},"${(m.name || "").replace(/"/g, '""')}","${(m.email || "").replace(/"/g, '""')}","${(m.phone || "").replace(/"/g, '""')}","${(m.membership_id || "").replace(/"/g, '""')}"`
-      ).join("\n");
-      const csvContent = csvHeader + csvRows;
-      const csvBase64 = Buffer.from(csvContent, "utf-8").toString("base64");
+      const xlsContent = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta charset="utf-8" /></head>
+        <body>
+          <table border="1">
+            <thead>
+              <tr>
+                <th style="background-color: #f8fafc;">#</th>
+                <th style="background-color: #f8fafc;">Full Name</th>
+                <th style="background-color: #f8fafc;">Email</th>
+                <th style="background-color: #f8fafc;">Phone</th>
+                <th style="background-color: #f8fafc;">Membership ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${members.map((m: any, i: number) => `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td>${m.name || ""}</td>
+                  <td>${m.email || ""}</td>
+                  <td>${m.phone || ""}</td>
+                  <td style="font-family: monospace;">${m.membership_id || ""}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+      const xlsBase64 = Buffer.from(xlsContent, "utf-8").toString("base64");
       attachments.push({
-        filename: `Member-Roster-${companyName.replace(/\s+/g, "-")}-${invoiceNumber}.csv`,
-        content: csvBase64,
+        filename: `Member-Roster-${companyName.replace(/\s+/g, "-")}-${invoiceNumber}.xls`,
+        content: xlsBase64,
       });
-      console.log("[sendCompanyRosterEmail] CSV generated for", members.length, "members");
-    } catch (csvErr) {
-      console.error("[sendCompanyRosterEmail] CSV generation FAILED:", csvErr);
+      console.log("[sendCompanyRosterEmail] XLS generated for", members.length, "members");
+    } catch (xlsErr) {
+      console.error("[sendCompanyRosterEmail] XLS generation FAILED:", xlsErr);
     }
   }
 
@@ -493,12 +511,8 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" }).handler
       filename: `Invoice-${invoiceNumber}.pdf`,
       content: pdfBase64,
     });
-    console.log("[sendCompanyRosterEmail] PDF attached, base64 length:", pdfBase64.length);
-  } else {
-    console.warn("[sendCompanyRosterEmail] No pdfBase64 provided, sending without invoice attachment");
   }
 
-  console.log("[sendCompanyRosterEmail] Total attachments:", attachments.length, "| Calling Resend API...");
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -515,7 +529,6 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" }).handler
   });
 
   const data = await res.json();
-  console.log("Resend Company Roster API Response:", { status: res.status, ok: res.ok, data });
   if (!res.ok) throw new Error(data.message || "Failed to send company roster email");
   return data;
 });

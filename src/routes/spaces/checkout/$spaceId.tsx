@@ -138,9 +138,7 @@ function CheckoutPage() {
       const savedMembers: any[] = subscription?.team_members || [];
       const invoiceDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
       const groupPlanName = bookingType === "group" ? `${planName} (Group of ${teamMembers.length})` : planName;
-      console.log("[checkout] Subscription created:", subscription?.id, "| type:", bookingType, "| members:", savedMembers.length);
 
-      console.log("[checkout] Calling createInvoiceRecord...");
       const invoice = await createInvoiceRecord({
         data: {
           spaceName: space?.name || "Our Space",
@@ -158,14 +156,12 @@ function CheckoutPage() {
 
       const invoiceNumber = invoice?.invoiceNumber || `AGT-${Date.now()}`;
       const pdfBase64 = invoice?.pdfBase64 || null;
-      console.log("[checkout] Invoice created:", invoiceNumber, "| PDF present:", !!pdfBase64);
 
       const formattedStart = formData.startDate
         ? new Date(formData.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })
         : formData.startDate;
 
       if (bookingType === "group") {
-        console.log("[checkout] Sending company roster email to:", formData.email);
         // Send one company email with details
         await sendCompanyRosterEmail({
           data: {
@@ -204,7 +200,6 @@ function CheckoutPage() {
         }
       } else {
         // Individual booking — send confirmation + invoice sequentially
-        console.log("[checkout] Sending confirmation email to:", formData.email);
         await sendSubscriptionConfirmationEmail({
           data: {
             to: formData.email,
@@ -217,7 +212,6 @@ function CheckoutPage() {
           }
         });
 
-        console.log("[checkout] Sending invoice email to:", formData.email);
         await sendSubscriptionInvoiceEmail({
           data: {
             to: formData.email,
@@ -235,11 +229,10 @@ function CheckoutPage() {
       }
 
       // 3. Redirect to Success only after all emails are successfully sent
-      console.log("[checkout] All done — navigating to success page");
       navigate({ to: `/spaces/success/${spaceId}`, search: { email: formData.email } });
 
     } catch (err: any) {
-      console.error("[checkout] PAYMENT FLOW ERROR:", err);
+      console.error(err);
       setErrorMsg(err.message || "Something went wrong during checkout. Please try again.");
       setIsProcessing(false);
     }

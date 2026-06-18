@@ -26,7 +26,6 @@ export function generateInvoiceNumber(): string {
 
 // Generate PDF buffer server-side using jsPDF — uses DYNAMIC imports to prevent Vite bundling for client
 export async function generateInvoicePdf(data: InvoiceData, qrBase64: string): Promise<any> {
-  console.log("[generateInvoicePdf] Starting PDF generation for invoice:", data.invoiceNumber);
   const { jsPDF } = await import("jspdf");
   const { Buffer } = await import("buffer");
   const fs = await import("fs");
@@ -188,7 +187,6 @@ export async function generateInvoicePdf(data: InvoiceData, qrBase64: string): P
 
   const pdfArrayBuffer = doc.output("arraybuffer");
   const pdfBuffer = Buffer.from(pdfArrayBuffer);
-  console.log("[generateInvoicePdf] PDF generated successfully, size:", pdfBuffer.length, "bytes");
   return pdfBuffer;
 }
 
@@ -208,8 +206,6 @@ export const createInvoiceRecord = createServerFn({ method: "POST" }).handler(as
 
   const invoiceNumber = generateInvoiceNumber();
 
-  console.log("[createInvoiceRecord] Generating invoice:", invoiceNumber);
-
   // Generate PDF
   let pdfBase64: string | null = null;
   try {
@@ -218,15 +214,13 @@ export const createInvoiceRecord = createServerFn({ method: "POST" }).handler(as
     let qrBase64 = "";
     try {
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&format=png&data=${encodeURIComponent(verificationUrl)}`;
-      console.log("[createInvoiceRecord] Fetching QR code...");
       const qrRes = await fetch(qrUrl);
       if (qrRes.ok) {
         const qrBuffer = await qrRes.arrayBuffer();
         qrBase64 = `data:image/png;base64,${Buffer.from(qrBuffer).toString("base64")}`;
-        console.log("[createInvoiceRecord] QR code fetched OK");
       }
     } catch (qrErr) {
-      console.warn("[createInvoiceRecord] QR fetch failed (non-fatal):", qrErr);
+      console.warn("QR fetch failed (non-fatal):", qrErr);
     }
     const pdfBuffer = await generateInvoicePdf({
       invoiceNumber,
@@ -242,9 +236,8 @@ export const createInvoiceRecord = createServerFn({ method: "POST" }).handler(as
         : new Date().toLocaleDateString("en-GB"),
     }, qrBase64);
     pdfBase64 = pdfBuffer.toString("base64");
-    console.log("[createInvoiceRecord] PDF base64 length:", pdfBase64.length);
   } catch (pdfErr) {
-    console.error("[createInvoiceRecord] PDF generation FAILED:", pdfErr);
+    console.error("PDF generation failed:", pdfErr);
   }
 
   // Save invoice record to DB
@@ -298,13 +291,11 @@ export const createInvoiceRecord = createServerFn({ method: "POST" }).handler(as
       billing_cycle: billingCycle,
       status: "paid",
     });
-    console.log("[createInvoiceRecord] Invoice saved to DB:", invoiceNumber);
   } catch (dbErr) {
-    console.error("[createInvoiceRecord] DB save FAILED:", dbErr);
+    console.error("DB save FAILED:", dbErr);
     // Don't throw — PDF was still generated, continue with email
   }
 
-  console.log("[createInvoiceRecord] Done. pdfBase64 present:", !!pdfBase64);
   return {
     invoiceNumber,
     pdfBase64,
