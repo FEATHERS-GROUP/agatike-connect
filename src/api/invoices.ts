@@ -190,7 +190,9 @@ export async function generateInvoicePdf(data: InvoiceData, qrBase64: string): P
   return pdfBuffer;
 }
 
-export const createInvoiceRecord = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const createInvoiceRecord = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
   const {
     spaceName,
     customerName,

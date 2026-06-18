@@ -14,7 +14,9 @@ function generateMembershipId(): string {
   return `${year}${month}${rand}`;
 }
 
-export const createSpaceSubscription = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const createSpaceSubscription = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
   const {
     space_id,
     user_id,

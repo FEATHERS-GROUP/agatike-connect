@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const sendAttendeeEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
   const {
     to,
     subject,
@@ -142,7 +144,9 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
   return data;
 });
 
-export const sendTicketsEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const sendTicketsEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
   const {
     to,
     customerName,
@@ -205,7 +209,9 @@ export const sendTicketsEmail = createServerFn({ method: "POST" }).handler(async
   return data;
 });
 
-export const sendProfileUpdateOTP = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
   const { to, otp } = ctx.data as any;
 
   const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -262,7 +268,9 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" }).handler(a
   return data;
 });
 
-export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
   const { to, customerName, spaceName, planName, price, billingCycle, startDate } = ctx.data as any;
 
   const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -325,7 +333,9 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
   return data;
 });
 
-export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
   const { to, customerName, spaceName, planName, price, billingCycle, invoiceDate, invoiceNumber, startDate, pdfBase64 } = ctx.data as any;
 
   const baseUrl = process.env.PROJECT_PRODUCTION_URL
@@ -415,7 +425,9 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).h
 });
 
 // Sends the company email with invoice PDF + member roster PDF attached
-export const sendCompanyRosterEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
   const {
     to, companyName, spaceName, planName, price, billingCycle, startDate,
     invoiceNumber, invoiceDate, memberCount, members, pdfBase64,
@@ -534,7 +546,9 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" }).handler
 });
 
 // Sends a personal welcome email to each individual team member
-export const sendMemberWelcomeEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
   const {
     to,
     memberName,

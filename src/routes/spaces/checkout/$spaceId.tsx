@@ -38,7 +38,7 @@ function CheckoutPage() {
   const { user } = useUserAuth();
 
   const [formData, setFormData] = useState({
-    name: user?.name || user?.username || "",
+    name: user?.username || "",
     email: user?.email || "",
     phone: user?.phone || "",
     gender: user?.gender || "",
@@ -51,7 +51,7 @@ function CheckoutPage() {
     if (user) {
       setFormData(prev => ({
         ...prev,
-        name: prev.name || user.name || user.username || "",
+        name: prev.name || user.username || "",
         email: prev.email || user.email || "",
         phone: prev.phone || user.phone || "",
         gender: prev.gender || user.gender || "",
