@@ -148,11 +148,11 @@ function SpaceDetails() {
   const typeLabel        = SPACE_TYPE_LABELS[space.type] ?? space.type ?? "Space";
 
   const mapStops = locations
-    .filter((loc: any) => loc.lat && loc.lng)
+    .filter((loc: any) => loc.lat && loc.lng && !isNaN(Number(loc.lat)) && !isNaN(Number(loc.lng)))
     .map((loc: any) => ({
       id: loc.id,
-      lat: loc.lat,
-      lng: loc.lng,
+      lat: Number(loc.lat),
+      lng: Number(loc.lng),
       venue: loc.name,
       city: loc.city,
       address: loc.address,
@@ -383,6 +383,10 @@ function SpaceDetails() {
                       className="w-full h-11 rounded-xl font-bold shadow-[var(--shadow-glow)] mt-auto"
                       style={i === 1 ? { background: "var(--gradient-primary)" } : {}}
                       variant={i === 1 ? "default" : "secondary"}
+                      onClick={() => navigate({ 
+                        to: `/spaces/checkout/${spaceId}`, 
+                        search: { plan: plan.name, price: plan.price, cycle: plan.billing_cycle } 
+                      })}
                     >
                       Select Plan
                     </Button>

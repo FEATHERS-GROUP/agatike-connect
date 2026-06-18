@@ -56,6 +56,8 @@ import { Route as AQrStringRouteImport } from './routes/a/$qrString'
 import { Route as UserIdMessageRouteImport } from './routes/$userId/message'
 import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard/$workspaceSlug/index'
 import { Route as VenuesCheckoutVenueIdRouteImport } from './routes/venues/checkout/$venueId'
+import { Route as SpacesSuccessSpaceIdRouteImport } from './routes/spaces/success/$spaceId'
+import { Route as SpacesCheckoutSpaceIdRouteImport } from './routes/spaces/checkout/$spaceId'
 import { Route as PublicBadgeBadgeIdRouteImport } from './routes/public/badge/$badgeId'
 import { Route as FEventIdReviewRouteImport } from './routes/f/$eventId/review'
 import { Route as DashboardWorkspaceSlugWithdrawalsRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals'
@@ -349,6 +351,16 @@ const DashboardWorkspaceSlugIndexRoute =
 const VenuesCheckoutVenueIdRoute = VenuesCheckoutVenueIdRouteImport.update({
   id: '/venues/checkout/$venueId',
   path: '/venues/checkout/$venueId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SpacesSuccessSpaceIdRoute = SpacesSuccessSpaceIdRouteImport.update({
+  id: '/spaces/success/$spaceId',
+  path: '/spaces/success/$spaceId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SpacesCheckoutSpaceIdRoute = SpacesCheckoutSpaceIdRouteImport.update({
+  id: '/spaces/checkout/$spaceId',
+  path: '/spaces/checkout/$spaceId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicBadgeBadgeIdRoute = PublicBadgeBadgeIdRouteImport.update({
@@ -751,6 +763,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
+  '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
+  '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
@@ -857,6 +871,8 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
+  '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
+  '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/dashboard/$workspaceSlug': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
@@ -963,6 +979,8 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
+  '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
+  '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
@@ -1071,6 +1089,8 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals'
     | '/f/$eventId/review'
     | '/public/badge/$badgeId'
+    | '/spaces/checkout/$spaceId'
+    | '/spaces/success/$spaceId'
     | '/venues/checkout/$venueId'
     | '/dashboard/$workspaceSlug/'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
@@ -1177,6 +1197,8 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals'
     | '/f/$eventId/review'
     | '/public/badge/$badgeId'
+    | '/spaces/checkout/$spaceId'
+    | '/spaces/success/$spaceId'
     | '/venues/checkout/$venueId'
     | '/dashboard/$workspaceSlug'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
@@ -1282,6 +1304,8 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals'
     | '/f/$eventId/review'
     | '/public/badge/$badgeId'
+    | '/spaces/checkout/$spaceId'
+    | '/spaces/success/$spaceId'
     | '/venues/checkout/$venueId'
     | '/dashboard/$workspaceSlug/'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
@@ -1375,6 +1399,8 @@ export interface RootRouteChildren {
   VenuesIndexRoute: typeof VenuesIndexRoute
   FEventIdReviewRoute: typeof FEventIdReviewRoute
   PublicBadgeBadgeIdRoute: typeof PublicBadgeBadgeIdRoute
+  SpacesCheckoutSpaceIdRoute: typeof SpacesCheckoutSpaceIdRoute
+  SpacesSuccessSpaceIdRoute: typeof SpacesSuccessSpaceIdRoute
   VenuesCheckoutVenueIdRoute: typeof VenuesCheckoutVenueIdRoute
 }
 
@@ -1707,6 +1733,20 @@ declare module '@tanstack/react-router' {
       path: '/venues/checkout/$venueId'
       fullPath: '/venues/checkout/$venueId'
       preLoaderRoute: typeof VenuesCheckoutVenueIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/spaces/success/$spaceId': {
+      id: '/spaces/success/$spaceId'
+      path: '/spaces/success/$spaceId'
+      fullPath: '/spaces/success/$spaceId'
+      preLoaderRoute: typeof SpacesSuccessSpaceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/spaces/checkout/$spaceId': {
+      id: '/spaces/checkout/$spaceId'
+      path: '/spaces/checkout/$spaceId'
+      fullPath: '/spaces/checkout/$spaceId'
+      preLoaderRoute: typeof SpacesCheckoutSpaceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/public/badge/$badgeId': {
@@ -2359,6 +2399,8 @@ const rootRouteChildren: RootRouteChildren = {
   VenuesIndexRoute: VenuesIndexRoute,
   FEventIdReviewRoute: FEventIdReviewRoute,
   PublicBadgeBadgeIdRoute: PublicBadgeBadgeIdRoute,
+  SpacesCheckoutSpaceIdRoute: SpacesCheckoutSpaceIdRoute,
+  SpacesSuccessSpaceIdRoute: SpacesSuccessSpaceIdRoute,
   VenuesCheckoutVenueIdRoute: VenuesCheckoutVenueIdRoute,
 }
 export const routeTree = rootRouteImport
