@@ -96,67 +96,141 @@ export const createSpaceSubscription = createServerFn({ method: "POST" })
     }));
   }
 
-  const query = `
-    mutation CreateSpaceSubscription(
-      $space_id: uuid!,
-      $user_id: uuid,
-      $customer_name: String!,
-      $customer_email: String!,
-      $customer_phone: String!,
-      $plan_name: String!,
-      $price: String!,
-      $billing_cycle: String!,
-      $status: String!,
-      $start_date: timestamptz,
-      $next_billing_date: timestamptz,
-      $booking_type: String!,
-      $team_members: jsonb
-    ) {
-      insert_space_subscriptions_one(
-        object: {
-          space_id: $space_id,
-          user_id: $user_id,
-          customer_name: $customer_name,
-          customer_email: $customer_email,
-          customer_phone: $customer_phone,
-          plan_name: $plan_name,
-          price: $price,
-          billing_cycle: $billing_cycle,
-          status: $status,
-          start_date: $start_date,
-          next_billing_date: $next_billing_date,
-          booking_type: $booking_type,
-          team_members: $team_members
+  let existingSubscriptionId: string | null = null;
+  if (user_id) {
+    const checkQuery = `
+      query CheckExistingSpaceSubscription($user_id: uuid!, $space_id: uuid!) {
+        space_subscriptions(where: { user_id: { _eq: $user_id }, space_id: { _eq: $space_id } }) {
+          id
         }
-      ) {
-        id
-        status
-        start_date
-        next_billing_date
-        team_members
       }
+    `;
+    try {
+      const existingData = await hasuraRequest<{ space_subscriptions: { id: string }[] }>(checkQuery, { user_id, space_id });
+      if (existingData?.space_subscriptions?.length > 0) {
+        existingSubscriptionId = existingData.space_subscriptions[0].id;
+      }
+    } catch (err) {
+      console.error("Failed to check existing space subscription:", err);
     }
-  `;
+  }
 
-  const variables = {
-    space_id,
-    user_id: user_id || null,
-    customer_name,
-    customer_email,
-    customer_phone,
-    plan_name,
-    price: String(price),
-    billing_cycle,
-    status: "active",
-    start_date: baseDate.toISOString(),
-    next_billing_date: nextBillingDate,
-    booking_type: booking_type || "individual",
-    // team_members carry individual membership_id inside each member's JSON object
-    team_members: finalTeamMembers,
-  };
-
-  const data = await hasuraRequest<{ insert_space_subscriptions_one: any }>(query, variables);
-  return data.insert_space_subscriptions_one;
+  if (existingSubscriptionId) {
+    const updateMutation = `
+      mutation UpdateSpaceSubscription(
+        $id: uuid!,
+        $customer_name: String!,
+        $customer_email: String!,
+        $customer_phone: String!,
+        $plan_name: String!,
+        $price: String!,
+        $billing_cycle: String!,
+        $status: String!,
+        $start_date: timestamptz,
+        $next_billing_date: timestamptz,
+        $booking_type: String!,
+        $team_members: jsonb
+      ) {
+        update_space_subscriptions_by_pk(
+          pk_columns: { id: $id }
+          _set: {
+            customer_name: $customer_name,
+            customer_email: $customer_email,
+            customer_phone: $customer_phone,
+            plan_name: $plan_name,
+            price: $price,
+            billing_cycle: $billing_cycle,
+            status: $status,
+            start_date: $start_date,
+            next_billing_date: $next_billing_date,
+            booking_type: $booking_type,
+            team_members: $team_members
+          }
+        ) {
+          id
+          status
+          start_date
+          next_billing_date
+          team_members
+        }
+      }
+    `;
+    const updateVariables = {
+      id: existingSubscriptionId,
+      customer_name,
+      customer_email,
+      customer_phone,
+      plan_name,
+      price: String(price),
+      billing_cycle,
+      status: "active",
+      start_date: baseDate.toISOString(),
+      next_billing_date: nextBillingDate,
+      booking_type: booking_type || "individual",
+      team_members: finalTeamMembers,
+    };
+    const data = await hasuraRequest<{ update_space_subscriptions_by_pk: any }>(updateMutation, updateVariables);
+    return data.update_space_subscriptions_by_pk;
+  } else {
+    const insertMutation = `
+      mutation CreateSpaceSubscription(
+        $space_id: uuid!,
+        $user_id: uuid,
+        $customer_name: String!,
+        $customer_email: String!,
+        $customer_phone: String!,
+        $plan_name: String!,
+        $price: String!,
+        $billing_cycle: String!,
+        $status: String!,
+        $start_date: timestamptz,
+        $next_billing_date: timestamptz,
+        $booking_type: String!,
+        $team_members: jsonb
+      ) {
+        insert_space_subscriptions_one(
+          object: {
+            space_id: $space_id,
+            user_id: $user_id,
+            customer_name: $customer_name,
+            customer_email: $customer_email,
+            customer_phone: $customer_phone,
+            plan_name: $plan_name,
+            price: $price,
+            billing_cycle: $billing_cycle,
+            status: $status,
+            start_date: $start_date,
+            next_billing_date: $next_billing_date,
+            booking_type: $booking_type,
+            team_members: $team_members
+          }
+        ) {
+          id
+          status
+          start_date
+          next_billing_date
+          team_members
+        }
+      }
+    `;
+    const insertVariables = {
+      space_id,
+      user_id: user_id || null,
+      customer_name,
+      customer_email,
+      customer_phone,
+      plan_name,
+      price: String(price),
+      billing_cycle,
+      status: "active",
+      start_date: baseDate.toISOString(),
+      next_billing_date: nextBillingDate,
+      booking_type: booking_type || "individual",
+      team_members: finalTeamMembers,
+    };
+    const data = await hasuraRequest<{ insert_space_subscriptions_one: any }>(insertMutation, insertVariables);
+    return data.insert_space_subscriptions_one;
+  }
 });
 
 export const getUserSubscriptions = createServerFn({ method: "POST" })
