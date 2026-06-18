@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 
-export function Navbar() {
+export function Navbar({ hideOnMobile }: { hideOnMobile?: boolean } = {}) {
   const { isLoggedIn, user } = useUserAuth();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/70 backdrop-blur-xl">
+    <header className={`sticky top-0 z-40 w-full border-b border-border/60 bg-background/70 backdrop-blur-xl ${hideOnMobile ? "hidden md:block" : ""}`}>
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2">
           <img src="/icon.svg" alt="Agatike" className="h-8 w-auto" />

@@ -542,7 +542,7 @@ function ProfilePage() {
   if (isLoading || isLoadingTickets || isLoadingOrganizers) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
+        <Navbar hideOnMobile />
         <div className="flex-1 flex flex-col items-center justify-center p-6 mt-10 md:mt-20">
           <Skeleton className="h-24 w-24 rounded-full mb-6" />
           <Skeleton className="h-6 w-48 mb-2" />
