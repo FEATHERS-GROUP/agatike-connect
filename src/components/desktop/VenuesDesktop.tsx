@@ -123,7 +123,7 @@ export function VenuesDesktop() {
                   <div className="mt-6 flex items-center justify-between border-t border-border/40 pt-4">
                     <div>
                       <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
-                        Entry Fee
+                        {venue.type === "office" || venue.type === "gym" ? "Starting At" : "Entry Fee"}
                       </p>
                       <span className="font-semibold text-lg text-primary">
                         {venue.pricing_tiers?.[0]?.amount > 0
@@ -131,14 +131,25 @@ export function VenuesDesktop() {
                           : "Free"}
                       </span>
                     </div>
-                    <Link to="/venues/$venueId" params={{ venueId: venue.id }}>
-                      <Button
-                        className="rounded-xl px-6 shadow-[var(--shadow-glow)] transition-all group-hover:scale-105"
-                        style={{ background: "var(--gradient-primary)" }}
-                      >
-                        Get Ticket
-                      </Button>
-                    </Link>
+                    {venue.type === "office" || venue.type === "gym" ? (
+                      <Link to="/spaces/$spaceId" params={{ spaceId: venue.id }}>
+                        <Button
+                          className="rounded-xl px-6 shadow-[var(--shadow-glow)] transition-all group-hover:scale-105"
+                          style={{ background: "var(--gradient-primary)" }}
+                        >
+                          Explore Space
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link to="/venues/$venueId" params={{ venueId: venue.id }}>
+                        <Button
+                          className="rounded-xl px-6 shadow-[var(--shadow-glow)] transition-all group-hover:scale-105"
+                          style={{ background: "var(--gradient-primary)" }}
+                        >
+                          Get Ticket
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

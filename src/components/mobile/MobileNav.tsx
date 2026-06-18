@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Compass, Bus, Ticket, User, Menu, Film, CalendarDays, Repeat } from "lucide-react";
+import { Home, Compass, Bus, Ticket, User, Menu, Film, CalendarDays, Repeat, Building2, Dumbbell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Drawer,
@@ -18,13 +18,15 @@ export function MobileNav() {
   const tabs = [
     { name: "Home", href: "/", icon: Home },
     { name: "Explore", href: "/explore", icon: Compass },
-    { name: "Bus", href: "/buses/mobile", icon: Bus },
-    { name: "Venues", href: "/venues", icon: Ticket },
+    { name: "Events", href: "/events", icon: CalendarDays },
+    { name: "Spaces", href: "/venues", icon: Ticket },
   ];
 
   const moreMenuLinks = [
-    { name: "Events", href: "/events", icon: CalendarDays },
+    { name: "Bus Tickets", href: "/buses/mobile", icon: Bus },
     { name: "Movies & Cinemas", href: "/movies", icon: Film },
+    { name: "Offices & Co-working (Mock)", href: "/venues?type=office", icon: Building2 },
+    { name: "Gyms & Fitness (Mock)", href: "/venues?type=gym", icon: Dumbbell },
     { name: "Subscriptions", href: "/subscriptions", icon: Repeat, requiresAuth: true },
     { name: "Profile Settings", href: "/settings", icon: User, requiresAuth: true },
   ];

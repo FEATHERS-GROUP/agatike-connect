@@ -56,7 +56,7 @@ export function Navbar() {
             className="hover:text-foreground transition-colors"
             activeProps={{ className: "text-foreground font-medium" }}
           >
-            Venue Tickets
+            Spaces
           </Link>
         </nav>
 
