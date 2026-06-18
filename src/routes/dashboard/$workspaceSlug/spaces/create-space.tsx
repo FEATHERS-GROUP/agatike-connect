@@ -87,9 +87,7 @@ function NewSpaceWizard() {
     name: "",
     type: "",
     description: "",
-    city: "",
-    country: "RW",
-    address: "",
+    locations: [{ name: "Main Location", city: "", country: "RW", address: "" }],
     plans: [{ name: "Day Pass", price: "", features: ["Access to space"] }],
     cover_url: "",
     socials: { instagram: "", whatsapp: "", phone: "" },
@@ -143,15 +141,7 @@ function NewSpaceWizard() {
           currency: activeWorkspace?.currency || "RWF",
           cover_url: formData.cover_url || "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=800",
           socials: formData.socials,
-          locations: [
-            {
-              id: "loc-1",
-              name: "Main Location",
-              city: formData.city,
-              country: formData.country,
-              address: formData.address,
-            }
-          ],
+          locations: formData.locations.map((loc: any, idx: number) => ({ ...loc, id: `loc-${idx + 1}` })),
           plans: formData.plans,
         },
       });
@@ -174,8 +164,8 @@ function NewSpaceWizard() {
   const nextStep = () => {
     if (step === 0 && !formData.type) return toast.error("Please select a space type");
     if (step === 1 && !formData.name) return toast.error("Space name is required");
-    if (step === 2 && (!formData.city || !formData.address))
-      return toast.error("City and Address are required");
+    if (step === 2 && formData.locations.some((l: any) => !l.city || !l.address || !l.name))
+      return toast.error("Please fill in all details for your locations");
 
     setStep(Math.min(step + 1, 4));
   };
@@ -197,6 +187,21 @@ function NewSpaceWizard() {
 
   const removePlan = (idx: number) => {
     setFormData((p) => ({ ...p, plans: p.plans.filter((_, i) => i !== idx) }));
+  };
+
+  const addLocation = () => {
+    setFormData((p) => ({ ...p, locations: [...p.locations, { name: "", city: "", country: "RW", address: "" }] }));
+  };
+
+  const updateLocation = (idx: number, field: string, val: any) => {
+    setFormData((p) => ({
+      ...p,
+      locations: p.locations.map((t: any, i: number) => (i === idx ? { ...t, [field]: val } : t)),
+    }));
+  };
+
+  const removeLocation = (idx: number) => {
+    setFormData((p) => ({ ...p, locations: p.locations.filter((_: any, i: number) => i !== idx) }));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -421,52 +426,71 @@ function NewSpaceWizard() {
           {step === 2 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div>
-                <h2 className="text-3xl font-bold">Primary Location</h2>
+                <h2 className="text-3xl font-bold">Space Locations</h2>
                 <p className="text-muted-foreground mt-2 text-lg">
-                  Where is your main space located? (You can add more locations later)
+                  Where are your spaces located? You can add multiple locations.
                 </p>
               </div>
               <div className="space-y-6 mt-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-base">
-                      Country <span className="text-red-500">*</span>
-                    </Label>
-                    <select
-                      className="w-full h-12 rounded-xl bg-secondary/50 border border-input px-4 text-base"
-                      value={formData.country}
-                      onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
-                    >
-                      {COUNTRIES.map((c) => (
-                        <option key={c.code} value={c.code}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
+                {formData.locations.map((loc: any, idx: number) => (
+                  <div key={idx} className="p-6 bg-secondary/20 rounded-2xl border border-border/60 relative space-y-6">
+                    <div className="space-y-2">
+                      <Label className="text-base">Location Name <span className="text-red-500">*</span></Label>
+                      <Input
+                        className="h-12 text-lg rounded-xl"
+                        value={loc.name}
+                        onChange={(e) => updateLocation(idx, "name", e.target.value)}
+                        placeholder="e.g. Kigali HQ"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-base">Country <span className="text-red-500">*</span></Label>
+                        <select
+                          className="w-full h-12 rounded-xl bg-secondary/50 border border-input px-4 text-base"
+                          value={loc.country}
+                          onChange={(e) => updateLocation(idx, "country", e.target.value)}
+                        >
+                          {COUNTRIES.map((c) => (
+                            <option key={c.code} value={c.code}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-base">City / Area <span className="text-red-500">*</span></Label>
+                        <Input
+                          className="h-12 text-lg rounded-xl"
+                          value={loc.city}
+                          onChange={(e) => updateLocation(idx, "city", e.target.value)}
+                          placeholder="e.g. Kigali"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-base">Street Address <span className="text-red-500">*</span></Label>
+                      <Input
+                        className="h-12 text-lg rounded-xl"
+                        value={loc.address}
+                        onChange={(e) => updateLocation(idx, "address", e.target.value)}
+                        placeholder="e.g. KG 11 Ave"
+                      />
+                    </div>
+                    {formData.locations.length > 1 && (
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-3 -right-3 rounded-full h-8 w-8"
+                        onClick={() => removeLocation(idx)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-base">
-                      City / Area <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      className="h-12 text-lg rounded-xl"
-                      value={formData.city}
-                      onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
-                      placeholder="e.g. Kigali"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-base">
-                    Street Address <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    className="h-12 text-lg rounded-xl"
-                    value={formData.address}
-                    onChange={(e) => setFormData((p) => ({ ...p, address: e.target.value }))}
-                    placeholder="e.g. KG 11 Ave"
-                  />
-                </div>
+                ))}
+
+                <Button variant="outline" className="w-full border-dashed py-8 rounded-2xl" onClick={addLocation}>
+                  <Plus className="mr-2 h-4 w-4" /> Add Another Location
+                </Button>
               </div>
             </div>
           )}
