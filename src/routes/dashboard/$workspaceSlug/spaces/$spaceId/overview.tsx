@@ -124,13 +124,14 @@ function SpaceOverviewPage() {
   });
 
   // ── Membership status donut ────────────────────────────────────
-  let statusCounts = { Active: 0, Expired: 0, Pending: 0, Cancelled: 0 };
+  let statusCounts = { Active: 0, Expired: 0, Pending: 0, Cancelled: 0, OnHold: 0 };
   subscriptions.forEach((s: any) => {
     if (s.booking_type === 'visitor') return;
     if (s.status === 'active') statusCounts.Active++;
     else if (s.status === 'expired') statusCounts.Expired++;
     else if (s.status === 'pending') statusCounts.Pending++;
     else if (s.status === 'cancelled') statusCounts.Cancelled++;
+    else if (s.status === 'on_hold') statusCounts.OnHold++;
   });
   
   const membershipStatusData = [
@@ -138,6 +139,7 @@ function SpaceOverviewPage() {
     { name: "Expired",   value: statusCounts.Expired,   color: ROSE      },
     { name: "Pending",   value: statusCounts.Pending,   color: AMBER     },
     { name: "Cancelled", value: statusCounts.Cancelled, color: "#64748b" },
+    { name: "On Hold",   value: statusCounts.OnHold,    color: "#f59e0b" }, // Using a different amber/orange shade
   ].filter(d => d.value > 0);
 
   if (membershipStatusData.length === 0) {

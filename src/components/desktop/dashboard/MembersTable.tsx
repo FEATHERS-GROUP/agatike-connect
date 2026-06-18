@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 export type MemberType = "Individual" | "Company" | "Organization";
-export type MemberStatus = "Active" | "Expired" | "Pending";
+export type MemberStatus = "Active" | "Expired" | "Pending" | "OnHold";
 export type SubscriptionType = "new" | "returning";
 export type MemberCategory = "member" | "visitor";
 
@@ -40,6 +40,7 @@ const STATUS_STYLES: Record<MemberStatus, string> = {
   Active:  "bg-green-500/10 text-green-500",
   Expired: "bg-muted text-muted-foreground",
   Pending: "bg-amber-500/10 text-amber-500",
+  OnHold:  "bg-orange-500/10 text-orange-500",
 };
 
 const TYPE_STYLES: Record<MemberType, string> = {
