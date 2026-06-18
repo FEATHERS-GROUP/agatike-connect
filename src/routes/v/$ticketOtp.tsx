@@ -92,7 +92,9 @@ function PublicTicketValidationRoute() {
 
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6 text-center">
-        <div className={`h-24 w-24 rounded-full ${validity.isValid ? "bg-emerald-500/20" : "bg-red-500/20"} flex items-center justify-center mb-6 shadow-[0_0_40px_${validity.isValid ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}]`}>
+        <div
+          className={`h-24 w-24 rounded-full ${validity.isValid ? "bg-emerald-500/20" : "bg-red-500/20"} flex items-center justify-center mb-6 shadow-[0_0_40px_${validity.isValid ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}]`}
+        >
           {validity.isValid ? (
             <CheckCircle2 className="h-12 w-12 text-emerald-500" />
           ) : (
@@ -100,7 +102,9 @@ function PublicTicketValidationRoute() {
           )}
         </div>
 
-        <h1 className={`text-3xl font-black uppercase tracking-widest mb-2 ${validity.isValid ? "text-emerald-400" : "text-red-400"}`}>
+        <h1
+          className={`text-3xl font-black uppercase tracking-widest mb-2 ${validity.isValid ? "text-emerald-400" : "text-red-400"}`}
+        >
           {validity.label} Subscription
         </h1>
         <p className="text-muted-foreground mb-12 uppercase tracking-widest text-xs">
@@ -117,10 +121,10 @@ function PublicTicketValidationRoute() {
           )}
 
           <div className="mb-6 text-center">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Subscriber</p>
-            <p className="text-xl font-bold text-white">
-              {sub.customer_name}
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+              Subscriber
             </p>
+            <p className="text-xl font-bold text-white">{sub.customer_name}</p>
             {sub.customer_email && (
               <p className="text-xs text-white/60 mt-0.5">{sub.customer_email}</p>
             )}
@@ -128,10 +132,10 @@ function PublicTicketValidationRoute() {
 
           <div className="grid grid-cols-2 gap-4 mb-6 text-left">
             <div className="bg-black/30 rounded-xl p-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Plan</p>
-              <p className="font-semibold text-white truncate">
-                {sub.plan_name}
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                Plan
               </p>
+              <p className="font-semibold text-white truncate">{sub.plan_name}</p>
             </div>
             <div className="bg-black/30 rounded-xl p-3">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
@@ -140,28 +144,34 @@ function PublicTicketValidationRoute() {
               <p className="font-semibold text-white truncate">{sub.space?.name || "Space"}</p>
             </div>
             <div className="bg-black/30 rounded-xl p-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Price</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                Price
+              </p>
               <p className="font-semibold text-white truncate">
                 {sub.price} {currency}
               </p>
             </div>
             <div className="bg-black/30 rounded-xl p-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Cycle</p>
-              <p className="font-semibold text-white truncate capitalize">
-                {sub.billing_cycle}
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                Cycle
               </p>
+              <p className="font-semibold text-white truncate capitalize">{sub.billing_cycle}</p>
             </div>
           </div>
 
           {sub.booking_type === "team" && sub.team_members && sub.team_members.length > 0 && (
             <div className="bg-black/30 rounded-xl p-4 mb-6 text-left">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Team Members</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">
+                Team Members
+              </p>
               <div className="space-y-1 max-h-32 overflow-y-auto">
                 {sub.team_members.map((member: any, idx: number) => (
                   <div key={idx} className="flex justify-between items-center text-xs">
                     <span className="font-medium text-white/80">{member.name || member.email}</span>
                     {member.membership_id && (
-                      <span className="font-mono text-[10px] text-white/40">{member.membership_id}</span>
+                      <span className="font-mono text-[10px] text-white/40">
+                        {member.membership_id}
+                      </span>
                     )}
                   </div>
                 ))}
@@ -172,12 +182,14 @@ function PublicTicketValidationRoute() {
           <div className="bg-black/50 rounded-xl py-3 px-4 flex justify-between items-center text-left">
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                {sub.billing_cycle?.toLowerCase() === "one-time" || sub.billing_cycle?.toLowerCase() === "onetime"
+                {sub.billing_cycle?.toLowerCase() === "one-time" ||
+                sub.billing_cycle?.toLowerCase() === "onetime"
                   ? "Start Date"
                   : "Valid Until"}
               </p>
               <p className="font-semibold text-sm text-white/80 mt-0.5">
-                {sub.billing_cycle?.toLowerCase() === "one-time" || sub.billing_cycle?.toLowerCase() === "onetime"
+                {sub.billing_cycle?.toLowerCase() === "one-time" ||
+                sub.billing_cycle?.toLowerCase() === "onetime"
                   ? formatDate(sub.start_date)
                   : formatDate(sub.next_billing_date)}
               </p>

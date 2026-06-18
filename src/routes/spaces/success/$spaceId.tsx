@@ -17,23 +17,25 @@ function SuccessPage() {
   const { spaceId } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate();
-  
+
   const email = search.email;
 
   return (
     <div className="min-h-screen bg-background flex flex-col text-foreground">
       <Navbar hideOnMobile />
-      
+
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center space-y-6 animate-in zoom-in-95 duration-500 fade-in">
-          
           <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-8 relative">
-            <div className="absolute inset-0 bg-emerald-500/20 rounded-full animate-ping" style={{ animationDuration: '3s' }}></div>
+            <div
+              className="absolute inset-0 bg-emerald-500/20 rounded-full animate-ping"
+              style={{ animationDuration: "3s" }}
+            ></div>
             <CheckCircle2 className="w-12 h-12 text-emerald-500 relative z-10" />
           </div>
 
           <h1 className="text-4xl font-bold tracking-tight">Booking Confirmed!</h1>
-          
+
           <p className="text-muted-foreground text-lg">
             Your payment was successful and your space is secured.
           </p>
@@ -45,15 +47,23 @@ function SuccessPage() {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
                 <span className="text-primary font-bold mt-0.5">•</span>
-                <span>We've sent a <strong>booking confirmation</strong> to {email ? <span className="text-foreground">{email}</span> : "your email"}.</span>
+                <span>
+                  We've sent a <strong>booking confirmation</strong> to{" "}
+                  {email ? <span className="text-foreground">{email}</span> : "your email"}.
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary font-bold mt-0.5">•</span>
-                <span>Your <strong>invoice details</strong> have also been sent in a separate email for your records.</span>
+                <span>
+                  Your <strong>invoice details</strong> have also been sent in a separate email for
+                  your records.
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary font-bold mt-0.5">•</span>
-                <span>The space organizer will be in touch shortly if any further details are required.</span>
+                <span>
+                  The space organizer will be in touch shortly if any further details are required.
+                </span>
               </li>
             </ul>
           </div>
@@ -73,7 +83,6 @@ function SuccessPage() {
               Explore More Spaces <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
-
         </div>
       </main>
     </div>

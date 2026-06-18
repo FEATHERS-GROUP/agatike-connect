@@ -70,7 +70,7 @@ async function generateVisitorPassPdf(data: VisitorPassData, qrBase64: string): 
   if (qrBase64) {
     try {
       doc.addImage(qrBase64, "PNG", (W - 35) / 2, y, 35, 35);
-    } catch (_) { }
+    } catch (_) {}
   }
 
   y += 42;
@@ -103,13 +103,16 @@ export const processVisitorPass = createServerFn({ method: "POST" })
       console.warn("Visitor QR fetch failed:", err);
     }
 
-    const pdfBuffer = await generateVisitorPassPdf({
-      visitorName,
-      visitorId,
-      spaceName,
-      visitDate,
-      hostedBy
-    }, qrBase64);
+    const pdfBuffer = await generateVisitorPassPdf(
+      {
+        visitorName,
+        visitorId,
+        spaceName,
+        visitDate,
+        hostedBy,
+      },
+      qrBase64,
+    );
 
     const pdfBase64 = pdfBuffer.toString("base64");
 
@@ -122,8 +125,8 @@ export const processVisitorPass = createServerFn({ method: "POST" })
           spaceName,
           visitDate,
           hostedBy,
-          pdfBase64
-        }
+          pdfBase64,
+        },
       });
     }
 

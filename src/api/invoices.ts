@@ -44,7 +44,7 @@ export async function generateInvoicePdf(data: InvoiceData, qrBase64: string): P
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
-  
+
   // Logo omitted due to massive file size (17k x 3k pixels), using text instead
   doc.text("INVOICE", 14, 18);
 
@@ -56,7 +56,12 @@ export async function generateInvoicePdf(data: InvoiceData, qrBase64: string): P
   // Invoice number & date (top-right)
   doc.setFontSize(9);
   doc.text(`Invoice #: ${data.invoiceNumber}`, W - 14, 18, { align: "right" });
-  doc.text(`Date: ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}`, W - 14, 24, { align: "right" });
+  doc.text(
+    `Date: ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}`,
+    W - 14,
+    24,
+    { align: "right" },
+  );
   doc.text(`Status: PAID`, W - 14, 30, { align: "right" });
 
   // ── Bill To section ─────────────────────────────────────────
@@ -193,57 +198,64 @@ export async function generateInvoicePdf(data: InvoiceData, qrBase64: string): P
 export const createInvoiceRecord = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
-  const {
-    spaceName,
-    customerName,
-    customerEmail,
-    planName,
-    amount,
-    currency,
-    billingCycle,
-    startDate,
-    spaceId,
-    referenceId,
-  } = ctx.data as any;
-
-  const invoiceNumber = generateInvoiceNumber();
-
-  // Generate PDF
-  let pdfBase64: string | null = null;
-  try {
-    const { Buffer } = await import("buffer");
-    const verificationUrl = `https://agatike.rw/invoices/verify/${invoiceNumber}`;
-    let qrBase64 = "";
-    try {
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&format=png&data=${encodeURIComponent(verificationUrl)}`;
-      const qrRes = await fetch(qrUrl);
-      if (qrRes.ok) {
-        const qrBuffer = await qrRes.arrayBuffer();
-        qrBase64 = `data:image/png;base64,${Buffer.from(qrBuffer).toString("base64")}`;
-      }
-    } catch (qrErr) {
-      console.warn("QR fetch failed (non-fatal):", qrErr);
-    }
-    const pdfBuffer = await generateInvoicePdf({
-      invoiceNumber,
+    const {
+      spaceName,
       customerName,
       customerEmail,
-      spaceName,
       planName,
-      amount: String(amount),
-      currency: currency || "RWF",
+      amount,
+      currency,
       billingCycle,
-      startDate: startDate
-        ? new Date(startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })
-        : new Date().toLocaleDateString("en-GB"),
-    }, qrBase64);
-    pdfBase64 = pdfBuffer.toString("base64");
-  } catch (pdfErr) {
-    console.error("PDF generation failed:", pdfErr);
-  }
+      startDate,
+      spaceId,
+      referenceId,
+    } = ctx.data as any;
 
-  // Save invoice record to DB
-  const query = `
+    const invoiceNumber = generateInvoiceNumber();
+
+    // Generate PDF
+    let pdfBase64: string | null = null;
+    try {
+      const { Buffer } = await import("buffer");
+      const verificationUrl = `https://agatike.rw/invoices/verify/${invoiceNumber}`;
+      let qrBase64 = "";
+      try {
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&format=png&data=${encodeURIComponent(verificationUrl)}`;
+        const qrRes = await fetch(qrUrl);
+        if (qrRes.ok) {
+          const qrBuffer = await qrRes.arrayBuffer();
+          qrBase64 = `data:image/png;base64,${Buffer.from(qrBuffer).toString("base64")}`;
+        }
+      } catch (qrErr) {
+        console.warn("QR fetch failed (non-fatal):", qrErr);
+      }
+      const pdfBuffer = await generateInvoicePdf(
+        {
+          invoiceNumber,
+          customerName,
+          customerEmail,
+          spaceName,
+          planName,
+          amount: String(amount),
+          currency: currency || "RWF",
+          billingCycle,
+          startDate: startDate
+            ? new Date(startDate).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })
+            : new Date().toLocaleDateString("en-GB"),
+        },
+        qrBase64,
+      );
+      pdfBase64 = pdfBuffer.toString("base64");
+    } catch (pdfErr) {
+      console.error("PDF generation failed:", pdfErr);
+    }
+
+    // Save invoice record to DB
+    const query = `
     mutation CreateInvoice(
       $invoice_number: String!
       $type: String!
@@ -278,31 +290,28 @@ export const createInvoiceRecord = createServerFn({ method: "POST" })
     }
   `;
 
-  try {
-    await hasuraRequest(query, {
-      invoice_number: invoiceNumber,
-      type: "space_subscription",
-      reference_id: referenceId || null,
-      space_id: spaceId || null,
-      space_subscription_id: referenceId || null,
-      customer_name: customerName,
-      customer_email: customerEmail,
-      amount: String(amount),
-      currency: currency || "RWF",
-      plan_name: planName,
-      billing_cycle: billingCycle,
-      status: "paid",
-    });
-  } catch (dbErr) {
-    console.error("DB save FAILED:", dbErr);
-    // Don't throw — PDF was still generated, continue with email
-  }
+    try {
+      await hasuraRequest(query, {
+        invoice_number: invoiceNumber,
+        type: "space_subscription",
+        reference_id: referenceId || null,
+        space_id: spaceId || null,
+        space_subscription_id: referenceId || null,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        amount: String(amount),
+        currency: currency || "RWF",
+        plan_name: planName,
+        billing_cycle: billingCycle,
+        status: "paid",
+      });
+    } catch (dbErr) {
+      console.error("DB save FAILED:", dbErr);
+      // Don't throw — PDF was still generated, continue with email
+    }
 
-  return {
-    invoiceNumber,
-    pdfBase64,
-  };
-});
-
-
-
+    return {
+      invoiceNumber,
+      pdfBase64,
+    };
+  });

@@ -40,12 +40,12 @@ function SpacesListingsPage() {
   // Calculate total plans across all spaces
   const activePlans = spaces.reduce(
     (acc: number, space: any) => acc + (space.plans?.length || 0),
-    0
+    0,
   );
   // Calculate total locations across all spaces
   const totalLocations = spaces.reduce(
     (acc: number, space: any) => acc + (space.locations?.length || 0),
-    0
+    0,
   );
 
   return (
@@ -119,7 +119,9 @@ function SpacesListingsPage() {
           <div className="flex flex-col items-center justify-center p-12 bg-secondary/20 rounded-2xl border border-dashed">
             <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold mb-2">No spaces yet</h3>
-            <p className="text-muted-foreground mb-6">Create your first space to start managing plans and members.</p>
+            <p className="text-muted-foreground mb-6">
+              Create your first space to start managing plans and members.
+            </p>
             <Button
               asChild
               style={{ background: "var(--gradient-primary)" }}

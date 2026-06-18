@@ -685,7 +685,7 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
 
   if (pdfBase64) {
     emailPayload.attachments.push({
-      filename: \`VisitorPass-\${visitorId}.pdf\`,
+      filename: `VisitorPass-${visitorId}.pdf`,
       content: pdfBase64,
     });
   }
@@ -694,7 +694,7 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: \`Bearer \${process.env.RESEND_API_KEY}\`,
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
     },
     body: JSON.stringify(emailPayload),
   });

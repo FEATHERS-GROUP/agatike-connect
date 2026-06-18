@@ -10,10 +10,10 @@ async function check() {
       {
         type: "run_sql",
         args: {
-          sql: "SELECT column_name FROM information_schema.columns WHERE table_name = 'invoices';"
-        }
-      }
-    ]
+          sql: "SELECT column_name FROM information_schema.columns WHERE table_name = 'invoices';",
+        },
+      },
+    ],
   };
 
   const res = await fetch(process.env.VITE_HASURA_ADMIN_API, {
@@ -22,7 +22,7 @@ async function check() {
       "Content-Type": "application/json",
       "x-hasura-admin-secret": process.env.VITE_HASURA_ADMIN_SECRET,
     },
-    body: JSON.stringify(query)
+    body: JSON.stringify(query),
   });
 
   console.log(JSON.stringify(await res.json(), null, 2));

@@ -1,5 +1,14 @@
 import { Link, useRouterState, useParams } from "@tanstack/react-router";
-import { LayoutDashboard, MapPin, Users, Settings, ArrowLeft, CreditCard, ListChecks, Link as LinkIcon } from "lucide-react";
+import {
+  LayoutDashboard,
+  MapPin,
+  Users,
+  Settings,
+  ArrowLeft,
+  CreditCard,
+  ListChecks,
+  Link as LinkIcon,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
 import { cn } from "@/lib/utils";
@@ -66,15 +75,13 @@ export function SpaceSidebar() {
       <div className="mb-4 flex items-center gap-3">
         <div className="h-9 w-9 overflow-hidden rounded-lg bg-secondary shrink-0">
           {space?.cover_url && (
-            <img
-              src={space.cover_url}
-              alt={space.name}
-              className="h-full w-full object-cover"
-            />
+            <img src={space.cover_url} alt={space.name} className="h-full w-full object-cover" />
           )}
         </div>
         <div className="min-w-0">
-          <p className="font-semibold text-sm leading-tight truncate">{space?.name || "Loading..."}</p>
+          <p className="font-semibold text-sm leading-tight truncate">
+            {space?.name || "Loading..."}
+          </p>
           <p className="text-xs text-muted-foreground">{space?.type || "Space Workspace"}</p>
         </div>
       </div>
@@ -118,10 +125,12 @@ export function SpaceSidebar() {
               : "text-muted-foreground hover:bg-secondary hover:text-foreground",
           )}
         >
-          <Users className={cn(
-            "h-4 w-4 shrink-0",
-            location.pathname.includes(`/${workspaceSlug}/memberships`) ? "text-primary" : ""
-          )} />
+          <Users
+            className={cn(
+              "h-4 w-4 shrink-0",
+              location.pathname.includes(`/${workspaceSlug}/memberships`) ? "text-primary" : "",
+            )}
+          />
           <span className="truncate">Memberships</span>
         </Link>
       </div>

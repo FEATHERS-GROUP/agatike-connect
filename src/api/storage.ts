@@ -67,46 +67,46 @@ export const uploadFile = createServerFn({ method: "POST" }).handler(async (ctx)
 export const uploadFormData = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
-  const formData = ctx.data as unknown as FormData;
-  const file = formData.get("file") as File;
-  const folder = (formData.get("folder") as string) || "uploads";
-  
-  if (!file) throw new Error("No file provided");
+    const formData = ctx.data as unknown as FormData;
+    const file = formData.get("file") as File;
+    const folder = (formData.get("folder") as string) || "uploads";
 
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const anonKey = process.env.SUPABASE_ANOM_KEY;
-  const isServiceKeyValid =
-    serviceKey && serviceKey !== "YOUR_SERVICE_ROLE_KEY_HERE" && serviceKey.startsWith("eyJ");
-  const authKey = isServiceKeyValid ? serviceKey : anonKey;
+    if (!file) throw new Error("No file provided");
 
-  if (!authKey) throw new Error("Supabase credentials not configured in .env");
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const anonKey = process.env.SUPABASE_ANOM_KEY;
+    const isServiceKeyValid =
+      serviceKey && serviceKey !== "YOUR_SERVICE_ROLE_KEY_HERE" && serviceKey.startsWith("eyJ");
+    const authKey = isServiceKeyValid ? serviceKey : anonKey;
 
-  const ext = file.name.split(".").pop() || "jpg";
-  const filename = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-  const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${filename}`;
+    if (!authKey) throw new Error("Supabase credentials not configured in .env");
 
-  const arrayBuffer = await file.arrayBuffer();
-  const binaryData = Buffer.from(arrayBuffer);
+    const ext = file.name.split(".").pop() || "jpg";
+    const filename = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${filename}`;
 
-  const response = await fetch(uploadUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${authKey}`,
-      "Content-Type": file.type || "application/octet-stream",
-      "Cache-Control": "3600",
-      "x-upsert": "true",
-    },
-    body: binaryData,
+    const arrayBuffer = await file.arrayBuffer();
+    const binaryData = Buffer.from(arrayBuffer);
+
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${authKey}`,
+        "Content-Type": file.type || "application/octet-stream",
+        "Cache-Control": "3600",
+        "x-upsert": "true",
+      },
+      body: binaryData,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Upload failed (${response.status}): ${errText}`);
+    }
+
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${filename}`;
+    return { url: publicUrl };
   });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Upload failed (${response.status}): ${errText}`);
-  }
-
-  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${filename}`;
-  return { url: publicUrl };
-});
 
 /**
  * Server-side bulk file deletion from Supabase Storage.
@@ -115,39 +115,39 @@ export const uploadFormData = createServerFn({ method: "POST" })
 export const deleteFiles = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
-  const { urls } = ctx.data as unknown as { urls: string[] };
+    const { urls } = ctx.data as unknown as { urls: string[] };
 
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const anonKey = process.env.SUPABASE_ANOM_KEY;
-  const isServiceKeyValid =
-    serviceKey && serviceKey !== "YOUR_SERVICE_ROLE_KEY_HERE" && serviceKey.startsWith("eyJ");
-  const authKey = isServiceKeyValid ? serviceKey : anonKey;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const anonKey = process.env.SUPABASE_ANOM_KEY;
+    const isServiceKeyValid =
+      serviceKey && serviceKey !== "YOUR_SERVICE_ROLE_KEY_HERE" && serviceKey.startsWith("eyJ");
+    const authKey = isServiceKeyValid ? serviceKey : anonKey;
 
-  if (!authKey) throw new Error("Supabase credentials not configured in .env");
+    if (!authKey) throw new Error("Supabase credentials not configured in .env");
 
-  const PREFIX = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
+    const PREFIX = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
 
-  // Extract storage paths from full public URLs and filter to only files in our bucket
-  const paths = urls.filter((u) => u && u.startsWith(PREFIX)).map((u) => u.replace(PREFIX, ""));
+    // Extract storage paths from full public URLs and filter to only files in our bucket
+    const paths = urls.filter((u) => u && u.startsWith(PREFIX)).map((u) => u.replace(PREFIX, ""));
 
-  if (paths.length === 0) return { deleted: 0 };
+    if (paths.length === 0) return { deleted: 0 };
 
-  // Supabase Storage bulk delete endpoint
-  const deleteUrl = `${SUPABASE_URL}/storage/v1/object/${BUCKET}`;
-  const response = await fetch(deleteUrl, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${authKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ prefixes: paths }),
+    // Supabase Storage bulk delete endpoint
+    const deleteUrl = `${SUPABASE_URL}/storage/v1/object/${BUCKET}`;
+    const response = await fetch(deleteUrl, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${authKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prefixes: paths }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(`Storage deletion failed (${response.status}): ${errText}`);
+      // Don't throw — still proceed with DB deletion
+    }
+
+    return { deleted: paths.length };
   });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    console.error(`Storage deletion failed (${response.status}): ${errText}`);
-    // Don't throw — still proceed with DB deletion
-  }
-
-  return { deleted: paths.length };
-});

@@ -54,7 +54,9 @@ function DashboardLayout() {
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isExperienceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/experiences\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
-  const isSpaceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/[^/]+/) && !location.pathname.includes("create-space");
+  const isSpaceWorkspace =
+    location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/[^/]+/) &&
+    !location.pathname.includes("create-space");
   const search = location.search as any;
   const isDesigningVenue = !!location.pathname.match(/^\/dashboard\/[^/]+\/venue-designer\/[^/]+/);
 

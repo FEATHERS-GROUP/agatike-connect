@@ -2,7 +2,15 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSpaceById, updateSpace } from "@/api/spaces";
 import { uploadFormData, deleteFiles } from "@/api/storage";
-import { Settings, Save, UploadCloud, Phone, Instagram, MessageCircle, Loader2 } from "lucide-react";
+import {
+  Settings,
+  Save,
+  UploadCloud,
+  Phone,
+  Instagram,
+  MessageCircle,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,7 +69,9 @@ function SpaceSettingsPage() {
     }
   }, [space]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -154,10 +164,10 @@ function SpaceSettingsPage() {
             Update your space's general information and branding.
           </p>
         </div>
-        <Button 
-          onClick={handleSave} 
+        <Button
+          onClick={handleSave}
           disabled={isSaving}
-          className="gap-2 rounded-xl h-11 px-6 shadow-sm font-bold" 
+          className="gap-2 rounded-xl h-11 px-6 shadow-sm font-bold"
           style={{ background: "var(--gradient-primary)" }}
         >
           {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -167,11 +177,10 @@ function SpaceSettingsPage() {
 
       <div className="grid grid-cols-1 gap-8">
         <div className="bg-card border border-border/60 rounded-3xl p-6 md:p-8 shadow-sm space-y-8">
-          
           <div className="space-y-4">
             <h3 className="font-bold text-lg">Cover Image</h3>
             <div className="flex flex-col sm:flex-row gap-6 items-start">
-              <div 
+              <div
                 className="h-40 w-full sm:w-64 rounded-2xl overflow-hidden bg-secondary border border-border/60 shrink-0 relative group cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
               >
@@ -187,20 +196,24 @@ function SpaceSettingsPage() {
                 </div>
               </div>
               <div className="space-y-3 flex-1">
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  className="hidden" 
-                  accept="image/*" 
-                  onChange={handleImageUpload} 
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImageUpload}
                 />
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="gap-2 rounded-xl"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploadingImage}
                 >
-                  {isUploadingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+                  {isUploadingImage ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <UploadCloud className="h-4 w-4" />
+                  )}
                   {isUploadingImage ? "Uploading..." : "Upload New Image"}
                 </Button>
                 <p className="text-sm text-muted-foreground">
@@ -214,16 +227,16 @@ function SpaceSettingsPage() {
 
           <div className="space-y-6">
             <h3 className="font-bold text-lg">Basic Details</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name">Space Name</Label>
-                <Input 
-                  id="name" 
+                <Input
+                  id="name"
                   name="name"
-                  value={form.name} 
+                  value={form.name}
                   onChange={handleChange}
-                  className="rounded-xl h-11" 
+                  className="rounded-xl h-11"
                 />
               </div>
               <div className="space-y-2">
@@ -235,8 +248,10 @@ function SpaceSettingsPage() {
                   onChange={handleChange}
                   className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {SPACE_TYPES.map(t => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
+                  {SPACE_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -244,12 +259,12 @@ function SpaceSettingsPage() {
 
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
-              <Textarea 
-                id="description" 
+              <Textarea
+                id="description"
                 name="description"
-                value={form.description} 
+                value={form.description}
                 onChange={handleChange}
-                className="rounded-xl min-h-[120px] resize-y" 
+                className="rounded-xl min-h-[120px] resize-y"
               />
             </div>
           </div>
@@ -258,47 +273,51 @@ function SpaceSettingsPage() {
 
           <div className="space-y-6">
             <h3 className="font-bold text-lg">Contact & Socials</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> Phone Number</Label>
-                <Input 
-                  id="phone" 
+                <Label htmlFor="phone" className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" /> Phone Number
+                </Label>
+                <Input
+                  id="phone"
                   name="phone"
-                  value={form.phone} 
+                  value={form.phone}
                   onChange={handleChange}
-                  className="rounded-xl h-11" 
-                  placeholder="+250 788 000 000" 
+                  className="rounded-xl h-11"
+                  placeholder="+250 788 000 000"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="whatsapp" className="flex items-center gap-2"><MessageCircle className="h-4 w-4 text-muted-foreground" /> WhatsApp</Label>
-                <Input 
-                  id="whatsapp" 
+                <Label htmlFor="whatsapp" className="flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4 text-muted-foreground" /> WhatsApp
+                </Label>
+                <Input
+                  id="whatsapp"
                   name="whatsapp"
-                  value={form.whatsapp} 
+                  value={form.whatsapp}
                   onChange={handleChange}
-                  className="rounded-xl h-11" 
-                  placeholder="+250 788 000 000" 
+                  className="rounded-xl h-11"
+                  placeholder="+250 788 000 000"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="instagram" className="flex items-center gap-2"><Instagram className="h-4 w-4 text-muted-foreground" /> Instagram Handle</Label>
-                <Input 
-                  id="instagram" 
+                <Label htmlFor="instagram" className="flex items-center gap-2">
+                  <Instagram className="h-4 w-4 text-muted-foreground" /> Instagram Handle
+                </Label>
+                <Input
+                  id="instagram"
                   name="instagram"
-                  value={form.instagram} 
+                  value={form.instagram}
                   onChange={handleChange}
-                  className="rounded-xl h-11" 
-                  placeholder="https://instagram.com/yourspace" 
+                  className="rounded-xl h-11"
+                  placeholder="https://instagram.com/yourspace"
                 />
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
   );
 }
-

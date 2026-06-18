@@ -90,11 +90,10 @@ const GET_PUBLIC_SPACES = `
   }
 `;
 
-export const getPublicSpaces = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const res = await hasuraRequest<{ spaces: any[] }>(GET_PUBLIC_SPACES);
-    return res.spaces;
-  });
+export const getPublicSpaces = createServerFn({ method: "GET" }).handler(async () => {
+  const res = await hasuraRequest<{ spaces: any[] }>(GET_PUBLIC_SPACES);
+  return res.spaces;
+});
 
 const GET_SPACE_BY_ID = `
   query GetSpaceById($id: uuid!) {

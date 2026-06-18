@@ -20,12 +20,23 @@ import { Link, useNavigate } from "@tanstack/react-router";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 
-
-
-const DAY_KEYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"] as const;
+const DAY_KEYS = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const;
 const DAY_LABELS: Record<string, string> = {
-  monday: "Mon", tuesday: "Tue", wednesday: "Wed",
-  thursday: "Thu", friday: "Fri", saturday: "Sat", sunday: "Sun",
+  monday: "Mon",
+  tuesday: "Tue",
+  wednesday: "Wed",
+  thursday: "Thu",
+  friday: "Fri",
+  saturday: "Sat",
+  sunday: "Sun",
 };
 
 function formatHourEntry(h: any) {
@@ -45,9 +56,10 @@ function summarizeHours(opening_hours: Record<string, any>): string[] {
     const label = formatHourEntry(h);
     let j = i + 1;
     while (j < DAY_KEYS.length && formatHourEntry(opening_hours[DAY_KEYS[j]]) === label) j++;
-    const dayRange = j - i > 1
-      ? `${DAY_LABELS[DAY_KEYS[i]]}–${DAY_LABELS[DAY_KEYS[j - 1]]}`
-      : DAY_LABELS[DAY_KEYS[i]];
+    const dayRange =
+      j - i > 1
+        ? `${DAY_LABELS[DAY_KEYS[i]]}–${DAY_LABELS[DAY_KEYS[j - 1]]}`
+        : DAY_LABELS[DAY_KEYS[i]];
     lines.push(`${dayRange}: ${label}`);
     i = j;
   }
@@ -57,7 +69,7 @@ function summarizeHours(opening_hours: Record<string, any>): string[] {
 /** Get today's hours string from an opening_hours object */
 function todayHours(opening_hours: Record<string, any>): string | null {
   if (!opening_hours) return null;
-  const days = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
   const todayKey = days[new Date().getDay()];
   const h = opening_hours[todayKey];
   if (!h) return null;
@@ -73,7 +85,7 @@ const SPACE_TYPE_LABELS: Record<string, string> = {
   meeting_room: "Meeting Room",
 };
 
-export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedPage: any }) {
+export function SpaceDetailsDesktop({ space, linkedPage }: { space: any; linkedPage: any }) {
   const navigate = useNavigate();
   const [selectedLocationIdx, setSelectedLocationIdx] = useState(0);
   const [isClient, setIsClient] = useState(false);
@@ -90,7 +102,9 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
         <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-4">
           <Building2 className="w-16 h-16 text-muted-foreground/40" />
           <h2 className="text-2xl font-bold">Space not found</h2>
-          <p className="text-muted-foreground">This space may have been removed or is not publicly available.</p>
+          <p className="text-muted-foreground">
+            This space may have been removed or is not publicly available.
+          </p>
           <Button onClick={() => navigate({ to: "/venues" })} className="rounded-full mt-2">
             Browse all spaces
           </Button>
@@ -101,10 +115,10 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
   }
 
   const locations: any[] = Array.isArray(space.locations) ? space.locations : [];
-  const plans: any[]     = Array.isArray(space.plans)     ? space.plans     : [];
-  const socials: any     = space.socials || {};
+  const plans: any[] = Array.isArray(space.plans) ? space.plans : [];
+  const socials: any = space.socials || {};
   const currency: string = space.currency || "RWF";
-  const typeLabel        = SPACE_TYPE_LABELS[space.type] ?? space.type ?? "Space";
+  const typeLabel = SPACE_TYPE_LABELS[space.type] ?? space.type ?? "Space";
 
   const mapStops = locations
     .filter((loc: any) => loc.lat && loc.lng && !isNaN(Number(loc.lat)) && !isNaN(Number(loc.lng)))
@@ -160,117 +174,148 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
           <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium">
             {locations.length > 0 && (
               <span className="inline-flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-lg backdrop-blur-md">
-                <MapPin className="h-4 w-4" /> {locations.length} {locations.length === 1 ? "Location" : "Locations"}
+                <MapPin className="h-4 w-4" /> {locations.length}{" "}
+                {locations.length === 1 ? "Location" : "Locations"}
               </span>
             )}
             {/* Smart working hours pill */}
-            {locations.length > 0 && locations[0]?.opening_hours && (() => {
-              const firstLocHours = locations[0].opening_hours;
-              const todayStr = todayHours(firstLocHours);
-              const summary = summarizeHours(firstLocHours);
-              const allSame = locations.every((l: any) =>
-                JSON.stringify(l.opening_hours) === JSON.stringify(firstLocHours)
-              );
-              return (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowHours(h => !h)}
-                    className="inline-flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-lg backdrop-blur-md hover:bg-secondary/80 transition-colors"
-                  >
-                    <Clock className="h-4 w-4" />
-                    <span>Today: {todayStr ?? "See schedule"}</span>
-                    {!allSame && <span className="text-[10px] ml-1 text-primary font-bold">Varies</span>}
-                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showHours ? "rotate-180" : ""}`} />
-                  </button>
-                  {showHours && (
-                    <div className="absolute top-full mt-2 left-0 z-50 min-w-[260px] bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl p-4 shadow-xl">
-                      {allSame ? (
-                        <>
-                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">All Locations</p>
-                          <div className="space-y-1.5">
-                            {summary.map((line, i) => (
-                              <p key={i} className="text-sm text-foreground">{line}</p>
+            {locations.length > 0 &&
+              locations[0]?.opening_hours &&
+              (() => {
+                const firstLocHours = locations[0].opening_hours;
+                const todayStr = todayHours(firstLocHours);
+                const summary = summarizeHours(firstLocHours);
+                const allSame = locations.every(
+                  (l: any) => JSON.stringify(l.opening_hours) === JSON.stringify(firstLocHours),
+                );
+                return (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowHours((h) => !h)}
+                      className="inline-flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-lg backdrop-blur-md hover:bg-secondary/80 transition-colors"
+                    >
+                      <Clock className="h-4 w-4" />
+                      <span>Today: {todayStr ?? "See schedule"}</span>
+                      {!allSame && (
+                        <span className="text-[10px] ml-1 text-primary font-bold">Varies</span>
+                      )}
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 transition-transform ${showHours ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {showHours && (
+                      <div className="absolute top-full mt-2 left-0 z-50 min-w-[260px] bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl p-4 shadow-xl">
+                        {allSame ? (
+                          <>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                              All Locations
+                            </p>
+                            <div className="space-y-1.5">
+                              {summary.map((line, i) => (
+                                <p key={i} className="text-sm text-foreground">
+                                  {line}
+                                </p>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="space-y-4">
+                            {locations.map((loc: any, idx: number) => (
+                              <div key={idx}>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                                  {loc.name || `Location ${idx + 1}`}
+                                </p>
+                                <div className="space-y-1">
+                                  {summarizeHours(loc.opening_hours).map((line, i) => (
+                                    <p key={i} className="text-sm text-foreground">
+                                      {line}
+                                    </p>
+                                  ))}
+                                </div>
+                              </div>
                             ))}
                           </div>
-                        </>
-                      ) : (
-                        <div className="space-y-4">
-                          {locations.map((loc: any, idx: number) => (
-                            <div key={idx}>
-                              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">{loc.name || `Location ${idx + 1}`}</p>
-                              <div className="space-y-1">
-                                {summarizeHours(loc.opening_hours).map((line, i) => (
-                                  <p key={i} className="text-sm text-foreground">{line}</p>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
           </div>
 
           {/* Social links + RSVP buttons */}
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {socials.instagram && (
-              <a href={socials.instagram} target="_blank" rel="noreferrer"
-                className="w-10 h-10 rounded-full bg-card/40 backdrop-blur border border-white/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+              <a
+                href={socials.instagram}
+                target="_blank"
+                rel="noreferrer"
+                className="w-10 h-10 rounded-full bg-card/40 backdrop-blur border border-white/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+              >
                 <Instagram className="w-4 h-4" />
               </a>
             )}
             {socials.twitter && (
-              <a href={socials.twitter} target="_blank" rel="noreferrer"
-                className="w-10 h-10 rounded-full bg-card/40 backdrop-blur border border-white/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+              <a
+                href={socials.twitter}
+                target="_blank"
+                rel="noreferrer"
+                className="w-10 h-10 rounded-full bg-card/40 backdrop-blur border border-white/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+              >
                 <Twitter className="w-4 h-4" />
               </a>
             )}
             {socials.facebook && (
-              <a href={socials.facebook} target="_blank" rel="noreferrer"
-                className="w-10 h-10 rounded-full bg-card/40 backdrop-blur border border-white/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+              <a
+                href={socials.facebook}
+                target="_blank"
+                rel="noreferrer"
+                className="w-10 h-10 rounded-full bg-card/40 backdrop-blur border border-white/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+              >
                 <Facebook className="w-4 h-4" />
               </a>
             )}
             {socials.website && (
-              <a href={socials.website} target="_blank" rel="noreferrer"
-                className="w-10 h-10 rounded-full bg-card/40 backdrop-blur border border-white/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+              <a
+                href={socials.website}
+                target="_blank"
+                rel="noreferrer"
+                className="w-10 h-10 rounded-full bg-card/40 backdrop-blur border border-white/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+              >
                 <Globe className="w-4 h-4" />
               </a>
             )}
             {socials.phone && (
-              <a href={`tel:${socials.phone}`}
-                className="h-10 px-4 rounded-full bg-card/40 backdrop-blur border border-white/10 flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-sm font-medium">
+              <a
+                href={`tel:${socials.phone}`}
+                className="h-10 px-4 rounded-full bg-card/40 backdrop-blur border border-white/10 flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-sm font-medium"
+              >
                 <Phone className="w-4 h-4" /> {socials.phone}
               </a>
             )}
             {/* Multiple RSVP form buttons */}
-            {space.connected_forms && space.connected_forms.length > 0
-              ? space.connected_forms.map((cForm: any) =>
-                  cForm.showButton !== false && cForm.formId && cForm.formId !== "none" ? (
-                    <Button
-                      key={cForm.id}
-                      variant="default"
-                      className="h-10 px-6 rounded-full font-bold shadow-[var(--shadow-glow)]"
-                      onClick={() => window.open(`/f/${cForm.formId}`, "_blank")}
-                    >
-                      {cForm.buttonText || "Fill out our form"}
-                    </Button>
-                  ) : null
-                )
-              : space.rsvp_form_id && space.show_rsvp_form_button !== false
-              ? (
-                <Button
-                  variant="default"
-                  className="h-10 px-6 rounded-full font-bold shadow-[var(--shadow-glow)]"
-                  onClick={() => window.open(`/f/${space.rsvp_form_id}`, "_blank")}
-                >
-                  {space.rsvp_form_button_text || "Fill out our form"}
-                </Button>
+            {space.connected_forms && space.connected_forms.length > 0 ? (
+              space.connected_forms.map((cForm: any) =>
+                cForm.showButton !== false && cForm.formId && cForm.formId !== "none" ? (
+                  <Button
+                    key={cForm.id}
+                    variant="default"
+                    className="h-10 px-6 rounded-full font-bold shadow-[var(--shadow-glow)]"
+                    onClick={() => window.open(`/f/${cForm.formId}`, "_blank")}
+                  >
+                    {cForm.buttonText || "Fill out our form"}
+                  </Button>
+                ) : null,
               )
-              : null}
+            ) : space.rsvp_form_id && space.show_rsvp_form_button !== false ? (
+              <Button
+                variant="default"
+                className="h-10 px-6 rounded-full font-bold shadow-[var(--shadow-glow)]"
+                onClick={() => window.open(`/f/${space.rsvp_form_id}`, "_blank")}
+              >
+                {space.rsvp_form_button_text || "Fill out our form"}
+              </Button>
+            ) : null}
             {linkedPage && (
               <Button
                 variant="outline"
@@ -287,7 +332,6 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-20 pt-12">
         <div className="space-y-16">
-
           {/* About */}
           {space.description && (
             <div className="max-w-3xl">
@@ -312,7 +356,9 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
                         {currency} {(plan.price ?? plan.amount ?? 0).toLocaleString()}
                       </span>
                       {plan.billing_cycle && (
-                        <span className="text-sm text-muted-foreground mb-1">/ {plan.billing_cycle}</span>
+                        <span className="text-sm text-muted-foreground mb-1">
+                          / {plan.billing_cycle}
+                        </span>
                       )}
                     </div>
 
@@ -330,10 +376,10 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
                     <Link
                       to="/spaces/checkout/$spaceId"
                       params={{ spaceId: space.id }}
-                      search={{ 
-                        plan: plan.name, 
-                        price: String(plan.price ?? plan.amount ?? ""), 
-                        cycle: plan.billing_cycle 
+                      search={{
+                        plan: plan.name,
+                        price: String(plan.price ?? plan.amount ?? ""),
+                        cycle: plan.billing_cycle,
                       }}
                       className="mt-auto"
                     >
@@ -356,7 +402,9 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
             <div>
               <h2 className="text-2xl font-semibold mb-6">Locations</h2>
 
-              <div className={`grid gap-8 lg:gap-12 items-start ${mapStops.length > 0 ? "grid-cols-1 lg:grid-cols-[1fr_400px]" : "grid-cols-1"}`}>
+              <div
+                className={`grid gap-8 lg:gap-12 items-start ${mapStops.length > 0 ? "grid-cols-1 lg:grid-cols-[1fr_400px]" : "grid-cols-1"}`}
+              >
                 <div>
                   {/* Location tabs */}
                   <div className="flex flex-wrap gap-2 mb-6">
@@ -396,7 +444,12 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
                               variant="outline"
                               size="sm"
                               className="rounded-full"
-                              onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`, "_blank")}
+                              onClick={() =>
+                                window.open(
+                                  `https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`,
+                                  "_blank",
+                                )
+                              }
                             >
                               Navigate
                             </Button>
@@ -407,7 +460,10 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
                         {Array.isArray(loc.gallery) && loc.gallery.length > 0 && (
                           <div className="grid grid-cols-2 gap-3 mt-4">
                             {loc.gallery.map((img: string, i: number) => (
-                              <div key={i} className="aspect-[4/3] rounded-xl overflow-hidden bg-secondary">
+                              <div
+                                key={i}
+                                className="aspect-[4/3] rounded-xl overflow-hidden bg-secondary"
+                              >
                                 <img
                                   src={img}
                                   alt={`${loc.name} - ${i + 1}`}
@@ -427,11 +483,25 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
                             <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
                               {DAY_KEYS.map((day) => {
                                 const h = loc.opening_hours[day];
-                                const isToday = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"][new Date().getDay()] === day;
+                                const isToday =
+                                  [
+                                    "sunday",
+                                    "monday",
+                                    "tuesday",
+                                    "wednesday",
+                                    "thursday",
+                                    "friday",
+                                    "saturday",
+                                  ][new Date().getDay()] === day;
                                 return (
-                                  <div key={day} className={`flex items-center justify-between text-sm py-0.5 ${isToday ? "font-semibold text-primary" : "text-foreground"}`}>
+                                  <div
+                                    key={day}
+                                    className={`flex items-center justify-between text-sm py-0.5 ${isToday ? "font-semibold text-primary" : "text-foreground"}`}
+                                  >
                                     <span className="capitalize">{DAY_LABELS[day]}</span>
-                                    <span className={h?.closed ? "text-muted-foreground" : ""}>{formatHourEntry(h)}</span>
+                                    <span className={h?.closed ? "text-muted-foreground" : ""}>
+                                      {formatHourEntry(h)}
+                                    </span>
                                   </div>
                                 );
                               })}
@@ -448,7 +518,13 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
                   <div className="hidden lg:block relative h-full">
                     <div className="sticky top-24 h-[400px] w-full rounded-3xl overflow-hidden border border-border/40 shadow-lg bg-secondary/20">
                       {isClient && (
-                        <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-muted-foreground text-sm">Loading map...</div>}>
+                        <Suspense
+                          fallback={
+                            <div className="h-full w-full flex items-center justify-center text-muted-foreground text-sm">
+                              Loading map...
+                            </div>
+                          }
+                        >
                           <VenueMap
                             tourStops={mapStops}
                             selectedStopIdx={selectedLocationIdx}
@@ -497,10 +573,17 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
                       </div>
                       <div className="flex items-center gap-1 mt-0.5">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className={`h-3 w-3 ${i < r.rating ? "fill-primary text-primary" : "text-muted"}`} />
+                          <Star
+                            key={i}
+                            className={`h-3 w-3 ${i < r.rating ? "fill-primary text-primary" : "text-muted"}`}
+                          />
                         ))}
                         <span className="ml-2 text-[10px] text-muted-foreground">
-                          {new Date(r.created_at).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" })}
+                          {new Date(r.created_at).toLocaleDateString("en-GB", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </span>
                       </div>
                     </div>
@@ -510,7 +593,6 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
               ))}
             </div>
           </div>
-
         </div>
       </div>
 

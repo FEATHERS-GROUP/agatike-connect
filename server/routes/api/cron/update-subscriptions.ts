@@ -32,7 +32,10 @@ export default defineEventHandler(async (event) => {
   const hasuraSecret = process.env.HASURA_ADMIN_SECRET || process.env.VITE_HASURA_ADMIN_SECRET;
 
   if (!hasuraEndpoint || !hasuraSecret) {
-    sendError(event, createError({ statusCode: 500, statusMessage: "Missing Hasura environment variables" }));
+    sendError(
+      event,
+      createError({ statusCode: 500, statusMessage: "Missing Hasura environment variables" }),
+    );
     return;
   }
 
@@ -83,14 +86,17 @@ export default defineEventHandler(async (event) => {
 
     if (json.errors) {
       console.error("[cron/update-subscriptions] GraphQL errors:", json.errors);
-      sendError(event, createError({ statusCode: 500, statusMessage: json.errors[0]?.message || "GraphQL error" }));
+      sendError(
+        event,
+        createError({ statusCode: 500, statusMessage: json.errors[0]?.message || "GraphQL error" }),
+      );
       return;
     }
 
     affected_rows = json.data?.update_space_subscriptions?.affected_rows ?? 0;
 
     console.log(
-      `[cron/update-subscriptions] ✅ ${affected_rows} subscription(s) moved to on_hold at ${new Date().toISOString()}`
+      `[cron/update-subscriptions] ✅ ${affected_rows} subscription(s) moved to on_hold at ${new Date().toISOString()}`,
     );
   } catch (err: any) {
     console.error("[cron/update-subscriptions] Fetch error:", err);

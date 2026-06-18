@@ -79,11 +79,11 @@ export function LocationSearchInput({
       <Input
         value={value}
         onChange={handleChange}
-        onFocus={() => (value?.trim() && (predictions.length > 0 || isLoading)) && setIsOpen(true)}
+        onFocus={() => value?.trim() && (predictions.length > 0 || isLoading) && setIsOpen(true)}
         placeholder={placeholder}
         className={className}
       />
-      {isOpen && (value?.trim()) && (
+      {isOpen && value?.trim() && (
         <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-xl border border-border bg-popover text-popover-foreground shadow-md outline-none">
           {isLoading && (
             <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground justify-center">

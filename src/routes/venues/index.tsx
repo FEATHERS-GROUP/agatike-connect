@@ -15,10 +15,7 @@ export const Route = createFileRoute("/venues/")({
     ],
   }),
   loader: async () => {
-    const [data, spacesData] = await Promise.all([
-      getPublicRentableVenues(),
-      getPublicSpaces(),
-    ]);
+    const [data, spacesData] = await Promise.all([getPublicRentableVenues(), getPublicSpaces()]);
 
     const formattedSpaces = spacesData.map((s: any) => ({
       id: s.id,
@@ -32,10 +29,11 @@ export const Route = createFileRoute("/venues/")({
       cover_url: s.cover_url,
       currency: s.currency,
       source: "space",
-      pricing_tiers: s.plans?.map((p: any) => ({
-        name: p.name,
-        amount: p.price,
-      })) || [],
+      pricing_tiers:
+        s.plans?.map((p: any) => ({
+          name: p.name,
+          amount: p.price,
+        })) || [],
     }));
 
     return [...data.map((v: any) => ({ ...v, source: "venue" })), ...formattedSpaces];

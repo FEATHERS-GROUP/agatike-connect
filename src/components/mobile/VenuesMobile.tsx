@@ -75,16 +75,8 @@ export function VenuesMobile() {
           filteredVenues.map((venue) => (
             <Link
               key={venue.id}
-              to={
-                venue.source === "space"
-                  ? "/spaces/$spaceId"
-                  : "/venues/$venueId"
-              }
-              params={
-                venue.source === "space"
-                  ? { spaceId: venue.id }
-                  : { venueId: venue.id }
-              }
+              to={venue.source === "space" ? "/spaces/$spaceId" : "/venues/$venueId"}
+              params={venue.source === "space" ? { spaceId: venue.id } : { venueId: venue.id }}
               className="block active:scale-[0.98] transition-transform"
             >
               <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm">

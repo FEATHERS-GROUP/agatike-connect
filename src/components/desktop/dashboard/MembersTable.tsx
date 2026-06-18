@@ -1,5 +1,14 @@
 import { useState, useMemo } from "react";
-import { Building2, Users, RefreshCw, UserCheck, ChevronLeft, ChevronRight, Search, Filter } from "lucide-react";
+import {
+  Building2,
+  Users,
+  RefreshCw,
+  UserCheck,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Filter,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -37,15 +46,15 @@ interface MembersTableProps {
 }
 
 const STATUS_STYLES: Record<MemberStatus, string> = {
-  Active:  "bg-green-500/10 text-green-500",
+  Active: "bg-green-500/10 text-green-500",
   Expired: "bg-muted text-muted-foreground",
   Pending: "bg-amber-500/10 text-amber-500",
-  OnHold:  "bg-orange-500/10 text-orange-500",
+  OnHold: "bg-orange-500/10 text-orange-500",
 };
 
 const TYPE_STYLES: Record<MemberType, string> = {
-  Individual:   "bg-secondary/60 text-muted-foreground",
-  Company:      "bg-orange-500/10 text-orange-500",
+  Individual: "bg-secondary/60 text-muted-foreground",
+  Company: "bg-orange-500/10 text-orange-500",
   Organization: "bg-purple-500/10 text-purple-500",
 };
 
@@ -56,11 +65,11 @@ export function MembersTable({
   showFilters = true,
   showSpaceColumn = false,
 }: MembersTableProps) {
-  const [query, setQuery]         = useState("");
+  const [query, setQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterType, setFilterType]     = useState<string>("all");
+  const [filterType, setFilterType] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [page, setPage]           = useState(1);
+  const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
     return members.filter((m) => {
@@ -71,8 +80,8 @@ export function MembersTable({
         (m.email?.toLowerCase().includes(q) ?? false) ||
         (m.plan?.toLowerCase().includes(q) ?? false);
 
-      const matchesStatus   = filterStatus   === "all" || m.status   === filterStatus;
-      const matchesType     = filterType     === "all" || m.type     === filterType;
+      const matchesStatus = filterStatus === "all" || m.status === filterStatus;
+      const matchesType = filterType === "all" || m.type === filterType;
       const matchesCategory = filterCategory === "all" || m.category === filterCategory;
 
       return matchesQuery && matchesStatus && matchesType && matchesCategory;
@@ -80,8 +89,8 @@ export function MembersTable({
   }, [members, query, filterStatus, filterType, filterCategory]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const safePage   = Math.min(page, totalPages);
-  const paginated  = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const safePage = Math.min(page, totalPages);
+  const paginated = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   const resetPage = () => setPage(1);
 
@@ -96,7 +105,10 @@ export function MembersTable({
               <Input
                 placeholder="Search by name, email or plan…"
                 value={query}
-                onChange={(e) => { setQuery(e.target.value); resetPage(); }}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  resetPage();
+                }}
                 className="pl-9 rounded-xl h-10"
               />
             </div>
@@ -106,7 +118,10 @@ export function MembersTable({
             <>
               <select
                 value={filterCategory}
-                onChange={(e) => { setFilterCategory(e.target.value); resetPage(); }}
+                onChange={(e) => {
+                  setFilterCategory(e.target.value);
+                  resetPage();
+                }}
                 className="h-10 rounded-xl border border-border/60 bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 <option value="all">All categories</option>
@@ -116,7 +131,10 @@ export function MembersTable({
 
               <select
                 value={filterType}
-                onChange={(e) => { setFilterType(e.target.value); resetPage(); }}
+                onChange={(e) => {
+                  setFilterType(e.target.value);
+                  resetPage();
+                }}
                 className="h-10 rounded-xl border border-border/60 bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 <option value="all">All types</option>
@@ -127,7 +145,10 @@ export function MembersTable({
 
               <select
                 value={filterStatus}
-                onChange={(e) => { setFilterStatus(e.target.value); resetPage(); }}
+                onChange={(e) => {
+                  setFilterStatus(e.target.value);
+                  resetPage();
+                }}
                 className="h-10 rounded-xl border border-border/60 bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 <option value="all">All statuses</option>
@@ -167,7 +188,10 @@ export function MembersTable({
             <tbody className="divide-y divide-border/30">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={showSpaceColumn ? 13 : 12} className="px-5 py-12 text-center text-muted-foreground">
+                  <td
+                    colSpan={showSpaceColumn ? 13 : 12}
+                    className="px-5 py-12 text-center text-muted-foreground"
+                  >
                     No members match your filters.
                   </td>
                 </tr>
@@ -176,80 +200,117 @@ export function MembersTable({
                   <tr key={m.id} className="hover:bg-secondary/5 transition-colors group">
                     <td className="px-5 py-3.5">
                       <div>
-                        <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{m.name}</p>
-                        {m.email && <p className="text-xs text-muted-foreground mt-0.5">{m.email}</p>}
+                        <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                          {m.name}
+                        </p>
+                        {m.email && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{m.email}</p>
+                        )}
                         {m.hostedBy && (
                           <p className="text-[10px] text-rose-400 mt-0.5 flex items-center gap-0.5">
-                            <span className="opacity-70">hosted by</span> <span className="font-semibold">{m.hostedBy}</span>
+                            <span className="opacity-70">hosted by</span>{" "}
+                            <span className="font-semibold">{m.hostedBy}</span>
                           </p>
                         )}
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground text-xs whitespace-nowrap">
                       {m.membershipId ? (
-                        <span className="font-mono bg-secondary/40 px-1.5 py-0.5 rounded text-foreground font-semibold">{m.membershipId}</span>
-                      ) : "—"}
+                        <span className="font-mono bg-secondary/40 px-1.5 py-0.5 rounded text-foreground font-semibold">
+                          {m.membershipId}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground text-xs whitespace-nowrap">
                       {m.phone ?? "—"}
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className={cn(
-                        "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider",
-                        m.category === "visitor"
-                          ? "bg-rose-500/10 text-rose-500"
-                          : "bg-blue-500/10 text-blue-500"
-                      )}>
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider",
+                          m.category === "visitor"
+                            ? "bg-rose-500/10 text-rose-500"
+                            : "bg-blue-500/10 text-blue-500",
+                        )}
+                      >
                         {m.category === "visitor" ? "Visitor" : "Member"}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold",
-                        TYPE_STYLES[m.type]
-                      )}>
-                        {m.type === "Individual" ? <Users className="h-3 w-3" /> : <Building2 className="h-3 w-3" />}
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold",
+                          TYPE_STYLES[m.type],
+                        )}
+                      >
+                        {m.type === "Individual" ? (
+                          <Users className="h-3 w-3" />
+                        ) : (
+                          <Building2 className="h-3 w-3" />
+                        )}
                         {m.type}
                       </span>
                       {m.organization && (
-                        <p className="text-[10px] text-muted-foreground mt-1 font-medium">{m.organization}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1 font-medium">
+                          {m.organization}
+                        </p>
                       )}
                     </td>
                     {showSpaceColumn && (
-                      <td className="px-5 py-3.5 text-muted-foreground text-xs">{m.space ?? "—"}</td>
+                      <td className="px-5 py-3.5 text-muted-foreground text-xs">
+                        {m.space ?? "—"}
+                      </td>
                     )}
                     <td className="px-5 py-3.5 text-muted-foreground">{m.plan ?? "—"}</td>
                     <td className="px-5 py-3.5 text-center font-bold">
-                      {m.employees && m.employees > 1
-                        ? <span className="text-orange-500">{m.employees}</span>
-                        : <span className="text-muted-foreground text-xs">—</span>}
+                      {m.employees && m.employees > 1 ? (
+                        <span className="text-orange-500">{m.employees}</span>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className={cn(
-                        "text-xs font-semibold uppercase tracking-wider",
-                        m.billedAs === "Individual" ? "text-muted-foreground" : "text-orange-500"
-                      )}>
+                      <span
+                        className={cn(
+                          "text-xs font-semibold uppercase tracking-wider",
+                          m.billedAs === "Individual" ? "text-muted-foreground" : "text-orange-500",
+                        )}
+                      >
                         {m.billedAs}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-muted-foreground text-xs whitespace-nowrap">{m.joinedDate}</td>
+                    <td className="px-5 py-3.5 text-muted-foreground text-xs whitespace-nowrap">
+                      {m.joinedDate}
+                    </td>
                     <td className="px-5 py-3.5">
-                      <span className={cn(
-                        "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider",
-                        m.subscriptionType === "returning"
-                          ? "bg-emerald-500/10 text-emerald-500"
-                          : "bg-orange-500/10 text-orange-500"
-                      )}>
-                        {m.subscriptionType === "returning"
-                          ? <><RefreshCw className="h-3 w-3" /> Re-using</>
-                          : <><UserCheck className="h-3 w-3" /> New</>}
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider",
+                          m.subscriptionType === "returning"
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-orange-500/10 text-orange-500",
+                        )}
+                      >
+                        {m.subscriptionType === "returning" ? (
+                          <>
+                            <RefreshCw className="h-3 w-3" /> Re-using
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="h-3 w-3" /> New
+                          </>
+                        )}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className={cn(
-                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider",
-                        STATUS_STYLES[m.status]
-                      )}>
+                      <span
+                        className={cn(
+                          "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider",
+                          STATUS_STYLES[m.status],
+                        )}
+                      >
                         {m.status}
                       </span>
                     </td>
@@ -265,8 +326,8 @@ export function MembersTable({
           <div className="px-5 py-4 border-t border-border/40 flex items-center justify-between bg-secondary/5">
             <p className="text-xs text-muted-foreground">
               Page <span className="font-semibold text-foreground">{safePage}</span> of{" "}
-              <span className="font-semibold text-foreground">{totalPages}</span>
-              {" "}· {filtered.length} total
+              <span className="font-semibold text-foreground">{totalPages}</span> ·{" "}
+              {filtered.length} total
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -298,7 +359,7 @@ export function MembersTable({
                     size="icon"
                     className={cn(
                       "h-8 w-8 rounded-lg text-xs font-bold",
-                      pageNum === safePage && "shadow-[var(--shadow-glow)]"
+                      pageNum === safePage && "shadow-[var(--shadow-glow)]",
                     )}
                     style={pageNum === safePage ? { background: "var(--gradient-primary)" } : {}}
                     onClick={() => setPage(pageNum)}

@@ -8,8 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Link as LinkIcon, FileText, LayoutTemplate, Copy, ExternalLink, Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Link as LinkIcon,
+  FileText,
+  LayoutTemplate,
+  Copy,
+  ExternalLink,
+  Loader2,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/$spaceId/integrations")({
@@ -39,7 +54,7 @@ function SpaceIntegrationsPage() {
   });
 
   const [pageId, setPageId] = useState<string>("none");
-  
+
   type ConnectedForm = { id: string; formId: string; showButton: boolean; buttonText: string };
   const [connectedForms, setConnectedForms] = useState<ConnectedForm[]>([]);
 
@@ -47,7 +62,7 @@ function SpaceIntegrationsPage() {
     if (space) {
       setPageId(space.page_id || "none");
       setConnectedForms(space.connected_forms || []);
-      
+
       // Migrate legacy single form config if it exists and array is empty
       if ((!space.connected_forms || space.connected_forms.length === 0) && space.rsvp_form_id) {
         setConnectedForms([
@@ -55,8 +70,8 @@ function SpaceIntegrationsPage() {
             id: crypto.randomUUID(),
             formId: space.rsvp_form_id,
             showButton: space.show_rsvp_form_button !== false,
-            buttonText: space.rsvp_form_button_text || "Fill out our form"
-          }
+            buttonText: space.rsvp_form_button_text || "Fill out our form",
+          },
         ]);
       }
     }
@@ -99,17 +114,25 @@ function SpaceIntegrationsPage() {
 
   const selectedPage = pages?.find((p: any) => p.id === pageId);
   const pageUrl = selectedPage ? `${window.location.origin}/p/${selectedPage.slug}` : "";
-  
+
   const addForm = () => {
-    setConnectedForms([...connectedForms, { id: crypto.randomUUID(), formId: "none", showButton: true, buttonText: "Fill out our form" }]);
+    setConnectedForms([
+      ...connectedForms,
+      {
+        id: crypto.randomUUID(),
+        formId: "none",
+        showButton: true,
+        buttonText: "Fill out our form",
+      },
+    ]);
   };
 
   const updateForm = (id: string, updates: Partial<ConnectedForm>) => {
-    setConnectedForms(connectedForms.map(f => f.id === id ? { ...f, ...updates } : f));
+    setConnectedForms(connectedForms.map((f) => (f.id === id ? { ...f, ...updates } : f)));
   };
 
   const removeForm = (id: string) => {
-    setConnectedForms(connectedForms.filter(f => f.id !== id));
+    setConnectedForms(connectedForms.filter((f) => f.id !== id));
   };
 
   return (
@@ -132,7 +155,8 @@ function SpaceIntegrationsPage() {
               <div>
                 <h3 className="font-bold text-lg">Custom Landing Page</h3>
                 <p className="text-sm text-muted-foreground">
-                  Connect a custom page built with the Page Builder to this space. This serves as your personal sharing link.
+                  Connect a custom page built with the Page Builder to this space. This serves as
+                  your personal sharing link.
                 </p>
               </div>
 
@@ -160,7 +184,11 @@ function SpaceIntegrationsPage() {
                   </Label>
                   <div className="flex items-center gap-2">
                     <Input readOnly value={pageUrl} className="bg-background" />
-                    <Button variant="secondary" size="icon" onClick={() => copyToClipboard(pageUrl)}>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      onClick={() => copyToClipboard(pageUrl)}
+                    >
                       <Copy className="h-4 w-4" />
                     </Button>
                     <Button variant="outline" size="icon" asChild>
@@ -186,35 +214,56 @@ function SpaceIntegrationsPage() {
                 <div>
                   <h3 className="font-bold text-lg">Custom Data Collection (RSVP Forms)</h3>
                   <p className="text-sm text-muted-foreground">
-                    Connect multiple forms to collect custom information from your space visitors or members.
+                    Connect multiple forms to collect custom information from your space visitors or
+                    members.
                   </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={addForm} className="gap-1.5 rounded-full">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={addForm}
+                  className="gap-1.5 rounded-full"
+                >
                   <Plus className="h-4 w-4" /> Add Form
                 </Button>
               </div>
 
               {connectedForms.length === 0 ? (
                 <div className="text-center py-8 border border-dashed border-border/60 rounded-2xl bg-secondary/10">
-                  <p className="text-sm text-muted-foreground">No forms connected. Click "Add Form" to start.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No forms connected. Click "Add Form" to start.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-6">
                   {connectedForms.map((cForm, index) => {
                     const selectedForm = forms?.find((f: any) => f.id === cForm.formId);
-                    const formUrl = selectedForm ? `${window.location.origin}/f/${selectedForm.id}` : "";
+                    const formUrl = selectedForm
+                      ? `${window.location.origin}/f/${selectedForm.id}`
+                      : "";
 
                     return (
-                      <div key={cForm.id} className="relative bg-card border border-border/60 rounded-2xl p-5 space-y-5">
+                      <div
+                        key={cForm.id}
+                        className="relative bg-card border border-border/60 rounded-2xl p-5 space-y-5"
+                      >
                         <div className="absolute top-4 right-4">
-                          <Button variant="ghost" size="icon" onClick={() => removeForm(cForm.id)} className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-full">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeForm(cForm.id)}
+                            className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-full"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        
+
                         <div className="space-y-2 pr-10">
                           <Label>Select a Form</Label>
-                          <Select value={cForm.formId} onValueChange={(val) => updateForm(cForm.id, { formId: val })}>
+                          <Select
+                            value={cForm.formId}
+                            onValueChange={(val) => updateForm(cForm.id, { formId: val })}
+                          >
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select an RSVP form to connect" />
                             </SelectTrigger>
@@ -239,16 +288,23 @@ function SpaceIntegrationsPage() {
                                     Display a button linking to this form.
                                   </p>
                                 </div>
-                                <Switch checked={cForm.showButton} onCheckedChange={(val) => updateForm(cForm.id, { showButton: val })} />
+                                <Switch
+                                  checked={cForm.showButton}
+                                  onCheckedChange={(val) =>
+                                    updateForm(cForm.id, { showButton: val })
+                                  }
+                                />
                               </div>
 
                               {cForm.showButton && (
                                 <div className="space-y-2 pt-2 border-t border-border/40">
                                   <Label>Button Text</Label>
-                                  <Input 
-                                    value={cForm.buttonText} 
-                                    onChange={(e) => updateForm(cForm.id, { buttonText: e.target.value })} 
-                                    placeholder="e.g. Fill out our form" 
+                                  <Input
+                                    value={cForm.buttonText}
+                                    onChange={(e) =>
+                                      updateForm(cForm.id, { buttonText: e.target.value })
+                                    }
+                                    placeholder="e.g. Fill out our form"
                                   />
                                 </div>
                               )}
@@ -260,7 +316,11 @@ function SpaceIntegrationsPage() {
                               </Label>
                               <div className="flex items-center gap-2">
                                 <Input readOnly value={formUrl} className="bg-background text-sm" />
-                                <Button variant="secondary" size="icon" onClick={() => copyToClipboard(formUrl)}>
+                                <Button
+                                  variant="secondary"
+                                  size="icon"
+                                  onClick={() => copyToClipboard(formUrl)}
+                                >
                                   <Copy className="h-4 w-4" />
                                 </Button>
                                 <Button variant="outline" size="icon" asChild>
@@ -282,12 +342,16 @@ function SpaceIntegrationsPage() {
         </div>
 
         <div className="flex justify-end pt-4">
-          <Button 
-            onClick={handleSave} 
-            disabled={updateMutation.isPending} 
+          <Button
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
             className="w-full sm:w-auto h-12 px-8 rounded-xl text-base font-semibold"
           >
-            {updateMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <LinkIcon className="h-5 w-5 mr-2" />}
+            {updateMutation.isPending ? (
+              <Loader2 className="h-5 w-5 animate-spin mr-2" />
+            ) : (
+              <LinkIcon className="h-5 w-5 mr-2" />
+            )}
             Save Integrations
           </Button>
         </div>

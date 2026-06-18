@@ -18,8 +18,6 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/memberships")({
 
 const BILLING_CYCLES = ["Monthly", "Annually", "Daily", "Weekly", "One-time"];
 
-
-
 // ── MembershipsPage ─────────────────────────────────────────────────────────
 function MembershipsPage() {
   const { workspaceSlug } = useParams({ strict: false }) as any;
@@ -28,7 +26,8 @@ function MembershipsPage() {
 
   const { data: subscriptions = [], isLoading } = useQuery({
     queryKey: ["workspace_subscriptions", activeWorkspace?.id],
-    queryFn: () => getWorkspaceSubscriptionsByWorkspaceId({ data: { workspace_id: activeWorkspace!.id } }),
+    queryFn: () =>
+      getWorkspaceSubscriptionsByWorkspaceId({ data: { workspace_id: activeWorkspace!.id } }),
     enabled: !!activeWorkspace?.id,
   });
 
@@ -43,12 +42,20 @@ function MembershipsPage() {
     if (isLoading) return [];
     const transformed: SpaceMember[] = [];
     for (const sub of subscriptions) {
-      const isGroup   = sub.booking_type === "group";
+      const isGroup = sub.booking_type === "group";
       const isVisitor = sub.booking_type === "visitor";
-      const status    = sub.status === "cancelled" || sub.status === "inactive" ? "Expired" : "Active";
+      const status = sub.status === "cancelled" || sub.status === "inactive" ? "Expired" : "Active";
       const joinedDate = sub.start_date
-        ? new Date(sub.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-        : new Date(sub.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+        ? new Date(sub.start_date).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
+        : new Date(sub.created_at).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          });
 
       if (isGroup && sub.team_members && Array.isArray(sub.team_members)) {
         for (const member of sub.team_members) {
@@ -110,10 +117,34 @@ function MembershipsPage() {
   }, [subscriptions, isLoading]);
 
   const stats = [
-    { label: "Total Members",    value: members.filter(m => m.category === "member").length,                            icon: Users,     color: "text-orange-500",  bg: "bg-orange-500/10"  },
-    { label: "Visitors",         value: members.filter(m => m.category === "visitor").length,                           icon: Eye,       color: "text-rose-500",    bg: "bg-rose-500/10"    },
-    { label: "Re-using",         value: members.filter(m => m.subscriptionType === "returning").length,                 icon: RefreshCw, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Companies / Orgs", value: members.filter(m => m.type !== "Individual" && m.category === "member").length, icon: Building2, color: "text-purple-500",  bg: "bg-purple-500/10"  },
+    {
+      label: "Total Members",
+      value: members.filter((m) => m.category === "member").length,
+      icon: Users,
+      color: "text-orange-500",
+      bg: "bg-orange-500/10",
+    },
+    {
+      label: "Visitors",
+      value: members.filter((m) => m.category === "visitor").length,
+      icon: Eye,
+      color: "text-rose-500",
+      bg: "bg-rose-500/10",
+    },
+    {
+      label: "Re-using",
+      value: members.filter((m) => m.subscriptionType === "returning").length,
+      icon: RefreshCw,
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10",
+    },
+    {
+      label: "Companies / Orgs",
+      value: members.filter((m) => m.type !== "Individual" && m.category === "member").length,
+      icon: Building2,
+      color: "text-purple-500",
+      bg: "bg-purple-500/10",
+    },
   ];
 
   // ── Add Member modal state ─────────────────────────────────────────────────
@@ -130,17 +161,28 @@ function MembershipsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Memberships</h1>
           <p className="text-muted-foreground mt-1 text-lg">
             All members, visitors, and organizations across every space in{" "}
-            <span className="text-foreground font-semibold">{activeWorkspace?.name ?? workspaceSlug}</span>.
+            <span className="text-foreground font-semibold">
+              {activeWorkspace?.name ?? workspaceSlug}
+            </span>
+            .
           </p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" className="gap-2 rounded-xl h-11 px-5">
             <Download className="h-4 w-4" /> Export CSV
           </Button>
-          <Button variant="outline" onClick={() => setShowVisitorModal(true)} className="gap-2 rounded-xl h-11 px-5 border-rose-500/40 text-rose-500 hover:bg-rose-500/10">
+          <Button
+            variant="outline"
+            onClick={() => setShowVisitorModal(true)}
+            className="gap-2 rounded-xl h-11 px-5 border-rose-500/40 text-rose-500 hover:bg-rose-500/10"
+          >
             <UserRound className="h-4 w-4" /> Add Visitor
           </Button>
-          <Button onClick={() => setShowMemberModal(true)} className="gap-2 rounded-xl h-11 px-5" style={{ background: "var(--gradient-primary)" }}>
+          <Button
+            onClick={() => setShowMemberModal(true)}
+            className="gap-2 rounded-xl h-11 px-5"
+            style={{ background: "var(--gradient-primary)" }}
+          >
             <UserPlus className="h-4 w-4" /> Add Member
           </Button>
         </div>
@@ -149,12 +191,19 @@ function MembershipsPage() {
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s, i) => (
-          <div key={i} className="bg-card border border-border/60 rounded-3xl p-5 shadow-sm flex items-center gap-4 hover:border-orange-500/30 transition-colors">
-            <div className={`h-11 w-11 rounded-2xl ${s.bg} ${s.color} flex items-center justify-center shrink-0`}>
+          <div
+            key={i}
+            className="bg-card border border-border/60 rounded-3xl p-5 shadow-sm flex items-center gap-4 hover:border-orange-500/30 transition-colors"
+          >
+            <div
+              className={`h-11 w-11 rounded-2xl ${s.bg} ${s.color} flex items-center justify-center shrink-0`}
+            >
               <s.icon className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider leading-tight">{s.label}</p>
+              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider leading-tight">
+                {s.label}
+              </p>
               <h4 className="text-2xl font-bold mt-0.5">{s.value}</h4>
             </div>
           </div>
@@ -164,18 +213,18 @@ function MembershipsPage() {
       <MembersTable members={members} pageSize={8} showSearch showFilters showSpaceColumn />
 
       {/* Modals */}
-      <AddMemberModal 
-        open={showMemberModal} 
-        onOpenChange={setShowMemberModal} 
-        spaces={spaces as any[]} 
-        workspaceId={activeWorkspace?.id || ""} 
+      <AddMemberModal
+        open={showMemberModal}
+        onOpenChange={setShowMemberModal}
+        spaces={spaces as any[]}
+        workspaceId={activeWorkspace?.id || ""}
       />
 
-      <AddVisitorModal 
-        open={showVisitorModal} 
-        onOpenChange={setShowVisitorModal} 
-        spaces={spaces as any[]} 
-        workspaceId={activeWorkspace?.id || ""} 
+      <AddVisitorModal
+        open={showVisitorModal}
+        onOpenChange={setShowVisitorModal}
+        spaces={spaces as any[]}
+        workspaceId={activeWorkspace?.id || ""}
         members={members}
       />
     </div>

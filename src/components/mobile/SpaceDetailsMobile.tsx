@@ -1,10 +1,24 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, MapPin, Clock, Star, Heart, Share2, ChevronUp, ChevronDown, CheckCircle2, Instagram, Facebook, Twitter, Globe, Phone, ExternalLink } from "lucide-react";
+import {
+  ChevronLeft,
+  MapPin,
+  Clock,
+  Star,
+  Heart,
+  Share2,
+  ChevronUp,
+  ChevronDown,
+  CheckCircle2,
+  Instagram,
+  Facebook,
+  Twitter,
+  Globe,
+  Phone,
+  ExternalLink,
+} from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-
-
 
 const SPACE_TYPE_LABELS: Record<string, string> = {
   gym: "Fitness Center",
@@ -15,10 +29,23 @@ const SPACE_TYPE_LABELS: Record<string, string> = {
   meeting_room: "Meeting Room",
 };
 
-const DAY_KEYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"] as const;
+const DAY_KEYS = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const;
 const DAY_LABELS: Record<string, string> = {
-  monday: "Mon", tuesday: "Tue", wednesday: "Wed",
-  thursday: "Thu", friday: "Fri", saturday: "Sat", sunday: "Sun",
+  monday: "Mon",
+  tuesday: "Tue",
+  wednesday: "Wed",
+  thursday: "Thu",
+  friday: "Fri",
+  saturday: "Sat",
+  sunday: "Sun",
 };
 
 function formatHourEntry(h: any) {
@@ -38,9 +65,10 @@ function summarizeHours(opening_hours: Record<string, any>): string[] {
     const label = formatHourEntry(h);
     let j = i + 1;
     while (j < DAY_KEYS.length && formatHourEntry(opening_hours[DAY_KEYS[j]]) === label) j++;
-    const dayRange = j - i > 1
-      ? `${DAY_LABELS[DAY_KEYS[i]]}–${DAY_LABELS[DAY_KEYS[j - 1]]}`
-      : DAY_LABELS[DAY_KEYS[i]];
+    const dayRange =
+      j - i > 1
+        ? `${DAY_LABELS[DAY_KEYS[i]]}–${DAY_LABELS[DAY_KEYS[j - 1]]}`
+        : DAY_LABELS[DAY_KEYS[i]];
     lines.push(`${dayRange}: ${label}`);
     i = j;
   }
@@ -50,14 +78,14 @@ function summarizeHours(opening_hours: Record<string, any>): string[] {
 /** Get today's hours string from an opening_hours object */
 function todayHours(opening_hours: Record<string, any>): string | null {
   if (!opening_hours) return null;
-  const days = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
   const todayKey = days[new Date().getDay()];
   const h = opening_hours[todayKey];
   if (!h) return null;
   return formatHourEntry(h);
 }
 
-export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPage: any }) {
+export function SpaceDetailsMobile({ space, linkedPage }: { space: any; linkedPage: any }) {
   if (!space) return null;
 
   const [isPlansExpanded, setIsPlansExpanded] = useState(false);
@@ -76,10 +104,10 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
   }, []);
 
   const locations: any[] = Array.isArray(space.locations) ? space.locations : [];
-  const plans: any[]     = Array.isArray(space.plans)     ? space.plans     : [];
-  const socials: any     = space.socials || {};
+  const plans: any[] = Array.isArray(space.plans) ? space.plans : [];
+  const socials: any = space.socials || {};
   const currency: string = space.currency || "RWF";
-  const typeLabel        = SPACE_TYPE_LABELS[space.type] ?? space.type ?? "Space";
+  const typeLabel = SPACE_TYPE_LABELS[space.type] ?? space.type ?? "Space";
 
   const firstLocation = locations.length > 0 ? locations[0] : null;
 
@@ -152,120 +180,151 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground font-medium relative">
             {locations.length > 0 && (
               <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-lg backdrop-blur-md text-foreground">
-                <MapPin className="h-4 w-4 text-primary" /> {locations.length} {locations.length === 1 ? "Location" : "Locations"}
+                <MapPin className="h-4 w-4 text-primary" /> {locations.length}{" "}
+                {locations.length === 1 ? "Location" : "Locations"}
               </span>
             )}
-            
+
             {/* Smart working hours pill */}
-            {locations.length > 0 && locations[0]?.opening_hours && (() => {
-              const firstLocHours = locations[0].opening_hours;
-              const todayStr = todayHours(firstLocHours);
-              const summary = summarizeHours(firstLocHours);
-              const allSame = locations.every((l: any) =>
-                JSON.stringify(l.opening_hours) === JSON.stringify(firstLocHours)
-              );
-              return (
-                <>
-                  <button
-                    onClick={() => setShowHours(h => !h)}
-                    className="inline-flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-lg backdrop-blur-md hover:bg-secondary/80 transition-colors text-foreground"
-                  >
-                    <Clock className="h-4 w-4 text-primary" />
-                    <span>Today: {todayStr ?? "See schedule"}</span>
-                    {!allSame && <span className="text-[10px] ml-1 text-primary font-bold">Varies</span>}
-                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showHours ? "rotate-180" : ""}`} />
-                  </button>
-                  {showHours && (
-                    <div className="absolute top-full mt-2 left-0 right-0 z-20 bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl p-4 shadow-xl">
-                      {allSame ? (
-                        <>
-                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">All Locations</p>
-                          <div className="space-y-1.5">
-                            {summary.map((line, i) => (
-                              <p key={i} className="text-sm text-foreground">{line}</p>
+            {locations.length > 0 &&
+              locations[0]?.opening_hours &&
+              (() => {
+                const firstLocHours = locations[0].opening_hours;
+                const todayStr = todayHours(firstLocHours);
+                const summary = summarizeHours(firstLocHours);
+                const allSame = locations.every(
+                  (l: any) => JSON.stringify(l.opening_hours) === JSON.stringify(firstLocHours),
+                );
+                return (
+                  <>
+                    <button
+                      onClick={() => setShowHours((h) => !h)}
+                      className="inline-flex items-center gap-1.5 bg-secondary/50 px-3 py-1.5 rounded-lg backdrop-blur-md hover:bg-secondary/80 transition-colors text-foreground"
+                    >
+                      <Clock className="h-4 w-4 text-primary" />
+                      <span>Today: {todayStr ?? "See schedule"}</span>
+                      {!allSame && (
+                        <span className="text-[10px] ml-1 text-primary font-bold">Varies</span>
+                      )}
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 transition-transform ${showHours ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {showHours && (
+                      <div className="absolute top-full mt-2 left-0 right-0 z-20 bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl p-4 shadow-xl">
+                        {allSame ? (
+                          <>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                              All Locations
+                            </p>
+                            <div className="space-y-1.5">
+                              {summary.map((line, i) => (
+                                <p key={i} className="text-sm text-foreground">
+                                  {line}
+                                </p>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="space-y-4">
+                            {locations.map((loc: any, idx: number) => (
+                              <div key={idx}>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                                  {loc.name || `Location ${idx + 1}`}
+                                </p>
+                                <div className="space-y-1">
+                                  {summarizeHours(loc.opening_hours).map((line, i) => (
+                                    <p key={i} className="text-sm text-foreground">
+                                      {line}
+                                    </p>
+                                  ))}
+                                </div>
+                              </div>
                             ))}
                           </div>
-                        </>
-                      ) : (
-                        <div className="space-y-4">
-                          {locations.map((loc: any, idx: number) => (
-                            <div key={idx}>
-                              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">{loc.name || `Location ${idx + 1}`}</p>
-                              <div className="space-y-1">
-                                {summarizeHours(loc.opening_hours).map((line, i) => (
-                                  <p key={i} className="text-sm text-foreground">{line}</p>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </>
-              );
-            })()}
+                        )}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
           </div>
         </div>
 
         {/* Social links + RSVP buttons */}
         <div className="flex flex-wrap items-center gap-2">
           {socials.instagram && (
-            <a href={socials.instagram} target="_blank" rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+            <a
+              href={socials.instagram}
+              target="_blank"
+              rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+            >
               <Instagram className="w-4 h-4" />
             </a>
           )}
           {socials.twitter && (
-            <a href={socials.twitter} target="_blank" rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+            <a
+              href={socials.twitter}
+              target="_blank"
+              rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+            >
               <Twitter className="w-4 h-4" />
             </a>
           )}
           {socials.facebook && (
-            <a href={socials.facebook} target="_blank" rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+            <a
+              href={socials.facebook}
+              target="_blank"
+              rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+            >
               <Facebook className="w-4 h-4" />
             </a>
           )}
           {socials.website && (
-            <a href={socials.website} target="_blank" rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+            <a
+              href={socials.website}
+              target="_blank"
+              rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+            >
               <Globe className="w-4 h-4" />
             </a>
           )}
           {socials.phone && (
-            <a href={`tel:${socials.phone}`}
-              className="h-10 px-4 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-sm font-medium">
+            <a
+              href={`tel:${socials.phone}`}
+              className="h-10 px-4 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-sm font-medium"
+            >
               <Phone className="w-4 h-4" /> <span className="sr-only">Call</span>
             </a>
           )}
-          
+
           {/* Form Buttons */}
-          {space.connected_forms && space.connected_forms.length > 0
-            ? space.connected_forms.map((cForm: any) =>
-                cForm.showButton !== false && cForm.formId && cForm.formId !== "none" ? (
-                  <Button
-                    key={cForm.id}
-                    variant="default"
-                    className="h-10 px-5 rounded-full font-bold shadow-[var(--shadow-glow)] text-xs"
-                    onClick={() => window.open(`/f/${cForm.formId}`, "_blank")}
-                  >
-                    {cForm.buttonText || "Fill out our form"}
-                  </Button>
-                ) : null
-              )
-            : space.rsvp_form_id && space.show_rsvp_form_button !== false
-            ? (
-              <Button
-                variant="default"
-                className="h-10 px-5 rounded-full font-bold shadow-[var(--shadow-glow)] text-xs"
-                onClick={() => window.open(`/f/${space.rsvp_form_id}`, "_blank")}
-              >
-                {space.rsvp_form_button_text || "Fill out our form"}
-              </Button>
+          {space.connected_forms && space.connected_forms.length > 0 ? (
+            space.connected_forms.map((cForm: any) =>
+              cForm.showButton !== false && cForm.formId && cForm.formId !== "none" ? (
+                <Button
+                  key={cForm.id}
+                  variant="default"
+                  className="h-10 px-5 rounded-full font-bold shadow-[var(--shadow-glow)] text-xs"
+                  onClick={() => window.open(`/f/${cForm.formId}`, "_blank")}
+                >
+                  {cForm.buttonText || "Fill out our form"}
+                </Button>
+              ) : null,
             )
-            : null}
+          ) : space.rsvp_form_id && space.show_rsvp_form_button !== false ? (
+            <Button
+              variant="default"
+              className="h-10 px-5 rounded-full font-bold shadow-[var(--shadow-glow)] text-xs"
+              onClick={() => window.open(`/f/${space.rsvp_form_id}`, "_blank")}
+            >
+              {space.rsvp_form_button_text || "Fill out our form"}
+            </Button>
+          ) : null}
 
           {/* Linked Page */}
           {linkedPage && (
@@ -369,9 +428,7 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
             onClick={() => setIsPlansExpanded(!isPlansExpanded)}
           >
             <div className="flex items-center gap-1.5">
-              <span className="text-sm text-muted-foreground font-semibold">
-                Membership Plans
-              </span>
+              <span className="text-sm text-muted-foreground font-semibold">Membership Plans</span>
               <ChevronUp
                 className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${isPlansExpanded ? "rotate-180" : ""}`}
               />
@@ -394,25 +451,38 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-bold text-sm">{plan.name}</p>
                     <p className="font-bold text-base text-primary">
-                      {plan.amount > 0 || plan.price > 0 ? formatCurrency(plan.amount ?? plan.price, currency) : "Free"}
-                      {plan.billing_cycle && <span className="text-[10px] text-muted-foreground ml-1">/ {plan.billing_cycle}</span>}
+                      {plan.amount > 0 || plan.price > 0
+                        ? formatCurrency(plan.amount ?? plan.price, currency)
+                        : "Free"}
+                      {plan.billing_cycle && (
+                        <span className="text-[10px] text-muted-foreground ml-1">
+                          / {plan.billing_cycle}
+                        </span>
+                      )}
                     </p>
                   </div>
-                  
+
                   {Array.isArray(plan.features) && plan.features.length > 0 && (
                     <div className="mt-2 space-y-1.5">
-                      {plan.features.slice(0, expandedPlanIdx === idx ? undefined : 2).map((feature: string, j: number) => (
-                        <p key={j} className="flex items-start gap-1.5 text-[11px] text-muted-foreground leading-snug">
-                          <CheckCircle2 className="w-3 h-3 text-primary shrink-0 mt-0.5" />
-                          <span>{feature}</span>
-                        </p>
-                      ))}
+                      {plan.features
+                        .slice(0, expandedPlanIdx === idx ? undefined : 2)
+                        .map((feature: string, j: number) => (
+                          <p
+                            key={j}
+                            className="flex items-start gap-1.5 text-[11px] text-muted-foreground leading-snug"
+                          >
+                            <CheckCircle2 className="w-3 h-3 text-primary shrink-0 mt-0.5" />
+                            <span>{feature}</span>
+                          </p>
+                        ))}
                       {plan.features.length > 2 && (
-                        <button 
+                        <button
                           className="text-[11px] font-bold text-primary mt-1"
                           onClick={() => setExpandedPlanIdx(expandedPlanIdx === idx ? null : idx)}
                         >
-                          {expandedPlanIdx === idx ? "Show less" : `View ${plan.features.length - 2} more features`}
+                          {expandedPlanIdx === idx
+                            ? "Show less"
+                            : `View ${plan.features.length - 2} more features`}
                         </button>
                       )}
                     </div>
@@ -422,16 +492,16 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
                     <Link
                       to="/spaces/checkout/$spaceId"
                       params={{ spaceId: space.id }}
-                      search={{ 
-                        plan: plan.name, 
-                        price: String(plan.price ?? plan.amount ?? ""), 
-                        cycle: plan.billing_cycle 
+                      search={{
+                        plan: plan.name,
+                        price: String(plan.price ?? plan.amount ?? ""),
+                        cycle: plan.billing_cycle,
                       }}
                       className="w-full"
                     >
-                      <Button 
-                        className="w-full h-9 rounded-lg text-xs font-bold shadow-[var(--shadow-glow)]" 
-                        style={idx === 1 ? { background: "var(--gradient-primary)" } : {}} 
+                      <Button
+                        className="w-full h-9 rounded-lg text-xs font-bold shadow-[var(--shadow-glow)]"
+                        style={idx === 1 ? { background: "var(--gradient-primary)" } : {}}
                         variant={idx === 1 ? "default" : "secondary"}
                       >
                         Select Plan
@@ -454,22 +524,31 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-bold text-sm">{plan.name}</p>
                     <p className="font-bold text-base text-primary">
-                      {plan.amount > 0 || plan.price > 0 ? formatCurrency(plan.amount ?? plan.price, currency) : "Free"}
-                      {plan.billing_cycle && <span className="text-[10px] text-muted-foreground ml-1">/ {plan.billing_cycle}</span>}
+                      {plan.amount > 0 || plan.price > 0
+                        ? formatCurrency(plan.amount ?? plan.price, currency)
+                        : "Free"}
+                      {plan.billing_cycle && (
+                        <span className="text-[10px] text-muted-foreground ml-1">
+                          / {plan.billing_cycle}
+                        </span>
+                      )}
                     </p>
                   </div>
                   <div className="flex items-center mt-3 pt-3 border-t border-border/40">
                     <Link
                       to="/spaces/checkout/$spaceId"
                       params={{ spaceId: space.id }}
-                      search={{ 
-                        plan: plan.name, 
-                        price: String(plan.price ?? plan.amount ?? ""), 
-                        cycle: plan.billing_cycle 
+                      search={{
+                        plan: plan.name,
+                        price: String(plan.price ?? plan.amount ?? ""),
+                        cycle: plan.billing_cycle,
                       }}
                       className="w-full"
                     >
-                      <Button className="w-full h-9 rounded-lg text-xs font-bold shadow-[var(--shadow-glow)]" variant="secondary">
+                      <Button
+                        className="w-full h-9 rounded-lg text-xs font-bold shadow-[var(--shadow-glow)]"
+                        variant="secondary"
+                      >
                         Select Plan
                       </Button>
                     </Link>

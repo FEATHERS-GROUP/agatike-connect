@@ -3,13 +3,28 @@ import { useState, useEffect, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
 import { createSpaceSubscription } from "@/api/space_subscriptions";
-import { sendSubscriptionConfirmationEmail, sendSubscriptionInvoiceEmail, sendCompanyRosterEmail, sendMemberWelcomeEmail } from "@/api/email";
+import {
+  sendSubscriptionConfirmationEmail,
+  sendSubscriptionInvoiceEmail,
+  sendCompanyRosterEmail,
+  sendMemberWelcomeEmail,
+} from "@/api/email";
 import { createInvoiceRecord } from "@/api/invoices";
 import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, CheckCircle2, Building2, CreditCard, Loader2, Plus, Trash2, Users, ChevronUp } from "lucide-react";
+import {
+  ChevronLeft,
+  CheckCircle2,
+  Building2,
+  CreditCard,
+  Loader2,
+  Plus,
+  Trash2,
+  Users,
+  ChevronUp,
+} from "lucide-react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { z } from "zod";
 
@@ -49,7 +64,7 @@ function CheckoutPage() {
   // Pre-fill form if user data loads later
   useEffect(() => {
     if (user) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         name: prev.name || user.username || "",
         email: prev.email || user.email || "",
@@ -64,7 +79,9 @@ function CheckoutPage() {
   const handleBack = () => setStep((s) => Math.max(s - 1, 1));
 
   const [bookingType, setBookingType] = useState<"individual" | "group">("individual");
-  const [teamMembers, setTeamMembers] = useState([{ name: "", email: "", phone: "", gender: "", handle: "" }]);
+  const [teamMembers, setTeamMembers] = useState([
+    { name: "", email: "", phone: "", gender: "", handle: "" },
+  ]);
 
   const [sendMemberEmails, setSendMemberEmails] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -79,7 +96,8 @@ function CheckoutPage() {
   const parsedPrice = parseInt(planPrice.replace(/[^0-9]/g, "")) || 0;
   const numMembers = bookingType === "group" ? Math.max(1, teamMembers.length) : 1;
   const finalPriceNum = parsedPrice * numMembers;
-  const finalPriceString = finalPriceNum > 0 ? `${currency} ${finalPriceNum.toLocaleString()}` : planPrice;
+  const finalPriceString =
+    finalPriceNum > 0 ? `${currency} ${finalPriceNum.toLocaleString()}` : planPrice;
 
   const handleAddMember = () => {
     setTeamMembers([...teamMembers, { name: "", email: "", phone: "", gender: "", handle: "" }]);
@@ -131,13 +149,18 @@ function CheckoutPage() {
           start_date: formData.startDate,
           booking_type: bookingType,
           team_members: bookingType === "group" ? teamMembers : [],
-        }
+        },
       });
 
       // Members now have membership_ids assigned by the server
       const savedMembers: any[] = subscription?.team_members || [];
-      const invoiceDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
-      const groupPlanName = bookingType === "group" ? `${planName} (Group of ${teamMembers.length})` : planName;
+      const invoiceDate = new Date().toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+      const groupPlanName =
+        bookingType === "group" ? `${planName} (Group of ${teamMembers.length})` : planName;
 
       const invoice = await createInvoiceRecord({
         data: {
@@ -151,14 +174,18 @@ function CheckoutPage() {
           startDate: formData.startDate,
           spaceId,
           referenceId: subscription?.id,
-        }
+        },
       });
 
       const invoiceNumber = invoice?.invoiceNumber || `AGT-${Date.now()}`;
       const pdfBase64 = invoice?.pdfBase64 || null;
 
       const formattedStart = formData.startDate
-        ? new Date(formData.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })
+        ? new Date(formData.startDate).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })
         : formData.startDate;
 
       if (bookingType === "group") {
@@ -177,7 +204,7 @@ function CheckoutPage() {
             memberCount: savedMembers.length,
             members: savedMembers,
             pdfBase64, // attach invoice PDF
-          }
+          },
         });
 
         // Optionally send individual welcome emails to each member sequentially
@@ -193,7 +220,7 @@ function CheckoutPage() {
                   planName,
                   startDate: formattedStart,
                   membershipId: m.membership_id || "—",
-                }
+                },
               });
             }
           }
@@ -209,7 +236,7 @@ function CheckoutPage() {
             price: finalPriceString,
             billingCycle,
             startDate: formData.startDate,
-          }
+          },
         });
 
         await sendSubscriptionInvoiceEmail({
@@ -224,13 +251,12 @@ function CheckoutPage() {
             invoiceNumber,
             startDate: formData.startDate,
             pdfBase64, // attach invoice PDF
-          }
+          },
         });
       }
 
       // 3. Redirect to Success only after all emails are successfully sent
       navigate({ to: `/spaces/success/${spaceId}`, search: { email: formData.email } });
-
     } catch (err: any) {
       console.error(err);
       setErrorMsg(err.message || "Something went wrong during checkout. Please try again.");
@@ -249,7 +275,7 @@ function CheckoutPage() {
         return;
       }
       if (bookingType === "group") {
-        const hasEmpty = teamMembers.some(m => !m.name || !m.email || !m.phone);
+        const hasEmpty = teamMembers.some((m) => !m.name || !m.email || !m.phone);
         if (hasEmpty) {
           setErrorMsg("Please fill in all required team member details.");
           return;
@@ -308,14 +334,18 @@ function CheckoutPage() {
   const STEPS = [
     { id: 1, title: "Booking Type" },
     { id: 2, title: "Details" },
-    { id: 3, title: "Payment" }
+    { id: 3, title: "Payment" },
   ];
 
   const OrderSummaryContent = () => (
     <>
       <div className="flex items-center gap-4 mb-6 pb-6 border-b border-border/40">
         {space.cover_url ? (
-          <img src={space.cover_url} alt={space.name} className="w-16 h-16 rounded-xl object-cover" />
+          <img
+            src={space.cover_url}
+            alt={space.name}
+            className="w-16 h-16 rounded-xl object-cover"
+          />
         ) : (
           <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center">
             <Building2 className="w-8 h-8 text-primary" />
@@ -323,7 +353,9 @@ function CheckoutPage() {
         )}
         <div>
           <h3 className="font-semibold">{space.name}</h3>
-          <p className="text-sm text-muted-foreground">{space.locations?.[0]?.city || "Space Booking"}</p>
+          <p className="text-sm text-muted-foreground">
+            {space.locations?.[0]?.city || "Space Booking"}
+          </p>
         </div>
       </div>
 
@@ -340,7 +372,9 @@ function CheckoutPage() {
         )}
         <div className="flex justify-between items-center text-sm">
           <span className="text-muted-foreground">Base Price</span>
-          <span className="font-medium">{currency} {planPrice}</span>
+          <span className="font-medium">
+            {currency} {planPrice}
+          </span>
         </div>
         <div className="flex justify-between items-center text-sm">
           <span className="text-muted-foreground">Cycle</span>
@@ -360,7 +394,8 @@ function CheckoutPage() {
       <div className="mt-8 flex items-start gap-3 bg-card p-4 rounded-xl border border-border/40">
         <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground">
-          Your booking is protected by Agatike Guarantee. You will receive an email confirmation and invoice immediately after payment.
+          Your booking is protected by Agatike Guarantee. You will receive an email confirmation and
+          invoice immediately after payment.
         </p>
       </div>
     </>
@@ -387,14 +422,21 @@ function CheckoutPage() {
         {/* Stepper Progress */}
         <div className="mb-12 flex items-center justify-between max-w-lg mx-auto relative px-2">
           <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-secondary rounded-full -z-10"></div>
-          <div className={`absolute top-5 left-[10%] h-1 bg-primary rounded-full transition-all duration-500 -z-10`} style={{ width: `${((step - 1) / 2) * 80}%` }}></div>
+          <div
+            className={`absolute top-5 left-[10%] h-1 bg-primary rounded-full transition-all duration-500 -z-10`}
+            style={{ width: `${((step - 1) / 2) * 80}%` }}
+          ></div>
 
           {STEPS.map((s) => (
             <div key={s.id} className="flex flex-col items-center gap-2 relative z-10 w-24">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 ring-4 ring-background ${step >= s.id ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)] scale-110" : "bg-secondary text-muted-foreground border border-border"}`}>
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 ring-4 ring-background ${step >= s.id ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)] scale-110" : "bg-secondary text-muted-foreground border border-border"}`}
+              >
                 {step > s.id ? <CheckCircle2 className="w-5 h-5" /> : s.id}
               </div>
-              <span className={`text-xs font-semibold whitespace-nowrap transition-colors ${step >= s.id ? "text-foreground" : "text-muted-foreground"}`}>
+              <span
+                className={`text-xs font-semibold whitespace-nowrap transition-colors ${step >= s.id ? "text-foreground" : "text-muted-foreground"}`}
+              >
                 {s.title}
               </span>
             </div>
@@ -402,21 +444,23 @@ function CheckoutPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 lg:gap-12 items-start">
-
           {/* Left Column: Form Steps */}
           <div className="space-y-8">
             <div>
               <h1 className="text-3xl font-bold tracking-tight mb-2">Checkout</h1>
-              <p className="text-muted-foreground">Complete your details to secure your booking at {space.name}.</p>
+              <p className="text-muted-foreground">
+                Complete your details to secure your booking at {space.name}.
+              </p>
             </div>
 
             <form id="checkout-form" onSubmit={handlePayment} className="space-y-8">
-
               {/* STEP 1: Booking Type */}
               {step === 1 && (
                 <div className="bg-card border border-border/40 rounded-2xl p-6 shadow-sm animate-in fade-in slide-in-from-right-8 duration-300">
                   <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                    <span className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                    <span className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm">
+                      1
+                    </span>
                     Booking Type
                   </h2>
                   <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -425,21 +469,33 @@ function CheckoutPage() {
                       onClick={() => setBookingType("individual")}
                       className={`flex-1 p-6 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-3 ${bookingType === "individual" ? "border-primary bg-primary/5 text-primary scale-[1.02]" : "border-border hover:border-primary/50 text-muted-foreground"}`}
                     >
-                      <CheckCircle2 className={`w-8 h-8 ${bookingType === "individual" ? "text-primary" : "opacity-50"}`} />
+                      <CheckCircle2
+                        className={`w-8 h-8 ${bookingType === "individual" ? "text-primary" : "opacity-50"}`}
+                      />
                       <span className="font-semibold text-lg">Individual Booking</span>
-                      <span className="text-sm font-normal opacity-80">Book a spot for yourself</span>
+                      <span className="text-sm font-normal opacity-80">
+                        Book a spot for yourself
+                      </span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setBookingType("group")}
                       className={`flex-1 p-6 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-3 ${bookingType === "group" ? "border-primary bg-primary/5 text-primary scale-[1.02]" : "border-border hover:border-primary/50 text-muted-foreground"}`}
                     >
-                      <Users className={`w-8 h-8 ${bookingType === "group" ? "text-primary" : "opacity-50"}`} />
+                      <Users
+                        className={`w-8 h-8 ${bookingType === "group" ? "text-primary" : "opacity-50"}`}
+                      />
                       <span className="font-semibold text-lg">Company / Group</span>
                       <span className="text-sm font-normal opacity-80">Book for your team</span>
                     </button>
                   </div>
-                  <Button type="button" onClick={validateAndNext} className="hidden lg:flex w-full h-12 text-md">Continue</Button>
+                  <Button
+                    type="button"
+                    onClick={validateAndNext}
+                    className="hidden lg:flex w-full h-12 text-md"
+                  >
+                    Continue
+                  </Button>
                 </div>
               )}
 
@@ -448,7 +504,9 @@ function CheckoutPage() {
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-300">
                   <div className="bg-card border border-border/40 rounded-2xl p-6 shadow-sm">
                     <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                      <span className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                      <span className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm">
+                        2
+                      </span>
                       {bookingType === "group" ? "Company / Group Details" : "Your Details"}
                     </h2>
 
@@ -513,14 +571,18 @@ function CheckoutPage() {
                               id="startDate"
                               type="date"
                               value={formData.startDate}
-                              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                              onChange={(e) =>
+                                setFormData({ ...formData, startDate: e.target.value })
+                              }
                               min={new Date().toISOString().split("T")[0]}
                               required
                               className="bg-secondary/50 w-full"
                             />
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">Your billing cycle will renew relative to your chosen start date.</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Your billing cycle will renew relative to your chosen start date.
+                        </p>
                       </div>
                     )}
 
@@ -580,13 +642,18 @@ function CheckoutPage() {
                             id="startDate"
                             type="date"
                             value={formData.startDate}
-                            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                            onChange={(e) =>
+                              setFormData({ ...formData, startDate: e.target.value })
+                            }
                             min={new Date().toISOString().split("T")[0]}
                             required
                             className="bg-secondary/50 w-full"
                           />
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">Invoices will be billed to the company email above. Your billing cycle renews relative to the start date.</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Invoices will be billed to the company email above. Your billing cycle
+                          renews relative to the start date.
+                        </p>
                       </div>
                     )}
                   </div>
@@ -599,13 +666,16 @@ function CheckoutPage() {
                           Team Members
                         </h2>
                         <span className="text-sm bg-primary/10 text-primary px-3 py-1 rounded-full font-medium">
-                          {teamMembers.length} member{teamMembers.length !== 1 ? 's' : ''}
+                          {teamMembers.length} member{teamMembers.length !== 1 ? "s" : ""}
                         </span>
                       </div>
 
                       <div className="space-y-6">
                         {teamMembers.map((member, index) => (
-                          <div key={index} className="p-4 bg-secondary/30 border border-border/50 rounded-xl relative">
+                          <div
+                            key={index}
+                            className="p-4 bg-secondary/30 border border-border/50 rounded-xl relative"
+                          >
                             {teamMembers.length > 1 && (
                               <button
                                 type="button"
@@ -615,20 +685,39 @@ function CheckoutPage() {
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             )}
-                            <h3 className="font-medium mb-4 text-sm text-muted-foreground uppercase tracking-wider">Member {index + 1}</h3>
+                            <h3 className="font-medium mb-4 text-sm text-muted-foreground uppercase tracking-wider">
+                              Member {index + 1}
+                            </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
                                 <Label>Full Name *</Label>
-                                <Input value={member.name} onChange={(e) => updateMember(index, "name", e.target.value)} required className="bg-background" />
+                                <Input
+                                  value={member.name}
+                                  onChange={(e) => updateMember(index, "name", e.target.value)}
+                                  required
+                                  className="bg-background"
+                                />
                               </div>
                               <div className="space-y-2">
                                 <Label>Email *</Label>
-                                <Input type="email" value={member.email} onChange={(e) => updateMember(index, "email", e.target.value)} required className="bg-background" />
+                                <Input
+                                  type="email"
+                                  value={member.email}
+                                  onChange={(e) => updateMember(index, "email", e.target.value)}
+                                  required
+                                  className="bg-background"
+                                />
                               </div>
                               <div className="space-y-2">
                                 <Label>Phone Number *</Label>
-                                <Input type="tel" value={member.phone} onChange={(e) => updateMember(index, "phone", e.target.value)} required className="bg-background" />
+                                <Input
+                                  type="tel"
+                                  value={member.phone}
+                                  onChange={(e) => updateMember(index, "phone", e.target.value)}
+                                  required
+                                  className="bg-background"
+                                />
                               </div>
                               <div className="space-y-2">
                                 <Label>Gender</Label>
@@ -651,13 +740,21 @@ function CheckoutPage() {
                                   onChange={(e) => updateMember(index, "handle", e.target.value)}
                                   className="bg-background font-mono text-sm"
                                 />
-                                <p className="text-xs text-muted-foreground">If they have an Agatike account, this connects the booking to their profile.</p>
+                                <p className="text-xs text-muted-foreground">
+                                  If they have an Agatike account, this connects the booking to
+                                  their profile.
+                                </p>
                               </div>
                             </div>
                           </div>
                         ))}
 
-                        <Button type="button" variant="outline" onClick={handleAddMember} className="w-full border-dashed">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleAddMember}
+                          className="w-full border-dashed"
+                        >
                           <Plus className="w-4 h-4 mr-2" /> Add Another Member
                         </Button>
 
@@ -666,18 +763,29 @@ function CheckoutPage() {
                           className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${sendMemberEmails ? "border-primary/50 bg-primary/5" : "border-border/50 bg-secondary/20"}`}
                           onClick={() => setSendMemberEmails((v) => !v)}
                         >
-                          <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${sendMemberEmails ? "border-primary bg-primary" : "border-border"}`}>
+                          <div
+                            className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${sendMemberEmails ? "border-primary bg-primary" : "border-border"}`}
+                          >
                             {sendMemberEmails && (
                               <svg viewBox="0 0 12 10" fill="none" className="w-3 h-3">
-                                <path d="M1 5l3.5 3.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                <path
+                                  d="M1 5l3.5 3.5L11 1"
+                                  stroke="white"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
                               </svg>
                             )}
                           </div>
                           <div>
-                            <p className="font-medium text-sm">Also send welcome emails to each team member</p>
+                            <p className="font-medium text-sm">
+                              Also send welcome emails to each team member
+                            </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              Each member will receive their personal Membership ID by email.
-                              By default, only the company email receives the invoice + full member roster.
+                              Each member will receive their personal Membership ID by email. By
+                              default, only the company email receives the invoice + full member
+                              roster.
                             </p>
                           </div>
                         </div>
@@ -700,7 +808,9 @@ function CheckoutPage() {
               {step === 3 && (
                 <div className="bg-card border border-border/40 rounded-2xl p-6 shadow-sm animate-in fade-in slide-in-from-right-8 duration-300">
                   <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                    <span className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
+                    <span className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm">
+                      3
+                    </span>
                     Payment Option
                   </h2>
 
@@ -709,7 +819,9 @@ function CheckoutPage() {
                       <CreditCard className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-orange-600 dark:text-orange-400">Mobile Money</h3>
+                      <h3 className="font-semibold text-orange-600 dark:text-orange-400">
+                        Mobile Money
+                      </h3>
                       <p className="text-sm text-muted-foreground">Pay securely with Momo.</p>
                     </div>
                     <CheckCircle2 className="w-5 h-5 text-orange-500 ml-auto" />
@@ -739,7 +851,6 @@ function CheckoutPage() {
                   </p>
                 </div>
               )}
-
             </form>
           </div>
 
@@ -748,14 +859,12 @@ function CheckoutPage() {
             <h2 className="text-xl font-bold mb-6">Order Summary</h2>
             <OrderSummaryContent />
           </div>
-
         </div>
       </main>
 
       {/* Mobile Bottom Action Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/50 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)] transition-transform duration-300">
         <div className="max-w-md mx-auto p-4">
-
           {/* Collapsible Order Summary */}
           <div
             className="flex items-center justify-between gap-4 mb-3 cursor-pointer active:opacity-70 transition-opacity"
@@ -763,7 +872,9 @@ function CheckoutPage() {
           >
             <div className="flex items-center gap-1.5">
               <span className="text-sm text-muted-foreground font-semibold">Order Summary</span>
-              <ChevronUp className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${summaryExpanded ? "rotate-180" : ""}`} />
+              <ChevronUp
+                className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${summaryExpanded ? "rotate-180" : ""}`}
+              />
             </div>
             {!summaryExpanded && (
               <span className="font-bold text-primary text-sm">{finalPriceString}</span>
@@ -792,9 +903,15 @@ function CheckoutPage() {
           >
             {step === 3 ? (
               isProcessing ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
-              ) : `Pay ${finalPriceString}`
-            ) : "Continue"}
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...
+                </>
+              ) : (
+                `Pay ${finalPriceString}`
+              )
+            ) : (
+              "Continue"
+            )}
           </Button>
           {step === 3 && (
             <p className="text-center text-[10px] text-muted-foreground mt-3">

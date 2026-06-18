@@ -2,8 +2,15 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSpaceById, updateSpace } from "@/api/spaces";
 import {
-  CreditCard, Plus, Edit, Trash2, CheckCircle2,
-  X, Loader2, GripVertical, Sparkles,
+  CreditCard,
+  Plus,
+  Edit,
+  Trash2,
+  CheckCircle2,
+  X,
+  Loader2,
+  GripVertical,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,8 +104,7 @@ function PlanModal({ open, onOpenChange, initial, currency, onSave }: PlanModalP
       return { ...prev, features };
     });
 
-  const addFeature = () =>
-    setForm((prev) => ({ ...prev, features: [...prev.features, ""] }));
+  const addFeature = () => setForm((prev) => ({ ...prev, features: [...prev.features, ""] }));
 
   const removeFeature = (idx: number) =>
     setForm((prev) => ({
@@ -107,8 +113,14 @@ function PlanModal({ open, onOpenChange, initial, currency, onSave }: PlanModalP
     }));
 
   const handleSave = async () => {
-    if (!form.name.trim()) { toast.error("Plan name is required."); return; }
-    if (form.price === "" || isNaN(Number(form.price))) { toast.error("A valid price is required."); return; }
+    if (!form.name.trim()) {
+      toast.error("Plan name is required.");
+      return;
+    }
+    if (form.price === "" || isNaN(Number(form.price))) {
+      toast.error("A valid price is required.");
+      return;
+    }
 
     const cleaned: Plan = {
       ...form,
@@ -180,7 +192,9 @@ function PlanModal({ open, onOpenChange, initial, currency, onSave }: PlanModalP
                 className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 {BILLING_CYCLES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
@@ -246,8 +260,12 @@ function PlanModal({ open, onOpenChange, initial, currency, onSave }: PlanModalP
             className="rounded-xl gap-2"
             style={{ background: "var(--gradient-primary)" }}
           >
-            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-            {isSaving ? "Saving…" : (initial?.name ? "Save Changes" : "Add Plan")}
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <CheckCircle2 className="h-4 w-4" />
+            )}
+            {isSaving ? "Saving…" : initial?.name ? "Save Changes" : "Add Plan"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -372,7 +390,12 @@ function SpacePlansPage() {
             className="flex flex-col bg-card border border-border/60 rounded-3xl p-6 shadow-sm relative overflow-hidden group hover:border-primary/30 hover:shadow-md transition-all duration-200"
           >
             {/* Coloured top accent bar */}
-            <div className={cn("absolute top-0 inset-x-0 h-1 bg-gradient-to-r", CARD_ACCENTS[idx % CARD_ACCENTS.length])} />
+            <div
+              className={cn(
+                "absolute top-0 inset-x-0 h-1 bg-gradient-to-r",
+                CARD_ACCENTS[idx % CARD_ACCENTS.length],
+              )}
+            />
 
             {/* Title + action buttons */}
             <div className="flex justify-between items-start mb-1">
@@ -399,8 +422,7 @@ function SpacePlansPage() {
 
             {/* Price */}
             <div className="text-3xl font-bold mb-1 flex items-baseline gap-1 mt-1">
-              {space.currency}{" "}
-              {Number(plan.price || 0).toLocaleString()}
+              {space.currency} {Number(plan.price || 0).toLocaleString()}
               {plan.billing_cycle && plan.billing_cycle !== "One-time" && (
                 <span className="text-sm text-muted-foreground font-medium uppercase tracking-wider">
                   / {plan.billing_cycle}
@@ -475,16 +497,13 @@ function SpacePlansPage() {
       />
 
       {/* ── Delete Confirmation ── */}
-      <AlertDialog
-        open={deleteIdx !== null}
-        onOpenChange={(v) => !v && setDeleteIdx(null)}
-      >
+      <AlertDialog open={deleteIdx !== null} onOpenChange={(v) => !v && setDeleteIdx(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete "{plans[deleteIdx ?? 0]?.name}"?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove this plan. Existing subscribers on this plan will not be affected,
-              but no new members can subscribe to it.
+              This will permanently remove this plan. Existing subscribers on this plan will not be
+              affected, but no new members can subscribe to it.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -495,7 +514,9 @@ function SpacePlansPage() {
               disabled={isDeleting}
             >
               {isDeleting ? (
-                <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Deleting…</>
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" /> Deleting…
+                </>
               ) : (
                 "Delete Plan"
               )}
