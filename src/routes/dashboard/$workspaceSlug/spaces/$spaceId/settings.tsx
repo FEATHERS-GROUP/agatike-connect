@@ -1,7 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSpaceById, updateSpace } from "@/api/spaces";
-import { uploadFile } from "@/api/storage";
+import { uploadFormData, deleteFiles } from "@/api/storage";
 import { Settings, Save, UploadCloud, Phone, Instagram, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,37 +77,34 @@ function SpaceSettingsPage() {
 
     setIsUploadingImage(true);
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
+      // 1. Delete the old image if it exists
+      if (form.cover_url) {
         try {
-          const base64String = (reader.result as string).split(",")[1];
-          const res = await uploadFile({
-            data: {
-              base64: base64String,
-              contentType: file.type,
-              folder: "spaces",
-              ext: file.name.split(".").pop() || "jpg",
-            }
-          });
-          if (res?.url) {
-            setForm(prev => ({ ...prev, cover_url: res.url }));
-            toast.success("Image uploaded! Don't forget to save changes.");
-          }
-        } catch (err) {
-          toast.error("Failed to upload image.");
-          console.error(err);
-        } finally {
-          setIsUploadingImage(false);
-          if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-          }
+          await deleteFiles({ data: { urls: [form.cover_url] } });
+        } catch (e) {
+          console.warn("Could not delete old image:", e);
         }
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      toast.error("Error reading file.");
+      }
+
+      // 2. Upload the new image via FormData proxy
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "spaces");
+
+      const res = await uploadFormData({ data: formData });
+
+      if (res?.url) {
+        setForm((prev) => ({ ...prev, cover_url: res.url }));
+        toast.success("Image uploaded! Don't forget to save changes.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload image.");
       console.error(err);
+    } finally {
       setIsUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
