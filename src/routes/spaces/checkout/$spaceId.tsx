@@ -9,7 +9,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, CheckCircle2, Building2, CreditCard, Loader2 } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Building2, CreditCard, Loader2, Plus, Trash2, Users } from "lucide-react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { z } from "zod";
 
@@ -58,6 +58,9 @@ function CheckoutPage() {
     }
   }, [user]);
 
+  const [bookingType, setBookingType] = useState<"individual" | "group">("individual");
+  const [teamMembers, setTeamMembers] = useState([{ name: "", email: "", phone: "", gender: "", handle: "" }]);
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -65,6 +68,28 @@ function CheckoutPage() {
   const planPrice = search.price || "Contact for price";
   const billingCycle = search.cycle || "Monthly";
   const currency = space?.currency || "RWF";
+
+  // Calculate price dynamically based on group size
+  const parsedPrice = parseInt(planPrice.replace(/[^0-9]/g, "")) || 0;
+  const numMembers = bookingType === "group" ? Math.max(1, teamMembers.length) : 1;
+  const finalPriceNum = parsedPrice * numMembers;
+  const finalPriceString = finalPriceNum > 0 ? `${currency} ${finalPriceNum.toLocaleString()}` : planPrice;
+
+  const handleAddMember = () => {
+    setTeamMembers([...teamMembers, { name: "", email: "", phone: "", gender: "", handle: "" }]);
+  };
+
+  const handleRemoveMember = (index: number) => {
+    if (teamMembers.length > 1) {
+      setTeamMembers(teamMembers.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateMember = (index: number, field: string, value: string) => {
+    const newMembers = [...teamMembers];
+    newMembers[index] = { ...newMembers[index], [field]: value };
+    setTeamMembers(newMembers);
+  };
 
   const handlePayment = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -82,14 +107,17 @@ function CheckoutPage() {
       const subscription = await createSpaceSubscription({
         data: {
           space_id: spaceId,
+          user_id: user?.id,
           customer_name: formData.name,
           customer_email: formData.email,
           customer_phone: formData.phone,
           customer_gender: formData.gender,
           plan_name: planName,
-          price: planPrice,
+          price: finalPriceString,
           billing_cycle: billingCycle,
           start_date: formData.startDate,
+          booking_type: bookingType,
+          team_members: bookingType === "group" ? teamMembers : [],
         }
       });
 
@@ -101,8 +129,8 @@ function CheckoutPage() {
               spaceName: space?.name || "Our Space",
               customerName: formData.name,
               customerEmail: formData.email,
-              planName,
-              amount: planPrice,
+              planName: bookingType === "group" ? `${planName} (Group of ${teamMembers.length})` : planName,
+              amount: finalPriceString.replace(`${currency} `, ""),
               currency,
               billingCycle,
               startDate: formData.startDate,
@@ -121,9 +149,10 @@ function CheckoutPage() {
                 to: formData.email,
                 customerName: formData.name,
                 spaceName: space?.name || "Our Space",
-                planName,
-                price: `${currency} ${planPrice}`,
+                planName: bookingType === "group" ? `${planName} (Group of ${teamMembers.length})` : planName,
+                price: finalPriceString,
                 billingCycle,
+                startDate: formData.startDate,
               }
             }),
             sendSubscriptionInvoiceEmail({
@@ -131,8 +160,8 @@ function CheckoutPage() {
                 to: formData.email,
                 customerName: formData.name,
                 spaceName: space?.name || "Our Space",
-                planName,
-                price: `${currency} ${planPrice}`,
+                planName: bookingType === "group" ? `${planName} (Group of ${teamMembers.length})` : planName,
+                price: finalPriceString,
                 billingCycle,
                 invoiceDate: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
                 invoiceNumber,
@@ -271,10 +300,112 @@ function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Payment Mock */}
+              {/* Booking Type Toggle */}
               <div className="bg-card border border-border/40 rounded-2xl p-6 shadow-sm">
                 <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                   <span className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                  Booking Type
+                </h2>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setBookingType("individual")}
+                    className={`flex-1 p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-2 ${bookingType === "individual" ? "border-primary bg-primary/5 text-primary" : "border-border hover:border-primary/50 text-muted-foreground"}`}
+                  >
+                    <CheckCircle2 className={`w-6 h-6 ${bookingType === "individual" ? "text-primary" : "opacity-50"}`} />
+                    <span className="font-semibold">Individual Booking</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBookingType("group")}
+                    className={`flex-1 p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-2 ${bookingType === "group" ? "border-primary bg-primary/5 text-primary" : "border-border hover:border-primary/50 text-muted-foreground"}`}
+                  >
+                    <Users className={`w-6 h-6 ${bookingType === "group" ? "text-primary" : "opacity-50"}`} />
+                    <span className="font-semibold">Company / Group Booking</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Team Members Form */}
+              {bookingType === "group" && (
+                <div className="bg-card border border-primary/20 rounded-2xl p-6 shadow-sm animate-in fade-in slide-in-from-top-4">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                      <Users className="w-5 h-5 text-primary" />
+                      Team Members
+                    </h2>
+                    <span className="text-sm bg-primary/10 text-primary px-3 py-1 rounded-full font-medium">
+                      {teamMembers.length} member{teamMembers.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    {teamMembers.map((member, index) => (
+                      <div key={index} className="p-4 bg-secondary/30 border border-border/50 rounded-xl relative">
+                        {teamMembers.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMember(index)}
+                            className="absolute top-4 right-4 text-muted-foreground hover:text-destructive transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        <h3 className="font-medium mb-4 text-sm text-muted-foreground uppercase tracking-wider">Member {index + 1}</h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Full Name *</Label>
+                            <Input value={member.name} onChange={(e) => updateMember(index, "name", e.target.value)} required className="bg-background" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Email *</Label>
+                            <Input type="email" value={member.email} onChange={(e) => updateMember(index, "email", e.target.value)} required className="bg-background" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Phone Number *</Label>
+                            <Input type="tel" value={member.phone} onChange={(e) => updateMember(index, "phone", e.target.value)} required className="bg-background" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Gender</Label>
+                            <select
+                              value={member.gender}
+                              onChange={(e) => updateMember(index, "gender", e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            >
+                              <option value="">Select Gender</option>
+                              <option value="male">Male</option>
+                              <option value="female">Female</option>
+                              <option value="other">Other</option>
+                            </select>
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <Label>Agatike Handle (Optional)</Label>
+                            <Input 
+                              placeholder="@username" 
+                              value={member.handle} 
+                              onChange={(e) => updateMember(index, "handle", e.target.value)} 
+                              className="bg-background font-mono text-sm" 
+                            />
+                            <p className="text-xs text-muted-foreground">If they have an Agatike account, this connects the booking to their profile.</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <Button type="button" variant="outline" onClick={handleAddMember} className="w-full border-dashed">
+                      <Plus className="w-4 h-4 mr-2" /> Add Another Member
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Section */}
+              <div className="bg-card border border-border/40 rounded-2xl p-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                  <span className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm">
+                    {bookingType === "group" ? "3" : "2"}
+                  </span>
                   Payment
                 </h2>
                 
@@ -305,7 +436,7 @@ function CheckoutPage() {
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing Payment...
                     </>
                   ) : (
-                    `Pay ${currency} ${planPrice}`
+                    `Pay ${finalPriceString}`
                   )}
                 </Button>
                 <p className="text-center text-xs text-muted-foreground mt-4">
@@ -333,16 +464,9 @@ function CheckoutPage() {
               </div>
             </div>
 
-            <div className="space-y-4 mb-6 pb-6 border-b border-border/40">
-              <div className="flex justify-between items-center">
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">Plan</span>
-                <span className="font-medium">{planName}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Billing Cycle</span>
-                <span className="font-medium">{billingCycle}</span>
-              </div>
-              <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Price</span>
                 <span className="font-medium">{currency} {planPrice}</span>
               </div>

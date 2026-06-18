@@ -266,37 +266,38 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" }).handler(a
 });
 
 export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { to, customerName, spaceName, planName, price, billingCycle } = ctx.data as any;
+  const { to, customerName, spaceName, planName, price, billingCycle, startDate } = ctx.data as any;
 
   const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : import.meta.env.PROD
-        ? "https://agatike.rw"
-        : "https://agatike.rw";
+      : "https://agatike.rw";
 
   const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
 
   const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
-      <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
-        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
+      <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
           <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Booking Confirmed!</h2>
       </div>
       <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
         <p>Hi ${customerName},</p>
-        <p>Your booking for <strong>${spaceName}</strong> has been confirmed.</p>
+        <p>Your booking for <strong>${spaceName}</strong> has been confirmed successfully!</p>
         <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border: 1px solid #e2e8f0;">
-          <h3 style="margin-top: 0; color: #0f172a; font-size: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Order Details</h3>
+          <h3 style="margin: 0 0 16px 0; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Booking Details</h3>
           <p style="margin: 8px 0;"><strong>Plan:</strong> ${planName}</p>
+          <p style="margin: 8px 0;"><strong>Billing Cycle:</strong> ${billingCycle}</p>
           <p style="margin: 8px 0;"><strong>Price:</strong> ${price}</p>
-          <p style="margin: 8px 0;"><strong>Billing:</strong> ${billingCycle}</p>
+          ${startDate ? `<p style="margin: 8px 0;"><strong>Start Date:</strong> ${startDate}</p>` : ''}
         </div>
         <p>If you have any questions, feel free to contact the space organizer.</p>
-        <p>Welcome, and enjoy your time at ${spaceName}!</p>
+        <div style="margin-top: 32px;">
+          <a href="${baseUrl}/spaces/${spaceName.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase()}" style="background-color: #f2571d; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: inline-block;">View Space</a>
+        </div>
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
@@ -314,7 +315,7 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
     body: JSON.stringify({
       from: "Agatike Connect <hello@agatike.rw>",
       to: [to],
-      subject: `Booking Confirmed: ${spaceName} - ${planName}`,
+      subject: `Booking Confirmed: ${spaceName}`,
       html: html,
     }),
   });
@@ -327,7 +328,7 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
 });
 
 export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { to, customerName, spaceName, planName, price, billingCycle, invoiceDate, invoiceNumber, pdfBase64 } = ctx.data as any;
+  const { to, customerName, spaceName, planName, price, billingCycle, invoiceDate, invoiceNumber, pdfBase64, startDate } = ctx.data as any;
 
   const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -363,6 +364,11 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).h
             <span>${planName} (${billingCycle})</span>
             <strong>${price}</strong>
           </p>
+          ${startDate ? `
+          <p style="margin: 8px 0; display: flex; justify-content: space-between; font-size: 14px; color: #64748b;">
+            <span>Start Date</span>
+            <span>${startDate}</span>
+          </p>` : ''}
           <div style="border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 12px; display: flex; justify-content: space-between; font-size: 18px; font-weight: 700;">
             <span>Total Paid</span>
             <span>${price}</span>
