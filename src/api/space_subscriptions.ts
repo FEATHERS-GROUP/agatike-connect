@@ -158,3 +158,53 @@ export const createSpaceSubscription = createServerFn({ method: "POST" })
   const data = await hasuraRequest<{ insert_space_subscriptions_one: any }>(query, variables);
   return data.insert_space_subscriptions_one;
 });
+
+export const getUserSubscriptions = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { user_id } = ctx.data as any;
+    if (!user_id) return [];
+    
+    const query = `
+      query GetUserSubscriptions($user_id: uuid!) {
+        space_subscriptions(where: { user_id: { _eq: $user_id } }, order_by: { created_at: desc }) {
+          id
+          plan_name
+          price
+          status
+          billing_cycle
+          start_date
+          next_billing_date
+          booking_type
+          customer_name
+          customer_email
+          customer_phone
+          team_members
+          created_at
+          space {
+            id
+            name
+            cover_url
+            currency
+          }
+          invoices(order_by: { created_at: desc }, limit: 1) {
+            id
+            invoice_number
+            amount
+            status
+            created_at
+          }
+        }
+      }
+    `;
+    
+    try {
+      const data = await hasuraRequest<{ space_subscriptions: any[] }>(query, { user_id });
+      return data.space_subscriptions || [];
+    } catch (e) {
+      console.error("Error fetching user subscriptions:", e);
+      return [];
+    }
+  });
+
+

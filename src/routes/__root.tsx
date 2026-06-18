@@ -211,7 +211,7 @@ function AuthRedirect() {
   useEffect(() => {
     if (typeof window === "undefined" || isLoading) return;
     const isMobile = window.matchMedia("(max-width: 767px)").matches;
-    const publicPaths = ["/signin", "/signup", "/onboarding"];
+    const publicPaths = ["/signin", "/signup", "/onboarding", "/v"];
     const isPublic = publicPaths.some((p) => location.pathname.startsWith(p));
     if (isMobile && !isLoggedIn && !isPublic) {
       navigate({ to: "/signin", replace: true });

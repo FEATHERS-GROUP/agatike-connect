@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, MapPin, QrCode } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ArrowLeft, MapPin, CheckCircle2, XCircle, Clock, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,53 +9,86 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-
-const mockSubscriptions = [
-  {
-    id: "sub_1",
-    title: "Premium Gym Access",
-    venue: "Fit & Flex Center",
-    type: "Monthly",
-    status: "Active",
-    nextBilling: "2026-07-14",
-    price: "$50.00",
-    cover:
-      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=400&auto=format&fit=crop",
-  },
-  {
-    id: "sub_2",
-    title: "Gold Swimming Session",
-    venue: "Aqua Oasis",
-    type: "Monthly",
-    status: "Expiring Soon",
-    nextBilling: "2026-06-20",
-    price: "$30.00",
-    cover:
-      "https://images.unsplash.com/photo-1519315901367-f34f9274ceb3?q=80&w=400&auto=format&fit=crop",
-  },
-  {
-    id: "sub_3",
-    title: "Dedicated Workspace",
-    venue: "Kigali Tech Hub",
-    type: "Monthly",
-    status: "Active",
-    nextBilling: "2026-07-01",
-    price: "$150.00",
-    cover:
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=400&auto=format&fit=crop",
-  },
-];
+import { getUserSession } from "@/api/auth";
+import { getUserSubscriptions } from "@/api/space_subscriptions";
+import QRCode from "react-qr-code";
 
 export const Route = createFileRoute("/subscriptions")({
+  loader: async () => {
+    const session = await getUserSession();
+    if (!session) return { subscriptions: [] };
+    
+    const subscriptions = await getUserSubscriptions({ data: { user_id: session.id } });
+    return { subscriptions };
+  },
   component: SubscriptionsPage,
 });
 
+/** Determine if a subscription is still valid based on next_billing_date */
+function getSubscriptionValidity(sub: any): { isValid: boolean; label: string; color: string } {
+  const status = (sub.status || "").toLowerCase();
+  if (status === "cancelled" || status === "inactive") {
+    return { isValid: false, label: "Cancelled", color: "bg-red-500/10 text-red-500" };
+  }
+
+  if (sub.next_billing_date) {
+    const nextBilling = new Date(sub.next_billing_date);
+    const now = new Date();
+    if (nextBilling < now) {
+      return { isValid: false, label: "Expired", color: "bg-red-500/10 text-red-500" };
+    }
+    // Expiring within 3 days
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+    if (nextBilling.getTime() - now.getTime() < threeDays) {
+      return { isValid: true, label: "Expiring Soon", color: "bg-amber-500/10 text-amber-500" };
+    }
+  }
+
+  return { isValid: true, label: "Active", color: "bg-green-500/10 text-green-500" };
+}
+
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "N/A";
+  try {
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return "N/A";
+  }
+}
+
 /* ─── Subscription Card ─── */
 function SubscriptionCard({ sub }: { sub: any }) {
-  const isExpiring = sub.status === "Expiring Soon";
   const [showInvoice, setShowInvoice] = useState(false);
   const [showRenew, setShowRenew] = useState(false);
   const [showQR, setShowQR] = useState(false);
+
+  const validity = useMemo(() => getSubscriptionValidity(sub), [sub]);
+  const latestInvoice = sub.invoices?.[0] || null;
+  const currency = sub.space?.currency || "RWF";
+
+  // Build QR payload as a verification link
+  const qrPayload = typeof window !== "undefined"
+    ? `${window.location.origin}/v/${sub.id}`
+    : `/v/${sub.id}`;
+
+
+  // Compute the "next billing" display — fall back to calculating from start_date + billing_cycle
+  const nextBillingDisplay = useMemo(() => {
+    if (sub.next_billing_date) return formatDate(sub.next_billing_date);
+    if (!sub.start_date) return "N/A";
+    // Compute from start_date + billing_cycle
+    const start = new Date(sub.start_date);
+    const cycle = (sub.billing_cycle || "").toLowerCase();
+    if (cycle === "daily") start.setDate(start.getDate() + 1);
+    else if (cycle === "monthly") start.setMonth(start.getMonth() + 1);
+    else if (cycle === "annually" || cycle === "yearly") start.setFullYear(start.getFullYear() + 1);
+    else return formatDate(sub.start_date);
+    return formatDate(start.toISOString());
+  }, [sub]);
 
   return (
     <>
@@ -65,57 +98,64 @@ function SubscriptionCard({ sub }: { sub: any }) {
           onClick={() => setShowQR(true)}
         >
           <img
-            src={sub.cover}
-            alt={sub.title}
+            src={sub.space?.cover_url || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=400&auto=format&fit=crop"}
+            alt={sub.plan_name}
             className="w-16 h-16 object-cover rounded-2xl shrink-0"
           />
           <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
             <div>
               <div className="flex justify-between items-start mb-0.5">
-                <p className="font-bold text-sm leading-tight">{sub.title}</p>
+                <p className="font-bold text-sm leading-tight">{sub.plan_name}</p>
               </div>
-              <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap inline-block mb-1 ${isExpiring ? "bg-amber-500/10 text-amber-500" : "bg-green-500/10 text-green-500"}`}
-              >
-                {sub.status}
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap inline-block mb-1 ${validity.color}`}>
+                {validity.label}
               </span>
               <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                {sub.venue}
+                {sub.space?.name || "Unknown Venue"}
               </p>
             </div>
             <div className="text-xs font-bold text-primary mt-1.5">
-              {sub.price}{" "}
-              <span className="text-muted-foreground font-normal text-[10px]">/ {sub.type}</span>
+              {sub.price} {currency}{" "}
+              <span className="text-muted-foreground font-normal text-[10px]">/ {sub.billing_cycle}</span>
             </div>
           </div>
         </div>
         <div className="bg-secondary/20 p-3 flex flex-row items-center justify-between gap-3">
-          <div className="text-xs text-muted-foreground">
-            Next billing: <span className="font-bold text-foreground">{sub.nextBilling}</span>
+          <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <CalendarDays className="h-3.5 w-3.5" />
+            {sub.billing_cycle?.toLowerCase() === "one-time" || sub.billing_cycle?.toLowerCase() === "onetime" ? (
+              <>Start date: <span className="font-bold text-foreground">{formatDate(sub.start_date)}</span></>
+            ) : (
+              <>Next billing: <span className="font-bold text-foreground">{nextBillingDisplay}</span></>
+            )}
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs font-semibold rounded-xl px-3"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowInvoice(true);
-              }}
-            >
-              Invoice
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs font-semibold rounded-xl px-3 bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowRenew(true);
-              }}
-            >
-              Renew
-            </Button>
+            {latestInvoice && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs font-semibold rounded-xl px-3"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowInvoice(true);
+                }}
+              >
+                Invoice
+              </Button>
+            )}
+            {!validity.isValid || validity.label === "Expiring Soon" ? (
+              <Button
+                size="sm"
+                className="h-8 text-xs font-semibold rounded-xl px-3 bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowRenew(true);
+                }}
+              >
+                Renew
+              </Button>
+            ) : null}
           </div>
         </div>
       </div>
@@ -126,24 +166,32 @@ function SubscriptionCard({ sub }: { sub: any }) {
           <DialogHeader>
             <DialogTitle>Recent Invoice</DialogTitle>
             <DialogDescription>
-              {sub.title} at {sub.venue}
+              {sub.plan_name} at {sub.space?.name}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4 text-sm">
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Amount Paid</span>
-              <span className="font-bold">{sub.price}</span>
-            </div>
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Date</span>
-              <span className="font-medium">14 May 2026</span>
-            </div>
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Status</span>
-              <span className="text-green-500 font-bold">Paid</span>
-            </div>
+            {latestInvoice && (
+              <>
+                <div className="flex justify-between border-b pb-2">
+                  <span className="text-muted-foreground">Invoice #</span>
+                  <span className="font-bold font-mono text-xs">{latestInvoice.invoice_number}</span>
+                </div>
+                <div className="flex justify-between border-b pb-2">
+                  <span className="text-muted-foreground">Amount</span>
+                  <span className="font-bold">{latestInvoice.amount || sub.price} {currency}</span>
+                </div>
+                <div className="flex justify-between border-b pb-2">
+                  <span className="text-muted-foreground">Date</span>
+                  <span className="font-medium">{formatDate(latestInvoice.created_at)}</span>
+                </div>
+                <div className="flex justify-between border-b pb-2">
+                  <span className="text-muted-foreground">Status</span>
+                  <span className="text-green-500 font-bold capitalize">{latestInvoice.status || "paid"}</span>
+                </div>
+              </>
+            )}
             <Button className="w-full mt-4 rounded-xl" onClick={() => setShowInvoice(false)}>
-              Download PDF
+              Close
             </Button>
           </div>
         </DialogContent>
@@ -154,12 +202,12 @@ function SubscriptionCard({ sub }: { sub: any }) {
         <DialogContent className="max-w-sm rounded-3xl w-[90vw]">
           <DialogHeader>
             <DialogTitle>Renew Subscription</DialogTitle>
-            <DialogDescription>You are renewing {sub.title} for another month.</DialogDescription>
+            <DialogDescription>You are renewing {sub.plan_name} for another {sub.billing_cycle || "period"}.</DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="bg-secondary/40 p-4 rounded-2xl flex justify-between items-center">
               <span className="font-medium">Total Due</span>
-              <span className="text-xl font-bold text-primary">{sub.price}</span>
+              <span className="text-xl font-bold text-primary">{sub.price} {currency}</span>
             </div>
             <Button
               className="w-full h-12 rounded-xl text-base font-bold"
@@ -173,18 +221,25 @@ function SubscriptionCard({ sub }: { sub: any }) {
         </DialogContent>
       </Dialog>
 
-      {/* QR Code Scan Modal */}
+      {/* QR Code / Membership Validation Modal */}
       <Dialog open={showQR} onOpenChange={setShowQR}>
         <DialogContent className="max-w-xs rounded-3xl w-[90vw]">
           <DialogHeader className="text-center pb-2">
-            <DialogTitle className="text-center">{sub.title}</DialogTitle>
-            <DialogDescription className="text-center">Show this at {sub.venue}</DialogDescription>
+            <DialogTitle className="text-center">{sub.plan_name}</DialogTitle>
+            <DialogDescription className="text-center">
+              Show this at {sub.space?.name || "the venue"}
+            </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-6 space-y-6">
-            <div className="bg-white p-4 rounded-2xl">
-              <QrCode className="w-48 h-48 text-black" />
+          <div className="flex flex-col items-center justify-center py-4 space-y-4">
+            {/* QR Code */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm">
+              <QRCode
+                value={qrPayload}
+                size={192}
+                level="M"
+                style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+              />
             </div>
-            <p className="text-xs text-muted-foreground font-mono">ID: {sub.id.toUpperCase()}-X9</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -194,6 +249,7 @@ function SubscriptionCard({ sub }: { sub: any }) {
 
 function SubscriptionsPage() {
   const navigate = useNavigate();
+  const { subscriptions } = Route.useLoaderData();
 
   return (
     <div className="bg-background text-foreground pb-6">
@@ -219,9 +275,18 @@ function SubscriptionsPage() {
         </div>
 
         <div className="space-y-4">
-          {mockSubscriptions.map((sub) => (
-            <SubscriptionCard key={sub.id} sub={sub} />
-          ))}
+          {subscriptions && subscriptions.length > 0 ? (
+            subscriptions.map((sub: any) => (
+              <SubscriptionCard key={sub.id} sub={sub} />
+            ))
+          ) : (
+            <div className="text-center py-10 bg-card rounded-2xl border border-border/60">
+              <p className="text-muted-foreground text-sm font-medium">You have no active subscriptions.</p>
+              <Button className="mt-4 rounded-full" onClick={() => navigate({ to: "/venues" })}>
+                Browse Spaces
+              </Button>
+            </div>
+          )}
         </div>
       </main>
     </div>

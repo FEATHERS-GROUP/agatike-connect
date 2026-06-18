@@ -178,6 +178,46 @@ export const getVenueBookingByOtp = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { otp } = ctx.data;
     if (!otp) throw new Error("otp is required");
+
+    // Check if otp matches a UUID format (used for subscriptions)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(otp);
+    if (isUuid) {
+      const query = `
+        query GetSpaceSubscriptionById($id: uuid!) {
+          space_subscriptions_by_pk(id: $id) {
+            id
+            plan_name
+            price
+            status
+            billing_cycle
+            start_date
+            next_billing_date
+            booking_type
+            customer_name
+            customer_email
+            customer_phone
+            team_members
+            created_at
+            space {
+              id
+              name
+              cover_url
+              currency
+            }
+          }
+        }
+      `;
+      try {
+        const data = await hasuraRequest<{ space_subscriptions_by_pk: any }>(query, { id: otp });
+        const sub = data.space_subscriptions_by_pk;
+        if (sub) {
+          return { type: "subscription", data: sub };
+        }
+      } catch (e) {
+        console.error("Error fetching space subscription by id in getVenueBookingByOtp:", e);
+      }
+    }
+
     const res = await hasuraRequest<{ venue_bookings: any[] }>(VALIDATE_TICKET_OTP, { otp });
     const booking = res.venue_bookings[0] || null;
     if (booking && booking.venue_id) {
@@ -193,7 +233,11 @@ export const getVenueBookingByOtp = createServerFn({ method: "POST" })
       );
       booking.venue_name = venueRes?.rentable_venues_by_pk?.name || "Venue";
     }
-    return booking;
+
+    if (booking) {
+      return { type: "ticket", data: booking };
+    }
+    return null;
   });
 
 const GET_VENUE_BOOKING = `
