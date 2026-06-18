@@ -62,12 +62,14 @@ function DashboardLayout() {
     location.pathname === "/dashboard/create-organizer" ||
     location.pathname === "/dashboard/settings" ||
     isDesigningVenue ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/);
+    location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/);
 
   const isDesigner =
     isDesigningVenue ||
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/community/i);
+    location.pathname.match(/^\/dashboard\/[^/]+\/community/i) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/);
 
   useEffect(() => {
     if (!isLoaded) return;

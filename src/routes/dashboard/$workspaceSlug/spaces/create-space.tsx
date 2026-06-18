@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, useParams, Link, useSearch } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { uploadFileToStorage } from "@/lib/firebase-storage";
 import {
   ArrowLeft,
   ArrowRight,
@@ -91,7 +92,10 @@ function NewSpaceWizard() {
     address: "",
     plans: [{ name: "Day Pass", price: "", features: ["Access to space"] }],
     cover_url: "",
+    socials: { instagram: "", whatsapp: "", phone: "" },
   };
+
+  const [isUploading, setIsUploading] = useState(false);
 
   const [formData, setFormData] = useState(() => {
     const saved = localStorage.getItem(DRAFT_KEY);
@@ -138,6 +142,7 @@ function NewSpaceWizard() {
           description: formData.description,
           currency: activeWorkspace?.currency || "RWF",
           cover_url: formData.cover_url || "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=800",
+          socials: formData.socials,
           locations: [
             {
               id: "loc-1",
@@ -194,9 +199,68 @@ function NewSpaceWizard() {
     setFormData((p) => ({ ...p, plans: p.plans.filter((_, i) => i !== idx) }));
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    
+    setIsUploading(true);
+    try {
+      const url = await uploadFileToStorage(file, "spaces/covers");
+      setFormData(prev => ({ ...prev, cover_url: url }));
+      toast.success("Image uploaded successfully!");
+    } catch (err) {
+      toast.error("Failed to upload image");
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
-    <div className="flex w-full">
-      <div className="flex-1 flex flex-col h-[calc(100vh-4rem)] overflow-y-auto pb-24 p-4 lg:p-10">
+    <div className="flex w-full h-screen bg-background">
+      {/* Left Sidebar - Sticky Progress */}
+      <div className="hidden lg:flex w-80 flex-col border-r border-border/60 bg-secondary/10 p-6 shadow-[4px_0_24px_rgba(0,0,0,0.02)] h-full shrink-0">
+        <h3 className="font-bold text-lg mb-6">Setup Progress</h3>
+        <div className="space-y-6 flex-1">
+          {[
+            { label: "Space Type", desc: "Category" },
+            { label: "Details", desc: "Name & info" },
+            { label: "Location", desc: "Main address" },
+            { label: "Plans", desc: "Pricing setup" },
+          ].map((s, i) => (
+            <div key={i} className="flex gap-4 relative">
+              {i !== 3 && (
+                <div
+                  className={cn(
+                    "absolute left-[11px] top-8 bottom-[-16px] w-[2px]",
+                    step > i ? "bg-primary" : "bg-border",
+                  )}
+                />
+              )}
+              <div
+                className={cn(
+                  "h-6 w-6 rounded-full flex items-center justify-center shrink-0 z-10 font-bold text-[11px] transition-colors shadow-sm",
+                  step > i
+                    ? "bg-primary text-primary-foreground"
+                    : step === i
+                      ? "bg-background border-2 border-primary text-primary"
+                      : "bg-secondary text-muted-foreground border border-border",
+                )}
+              >
+                {step > i ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
+              </div>
+              <div className="-mt-1">
+                <p className={cn("font-semibold text-sm", step === i ? "text-primary" : "")}>
+                  {s.label}
+                </p>
+                <p className="text-xs text-muted-foreground">{s.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col h-full overflow-y-auto pb-24 p-4 lg:p-10 relative">
         <div className="max-w-4xl w-full mx-auto">
           {step === 0 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -280,6 +344,75 @@ function NewSpaceWizard() {
                     onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
                     placeholder="Describe the vibe, layout, and what makes your space special..."
                   />
+                </div>
+
+                <div className="space-y-2 pt-4">
+                  <Label className="text-base">Cover Image</Label>
+                  {formData.cover_url ? (
+                    <div className="relative w-full h-48 rounded-2xl overflow-hidden border">
+                      <img src={formData.cover_url} alt="Cover" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => setFormData((p) => ({ ...p, cover_url: "" }))}
+                        className="absolute top-3 right-3 bg-black/60 text-white px-3 py-1.5 rounded-full hover:bg-red-500 text-sm font-medium"
+                      >
+                        Remove Image
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center w-full h-48 bg-secondary/20 rounded-2xl border-2 border-dashed border-border/60 relative hover:bg-secondary/40 transition-colors cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        disabled={isUploading}
+                      />
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="h-8 w-8 mb-2 animate-spin text-primary" />
+                          <span className="text-sm font-medium">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud className="h-10 w-10 mb-3 text-muted-foreground" />
+                          <span className="text-sm font-medium text-muted-foreground">Click to upload cover image</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-6 border-t border-border/60">
+                  <h3 className="text-xl font-bold mb-4">Contact & Socials</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Phone Number</Label>
+                      <Input
+                        className="rounded-xl"
+                        placeholder="+250 788 123 456"
+                        value={formData.socials.phone}
+                        onChange={(e) => setFormData(p => ({ ...p, socials: { ...p.socials, phone: e.target.value } }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>WhatsApp Number</Label>
+                      <Input
+                        className="rounded-xl"
+                        placeholder="+250 788 123 456"
+                        value={formData.socials.whatsapp}
+                        onChange={(e) => setFormData(p => ({ ...p, socials: { ...p.socials, whatsapp: e.target.value } }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Instagram Link</Label>
+                      <Input
+                        className="rounded-xl"
+                        placeholder="https://instagram.com/yourspace"
+                        value={formData.socials.instagram}
+                        onChange={(e) => setFormData(p => ({ ...p, socials: { ...p.socials, instagram: e.target.value } }))}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -392,7 +525,7 @@ function NewSpaceWizard() {
       </div>
 
       {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 lg:left-64 right-0 bg-background/80 backdrop-blur-xl border-t border-border/60 p-4 px-6 flex justify-between items-center z-50">
+      <div className="fixed bottom-0 left-0 lg:left-80 right-0 bg-background/80 backdrop-blur-xl border-t border-border/60 p-4 px-6 flex justify-between items-center z-50">
         <Button variant="ghost" onClick={prevStep} disabled={step === 0} className="gap-2 rounded-xl">
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
