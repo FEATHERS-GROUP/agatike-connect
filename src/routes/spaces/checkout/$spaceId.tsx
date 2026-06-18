@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
 import { createSpaceSubscription } from "@/api/space_subscriptions";
 import { sendSubscriptionConfirmationEmail, sendSubscriptionInvoiceEmail, sendCompanyRosterEmail, sendMemberWelcomeEmail } from "@/api/email";
-import { generateMemberRosterPdf, createInvoiceAndGeneratePdf } from "@/api/invoices";
+import { createInvoiceRecord } from "@/api/invoices";
 import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -138,119 +138,108 @@ function CheckoutPage() {
       const savedMembers: any[] = subscription?.team_members || [];
       const invoiceDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
       const groupPlanName = bookingType === "group" ? `${planName} (Group of ${teamMembers.length})` : planName;
+      console.log("[checkout] Subscription created:", subscription?.id, "| type:", bookingType, "| members:", savedMembers.length);
 
-      // 2. Fire and forget the heavy PDF/Email tasks in the background
-      (async () => {
-        try {
-          const invoice = await createInvoiceAndGeneratePdf({
-            data: {
-              spaceName: space?.name || "Our Space",
-              customerName: formData.name,
-              customerEmail: formData.email,
-              planName: groupPlanName,
-              amount: finalPriceString.replace(`${currency} `, ""),
-              currency,
-              billingCycle,
-              startDate: formData.startDate,
-              spaceId,
-              referenceId: subscription?.id,
-            }
-          });
-
-          const invoiceNumber = invoice?.invoiceNumber || `AGT-${Date.now()}`;
-          const invoicePdfBase64 = invoice?.pdfBase64 || null;
-          const formattedStart = formData.startDate
-            ? new Date(formData.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })
-            : formData.startDate;
-
-          if (bookingType === "group") {
-            // Generate the member roster PDF
-            const rosterPdfBase64 = await generateMemberRosterPdf({
-              companyName: formData.name,
-              spaceName: space?.name || "Our Space",
-              planName,
-              startDate: formattedStart,
-              members: savedMembers,
-            });
-
-            // Send one company email with both PDFs attached
-            await sendCompanyRosterEmail({
-              data: {
-                to: formData.email,
-                companyName: formData.name,
-                spaceName: space?.name || "Our Space",
-                planName: groupPlanName,
-                price: finalPriceString,
-                billingCycle,
-                startDate: formattedStart,
-                invoiceNumber,
-                invoiceDate,
-                memberCount: savedMembers.length,
-                invoicePdfBase64,
-                rosterPdfBase64,
-              }
-            });
-
-            // Optionally send individual welcome emails to each member
-            if (sendMemberEmails) {
-              await Promise.all(
-                savedMembers
-                  .filter((m: any) => m.email)
-                  .map((m: any) =>
-                    sendMemberWelcomeEmail({
-                      data: {
-                        to: m.email,
-                        memberName: m.name,
-                        companyName: formData.name,
-                        spaceName: space?.name || "Our Space",
-                        planName,
-                        startDate: formattedStart,
-                        membershipId: m.membership_id || "—",
-                      }
-                    })
-                  )
-              );
-            }
-          } else {
-            // Individual booking — send confirmation + invoice as before
-            await Promise.all([
-              sendSubscriptionConfirmationEmail({
-                data: {
-                  to: formData.email,
-                  customerName: formData.name,
-                  spaceName: space?.name || "Our Space",
-                  planName,
-                  price: finalPriceString,
-                  billingCycle,
-                  startDate: formData.startDate,
-                }
-              }),
-              sendSubscriptionInvoiceEmail({
-                data: {
-                  to: formData.email,
-                  customerName: formData.name,
-                  spaceName: space?.name || "Our Space",
-                  planName,
-                  price: finalPriceString,
-                  billingCycle,
-                  invoiceDate,
-                  invoiceNumber,
-                  pdfBase64: invoicePdfBase64,
-                  startDate: formData.startDate,
-                }
-              })
-            ]);
-          }
-        } catch (bgErr) {
-          console.error("Background processing failed:", bgErr);
+      console.log("[checkout] Calling createInvoiceRecord...");
+      const invoice = await createInvoiceRecord({
+        data: {
+          spaceName: space?.name || "Our Space",
+          customerName: formData.name,
+          customerEmail: formData.email,
+          planName: groupPlanName,
+          amount: finalPriceString.replace(`${currency} `, ""),
+          currency,
+          billingCycle,
+          startDate: formData.startDate,
+          spaceId,
+          referenceId: subscription?.id,
         }
-      })();
+      });
 
-      // 3. Redirect immediately to Success (frontend feels instant)
+      const invoiceNumber = invoice?.invoiceNumber || `AGT-${Date.now()}`;
+      const pdfBase64 = invoice?.pdfBase64 || null;
+      console.log("[checkout] Invoice created:", invoiceNumber, "| PDF present:", !!pdfBase64);
+
+      const formattedStart = formData.startDate
+        ? new Date(formData.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })
+        : formData.startDate;
+
+      if (bookingType === "group") {
+        console.log("[checkout] Sending company roster email to:", formData.email);
+        // Send one company email with details
+        await sendCompanyRosterEmail({
+          data: {
+            to: formData.email,
+            companyName: formData.name,
+            spaceName: space?.name || "Our Space",
+            planName: groupPlanName,
+            price: finalPriceString,
+            billingCycle,
+            startDate: formattedStart,
+            invoiceNumber,
+            invoiceDate,
+            memberCount: savedMembers.length,
+            members: savedMembers,
+            pdfBase64, // attach invoice PDF
+          }
+        });
+
+        // Optionally send individual welcome emails to each member sequentially
+        if (sendMemberEmails) {
+          for (const m of savedMembers) {
+            if (m.email) {
+              await sendMemberWelcomeEmail({
+                data: {
+                  to: m.email,
+                  memberName: m.name,
+                  companyName: formData.name,
+                  spaceName: space?.name || "Our Space",
+                  planName,
+                  startDate: formattedStart,
+                  membershipId: m.membership_id || "—",
+                }
+              });
+            }
+          }
+        }
+      } else {
+        // Individual booking — send confirmation + invoice sequentially
+        console.log("[checkout] Sending confirmation email to:", formData.email);
+        await sendSubscriptionConfirmationEmail({
+          data: {
+            to: formData.email,
+            customerName: formData.name,
+            spaceName: space?.name || "Our Space",
+            planName,
+            price: finalPriceString,
+            billingCycle,
+            startDate: formData.startDate,
+          }
+        });
+
+        console.log("[checkout] Sending invoice email to:", formData.email);
+        await sendSubscriptionInvoiceEmail({
+          data: {
+            to: formData.email,
+            customerName: formData.name,
+            spaceName: space?.name || "Our Space",
+            planName,
+            price: finalPriceString,
+            billingCycle,
+            invoiceDate,
+            invoiceNumber,
+            startDate: formData.startDate,
+            pdfBase64, // attach invoice PDF
+          }
+        });
+      }
+
+      // 3. Redirect to Success only after all emails are successfully sent
+      console.log("[checkout] All done — navigating to success page");
       navigate({ to: `/spaces/success/${spaceId}`, search: { email: formData.email } });
 
     } catch (err: any) {
-      console.error(err);
+      console.error("[checkout] PAYMENT FLOW ERROR:", err);
       setErrorMsg(err.message || "Something went wrong during checkout. Please try again.");
       setIsProcessing(false);
     }
@@ -795,15 +784,16 @@ function CheckoutPage() {
             </div>
           )}
 
-          {/* Action Button */}
           <Button 
-            form={step === 3 ? "checkout-form" : undefined}
-            type={step === 3 ? "submit" : "button"}
+            type="button"
             disabled={isProcessing}
             className="w-full h-12 text-md font-bold rounded-xl shadow-[var(--shadow-glow)]"
             onClick={() => {
               if (step < 3) {
                  validateAndNext();
+              } else {
+                 const form = document.getElementById("checkout-form") as HTMLFormElement;
+                 if (form) form.requestSubmit();
               }
             }}
           >

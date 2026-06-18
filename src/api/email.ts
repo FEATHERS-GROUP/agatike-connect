@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-
 export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const {
     to,
@@ -71,17 +70,16 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
         ${eventName ? `<h3 style="margin-top: 0; color: #111; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; margin-bottom: 24px;">Regarding: ${eventName}</h3>` : ""}
         <div style="margin: 0;">${message}</div>
         
-        ${
-          badgeLink
-            ? `
+        ${badgeLink
+      ? `
         <div style="margin-top: 32px; text-align: center; background-color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px dashed #cbd5e1;">
           <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px;">Your Digital Badge</h4>
           <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569;">Click below to open and save your digital badge. You can use it to check in at the event!</p>
           <a href="${badgeLink}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 15px;">View My Badge</a>
         </div>
         `
-            : ""
-        }
+      : ""
+    }
 
         ${socialsHtml}
       </div>
@@ -98,18 +96,17 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" }).handler(asyn
             <td align="center">
               <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  ${
-                    organizerLogo &&
-                    !organizerLogo.includes("localhost") &&
-                    organizerLogo.startsWith("http")
-                      ? `
+                  ${organizerLogo &&
+      !organizerLogo.includes("localhost") &&
+      organizerLogo.startsWith("http")
+      ? `
                   <td align="center" style="padding-right: 16px; border-right: 1px solid #cbd5e1;">
                     <img src="${organizerLogo}" alt="${organizerName}" style="height: 40px; border-radius: 8px; object-fit: contain; display: block;" />
                   </td>
                   <td width="16"></td>
                   `
-                      : ""
-                  }
+      : ""
+    }
                   <td align="center">
                     <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; display: block;" />
                   </td>
@@ -321,6 +318,7 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
   });
 
   const data = await res.json();
+  console.log("Resend Subscription Confirmation API Response:", { status: res.status, ok: res.ok, data });
   if (!res.ok) {
     throw new Error(data.message || "Failed to send confirmation email");
   }
@@ -328,12 +326,13 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
 });
 
 export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { to, customerName, spaceName, planName, price, billingCycle, invoiceDate, invoiceNumber, pdfBase64, startDate } = ctx.data as any;
+  const { to, customerName, spaceName, planName, price, billingCycle, invoiceDate, invoiceNumber, startDate, pdfBase64 } = ctx.data as any;
+  console.log("[sendSubscriptionInvoiceEmail] Sending to:", to, "| invoiceNumber:", invoiceNumber, "| pdfBase64 present:", !!pdfBase64);
 
-  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : "https://agatike.rw";
 
   const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
@@ -389,16 +388,18 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).h
     to: [to],
     subject: `Invoice ${invoiceNumber} — ${spaceName}`,
     html: html,
+    attachments: [],
   };
 
-  // Attach PDF if provided
+  // Attach pre-generated PDF if provided
   if (pdfBase64) {
-    emailPayload.attachments = [
-      {
-        filename: `Invoice-${invoiceNumber}.pdf`,
-        content: pdfBase64,
-      },
-    ];
+    emailPayload.attachments.push({
+      filename: `Invoice-${invoiceNumber}.pdf`,
+      content: pdfBase64,
+    });
+    console.log("[sendSubscriptionInvoiceEmail] PDF attached, base64 length:", pdfBase64.length);
+  } else {
+    console.warn("[sendSubscriptionInvoiceEmail] No pdfBase64 provided, sending without attachment");
   }
 
   const res = await fetch("https://api.resend.com/emails", {
@@ -411,6 +412,7 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).h
   });
 
   const data = await res.json();
+  console.log("[sendSubscriptionInvoiceEmail] Resend response:", { status: res.status, ok: res.ok, data });
   if (!res.ok) {
     throw new Error(data.message || "Failed to send invoice email");
   }
@@ -420,19 +422,10 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).h
 // Sends the company email with invoice PDF + member roster PDF attached
 export const sendCompanyRosterEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const {
-    to,
-    companyName,
-    spaceName,
-    planName,
-    price,
-    billingCycle,
-    startDate,
-    invoiceNumber,
-    invoiceDate,
-    memberCount,
-    invoicePdfBase64,
-    rosterPdfBase64,
+    to, companyName, spaceName, planName, price, billingCycle, startDate,
+    invoiceNumber, invoiceDate, memberCount, members, pdfBase64,
   } = ctx.data as any;
+  console.log("[sendCompanyRosterEmail] Sending to:", to, "| invoiceNumber:", invoiceNumber, "| members:", members?.length, "| pdfBase64 present:", !!pdfBase64);
 
   const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -453,22 +446,16 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" }).handler
       </div>
       <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
         <p>Hi <strong>${companyName}</strong>,</p>
-        <p>Your group booking for <strong>${spaceName}</strong> has been confirmed. We've attached two documents to this email:</p>
-        <ul style="margin: 16px 0; padding-left: 20px; color: #475569;">
-          <li style="margin-bottom: 8px;">📄 <strong>Invoice PDF</strong> — your payment receipt</li>
-          <li style="margin-bottom: 8px;">👥 <strong>Member Roster PDF</strong> — the full list of your ${memberCount} team member(s) with their individual Membership IDs</li>
-        </ul>
+        <p>Your group booking for <strong>${spaceName}</strong> has been confirmed.</p>
         <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border: 1px solid #e2e8f0;">
           <h3 style="margin: 0 0 16px 0; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Booking Summary</h3>
+          <p style="margin: 8px 0;"><strong>Invoice Number:</strong> ${invoiceNumber}</p>
           <p style="margin: 8px 0;"><strong>Plan:</strong> ${planName}</p>
-          <p style="margin: 8px 0;"><strong>Members:</strong> ${memberCount}</p>
           <p style="margin: 8px 0;"><strong>Billing Cycle:</strong> ${billingCycle}</p>
-          <p style="margin: 8px 0;"><strong>Total:</strong> ${price}</p>
-          <p style="margin: 8px 0;"><strong>Start Date:</strong> ${startDate}</p>
-          <p style="margin: 8px 0;"><strong>Invoice #:</strong> ${invoiceNumber}</p>
-          <p style="margin: 8px 0;"><strong>Invoice Date:</strong> ${invoiceDate}</p>
+          <p style="margin: 8px 0;"><strong>Total Price:</strong> ${price}</p>
+          ${startDate ? `<p style="margin: 8px 0;"><strong>Start Date:</strong> ${startDate}</p>` : ''}
+          <p style="margin: 8px 0; color: #f2571d; font-weight: 600;"><strong>Team Members:</strong> ${memberCount}</p>
         </div>
-        <p style="color: #64748b; font-size: 14px;">Each team member's Membership ID is in the attached roster. They can use it when checking in at the space.</p>
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
@@ -479,13 +466,39 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" }).handler
   `;
 
   const attachments: any[] = [];
-  if (invoicePdfBase64) {
-    attachments.push({ filename: `Invoice-${invoiceNumber}.pdf`, content: invoicePdfBase64 });
-  }
-  if (rosterPdfBase64) {
-    attachments.push({ filename: `MemberRoster-${invoiceNumber}.pdf`, content: rosterPdfBase64 });
+
+  // 1. Generate member roster CSV and attach it
+  if (members && members.length > 0) {
+    try {
+      const { Buffer } = await import("buffer");
+      const csvHeader = "#,Full Name,Email,Phone,Membership ID\n";
+      const csvRows = members.map((m: any, i: number) =>
+        `${i + 1},"${(m.name || "").replace(/"/g, '""')}","${(m.email || "").replace(/"/g, '""')}","${(m.phone || "").replace(/"/g, '""')}","${(m.membership_id || "").replace(/"/g, '""')}"`
+      ).join("\n");
+      const csvContent = csvHeader + csvRows;
+      const csvBase64 = Buffer.from(csvContent, "utf-8").toString("base64");
+      attachments.push({
+        filename: `Member-Roster-${companyName.replace(/\s+/g, "-")}-${invoiceNumber}.csv`,
+        content: csvBase64,
+      });
+      console.log("[sendCompanyRosterEmail] CSV generated for", members.length, "members");
+    } catch (csvErr) {
+      console.error("[sendCompanyRosterEmail] CSV generation FAILED:", csvErr);
+    }
   }
 
+  // 2. Attach pre-generated invoice PDF if provided
+  if (pdfBase64) {
+    attachments.push({
+      filename: `Invoice-${invoiceNumber}.pdf`,
+      content: pdfBase64,
+    });
+    console.log("[sendCompanyRosterEmail] PDF attached, base64 length:", pdfBase64.length);
+  } else {
+    console.warn("[sendCompanyRosterEmail] No pdfBase64 provided, sending without invoice attachment");
+  }
+
+  console.log("[sendCompanyRosterEmail] Total attachments:", attachments.length, "| Calling Resend API...");
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -502,6 +515,7 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" }).handler
   });
 
   const data = await res.json();
+  console.log("Resend Company Roster API Response:", { status: res.status, ok: res.ok, data });
   if (!res.ok) throw new Error(data.message || "Failed to send company roster email");
   return data;
 });
@@ -575,6 +589,7 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" }).handler
   });
 
   const data = await res.json();
+  console.log("Resend Member Welcome API Response:", { status: res.status, ok: res.ok, data });
   if (!res.ok) throw new Error(data.message || "Failed to send member welcome email");
   return data;
 });

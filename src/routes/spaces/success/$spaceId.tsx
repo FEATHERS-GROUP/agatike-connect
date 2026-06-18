@@ -49,7 +49,7 @@ function SuccessPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary font-bold mt-0.5">•</span>
-                <span>An <strong>invoice</strong> has also been attached in a separate email for your records.</span>
+                <span>Your <strong>invoice details</strong> have also been sent in a separate email for your records.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary font-bold mt-0.5">•</span>

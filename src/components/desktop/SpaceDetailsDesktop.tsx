@@ -514,7 +514,7 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
                           <Star key={i} className={`h-3 w-3 ${i < r.rating ? "fill-primary text-primary" : "text-muted"}`} />
                         ))}
                         <span className="ml-2 text-[10px] text-muted-foreground">
-                          {new Date(r.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                          {new Date(r.created_at).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" })}
                         </span>
                       </div>
                     </div>
