@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { createSpaceSubscription } from "@/api/space_subscriptions";
+import { processVisitorPass } from "@/api/visitor_passes";
 import { StepIndicator, Row } from "./AddMemberModal";
 import { SpaceMember } from "./MembersTable";
 
@@ -41,7 +42,9 @@ export function AddVisitorModal({ open, onOpenChange, spaces, workspaceId, membe
     setVisitorError("");
     setVisitorSubmitting(true);
     try {
-      await createSpaceSubscription({
+      const visitorSpace = spaces.find((s: any) => s.id === visitorSpaceId) as any;
+
+      const subscription = await createSpaceSubscription({
         data: {
           space_id: visitorSpaceId,
           user_id: null,
@@ -58,13 +61,33 @@ export function AddVisitorModal({ open, onOpenChange, spaces, workspaceId, membe
         }
       });
 
+      const visitorId = subscription.id.split("-")[0].toUpperCase();
+
+      await processVisitorPass({
+        data: {
+          to: visitorForm.email,
+          visitorName: visitorForm.name,
+          visitorId,
+          spaceName: visitorSpace?.name || "Our Space",
+          visitDate: visitorForm.visitDate,
+          hostedBy: visitorForm.hostedBy,
+        }
+      });
+
       queryClient.invalidateQueries({ queryKey: ["workspace_subscriptions", workspaceId] });
-      setVisitorSuccess(`✓ Visitor "${visitorForm.name}" logged, hosted by ${visitorForm.hostedBy}`);
+      
+      setVisitorSuccess(
+        visitorForm.email
+          ? `✓ Visitor logged! Pass sent to ${visitorForm.email}`
+          : `✓ Visitor logged! Please ask them to write down ID: ${visitorId}`
+      );
+      
+      // Delay closing modal slightly longer so they can read the ID
       setTimeout(() => {
         onOpenChange(false);
         setVisitorStep(0);
         setVisitorForm({ name: "", email: "", phone: "", visitDate: new Date().toISOString().split("T")[0], hostedBy: "", hostEmail: "", notes: "" });
-      }, 2000);
+      }, 4000);
     } catch (err: any) {
       setVisitorError(err.message || "Something went wrong.");
     } finally {

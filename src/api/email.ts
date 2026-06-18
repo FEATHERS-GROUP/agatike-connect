@@ -621,4 +621,85 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
   return data;
 });
 
+export const sendVisitorPassEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+  const {
+    to,
+    visitorName,
+    spaceName,
+    visitDate,
+    hostedBy,
+    visitorId,
+    pdfBase64,
+  } = ctx.data as any;
 
+  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://agatike.rw";
+
+  const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+
+  const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #e11d48; padding: 40px 24px; text-align: center;">
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
+          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Your Visitor Pass</h2>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">for ${spaceName}</p>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
+        <p>Hi <strong>${visitorName}</strong>,</p>
+        <p>You have been registered as a visitor at <strong>${spaceName}</strong>.</p>
+
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px; padding: 24px; margin: 28px 0; text-align: center;">
+          <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.1em;">Your Visitor ID</p>
+          <p style="color: #e11d48; font-size: 28px; font-weight: 800; letter-spacing: 4px; margin: 0; font-family: monospace;">${visitorId}</p>
+          <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 12px 0 0 0;">Show this ID or your attached QR code at the front desk</p>
+        </div>
+
+        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border: 1px solid #e2e8f0;">
+          <p style="margin: 8px 0;"><strong>Visit Date:</strong> ${visitDate}</p>
+          <p style="margin: 8px 0;"><strong>Hosted By:</strong> ${hostedBy}</p>
+        </div>
+        <p style="color: #64748b; font-size: 14px;">📎 Your official Visitor Pass PDF is attached. Please keep it handy!</p>
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
+        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
+      </div>
+    </div>
+  `;
+
+  const emailPayload: any = {
+    from: "Agatike Connect <hello@agatike.rw>",
+    to: [to],
+    subject: `Visitor Pass for ${spaceName}`,
+    html: html,
+    attachments: [],
+  };
+
+  if (pdfBase64) {
+    emailPayload.attachments.push({
+      filename: \`VisitorPass-\${visitorId}.pdf\`,
+      content: pdfBase64,
+    });
+  }
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: \`Bearer \${process.env.RESEND_API_KEY}\`,
+    },
+    body: JSON.stringify(emailPayload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to send visitor pass email");
+  return data;
+});

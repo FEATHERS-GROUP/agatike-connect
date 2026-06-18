@@ -1,6 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
+import { getSpaceSubscriptionsBySpaceId } from "@/api/space_subscriptions";
 import {
   Users, TrendingUp, CreditCard, Activity,
   RefreshCw, UserCheck, Eye, ArrowRight,
@@ -47,50 +48,127 @@ const tooltipStyle = {
 function SpaceOverviewPage() {
   const { spaceId, workspaceSlug } = useParams({ strict: false }) as any;
 
-  const { data: space, isLoading } = useQuery({
+  const { data: space, isLoading: spaceLoading } = useQuery({
     queryKey: ["space", spaceId],
     queryFn: () => getSpaceById({ data: { id: spaceId } }),
     enabled: !!spaceId,
   });
 
-  if (isLoading)
+  const { data: subscriptions = [], isLoading: subsLoading } = useQuery({
+    queryKey: ["workspace_subscriptions", spaceId],
+    queryFn: () => getSpaceSubscriptionsBySpaceId({ data: { space_id: spaceId } }),
+    enabled: !!spaceId,
+  });
+
+  if (spaceLoading || subsLoading)
     return <div className="p-8 text-center text-muted-foreground">Loading space overview...</div>;
   if (!space)
     return <div className="p-8 text-center text-red-500 font-semibold">Space not found</div>;
 
+  // ── KPI calculations ──────────────────────────────────────────────────
+  const activeSubs = subscriptions.filter((s: any) => s.status === 'active' && s.booking_type !== 'visitor');
+  const activeSubsCount = activeSubs.length;
+
+  const monthlyRevenue = activeSubs.reduce((acc: number, s: any) => {
+    const p = parseFloat((s.price || "0").toString().replace(/[^0-9.]/g, ''));
+    return acc + (isNaN(p) ? 0 : p);
+  }, 0);
+
+  const formatCurrency = (val: number) => {
+    if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
+    if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
+    return val.toString();
+  };
+
+  const membersCount = subscriptions.reduce((acc: number, s: any) => {
+    if (s.booking_type === 'visitor') return acc;
+    if (s.booking_type === 'company' || s.team_members?.length > 0) {
+       return acc + (s.team_members?.length || 0);
+    }
+    return acc + 1;
+  }, 0);
+
+  const visitorsCount = subscriptions.filter((s: any) => s.booking_type === 'visitor').length;
+
   // ── KPI cards ──────────────────────────────────────────────────
   const stats = [
-    { label: "Active Subscriptions", value: "142", icon: Users,       color: "text-orange-500",  bg: "bg-orange-500/10"  },
-    { label: "Monthly Revenue",       value: `${space.currency || "RWF"} 1.2M`, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Re-using Members",      value: "89",  icon: RefreshCw,  color: "text-amber-500",   bg: "bg-amber-500/10"   },
-    { label: "Total Visitors (30d)",  value: "312", icon: Eye,        color: "text-rose-500",     bg: "bg-rose-500/10"    },
+    { label: "Active Subscriptions", value: activeSubsCount.toString(), icon: Users,       color: "text-orange-500",  bg: "bg-orange-500/10"  },
+    { label: "Est. Monthly Revenue", value: `${space.currency || "RWF"} ${formatCurrency(monthlyRevenue)}`, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { label: "Total Members",        value: membersCount.toString(),  icon: UserCheck,  color: "text-amber-500",   bg: "bg-amber-500/10"   },
+    { label: "Total Visitors",       value: visitorsCount.toString(), icon: Eye,        color: "text-rose-500",     bg: "bg-rose-500/10"    },
   ];
 
   // ── Subscription trend ─────────────────────────────────────────
-  const subscriptionTrendData = [
-    { name: "May", new: 24, returning: 55, expired: 10, visitors: 48 },
-    { name: "Jun", new: 30, returning: 65, expired: 12, visitors: 62 },
-    { name: "Jul", new: 45, returning: 78, expired: 8,  visitors: 91 },
-    { name: "Aug", new: 35, returning: 92, expired: 15, visitors: 75 },
-    { name: "Sep", new: 50, returning: 104, expired: 20, visitors: 120 },
-    { name: "Oct", new: 65, returning: 112, expired: 18, visitors: 148 },
-  ];
+  const months = Array.from({length: 6}).map((_, i) => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - (5 - i));
+    return d.toLocaleString('default', { month: 'short' });
+  });
+
+  const subscriptionTrendData = months.map(m => ({
+    name: m,
+    new: 0,
+    expired: 0,
+    visitors: 0
+  }));
+
+  subscriptions.forEach((s: any) => {
+    const d = new Date(s.start_date || s.created_at);
+    const mStr = d.toLocaleString('default', { month: 'short' });
+    const mIdx = months.indexOf(mStr);
+    if (mIdx !== -1) {
+       if (s.booking_type === 'visitor') subscriptionTrendData[mIdx].visitors++;
+       else if (s.status === 'expired' || s.status === 'cancelled') subscriptionTrendData[mIdx].expired++;
+       else subscriptionTrendData[mIdx].new++;
+    }
+  });
 
   // ── Membership status donut ────────────────────────────────────
+  let statusCounts = { Active: 0, Expired: 0, Pending: 0, Cancelled: 0 };
+  subscriptions.forEach((s: any) => {
+    if (s.booking_type === 'visitor') return;
+    if (s.status === 'active') statusCounts.Active++;
+    else if (s.status === 'expired') statusCounts.Expired++;
+    else if (s.status === 'pending') statusCounts.Pending++;
+    else if (s.status === 'cancelled') statusCounts.Cancelled++;
+  });
+  
   const membershipStatusData = [
-    { name: "Active",   value: 142, color: ORANGE    },
-    { name: "Expired",  value: 35,  color: ROSE      },
-    { name: "Pending",  value: 12,  color: AMBER     },
-    { name: "Re-using", value: 89,  color: EMERALD   },
-  ];
+    { name: "Active",    value: statusCounts.Active,    color: ORANGE    },
+    { name: "Expired",   value: statusCounts.Expired,   color: ROSE      },
+    { name: "Pending",   value: statusCounts.Pending,   color: AMBER     },
+    { name: "Cancelled", value: statusCounts.Cancelled, color: "#64748b" },
+  ].filter(d => d.value > 0);
+
+  if (membershipStatusData.length === 0) {
+    membershipStatusData.push({ name: "No Data", value: 1, color: "#cbd5e1" });
+  }
 
   // ── Recent subscriptions summary ───────────────────────────────
-  const recentPlansData = [
-    { name: "Private Office", subscriptions: 2 },
-    { name: "Dedicated Desk", subscriptions: 2 },
-    { name: "Monthly Hot Desk", subscriptions: 1 },
-    { name: "Day Pass", subscriptions: 1 },
-  ];
+  const planCounts: Record<string, number> = {};
+  subscriptions.forEach((s: any) => {
+    if (s.booking_type === 'visitor') return;
+    const plan = s.plan_name || "Unknown Plan";
+    planCounts[plan] = (planCounts[plan] || 0) + 1;
+  });
+  const recentPlansData = Object.entries(planCounts)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([name, count]) => ({ name, subscriptions: count }));
+
+  // ── Member Types ───────────────────────────────────────────────
+  let individuals = 0;
+  let companies = 0;
+  subscriptions.forEach((s: any) => {
+    if (s.booking_type === 'visitor') return;
+    if (s.booking_type === 'company' || s.team_members?.length > 0) companies++;
+    else individuals++;
+  });
+  const totalMemberTypes = individuals + companies;
+  const memberTypes = [
+    { label: "Individuals", count: individuals, pct: totalMemberTypes ? Math.round((individuals/totalMemberTypes)*100) : 0, color: "bg-muted" },
+    { label: "Companies/Groups", count: companies, pct: totalMemberTypes ? Math.round((companies/totalMemberTypes)*100) : 0, color: "bg-orange-500" },
+  ].filter(d => d.count > 0);
 
   const tickStyle = { fontSize: 11, fill: "hsl(var(--muted-foreground))" };
 
@@ -129,11 +207,10 @@ function SpaceOverviewPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="font-bold text-lg">Subscription Trends</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">New • Re-using • Expired</p>
+                <p className="text-xs text-muted-foreground mt-0.5">New • Expired (Last 6 Months)</p>
               </div>
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: ORANGE }}></span>New</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: EMERALD }}></span>Re-using</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: ORANGE }}></span>New/Active</span>
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: ROSE }}></span>Expired</span>
               </div>
             </div>
@@ -158,9 +235,8 @@ function SpaceOverviewPage() {
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={tickStyle} dy={8} />
                   <YAxis axisLine={false} tickLine={false} tick={tickStyle} />
                   <RechartsTooltip {...tooltipStyle} />
-                  <Area type="monotone" dataKey="returning" name="Re-using"  stackId="1" stroke={EMERALD} fill="url(#gReturning)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="new"       name="New"       stackId="1" stroke={ORANGE}  fill="url(#gNew)"       strokeWidth={2} />
-                  <Area type="monotone" dataKey="expired"   name="Expired"   stroke={ROSE}   fill="url(#gExpired)"   strokeWidth={2} dot={false} />
+                  <Area type="monotone" dataKey="new"       name="New/Active" stackId="1" stroke={ORANGE}  fill="url(#gNew)"       strokeWidth={2} />
+                  <Area type="monotone" dataKey="expired"   name="Expired"    stroke={ROSE}   fill="url(#gExpired)"   strokeWidth={2} dot={false} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -254,7 +330,7 @@ function SpaceOverviewPage() {
           {/* Membership Status Donut */}
           <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
             <h3 className="font-bold text-lg mb-1">Membership Status</h3>
-            <p className="text-xs text-muted-foreground mb-4">Active · Re-using · Expired · Pending</p>
+            <p className="text-xs text-muted-foreground mb-4">Current breakdown by status</p>
             <div className="h-[180px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
