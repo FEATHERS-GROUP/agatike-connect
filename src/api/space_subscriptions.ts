@@ -101,8 +101,6 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
       $customer_name: String!,
       $customer_email: String!,
       $customer_phone: String!,
-      $customer_gender: String,
-      $customer_address: String,
       $plan_name: String!,
       $price: String!,
       $billing_cycle: String!,
@@ -110,8 +108,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
       $start_date: timestamptz,
       $next_billing_date: timestamptz,
       $booking_type: String!,
-      $team_members: jsonb,
-      $membership_id: String
+      $team_members: jsonb
     ) {
       insert_space_subscriptions_one(
         object: {
@@ -120,8 +117,6 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
           customer_name: $customer_name,
           customer_email: $customer_email,
           customer_phone: $customer_phone,
-          customer_gender: $customer_gender,
-          customer_address: $customer_address,
           plan_name: $plan_name,
           price: $price,
           billing_cycle: $billing_cycle,
@@ -129,15 +124,13 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
           start_date: $start_date,
           next_billing_date: $next_billing_date,
           booking_type: $booking_type,
-          team_members: $team_members,
-          membership_id: $membership_id
+          team_members: $team_members
         }
       ) {
         id
         status
         start_date
         next_billing_date
-        membership_id
         team_members
       }
     }
@@ -149,8 +142,6 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
     customer_name,
     customer_email,
     customer_phone,
-    customer_gender,
-    customer_address: customer_address || null,
     plan_name,
     price: String(price),
     billing_cycle,
@@ -158,8 +149,8 @@ export const createSpaceSubscription = createServerFn({ method: "POST" }).handle
     start_date: baseDate.toISOString(),
     next_billing_date: nextBillingDate,
     booking_type: booking_type || "individual",
+    // team_members carry individual membership_id inside each member's JSON object
     team_members: finalTeamMembers,
-    membership_id: membershipId,
   };
 
   const data = await hasuraRequest<{ insert_space_subscriptions_one: any }>(query, variables);

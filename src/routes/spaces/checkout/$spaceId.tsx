@@ -9,7 +9,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, CheckCircle2, Building2, CreditCard, Loader2, Plus, Trash2, Users } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Building2, CreditCard, Loader2, Plus, Trash2, Users, ChevronUp } from "lucide-react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { z } from "zod";
 
@@ -100,6 +100,12 @@ function CheckoutPage() {
   const handlePayment = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMsg("");
+
+    // Guard: only process payment when the user is explicitly on step 3
+    if (step !== 3) {
+      validateAndNext();
+      return;
+    }
 
     if (!formData.name || !formData.email || !formData.phone || !formData.startDate) {
       setErrorMsg("Please fill in all details including the start date.");
@@ -250,10 +256,60 @@ function CheckoutPage() {
     }
   };
 
+  const validateAndNext = () => {
+    if (step === 1) {
+      handleNext();
+      return;
+    }
+    if (step === 2) {
+      if (!formData.name || !formData.email || !formData.phone || !formData.startDate) {
+        setErrorMsg("Please fill in all your details to continue.");
+        return;
+      }
+      if (bookingType === "group") {
+        const hasEmpty = teamMembers.some(m => !m.name || !m.email || !m.phone);
+        if (hasEmpty) {
+          setErrorMsg("Please fill in all required team member details.");
+          return;
+        }
+      }
+      setErrorMsg("");
+      handleNext();
+    }
+  };
+
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
+
   if (spaceLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background text-foreground flex flex-col pb-28 lg:pb-0">
+        <Navbar hideOnMobile />
+        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 md:py-12">
+          {/* Back button skeleton */}
+          <div className="w-24 h-6 bg-secondary/60 animate-pulse rounded-md mb-8" />
+          
+          {/* Stepper skeleton */}
+          <div className="mb-12 flex items-center justify-between max-w-lg mx-auto relative px-2">
+            <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-secondary/60 animate-pulse rounded-full -z-10"></div>
+            {[1, 2, 3].map((s) => (
+              <div key={s} className="flex flex-col items-center gap-2 relative z-10 w-24">
+                <div className="w-10 h-10 rounded-full bg-secondary/60 animate-pulse ring-4 ring-background" />
+                <div className="w-16 h-3 bg-secondary/60 animate-pulse rounded mt-1" />
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 lg:gap-12 items-start">
+            <div className="space-y-8">
+              <div className="space-y-3">
+                <div className="w-48 h-8 bg-secondary/60 animate-pulse rounded-md" />
+                <div className="w-full max-w-md h-4 bg-secondary/60 animate-pulse rounded-md" />
+              </div>
+              <div className="w-full h-96 bg-secondary/40 animate-pulse rounded-2xl" />
+            </div>
+            <div className="hidden lg:block w-full h-80 bg-secondary/40 animate-pulse rounded-2xl" />
+          </div>
+        </main>
       </div>
     );
   }
@@ -267,8 +323,69 @@ function CheckoutPage() {
     );
   }
 
+  const STEPS = [
+    { id: 1, title: "Booking Type" },
+    { id: 2, title: "Details" },
+    { id: 3, title: "Payment" }
+  ];
+
+  const OrderSummaryContent = () => (
+    <>
+      <div className="flex items-center gap-4 mb-6 pb-6 border-b border-border/40">
+        {space.cover_url ? (
+          <img src={space.cover_url} alt={space.name} className="w-16 h-16 rounded-xl object-cover" />
+        ) : (
+          <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center">
+            <Building2 className="w-8 h-8 text-primary" />
+          </div>
+        )}
+        <div>
+          <h3 className="font-semibold">{space.name}</h3>
+          <p className="text-sm text-muted-foreground">{space.locations?.[0]?.city || "Space Booking"}</p>
+        </div>
+      </div>
+
+      <div className="space-y-3 mb-6">
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-muted-foreground">Plan</span>
+          <span className="font-medium text-right max-w-[200px] truncate">{planName}</span>
+        </div>
+        {bookingType === "group" && (
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">Members</span>
+            <span className="font-medium">{teamMembers.length}</span>
+          </div>
+        )}
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-muted-foreground">Base Price</span>
+          <span className="font-medium">{currency} {planPrice}</span>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-muted-foreground">Cycle</span>
+          <span className="font-medium">{billingCycle}</span>
+        </div>
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-muted-foreground">Start Date</span>
+          <span className="font-medium">{formData.startDate || "Not selected"}</span>
+        </div>
+        
+        <div className="pt-3 mt-3 border-t border-border flex justify-between items-center">
+          <span className="font-semibold">Total Due Today</span>
+          <span className="text-xl font-bold text-primary">{finalPriceString}</span>
+        </div>
+      </div>
+      
+      <div className="mt-8 flex items-start gap-3 bg-card p-4 rounded-xl border border-border/40">
+        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground">
+          Your booking is protected by Agatike Guarantee. You will receive an email confirmation and invoice immediately after payment.
+        </p>
+      </div>
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col pb-28 lg:pb-0">
       <Navbar hideOnMobile />
       
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 md:py-12">
@@ -286,13 +403,18 @@ function CheckoutPage() {
         </button>
 
         {/* Stepper Progress */}
-        <div className="mb-8 flex items-center justify-between max-w-2xl mx-auto relative">
-          <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border/50 -z-10 -translate-y-1/2 rounded-full"></div>
-          <div className={`absolute top-1/2 left-0 h-0.5 bg-primary -z-10 -translate-y-1/2 rounded-full transition-all duration-500`} style={{ width: `${((step - 1) / 2) * 100}%` }}></div>
+        <div className="mb-12 flex items-center justify-between max-w-lg mx-auto relative px-2">
+          <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-secondary rounded-full -z-10"></div>
+          <div className={`absolute top-5 left-[10%] h-1 bg-primary rounded-full transition-all duration-500 -z-10`} style={{ width: `${((step - 1) / 2) * 80}%` }}></div>
           
-          {[1, 2, 3].map((s) => (
-            <div key={s} className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors duration-500 ${step >= s ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)]" : "bg-secondary text-muted-foreground border border-border"}`}>
-              {s}
+          {STEPS.map((s) => (
+            <div key={s.id} className="flex flex-col items-center gap-2 relative z-10 w-24">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 ring-4 ring-background ${step >= s.id ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)] scale-110" : "bg-secondary text-muted-foreground border border-border"}`}>
+                {step > s.id ? <CheckCircle2 className="w-5 h-5" /> : s.id}
+              </div>
+              <span className={`text-xs font-semibold whitespace-nowrap transition-colors ${step >= s.id ? "text-foreground" : "text-muted-foreground"}`}>
+                {s.title}
+              </span>
             </div>
           ))}
         </div>
@@ -306,7 +428,7 @@ function CheckoutPage() {
               <p className="text-muted-foreground">Complete your details to secure your booking at {space.name}.</p>
             </div>
 
-            <form onSubmit={handlePayment} className="space-y-8">
+            <form id="checkout-form" onSubmit={handlePayment} className="space-y-8">
               
               {/* STEP 1: Booking Type */}
               {step === 1 && (
@@ -335,7 +457,7 @@ function CheckoutPage() {
                       <span className="text-sm font-normal opacity-80">Book for your team</span>
                     </button>
                   </div>
-                  <Button type="button" onClick={handleNext} className="w-full h-12 text-md">Continue</Button>
+                  <Button type="button" onClick={validateAndNext} className="hidden lg:flex w-full h-12 text-md">Continue</Button>
                 </div>
               )}
 
@@ -583,22 +705,8 @@ function CheckoutPage() {
 
                   <Button 
                     type="button" 
-                    onClick={() => {
-                      if (!formData.name || !formData.email || !formData.phone || !formData.startDate) {
-                        setErrorMsg("Please fill in all your details to continue.");
-                        return;
-                      }
-                      if (bookingType === "group") {
-                        const hasEmpty = teamMembers.some(m => !m.name || !m.email || !m.phone);
-                        if (hasEmpty) {
-                          setErrorMsg("Please fill in all required team member details.");
-                          return;
-                        }
-                      }
-                      setErrorMsg("");
-                      handleNext();
-                    }} 
-                    className="w-full h-12 text-md"
+                    onClick={validateAndNext} 
+                    className="hidden lg:flex w-full h-12 text-md"
                   >
                     Continue to Payment
                   </Button>
@@ -634,7 +742,7 @@ function CheckoutPage() {
                   <Button
                     type="submit"
                     disabled={isProcessing}
-                    className="w-full h-14 text-lg font-bold rounded-xl shadow-[var(--shadow-glow)]"
+                    className="hidden lg:flex w-full h-14 text-lg font-bold rounded-xl shadow-[var(--shadow-glow)]"
                   >
                     {isProcessing ? (
                       <>
@@ -644,7 +752,7 @@ function CheckoutPage() {
                       `Pay ${finalPriceString}`
                     )}
                   </Button>
-                  <p className="text-center text-xs text-muted-foreground mt-4">
+                  <p className="hidden lg:block text-center text-xs text-muted-foreground mt-4">
                     By clicking "Pay", you agree to the Terms of Service and Privacy Policy.
                   </p>
                 </div>
@@ -653,64 +761,65 @@ function CheckoutPage() {
             </form>
           </div>
 
-          {/* Right Column: Order Summary */}
-          <div className="bg-secondary/30 border border-border/40 rounded-3xl p-6 lg:p-8 lg:sticky lg:top-8 mt-8 lg:mt-0">
+          {/* Right Column: Order Summary (Desktop) */}
+          <div className="hidden lg:block bg-secondary/30 border border-border/40 rounded-3xl p-8 sticky top-8">
             <h2 className="text-xl font-bold mb-6">Order Summary</h2>
-            
-            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-border/40">
-              {space.cover_url ? (
-                <img src={space.cover_url} alt={space.name} className="w-16 h-16 rounded-xl object-cover" />
-              ) : (
-                <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <Building2 className="w-8 h-8 text-primary" />
-                </div>
-              )}
-              <div>
-                <h3 className="font-semibold">{space.name}</h3>
-                <p className="text-sm text-muted-foreground">{space.locations?.[0]?.city || "Space Booking"}</p>
-              </div>
-            </div>
-
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Plan</span>
-                <span className="font-medium text-right max-w-[200px] truncate">{planName}</span>
-              </div>
-              {bookingType === "group" && (
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Members</span>
-                  <span className="font-medium">{teamMembers.length}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Base Price</span>
-                <span className="font-medium">{currency} {planPrice}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Cycle</span>
-                <span className="font-medium">{billingCycle}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Start Date</span>
-                <span className="font-medium">{formData.startDate || "Not selected"}</span>
-              </div>
-              
-              <div className="pt-3 mt-3 border-t border-border flex justify-between items-center">
-                <span className="font-semibold">Total Due Today</span>
-                <span className="text-xl font-bold text-primary">{finalPriceString}</span>
-              </div>
-            </div>
-            
-            <div className="mt-8 flex items-start gap-3 bg-card p-4 rounded-xl border border-border/40">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-muted-foreground">
-                Your booking is protected by Agatike Guarantee. You will receive an email confirmation and invoice immediately after payment.
-              </p>
-            </div>
+            <OrderSummaryContent />
           </div>
 
         </div>
       </main>
+
+      {/* Mobile Bottom Action Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/50 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)] transition-transform duration-300">
+        <div className="max-w-md mx-auto p-4">
+          
+          {/* Collapsible Order Summary */}
+          <div 
+            className="flex items-center justify-between gap-4 mb-3 cursor-pointer active:opacity-70 transition-opacity"
+            onClick={() => setSummaryExpanded(!summaryExpanded)}
+          >
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm text-muted-foreground font-semibold">Order Summary</span>
+              <ChevronUp className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${summaryExpanded ? "rotate-180" : ""}`} />
+            </div>
+            {!summaryExpanded && (
+              <span className="font-bold text-primary text-sm">{finalPriceString}</span>
+            )}
+          </div>
+
+          {/* Expanded Summary */}
+          {summaryExpanded && (
+            <div className="mb-4 text-sm animate-in slide-in-from-bottom-2 fade-in duration-200 border-t border-border/40 pt-4 max-h-[50vh] overflow-y-auto scrollbar-hide">
+               <OrderSummaryContent />
+            </div>
+          )}
+
+          {/* Action Button */}
+          <Button 
+            form={step === 3 ? "checkout-form" : undefined}
+            type={step === 3 ? "submit" : "button"}
+            disabled={isProcessing}
+            className="w-full h-12 text-md font-bold rounded-xl shadow-[var(--shadow-glow)]"
+            onClick={() => {
+              if (step < 3) {
+                 validateAndNext();
+              }
+            }}
+          >
+            {step === 3 ? (
+              isProcessing ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
+              ) : `Pay ${finalPriceString}`
+            ) : "Continue"}
+          </Button>
+          {step === 3 && (
+            <p className="text-center text-[10px] text-muted-foreground mt-3">
+              By clicking "Pay", you agree to the Terms of Service.
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
