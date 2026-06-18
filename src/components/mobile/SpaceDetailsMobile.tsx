@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, MapPin, Clock, Star, Heart, Share2, ChevronUp, ChevronDown, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, MapPin, Clock, Star, Heart, Share2, ChevronUp, ChevronDown, CheckCircle2, Instagram, Facebook, Twitter, Globe, Phone, ExternalLink } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -91,6 +91,7 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
 
   const locations: any[] = Array.isArray(space.locations) ? space.locations : [];
   const plans: any[]     = Array.isArray(space.plans)     ? space.plans     : [];
+  const socials: any     = space.socials || {};
   const currency: string = space.currency || "RWF";
   const typeLabel        = SPACE_TYPE_LABELS[space.type] ?? space.type ?? "Space";
 
@@ -219,6 +220,78 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
               );
             })()}
           </div>
+        </div>
+
+        {/* Social links + RSVP buttons */}
+        <div className="flex flex-wrap items-center gap-2">
+          {socials.instagram && (
+            <a href={socials.instagram} target="_blank" rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+              <Instagram className="w-4 h-4" />
+            </a>
+          )}
+          {socials.twitter && (
+            <a href={socials.twitter} target="_blank" rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+              <Twitter className="w-4 h-4" />
+            </a>
+          )}
+          {socials.facebook && (
+            <a href={socials.facebook} target="_blank" rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+              <Facebook className="w-4 h-4" />
+            </a>
+          )}
+          {socials.website && (
+            <a href={socials.website} target="_blank" rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all">
+              <Globe className="w-4 h-4" />
+            </a>
+          )}
+          {socials.phone && (
+            <a href={`tel:${socials.phone}`}
+              className="h-10 px-4 rounded-full bg-secondary/50 backdrop-blur border border-border/40 flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-sm font-medium">
+              <Phone className="w-4 h-4" /> <span className="sr-only">Call</span>
+            </a>
+          )}
+          
+          {/* Form Buttons */}
+          {space.connected_forms && space.connected_forms.length > 0
+            ? space.connected_forms.map((cForm: any) =>
+                cForm.showButton !== false && cForm.formId && cForm.formId !== "none" ? (
+                  <Button
+                    key={cForm.id}
+                    variant="default"
+                    className="h-10 px-5 rounded-full font-bold shadow-[var(--shadow-glow)] text-xs"
+                    onClick={() => window.open(`/f/${cForm.formId}`, "_blank")}
+                  >
+                    {cForm.buttonText || "Fill out our form"}
+                  </Button>
+                ) : null
+              )
+            : space.rsvp_form_id && space.show_rsvp_form_button !== false
+            ? (
+              <Button
+                variant="default"
+                className="h-10 px-5 rounded-full font-bold shadow-[var(--shadow-glow)] text-xs"
+                onClick={() => window.open(`/f/${space.rsvp_form_id}`, "_blank")}
+              >
+                {space.rsvp_form_button_text || "Fill out our form"}
+              </Button>
+            )
+            : null}
+
+          {/* Linked Page */}
+          {linkedPage && (
+            <Button
+              variant="outline"
+              className="h-10 px-5 rounded-full font-bold bg-background/50 backdrop-blur text-xs"
+              onClick={() => window.open(`/p/${linkedPage.slug}`, "_blank")}
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Visit our page
+            </Button>
+          )}
         </div>
 
         {/* About */}
