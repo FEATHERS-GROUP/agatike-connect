@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
 import { createSpaceSubscription } from "@/api/space_subscriptions";
 import { sendSubscriptionConfirmationEmail, sendSubscriptionInvoiceEmail } from "@/api/email";
+import { createInvoiceAndGeneratePdf } from "@/api/invoices";
 import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,33 +93,53 @@ function CheckoutPage() {
         }
       });
 
-      // 2. Send Confirmation Email
+      // 2. Generate Invoice PDF and save to DB
+      const invoice = await createInvoiceAndGeneratePdf({
+        data: {
+          spaceName: space?.name || "Our Space",
+          customerName: formData.name,
+          customerEmail: formData.email,
+          planName,
+          amount: planPrice,
+          currency,
+          billingCycle,
+          startDate: formData.startDate,
+          spaceId,
+          referenceId: subscription?.id,
+        }
+      });
+
+      const invoiceNumber = invoice?.invoiceNumber || `AGT-${Date.now()}`;
+      const pdfBase64 = invoice?.pdfBase64 || null;
+
+      // 3. Send Confirmation Email
       await sendSubscriptionConfirmationEmail({
         data: {
           to: formData.email,
           customerName: formData.name,
           spaceName: space?.name || "Our Space",
           planName,
-          price: planPrice,
+          price: `${currency} ${planPrice}`,
           billingCycle,
         }
       });
 
-      // 3. Send Invoice Email
+      // 4. Send Invoice Email with PDF attached
       await sendSubscriptionInvoiceEmail({
         data: {
           to: formData.email,
           customerName: formData.name,
           spaceName: space?.name || "Our Space",
           planName,
-          price: planPrice,
+          price: `${currency} ${planPrice}`,
           billingCycle,
-          invoiceDate: new Date().toLocaleDateString(),
-          invoiceNumber: `INV-${Math.floor(100000 + Math.random() * 900000)}`,
+          invoiceDate: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
+          invoiceNumber,
+          pdfBase64,
         }
       });
 
-      // 4. Redirect to Success
+      // 5. Redirect to Success
       navigate({ to: `/spaces/success/${spaceId}`, search: { email: formData.email } });
 
     } catch (err: any) {

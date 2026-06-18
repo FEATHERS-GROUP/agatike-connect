@@ -104,6 +104,57 @@ async function run() {
     }),
   });
   console.log("Track space_subscriptions:", await trackSubRes.json());
+
+  console.log("5. Creating invoices table...");
+  const invoicesRes = await fetch(`${API_BASE}/v2/query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-hasura-admin-secret": SECRET },
+    body: JSON.stringify({
+      type: "run_sql",
+      args: {
+        sql: `
+          CREATE TABLE IF NOT EXISTS public.invoices (
+            id uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
+            invoice_number text NOT NULL UNIQUE,
+            type text NOT NULL DEFAULT 'space_subscription',
+            reference_id uuid,
+            space_id uuid,
+            workspace_id uuid,
+            customer_name text NOT NULL,
+            customer_email text NOT NULL,
+            amount text NOT NULL,
+            currency text DEFAULT 'RWF' NOT NULL,
+            plan_name text,
+            billing_cycle text,
+            status text DEFAULT 'paid' NOT NULL,
+            notes text,
+            pdf_url text,
+            created_at timestamp with time zone DEFAULT now() NOT NULL
+          );
+        `,
+      },
+    }),
+  });
+  const invoicesData = await invoicesRes.json();
+  if (invoicesData.error) {
+    console.error("Error creating invoices table:", invoicesData.error);
+  } else {
+    console.log("Invoices table ready!");
+  }
+
+  console.log("6. Tracking invoices table...");
+  const trackInvoicesRes = await fetch(`${API_BASE}/v1/metadata`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-hasura-admin-secret": SECRET },
+    body: JSON.stringify({
+      type: "pg_track_table",
+      args: {
+        source: "default",
+        table: "invoices",
+      },
+    }),
+  });
+  console.log("Track invoices:", await trackInvoicesRes.json());
 }
 
 run();

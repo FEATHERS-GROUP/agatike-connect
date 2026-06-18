@@ -327,29 +327,27 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
 });
 
 export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { to, customerName, spaceName, planName, price, billingCycle, invoiceDate, invoiceNumber } = ctx.data as any;
+  const { to, customerName, spaceName, planName, price, billingCycle, invoiceDate, invoiceNumber, pdfBase64 } = ctx.data as any;
 
   const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : import.meta.env.PROD
-        ? "https://agatike.rw"
-        : "https://agatike.rw";
+      : "https://agatike.rw";
 
   const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
 
   const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
-        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
           <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Payment Invoice</h2>
       </div>
       <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
         <p>Hi ${customerName},</p>
-        <p>Thank you for your payment. Here are the details for your recent transaction for <strong>${spaceName}</strong>.</p>
+        <p>Thank you for your payment. Your invoice for <strong>${spaceName}</strong> is attached to this email as a PDF.</p>
         <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border: 1px solid #e2e8f0;">
           <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px;">
             <div>
@@ -370,7 +368,8 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).h
             <span>${price}</span>
           </div>
         </div>
-        <p>We've received your payment and your subscription is active. You can save this email for your records.</p>
+        <p style="color: #64748b; font-size: 14px;">📎 Your invoice PDF is attached. It includes a QR code for verification.</p>
+        <p>Your subscription is now active. Keep this email for your records.</p>
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
@@ -379,18 +378,30 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" }).h
     </div>
   `;
 
+  const emailPayload: any = {
+    from: "Agatike Connect <hello@agatike.rw>",
+    to: [to],
+    subject: `Invoice ${invoiceNumber} — ${spaceName}`,
+    html: html,
+  };
+
+  // Attach PDF if provided
+  if (pdfBase64) {
+    emailPayload.attachments = [
+      {
+        filename: `Invoice-${invoiceNumber}.pdf`,
+        content: pdfBase64,
+      },
+    ];
+  }
+
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
     },
-    body: JSON.stringify({
-      from: "Agatike Connect <hello@agatike.rw>",
-      to: [to],
-      subject: `Invoice ${invoiceNumber} for ${spaceName}`,
-      html: html,
-    }),
+    body: JSON.stringify(emailPayload),
   });
 
   const data = await res.json();
