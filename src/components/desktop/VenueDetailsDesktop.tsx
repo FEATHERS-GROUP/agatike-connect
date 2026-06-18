@@ -247,7 +247,6 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
               )}
             </div>
           </div>
-
         </div>
 
         {/* Right Column: CTA Widget */}

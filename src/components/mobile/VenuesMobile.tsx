@@ -75,8 +75,16 @@ export function VenuesMobile() {
           filteredVenues.map((venue) => (
             <Link
               key={venue.id}
-              to={venue.type === "office" || venue.type === "gym" ? "/spaces/$spaceId" : "/venues/$venueId"}
-              params={venue.type === "office" || venue.type === "gym" ? { spaceId: venue.id } : { venueId: venue.id }}
+              to={
+                venue.type === "office" || venue.type === "gym"
+                  ? "/spaces/$spaceId"
+                  : "/venues/$venueId"
+              }
+              params={
+                venue.type === "office" || venue.type === "gym"
+                  ? { spaceId: venue.id }
+                  : { venueId: venue.id }
+              }
               className="block active:scale-[0.98] transition-transform"
             >
               <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm">
@@ -100,7 +108,9 @@ export function VenuesMobile() {
                   <div className="flex items-center justify-between mt-2 pt-3 border-t border-border/40">
                     <div className="flex flex-col">
                       <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                        {venue.type === "office" || venue.type === "gym" ? "Starting At" : "Entry Fee"}
+                        {venue.type === "office" || venue.type === "gym"
+                          ? "Starting At"
+                          : "Entry Fee"}
                       </span>
                       <span className="text-sm font-bold text-foreground">
                         {venue.pricing_tiers?.[0]?.amount > 0

@@ -184,7 +184,7 @@ export default function VenueMap({
               eventHandlers={{
                 click: () => {
                   if (onMarkerClick) onMarkerClick(idx);
-                }
+                },
               }}
             >
               <Popup className="rounded-xl">

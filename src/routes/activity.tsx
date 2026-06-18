@@ -1,16 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  CheckCircle2,
-  CalendarDays,
-  Star,
-  Film,
-  ChevronRight,
-  MessageCircle,
-  Heart,
-} from "lucide-react";
+import { CalendarDays, Film, ChevronRight, MessageCircle, Heart, Trash2, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  deleteDoc,
+  doc,
+  writeBatch,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { timeAgo } from "@/lib/utils";
@@ -33,6 +33,8 @@ type Notification = {
 function ActivityPage() {
   const { user } = useUserAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [clearing, setClearing] = useState(false);
+  const [dismissing, setDismissing] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -44,13 +46,10 @@ function ActivityPage() {
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const notifs: Notification[] = [];
-      snapshot.forEach((doc) => {
-        notifs.push({ id: doc.id, ...doc.data() } as Notification);
+      snapshot.forEach((docSnap) => {
+        notifs.push({ id: docSnap.id, ...docSnap.data() } as Notification);
       });
-      // Sort by createdAt desc locally since Firestore requires a composite index for where+orderBy
       notifs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-      // Filter out notifications triggered by the user themselves
       setNotifications(notifs.filter((n) => n.actorId !== user.id));
     });
 
@@ -58,29 +57,70 @@ function ActivityPage() {
   }, [user?.id]);
 
   useEffect(() => {
-    // Mark as read when viewing activity
     localStorage.setItem("lastActivityReadTimestamp", Date.now().toString());
-
-    // Clear notification badge count immediately on this page
     window.dispatchEvent(new Event("activityRead"));
   }, []);
 
+  const handleClearOne = async (id: string) => {
+    setDismissing(id);
+    try {
+      await deleteDoc(doc(db, "agatike_notifications", id));
+    } catch (err) {
+      console.error("Failed to delete notification:", err);
+    } finally {
+      setDismissing(null);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (notifications.length === 0 || clearing) return;
+    setClearing(true);
+    try {
+      const batch = writeBatch(db);
+      notifications.forEach((n) => {
+        batch.delete(doc(db, "agatike_notifications", n.id));
+      });
+      await batch.commit();
+    } catch (err) {
+      console.error("Failed to clear all notifications:", err);
+    } finally {
+      setClearing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-8 pt-safe-top md:max-w-md md:mx-auto md:border-x md:border-border/40 md:min-h-[100dvh] shadow-xl">
+      {/* Header */}
       <div className="px-4 py-3 sticky top-0 bg-background/90 backdrop-blur-md z-30 border-b border-border/40">
-        <h1 className="font-bold text-2xl tracking-tight">Activity</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="font-bold text-2xl tracking-tight">Activity</h1>
+          {notifications.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              disabled={clearing}
+              className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50 px-2 py-1.5 rounded-lg hover:bg-destructive/10"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              {clearing ? "Clearing…" : "Clear all"}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="px-4 py-4">
         <h2 className="text-sm font-bold text-muted-foreground mb-4 uppercase tracking-wider">
           Recent
         </h2>
-        <div className="space-y-5">
+        <div className="space-y-3">
           {notifications.length === 0 && (
-            <div className="text-center py-10 text-muted-foreground text-sm">
-              No recent activity.
+            <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+              <div className="h-16 w-16 rounded-2xl bg-secondary/60 flex items-center justify-center">
+                <Bell className="h-7 w-7 text-muted-foreground/50" />
+              </div>
+              <p className="text-sm text-muted-foreground font-medium">No recent activity.</p>
             </div>
           )}
+
           {notifications.map((n) => {
             const isComment = n.type === "comment";
             const isNewEvent = n.type === "new_event";
@@ -120,10 +160,11 @@ function ActivityPage() {
               link = `/${user?.id}/message`;
               linkText = "View Messages";
             }
+
             return (
               <div
                 key={n.id}
-                className="flex items-start gap-4 p-3 rounded-2xl bg-card border border-border/40 shadow-sm transition-all active:scale-[0.98]"
+                className={`flex items-start gap-4 p-3 rounded-2xl bg-card border border-border/40 shadow-sm transition-all active:scale-[0.98] ${dismissing === n.id ? "opacity-50 scale-95" : ""}`}
               >
                 <div className="relative shrink-0">
                   <div className="h-14 w-14 rounded-xl overflow-hidden bg-secondary flex items-center justify-center">
@@ -147,24 +188,32 @@ function ActivityPage() {
                     {description}
                   </p>
 
-                  <Link to={link}>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="w-full text-xs h-7 mt-1 font-bold"
+                  <div className="flex items-center gap-2">
+                    <Link to={link} className="flex-1">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="w-full text-xs h-7 font-bold"
+                      >
+                        {linkText}
+                        <ChevronRight className="h-3 w-3 ml-1 opacity-50" />
+                      </Button>
+                    </Link>
+                    <button
+                      onClick={() => handleClearOne(n.id)}
+                      disabled={dismissing === n.id}
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-secondary/60 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors disabled:opacity-40"
+                      title="Dismiss"
                     >
-                      {linkText}
-                      <ChevronRight className="h-3 w-3 ml-1 opacity-50" />
-                    </Button>
-                  </Link>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
       </div>
-
-      {/* Removed Earlier mock section */}
     </div>
   );
 }
