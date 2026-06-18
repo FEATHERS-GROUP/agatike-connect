@@ -20,21 +20,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 
-// Replace date-format tokens in plan names/prices with actual values
-function resolvePlanTokens(str: string | undefined | null): string {
-  if (!str) return "";
-  const now = new Date();
-  const monthNames = ["January","February","March","April","May","June",
-    "July","August","September","October","November","December"];
-  const shortMonthNames = ["Jan","Feb","Mar","Apr","May","Jun",
-    "Jul","Aug","Sep","Oct","Nov","Dec"];
-  return str
-    .replace(/MMMM/g, monthNames[now.getMonth()])
-    .replace(/MMM/g, shortMonthNames[now.getMonth()])
-    .replace(/MM/g, String(now.getMonth() + 1).padStart(2, "0"))
-    .replace(/YYYY/g, String(now.getFullYear()))
-    .replace(/YY/g, String(now.getFullYear()).slice(-2));
-}
+
 
 const DAY_KEYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"] as const;
 const DAY_LABELS: Record<string, string> = {
@@ -320,7 +306,7 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
                     key={i}
                     className="flex flex-col rounded-3xl border border-border/40 bg-card p-6 shadow-sm relative overflow-hidden group hover:border-primary/50 transition-colors"
                   >
-                    <h3 className="text-xl font-bold mb-2">{resolvePlanTokens(plan.name)}</h3>
+                    <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
                     <div className="flex items-end gap-1 mb-6">
                       <span className="text-2xl font-bold">
                         {currency} {(plan.price ?? plan.amount ?? 0).toLocaleString()}
@@ -345,7 +331,7 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any, linkedP
                       to="/spaces/checkout/$spaceId"
                       params={{ spaceId: space.id }}
                       search={{ 
-                        plan: resolvePlanTokens(plan.name), 
+                        plan: plan.name, 
                         price: String(plan.price ?? plan.amount ?? ""), 
                         cycle: plan.billing_cycle 
                       }}

@@ -4,21 +4,7 @@ import { formatCurrency } from "@/lib/currency";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
-// Replace date-format tokens in plan names/prices with actual values
-function resolvePlanTokens(str: string | undefined | null): string {
-  if (!str) return "";
-  const now = new Date();
-  const monthNames = ["January","February","March","April","May","June",
-    "July","August","September","October","November","December"];
-  const shortMonthNames = ["Jan","Feb","Mar","Apr","May","Jun",
-    "Jul","Aug","Sep","Oct","Nov","Dec"];
-  return str
-    .replace(/MMMM/g, monthNames[now.getMonth()])
-    .replace(/MMM/g, shortMonthNames[now.getMonth()])
-    .replace(/MM/g, String(now.getMonth() + 1).padStart(2, "0"))
-    .replace(/YYYY/g, String(now.getFullYear()))
-    .replace(/YY/g, String(now.getFullYear()).slice(-2));
-}
+
 
 const SPACE_TYPE_LABELS: Record<string, string> = {
   gym: "Fitness Center",
@@ -406,7 +392,7 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
                   className="w-full rounded-2xl border border-border/40 bg-card/50 p-3.5 transition-all duration-300"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-bold text-sm">{resolvePlanTokens(plan.name)}</p>
+                    <p className="font-bold text-sm">{plan.name}</p>
                     <p className="font-bold text-base text-primary">
                       {plan.amount > 0 || plan.price > 0 ? formatCurrency(plan.amount ?? plan.price, currency) : "Free"}
                       {plan.billing_cycle && <span className="text-[10px] text-muted-foreground ml-1">/ {plan.billing_cycle}</span>}
@@ -437,7 +423,7 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
                       to="/spaces/checkout/$spaceId"
                       params={{ spaceId: space.id }}
                       search={{ 
-                        plan: resolvePlanTokens(plan.name), 
+                        plan: plan.name, 
                         price: String(plan.price ?? plan.amount ?? ""), 
                         cycle: plan.billing_cycle 
                       }}
@@ -466,7 +452,7 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
                   className="w-full rounded-2xl border border-border/40 bg-card/50 p-3.5 transition-all duration-300"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-bold text-sm">{resolvePlanTokens(plan.name)}</p>
+                    <p className="font-bold text-sm">{plan.name}</p>
                     <p className="font-bold text-base text-primary">
                       {plan.amount > 0 || plan.price > 0 ? formatCurrency(plan.amount ?? plan.price, currency) : "Free"}
                       {plan.billing_cycle && <span className="text-[10px] text-muted-foreground ml-1">/ {plan.billing_cycle}</span>}
@@ -477,7 +463,7 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any, linkedPa
                       to="/spaces/checkout/$spaceId"
                       params={{ spaceId: space.id }}
                       search={{ 
-                        plan: resolvePlanTokens(plan.name), 
+                        plan: plan.name, 
                         price: String(plan.price ?? plan.amount ?? ""), 
                         cycle: plan.billing_cycle 
                       }}
