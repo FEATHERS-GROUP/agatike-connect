@@ -15,6 +15,7 @@ export interface SpaceMember {
   email?: string;
   phone?: string;
   membershipId?: string;
+  hostedBy?: string;
   type: MemberType;
   category: MemberCategory;
   organization?: string;
@@ -176,6 +177,11 @@ export function MembersTable({
                       <div>
                         <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{m.name}</p>
                         {m.email && <p className="text-xs text-muted-foreground mt-0.5">{m.email}</p>}
+                        {m.hostedBy && (
+                          <p className="text-[10px] text-rose-400 mt-0.5 flex items-center gap-0.5">
+                            <span className="opacity-70">hosted by</span> <span className="font-semibold">{m.hostedBy}</span>
+                          </p>
+                        )}
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground text-xs whitespace-nowrap">
