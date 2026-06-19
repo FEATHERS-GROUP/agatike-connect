@@ -57,6 +57,20 @@ const MOCK_MOVIES = [
     currency: "RWF",
     status: "coming_soon",
   },
+  {
+    id: "m4",
+    cinema: "Century Cinema",
+    title: "Oppenheimer",
+    genre: "Biography/Drama",
+    duration: "3h 0m",
+    cover: "https://images.unsplash.com/photo-1440407876336-62333a6f010f?auto=format&fit=crop&q=80&w=800",
+    rating: "R",
+    synopsis: "The story of American scientist, J. Robert Oppenheimer, and his role in the development of the atomic bomb.",
+    showtimes: [],
+    price: 10000,
+    currency: "RWF",
+    status: "finished",
+  },
 ];
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/movies")({
@@ -68,6 +82,7 @@ function CinemaMovies() {
 
   const nowShowing = MOCK_MOVIES.filter((m) => m.status === "now_showing");
   const comingSoon = MOCK_MOVIES.filter((m) => m.status === "coming_soon");
+  const finished = MOCK_MOVIES.filter((m) => m.status === "finished");
 
   return (
     <div className="space-y-16 animate-in fade-in duration-500 max-w-6xl mx-auto">
@@ -235,6 +250,8 @@ function CinemaMovies() {
         </div>
       </div>
 
+
+
       {/* Movie Details / Edit Drawer */}
       <Drawer open={!!selectedMovie} onOpenChange={(open) => !open && setSelectedMovie(null)}>
         <DrawerContent
@@ -305,6 +322,7 @@ function CinemaMovies() {
                         <select className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                           <option value="now_showing" selected={selectedMovie.status === "now_showing"}>Now Showing</option>
                           <option value="coming_soon" selected={selectedMovie.status === "coming_soon"}>Coming Soon</option>
+                          <option value="finished" selected={selectedMovie.status === "finished"}>Finished (Archive)</option>
                         </select>
                       </div>
                     </div>

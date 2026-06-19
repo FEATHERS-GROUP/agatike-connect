@@ -9,6 +9,7 @@ import {
   Ticket,
   LayoutTemplate,
   FormInput,
+  Archive,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +53,11 @@ export function CinemaSidebar() {
       label: "Screens / Halls",
       href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/screens`,
       icon: MonitorPlay,
+    },
+    {
+      label: "Past & Finished",
+      href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/archive`,
+      icon: Archive,
     },
     {
       label: "Settings",
