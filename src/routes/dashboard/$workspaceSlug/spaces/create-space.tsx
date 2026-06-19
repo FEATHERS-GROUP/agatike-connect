@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useParams, Link, useSearch } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Key } from "react";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
 import { LocationSearchInput } from "@/components/desktop/LocationSearchInput";
 import {
@@ -165,7 +165,7 @@ function NewSpaceWizard() {
         if (parsed.step && parsed.step > 0) {
           navigate({ search: { step: parsed.step } as any, replace: true });
         }
-      } catch (e) {}
+      } catch (e) { }
     }
   }, [workspaceSlug]);
 
@@ -242,7 +242,7 @@ function NewSpaceWizard() {
   };
 
   const addPlan = () => {
-    setFormData((p) => ({
+    setFormData((p: { plans: any; }) => ({
       ...p,
       plans: [
         ...p.plans,
@@ -252,41 +252,41 @@ function NewSpaceWizard() {
   };
 
   const updatePlan = (idx: number, field: string, val: any) => {
-    setFormData((p) => ({
+    setFormData((p: { plans: any[]; }) => ({
       ...p,
-      plans: p.plans.map((t, i) => (i === idx ? { ...t, [field]: val } : t)),
+      plans: p.plans.map((t: any, i: number) => (i === idx ? { ...t, [field]: val } : t)),
     }));
   };
 
   const addFeature = (planIdx: number) => {
-    setFormData((p) => ({
+    setFormData((p: { plans: any[]; }) => ({
       ...p,
-      plans: p.plans.map((t, i) =>
+      plans: p.plans.map((t: { features: any; }, i: number) =>
         i === planIdx ? { ...t, features: [...(t.features || []), ""] } : t,
       ),
     }));
   };
 
   const updateFeature = (planIdx: number, featIdx: number, val: string) => {
-    setFormData((p) => ({
+    setFormData((p: { plans: any[]; }) => ({
       ...p,
-      plans: p.plans.map((t, i) =>
+      plans: p.plans.map((t: { features: any; }, i: number) =>
         i === planIdx
           ? {
-              ...t,
-              features: (t.features || []).map((f: string, fi: number) =>
-                fi === featIdx ? val : f,
-              ),
-            }
+            ...t,
+            features: (t.features || []).map((f: string, fi: number) =>
+              fi === featIdx ? val : f,
+            ),
+          }
           : t,
       ),
     }));
   };
 
   const removeFeature = (planIdx: number, featIdx: number) => {
-    setFormData((p) => ({
+    setFormData((p: { plans: any[]; }) => ({
       ...p,
-      plans: p.plans.map((t, i) =>
+      plans: p.plans.map((t: { features: any; }, i: number) =>
         i === planIdx
           ? { ...t, features: (t.features || []).filter((_: string, fi: number) => fi !== featIdx) }
           : t,
@@ -295,11 +295,11 @@ function NewSpaceWizard() {
   };
 
   const removePlan = (idx: number) => {
-    setFormData((p) => ({ ...p, plans: p.plans.filter((_, i) => i !== idx) }));
+    setFormData((p: { plans: any[]; }) => ({ ...p, plans: p.plans.filter((_: any, i: number) => i !== idx) }));
   };
 
   const addLocation = () => {
-    setFormData((p) => ({
+    setFormData((p: { locations: any; }) => ({
       ...p,
       locations: [
         ...p.locations,
@@ -317,14 +317,14 @@ function NewSpaceWizard() {
   };
 
   const updateLocation = (idx: number, field: string, val: any) => {
-    setFormData((p) => ({
+    setFormData((p: { locations: any[]; }) => ({
       ...p,
       locations: p.locations.map((t: any, i: number) => (i === idx ? { ...t, [field]: val } : t)),
     }));
   };
 
   const removeLocation = (idx: number) => {
-    setFormData((p) => ({ ...p, locations: p.locations.filter((_: any, i: number) => i !== idx) }));
+    setFormData((p: { locations: any[]; }) => ({ ...p, locations: p.locations.filter((_: any, i: number) => i !== idx) }));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -334,7 +334,7 @@ function NewSpaceWizard() {
     setIsUploading(true);
     try {
       const url = await uploadFileToStorage(file, "spaces/covers");
-      setFormData((prev) => ({ ...prev, cover_url: url }));
+      setFormData((prev: any) => ({ ...prev, cover_url: url }));
       toast.success("Image uploaded successfully!");
     } catch (err) {
       toast.error("Failed to upload image");
@@ -415,7 +415,7 @@ function NewSpaceWizard() {
                   return (
                     <button
                       key={st.id}
-                      onClick={() => setFormData((p) => ({ ...p, type: st.id }))}
+                      onClick={() => setFormData((p: any) => ({ ...p, type: st.id }))}
                       className={cn(
                         "flex items-start text-left gap-4 p-6 rounded-2xl border-2 transition-all hover:border-primary/50 cursor-pointer",
                         formData.type === st.id
@@ -462,7 +462,7 @@ function NewSpaceWizard() {
                   <Input
                     className="h-12 text-lg rounded-xl"
                     value={formData.name}
-                    onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                    onChange={(e) => setFormData((p: any) => ({ ...p, name: e.target.value }))}
                     placeholder="e.g. Impact Hub Kigali"
                   />
                 </div>
@@ -471,7 +471,7 @@ function NewSpaceWizard() {
                   <Textarea
                     className="min-h-[140px] rounded-xl resize-none text-base p-4"
                     value={formData.description}
-                    onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                    onChange={(e) => setFormData((p: any) => ({ ...p, description: e.target.value }))}
                     placeholder="Describe the vibe, layout, and what makes your space special..."
                   />
                 </div>
@@ -486,7 +486,7 @@ function NewSpaceWizard() {
                         className="w-full h-full object-cover"
                       />
                       <button
-                        onClick={() => setFormData((p) => ({ ...p, cover_url: "" }))}
+                        onClick={() => setFormData((p: any) => ({ ...p, cover_url: "" }))}
                         className="absolute top-3 right-3 bg-black/60 text-white px-3 py-1.5 rounded-full hover:bg-red-500 text-sm font-medium"
                       >
                         Remove Image
@@ -528,7 +528,7 @@ function NewSpaceWizard() {
                         placeholder="+250 788 123 456"
                         value={formData.socials.phone}
                         onChange={(e) =>
-                          setFormData((p) => ({
+                          setFormData((p: { socials: any; }) => ({
                             ...p,
                             socials: { ...p.socials, phone: e.target.value },
                           }))
@@ -542,7 +542,7 @@ function NewSpaceWizard() {
                         placeholder="+250 788 123 456"
                         value={formData.socials.whatsapp}
                         onChange={(e) =>
-                          setFormData((p) => ({
+                          setFormData((p: { socials: any; }) => ({
                             ...p,
                             socials: { ...p.socials, whatsapp: e.target.value },
                           }))
@@ -556,7 +556,7 @@ function NewSpaceWizard() {
                         placeholder="https://instagram.com/yourspace"
                         value={formData.socials.instagram}
                         onChange={(e) =>
-                          setFormData((p) => ({
+                          setFormData((p: { socials: any; }) => ({
                             ...p,
                             socials: { ...p.socials, instagram: e.target.value },
                           }))
@@ -673,7 +673,7 @@ function NewSpaceWizard() {
                 </p>
               </div>
               <div className="space-y-6 mt-8">
-                {formData.plans.map((plan, idx) => (
+                {formData.plans.map((plan: any, idx: number) => (
                   <div
                     key={idx}
                     className="p-6 bg-secondary/20 rounded-2xl border border-border/60 relative space-y-4"

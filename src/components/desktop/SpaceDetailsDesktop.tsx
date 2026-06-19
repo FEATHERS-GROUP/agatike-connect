@@ -83,6 +83,8 @@ const SPACE_TYPE_LABELS: Record<string, string> = {
   studio: "Creative Studio",
   event_space: "Event Space",
   meeting_room: "Meeting Room",
+  Cinema: "Cinema / Movie Theater",
+  cinema: "Cinema / Movie Theater",
 };
 
 export function SpaceDetailsDesktop({ space, linkedPage }: { space: any; linkedPage: any }) {
