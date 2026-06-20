@@ -57,10 +57,10 @@ function CinemaOverview() {
 
 
   const STATS = [
-    { label: "Tickets Sold (Today)", value: stats?.today_quantity?.toString() || "0", icon: Ticket, trend: "Live" },
+    { label: "Tickets Sold (Today)", value: Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(stats?.today_quantity || 0), icon: Ticket, trend: "Live" },
     { label: "Active Movies", value: activeMoviesCount.toString(), icon: Film, trend: "Current" },
-    { label: "Total Revenue", value: formatCurrency(stats?.total_revenue || 0, workspaceCurrency), icon: TrendingUp, trend: "All time" },
-    { label: "Attendees", value: stats?.total_quantity?.toString() || "0", icon: Users, trend: "Total" },
+    { label: "Total Revenue", value: formatCurrency(stats?.total_revenue || 0, workspaceCurrency, true), icon: TrendingUp, trend: "All time" },
+    { label: "Attendees", value: Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(stats?.total_quantity || 0), icon: Users, trend: "Total" },
   ];
 
   return (
@@ -144,7 +144,7 @@ function CinemaOverview() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-lg">{formatCurrency(b.total_price, b.currency)}</p>
+                    <p className="font-bold text-lg">{formatCurrency(b.total_price, b.currency || workspaceCurrency)}</p>
                     <p className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>

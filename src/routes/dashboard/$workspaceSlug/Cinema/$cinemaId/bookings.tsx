@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/currency";
 import { useState } from "react";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/bookings")({
   component: CinemaBookings,
@@ -15,6 +16,8 @@ function CinemaBookings() {
   const { workspaceSlug, cinemaId } = Route.useParams() as any;
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const { activeWorkspace } = useWorkspace();
+  const workspaceCurrency = activeWorkspace?.currency || activeWorkspace?.wallet?.currency || "RWF";
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ["cinema_bookings", cinemaId],
@@ -108,7 +111,7 @@ function CinemaBookings() {
                     </span>
                   </td>
                   <td className="px-4 py-4 text-right">
-                    <p className="font-bold">{formatCurrency(booking.total_price, booking.currency)}</p>
+                    <p className="font-bold">{formatCurrency(booking.total_price, booking.currency || workspaceCurrency)}</p>
                     <p className="text-xs text-muted-foreground">{booking.payment_method}</p>
                   </td>
                   <td className="px-6 py-4 text-right">
