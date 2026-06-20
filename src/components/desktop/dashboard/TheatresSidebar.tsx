@@ -1,11 +1,5 @@
 import { Link, useRouterState, useParams } from "@tanstack/react-router";
-import {
-  Building2,
-  Ticket,
-  Plus,
-  ArrowLeft,
-  BarChart3,
-} from "lucide-react";
+import { Building2, Ticket, Plus, ArrowLeft, BarChart3, Film } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function TheatresSidebar() {
@@ -26,6 +20,11 @@ export function TheatresSidebar() {
       icon: BarChart3,
     },
     {
+      label: "Film Library",
+      href: `/dashboard/${workspaceSlug}/Cinema/movies`,
+      icon: Film,
+    },
+    {
       label: "Ticket Tiers",
       href: `/dashboard/${workspaceSlug}/Cinema/ticket-tiers`,
       icon: Ticket,
@@ -34,10 +33,7 @@ export function TheatresSidebar() {
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) {
-      return (
-        location.pathname === href ||
-        location.pathname === `${href}/`
-      );
+      return location.pathname === href || location.pathname === `${href}/`;
     }
     return location.pathname.startsWith(href);
   };

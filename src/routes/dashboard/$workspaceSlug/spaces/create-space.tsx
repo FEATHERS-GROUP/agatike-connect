@@ -165,7 +165,7 @@ function NewSpaceWizard() {
         if (parsed.step && parsed.step > 0) {
           navigate({ search: { step: parsed.step } as any, replace: true });
         }
-      } catch (e) { }
+      } catch (e) {}
     }
   }, [workspaceSlug]);
 
@@ -242,7 +242,7 @@ function NewSpaceWizard() {
   };
 
   const addPlan = () => {
-    setFormData((p: { plans: any; }) => ({
+    setFormData((p: { plans: any }) => ({
       ...p,
       plans: [
         ...p.plans,
@@ -252,41 +252,41 @@ function NewSpaceWizard() {
   };
 
   const updatePlan = (idx: number, field: string, val: any) => {
-    setFormData((p: { plans: any[]; }) => ({
+    setFormData((p: { plans: any[] }) => ({
       ...p,
       plans: p.plans.map((t: any, i: number) => (i === idx ? { ...t, [field]: val } : t)),
     }));
   };
 
   const addFeature = (planIdx: number) => {
-    setFormData((p: { plans: any[]; }) => ({
+    setFormData((p: { plans: any[] }) => ({
       ...p,
-      plans: p.plans.map((t: { features: any; }, i: number) =>
+      plans: p.plans.map((t: { features: any }, i: number) =>
         i === planIdx ? { ...t, features: [...(t.features || []), ""] } : t,
       ),
     }));
   };
 
   const updateFeature = (planIdx: number, featIdx: number, val: string) => {
-    setFormData((p: { plans: any[]; }) => ({
+    setFormData((p: { plans: any[] }) => ({
       ...p,
-      plans: p.plans.map((t: { features: any; }, i: number) =>
+      plans: p.plans.map((t: { features: any }, i: number) =>
         i === planIdx
           ? {
-            ...t,
-            features: (t.features || []).map((f: string, fi: number) =>
-              fi === featIdx ? val : f,
-            ),
-          }
+              ...t,
+              features: (t.features || []).map((f: string, fi: number) =>
+                fi === featIdx ? val : f,
+              ),
+            }
           : t,
       ),
     }));
   };
 
   const removeFeature = (planIdx: number, featIdx: number) => {
-    setFormData((p: { plans: any[]; }) => ({
+    setFormData((p: { plans: any[] }) => ({
       ...p,
-      plans: p.plans.map((t: { features: any; }, i: number) =>
+      plans: p.plans.map((t: { features: any }, i: number) =>
         i === planIdx
           ? { ...t, features: (t.features || []).filter((_: string, fi: number) => fi !== featIdx) }
           : t,
@@ -295,11 +295,14 @@ function NewSpaceWizard() {
   };
 
   const removePlan = (idx: number) => {
-    setFormData((p: { plans: any[]; }) => ({ ...p, plans: p.plans.filter((_: any, i: number) => i !== idx) }));
+    setFormData((p: { plans: any[] }) => ({
+      ...p,
+      plans: p.plans.filter((_: any, i: number) => i !== idx),
+    }));
   };
 
   const addLocation = () => {
-    setFormData((p: { locations: any; }) => ({
+    setFormData((p: { locations: any }) => ({
       ...p,
       locations: [
         ...p.locations,
@@ -317,14 +320,17 @@ function NewSpaceWizard() {
   };
 
   const updateLocation = (idx: number, field: string, val: any) => {
-    setFormData((p: { locations: any[]; }) => ({
+    setFormData((p: { locations: any[] }) => ({
       ...p,
       locations: p.locations.map((t: any, i: number) => (i === idx ? { ...t, [field]: val } : t)),
     }));
   };
 
   const removeLocation = (idx: number) => {
-    setFormData((p: { locations: any[]; }) => ({ ...p, locations: p.locations.filter((_: any, i: number) => i !== idx) }));
+    setFormData((p: { locations: any[] }) => ({
+      ...p,
+      locations: p.locations.filter((_: any, i: number) => i !== idx),
+    }));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -471,7 +477,9 @@ function NewSpaceWizard() {
                   <Textarea
                     className="min-h-[140px] rounded-xl resize-none text-base p-4"
                     value={formData.description}
-                    onChange={(e) => setFormData((p: any) => ({ ...p, description: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((p: any) => ({ ...p, description: e.target.value }))
+                    }
                     placeholder="Describe the vibe, layout, and what makes your space special..."
                   />
                 </div>
@@ -528,7 +536,7 @@ function NewSpaceWizard() {
                         placeholder="+250 788 123 456"
                         value={formData.socials.phone}
                         onChange={(e) =>
-                          setFormData((p: { socials: any; }) => ({
+                          setFormData((p: { socials: any }) => ({
                             ...p,
                             socials: { ...p.socials, phone: e.target.value },
                           }))
@@ -542,7 +550,7 @@ function NewSpaceWizard() {
                         placeholder="+250 788 123 456"
                         value={formData.socials.whatsapp}
                         onChange={(e) =>
-                          setFormData((p: { socials: any; }) => ({
+                          setFormData((p: { socials: any }) => ({
                             ...p,
                             socials: { ...p.socials, whatsapp: e.target.value },
                           }))
@@ -556,7 +564,7 @@ function NewSpaceWizard() {
                         placeholder="https://instagram.com/yourspace"
                         value={formData.socials.instagram}
                         onChange={(e) =>
-                          setFormData((p: { socials: any; }) => ({
+                          setFormData((p: { socials: any }) => ({
                             ...p,
                             socials: { ...p.socials, instagram: e.target.value },
                           }))

@@ -1,372 +1,329 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Edit2, Trash2, Calendar, Film } from "lucide-react";
-import { formatCurrency } from "@/lib/currency";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import {
+  getMovies,
+  getCinemaMovies,
+  linkMovieToCinema,
+  unlinkMovieFromCinema,
+} from "@/api/cinema_management";
+import { Plus, Search, MoreVertical, Film, Loader2, Trash2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer";
-
-const MOCK_MOVIES = [
-  {
-    id: "m1",
-    cinema: "Century Cinema",
-    title: "Dune: Part Two",
-    genre: "Sci-Fi",
-    duration: "2h 46m",
-    cover: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=800",
-    rating: "PG-13",
-    synopsis: "Paul Atreides unites with Chani and the Fremen while on a warpath of revenge against the conspirators who destroyed his family.",
-    showtimes: ["11:00", "14:30", "18:00", "21:30"],
-    price: 10000,
-    currency: "RWF",
-    status: "now_showing",
-  },
-  {
-    id: "m2",
-    cinema: "Century Cinema",
-    title: "Deadpool & Wolverine",
-    genre: "Action/Comedy",
-    duration: "2h 07m",
-    cover: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?auto=format&fit=crop&q=80&w=800",
-    rating: "R",
-    synopsis: "Deadpool's peaceful existence is crashing down when the Time Variance Authority recruits him to help safeguard the multiverse.",
-    showtimes: ["12:00", "15:00", "19:00", "22:00"],
-    price: 10000,
-    currency: "RWF",
-    status: "now_showing",
-  },
-  {
-    id: "m3",
-    cinema: "Century Cinema",
-    title: "Joker: Folie à Deux",
-    genre: "Drama/Thriller",
-    duration: "2h 18m",
-    cover: "https://images.unsplash.com/photo-1571752726703-5e7d1f6a986d?auto=format&fit=crop&q=80&w=800",
-    rating: "R",
-    synopsis: "Failed comedian Arthur Fleck meets the love of his life, Harley Quinn, while incarcerated at Arkham State Hospital.",
-    showtimes: ["19:30"],
-    price: 12000,
-    currency: "RWF",
-    status: "coming_soon",
-  },
-  {
-    id: "m4",
-    cinema: "Century Cinema",
-    title: "Oppenheimer",
-    genre: "Biography/Drama",
-    duration: "3h 0m",
-    cover: "https://images.unsplash.com/photo-1440407876336-62333a6f010f?auto=format&fit=crop&q=80&w=800",
-    rating: "R",
-    synopsis: "The story of American scientist, J. Robert Oppenheimer, and his role in the development of the atomic bomb.",
-    showtimes: [],
-    price: 10000,
-    currency: "RWF",
-    status: "finished",
-  },
-];
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/movies")({
-  component: CinemaMovies,
+  component: CinemaSpecificMoviesPage,
 });
 
-function CinemaMovies() {
-  const [selectedMovie, setSelectedMovie] = useState<(typeof MOCK_MOVIES)[0] | null>(null);
+const RATING_COLORS: Record<string, string> = {
+  G: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
+  PG: "bg-blue-500/15 text-blue-600 border-blue-500/30",
+  "PG-13": "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
+  R: "bg-rose-500/15 text-rose-600 border-rose-500/30",
+  "NC-17": "bg-red-500/15 text-red-600 border-red-500/30",
+};
 
-  const nowShowing = MOCK_MOVIES.filter((m) => m.status === "now_showing");
-  const comingSoon = MOCK_MOVIES.filter((m) => m.status === "coming_soon");
-  const finished = MOCK_MOVIES.filter((m) => m.status === "finished");
+function CinemaSpecificMoviesPage() {
+  const { cinemaId } = Route.useParams();
+  const { activeWorkspace } = useWorkspace();
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  // ── Data ──────────────────────────────────────────────────────────────────
+  const { data: cinemaMoviesRaw = [], isLoading } = useQuery({
+    queryKey: ["cinema_movie_cinemas", cinemaId],
+    queryFn: () => getCinemaMovies({ data: { cinema_id: cinemaId } }),
+    enabled: !!cinemaId,
+  });
+
+  const { data: globalMovies = [], isLoading: globalLoading } = useQuery({
+    queryKey: ["cinema_movies", activeWorkspace?.id],
+    queryFn: () => getMovies({ data: { workspace_id: activeWorkspace?.id } }),
+    enabled: !!activeWorkspace?.id && sheetOpen,
+  });
+
+  const cinemaMovies = cinemaMoviesRaw.map((cm: any) => ({
+    ...cm.movie,
+    link_id: cm.id,
+    link_status: cm.status,
+  }));
+
+  const filteredMovies = cinemaMovies.filter((m: any) =>
+    m.title.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const cinemaMovieIds = new Set(cinemaMovies.map((m: any) => m.id));
+  const availableGlobalMovies = globalMovies.filter(
+    (m: any) =>
+      !cinemaMovieIds.has(m.id) && m.title.toLowerCase().includes(globalSearch.toLowerCase()),
+  );
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  const handleLink = async (movie: any) => {
+    setSavingId(movie.id);
+    try {
+      await linkMovieToCinema({
+        data: { cinema_id: cinemaId, movie_id: movie.id, status: "now_showing" },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["cinema_movie_cinemas"] });
+      toast.success(`${movie.title} added to this cinema`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add movie");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const handleUnlink = async (movie: any) => {
+    if (!confirm(`Remove ${movie.title} from this cinema?`)) return;
+    try {
+      await unlinkMovieFromCinema({
+        data: { cinema_id: cinemaId, movie_id: movie.id },
+      });
+      await queryClient.invalidateQueries({ queryKey: ["cinema_movie_cinemas"] });
+      toast.success(`${movie.title} removed`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to remove movie");
+    }
+  };
 
   return (
-    <div className="space-y-16 animate-in fade-in duration-500 max-w-6xl mx-auto">
-      {/* Now Showing */}
-      <div>
-        <div className="flex items-center justify-between mb-8">
+    <div className="animate-in fade-in duration-500">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Now Showing</h2>
-            <p className="text-muted-foreground mt-1 text-sm md:text-base">
-              Manage movies currently screening.
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">Movies</h1>
+            <p className="text-muted-foreground">
+              Movies currently playing or coming soon to this specific cinema.
             </p>
           </div>
-          <Button variant="outline" className="rounded-xl gap-2 shadow-sm border-primary/20 text-primary hover:bg-primary/10">
-            <Plus className="h-4 w-4" /> Add Movie
+          <Button
+            onClick={() => setSheetOpen(true)}
+            className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)]"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            <Plus className="h-5 w-5" /> Import from Library
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {nowShowing.map((movie) => (
-            <div
-              key={movie.id}
-              className="group flex flex-col h-full bg-card/40 border border-border/40 hover:border-border/80 rounded-3xl p-3 transition-all duration-300 relative"
+        {/* Toolbar */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search active movies..."
+              className="pl-10 h-11 rounded-xl bg-card border-border/60 focus-visible:ring-primary/20"
+            />
+          </div>
+        </div>
+
+        {/* Loading */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        )}
+
+        {/* Empty */}
+        {!isLoading && cinemaMovies.length === 0 && (
+          <div className="bg-secondary/40 rounded-3xl p-12 text-center border border-border/40 max-w-2xl mx-auto mt-12">
+            <Film className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+            <h3 className="text-2xl font-bold mb-2">No Movies Playing</h3>
+            <p className="text-muted-foreground mb-6">
+              Import movies from your global Film Library to start showing them in this cinema.
+            </p>
+            <Button
+              onClick={() => setSheetOpen(true)}
+              className="gap-2 rounded-xl h-11 px-6 font-bold"
             >
-              {/* Management Hover Overlay */}
-              <div className="absolute top-5 right-5 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full bg-white/90 hover:bg-white text-black shadow-md" onClick={() => setSelectedMovie(movie)}>
-                  <Edit2 className="h-3.5 w-3.5" />
-                </Button>
-                <Button size="icon" variant="destructive" className="h-8 w-8 rounded-full shadow-md">
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-
-              <div className="relative aspect-[2/3] rounded-2xl overflow-hidden shadow-sm mb-4">
-                <img
-                  src={movie.cover}
-                  alt={movie.title}
-                  className="w-full h-full object-cover transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-colors duration-300" />
-                <span className="absolute top-2 left-2 rounded bg-black/60 backdrop-blur-md px-1.5 py-0.5 text-[10px] font-bold text-white border border-white/10">
-                  {movie.rating}
-                </span>
-              </div>
-              <div className="flex-1 flex flex-col">
-                <h3 className="font-bold text-base md:text-lg leading-tight mb-1 group-hover:text-primary transition-colors">
-                  {movie.title}
-                </h3>
-                <p className="text-xs text-muted-foreground mb-3">
-                  {movie.genre} • {movie.duration}
-                </p>
-
-                <div className="mt-auto">
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {movie.showtimes.slice(0, 3).map((t) => (
-                      <span
-                        key={t}
-                        className="px-2 py-1 bg-secondary text-[10px] font-semibold rounded-md border border-border/60"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                    {movie.showtimes.length > 3 && (
-                      <span className="px-2 py-1 bg-secondary text-[10px] font-semibold rounded-md border border-border/60 text-muted-foreground">
-                        +{movie.showtimes.length - 3}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between mt-2 pt-3 border-t border-border/40">
-                    <span className="text-sm font-bold text-foreground">
-                      {formatCurrency(movie.price, movie.currency)}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="h-7 text-xs rounded-lg"
-                      onClick={() => setSelectedMovie(movie)}
-                    >
-                      Manage
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Coming Soon / Premieres */}
-      <div>
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Coming Soon & Premieres</h2>
-            <p className="text-muted-foreground mt-1 text-sm md:text-base">
-              Schedule future screenings and premiere events.
-            </p>
+              <Plus className="h-5 w-5" /> Import Movies
+            </Button>
           </div>
-          <Button variant="outline" className="rounded-xl gap-2 shadow-sm">
-            <Calendar className="h-4 w-4" /> Schedule Premiere
-          </Button>
-        </div>
+        )}
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {comingSoon.map((movie) => (
-             <div
-             key={movie.id}
-             className="group flex flex-col h-full bg-card/40 border border-border/40 hover:border-border/80 rounded-3xl p-3 transition-all duration-300 relative"
-           >
-             <div className="absolute top-5 right-5 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-               <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full bg-white/90 hover:bg-white text-black shadow-md" onClick={() => setSelectedMovie(movie)}>
-                 <Edit2 className="h-3.5 w-3.5" />
-               </Button>
-               <Button size="icon" variant="destructive" className="h-8 w-8 rounded-full shadow-md">
-                 <Trash2 className="h-3.5 w-3.5" />
-               </Button>
-             </div>
-
-             <div className="relative aspect-[2/3] rounded-2xl overflow-hidden shadow-sm mb-4">
-               <img
-                 src={movie.cover}
-                 alt={movie.title}
-                 className="w-full h-full object-cover transition-transform duration-700"
-               />
-               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-colors duration-300" />
-               <span className="absolute top-2 left-2 rounded bg-black/60 backdrop-blur-md px-1.5 py-0.5 text-[10px] font-bold text-white border border-white/10">
-                 {movie.rating}
-               </span>
-             </div>
-             <div className="flex-1 flex flex-col">
-               <h3 className="font-bold text-base md:text-lg leading-tight mb-1 group-hover:text-primary transition-colors">
-                 {movie.title}
-               </h3>
-               <p className="text-xs text-muted-foreground mb-3">
-                 {movie.genre} • {movie.duration}
-               </p>
-
-               <div className="mt-auto">
-                 <div className="flex flex-wrap gap-1 mb-3">
-                   {movie.showtimes.slice(0, 3).map((t) => (
-                     <span
-                       key={t}
-                       className="px-2 py-1 bg-secondary text-[10px] font-semibold rounded-md border border-border/60"
-                     >
-                       {t}
-                     </span>
-                   ))}
-                 </div>
-                 <div className="flex items-center justify-between mt-2 pt-3 border-t border-border/40">
-                   <span className="text-sm font-bold text-foreground">
-                     {formatCurrency(movie.price, movie.currency)}
-                   </span>
-                   <Button
-                     size="sm"
-                     variant="secondary"
-                     className="h-7 text-xs rounded-lg"
-                     onClick={() => setSelectedMovie(movie)}
-                   >
-                     Manage
-                   </Button>
-                 </div>
-               </div>
-             </div>
-           </div>
-          ))}
-        </div>
-      </div>
-
-
-
-      {/* Movie Details / Edit Drawer */}
-      <Drawer open={!!selectedMovie} onOpenChange={(open) => !open && setSelectedMovie(null)}>
-        <DrawerContent
-          className="max-h-[90vh] p-0 border-border/60 mx-auto md:max-w-2xl"
-          aria-describedby="cinema-movie-desc"
-        >
-          {selectedMovie && (
-            <div className="overflow-y-auto hide-scrollbar pb-safe">
-              <DrawerHeader className="sr-only">
-                <DrawerTitle>Edit {selectedMovie.title}</DrawerTitle>
-                <DrawerDescription id="cinema-movie-desc">
-                  Update movie details and schedules.
-                </DrawerDescription>
-              </DrawerHeader>
-
-              <div className="relative aspect-video w-full">
-                <img
-                  src={selectedMovie.cover}
-                  alt={selectedMovie.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-                <Button variant="secondary" className="absolute bottom-4 right-4 rounded-xl shadow-md gap-2">
-                  <Edit2 className="h-4 w-4" /> Update Cover
-                </Button>
-              </div>
-
-              <div className="px-5 -mt-4 relative z-10 pb-8">
-                <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm space-y-6">
-                  
-                  <div className="space-y-4">
-                    <h3 className="font-bold text-lg">Movie Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Title</Label>
-                        <Input defaultValue={selectedMovie.title} className="rounded-xl" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Genre</Label>
-                        <Input defaultValue={selectedMovie.genre} className="rounded-xl" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Duration</Label>
-                        <Input defaultValue={selectedMovie.duration} className="rounded-xl" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Rating</Label>
-                        <Input defaultValue={selectedMovie.rating} className="rounded-xl" />
-                      </div>
+        {/* Grid */}
+        {!isLoading && filteredMovies.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {filteredMovies.map((movie: any) => (
+              <div
+                key={movie.link_id}
+                className="group relative flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm hover:shadow-md transition-all duration-300"
+              >
+                {/* Poster */}
+                <div className="relative aspect-[2/3] w-full bg-secondary">
+                  {movie.cover_url ? (
+                    <img
+                      src={movie.cover_url}
+                      alt={movie.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+                      <Film className="h-12 w-12 text-primary/30" />
                     </div>
-                    <div className="space-y-2">
-                      <Label>Synopsis</Label>
-                      <Textarea defaultValue={selectedMovie.synopsis} className="rounded-xl min-h-[100px] resize-y" />
-                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                  {/* Status Tag */}
+                  <div className="absolute top-2 left-2">
+                    <span className="bg-emerald-500 text-white px-2 py-0.5 rounded text-[10px] font-black uppercase shadow-sm">
+                      {movie.link_status.replace("_", " ")}
+                    </span>
                   </div>
 
-                  <hr className="border-border/40" />
-
-                  <div className="space-y-4">
-                    <h3 className="font-bold text-lg">Ticketing & Schedule</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Base Ticket Price ({selectedMovie.currency})</Label>
-                        <Input defaultValue={selectedMovie.price} type="number" className="rounded-xl" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Status</Label>
-                        <select className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                          <option value="now_showing" selected={selectedMovie.status === "now_showing"}>Now Showing</option>
-                          <option value="coming_soon" selected={selectedMovie.status === "coming_soon"}>Coming Soon</option>
-                          <option value="finished" selected={selectedMovie.status === "finished"}>Finished (Archive)</option>
-                        </select>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2 pt-2">
-                      <Label className="flex justify-between items-center">
-                        <span>Showtimes</span>
-                        <button className="text-primary text-xs font-bold hover:underline">Add Showtime</button>
-                      </Label>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedMovie.showtimes.map((t, i) => (
-                          <div key={i} className="flex items-center bg-secondary/50 border border-border/60 rounded-lg pl-3 pr-1 py-1 gap-2">
-                            <span className="text-sm font-semibold">{t}</span>
-                            <button className="text-muted-foreground hover:text-destructive p-1 rounded-md transition-colors">
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                  {/* Actions overlay */}
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="h-8 w-8 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/10 hover:bg-black/70"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="rounded-xl">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive gap-2"
+                          onClick={() => handleUnlink(movie)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Remove from Cinema
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
+                </div>
 
-                  <div className="flex gap-3 pt-6 border-t border-border/40 mt-6">
-                    <Button
-                      variant="outline"
-                      className="flex-1 rounded-xl h-11"
-                      onClick={() => setSelectedMovie(null)}
+                {/* Details */}
+                <div className="p-4 flex flex-col gap-2">
+                  <div>
+                    <h3
+                      className="font-bold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors"
+                      title={movie.title}
                     >
-                      Cancel
-                    </Button>
-                    <Button
-                      className="flex-1 rounded-xl h-11 shadow-[var(--shadow-glow)]"
-                      style={{ background: "var(--gradient-primary)" }}
-                    >
-                      Save Changes
-                    </Button>
+                      {movie.title}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                      <span
+                        className={`px-1.5 py-0.5 rounded font-semibold border ${RATING_COLORS[movie.rating] || RATING_COLORS["PG-13"]}`}
+                      >
+                        {movie.rating}
+                      </span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> {movie.duration_minutes}m
+                      </span>
+                    </div>
                   </div>
-                  
+                  <div className="text-xs text-muted-foreground line-clamp-1">
+                    {movie.genre || "Uncategorized"}
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Import Sheet ────────────────────────────────────────────────────── */}
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+            <SheetHeader className="mb-6">
+              <SheetTitle className="text-xl">Import from Film Library</SheetTitle>
+              <SheetDescription>
+                Select movies from your global catalog to show in this cinema.
+              </SheetDescription>
+            </SheetHeader>
+
+            <div className="space-y-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={globalSearch}
+                  onChange={(e) => setGlobalSearch(e.target.value)}
+                  placeholder="Search library..."
+                  className="pl-10 h-11 rounded-xl bg-secondary/50 border-border/60"
+                />
+              </div>
+
+              {globalLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : availableGlobalMovies.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground bg-secondary/30 rounded-2xl border border-border/40">
+                  <p>No new movies available to import.</p>
+                  <p className="text-sm mt-1">Check your global Film Library.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {availableGlobalMovies.map((movie: any) => (
+                    <div
+                      key={movie.id}
+                      className="flex gap-4 p-3 rounded-2xl bg-secondary/30 border border-border/40 hover:bg-secondary/60 transition-colors"
+                    >
+                      <div className="h-20 w-14 rounded-lg bg-secondary shrink-0 overflow-hidden">
+                        {movie.cover_url ? (
+                          <img
+                            src={movie.cover_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Film className="h-6 w-6 m-auto mt-7 text-muted-foreground/30" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 py-1">
+                        <h4 className="font-bold text-sm truncate">{movie.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">{movie.genre}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {movie.rating} • {movie.duration_minutes}m
+                        </p>
+                      </div>
+                      <div className="flex items-center">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="rounded-lg font-semibold bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground"
+                          onClick={() => handleLink(movie)}
+                          disabled={savingId === movie.id}
+                        >
+                          {savingId === movie.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            "Import"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </DrawerContent>
-      </Drawer>
+          </SheetContent>
+        </Sheet>
+      </div>
     </div>
   );
 }

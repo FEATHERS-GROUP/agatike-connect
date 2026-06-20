@@ -11,9 +11,11 @@ const FINISHED_MOVIES = [
     title: "Oppenheimer",
     genre: "Biography/Drama",
     duration: "3h 0m",
-    cover: "https://images.unsplash.com/photo-1440407876336-62333a6f010f?auto=format&fit=crop&q=80&w=200",
+    cover:
+      "https://images.unsplash.com/photo-1440407876336-62333a6f010f?auto=format&fit=crop&q=80&w=200",
     rating: "R",
-    synopsis: "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.",
+    synopsis:
+      "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.",
     last_shown: "2024-02-15",
     total_tickets: 12480,
     revenue: 124800000,
@@ -24,9 +26,11 @@ const FINISHED_MOVIES = [
     title: "Barbie",
     genre: "Comedy/Fantasy",
     duration: "1h 54m",
-    cover: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=200",
+    cover:
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=200",
     rating: "PG-13",
-    synopsis: "Barbie and Ken are having the time of their lives in the colorful and seemingly perfect world of Barbie Land.",
+    synopsis:
+      "Barbie and Ken are having the time of their lives in the colorful and seemingly perfect world of Barbie Land.",
     last_shown: "2024-01-20",
     total_tickets: 9810,
     revenue: 98100000,
@@ -37,9 +41,11 @@ const FINISHED_MOVIES = [
     title: "The Batman",
     genre: "Action/Crime",
     duration: "2h 56m",
-    cover: "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&q=80&w=200",
+    cover:
+      "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&q=80&w=200",
     rating: "PG-13",
-    synopsis: "When the Riddler, a sadistic serial killer, begins murdering key political figures in Gotham, Batman is forced to investigate.",
+    synopsis:
+      "When the Riddler, a sadistic serial killer, begins murdering key political figures in Gotham, Batman is forced to investigate.",
     last_shown: "2023-11-12",
     total_tickets: 7240,
     revenue: 72400000,
@@ -50,9 +56,11 @@ const FINISHED_MOVIES = [
     title: "Top Gun: Maverick",
     genre: "Action/Drama",
     duration: "2h 11m",
-    cover: "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?auto=format&fit=crop&q=80&w=200",
+    cover:
+      "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?auto=format&fit=crop&q=80&w=200",
     rating: "PG-13",
-    synopsis: "After more than thirty years of service, Pete 'Maverick' Mitchell is back where he belongs.",
+    synopsis:
+      "After more than thirty years of service, Pete 'Maverick' Mitchell is back where he belongs.",
     last_shown: "2023-09-05",
     total_tickets: 15600,
     revenue: 156000000,
@@ -63,9 +71,11 @@ const FINISHED_MOVIES = [
     title: "Black Panther: Wakanda Forever",
     genre: "Action/Sci-Fi",
     duration: "2h 41m",
-    cover: "https://images.unsplash.com/photo-1531259922701-8d5ededb1c56?auto=format&fit=crop&q=80&w=200",
+    cover:
+      "https://images.unsplash.com/photo-1531259922701-8d5ededb1c56?auto=format&fit=crop&q=80&w=200",
     rating: "PG-13",
-    synopsis: "Queen Ramonda, Shuri, M'Baku, Okoye and the Dora Milaje fight to protect their nation from intervening world powers.",
+    synopsis:
+      "Queen Ramonda, Shuri, M'Baku, Okoye and the Dora Milaje fight to protect their nation from intervening world powers.",
     last_shown: "2023-07-30",
     total_tickets: 11020,
     revenue: 110200000,
@@ -124,10 +134,16 @@ function CinemaArchive() {
           },
           {
             label: "Total Revenue",
-            value: "RWF " + (FINISHED_MOVIES.reduce((a, m) => a + m.revenue, 0) / 1_000_000).toFixed(1) + "M",
+            value:
+              "RWF " +
+              (FINISHED_MOVIES.reduce((a, m) => a + m.revenue, 0) / 1_000_000).toFixed(1) +
+              "M",
           },
         ].map((stat, i) => (
-          <div key={i} className="bg-card border border-border/60 rounded-2xl p-4 shadow-sm text-center">
+          <div
+            key={i}
+            className="bg-card border border-border/60 rounded-2xl p-4 shadow-sm text-center"
+          >
             <p className="text-2xl font-bold">{stat.value}</p>
             <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
           </div>
@@ -140,10 +156,18 @@ function CinemaArchive() {
           <thead>
             <tr className="border-b border-border/60 bg-secondary/40">
               <th className="text-left px-6 py-4 font-semibold text-muted-foreground">Movie</th>
-              <th className="text-left px-4 py-4 font-semibold text-muted-foreground hidden md:table-cell">Genre</th>
-              <th className="text-left px-4 py-4 font-semibold text-muted-foreground hidden md:table-cell">Rating</th>
-              <th className="text-left px-4 py-4 font-semibold text-muted-foreground hidden lg:table-cell">Last Shown</th>
-              <th className="text-right px-4 py-4 font-semibold text-muted-foreground hidden lg:table-cell">Tickets Sold</th>
+              <th className="text-left px-4 py-4 font-semibold text-muted-foreground hidden md:table-cell">
+                Genre
+              </th>
+              <th className="text-left px-4 py-4 font-semibold text-muted-foreground hidden md:table-cell">
+                Rating
+              </th>
+              <th className="text-left px-4 py-4 font-semibold text-muted-foreground hidden lg:table-cell">
+                Last Shown
+              </th>
+              <th className="text-right px-4 py-4 font-semibold text-muted-foreground hidden lg:table-cell">
+                Tickets Sold
+              </th>
               <th className="text-right px-4 py-4 font-semibold text-muted-foreground">Revenue</th>
               <th className="text-right px-6 py-4 font-semibold text-muted-foreground">Actions</th>
             </tr>

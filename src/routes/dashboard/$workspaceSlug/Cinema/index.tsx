@@ -1,33 +1,9 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getCinemas, createCinema, deleteCinema } from "@/api/cinemas";
-import {
-  Plus,
-  MapPin,
-  Film,
-  MoreVertical,
-  Building2,
-  Loader2,
-  Save,
-  Trash2,
-  X,
-  Phone,
-  Mail,
-  Globe,
-} from "lucide-react";
+import { getCinemas, deleteCinema } from "@/api/cinemas";
+import { Plus, MapPin, Film, MoreVertical, Building2, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,19 +16,6 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/")({
   component: CinemaDashboardList,
 });
 
-const EMPTY_FORM = {
-  name: "",
-  description: "",
-  city: "",
-  address: "",
-  country: "Rwanda",
-  phone: "",
-  email: "",
-  website: "",
-  cover_url: "",
-  status: "active",
-};
-
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
   inactive: "bg-secondary text-muted-foreground border-border/60",
@@ -61,44 +24,15 @@ const STATUS_COLORS: Record<string, string> = {
 
 function CinemaDashboardList() {
   const { workspaceSlug } = Route.useParams();
+  const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
 
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [form, setForm] = useState<any>(EMPTY_FORM);
-  const [saving, setSaving] = useState(false);
-
-  // ── Data ──────────────────────────────────────────────────────────────────
   const { data: cinemas = [], isLoading } = useQuery({
     queryKey: ["cinemas", activeWorkspace?.id],
     queryFn: () => getCinemas({ data: { workspace_id: activeWorkspace?.id } }),
     enabled: !!activeWorkspace?.id,
   });
-
-  // ── Mutations ─────────────────────────────────────────────────────────────
-  const handleCreate = async () => {
-    if (!form.name.trim()) {
-      toast.error("Cinema name is required");
-      return;
-    }
-    setSaving(true);
-    try {
-      await createCinema({
-        data: {
-          ...form,
-          workspace_id: activeWorkspace?.id,
-        },
-      });
-      await queryClient.invalidateQueries({ queryKey: ["cinemas"] });
-      toast.success(`${form.name} created!`);
-      setSheetOpen(false);
-      setForm(EMPTY_FORM);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create cinema");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleDelete = async (id: string, name: string) => {
     try {
@@ -110,13 +44,12 @@ function CinemaDashboardList() {
     }
   };
 
-  const set = (key: string, val: string) =>
-    setForm((p: any) => ({ ...p, [key]: val }));
+  const goCreate = () =>
+    navigate({ to: "/dashboard/$workspaceSlug/Cinema/create", params: { workspaceSlug } });
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24 md:pb-12 animate-in fade-in duration-500">
-      <div className="max-w-7xl mx-auto px-5 md:px-8 py-8 md:py-12">
-
+    <div className="animate-in fade-in duration-500">
+      <div className="space-y-10">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
           <div>
@@ -128,7 +61,7 @@ function CinemaDashboardList() {
             </p>
           </div>
           <Button
-            onClick={() => { setForm(EMPTY_FORM); setSheetOpen(true); }}
+            onClick={goCreate}
             className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
           >
@@ -151,24 +84,21 @@ function CinemaDashboardList() {
             <p className="text-muted-foreground mb-6">
               Create your first cinema or theater to start scheduling movies and selling tickets.
             </p>
-            <Button
-              onClick={() => { setForm(EMPTY_FORM); setSheetOpen(true); }}
-              className="gap-2 rounded-xl h-11 px-6 font-bold"
-            >
+            <Button onClick={goCreate} className="gap-2 rounded-xl h-11 px-6 font-bold">
               <Plus className="h-5 w-5" /> Create First Cinema
             </Button>
           </div>
         )}
 
-        {/* Cinema Cards */}
+        {/* Cinema Cards Grid */}
         {!isLoading && cinemas.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {cinemas.map((cinema: any) => (
               <div
                 key={cinema.id}
-                className="group flex flex-col bg-card/40 hover:bg-card border border-border/40 hover:border-border/80 rounded-3xl overflow-hidden transition-all duration-300"
+                className="group flex flex-col bg-card/40 hover:bg-card border border-border/40 hover:border-border/80 rounded-3xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md"
               >
-                {/* Cover Image */}
+                {/* Cover */}
                 <div className="relative aspect-video w-full overflow-hidden bg-secondary">
                   {cinema.cover_url ? (
                     <img
@@ -185,8 +115,12 @@ function CinemaDashboardList() {
 
                   {/* Status badge */}
                   <div className="absolute top-4 left-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${STATUS_COLORS[cinema.status] || STATUS_COLORS.active}`}>
-                      {cinema.status === "coming_soon" ? "Coming Soon" : cinema.status.charAt(0).toUpperCase() + cinema.status.slice(1)}
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${STATUS_COLORS[cinema.status] || STATUS_COLORS.active}`}
+                    >
+                      {cinema.status === "coming_soon"
+                        ? "Coming Soon"
+                        : cinema.status.charAt(0).toUpperCase() + cinema.status.slice(1)}
                     </span>
                   </div>
 
@@ -213,7 +147,7 @@ function CinemaDashboardList() {
                     </DropdownMenu>
                   </div>
 
-                  {/* Cinema name overlay */}
+                  {/* Name overlay */}
                   <div className="absolute bottom-4 left-4 right-4 text-white">
                     <h3 className="text-xl font-bold mb-1">{cinema.name}</h3>
                     {cinema.city && (
@@ -256,165 +190,6 @@ function CinemaDashboardList() {
           </div>
         )}
       </div>
-
-      {/* ── Create Cinema Sheet ─────────────────────────────────────────────── */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader className="mb-6">
-            <SheetTitle className="text-xl">New Cinema / Theater</SheetTitle>
-            <SheetDescription>
-              Create a new cinema venue. You can add screens and movies after.
-            </SheetDescription>
-          </SheetHeader>
-
-          <div className="space-y-6">
-            {/* Basic Info */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Cinema / Theater Name <span className="text-destructive">*</span></Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) => set("name", e.target.value)}
-                  placeholder="e.g. Century Cinema Kigali"
-                  className="rounded-xl h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea
-                  value={form.description}
-                  onChange={(e) => set("description", e.target.value)}
-                  placeholder="Describe the cinema..."
-                  className="rounded-xl min-h-[80px] resize-none"
-                />
-              </div>
-            </div>
-
-            <hr className="border-border/40" />
-
-            {/* Location */}
-            <div className="space-y-4">
-              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Location</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>City</Label>
-                  <Input
-                    value={form.city}
-                    onChange={(e) => set("city", e.target.value)}
-                    placeholder="Kigali"
-                    className="rounded-xl h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Country</Label>
-                  <Input
-                    value={form.country}
-                    onChange={(e) => set("country", e.target.value)}
-                    placeholder="Rwanda"
-                    className="rounded-xl h-11"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Address</Label>
-                <Input
-                  value={form.address}
-                  onChange={(e) => set("address", e.target.value)}
-                  placeholder="KG 123 St, Kigali"
-                  className="rounded-xl h-11"
-                />
-              </div>
-            </div>
-
-            <hr className="border-border/40" />
-
-            {/* Contact */}
-            <div className="space-y-4">
-              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Contact</h4>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> Phone</Label>
-                <Input
-                  value={form.phone}
-                  onChange={(e) => set("phone", e.target.value)}
-                  placeholder="+250 7XX XXX XXX"
-                  className="rounded-xl h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> Email</Label>
-                <Input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => set("email", e.target.value)}
-                  placeholder="info@cinema.com"
-                  className="rounded-xl h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-1.5"><Globe className="h-3.5 w-3.5" /> Website</Label>
-                <Input
-                  value={form.website}
-                  onChange={(e) => set("website", e.target.value)}
-                  placeholder="https://www.cinema.com"
-                  className="rounded-xl h-11"
-                />
-              </div>
-            </div>
-
-            <hr className="border-border/40" />
-
-            {/* Cover image */}
-            <div className="space-y-2">
-              <Label>Cover Image URL</Label>
-              <Input
-                value={form.cover_url}
-                onChange={(e) => set("cover_url", e.target.value)}
-                placeholder="https://..."
-                className="rounded-xl h-11"
-              />
-            </div>
-
-            {/* Status */}
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <select
-                value={form.status}
-                onChange={(e) => set("status", e.target.value)}
-                className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="active">Active</option>
-                <option value="coming_soon">Coming Soon</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-4 border-t border-border/40">
-              <Button
-                variant="outline"
-                className="flex-1 rounded-xl h-11"
-                onClick={() => setSheetOpen(false)}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 rounded-xl h-11 gap-2 shadow-[var(--shadow-glow)]"
-                style={{ background: "var(--gradient-primary)" }}
-                onClick={handleCreate}
-                disabled={saving}
-              >
-                {saving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                {saving ? "Creating..." : "Create Cinema"}
-              </Button>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }

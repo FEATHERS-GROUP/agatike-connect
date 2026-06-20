@@ -7,7 +7,8 @@ const MOCK_CINEMA = {
   name: "Century Cinema",
   city: "Kigali",
   screens: 4,
-  image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600",
+  image:
+    "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600",
 };
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/overview")({

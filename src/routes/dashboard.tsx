@@ -63,8 +63,7 @@ function DashboardLayout() {
   const isCinemaWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\//);
   // Top-level Cinema section (list page + ticket-tiers) — no $cinemaId sub-route
   const isCinemaSection =
-    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema/) &&
-    !isCinemaWorkspace;
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema/) && !isCinemaWorkspace;
   const search = location.search as any;
   const isDesigningVenue = !!location.pathname.match(/^\/dashboard\/[^/]+\/venue-designer\/[^/]+/);
 

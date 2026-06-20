@@ -89,7 +89,7 @@ async function run() {
       updated_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
     `,
-    "Create cinemas table"
+    "Create cinemas table",
   );
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -113,7 +113,7 @@ async function run() {
       updated_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
     `,
-    "Create cinema_screens table"
+    "Create cinema_screens table",
   );
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -144,7 +144,7 @@ async function run() {
       updated_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
     `,
-    "Create cinema_movies table"
+    "Create cinema_movies table",
   );
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -175,7 +175,7 @@ async function run() {
       updated_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
     `,
-    "Create cinema_schedules table"
+    "Create cinema_schedules table",
   );
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -202,7 +202,7 @@ async function run() {
       updated_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
     `,
-    "Create cinema_ticket_tiers table"
+    "Create cinema_ticket_tiers table",
   );
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -222,7 +222,7 @@ async function run() {
       created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
     `,
-    "Create cinema_schedule_ticket_tiers junction table"
+    "Create cinema_schedule_ticket_tiers junction table",
   );
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -239,7 +239,7 @@ async function run() {
       UNIQUE (cinema_id, movie_id)
     );
     `,
-    "Create cinema_movie_cinemas junction table"
+    "Create cinema_movie_cinemas junction table",
   );
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -259,75 +259,101 @@ async function run() {
 
   // cinema_screens → cinemas
   await trackRelationship(
-    "cinema_screens", "cinema", "pg_create_object_relationship",
+    "cinema_screens",
+    "cinema",
+    "pg_create_object_relationship",
     { foreign_key_constraint_on: "cinema_id" },
-    "cinema_screens.cinema"
+    "cinema_screens.cinema",
   );
   await trackRelationship(
-    "cinemas", "screens", "pg_create_array_relationship",
+    "cinemas",
+    "screens",
+    "pg_create_array_relationship",
     { foreign_key_constraint_on: { table: "cinema_screens", column: "cinema_id" } },
-    "cinemas.screens"
+    "cinemas.screens",
   );
 
   // cinema_schedules → cinema, screen, movie
   await trackRelationship(
-    "cinema_schedules", "cinema", "pg_create_object_relationship",
+    "cinema_schedules",
+    "cinema",
+    "pg_create_object_relationship",
     { foreign_key_constraint_on: "cinema_id" },
-    "cinema_schedules.cinema"
+    "cinema_schedules.cinema",
   );
   await trackRelationship(
-    "cinema_schedules", "screen", "pg_create_object_relationship",
+    "cinema_schedules",
+    "screen",
+    "pg_create_object_relationship",
     { foreign_key_constraint_on: "screen_id" },
-    "cinema_schedules.screen"
+    "cinema_schedules.screen",
   );
   await trackRelationship(
-    "cinema_schedules", "movie", "pg_create_object_relationship",
+    "cinema_schedules",
+    "movie",
+    "pg_create_object_relationship",
     { foreign_key_constraint_on: "movie_id" },
-    "cinema_schedules.movie"
+    "cinema_schedules.movie",
   );
   await trackRelationship(
-    "cinemas", "schedules", "pg_create_array_relationship",
+    "cinemas",
+    "schedules",
+    "pg_create_array_relationship",
     { foreign_key_constraint_on: { table: "cinema_schedules", column: "cinema_id" } },
-    "cinemas.schedules"
+    "cinemas.schedules",
   );
   await trackRelationship(
-    "cinema_movies", "schedules", "pg_create_array_relationship",
+    "cinema_movies",
+    "schedules",
+    "pg_create_array_relationship",
     { foreign_key_constraint_on: { table: "cinema_schedules", column: "movie_id" } },
-    "cinema_movies.schedules"
+    "cinema_movies.schedules",
   );
 
   // cinema_schedule_ticket_tiers relationships
   await trackRelationship(
-    "cinema_schedule_ticket_tiers", "schedule", "pg_create_object_relationship",
+    "cinema_schedule_ticket_tiers",
+    "schedule",
+    "pg_create_object_relationship",
     { foreign_key_constraint_on: "schedule_id" },
-    "cinema_schedule_ticket_tiers.schedule"
+    "cinema_schedule_ticket_tiers.schedule",
   );
   await trackRelationship(
-    "cinema_schedule_ticket_tiers", "ticket_tier", "pg_create_object_relationship",
+    "cinema_schedule_ticket_tiers",
+    "ticket_tier",
+    "pg_create_object_relationship",
     { foreign_key_constraint_on: "ticket_tier_id" },
-    "cinema_schedule_ticket_tiers.ticket_tier"
+    "cinema_schedule_ticket_tiers.ticket_tier",
   );
   await trackRelationship(
-    "cinema_schedules", "ticket_tiers", "pg_create_array_relationship",
+    "cinema_schedules",
+    "ticket_tiers",
+    "pg_create_array_relationship",
     { foreign_key_constraint_on: { table: "cinema_schedule_ticket_tiers", column: "schedule_id" } },
-    "cinema_schedules.ticket_tiers"
+    "cinema_schedules.ticket_tiers",
   );
 
   // cinema_movie_cinemas relationships
   await trackRelationship(
-    "cinema_movie_cinemas", "cinema", "pg_create_object_relationship",
+    "cinema_movie_cinemas",
+    "cinema",
+    "pg_create_object_relationship",
     { foreign_key_constraint_on: "cinema_id" },
-    "cinema_movie_cinemas.cinema"
+    "cinema_movie_cinemas.cinema",
   );
   await trackRelationship(
-    "cinema_movie_cinemas", "movie", "pg_create_object_relationship",
+    "cinema_movie_cinemas",
+    "movie",
+    "pg_create_object_relationship",
     { foreign_key_constraint_on: "movie_id" },
-    "cinema_movie_cinemas.movie"
+    "cinema_movie_cinemas.movie",
   );
   await trackRelationship(
-    "cinemas", "movies", "pg_create_array_relationship",
+    "cinemas",
+    "movies",
+    "pg_create_array_relationship",
     { foreign_key_constraint_on: { table: "cinema_movie_cinemas", column: "cinema_id" } },
-    "cinemas.movies"
+    "cinemas.movies",
   );
 
   console.log("\n🎬 All cinema tables created, tracked and relationships set up!\n");

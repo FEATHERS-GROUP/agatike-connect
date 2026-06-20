@@ -20,14 +20,15 @@ const MOCK_CINEMA = {
   name: "Century Cinema",
   city: "Kigali",
   screens: 4,
-  image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600",
+  image:
+    "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600",
 };
 
 export function CinemaSidebar() {
   const location = useRouterState({ select: (s) => s.location });
   const params = useParams({ strict: false });
   const workspaceSlug = params.workspaceSlug as string;
-  
+
   // Extract cinemaId from the pathname: /dashboard/:workspaceSlug/Cinema/:cinemaId/...
   const pathParts = location.pathname.split("/");
   const cinemaId = pathParts[4] || "";
@@ -107,9 +108,7 @@ export function CinemaSidebar() {
           <img src={cinema.image} alt={cinema.name} className="h-full w-full object-cover" />
         </div>
         <div className="min-w-0">
-          <p className="font-semibold text-sm leading-tight truncate">
-            {cinema.name}
-          </p>
+          <p className="font-semibold text-sm leading-tight truncate">{cinema.name}</p>
           <p className="text-xs text-muted-foreground">{cinema.city}</p>
         </div>
       </div>
