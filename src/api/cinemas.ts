@@ -89,6 +89,36 @@ const GET_CINEMA_BY_ID = `
   }
 `;
 
+const GET_PUBLIC_MOVIE_SCHEDULES = `
+  query GetPublicMovieSchedules($date: date!) {
+    cinema_schedules(
+      where: { show_date: { _gte: $date } }
+      order_by: { show_date: asc, start_time: asc }
+    ) {
+      id
+      show_date
+      start_time
+      base_price
+      cinema {
+        id
+        name
+        city
+        cover_url
+        workspace_id
+      }
+      movie {
+        id
+        title
+        genre
+        duration_minutes
+        rating
+        cover_url
+        synopsis
+      }
+    }
+  }
+`;
+
 // ─── Mutations ────────────────────────────────────────────────────────────────
 
 const CREATE_CINEMA = `
@@ -167,4 +197,32 @@ export const deleteCinema = createServerFn({ method: "POST" })
       id,
     });
     return res.delete_cinemas_by_pk;
+  });
+
+export const getPublicMovieSchedules = createServerFn({ method: "POST" })
+  .handler(async () => {
+    // Get local date string YYYY-MM-DD
+    const date = new Date().toISOString().split('T')[0];
+    const res = await hasuraRequest<any>(GET_PUBLIC_MOVIE_SCHEDULES, { date });
+    const schedules = res.cinema_schedules || [];
+
+    // Fetch workspaces to get currency
+    const workspaceRes = await hasuraRequest<{ workspaces: any[] }>(`
+      query GetWorkspacesForSchedules {
+        workspaces {
+          id
+          currency
+        }
+      }
+    `);
+    const workspaces = workspaceRes.workspaces || [];
+    const workspaceMap = new Map(workspaces.map(w => [w.id, w]));
+
+    return schedules.map((s: any) => {
+      const workspace = workspaceMap.get(s.cinema?.workspace_id);
+      return {
+        ...s,
+        currency: workspace?.currency || "RWF"
+      };
+    });
   });
