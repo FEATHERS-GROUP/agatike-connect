@@ -76,6 +76,19 @@ const DELETE_TICKET_TIER = `
   }
 `;
 
+const UNLINK_TIER_FROM_CINEMA = `
+  mutation UnlinkTierFromCinema($cinema_id: uuid!, $ticket_tier_id: uuid!) {
+    delete_cinema_schedule_ticket_tiers(
+      where: {
+        ticket_tier_id: { _eq: $ticket_tier_id },
+        schedule: { cinema_id: { _eq: $cinema_id } }
+      }
+    ) {
+      affected_rows
+    }
+  }
+`;
+
 // ─── Server Functions ────────────────────────────────────────────────────────
 
 export const getCinemaTicketTiers = createServerFn({ method: "POST" })
@@ -132,4 +145,15 @@ export const deleteCinemaTicketTier = createServerFn({ method: "POST" })
       { id },
     );
     return res.delete_cinema_ticket_tiers_by_pk;
+  });
+
+export const unlinkTierFromCinema = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { cinema_id, ticket_tier_id } = ctx.data;
+    const res = await hasuraRequest<{ delete_cinema_schedule_ticket_tiers: { affected_rows: number } }>(
+      UNLINK_TIER_FROM_CINEMA,
+      { cinema_id, ticket_tier_id }
+    );
+    return res.delete_cinema_schedule_ticket_tiers;
   });

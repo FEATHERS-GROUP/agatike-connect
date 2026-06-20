@@ -63,6 +63,11 @@ export function CinemaSidebar() {
       icon: MonitorPlay,
     },
     {
+      label: "Ticket Tiers",
+      href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/ticket-tiers`,
+      icon: Tag,
+    },
+    {
       label: "Past & Finished",
       href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/archive`,
       icon: Archive,
