@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { RotateCcw, Trash2, Search, Filter, Loader2, CalendarDays } from "lucide-react";
+import { RotateCcw, Search, Filter, Loader2, CalendarDays } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSchedules } from "@/api/cinema_management";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/archive")({
   component: CinemaArchive,
@@ -13,6 +14,8 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId
 
 function CinemaArchive() {
   const { workspaceSlug, cinemaId } = Route.useParams() as any;
+  const { activeWorkspace } = useWorkspace();
+  const workspaceCurrency = activeWorkspace?.currency || activeWorkspace?.wallet?.currency || "RWF";
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
@@ -46,7 +49,7 @@ function CinemaArchive() {
         last_shown: s.show_date,
         total_tickets: 0,
         revenue: 0,
-        currency: s.currency || "RWF",
+        currency: s.currency || workspaceCurrency,
       });
     }
     const stat = movieStats.get(movieId);

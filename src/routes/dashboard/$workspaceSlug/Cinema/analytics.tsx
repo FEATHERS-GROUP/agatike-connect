@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/analytics")({
   component: CinemaAnalyticsPage,
@@ -99,13 +100,18 @@ const RANGES = ["Last 7 days", "Last 30 days", "Last 6 months", "This year"];
 // ─── Component ────────────────────────────────────────────────────────────────
 
 function CinemaAnalyticsPage() {
-  const [range, setRange] = useState("Last 6 months");
+  const [timeRange, setTimeRange] = useState("This Month");
+  const { activeWorkspace } = useWorkspace();
+  const workspaceCurrency = activeWorkspace?.currency || activeWorkspace?.wallet?.currency || "RWF";
   const [showRangeMenu, setShowRangeMenu] = useState(false);
+
+  const TOTAL_REVENUE = CINEMA_STATS.reduce((acc, c) => acc + c.revenue, 0);
+  const TOTAL_TICKETS = CINEMA_STATS.reduce((a, c) => a + c.tickets, 0);
 
   const summaryCards = [
     {
       label: "Total Revenue",
-      value: "RWF " + (TOTAL_REVENUE / 1_000_000).toFixed(1) + "M",
+      value: `${workspaceCurrency} ` + (TOTAL_REVENUE / 1_000_000).toFixed(1) + "M",
       sub: "Across all cinemas",
       icon: DollarSign,
       trend: "+9%",
@@ -229,7 +235,7 @@ function CinemaAnalyticsPage() {
               <BarChart3 className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-lg">Monthly Revenue</h3>
             </div>
-            <span className="text-xs text-muted-foreground">All cinemas combined · RWF</span>
+            <span className="text-xs text-muted-foreground">All cinemas combined · {workspaceCurrency}</span>
           </div>
           <div className="flex items-end gap-3 h-44">
             {MONTHLY_DATA.map((d) => {
@@ -272,7 +278,7 @@ function CinemaAnalyticsPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold">
-                          RWF {(cinema.revenue / 1_000_000).toFixed(1)}M
+                          {workspaceCurrency} {(cinema.revenue / 1_000_000).toFixed(1)}M
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {cinema.tickets.toLocaleString()} tickets

@@ -15,10 +15,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export function BoxOfficeWidget({ cinemaId, workspaceSlug }: { cinemaId: string, workspaceSlug: string }) {
   const navigate = useNavigate();
   const searchParams = useRouterState({ select: (s) => (s.location.search as any) });
+  const { activeWorkspace } = useWorkspace();
+  const workspaceCurrency = activeWorkspace?.currency || activeWorkspace?.wallet?.currency || "RWF";
   
   const isOpen = searchParams.pos === "true";
 
@@ -58,7 +61,7 @@ export function BoxOfficeWidget({ cinemaId, workspaceSlug }: { cinemaId: string,
   const selectedTier = ticketTiers.find((t: any) => t.ticket_tier.id === selectedTierId);
   
   const unitPrice = selectedTier ? (selectedTier.price_override || selectedTier.ticket_tier.price) : 0;
-  const currency = selectedTier ? (selectedTier.currency || selectedTier.ticket_tier.currency || "RWF") : "RWF";
+  const currency = selectedTier ? (selectedTier.currency || selectedTier.ticket_tier.currency || workspaceCurrency) : workspaceCurrency;
   const totalPrice = unitPrice * quantity;
 
   const createMutation = useMutation({
@@ -177,7 +180,7 @@ export function BoxOfficeWidget({ cinemaId, workspaceSlug }: { cinemaId: string,
                   ) : (
                     ticketTiers.map((t: any) => {
                       const price = t.price_override || t.ticket_tier.price;
-                      const curr = t.currency || t.ticket_tier.currency || "RWF";
+                      const curr = t.currency || t.ticket_tier.currency || workspaceCurrency;
                       return (
                         <label key={t.ticket_tier.id} className={cn("flex justify-between items-center p-3 rounded-xl border-2 cursor-pointer transition-all", selectedTierId === t.ticket_tier.id ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/40")}>
                           <input type="radio" className="sr-only" checked={selectedTierId === t.ticket_tier.id} onChange={() => setSelectedTierId(t.ticket_tier.id)} />

@@ -277,7 +277,7 @@ function CreateTicketTierWizard() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-muted-foreground uppercase">{form.type}</p>
-                      <p className="text-2xl font-bold text-primary mt-1">{formatCurrency(form.price, form.currency)}</p>
+                      <p className="text-2xl font-bold text-primary mt-1">{formatCurrency(form.price, activeWorkspace?.currency || "RWF")}</p>
                     </div>
                   </div>
                   

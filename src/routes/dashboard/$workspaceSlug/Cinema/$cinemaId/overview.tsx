@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getCinemaById } from "@/api/cinemas";
 import { getCinemaStats, getCinemaBookings } from "@/api/cinema_bookings";
 import { formatCurrency } from "@/lib/currency";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/overview")({
   component: CinemaOverview,
@@ -11,6 +12,8 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId
 
 function CinemaOverview() {
   const { cinemaId } = Route.useParams();
+  const { activeWorkspace } = useWorkspace();
+  const workspaceCurrency = activeWorkspace?.currency || activeWorkspace?.wallet?.currency || "RWF";
 
   const { data: cinema, isLoading } = useQuery({
     queryKey: ["cinema", cinemaId],
@@ -56,7 +59,7 @@ function CinemaOverview() {
   const STATS = [
     { label: "Tickets Sold (Today)", value: stats?.today_quantity?.toString() || "0", icon: Ticket, trend: "Live" },
     { label: "Active Movies", value: activeMoviesCount.toString(), icon: Film, trend: "Current" },
-    { label: "Total Revenue", value: formatCurrency(stats?.total_revenue || 0, "RWF"), icon: TrendingUp, trend: "All time" },
+    { label: "Total Revenue", value: formatCurrency(stats?.total_revenue || 0, workspaceCurrency), icon: TrendingUp, trend: "All time" },
     { label: "Attendees", value: stats?.total_quantity?.toString() || "0", icon: Users, trend: "Total" },
   ];
 
