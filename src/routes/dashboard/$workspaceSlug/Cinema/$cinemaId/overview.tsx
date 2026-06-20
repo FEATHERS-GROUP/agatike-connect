@@ -49,13 +49,41 @@ function CinemaOverview() {
     );
   }
 
+  const now = new Date();
+  
   // Calculate unique movies from schedules
-  const activeMoviesCount = new Set(
-    (cinema.schedules || []).map((s: any) => s.movie?.id).filter(Boolean),
-  ).size;
+  // "Now Showing" should strictly be movies playing RIGHT NOW.
+  const activeSchedules = (cinema.schedules || []).filter((s: any) => {
+    if (!s.start_time) return false;
+    const showStart = new Date(`${s.show_date}T${s.start_time}`);
+    // If end_time is missing, assume a 2.5 hour duration
+    const showEnd = s.end_time 
+      ? new Date(`${s.show_date}T${s.end_time}`) 
+      : new Date(showStart.getTime() + 2.5 * 60 * 60 * 1000);
+      
+    // Movie is playing right now if the current time is between start and end
+    return now >= showStart && now <= showEnd;
+  });
 
+  const activeMoviesMap = new Map();
+  (cinema.schedules || []).forEach((s: any) => {
+    // For the overall stats "Active Movies", we count any future schedule
+    const timeStr = s.end_time || s.start_time || "00:00:00";
+    if (new Date(`${s.show_date}T${timeStr}`) >= now) {
+      if (s.movie && !activeMoviesMap.has(s.movie.id)) {
+        activeMoviesMap.set(s.movie.id, s.movie);
+      }
+    }
+  });
+  const activeMoviesCount = activeMoviesMap.size;
 
-
+  const nowShowingMap = new Map();
+  activeSchedules.forEach((s: any) => {
+    if (s.movie && !nowShowingMap.has(s.movie.id)) {
+      nowShowingMap.set(s.movie.id, s.movie);
+    }
+  });
+  const nowShowingMovies = Array.from(nowShowingMap.values());
   const STATS = [
     { label: "Tickets Sold (Today)", value: Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(stats?.today_quantity || 0), icon: Ticket, trend: "Live" },
     { label: "Active Movies", value: activeMoviesCount.toString(), icon: Film, trend: "Current" },
@@ -122,9 +150,38 @@ function CinemaOverview() {
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Currently Showing Movies */}
+        <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm flex flex-col">
+          <h3 className="text-xl font-bold mb-4">Live Now</h3>
+          {nowShowingMovies.length === 0 ? (
+            <div className="flex-1 text-center py-10 bg-secondary/10 rounded-2xl border border-border/40 flex flex-col items-center justify-center">
+              <Film className="h-6 w-6 text-muted-foreground/50 mb-2" />
+              <p className="text-muted-foreground">No movies are currently playing.</p>
+            </div>
+          ) : (
+            <div className="flex gap-4 overflow-x-auto pb-4 snap-x">
+              {nowShowingMovies.map((movie: any) => (
+                <div key={movie.id} className="min-w-[140px] max-w-[140px] shrink-0 snap-start space-y-2">
+                  <div className="aspect-[2/3] rounded-xl overflow-hidden bg-secondary border border-border/40 shadow-sm relative">
+                    <img 
+                      src={movie.cover_url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=400"} 
+                      alt={movie.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+                      Playing
+                    </div>
+                  </div>
+                  <p className="font-bold text-sm truncate" title={movie.title}>{movie.title}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Recent Activity */}
-        <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
+        <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm flex flex-col">
           <h3 className="text-xl font-bold mb-4">Recent Bookings</h3>
           {recentBookings.length === 0 ? (
             <div className="text-center py-12 bg-secondary/10 rounded-2xl border border-border/40 h-[calc(100%-3rem)] flex items-center justify-center">
