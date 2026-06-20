@@ -129,6 +129,7 @@ import { Route as DashboardWorkspaceSlugCinemaCinemaIdScreensRouteImport } from 
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdSchedulesRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/schedules'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdOverviewRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/overview'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdMoviesRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/movies'
+import { Route as DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdArchiveRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/archive'
 
 const WalletRoute = WalletRouteImport.update({
@@ -804,6 +805,12 @@ const DashboardWorkspaceSlugCinemaCinemaIdMoviesRoute =
     path: '/movies',
     getParentRoute: () => DashboardWorkspaceSlugCinemaCinemaIdRoute,
   } as any)
+const DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRoute =
+  DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRouteImport.update({
+    id: '/create-schedule',
+    path: '/create-schedule',
+    getParentRoute: () => DashboardWorkspaceSlugCinemaCinemaIdRoute,
+  } as any)
 const DashboardWorkspaceSlugCinemaCinemaIdArchiveRoute =
   DashboardWorkspaceSlugCinemaCinemaIdArchiveRouteImport.update({
     id: '/archive',
@@ -899,6 +906,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/ticket-designer/': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/venue-designer/': typeof DashboardWorkspaceSlugVenueDesignerIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive': typeof DashboardWorkspaceSlugCinemaCinemaIdArchiveRoute
+  '/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule': typeof DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/movies': typeof DashboardWorkspaceSlugCinemaCinemaIdMoviesRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/overview': typeof DashboardWorkspaceSlugCinemaCinemaIdOverviewRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/schedules': typeof DashboardWorkspaceSlugCinemaCinemaIdSchedulesRoute
@@ -1020,6 +1028,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/ticket-designer': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive': typeof DashboardWorkspaceSlugCinemaCinemaIdArchiveRoute
+  '/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule': typeof DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/movies': typeof DashboardWorkspaceSlugCinemaCinemaIdMoviesRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/overview': typeof DashboardWorkspaceSlugCinemaCinemaIdOverviewRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/schedules': typeof DashboardWorkspaceSlugCinemaCinemaIdSchedulesRoute
@@ -1144,6 +1153,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/ticket-designer/': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/venue-designer/': typeof DashboardWorkspaceSlugVenueDesignerIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive': typeof DashboardWorkspaceSlugCinemaCinemaIdArchiveRoute
+  '/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule': typeof DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/movies': typeof DashboardWorkspaceSlugCinemaCinemaIdMoviesRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/overview': typeof DashboardWorkspaceSlugCinemaCinemaIdOverviewRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/schedules': typeof DashboardWorkspaceSlugCinemaCinemaIdSchedulesRoute
@@ -1269,6 +1279,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/ticket-designer/'
     | '/dashboard/$workspaceSlug/venue-designer/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive'
+    | '/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/movies'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/overview'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/schedules'
@@ -1390,6 +1401,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/ticket-designer'
     | '/dashboard/$workspaceSlug/venue-designer'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive'
+    | '/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/movies'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/overview'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/schedules'
@@ -1513,6 +1525,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/ticket-designer/'
     | '/dashboard/$workspaceSlug/venue-designer/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive'
+    | '/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/movies'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/overview'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/schedules'
@@ -2439,6 +2452,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdMoviesRouteImport
       parentRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdRoute
     }
+    '/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule': {
+      id: '/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule'
+      path: '/create-schedule'
+      fullPath: '/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule'
+      preLoaderRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdRoute
+    }
     '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive': {
       id: '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive'
       path: '/archive'
@@ -2451,6 +2471,7 @@ declare module '@tanstack/react-router' {
 
 interface DashboardWorkspaceSlugCinemaCinemaIdRouteChildren {
   DashboardWorkspaceSlugCinemaCinemaIdArchiveRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdArchiveRoute
+  DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRoute
   DashboardWorkspaceSlugCinemaCinemaIdMoviesRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdMoviesRoute
   DashboardWorkspaceSlugCinemaCinemaIdOverviewRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdOverviewRoute
   DashboardWorkspaceSlugCinemaCinemaIdSchedulesRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdSchedulesRoute
@@ -2463,6 +2484,8 @@ const DashboardWorkspaceSlugCinemaCinemaIdRouteChildren: DashboardWorkspaceSlugC
   {
     DashboardWorkspaceSlugCinemaCinemaIdArchiveRoute:
       DashboardWorkspaceSlugCinemaCinemaIdArchiveRoute,
+    DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRoute:
+      DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRoute,
     DashboardWorkspaceSlugCinemaCinemaIdMoviesRoute:
       DashboardWorkspaceSlugCinemaCinemaIdMoviesRoute,
     DashboardWorkspaceSlugCinemaCinemaIdOverviewRoute:
