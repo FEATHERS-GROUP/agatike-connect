@@ -11,6 +11,7 @@ import { ExperienceSidebar } from "@/components/desktop/dashboard/ExperienceSide
 import { VenueSidebar } from "@/components/desktop/dashboard/VenueSidebar";
 import { SpaceSidebar } from "@/components/desktop/dashboard/SpaceSidebar";
 import { CinemaSidebar } from "@/components/desktop/dashboard/CinemaSidebar";
+import { TheatresSidebar } from "@/components/desktop/dashboard/TheatresSidebar";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useEffect } from "react";
 import { getSession } from "@/api/auth";
@@ -58,7 +59,12 @@ function DashboardLayout() {
   const isSpaceWorkspace =
     location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/[^/]+/) &&
     !location.pathname.includes("create-space");
-  const isCinemaWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+/);
+  // Cinema inside a specific cinema (has $cinemaId)
+  const isCinemaWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\//);
+  // Top-level Cinema section (list page + ticket-tiers) — no $cinemaId sub-route
+  const isCinemaSection =
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema/) &&
+    !isCinemaWorkspace;
   const search = location.search as any;
   const isDesigningVenue = !!location.pathname.match(/^\/dashboard\/[^/]+\/venue-designer\/[^/]+/);
 
@@ -151,6 +157,8 @@ function DashboardLayout() {
               <SpaceSidebar />
             ) : isCinemaWorkspace ? (
               <CinemaSidebar />
+            ) : isCinemaSection ? (
+              <TheatresSidebar />
             ) : (
               <DesktopSidebar />
             ))}

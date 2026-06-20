@@ -88,6 +88,8 @@ import { Route as DashboardWorkspaceSlugRsvpsFormIdRouteImport } from './routes/
 import { Route as DashboardWorkspaceSlugExperiencesCreateExperienceRouteImport } from './routes/dashboard/$workspaceSlug/experiences/create-experience'
 import { Route as DashboardWorkspaceSlugEventsCreateEventRouteImport } from './routes/dashboard/$workspaceSlug/events/create-event'
 import { Route as DashboardWorkspaceSlugBadgeDesignerProjectIdRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/$projectId'
+import { Route as DashboardWorkspaceSlugCinemaTicketTiersRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/ticket-tiers'
+import { Route as DashboardWorkspaceSlugCinemaAnalyticsRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/analytics'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/index'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/index'
@@ -550,6 +552,18 @@ const DashboardWorkspaceSlugBadgeDesignerProjectIdRoute =
     path: '/$workspaceSlug/badge-designer/$projectId',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugCinemaTicketTiersRoute =
+  DashboardWorkspaceSlugCinemaTicketTiersRouteImport.update({
+    id: '/$workspaceSlug/Cinema/ticket-tiers',
+    path: '/$workspaceSlug/Cinema/ticket-tiers',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugCinemaAnalyticsRoute =
+  DashboardWorkspaceSlugCinemaAnalyticsRouteImport.update({
+    id: '/$workspaceSlug/Cinema/analytics',
+    path: '/$workspaceSlug/Cinema/analytics',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugCinemaCinemaIdRoute =
   DashboardWorkspaceSlugCinemaCinemaIdRouteImport.update({
     id: '/$workspaceSlug/Cinema/$cinemaId',
@@ -831,6 +845,8 @@ export interface FileRoutesByFullPath {
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId': typeof DashboardWorkspaceSlugCinemaCinemaIdRouteWithChildren
+  '/dashboard/$workspaceSlug/Cinema/analytics': typeof DashboardWorkspaceSlugCinemaAnalyticsRoute
+  '/dashboard/$workspaceSlug/Cinema/ticket-tiers': typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
   '/dashboard/$workspaceSlug/experiences/create-experience': typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
@@ -947,6 +963,8 @@ export interface FileRoutesByTo {
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/dashboard/$workspaceSlug': typeof DashboardWorkspaceSlugIndexRoute
+  '/dashboard/$workspaceSlug/Cinema/analytics': typeof DashboardWorkspaceSlugCinemaAnalyticsRoute
+  '/dashboard/$workspaceSlug/Cinema/ticket-tiers': typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
   '/dashboard/$workspaceSlug/experiences/create-experience': typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
@@ -1064,6 +1082,8 @@ export interface FileRoutesById {
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId': typeof DashboardWorkspaceSlugCinemaCinemaIdRouteWithChildren
+  '/dashboard/$workspaceSlug/Cinema/analytics': typeof DashboardWorkspaceSlugCinemaAnalyticsRoute
+  '/dashboard/$workspaceSlug/Cinema/ticket-tiers': typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
   '/dashboard/$workspaceSlug/experiences/create-experience': typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
@@ -1183,6 +1203,8 @@ export interface FileRouteTypes {
     | '/venues/checkout/$venueId'
     | '/dashboard/$workspaceSlug/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId'
+    | '/dashboard/$workspaceSlug/Cinema/analytics'
+    | '/dashboard/$workspaceSlug/Cinema/ticket-tiers'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/events/create-event'
     | '/dashboard/$workspaceSlug/experiences/create-experience'
@@ -1299,6 +1321,8 @@ export interface FileRouteTypes {
     | '/spaces/success/$spaceId'
     | '/venues/checkout/$venueId'
     | '/dashboard/$workspaceSlug'
+    | '/dashboard/$workspaceSlug/Cinema/analytics'
+    | '/dashboard/$workspaceSlug/Cinema/ticket-tiers'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/events/create-event'
     | '/dashboard/$workspaceSlug/experiences/create-experience'
@@ -1415,6 +1439,8 @@ export interface FileRouteTypes {
     | '/venues/checkout/$venueId'
     | '/dashboard/$workspaceSlug/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId'
+    | '/dashboard/$workspaceSlug/Cinema/analytics'
+    | '/dashboard/$workspaceSlug/Cinema/ticket-tiers'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/events/create-event'
     | '/dashboard/$workspaceSlug/experiences/create-experience'
@@ -2074,6 +2100,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/Cinema/ticket-tiers': {
+      id: '/dashboard/$workspaceSlug/Cinema/ticket-tiers'
+      path: '/$workspaceSlug/Cinema/ticket-tiers'
+      fullPath: '/dashboard/$workspaceSlug/Cinema/ticket-tiers'
+      preLoaderRoute: typeof DashboardWorkspaceSlugCinemaTicketTiersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/Cinema/analytics': {
+      id: '/dashboard/$workspaceSlug/Cinema/analytics'
+      path: '/$workspaceSlug/Cinema/analytics'
+      fullPath: '/dashboard/$workspaceSlug/Cinema/analytics'
+      preLoaderRoute: typeof DashboardWorkspaceSlugCinemaAnalyticsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/Cinema/$cinemaId': {
       id: '/dashboard/$workspaceSlug/Cinema/$cinemaId'
       path: '/$workspaceSlug/Cinema/$cinemaId'
@@ -2433,6 +2473,8 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugWithdrawalsRoute: typeof DashboardWorkspaceSlugWithdrawalsRoute
   DashboardWorkspaceSlugIndexRoute: typeof DashboardWorkspaceSlugIndexRoute
   DashboardWorkspaceSlugCinemaCinemaIdRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdRouteWithChildren
+  DashboardWorkspaceSlugCinemaAnalyticsRoute: typeof DashboardWorkspaceSlugCinemaAnalyticsRoute
+  DashboardWorkspaceSlugCinemaTicketTiersRoute: typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   DashboardWorkspaceSlugBadgeDesignerProjectIdRoute: typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   DashboardWorkspaceSlugEventsCreateEventRoute: typeof DashboardWorkspaceSlugEventsCreateEventRoute
   DashboardWorkspaceSlugExperiencesCreateExperienceRoute: typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
@@ -2494,6 +2536,10 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardWorkspaceSlugIndexRoute: DashboardWorkspaceSlugIndexRoute,
   DashboardWorkspaceSlugCinemaCinemaIdRoute:
     DashboardWorkspaceSlugCinemaCinemaIdRouteWithChildren,
+  DashboardWorkspaceSlugCinemaAnalyticsRoute:
+    DashboardWorkspaceSlugCinemaAnalyticsRoute,
+  DashboardWorkspaceSlugCinemaTicketTiersRoute:
+    DashboardWorkspaceSlugCinemaTicketTiersRoute,
   DashboardWorkspaceSlugBadgeDesignerProjectIdRoute:
     DashboardWorkspaceSlugBadgeDesignerProjectIdRoute,
   DashboardWorkspaceSlugEventsCreateEventRoute:

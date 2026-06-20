@@ -10,6 +10,7 @@ import {
   LayoutTemplate,
   FormInput,
   Archive,
+  Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +44,11 @@ export function CinemaSidebar() {
       label: "Movies",
       href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/movies`,
       icon: Film,
+    },
+    {
+      label: "Ticket Tiers",
+      href: `/dashboard/${workspaceSlug}/Cinema/ticket-tiers`,
+      icon: Tag,
     },
     {
       label: "Schedules",

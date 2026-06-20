@@ -28,6 +28,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/")({
 
 function CinemaDashboardList() {
   const router = useRouter();
+  const { workspaceSlug } = Route.useParams();
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 md:pb-12 animate-in fade-in duration-500">
