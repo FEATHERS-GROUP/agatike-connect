@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Film, MapPin, Ticket, TrendingUp, Users, Loader2 } from "lucide-react";
+import { Film, MapPin, Ticket, TrendingUp, Users, Loader2, Tag } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getCinemaById } from "@/api/cinemas";
 
@@ -36,6 +36,28 @@ function CinemaOverview() {
   const activeMoviesCount = new Set(
     (cinema.schedules || []).map((s: any) => s.movie?.id).filter(Boolean),
   ).size;
+
+  // Extract ticket tiers and map them to their movies
+  const ticketTiersMap = new Map();
+  (cinema.schedules || []).forEach((schedule: any) => {
+    if (!schedule.movie || !schedule.ticket_tiers) return;
+    schedule.ticket_tiers.forEach((tt: any) => {
+      if (!tt.ticket_tier) return;
+      const tierId = tt.ticket_tier.id;
+      if (!ticketTiersMap.has(tierId)) {
+        ticketTiersMap.set(tierId, {
+          tier: tt.ticket_tier,
+          movies: new Map(),
+        });
+      }
+      ticketTiersMap.get(tierId).movies.set(schedule.movie.id, schedule.movie);
+    });
+  });
+
+  const connectedTiers = Array.from(ticketTiersMap.values()).map((x: any) => ({
+    ...x.tier,
+    movies: Array.from(x.movies.values()),
+  }));
 
   const STATS = [
     { label: "Tickets Sold (Today)", value: "0", icon: Ticket, trend: "0%" },
@@ -104,11 +126,59 @@ function CinemaOverview() {
         ))}
       </div>
 
-      {/* Recent Activity placeholder */}
-      <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
-        <h3 className="text-lg font-bold mb-4">Recent Bookings</h3>
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Bookings will appear here once movies are live.</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Connected Ticket Tiers */}
+        <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm flex flex-col">
+          <div className="flex items-center gap-2 mb-6">
+            <Tag className="h-5 w-5 text-primary" />
+            <h3 className="text-xl font-bold">Connected Ticket Tiers</h3>
+          </div>
+          
+          {connectedTiers.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center text-center py-12">
+              <p className="text-muted-foreground">No ticket tiers are currently linked to this cinema's schedules.</p>
+            </div>
+          ) : (
+            <div className="space-y-4 flex-1">
+              {connectedTiers.map((tier: any) => (
+                <div key={tier.id} className="p-4 rounded-2xl border border-border/50 bg-secondary/20 transition-colors hover:bg-secondary/40">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="font-bold">{tier.name}</h4>
+                      <p className="text-xs text-muted-foreground capitalize">{tier.type} Tier</p>
+                    </div>
+                    <span className="font-bold text-sm bg-background px-2 py-1 rounded-md border border-border/40">
+                      {tier.currency} {tier.price}
+                    </span>
+                  </div>
+                  
+                  <div className="pt-3 border-t border-border/50">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">Linked Movies:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {tier.movies.map((m: any) => (
+                        <div key={m.id} className="flex items-center gap-1.5 bg-background border border-border/40 rounded-full px-2 py-1">
+                          {m.cover_url ? (
+                            <img src={m.cover_url} alt={m.title} className="w-4 h-4 rounded-full object-cover" />
+                          ) : (
+                            <Film className="w-3 h-3 text-muted-foreground" />
+                          )}
+                          <span className="text-xs font-medium truncate max-w-[120px]">{m.title}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Activity placeholder */}
+        <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
+          <h3 className="text-xl font-bold mb-4">Recent Bookings</h3>
+          <div className="text-center py-12 bg-secondary/10 rounded-2xl border border-border/40 h-[calc(100%-3rem)] flex items-center justify-center">
+            <p className="text-muted-foreground">Bookings will appear here once movies are live.</p>
+          </div>
         </div>
       </div>
     </div>

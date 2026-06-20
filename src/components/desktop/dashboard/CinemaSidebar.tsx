@@ -12,6 +12,8 @@ import {
   Archive,
   Tag,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getCinemaById } from "@/api/cinemas";
 import { cn } from "@/lib/utils";
 
 // Mock Data instead of query for now to keep it consistent
@@ -33,7 +35,11 @@ export function CinemaSidebar() {
   const pathParts = location.pathname.split("/");
   const cinemaId = pathParts[4] || "";
 
-  const cinema = MOCK_CINEMA;
+  const { data: cinema } = useQuery({
+    queryKey: ["cinema", cinemaId],
+    queryFn: () => getCinemaById({ data: { id: cinemaId } } as any),
+    enabled: !!cinemaId && cinemaId !== "create" && cinemaId !== "movies" && cinemaId !== "ticket-tiers" && cinemaId !== "create-movie" && cinemaId !== "create-ticket-tier",
+  });
 
   const nav = [
     {
@@ -45,11 +51,6 @@ export function CinemaSidebar() {
       label: "Movies",
       href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/movies`,
       icon: Film,
-    },
-    {
-      label: "Ticket Tiers",
-      href: `/dashboard/${workspaceSlug}/Cinema/ticket-tiers`,
-      icon: Tag,
     },
     {
       label: "Schedules",
@@ -104,13 +105,21 @@ export function CinemaSidebar() {
       </Link>
 
       <div className="mb-4 flex items-center gap-3">
-        <div className="h-9 w-9 overflow-hidden rounded-lg bg-secondary shrink-0">
-          <img src={cinema.image} alt={cinema.name} className="h-full w-full object-cover" />
-        </div>
-        <div className="min-w-0">
-          <p className="font-semibold text-sm leading-tight truncate">{cinema.name}</p>
-          <p className="text-xs text-muted-foreground">{cinema.city}</p>
-        </div>
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary overflow-hidden">
+            {cinema?.logo_url || cinema?.cover_url ? (
+              <img src={cinema?.logo_url || cinema?.cover_url} alt={cinema.name} className="h-full w-full object-cover" />
+            ) : (
+              <Film className="h-6 w-6 text-muted-foreground" />
+            )}
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className="font-bold truncate" title={cinema?.name || "Loading..."}>
+              {cinema?.name || "Loading..."}
+            </span>
+            <span className="text-xs text-muted-foreground truncate" title={cinema?.city || "..."}>
+              {cinema?.city || "..."}
+            </span>
+          </div>
       </div>
 
       <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-4 px-1">

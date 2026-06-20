@@ -72,6 +72,18 @@ const GET_CINEMA_BY_ID = `
         status
         movie { id title cover_url }
         screen { id name }
+        ticket_tiers {
+          id
+          price_override
+          currency
+          ticket_tier {
+            id
+            name
+            type
+            price
+            currency
+          }
+        }
       }
     }
   }
