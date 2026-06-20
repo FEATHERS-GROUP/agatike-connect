@@ -172,6 +172,8 @@ const GET_SCHEDULES = `
         title
         cover_url
         duration_minutes
+        genre
+        rating
       }
       screen {
         id

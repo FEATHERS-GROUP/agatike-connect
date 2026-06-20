@@ -26,6 +26,11 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule")({
   component: CreateSchedulePage,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      movieId: search.movieId as string | undefined,
+    };
+  },
 });
 
 const EMPTY_FORM = {
@@ -60,12 +65,13 @@ const LANGUAGES = [
 
 function CreateSchedulePage() {
   const { workspaceSlug, cinemaId } = Route.useParams() as any;
+  const search = Route.useSearch() as any;
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
 
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<any>(EMPTY_FORM);
+  const [form, setForm] = useState<any>({ ...EMPTY_FORM, movie_id: search.movieId || "" });
   const [saving, setSaving] = useState(false);
 
   // ── Data Queries ────────────────────────────────────────────────────────

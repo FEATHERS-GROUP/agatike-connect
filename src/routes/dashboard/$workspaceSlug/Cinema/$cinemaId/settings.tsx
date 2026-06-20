@@ -1,15 +1,75 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Save, UploadCloud } from "lucide-react";
+import { Save, UploadCloud, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getCinemaById, updateCinema } from "@/api/cinemas";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/settings")({
   component: CinemaSettings,
 });
 
 function CinemaSettings() {
+  const { cinemaId } = Route.useParams() as any;
+  const queryClient = useQueryClient();
+
+  const { data: cinema, isLoading } = useQuery({
+    queryKey: ["cinema", cinemaId],
+    queryFn: () => getCinemaById({ data: { id: cinemaId } }),
+    enabled: !!cinemaId,
+  });
+
+  const [form, setForm] = useState({
+    name: "",
+    city: "",
+    address: "",
+    description: "",
+    cover_url: "",
+  });
+
+  useEffect(() => {
+    if (cinema) {
+      setForm({
+        name: cinema.name || "",
+        city: cinema.city || "",
+        address: cinema.address || "",
+        description: cinema.description || "",
+        cover_url: cinema.cover_url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600",
+      });
+    }
+  }, [cinema]);
+
+  const updateMutation = useMutation({
+    mutationFn: (updates: any) => updateCinema({ data: { id: cinemaId, ...updates } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cinema", cinemaId] });
+      toast.success("Cinema settings updated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to update cinema settings");
+    },
+  });
+
+  const handleSave = () => {
+    updateMutation.mutate(form);
+  };
+
+  const handleUploadClick = () => {
+    toast.info("Image uploading would open here (mocked for now).");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500 max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -20,10 +80,13 @@ function CinemaSettings() {
           </p>
         </div>
         <Button
+          onClick={handleSave}
+          disabled={updateMutation.isPending}
           className="gap-2 rounded-xl h-11 px-6 font-bold shadow-sm"
           style={{ background: "var(--gradient-primary)" }}
         >
-          <Save className="h-4 w-4" /> Save Changes
+          {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {updateMutation.isPending ? "Saving..." : "Save Changes"}
         </Button>
       </div>
 
@@ -31,9 +94,12 @@ function CinemaSettings() {
         <div className="space-y-4">
           <h3 className="font-bold text-lg">Cover Image</h3>
           <div className="flex flex-col sm:flex-row gap-6 items-start">
-            <div className="h-40 w-full sm:w-64 rounded-2xl overflow-hidden bg-secondary border border-border/60 shrink-0 relative group cursor-pointer">
+            <div 
+              onClick={handleUploadClick}
+              className="h-40 w-full sm:w-64 rounded-2xl overflow-hidden bg-secondary border border-border/60 shrink-0 relative group cursor-pointer"
+            >
               <img
-                src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600"
+                src={form.cover_url}
                 alt="Cover"
                 className="h-full w-full object-cover"
               />
@@ -42,7 +108,7 @@ function CinemaSettings() {
               </div>
             </div>
             <div className="space-y-3 flex-1">
-              <Button variant="outline" className="gap-2 rounded-xl">
+              <Button onClick={handleUploadClick} variant="outline" className="gap-2 rounded-xl">
                 <UploadCloud className="h-4 w-4" /> Upload New Image
               </Button>
               <p className="text-sm text-muted-foreground">
@@ -59,17 +125,34 @@ function CinemaSettings() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label>Cinema Name</Label>
-              <Input defaultValue="Century Cinema" className="rounded-xl h-11" />
+              <Input 
+                value={form.name} 
+                onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+                className="rounded-xl h-11" 
+              />
             </div>
             <div className="space-y-2">
               <Label>City / Location</Label>
-              <Input defaultValue="Kigali" className="rounded-xl h-11" />
+              <Input 
+                value={form.city} 
+                onChange={(e) => setForm(f => ({ ...f, city: e.target.value }))}
+                className="rounded-xl h-11" 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Address</Label>
+              <Input 
+                value={form.address} 
+                onChange={(e) => setForm(f => ({ ...f, address: e.target.value }))}
+                className="rounded-xl h-11" 
+              />
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Description / Address</Label>
+            <Label>Description</Label>
             <Textarea
-              defaultValue="Located in the heart of the city."
+              value={form.description}
+              onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
               className="rounded-xl min-h-[120px] resize-y"
             />
           </div>

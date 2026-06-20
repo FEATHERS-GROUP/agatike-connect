@@ -43,6 +43,13 @@ function CinemaSchedulesPage() {
     enabled: !!cinemaId,
   });
 
+  const now = new Date();
+  const activeSchedules = schedules.filter((s: any) => {
+    const timeStr = s.end_time || s.start_time || "00:00:00";
+    const endTime = new Date(`${s.show_date}T${timeStr}`);
+    return endTime >= now;
+  });
+
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleOpenCreate = () => {
     navigate({ to: "/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule", params: { workspaceSlug, cinemaId } });
@@ -86,7 +93,7 @@ function CinemaSchedulesPage() {
         )}
 
         {/* Empty */}
-        {!isLoading && schedules.length === 0 && (
+        {!isLoading && activeSchedules.length === 0 && (
           <div className="bg-secondary/40 rounded-3xl p-12 text-center border border-border/40 max-w-2xl mx-auto mt-12">
             <CalendarDays className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
             <h3 className="text-2xl font-bold mb-2">No Schedules Yet</h3>
@@ -100,9 +107,9 @@ function CinemaSchedulesPage() {
         )}
 
         {/* List */}
-        {!isLoading && schedules.length > 0 && (
+        {!isLoading && activeSchedules.length > 0 && (
           <div className="space-y-4">
-            {schedules.map((schedule: any) => (
+            {activeSchedules.map((schedule: any) => (
               <div
                 key={schedule.id}
                 className="group flex flex-col sm:flex-row gap-6 p-4 rounded-2xl bg-card border border-border/60 hover:shadow-sm hover:border-border/80 transition-all"
