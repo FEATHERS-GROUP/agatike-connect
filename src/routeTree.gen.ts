@@ -90,6 +90,7 @@ import { Route as DashboardWorkspaceSlugEventsCreateEventRouteImport } from './r
 import { Route as DashboardWorkspaceSlugBadgeDesignerProjectIdRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/$projectId'
 import { Route as DashboardWorkspaceSlugCinemaTicketTiersRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/ticket-tiers'
 import { Route as DashboardWorkspaceSlugCinemaMoviesRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/movies'
+import { Route as DashboardWorkspaceSlugCinemaCreateMovieRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/create-movie'
 import { Route as DashboardWorkspaceSlugCinemaCreateRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/create'
 import { Route as DashboardWorkspaceSlugCinemaAnalyticsRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/analytics'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId'
@@ -566,6 +567,12 @@ const DashboardWorkspaceSlugCinemaMoviesRoute =
     path: '/$workspaceSlug/Cinema/movies',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugCinemaCreateMovieRoute =
+  DashboardWorkspaceSlugCinemaCreateMovieRouteImport.update({
+    id: '/$workspaceSlug/Cinema/create-movie',
+    path: '/$workspaceSlug/Cinema/create-movie',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugCinemaCreateRoute =
   DashboardWorkspaceSlugCinemaCreateRouteImport.update({
     id: '/$workspaceSlug/Cinema/create',
@@ -861,6 +868,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/Cinema/$cinemaId': typeof DashboardWorkspaceSlugCinemaCinemaIdRouteWithChildren
   '/dashboard/$workspaceSlug/Cinema/analytics': typeof DashboardWorkspaceSlugCinemaAnalyticsRoute
   '/dashboard/$workspaceSlug/Cinema/create': typeof DashboardWorkspaceSlugCinemaCreateRoute
+  '/dashboard/$workspaceSlug/Cinema/create-movie': typeof DashboardWorkspaceSlugCinemaCreateMovieRoute
   '/dashboard/$workspaceSlug/Cinema/movies': typeof DashboardWorkspaceSlugCinemaMoviesRoute
   '/dashboard/$workspaceSlug/Cinema/ticket-tiers': typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
@@ -981,6 +989,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/$workspaceSlug/Cinema/analytics': typeof DashboardWorkspaceSlugCinemaAnalyticsRoute
   '/dashboard/$workspaceSlug/Cinema/create': typeof DashboardWorkspaceSlugCinemaCreateRoute
+  '/dashboard/$workspaceSlug/Cinema/create-movie': typeof DashboardWorkspaceSlugCinemaCreateMovieRoute
   '/dashboard/$workspaceSlug/Cinema/movies': typeof DashboardWorkspaceSlugCinemaMoviesRoute
   '/dashboard/$workspaceSlug/Cinema/ticket-tiers': typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
@@ -1102,6 +1111,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/Cinema/$cinemaId': typeof DashboardWorkspaceSlugCinemaCinemaIdRouteWithChildren
   '/dashboard/$workspaceSlug/Cinema/analytics': typeof DashboardWorkspaceSlugCinemaAnalyticsRoute
   '/dashboard/$workspaceSlug/Cinema/create': typeof DashboardWorkspaceSlugCinemaCreateRoute
+  '/dashboard/$workspaceSlug/Cinema/create-movie': typeof DashboardWorkspaceSlugCinemaCreateMovieRoute
   '/dashboard/$workspaceSlug/Cinema/movies': typeof DashboardWorkspaceSlugCinemaMoviesRoute
   '/dashboard/$workspaceSlug/Cinema/ticket-tiers': typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
@@ -1225,6 +1235,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId'
     | '/dashboard/$workspaceSlug/Cinema/analytics'
     | '/dashboard/$workspaceSlug/Cinema/create'
+    | '/dashboard/$workspaceSlug/Cinema/create-movie'
     | '/dashboard/$workspaceSlug/Cinema/movies'
     | '/dashboard/$workspaceSlug/Cinema/ticket-tiers'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
@@ -1345,6 +1356,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug'
     | '/dashboard/$workspaceSlug/Cinema/analytics'
     | '/dashboard/$workspaceSlug/Cinema/create'
+    | '/dashboard/$workspaceSlug/Cinema/create-movie'
     | '/dashboard/$workspaceSlug/Cinema/movies'
     | '/dashboard/$workspaceSlug/Cinema/ticket-tiers'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
@@ -1465,6 +1477,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId'
     | '/dashboard/$workspaceSlug/Cinema/analytics'
     | '/dashboard/$workspaceSlug/Cinema/create'
+    | '/dashboard/$workspaceSlug/Cinema/create-movie'
     | '/dashboard/$workspaceSlug/Cinema/movies'
     | '/dashboard/$workspaceSlug/Cinema/ticket-tiers'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
@@ -2140,6 +2153,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugCinemaMoviesRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/Cinema/create-movie': {
+      id: '/dashboard/$workspaceSlug/Cinema/create-movie'
+      path: '/$workspaceSlug/Cinema/create-movie'
+      fullPath: '/dashboard/$workspaceSlug/Cinema/create-movie'
+      preLoaderRoute: typeof DashboardWorkspaceSlugCinemaCreateMovieRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/Cinema/create': {
       id: '/dashboard/$workspaceSlug/Cinema/create'
       path: '/$workspaceSlug/Cinema/create'
@@ -2515,6 +2535,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugCinemaCinemaIdRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdRouteWithChildren
   DashboardWorkspaceSlugCinemaAnalyticsRoute: typeof DashboardWorkspaceSlugCinemaAnalyticsRoute
   DashboardWorkspaceSlugCinemaCreateRoute: typeof DashboardWorkspaceSlugCinemaCreateRoute
+  DashboardWorkspaceSlugCinemaCreateMovieRoute: typeof DashboardWorkspaceSlugCinemaCreateMovieRoute
   DashboardWorkspaceSlugCinemaMoviesRoute: typeof DashboardWorkspaceSlugCinemaMoviesRoute
   DashboardWorkspaceSlugCinemaTicketTiersRoute: typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   DashboardWorkspaceSlugBadgeDesignerProjectIdRoute: typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
@@ -2582,6 +2603,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugCinemaAnalyticsRoute,
   DashboardWorkspaceSlugCinemaCreateRoute:
     DashboardWorkspaceSlugCinemaCreateRoute,
+  DashboardWorkspaceSlugCinemaCreateMovieRoute:
+    DashboardWorkspaceSlugCinemaCreateMovieRoute,
   DashboardWorkspaceSlugCinemaMoviesRoute:
     DashboardWorkspaceSlugCinemaMoviesRoute,
   DashboardWorkspaceSlugCinemaTicketTiersRoute:

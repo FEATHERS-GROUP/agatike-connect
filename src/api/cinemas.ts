@@ -16,6 +16,8 @@ const GET_CINEMAS = `
       city
       address
       country
+      latitude
+      longitude
       cover_url
       logo_url
       phone
@@ -43,6 +45,8 @@ const GET_CINEMA_BY_ID = `
       city
       address
       country
+      latitude
+      longitude
       cover_url
       logo_url
       phone

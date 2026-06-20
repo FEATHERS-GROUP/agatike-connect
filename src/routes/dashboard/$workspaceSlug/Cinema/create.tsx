@@ -12,14 +12,19 @@ import {
   Globe,
   ImageIcon,
   Save,
-  Loader2,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { LocationSearchInput } from "@/components/desktop/LocationSearchInput";
+import { COUNTRIES } from "@/lib/countries";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { uploadFileToStorage } from "@/lib/firebase-storage";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/create")({
   component: CreateCinemaPage,
@@ -44,6 +49,8 @@ const EMPTY = {
   cover_url: "",
   logo_url: "",
   status: "active",
+  latitude: null as string | null,
+  longitude: null as string | null,
 };
 
 function CreateCinemaPage() {
@@ -55,6 +62,8 @@ function CreateCinemaPage() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<any>(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   const set = (key: string, val: string) => setForm((p: any) => ({ ...p, [key]: val }));
 
@@ -225,21 +234,33 @@ function CreateCinemaPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Country</Label>
-                  <Input
+                  <select
                     value={form.country}
                     onChange={(e) => set("country", e.target.value)}
-                    placeholder="Rwanda"
-                    className="rounded-xl h-11"
-                  />
+                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/10"
+                  >
+                    <option value="" disabled>
+                      Select a country
+                    </option>
+                    {COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Full Address</Label>
-                <Textarea
+                <LocationSearchInput
                   value={form.address}
-                  onChange={(e) => set("address", e.target.value)}
+                  onChange={(val) => set("address", val)}
+                  onSelectCoordinates={(lat, lng) => {
+                    set("latitude", lat);
+                    set("longitude", lng);
+                  }}
                   placeholder="KG 123 St, Kimironko, Kigali, Rwanda"
-                  className="rounded-xl min-h-[80px] resize-none"
+                  className="rounded-xl h-11"
                 />
               </div>
             </div>
@@ -258,13 +279,20 @@ function CreateCinemaPage() {
                 <Label className="flex items-center gap-1.5">
                   <Phone className="h-3.5 w-3.5" /> Phone
                 </Label>
-                <Input
-                  autoFocus
-                  value={form.phone}
-                  onChange={(e) => set("phone", e.target.value)}
-                  placeholder="+250 7XX XXX XXX"
-                  className="rounded-xl h-11"
-                />
+                <div className="relative">
+                  <PhoneInput
+                    international
+                    defaultCountry="RW"
+                    limitMaxLength
+                    value={form.phone}
+                    onChange={(val) => set("phone", val || "")}
+                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 text-foreground focus-within:ring-[3px] focus-within:ring-primary/10 focus-within:border-primary transition-all"
+                    numberInputProps={{
+                      className:
+                        "flex-1 bg-transparent border-none outline-none focus:ring-0 text-sm ml-3 text-foreground placeholder-muted-foreground",
+                    }}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-1.5">
@@ -303,17 +331,50 @@ function CreateCinemaPage() {
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-1.5">
-                  <ImageIcon className="h-3.5 w-3.5" /> Cover Image URL
+                  <ImageIcon className="h-3.5 w-3.5" /> Cover Image
                 </Label>
-                <Input
-                  autoFocus
-                  value={form.cover_url}
-                  onChange={(e) => set("cover_url", e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="rounded-xl h-11"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    autoFocus
+                    value={form.cover_url}
+                    onChange={(e) => set("cover_url", e.target.value)}
+                    placeholder="https://images.unsplash.com/... or upload"
+                    className="rounded-xl h-11 flex-1"
+                  />
+                  <div className="relative">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        if (!e.target.files?.[0]) return;
+                        setIsUploadingCover(true);
+                        try {
+                          const url = await uploadFileToStorage(
+                            e.target.files[0],
+                            "cinemas/covers",
+                          );
+                          set("cover_url", url);
+                          toast.success("Cover uploaded!");
+                        } catch (err) {
+                          toast.error("Failed to upload cover");
+                        } finally {
+                          setIsUploadingCover(false);
+                        }
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-11 rounded-xl px-4"
+                      disabled={isUploadingCover}
+                    >
+                      {isUploadingCover ? <Loader2 className="h-4 w-4 animate-spin" /> : "Upload"}
+                    </Button>
+                  </div>
+                </div>
                 {form.cover_url && (
-                  <div className="mt-3 rounded-2xl overflow-hidden border border-border/60 aspect-video bg-secondary">
+                  <div className="mt-3 rounded-2xl overflow-hidden border border-border/60 aspect-video bg-secondary relative">
                     <img
                       src={form.cover_url}
                       alt="Cover preview"
@@ -327,14 +388,44 @@ function CreateCinemaPage() {
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-1.5">
-                  <ImageIcon className="h-3.5 w-3.5" /> Logo URL
+                  <ImageIcon className="h-3.5 w-3.5" /> Logo
                 </Label>
-                <Input
-                  value={form.logo_url}
-                  onChange={(e) => set("logo_url", e.target.value)}
-                  placeholder="https://..."
-                  className="rounded-xl h-11"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={form.logo_url}
+                    onChange={(e) => set("logo_url", e.target.value)}
+                    placeholder="https://... or upload"
+                    className="rounded-xl h-11 flex-1"
+                  />
+                  <div className="relative">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        if (!e.target.files?.[0]) return;
+                        setIsUploadingLogo(true);
+                        try {
+                          const url = await uploadFileToStorage(e.target.files[0], "cinemas/logos");
+                          set("logo_url", url);
+                          toast.success("Logo uploaded!");
+                        } catch (err) {
+                          toast.error("Failed to upload logo");
+                        } finally {
+                          setIsUploadingLogo(false);
+                        }
+                      }}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-11 rounded-xl px-4"
+                      disabled={isUploadingLogo}
+                    >
+                      {isUploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Upload"}
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               {/* Summary before submit */}

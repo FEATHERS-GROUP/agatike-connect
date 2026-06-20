@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -86,11 +86,6 @@ function GlobalMoviesCatalog() {
   );
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleOpenCreate = () => {
-    setEditingId(null);
-    setForm(EMPTY_FORM);
-    setSheetOpen(true);
-  };
 
   const handleOpenEdit = (movie: any) => {
     setEditingId(movie.id);
@@ -105,17 +100,12 @@ function GlobalMoviesCatalog() {
     }
     setSaving(true);
     try {
-      if (editingId) {
-        await updateMovie({ data: { id: editingId, ...form } });
-        toast.success("Movie updated");
-      } else {
-        await createMovie({ data: { ...form, workspace_id: activeWorkspace?.id } });
-        toast.success("Movie created");
-      }
+      await updateMovie({ data: { id: editingId, ...form } });
+      toast.success("Movie updated");
       await queryClient.invalidateQueries({ queryKey: ["cinema_movies"] });
       setSheetOpen(false);
     } catch (err: any) {
-      toast.error(err.message || "Failed to save movie");
+      toast.error(err.message || "Failed to update movie");
     } finally {
       setSaving(false);
     }
@@ -146,13 +136,17 @@ function GlobalMoviesCatalog() {
               Master catalog of all movies available across your cinemas.
             </p>
           </div>
-          <Button
-            onClick={handleOpenCreate}
-            className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)]"
-            style={{ background: "var(--gradient-primary)" }}
+          <Link
+            to="/dashboard/$workspaceSlug/Cinema/create-movie"
+            params={{ workspaceSlug: activeWorkspace?.slug || "" }}
           >
-            <Plus className="h-5 w-5" /> Add Movie
-          </Button>
+            <Button
+              className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)]"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Plus className="h-5 w-5" /> Add Movie
+            </Button>
+          </Link>
         </div>
 
         {/* Toolbar */}
@@ -183,9 +177,14 @@ function GlobalMoviesCatalog() {
             <p className="text-muted-foreground mb-6">
               Your catalog is empty. Add movies here to schedule them in your cinemas.
             </p>
-            <Button onClick={handleOpenCreate} className="gap-2 rounded-xl h-11 px-6 font-bold">
-              <Plus className="h-5 w-5" /> Add First Movie
-            </Button>
+            <Link
+              to="/dashboard/$workspaceSlug/Cinema/create-movie"
+              params={{ workspaceSlug: activeWorkspace?.slug || "" }}
+            >
+              <Button className="gap-2 rounded-xl h-11 px-6 font-bold">
+                <Plus className="h-5 w-5" /> Add First Movie
+              </Button>
+            </Link>
           </div>
         )}
 
@@ -288,12 +287,8 @@ function GlobalMoviesCatalog() {
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle className="text-xl">
-              {editingId ? "Edit Movie" : "Add Movie to Catalog"}
-            </SheetTitle>
-            <SheetDescription>
-              Details added here will be available to all your cinemas.
-            </SheetDescription>
+            <SheetTitle className="text-xl">Edit Movie</SheetTitle>
+            <SheetDescription>Update movie details for all your cinemas.</SheetDescription>
           </SheetHeader>
 
           <div className="space-y-6">
@@ -461,7 +456,7 @@ function GlobalMoviesCatalog() {
                 ) : (
                   <Save className="h-4 w-4" />
                 )}
-                {saving ? "Saving..." : editingId ? "Save Changes" : "Add to Catalog"}
+                {saving ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </div>

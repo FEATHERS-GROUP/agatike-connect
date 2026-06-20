@@ -1,29 +1,62 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Film, MapPin, Ticket, TrendingUp, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-const MOCK_CINEMA = {
-  id: "CenturyCinema",
-  name: "Century Cinema",
-  city: "Kigali",
-  screens: 4,
-  image:
-    "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600",
-};
+import { Film, MapPin, Ticket, TrendingUp, Users, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getCinemaById } from "@/api/cinemas";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/overview")({
   component: CinemaOverview,
 });
 
 function CinemaOverview() {
-  const cinema = MOCK_CINEMA;
+  const { cinemaId } = Route.useParams();
+
+  const { data: cinema, isLoading } = useQuery({
+    queryKey: ["cinema", cinemaId],
+    queryFn: () => getCinemaById({ data: { id: cinemaId } } as any),
+    enabled: !!cinemaId,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!cinema) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <p className="text-muted-foreground text-lg">Cinema not found.</p>
+      </div>
+    );
+  }
+
+  // Calculate unique movies from schedules
+  const activeMoviesCount = new Set(
+    (cinema.schedules || []).map((s: any) => s.movie?.id).filter(Boolean),
+  ).size;
+
+  const STATS = [
+    { label: "Tickets Sold (Today)", value: "0", icon: Ticket, trend: "0%" },
+    { label: "Active Movies", value: activeMoviesCount.toString(), icon: Film, trend: "0%" },
+    { label: "Total Revenue", value: "RWF 0", icon: TrendingUp, trend: "0%" },
+    { label: "Attendees", value: "0", icon: Users, trend: "0%" },
+  ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 max-w-6xl mx-auto">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Hero Section */}
       <section className="relative w-full h-[250px] md:h-[300px] rounded-3xl overflow-hidden shadow-sm">
         <div className="absolute inset-0">
-          <img src={cinema.image} alt={cinema.name} className="w-full h-full object-cover" />
+          <img
+            src={
+              cinema.cover_url ||
+              "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600"
+            }
+            alt={cinema.name}
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         </div>
 
@@ -45,7 +78,7 @@ function CinemaOverview() {
                 <div className="w-1 h-1 rounded-full bg-white/50" />
                 <div className="flex items-center gap-1.5">
                   <Film className="h-4 w-4" />
-                  <span>{cinema.screens} screens</span>
+                  <span>{cinema.screens?.length || 0} screens</span>
                 </div>
               </div>
             </div>
@@ -55,12 +88,7 @@ function CinemaOverview() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Tickets Sold (Today)", value: "1,204", icon: Ticket, trend: "+12%" },
-          { label: "Active Movies", value: "12", icon: Film, trend: "0%" },
-          { label: "Total Revenue", value: "RWF 4.2M", icon: TrendingUp, trend: "+8%" },
-          { label: "Attendees", value: "3,402", icon: Users, trend: "+15%" },
-        ].map((stat, i) => (
+        {STATS.map((stat, i) => (
           <div key={i} className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
             <div className="flex justify-between items-start mb-4">
               <div className="p-2.5 bg-primary/10 rounded-xl">

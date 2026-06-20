@@ -74,13 +74,17 @@ function DashboardLayout() {
     location.pathname === "/dashboard/settings" ||
     isDesigningVenue ||
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/);
+    location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-movie/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/);
 
   const isDesigner =
     isDesigningVenue ||
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/community/i) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/);
+    location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-movie/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/);
 
   useEffect(() => {
     if (!isLoaded) return;
