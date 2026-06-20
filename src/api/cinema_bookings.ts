@@ -118,6 +118,19 @@ const GET_CINEMA_STATS = `
   }
 `;
 
+const GET_CINEMA_CHART_DATA = `
+  query GetCinemaChartData($cinema_id: uuid!) {
+    cinema_bookings(
+      where: { cinema_id: { _eq: $cinema_id }, status: { _neq: "cancelled" } }
+      order_by: { created_at: asc }
+    ) {
+      created_at
+      total_price
+      quantity
+    }
+  }
+`;
+
 export const getCinemaBookings = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
@@ -153,6 +166,19 @@ export const getCinemaStats = createServerFn({ method: "POST" })
       total_revenue: res.cinema_bookings_aggregate?.aggregate?.sum?.total_price || 0,
       today_quantity: res.today_bookings?.aggregate?.sum?.quantity || 0,
     };
+  });
+
+export const getCinemaChartData = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { cinema_id } = ctx.data;
+    if (!cinema_id) throw new Error("cinema_id is required");
+    
+    const res = await hasuraRequest<{ cinema_bookings: any[] }>(GET_CINEMA_CHART_DATA, {
+      cinema_id,
+    });
+    
+    return res.cinema_bookings;
   });
 
 export const getCinemaBookingById = createServerFn({ method: "POST" })
