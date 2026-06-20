@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Film, MapPin, Ticket, TrendingUp, Users, Loader2, Tag } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getCinemaById } from "@/api/cinemas";
+import { getCinemaStats, getCinemaBookings } from "@/api/cinema_bookings";
+import { formatCurrency } from "@/lib/currency";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/overview")({
   component: CinemaOverview,
@@ -13,6 +15,18 @@ function CinemaOverview() {
   const { data: cinema, isLoading } = useQuery({
     queryKey: ["cinema", cinemaId],
     queryFn: () => getCinemaById({ data: { id: cinemaId } } as any),
+    enabled: !!cinemaId,
+  });
+
+  const { data: stats } = useQuery({
+    queryKey: ["cinema_stats", cinemaId],
+    queryFn: () => getCinemaStats({ data: { cinema_id: cinemaId } }),
+    enabled: !!cinemaId,
+  });
+
+  const { data: recentBookings = [] } = useQuery({
+    queryKey: ["cinema_bookings", cinemaId, { limit: 5 }],
+    queryFn: () => getCinemaBookings({ data: { cinema_id: cinemaId, limit: 5 } }),
     enabled: !!cinemaId,
   });
 
@@ -40,10 +54,10 @@ function CinemaOverview() {
 
 
   const STATS = [
-    { label: "Tickets Sold (Today)", value: "0", icon: Ticket, trend: "0%" },
-    { label: "Active Movies", value: activeMoviesCount.toString(), icon: Film, trend: "0%" },
-    { label: "Total Revenue", value: "RWF 0", icon: TrendingUp, trend: "0%" },
-    { label: "Attendees", value: "0", icon: Users, trend: "0%" },
+    { label: "Tickets Sold (Today)", value: stats?.today_quantity?.toString() || "0", icon: Ticket, trend: "Live" },
+    { label: "Active Movies", value: activeMoviesCount.toString(), icon: Film, trend: "Current" },
+    { label: "Total Revenue", value: formatCurrency(stats?.total_revenue || 0, "RWF"), icon: TrendingUp, trend: "All time" },
+    { label: "Attendees", value: stats?.total_quantity?.toString() || "0", icon: Users, trend: "Total" },
   ];
 
   return (
@@ -106,12 +120,34 @@ function CinemaOverview() {
         ))}
       </div>
       <div className="grid grid-cols-1 gap-8">
-        {/* Recent Activity placeholder */}
+        {/* Recent Activity */}
         <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
           <h3 className="text-xl font-bold mb-4">Recent Bookings</h3>
-          <div className="text-center py-12 bg-secondary/10 rounded-2xl border border-border/40 h-[calc(100%-3rem)] flex items-center justify-center">
-            <p className="text-muted-foreground">Bookings will appear here once movies are live.</p>
-          </div>
+          {recentBookings.length === 0 ? (
+            <div className="text-center py-12 bg-secondary/10 rounded-2xl border border-border/40 h-[calc(100%-3rem)] flex items-center justify-center">
+              <p className="text-muted-foreground">Bookings will appear here once movies are live.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentBookings.map((b: any) => (
+                <div key={b.id} className="flex items-center justify-between p-4 rounded-2xl border border-border/40 hover:bg-secondary/20 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex flex-col items-center justify-center font-bold">
+                      <span className="text-sm">{b.quantity}x</span>
+                    </div>
+                    <div>
+                      <p className="font-bold">{b.schedule?.movie?.title}</p>
+                      <p className="text-sm text-muted-foreground">{b.names || "Walk-in"} • {b.ticket_tier?.name}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-lg">{formatCurrency(b.total_price, b.currency)}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -18,7 +18,7 @@ function CinemaBookings() {
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ["cinema_bookings", cinemaId],
-    queryFn: () => getCinemaBookings({ data: { cinema_id: cinemaId } }),
+    queryFn: () => getCinemaBookings({ data: { cinema_id: cinemaId, limit: 50 } }),
     enabled: !!cinemaId,
   });
 

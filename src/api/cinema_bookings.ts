@@ -4,10 +4,12 @@ import { hasuraRequest } from "./graphql.server";
 // ─── Queries ────────────────────────────────────────────────────────────────
 
 const GET_CINEMA_BOOKINGS = `
-  query GetCinemaBookings($cinema_id: uuid!) {
+  query GetCinemaBookings($cinema_id: uuid!, $limit: Int = 50, $offset: Int = 0) {
     cinema_bookings(
       where: { cinema_id: { _eq: $cinema_id } }
       order_by: { created_at: desc }
+      limit: $limit
+      offset: $offset
     ) {
       id
       cinema_id
@@ -90,15 +92,67 @@ const GET_CINEMA_BOOKING_BY_ID = `
 
 // ─── Mutations ───────────────────────────────────────────────────────────────
 
+const GET_CINEMA_STATS = `
+  query GetCinemaStats($cinema_id: uuid!) {
+    cinema_bookings_aggregate(where: { cinema_id: { _eq: $cinema_id }, status: { _neq: "cancelled" } }) {
+      aggregate {
+        sum {
+          quantity
+          total_price
+        }
+      }
+    }
+    today_bookings: cinema_bookings_aggregate(
+      where: { 
+        cinema_id: { _eq: $cinema_id }, 
+        status: { _neq: "cancelled" },
+        created_at: { _gte: "today" } 
+      }
+    ) {
+      aggregate {
+        sum {
+          quantity
+        }
+      }
+    }
+  }
+`;
+
 export const getCinemaBookings = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { cinema_id, limit = 50, offset = 0 } = ctx.data;
+    if (!cinema_id) throw new Error("cinema_id is required");
+    const res = await hasuraRequest<{ cinema_bookings: any[] }>(GET_CINEMA_BOOKINGS, {
+      cinema_id,
+      limit,
+      offset
+    });
+    return res.cinema_bookings;
+  });
+
+export const getCinemaStats = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
     const { cinema_id } = ctx.data;
     if (!cinema_id) throw new Error("cinema_id is required");
-    const res = await hasuraRequest<{ cinema_bookings: any[] }>(GET_CINEMA_BOOKINGS, {
+    
+    // We replace 'today' with actual ISO string for midnight UTC
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayISO = today.toISOString();
+
+    const query = GET_CINEMA_STATS.replace('"today"', `"${todayISO}"`);
+
+    const res = await hasuraRequest<any>(query, {
       cinema_id,
     });
-    return res.cinema_bookings;
+    
+    return {
+      total_quantity: res.cinema_bookings_aggregate?.aggregate?.sum?.quantity || 0,
+      total_revenue: res.cinema_bookings_aggregate?.aggregate?.sum?.total_price || 0,
+      today_quantity: res.today_bookings?.aggregate?.sum?.quantity || 0,
+    };
   });
 
 export const getCinemaBookingById = createServerFn({ method: "POST" })
