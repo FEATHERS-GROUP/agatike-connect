@@ -1,4 +1,4 @@
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -157,6 +157,7 @@ const MOCK_TIERS = [
 
 function CinemaTicketTiersPage() {
   const { workspaceSlug } = useParams({ strict: false }) as any;
+  const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
 
@@ -205,10 +206,10 @@ function CinemaTicketTiersPage() {
     setSaving(true);
     try {
       if (editingTier) {
-        await updateCinemaTicketTier({ data: { id: editingTier.id, object: form } });
+        await updateCinemaTicketTier({ data: { id: editingTier.id, ...form } });
         toast.success("Ticket tier updated!");
       } else {
-        await createCinemaTicketTier({ data: { object: { ...form, workspace_id: activeWorkspace?.id } } });
+        await createCinemaTicketTier({ data: { ...form, workspace_id: activeWorkspace?.id } });
         toast.success("Ticket tier created!");
       }
       await queryClient.invalidateQueries({ queryKey: ["cinema_ticket_tiers"] });
@@ -251,7 +252,7 @@ function CinemaTicketTiersPage() {
             </p>
           </div>
           <Button
-            onClick={openCreate}
+            onClick={() => navigate({ to: "/dashboard/$workspaceSlug/Cinema/create-ticket-tier", params: { workspaceSlug } })}
             className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
           >
@@ -432,12 +433,9 @@ function CinemaTicketTiersPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Currency</Label>
-                    <Input
-                      value={form.currency}
-                      onChange={(e) => setForm((p: any) => ({ ...p, currency: e.target.value }))}
-                      className="rounded-xl h-11"
-                      placeholder="RWF"
-                    />
+                    <div className="flex h-11 w-full items-center rounded-xl border border-input bg-secondary/30 px-3 text-sm font-semibold text-muted-foreground">
+                      {activeWorkspace?.currency || "RWF"}
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-2">

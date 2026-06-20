@@ -76,6 +76,7 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-movie/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-ticket-tier/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/);
 
   const isDesigner =
@@ -84,6 +85,7 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/community/i) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-movie/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-ticket-tier/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/);
 
   useEffect(() => {
