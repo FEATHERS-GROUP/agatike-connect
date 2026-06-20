@@ -1,0 +1,155 @@
+import { createServerFn } from "@tanstack/react-start";
+import { hasuraRequest } from "./graphql.server";
+
+// ─── Queries ────────────────────────────────────────────────────────────────
+
+const GET_CINEMA_BOOKINGS = `
+  query GetCinemaBookings($cinema_id: uuid!) {
+    cinema_bookings(
+      where: { cinema_id: { _eq: $cinema_id } }
+      order_by: { created_at: desc }
+    ) {
+      id
+      cinema_id
+      schedule_id
+      ticket_tier_id
+      names
+      email
+      phone
+      quantity
+      total_price
+      currency
+      payment_method
+      status
+      qrcode_number
+      created_at
+      schedule {
+        id
+        show_date
+        start_time
+        movie {
+          id
+          title
+          cover_url
+        }
+        screen {
+          id
+          name
+        }
+      }
+      ticket_tier {
+        id
+        name
+        type
+        price
+      }
+    }
+  }
+`;
+
+const GET_CINEMA_BOOKING_BY_ID = `
+  query GetCinemaBookingById($id: uuid!) {
+    cinema_bookings_by_pk(id: $id) {
+      id
+      cinema_id
+      schedule_id
+      ticket_tier_id
+      names
+      email
+      phone
+      quantity
+      total_price
+      currency
+      payment_method
+      status
+      qrcode_number
+      created_at
+      schedule {
+        id
+        show_date
+        start_time
+        movie {
+          id
+          title
+          cover_url
+        }
+        screen {
+          id
+          name
+        }
+      }
+      ticket_tier {
+        id
+        name
+        type
+        price
+      }
+    }
+  }
+`;
+
+// ─── Mutations ───────────────────────────────────────────────────────────────
+
+export const getCinemaBookings = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { cinema_id } = ctx.data;
+    if (!cinema_id) throw new Error("cinema_id is required");
+    const res = await hasuraRequest<{ cinema_bookings: any[] }>(GET_CINEMA_BOOKINGS, {
+      cinema_id,
+    });
+    return res.cinema_bookings;
+  });
+
+export const getCinemaBookingById = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { id } = ctx.data;
+    if (!id) throw new Error("id is required");
+    const res = await hasuraRequest<{ cinema_bookings_by_pk: any }>(GET_CINEMA_BOOKING_BY_ID, {
+      id,
+    });
+    return res.cinema_bookings_by_pk;
+  });
+
+export const createCinemaBooking = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { object } = ctx.data;
+    
+    // We need to increment the booked_seats for the schedule.
+    // Hasura doesn't easily do a nested update during an insert, so we'll do both via a multi-query string.
+    
+    // Generate a simple unique QR code number
+    const qrcode_number = `CBK-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+    
+    const objWithQr = {
+      ...object,
+      qrcode_number,
+    };
+
+    const CREATE_AND_UPDATE = `
+      mutation CreateCinemaBooking($object: cinema_bookings_insert_input!, $schedule_id: uuid!, $qty: Int!) {
+        insert_cinema_bookings_one(object: $object) {
+          id
+        }
+        update_cinema_schedules_by_pk(
+          pk_columns: { id: $schedule_id },
+          _inc: { booked_seats: $qty }
+        ) {
+          id
+        }
+      }
+    `;
+
+    const res = await hasuraRequest<{ insert_cinema_bookings_one: { id: string } }>(
+      CREATE_AND_UPDATE,
+      { 
+        object: objWithQr, 
+        schedule_id: object.schedule_id,
+        qty: object.quantity || 1
+      },
+    );
+    
+    return res.insert_cinema_bookings_one;
+  });

@@ -68,6 +68,11 @@ export function CinemaSidebar() {
       icon: Tag,
     },
     {
+      label: "Bookings",
+      href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/bookings`,
+      icon: Ticket,
+    },
+    {
       label: "Past & Finished",
       href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/archive`,
       icon: Archive,

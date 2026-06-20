@@ -178,7 +178,7 @@ function RootComponent() {
                   <GlobalNotificationListener />
                   <GlobalUserNotificationListener />
                   {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
-                  <div className={`min-h-[100dvh] md:pb-0 ${hideNav ? "" : "pb-24"}`}>
+                  <div className={`min-h-[100dvh] print:min-h-0 md:pb-0 ${hideNav ? "" : "pb-24"}`}>
                     <Outlet />
                   </div>
 

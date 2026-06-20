@@ -128,7 +128,7 @@ function DashboardLayout() {
 
   return (
     <>
-      <div className="md:hidden flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">
+      <div className="md:hidden print:hidden flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">
         <div className="bg-primary/10 p-4 rounded-full mb-4">
           <svg
             className="w-8 h-8 text-primary"
@@ -150,7 +150,7 @@ function DashboardLayout() {
           best experience.
         </p>
       </div>
-      <div className="hidden md:block min-h-screen bg-secondary/30">
+      <div className="hidden md:block print:block min-h-screen print:min-h-0 bg-secondary/30">
         <div className="flex">
           {/* Sidebar */}
           {!hideSidebar &&
@@ -172,7 +172,7 @@ function DashboardLayout() {
 
           {/* Main Content Area */}
           <main
-            className={`flex-1 min-w-0 ${isDesigner || location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" ? "" : "p-6 lg:p-10"}`}
+            className={`flex-1 min-w-0 ${isDesigner || location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" ? "" : "p-6 lg:p-10 print:p-0"}`}
           >
             <Outlet />
           </main>
