@@ -164,16 +164,14 @@ function CinemaTicketTiersPage() {
   const [editingTier, setEditingTier] = useState<any | null>(null);
   const [form, setForm] = useState<any>(EMPTY_FORM);
 
-  // Use mock data while DB is being set up; swap with useQuery below when ready
-  const tiers = MOCK_TIERS;
-  const isLoading = false;
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Uncomment to use real data:
-  // const { data: tiers = [], isLoading } = useQuery({
-  //   queryKey: ["cinema_ticket_tiers", activeWorkspace?.id],
-  //   queryFn: () => getCinemaTicketTiers({ data: { workspace_id: activeWorkspace?.id } }),
-  //   enabled: !!activeWorkspace?.id,
-  // });
+  const { data: tiers = [], isLoading } = useQuery({
+    queryKey: ["cinema_ticket_tiers", activeWorkspace?.id],
+    queryFn: () => getCinemaTicketTiers({ data: { workspace_id: activeWorkspace?.id } }),
+    enabled: !!activeWorkspace?.id,
+  });
 
   const openCreate = () => {
     setEditingTier(null);
@@ -203,14 +201,37 @@ function CinemaTicketTiersPage() {
   };
 
   const handleSave = async () => {
-    // TODO: wire to createCinemaTicketTier / updateCinemaTicketTier
-    toast.success(editingTier ? "Ticket tier updated!" : "Ticket tier created!");
-    setSheetOpen(false);
+    if (!form.name.trim()) return toast.error("Name is required");
+    setSaving(true);
+    try {
+      if (editingTier) {
+        await updateCinemaTicketTier({ data: { id: editingTier.id, object: form } });
+        toast.success("Ticket tier updated!");
+      } else {
+        await createCinemaTicketTier({ data: { object: { ...form, workspace_id: activeWorkspace?.id } } });
+        toast.success("Ticket tier created!");
+      }
+      await queryClient.invalidateQueries({ queryKey: ["cinema_ticket_tiers"] });
+      setSheetOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save ticket tier");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
-    // TODO: wire to deleteCinemaTicketTier
-    toast.success("Ticket tier deleted.");
+    if (!confirm("Are you sure you want to delete this ticket tier?")) return;
+    setDeletingId(id);
+    try {
+      await deleteCinemaTicketTier({ data: { id } });
+      toast.success("Ticket tier deleted.");
+      await queryClient.invalidateQueries({ queryKey: ["cinema_ticket_tiers"] });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete ticket tier");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const getBadges = (tier: any) =>
@@ -328,8 +349,13 @@ function CinemaTicketTiersPage() {
                           variant="ghost"
                           className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() => handleDelete(tier.id)}
+                          disabled={deletingId === tier.id}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          {deletingId === tier.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5" />
+                          )}
                         </Button>
                       </div>
                     </td>
@@ -510,8 +536,12 @@ function CinemaTicketTiersPage() {
                   style={{ background: "var(--gradient-primary)" }}
                   onClick={handleSave}
                 >
-                  <Save className="h-4 w-4" />
-                  {editingTier ? "Save Changes" : "Create Tier"}
+                  {saving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  {saving ? "Saving..." : editingTier ? "Save Changes" : "Create Tier"}
                 </Button>
               </div>
             </div>
