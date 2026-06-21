@@ -299,10 +299,10 @@ export function EventDetailsMobile({
           <span className="bg-primary/90 text-primary-foreground backdrop-blur-md px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md border border-white/10 shadow-sm">
             {category}
           </span>
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-white shadow-sm leading-none mb-4">
+          <h1 className="mt-3 text-4xl font-bold tracking-tight text-foreground leading-none mb-4">
             {ev.title}
           </h1>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-white/90 text-sm font-medium">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-muted-foreground text-sm font-medium">
             <span className="flex items-center gap-1.5">
               <Calendar className="h-4 w-4 text-primary" /> {date || "Today"}
             </span>
@@ -364,13 +364,13 @@ export function EventDetailsMobile({
         <div>
           <h2 className="text-lg font-bold mb-4">{isExperience ? "Route & Schedule" : "Venue"}</h2>
           {isExperience && itinerary.length > 0 ? (
-            <div className="flex flex-col gap-6">
-              {polylinePositions.length > 0 && (
-                <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden bg-secondary relative z-0 border border-border/40">
+            <div className="relative w-full rounded-2xl overflow-hidden border border-border/40 h-[500px]">
+              {polylinePositions.length > 0 ? (
+                <div className="absolute inset-0 z-0 bg-secondary">
                   {isClient ? (
                     <Suspense
                       fallback={
-                        <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground text-sm font-medium">
+                        <div className="h-full w-full flex items-center justify-center text-muted-foreground text-sm font-medium">
                           Loading map...
                         </div>
                       }
@@ -383,33 +383,57 @@ export function EventDetailsMobile({
                       />
                     </Suspense>
                   ) : (
-                    <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground text-sm font-medium">
+                    <div className="h-full w-full flex items-center justify-center text-muted-foreground text-sm font-medium">
                       Loading map...
                     </div>
                   )}
                 </div>
+              ) : (
+                <div className="absolute inset-0 z-0 bg-secondary flex items-center justify-center">
+                  Map data unavailable
+                </div>
               )}
-              
-              <div className="space-y-0 relative before:absolute before:top-0 before:bottom-0 before:left-4 before:-ml-px before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent pt-2">
-                {itinerary.map((stop: any) => (
-                  <div key={stop.id} className="relative flex items-start group py-4">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full border-4 border-background bg-primary shadow-sm shrink-0 relative z-10">
-                      <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
-                    </div>
-                    <div className="ml-3 bg-card/60 backdrop-blur w-full p-3.5 rounded-2xl border border-border/40 shadow-sm">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-bold text-sm">{stop.title}</h4>
-                        <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                          {stop.time}
-                        </span>
+
+              {/* Gradient overlay for readability */}
+              <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-background via-background/60 to-transparent z-0 pointer-events-none" />
+
+              {/* Floating Zigzag Itinerary Carousel */}
+              <div className="absolute bottom-0 left-0 right-0 z-10 w-full overflow-x-auto hide-scrollbar pb-6 pt-16 px-6 pointer-events-auto snap-x snap-mandatory">
+                <div className="flex gap-4 min-w-max relative items-center pb-8 pt-8">
+                  {itinerary.map((stop: any, idx: number) => {
+                    const isEven = idx % 2 === 0;
+                    return (
+                      <div key={stop.id} className={`relative z-10 flex flex-col items-center w-48 shrink-0 snap-center transition-transform ${isEven ? '-mt-16' : 'mt-16'}`}>
+                        {/* Circle node */}
+                        <div className="w-8 h-8 rounded-full bg-primary border-4 border-background flex items-center justify-center shrink-0 z-10 shadow-[0_0_15px_rgba(var(--primary),0.5)]">
+                          <div className="w-2 h-2 rounded-full bg-white" />
+                        </div>
+                        {/* Card */}
+                        <div className={`mt-3 bg-background/95 backdrop-blur-md shadow-xl border border-border/50 p-4 rounded-2xl w-full text-center flex flex-col items-center gap-1.5`}>
+                          <h4 className="font-bold text-[13px] leading-tight line-clamp-2">{stop.title}</h4>
+                          <span className="text-[10px] font-bold tracking-wider uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                            {stop.time}
+                          </span>
+                        </div>
+                        
+                        {/* SVG connector segment to next item */}
+                        {idx < itinerary.length - 1 && (
+                          <svg className="absolute left-1/2 w-[208px] h-[128px] overflow-visible z-[-1] pointer-events-none" style={{ top: '16px' }}>
+                             <path 
+                               d={isEven ? "M 0 0 C 104 0, 104 128, 208 128" : "M 0 0 C 104 0, 104 -128, 208 -128"} 
+                               stroke="hsl(var(--primary))" 
+                               strokeWidth="3" 
+                               fill="none" 
+                               strokeDasharray="6 6"
+                               strokeLinecap="round"
+                               className="opacity-70"
+                             />
+                          </svg>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
-                        <MapPin className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{stop.address}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    )
+                  })}
+                </div>
               </div>
             </div>
           ) : (

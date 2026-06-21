@@ -550,13 +550,7 @@ export function EventDetailsDesktop({
             <h2 className="text-xl font-semibold">{isExperience ? "Route & Schedule" : "Venue"}</h2>
 
             {isExperience && itinerary.length > 0 ? (
-              <div
-                className={
-                  polylinePositions.length > 0
-                    ? "mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8"
-                    : "mt-4 block"
-                }
-              >
+              <div className="mt-4 flex flex-col gap-8 w-full">
                 {polylinePositions.length > 0 && (
                   <div className="rounded-2xl overflow-hidden border border-border/60 h-[400px] z-10 relative mb-8 lg:mb-0">
                     {isClient ? (
