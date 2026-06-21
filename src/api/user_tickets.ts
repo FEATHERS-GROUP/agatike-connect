@@ -141,6 +141,7 @@ const GET_USER_CINEMA_BOOKINGS = `
         movie {
           title
           cover_url
+          duration_minutes
         }
         screen {
           name
@@ -402,6 +403,10 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
     const venueName = booking.schedule?.cinema?.name || "Cinema";
     const city = booking.schedule?.cinema?.city || "Unknown City";
     const coverUrl = booking.schedule?.movie?.cover_url || "/venues.png";
+    const screenName = booking.schedule?.screen?.name || "Main Screen";
+    const duration = booking.schedule?.movie?.duration_minutes
+      ? `${Math.floor(booking.schedule.movie.duration_minutes / 60)}h ${booking.schedule.movie.duration_minutes % 60}m`
+      : "2h 0m";
 
     tickets.push({
       id: booking.id,
@@ -414,6 +419,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         day: "numeric",
       }).format(new Date(booking.schedule.show_date)) : "TBA",
       time: booking.schedule?.start_time ? booking.schedule.start_time.substring(0, 5) : "TBA",
+      duration,
       seat: booking.names || "Guest",
       passengerName: booking.names || user.username || "Guest",
       passengerProfile: user.profile || null,
@@ -421,10 +427,13 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       ticketType: booking.ticket_tier?.name || "Standard",
       ticketCategory: "movie",
       price: booking.total_price,
+      quantity: booking.quantity || 1,
       isVenueBooking: false,
       status: booking.status || "Confirmed",
       eventDate: booking.schedule?.show_date || booking.created_at,
       venueName,
+      cinema: venueName,
+      screen: screenName,
       city,
       design: null,
     });

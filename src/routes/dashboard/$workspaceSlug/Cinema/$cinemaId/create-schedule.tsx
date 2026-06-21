@@ -16,6 +16,7 @@ import {
   Ticket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -45,6 +46,7 @@ const EMPTY_FORM = {
   is_imax: false,
   status: "scheduled",
   ticket_tiers: [] as string[],
+  tier_overrides: {} as Record<string, string>,
 };
 
 const TIME_OPTIONS = Array.from({ length: 24 * 4 }).map((_, i) => {
@@ -103,8 +105,19 @@ function CreateSchedulePage() {
       const tiers = p.ticket_tiers.includes(id)
         ? p.ticket_tiers.filter((t: string) => t !== id)
         : [...p.ticket_tiers, id];
-      return { ...p, ticket_tiers: tiers };
+      const overrides = { ...p.tier_overrides };
+      if (!tiers.includes(id)) {
+        delete overrides[id];
+      }
+      return { ...p, ticket_tiers: tiers, tier_overrides: overrides };
     });
+  };
+
+  const handleOverrideChange = (id: string, value: string) => {
+    setForm((p: any) => ({
+      ...p,
+      tier_overrides: { ...p.tier_overrides, [id]: value },
+    }));
   };
 
   const STEPS = [
@@ -150,6 +163,7 @@ function CreateSchedulePage() {
         ticket_tiers: {
           data: form.ticket_tiers.map((tId: string) => ({
             ticket_tier_id: tId,
+            price_override: form.tier_overrides[tId] ? Number(form.tier_overrides[tId]) : null,
           })),
         },
       };
@@ -505,7 +519,24 @@ function CreateSchedulePage() {
                                 {tier.currency} {tier.price}
                               </span>
                             </div>
-                            <p className="text-sm text-muted-foreground capitalize">{tier.type} Tier</p>
+                            <p className="text-sm text-muted-foreground capitalize mb-3">{tier.type} Tier</p>
+                            {form.ticket_tiers.includes(tier.id) && (
+                              <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
+                                <Label className="text-xs">Custom Price Override (Optional)</Label>
+                                <div className="relative">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                                    {tier.currency}
+                                  </span>
+                                  <Input 
+                                    type="number"
+                                    placeholder={`Default: ${tier.price}`}
+                                    value={form.tier_overrides[tier.id] || ""}
+                                    onChange={(e) => handleOverrideChange(tier.id, e.target.value)}
+                                    className="pl-12 bg-background border-border/60"
+                                  />
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </label>
                       ))}

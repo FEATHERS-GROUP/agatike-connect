@@ -300,20 +300,20 @@ function DynamicPrintablePass({ ticket, config }: { ticket: any; config?: Ticket
                 {labels.time || "Time"}
               </p>
               <p className="text-base font-bold">
-                {ticket.showtimes?.[0] || ticket.time || "18:30"}
+                {ticket.time || ticket.showtimes?.[0] || "18:30"}
               </p>
             </div>
             <div className="bg-white/10 rounded px-3 py-2">
               <p className="text-[9px] uppercase tracking-widest opacity-70 mb-0.5">
                 {labels.screen || "Screen"}
               </p>
-              <p className="text-base font-bold">IMAX 4</p>
+              <p className="text-base font-bold truncate">{ticket.screen || "Main Screen"}</p>
             </div>
             <div className="bg-white/10 rounded px-3 py-2">
               <p className="text-[9px] uppercase tracking-widest opacity-70 mb-0.5">
-                {labels.seat || "Seat"}
+                Quantity
               </p>
-              <p className="text-base font-bold">{ticket.seat?.split("·")[1]?.trim() || "H4"}</p>
+              <p className="text-base font-bold">{ticket.quantity || 1} Ticket{ticket.quantity !== 1 ? 's' : ''}</p>
             </div>
           </div>
         </div>

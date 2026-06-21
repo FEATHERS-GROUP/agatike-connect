@@ -280,7 +280,7 @@ function DynamicPass({ ticket }: { ticket: any }) {
         </div>
         <div className="flex justify-between items-end mb-4">
           <div>
-            <p className="font-bold text-lg">{ticket.showtimes?.[0] || "18:30"}</p>
+            <p className="font-bold text-lg">{ticket.time || ticket.showtimes?.[0] || "18:30"}</p>
             <p className="text-gray-500 text-xs font-medium mt-1">Start Time</p>
           </div>
           <div className="text-right">
@@ -301,11 +301,11 @@ function DynamicPass({ ticket }: { ticket: any }) {
           </div>
           <div className="text-center">
             <p className="text-gray-500 text-xs font-medium mb-1">Screen</p>
-            <p className="font-bold text-sm">IMAX 4</p>
+            <p className="font-bold text-sm truncate">{ticket.screen || "Main Screen"}</p>
           </div>
           <div className="text-right">
-            <p className="text-gray-500 text-xs font-medium mb-1">Seat</p>
-            <p className="font-bold text-sm">{ticket.seat.split("·")[1]?.trim() || "H4"}</p>
+            <p className="text-gray-500 text-xs font-medium mb-1">Quantity</p>
+            <p className="font-bold text-sm truncate">{ticket.quantity || 1} Ticket{ticket.quantity !== 1 ? 's' : ''}</p>
           </div>
         </div>
 
