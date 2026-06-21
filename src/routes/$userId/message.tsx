@@ -28,7 +28,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import EmojiPicker from "emoji-picker-react";
+import EmojiPicker, { Theme } from "emoji-picker-react";
 import { GiphyFetch } from "@giphy/js-fetch-api";
 import { Grid } from "@giphy/react-components";
 
@@ -739,7 +739,7 @@ function UserMessagesPage() {
                         onEmojiClick={(emojiData) =>
                           setMessageInput((prev) => prev + emojiData.emoji)
                         }
-                        theme="auto"
+                        theme={Theme.AUTO}
                       />
                     </PopoverContent>
                   </Popover>

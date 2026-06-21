@@ -24,7 +24,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import EmojiPicker from "emoji-picker-react";
+import EmojiPicker, { Theme } from "emoji-picker-react";
 import { GiphyFetch } from "@giphy/js-fetch-api";
 import { Grid } from "@giphy/react-components";
 
@@ -1030,7 +1030,7 @@ function CommunityPage() {
                   >
                     <EmojiPicker
                       onEmojiClick={(emojiData) => setMessageInput((prev) => prev + emojiData.emoji)}
-                      theme="auto"
+                      theme={Theme.AUTO}
                     />
                   </PopoverContent>
                 </Popover>
