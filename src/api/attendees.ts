@@ -34,8 +34,10 @@ const GET_EVENT_ATTENDEES = `
   }
 `;
 
-export const getEventAttendees = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { event_id } = ctx.data as unknown as { event_id: string };
+export const getEventAttendees = createServerFn({ method: "POST" })
+  .inputValidator((d: { event_id: string }) => d)
+  .handler(async (ctx) => {
+  const { event_id } = ctx.data;
   const data = await hasuraRequest<{ event_attendees: any[] }>(GET_EVENT_ATTENDEES, { event_id });
   return data.event_attendees || [];
 });
@@ -66,8 +68,10 @@ const GET_ATTENDEE_BY_QR_CODE = `
   }
 `;
 
-export const getAttendeeByQrCode = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { qrcode_number } = ctx.data as unknown as { qrcode_number: string };
+export const getAttendeeByQrCode = createServerFn({ method: "POST" })
+  .inputValidator((d: { qrcode_number: string }) => d)
+  .handler(async (ctx) => {
+  const { qrcode_number } = ctx.data;
   const data = await hasuraRequest<{ event_attendees: any[] }>(GET_ATTENDEE_BY_QR_CODE, {
     qrcode_number,
   });
@@ -85,8 +89,10 @@ const ADD_EVENT_ATTENDEES = `
   }
 `;
 
-export const addEventAttendees = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { objects } = ctx.data as any;
+export const addEventAttendees = createServerFn({ method: "POST" })
+  .inputValidator((d: { objects: any[] }) => d)
+  .handler(async (ctx) => {
+  const { objects } = ctx.data;
 
   // 1. Group by ticket_id to calculate requested quantities
   const qtyByTier: Record<string, number> = {};
@@ -196,8 +202,10 @@ export const addEventAttendees = createServerFn({ method: "POST" }).handler(asyn
   return hasuraRequest(ADD_EVENT_ATTENDEES, { objects });
 });
 
-export const checkUserAttendance = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { event_id } = ctx.data as unknown as { event_id: string };
+export const checkUserAttendance = createServerFn({ method: "POST" })
+  .inputValidator((d: { event_id: string }) => d)
+  .handler(async (ctx) => {
+  const { event_id } = ctx.data;
 
   // Need to dynamically import to avoid circular dependencies if auth imports from elsewhere,
   // but a static import at top is fine too. Let's just use it dynamically to be safe.

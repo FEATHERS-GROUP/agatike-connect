@@ -469,8 +469,10 @@ export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(asyn
   return { success: true };
 });
 
-export const getOrganizerFollowerIds = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { organizerId } = ctx.data as any;
+export const getOrganizerFollowerIds = createServerFn({ method: "POST" })
+  .inputValidator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+  const { organizerId } = ctx.data;
   const fetchQuery = `
     query GetFollowersRow($organizerId: uuid!) {
       organizer_followers(where: { organizer_id: { _eq: $organizerId } }) {

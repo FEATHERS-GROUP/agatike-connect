@@ -255,7 +255,7 @@ export function useFirestoreCommunity(
             const attendees = await getEventAttendees({
               data: { event_id: hasuraChannel.event_id },
             });
-            targetUsers = attendees.map((a) => a.user_id).filter(Boolean);
+            targetUsers = attendees.map((a: any) => a.user_id).filter(Boolean);
           } else {
             targetUsers = await getOrganizerFollowerIds({ data: { organizerId: workspaceId } });
           }
