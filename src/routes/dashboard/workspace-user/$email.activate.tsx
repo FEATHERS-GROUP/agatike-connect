@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { activateWorkspaceUser } from "@/api/workspace_users";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,39 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/dashboard/workspace-user/activate")({
+import { getSession } from "@/api/auth";
+import { checkWorkspaceUserStatus } from "@/api/workspace_users";
+
+export const Route = createFileRoute("/dashboard/workspace-user/$email/activate")({
+  beforeLoad: async ({ params, location }) => {
+    try {
+      const email = decodeURIComponent(params.email);
+      const status = await checkWorkspaceUserStatus({ data: { email } } as any);
+      
+      if (status === "active") {
+        const session = await getSession();
+        if (session) {
+          throw redirect({ to: "/dashboard" });
+        } else {
+          throw redirect({ to: "/dashboard/login" });
+        }
+      }
+    } catch (err: any) {
+      if (err.redirect) {
+        throw err;
+      }
+      // If user not found, we can just let the page load or show error later
+    }
+  },
   component: ActivatePage,
 });
 
 function ActivatePage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const { email: emailParam } = Route.useParams();
+  const decodedEmail = decodeURIComponent(emailParam);
+  
+  const [email, setEmail] = useState(decodedEmail);
   const [initialPassword, setInitialPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -68,7 +94,8 @@ function ActivatePage() {
                 type="email" 
                 placeholder="name@example.com" 
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                readOnly
+                className="bg-secondary/50 text-muted-foreground"
                 required
               />
             </div>

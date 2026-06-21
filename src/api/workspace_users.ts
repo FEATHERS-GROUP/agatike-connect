@@ -3,6 +3,7 @@ import { setCookie } from "@tanstack/react-start/server";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { hasuraRequest } from "./graphql.server";
+import { sendWorkspaceUserInviteEmail } from "./email";
 import { getSession } from "./auth";
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
@@ -157,8 +158,27 @@ export const addWorkspaceUser = createServerFn({ method: "POST" }).handler(async
 
   const data = await hasuraRequest<{ insert_workspace_users_one: { id: string } }>(mutation, variables);
   
-  // TODO: Send email invitation with initial password and link to /dashboard/workspace-user/activate
+  // Get organizer name
+  const orgQuery = `query GetOrg { organizers_by_pk(id: "${session.sub}") { name } }`;
+  let orgName = "an organizer";
+  try {
+    const orgRes = await hasuraRequest<{ organizers_by_pk: { name: string } }>(orgQuery, {});
+    if (orgRes.organizers_by_pk) orgName = orgRes.organizers_by_pk.name;
+  } catch (e) {}
+
   console.log(`Sending invite email to ${input.email} with initial password...`);
+  try {
+    await sendWorkspaceUserInviteEmail({
+      data: {
+        to: input.email,
+        userName: input.name,
+        initialPassword: input.password,
+        organizerName: orgName,
+      }
+    } as any);
+  } catch (err) {
+    console.error("Failed to send invite email:", err);
+  }
   
   return data.insert_workspace_users_one;
 });
@@ -230,6 +250,7 @@ export const loginWorkspaceUser = createServerFn({ method: "POST" }).handler(asy
   const user = result.workspace_users[0];
 
   if (!user) throw new Error("Invalid email or password");
+  if (user.status === "disabled" || user.status === "deleted") throw new Error("This account has been disabled or no longer exists.");
   if (user.status !== "active") throw new Error("Please activate your account first");
 
   const isValid = await bcrypt.compare(password, user.password);
@@ -324,3 +345,83 @@ export const removeWorkspaceUser = createServerFn({ method: "POST" }).handler(as
   await hasuraRequest(mutation, { id });
   return { success: true };
 });
+
+export const resendWorkspaceUserInvite = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub || session.type !== "organizer") {
+    throw new Error("unauthenticated or unauthorized");
+  }
+
+  const input = ctx.data as any;
+  const userId = input.userId;
+
+  // Fetch the user to make sure they belong to the organizer and are still pending
+  const query = `
+    query GetUser($id: uuid!) {
+      workspace_users_by_pk(id: $id) {
+        id
+        email
+        name
+        status
+        organizer_id
+      }
+    }
+  `;
+  const data = await hasuraRequest<{ workspace_users_by_pk: any }>(query, { id: userId });
+  const user = data.workspace_users_by_pk;
+
+  if (!user || user.organizer_id !== session.sub) throw new Error("User not found");
+  if (user.status === "active") throw new Error("User is already active");
+
+  // Generate new password
+  const newPassword = Math.random().toString(36).slice(-8);
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  const mutation = `
+    mutation UpdateUserPassword($id: uuid!, $password: String!) {
+      update_workspace_users_by_pk(pk_columns: {id: $id}, _set: {password: $password}) {
+        id
+      }
+    }
+  `;
+  await hasuraRequest(mutation, { id: userId, password: hashedPassword });
+
+  // Get organizer name
+  const orgQuery = `query GetOrg { organizers_by_pk(id: "${session.sub}") { name } }`;
+  let orgName = "an organizer";
+  try {
+    const orgRes = await hasuraRequest<{ organizers_by_pk: { name: string } }>(orgQuery, {});
+    if (orgRes.organizers_by_pk) orgName = orgRes.organizers_by_pk.name;
+  } catch (e) {}
+
+  console.log(`Resending invite email to ${user.email}...`);
+  await sendWorkspaceUserInviteEmail({
+    data: {
+      to: user.email,
+      userName: user.name,
+      initialPassword: newPassword,
+      organizerName: orgName,
+    }
+  } as any);
+
+  return { success: true };
+});
+
+export const checkWorkspaceUserStatus = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { email } = ctx.data as any;
+    
+    const query = `
+      query CheckUserStatus($email: String!) {
+        workspace_users(where: { email: { _ilike: $email } }) {
+          status
+        }
+      }
+    `;
+    const data = await hasuraRequest<{ workspace_users: any[] }>(query, { email });
+    const user = data.workspace_users[0];
+    
+    if (!user) throw new Error("User not found");
+    return user.status;
+  });

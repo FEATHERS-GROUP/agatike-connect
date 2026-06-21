@@ -725,3 +725,68 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
     if (!res.ok) throw new Error(data.message || "Failed to send visitor pass email");
     return data;
   });
+
+
+export const sendWorkspaceUserInviteEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    const { to, userName, initialPassword, organizerName } = ctx.data as any;
+
+    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : import.meta.env.PROD
+          ? "https://agatike.rw"
+          : "http://localhost:3000";
+
+    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const activationLink = `${baseUrl}/dashboard/workspace-user/${encodeURIComponent(to)}/activate`;
+
+    const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
+          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">You've Been Invited!</h2>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">to manage ${organizerName ? organizerName + "'s" : "a"} workspace</p>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
+        <p>Hi <strong>${userName}</strong>,</p>
+        <p>You have been invited to join a workspace on Agatike Connect. Your account has been provisioned.</p>
+
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px; padding: 24px; margin: 28px 0; text-align: center;">
+          <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.1em;">Your Temporary Password</p>
+          <p style="color: #F2571D; font-size: 28px; font-weight: 800; letter-spacing: 4px; margin: 0; font-family: monospace;">${initialPassword}</p>
+        </div>
+
+        <p>To activate your account and set a permanent password, click the link below:</p>
+        <div style="margin-top: 32px; text-align: center;">
+          <a href="${activationLink}" style="background-color: #f2571d; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: inline-block;">Activate Account</a>
+        </div>
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
+      </div>
+    </div>
+  `;
+
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "Agatike Connect <hello@agatike.rw>",
+        to: [to],
+        subject: `You've been invited to join ${organizerName || "a workspace"}`,
+        html,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to send invite email");
+    return data;
+  });
