@@ -446,7 +446,7 @@ function CommunityPage() {
   return (
     <div className="flex h-screen bg-background border-none rounded-none shadow-none">
       {/* LEFT SIDEBAR - Chat List */}
-      <div className="w-full md:w-[350px] lg:w-[400px] flex flex-col border-r border-border/60 bg-card/50">
+      <div className="w-full md:w-[350px] lg:w-[400px] shrink-0 flex flex-col border-r border-border/60 bg-card/50">
         <div className="p-4 border-b border-border/60">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold tracking-tight">Community</h2>
@@ -466,7 +466,7 @@ function CommunityPage() {
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="flex-1 flex flex-col w-full"
+          className="flex-1 flex flex-col w-full min-h-0 overflow-hidden"
         >
           <div className="px-4 pt-2 border-b border-border/60">
             <TabsList className="w-full grid grid-cols-3 bg-transparent p-0">
@@ -491,9 +491,9 @@ function CommunityPage() {
             </TabsList>
           </div>
 
-          <TabsContent value="all" className="flex-1 m-0">
+          <TabsContent value="all" className="flex-1 m-0 overflow-hidden">
             <ScrollArea className="h-full">
-              <div className="p-2 flex flex-col gap-1">
+              <div className="p-2 pr-4 flex flex-col gap-1">
                 {channels
                   .filter((c) => !(c.type === "user" && !c.lastMessage))
                   .map((chat) => {
@@ -511,52 +511,49 @@ function CommunityPage() {
                       <button
                         key={chat.id}
                         onClick={() => setActiveChatId(chat.id)}
-                        className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left ${
+                        className={`group flex items-center gap-3 w-full p-2 px-3 rounded-md transition-all text-left ${
                           activeChatId === chat.id
-                            ? "bg-primary/10 shadow-[var(--shadow-glow)] shadow-primary/5"
-                            : "hover:bg-accent/50"
+                            ? "bg-muted/80 text-foreground"
+                            : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
                         }`}
                       >
                         <div className="relative shrink-0">
-                          <Avatar className="h-12 w-12 border border-border/50">
+                          <Avatar className="h-8 w-8">
                             <AvatarImage src={chat.avatar} alt={chat.name} />
                             <AvatarFallback className="bg-primary/10 text-primary">
                               {chat.type === "group" ? (
-                                <MessageCircle className="h-5 w-5" />
+                                <MessageCircle className="h-4 w-4" />
                               ) : (
                                 chat.name.substring(0, 2).toUpperCase()
                               )}
                             </AvatarFallback>
                           </Avatar>
                           {chat.online && (
-                            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
+                            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full"></div>
                           )}
                         </div>
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="font-semibold text-sm truncate pr-2">
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                          <div className="flex justify-between items-center">
+                            <span className={`font-medium text-[14px] truncate pr-2 ${activeChatId === chat.id ? "text-foreground" : ""}`}>
                               {chat.name} {chat.country ? getCountryFlag(chat.country) : ""}
                             </span>
-                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                            <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                               {chat.time}
                             </span>
                           </div>
-                          <div className="flex justify-between items-center mt-1">
-                            <p
-                              className={`text-xs truncate pr-2 ${displayUnread > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}
-                            >
-                              {chat.lastMessage}
-                            </p>
-                            {displayUnread > 0 && (
-                              <Badge
-                                className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
-                                style={{ background: "var(--gradient-primary)" }}
-                              >
-                                {displayUnread}
-                              </Badge>
-                            )}
-                          </div>
+                          {chat.lastMessage && (
+                            <div className="flex justify-between items-center mt-0.5">
+                              <p className={`text-[12px] truncate pr-2 opacity-80 ${displayUnread > 0 ? "text-foreground font-semibold opacity-100" : ""}`}>
+                                {chat.lastMessage}
+                              </p>
+                              {displayUnread > 0 && (
+                                <Badge className="h-4 min-w-4 flex items-center justify-center rounded-full px-1 text-[9px] bg-primary text-primary-foreground">
+                                  {displayUnread}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </button>
                     );
@@ -565,9 +562,9 @@ function CommunityPage() {
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="followers" className="flex-1 m-0">
-            <ScrollArea className="flex-1 mt-4">
-              <div className="flex flex-col gap-1 pr-4">
+          <TabsContent value="followers" className="flex-1 m-0 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="p-2 pr-4 flex flex-col gap-1">
                 {followers.length === 0 && (
                   <div className="text-center p-4 text-sm text-muted-foreground">
                     No followers found.
@@ -584,25 +581,20 @@ function CommunityPage() {
                     <button
                       key={follower.id}
                       onClick={() => handleFollowerClick(follower)}
-                      className={`flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left hover:bg-accent/50`}
+                      className={`flex items-center gap-3 w-full p-2 px-3 rounded-md transition-all text-left hover:bg-muted/50 text-muted-foreground hover:text-foreground`}
                     >
                       <div className="relative shrink-0">
-                        <Avatar className="h-12 w-12 border border-border/50">
+                        <Avatar className="h-8 w-8">
                           <AvatarImage src={avatar} alt={name} />
                           <AvatarFallback>{name.substring(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                       </div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="font-semibold text-sm truncate pr-2">
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium text-[14px] truncate pr-2">
                             {name} {follower.country ? getCountryFlag(follower.country) : ""}
                           </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <p className="text-xs truncate pr-2 text-muted-foreground">
-                            Tap to message
-                          </p>
                         </div>
                       </div>
                     </button>
@@ -612,9 +604,9 @@ function CommunityPage() {
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="channels" className="flex-1 m-0">
+          <TabsContent value="channels" className="flex-1 m-0 overflow-hidden">
             <ScrollArea className="h-full">
-              <div className="p-2 flex flex-col gap-1">
+              <div className="p-2 pr-4 flex flex-col gap-1">
                 {/* Main Channel Section */}
                 <div className="mb-4">
                   <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-2">
@@ -839,7 +831,7 @@ function CommunityPage() {
 
       {/* RIGHT MAIN AREA - Chat View */}
       {activeChat ? (
-        <div className="flex-1 flex flex-col h-full bg-card/30 relative">
+        <div className="flex-1 min-w-0 flex flex-col h-full bg-card/30 relative">
           {/* Chat Header */}
           <div className="h-16 px-6 border-b border-border/60 flex items-center justify-between bg-background/50 backdrop-blur-md z-10 shrink-0">
             <div className="flex items-center gap-4">
@@ -905,97 +897,92 @@ function CommunityPage() {
                   : null;
                 const showDateHeader = currentMsgDate !== prevMsgDate;
 
+                // Show avatar if it's the first message, a new date, or a different sender
                 const showAvatar =
-                  !msg.isMe &&
-                  (idx === 0 || activeChat.messages[idx - 1]?.senderId !== msg.senderId);
+                  idx === 0 ||
+                  showDateHeader ||
+                  activeChat.messages[idx - 1]?.senderId !== msg.senderId;
+
+                const senderProfile = !msg.isMe
+                  ? followers.find((f: any) => f.id === msg.senderId)
+                  : null;
+
+                const senderName = msg.isMe
+                  ? activeWorkspace?.title || activeWorkspace?.name || "Me"
+                  : senderProfile?.handle
+                    ? `@${senderProfile.handle}`
+                    : senderProfile?.username || "Member";
+
+                const profileStr = typeof senderProfile?.profile === "string" ? senderProfile.profile : "";
+                const avatarSrc = msg.isMe
+                  ? activeWorkspace?.logo && !activeWorkspace.logo.includes("pravatar.cc") ? activeWorkspace.logo : undefined
+                  : profileStr && !profileStr.includes("pravatar.cc")
+                    ? profileStr
+                    : undefined;
+
+                const initials = msg.isMe 
+                  ? String(activeWorkspace?.title || activeWorkspace?.name || "M").substring(0, 1).toUpperCase()
+                  : String(senderName || "M").substring(0, 2).toUpperCase();
+
+                const senderFlag = !msg.isMe && senderProfile?.country
+                  ? getCountryFlag(senderProfile.country)
+                  : "";
 
                 return (
                   <React.Fragment key={msg.id}>
                     {showDateHeader && (
-                      <div className="flex items-center justify-center my-2">
-                        <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground bg-muted/50 px-3 py-1 rounded-full border border-border/50">
+                      <div className="flex items-center my-4">
+                        <div className="flex-1 h-px bg-border/50"></div>
+                        <span className="text-[11px] font-semibold text-muted-foreground px-3">
                           {currentMsgDate}
                         </span>
+                        <div className="flex-1 h-px bg-border/50"></div>
                       </div>
                     )}
-                    <div className={`flex gap-3 ${msg.isMe ? "justify-end" : "justify-start"}`}>
-                      {!msg.isMe && (
-                        <div className="w-8 shrink-0">
-                          {showAvatar &&
-                            (() => {
-                              const senderProfile = followers.find(
-                                (f: any) => f.id === msg.senderId,
-                              );
-                              const profileStr =
-                                typeof senderProfile?.profile === "string"
-                                  ? senderProfile.profile
-                                  : "";
-                              const avatarSrc =
-                                profileStr && !profileStr.includes("pravatar.cc")
-                                  ? profileStr
-                                  : undefined;
-                              return (
-                                <Avatar className="h-8 w-8 border border-border/50">
-                                  <AvatarImage src={avatarSrc} />
-                                  <AvatarFallback>
-                                    {(senderProfile?.handle ||
-                                      senderProfile?.username ||
-                                      "F")[0].toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                              );
-                            })()}
-                        </div>
-                      )}
-
-                      <div
-                        className={`flex flex-col ${msg.isMe ? "items-end" : "items-start"} max-w-[70%]`}
-                      >
-                        {!msg.isMe &&
-                          activeChat.type === "group" &&
-                          showAvatar &&
-                          (() => {
-                            const senderProfile = followers.find((f: any) => f.id === msg.senderId);
-                            const senderName = senderProfile?.handle
-                              ? `@${senderProfile.handle}`
-                              : senderProfile?.username || "Follower Member";
-                            const senderFlag = senderProfile?.country
-                              ? getCountryFlag(senderProfile.country)
-                              : "";
-                            return (
-                              <span className="text-[11px] text-muted-foreground mb-1 ml-1 font-medium">
-                                {senderName} {senderFlag}
-                              </span>
-                            );
-                          })()}
-
-                        <div
-                          className={`p-3.5 rounded-2xl shadow-sm text-sm ${
-                            msg.isMe && !msg.mediaUrl
-                              ? "bg-primary text-primary-foreground rounded-tr-sm"
-                              : msg.mediaUrl && !msg.text
-                                ? "p-0 bg-transparent shadow-none"
-                                : "bg-background border border-border/50 rounded-tl-sm"
-                          }`}
-                          style={
-                            msg.isMe && !msg.mediaUrl
-                              ? { background: "var(--gradient-primary)" }
-                              : {}
-                          }
-                        >
+                    
+                    <div className={`group flex gap-4 hover:bg-muted/30 px-6 py-0.5 -mx-6 transition-colors ${showAvatar ? "mt-4" : ""}`}>
+                      <div className="w-10 shrink-0 flex justify-center select-none pt-0.5">
+                        {showAvatar ? (
+                          <Avatar className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity">
+                            <AvatarImage src={avatarSrc} />
+                            <AvatarFallback className={msg.isMe ? "bg-primary/10 text-primary" : "bg-muted"}>
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <span className="text-[10px] font-medium text-muted-foreground opacity-0 group-hover:opacity-100 mt-1 cursor-default">
+                            {msg.timestamp}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0 flex flex-col justify-start">
+                        {showAvatar && (
+                          <div className="flex items-baseline gap-2 mb-0.5">
+                            <span className="font-medium text-[15px] hover:underline cursor-pointer tracking-tight">
+                              {senderName} {senderFlag}
+                            </span>
+                            <span className="text-xs text-muted-foreground cursor-default">
+                              {msg.timestamp}
+                            </span>
+                            {msg.isMe && (
+                              <Badge variant="secondary" className="h-4 px-1 text-[9px] rounded-sm font-semibold uppercase tracking-wider bg-primary/10 text-primary hover:bg-primary/20">
+                                Organizer
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                        
+                        <div className="text-[15px] text-foreground/90 whitespace-pre-wrap leading-[1.375rem]">
                           {msg.mediaUrl && (
                             <img
                               src={msg.mediaUrl}
-                              alt="GIF"
-                              className="max-w-[200px] rounded-lg object-cover"
+                              alt="attachment"
+                              className="max-w-[300px] rounded-lg mt-1 mb-2 border border-border/50 shadow-sm"
                             />
                           )}
-                          {msg.text && <div className={msg.mediaUrl ? "mt-2" : ""}>{msg.text}</div>}
+                          {msg.text}
                         </div>
-                        <span className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1 mx-1">
-                          {msg.timestamp}
-                          {msg.isMe && <span className="text-primary ml-1">✓✓</span>}
-                        </span>
                       </div>
                     </div>
                   </React.Fragment>
@@ -1006,91 +993,103 @@ function CommunityPage() {
           </ScrollArea>
 
           {/* Input Area */}
-          <div className="p-4 bg-background/50 backdrop-blur-md border-t border-border/60 shrink-0">
+          <div className="p-4 px-6 bg-background shrink-0">
             <form
               onSubmit={handleSendMessage}
-              className="max-w-4xl mx-auto relative flex items-center gap-2 bg-card border border-border/60 rounded-full p-1.5 shadow-sm"
+              className="max-w-4xl mx-auto relative flex items-start gap-2 bg-muted/40 hover:bg-muted/60 transition-colors rounded-xl p-2"
             >
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0"
+              <div className="flex items-center gap-1 mt-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-background/80 shrink-0"
+                    >
+                      <Smile className="h-5 w-5" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    side="top"
+                    align="start"
+                    className="p-0 border-none shadow-xl bg-transparent mb-2"
                   >
-                    <Smile className="h-5 w-5" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  side="top"
-                  align="start"
-                  className="p-0 border-none shadow-xl bg-transparent mb-2"
-                >
-                  <EmojiPicker
-                    onEmojiClick={(emojiData) => setMessageInput((prev) => prev + emojiData.emoji)}
-                    theme="auto"
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <Popover open={isGifPopoverOpen} onOpenChange={setIsGifPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0 hidden sm:inline-flex"
-                  >
-                    <Sticker className="h-5 w-5" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  side="top"
-                  align="start"
-                  className="w-[300px] p-2 mb-2 shadow-xl rounded-xl"
-                >
-                  <Input
-                    placeholder="Search GIFs..."
-                    value={gifSearch}
-                    onChange={(e) => setGifSearch(e.target.value)}
-                    className="mb-2 h-8 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
-                  />
-                  <div className="h-[300px] overflow-y-auto overflow-x-hidden rounded-md no-scrollbar relative">
-                    {isFetchingGifs && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] z-10">
-                        <Loader2 className="h-6 w-6 text-primary animate-spin" />
-                      </div>
-                    )}
-                    <Grid
-                      key={gifSearch}
-                      width={280}
-                      columns={2}
-                      fetchGifs={fetchGifs}
-                      onGifClick={handleGifClick}
-                      noLink
-                      hideAttribution
+                    <EmojiPicker
+                      onEmojiClick={(emojiData) => setMessageInput((prev) => prev + emojiData.emoji)}
+                      theme="auto"
                     />
-                  </div>
-                </PopoverContent>
-              </Popover>
+                  </PopoverContent>
+                </Popover>
 
-              <Input
+                <Popover open={isGifPopoverOpen} onOpenChange={setIsGifPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-background/80 shrink-0 hidden sm:inline-flex"
+                    >
+                      <Sticker className="h-5 w-5" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    side="top"
+                    align="start"
+                    className="w-[300px] p-2 mb-2 shadow-xl rounded-xl border-border/50"
+                  >
+                    <Input
+                      placeholder="Search GIFs..."
+                      value={gifSearch}
+                      onChange={(e) => setGifSearch(e.target.value)}
+                      className="mb-2 h-8 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 bg-muted/50 border-none"
+                    />
+                    <div className="h-[300px] overflow-y-auto overflow-x-hidden rounded-md no-scrollbar relative">
+                      {isFetchingGifs && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] z-10">
+                          <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                        </div>
+                      )}
+                      <Grid
+                        key={gifSearch}
+                        width={280}
+                        columns={2}
+                        fetchGifs={fetchGifs}
+                        onGifClick={handleGifClick}
+                        noLink
+                        hideAttribution
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <textarea
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-2 h-10 shadow-none text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage(e);
+                  }
+                }}
+                placeholder={`Message ${activeChat.name}`}
+                className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-2 min-h-[40px] max-h-[200px] py-2 shadow-none text-[15px] resize-none"
+                rows={1}
               />
 
-              <Button
-                type="submit"
-                size="icon"
-                className="h-10 w-10 rounded-full shrink-0 shadow-[var(--shadow-glow)] transition-all"
-                style={{ background: "var(--gradient-primary)" }}
-                disabled={!messageInput.trim()}
-              >
-                <Send className="h-4 w-4 ml-0.5" />
-              </Button>
+              <div className="mt-1">
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="h-8 px-3 rounded-lg font-medium transition-all"
+                  style={messageInput.trim() ? { background: "var(--gradient-primary)" } : undefined}
+                  variant={messageInput.trim() ? "default" : "secondary"}
+                  disabled={!messageInput.trim()}
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </form>
           </div>
         </div>

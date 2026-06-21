@@ -182,7 +182,7 @@ export const addEventAttendees = createServerFn({ method: "POST" }).handler(asyn
         const workspace_id = wsData?.events_by_pk?.workspace_id;
         if (workspace_id) {
           const { addMoneyToWorkspaceWallet } = await import("./wallet");
-          await addMoneyToWorkspaceWallet(workspace_id, totalCost);
+          await addMoneyToWorkspaceWallet({ data: { workspace_id, amount: totalCost } } as any);
         }
       } catch (e) {
         console.error("Failed to update wallet for event tickets:", e);

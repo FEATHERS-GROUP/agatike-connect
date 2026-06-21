@@ -247,7 +247,7 @@ export const createCinemaBooking = createServerFn({ method: "POST" })
         const workspace_id = cinemaRes?.cinemas_by_pk?.workspace_id;
         if (workspace_id) {
           const { addMoneyToWorkspaceWallet } = await import("./wallet");
-          await addMoneyToWorkspaceWallet(workspace_id, parseFloat(object.total_price));
+          await addMoneyToWorkspaceWallet({ data: { workspace_id, amount: parseFloat(object.total_price) } } as any);
         }
       } catch (e) {
         console.error("Failed to update wallet for cinema booking:", e);

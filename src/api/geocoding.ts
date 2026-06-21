@@ -60,7 +60,7 @@ export const getPlacesAutocomplete = createServerFn({ method: "POST" }).handler(
   // Fallback: OpenStreetMap Nominatim (free, no billing required)
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=6`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=6&accept-language=en`,
       { headers: { "User-Agent": "AgatikeConnect/1.0" } },
     );
     const data = await response.json();

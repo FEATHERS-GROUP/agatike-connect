@@ -260,7 +260,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" })
         
         if (workspace_id) {
           const { addMoneyToWorkspaceWallet } = await import("./wallet");
-          await addMoneyToWorkspaceWallet(workspace_id, parseFloat(price));
+          await addMoneyToWorkspaceWallet({ data: { workspace_id, amount: parseFloat(price) } } as any);
         }
       } catch (e) {
         console.error("Failed to update wallet for space subscription:", e);
