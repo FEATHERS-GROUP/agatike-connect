@@ -251,7 +251,7 @@ function UserMessagesPage() {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!messageInput.trim() && !pendingEventCard && !activeChat) return;
+    if (!activeChat || (!messageInput.trim() && !pendingEventCard)) return;
 
     sendMessage(messageInput, activeChat, undefined, pendingEventCard);
     setMessageInput("");

@@ -38,6 +38,7 @@ export type ChatChannel = {
   avatar: string;
   lastMessage: string;
   time: string;
+  rawTimeMillis: number;
   unread: number;
   online: boolean;
   type: "user" | "group";
@@ -137,8 +138,7 @@ export function useFirestoreCommunity(
         // Merge messages if they exist in prev state
         let updatedChannels = fetchedChannels.map((fc) => {
           const existing = prev.find((p) => p.id === fc.id);
-          const { rawTimeMillis, ...cleanFc } = fc; // Remove temporary sorting prop
-          return { ...cleanFc, messages: existing ? existing.messages : [] } as ChatChannel;
+          return { ...fc, messages: existing ? existing.messages : [] } as ChatChannel;
         });
 
         // Filter out DMs that have NO messages yet (lastMessage is empty) so they don't clog "All"
