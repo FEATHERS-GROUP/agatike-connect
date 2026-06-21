@@ -11,6 +11,7 @@ import {
   FormInput,
   Archive,
   Tag,
+  Puzzle,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getCinemaById } from "@/api/cinemas";
@@ -84,24 +85,30 @@ export function CinemaSidebar() {
     },
   ];
 
-  const toolsNav = [
+  const integrationsNav = [
     {
       label: "Ticket Designer",
-      href: `/dashboard/${workspaceSlug}/ticket-designer`,
+      href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/ticket-designer`,
       icon: Ticket,
     },
     {
       label: "Page Builder",
-      href: `/dashboard/${workspaceSlug}/page-builder`,
+      href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/page-builder`,
       icon: LayoutTemplate,
     },
-    // Adding form builder stub if it doesn't exist yet, using a general route
     {
       label: "Form Builder",
-      href: `/dashboard/${workspaceSlug}/forms`,
+      href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/forms`,
       icon: FormInput,
     },
+    {
+      label: "Integrations",
+      href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/integrations`,
+      icon: Puzzle,
+    },
   ];
+
+
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:flex flex-col">
@@ -157,13 +164,12 @@ export function CinemaSidebar() {
         })}
       </nav>
 
-      {/* Global Tools Section */}
       <div className="mt-4 pt-4 border-t border-border/60">
         <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
-          Design Tools
+          Integrations & Tools
         </p>
         <nav className="space-y-0.5 text-sm">
-          {toolsNav.map((n) => {
+          {integrationsNav.map((n) => {
             const isActive = location.pathname.includes(n.href);
             return (
               <Link
@@ -183,6 +189,7 @@ export function CinemaSidebar() {
           })}
         </nav>
       </div>
+
     </aside>
   );
 }

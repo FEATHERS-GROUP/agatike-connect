@@ -1,6 +1,6 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getSpaceById, updateSpace } from "@/api/spaces";
+import { getCinemaById, updateCinema } from "@/api/cinemas";
 import { getWorkspaceForms } from "@/api/rsvps";
 import { getAllWorkspacePages } from "@/api/workspace-pages";
 import { useState, useEffect } from "react";
@@ -35,30 +35,30 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/$spaceId/integrations")({
-  component: SpaceIntegrationsPage,
+export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/integrations")({
+  component: CinemaIntegrationsPage,
 });
 
-function SpaceIntegrationsPage() {
-  const { spaceId, workspaceSlug } = useParams({ strict: false }) as any;
+function CinemaIntegrationsPage() {
+  const { cinemaId, workspaceSlug } = useParams({ strict: false }) as any;
   const queryClient = useQueryClient();
 
-  const { data: space, isLoading: isSpaceLoading } = useQuery({
-    queryKey: ["space", spaceId],
-    queryFn: () => getSpaceById({ data: { id: spaceId } }),
-    enabled: !!spaceId,
+  const { data: cinema, isLoading: isCinemaLoading } = useQuery({
+    queryKey: ["cinema", cinemaId],
+    queryFn: () => getCinemaById({ data: { id: cinemaId } } as any),
+    enabled: !!cinemaId,
   });
 
   const { data: forms } = useQuery({
-    queryKey: ["forms", space?.workspace_id],
-    queryFn: () => getWorkspaceForms({ data: { workspace_id: space?.workspace_id } } as any),
-    enabled: !!space?.workspace_id,
+    queryKey: ["forms", cinema?.workspace_id],
+    queryFn: () => getWorkspaceForms({ data: { workspace_id: cinema?.workspace_id } } as any),
+    enabled: !!cinema?.workspace_id,
   });
 
   const { data: pages } = useQuery({
-    queryKey: ["workspace-pages", space?.workspace_id],
-    queryFn: () => getAllWorkspacePages({ data: { workspace_id: space?.workspace_id } } as any),
-    enabled: !!space?.workspace_id,
+    queryKey: ["workspace-pages", cinema?.workspace_id],
+    queryFn: () => getAllWorkspacePages({ data: { workspace_id: cinema?.workspace_id } } as any),
+    enabled: !!cinema?.workspace_id,
   });
 
   const [pageId, setPageId] = useState<string>("none");
@@ -67,28 +67,17 @@ function SpaceIntegrationsPage() {
   const [connectedForms, setConnectedForms] = useState<ConnectedForm[]>([]);
 
   useEffect(() => {
-    if (space) {
-      setPageId(space.page_id || "none");
-      setConnectedForms(space.connected_forms || []);
-
-      // Migrate legacy single form config if it exists and array is empty
-      if ((!space.connected_forms || space.connected_forms.length === 0) && space.rsvp_form_id) {
-        setConnectedForms([
-          {
-            id: crypto.randomUUID(),
-            formId: space.rsvp_form_id,
-            showButton: space.show_rsvp_form_button !== false,
-            buttonText: space.rsvp_form_button_text || "Fill out our form",
-          },
-        ]);
-      }
+    if (cinema) {
+      const settings = cinema.settings || {};
+      setPageId(settings.page_id || "none");
+      setConnectedForms(settings.connected_forms || []);
     }
-  }, [space]);
+  }, [cinema]);
 
   const updateMutation = useMutation({
-    mutationFn: updateSpace,
+    mutationFn: updateCinema,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["space", spaceId] });
+      queryClient.invalidateQueries({ queryKey: ["cinema", cinemaId] });
       toast.success("Integrations updated successfully!");
     },
     onError: (err) => {
@@ -98,13 +87,17 @@ function SpaceIntegrationsPage() {
   });
 
   const handleSave = () => {
+    const newSettings = {
+      ...(cinema?.settings || {}),
+      page_id: pageId === "none" ? null : pageId,
+      connected_forms: connectedForms,
+    };
     updateMutation.mutate({
       data: {
-        id: spaceId,
-        page_id: pageId === "none" ? null : pageId,
-        connected_forms: connectedForms,
+        id: cinemaId,
+        settings: newSettings,
       },
-    });
+    } as any);
   };
 
   const copyToClipboard = (text: string) => {
@@ -112,12 +105,12 @@ function SpaceIntegrationsPage() {
     toast.success("Copied to clipboard");
   };
 
-  if (isSpaceLoading) {
+  if (isCinemaLoading) {
     return <div className="p-8 text-center text-muted-foreground">Loading settings...</div>;
   }
 
-  if (!space) {
-    return <div className="p-8 text-center text-red-500 font-semibold">Space not found</div>;
+  if (!cinema) {
+    return <div className="p-8 text-center text-red-500 font-semibold">Cinema not found</div>;
   }
 
   const selectedPage = pages?.find((p: any) => p.id === pageId);
@@ -148,7 +141,7 @@ function SpaceIntegrationsPage() {
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Integrations</h2>
         <p className="text-muted-foreground mt-1 text-lg">
-          Connect your space with custom landing pages and RSVP forms.
+          Connect your cinema with custom landing pages and RSVP forms.
         </p>
       </div>
 
@@ -160,7 +153,7 @@ function SpaceIntegrationsPage() {
             <div>
               <h3 className="font-bold text-lg">Custom Landing Page</h3>
               <p className="text-sm text-muted-foreground">
-                Connect a custom page built with the Page Builder to this space. This serves as
+                Connect a custom page built with the Page Builder to this cinema. This serves as
                 your personal sharing link.
               </p>
             </div>
@@ -245,8 +238,7 @@ function SpaceIntegrationsPage() {
               <div>
                 <h3 className="font-bold text-lg">Custom Data Collection (RSVP Forms)</h3>
                 <p className="text-sm text-muted-foreground">
-                  Connect multiple forms to collect custom information from your space visitors or
-                  members.
+                  Connect multiple forms to collect custom information from your cinema visitors.
                 </p>
               </div>
             </div>
