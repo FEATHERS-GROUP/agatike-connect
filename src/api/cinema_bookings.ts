@@ -209,7 +209,7 @@ export const createCinemaBooking = createServerFn({ method: "POST" })
     };
 
     const CREATE_AND_UPDATE = `
-      mutation CreateCinemaBooking($object: cinema_bookings_insert_input!, $schedule_id: uuid!, $qty: Int!) {
+      mutation CreateCinemaBooking($object: cinema_bookings_insert_input!, $schedule_id: uuid!, $qty: Int!, $ticket_tier_id: uuid) {
         insert_cinema_bookings_one(object: $object) {
           id
         }
@@ -219,6 +219,12 @@ export const createCinemaBooking = createServerFn({ method: "POST" })
         ) {
           id
         }
+        update_cinema_schedule_ticket_tiers(
+          where: { schedule_id: { _eq: $schedule_id }, ticket_tier_id: { _eq: $ticket_tier_id } },
+          _inc: { sold_seats: $qty }
+        ) {
+          affected_rows
+        }
       }
     `;
 
@@ -227,7 +233,8 @@ export const createCinemaBooking = createServerFn({ method: "POST" })
       { 
         object: objWithQr, 
         schedule_id: object.schedule_id,
-        qty: object.quantity || 1
+        qty: object.quantity || 1,
+        ticket_tier_id: object.ticket_tier_id || null
       },
     );
     
