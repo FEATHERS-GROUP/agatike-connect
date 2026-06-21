@@ -137,7 +137,7 @@ function CinemaIntegrationsPage() {
   };
 
   return (
-    <div className="max-w-3xl space-y-8 pb-12">
+    <div className="max-w-5xl w-full space-y-8 pb-12">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Integrations</h2>
         <p className="text-muted-foreground mt-1 text-lg">
