@@ -18,7 +18,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
       ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
-        : import.meta.env.PROD
+        : process.env.NODE_ENV === "production"
           ? "https://agatike.rw"
           : appUrl || "https://agatike.com";
 
@@ -160,7 +160,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
-        : import.meta.env.PROD
+        : process.env.NODE_ENV === "production"
           ? "https://agatike.rw"
           : "https://agatike.rw";
 
@@ -220,7 +220,7 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
-        : import.meta.env.PROD
+        : process.env.NODE_ENV === "production"
           ? "https://agatike.rw"
           : "https://agatike.rw";
 
@@ -727,16 +727,14 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
   });
 
 
-export const sendWorkspaceUserInviteEmail = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
-  .handler(async (ctx) => {
-    const { to, userName, initialPassword, organizerName } = ctx.data as any;
+export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
+    const { to, userName, initialPassword, organizerName } = data;
 
     const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
-        : import.meta.env.PROD
+        : process.env.NODE_ENV === "production"
           ? "https://agatike.rw"
           : "http://localhost:3000";
 
@@ -786,7 +784,69 @@ export const sendWorkspaceUserInviteEmail = createServerFn({ method: "POST" })
       }),
     });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Failed to send invite email");
-    return data;
+    const resData = await res.json();
+    if (!res.ok) throw new Error(resData.message || "Failed to send invite email");
+    return resData;
+  };
+
+export const sendWorkspaceUserInviteEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: any) => d)
+  .handler(async (ctx) => {
+    return await executeSendWorkspaceUserInviteEmail(ctx.data);
   });
+
+export const executeSendProjectAccessEmail = async (data: any) => {
+  const { to, userName, organizerName, projectName, projectLink } = data;
+
+  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NODE_ENV === "production"
+        ? "https://agatike.rw"
+        : "http://localhost:3000";
+
+  const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+
+  const html = `
+  <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+    <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
+      <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
+        <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+      </div>
+      <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Project Access Granted</h2>
+      <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">by ${organizerName || "a workspace"}</p>
+    </div>
+    <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
+      <p>Hi ${userName},</p>
+      <p>You have been granted access to collaborate on the project <strong>${projectName}</strong>.</p>
+      
+      <p>Click the link below to open the project and start collaborating:</p>
+      <div style="margin-top: 32px; text-align: center;">
+        <a href="${projectLink}" style="background-color: #f2571d; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: inline-block;">Open Project</a>
+      </div>
+    </div>
+    <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+      <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
+    </div>
+  </div>
+`;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `You have been granted access to ${projectName}`,
+      html,
+    }),
+  });
+
+  const resData = await res.json();
+  if (!res.ok) throw new Error(resData.message || "Failed to send project access email");
+  return resData;
+};

@@ -108,7 +108,7 @@ export function InviteContributorModal({ isOpen, onClose, resourceType, resource
 
               <Button
                 onClick={() => inviteMutation.mutate()}
-                disabled={!email || inviteMutation.isPending}
+                disabled={!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || inviteMutation.isPending}
                 className="h-11 px-6 rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 text-white"
                 style={{ background: "var(--gradient-primary)" }}
               >

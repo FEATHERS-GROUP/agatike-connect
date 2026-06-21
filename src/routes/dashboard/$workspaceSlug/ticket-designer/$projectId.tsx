@@ -393,7 +393,6 @@ function TicketDesignerPage() {
     },
   });
 
-  console.log("TicketDesigner Render: ", { isProjectLoading, dbProject, projectError, isProjectError, userAccessLevel, accessError, isAccessError });
   if (isProjectError || isAccessError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center text-red-500">

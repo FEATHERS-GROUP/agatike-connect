@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { executeSendWorkspaceUserInviteEmail, executeSendProjectAccessEmail } from "./email";
+import * as bcrypt from "bcryptjs";
 import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
 
@@ -63,23 +65,35 @@ export const inviteContributor = createServerFn({ method: "POST" })
       }
     );
 
-    // Now check if a workspace_user already exists
+    // Now check if a workspace_user already exists globally
     const checkUserQuery = `
-      query CheckWorkspaceUser($email: String!, $workspace_id: String!) {
-        workspace_users(where: { email: { _ilike: $email }, workspaces: { _contains: $workspace_id } }) {
+      query CheckWorkspaceUser($email: String!) {
+        workspace_users(where: { email: { _ilike: $email } }) {
           id
+          workspaces
         }
       }
     `;
     const userRes = await hasuraRequest<{ workspace_users: any[] }>(checkUserQuery, {
       email,
-      workspace_id,
     });
 
-    if (userRes.workspace_users.length === 0) {
+    const existingUser = userRes.workspace_users[0];
+
+    // We assume the inviter is the organizer, or we need to find the organizer ID
+    // If session is organizer, session.sub is organizer_id
+    // If session is workspace_user, we need their organizer_id
+    let organizer_id = session.sub;
+    if (session.type === "workspace_user") {
+      const getOrgQuery = `query { workspace_users_by_pk(id: "${session.sub}") { organizer_id } }`;
+      const orgRes = await hasuraRequest<any>(getOrgQuery, {});
+      organizer_id = orgRes.workspace_users_by_pk.organizer_id;
+    }
+
+    if (!existingUser) {
       // Create a basic workspace_user for them to login with
       const createWorkspaceUser = `
-        mutation CreateBasicWorkspaceUser($email: String!, $organizer_id: uuid!, $workspace_id: jsonb!) {
+        mutation CreateBasicWorkspaceUser($email: String!, $organizer_id: uuid!, $workspace_id: jsonb!, $password: String!) {
           insert_workspace_users_one(object: {
             email: $email,
             name: $email,
@@ -89,30 +103,88 @@ export const inviteContributor = createServerFn({ method: "POST" })
             modules: "[]",
             pages: "[]",
             is_temporary: false,
-            status: "active",
-            password: "invite_pending"
+            status: "pending",
+            password: $password
           }) {
             id
           }
         }
       `;
-      // We assume the inviter is the organizer, or we need to find the organizer ID
-      // If session is organizer, session.sub is organizer_id
-      // If session is workspace_user, we need their organizer_id
-      let organizer_id = session.sub;
-      if (session.type === "workspace_user") {
-        const getOrgQuery = `query { workspace_users_by_pk(id: "${session.sub}") { organizer_id } }`;
-        const orgRes = await hasuraRequest<any>(getOrgQuery, {});
-        organizer_id = orgRes.workspace_users_by_pk.organizer_id;
-      }
+
+      const initialPassword = Math.random().toString(36).slice(-8);
+      const hashedPassword = await bcrypt.hash(initialPassword, 10);
 
       await hasuraRequest(createWorkspaceUser, {
         email: email.toLowerCase().trim(),
         organizer_id,
         workspace_id: [workspace_id],
+        password: hashedPassword,
       });
       
-      // Note: Ideally send an email here for them to set password via magic link
+      try {
+        const orgQuery = `query { organizers_by_pk(id: "${organizer_id}") { name } }`;
+        const orgData = await hasuraRequest<any>(orgQuery, {});
+        const orgName = orgData?.organizers_by_pk?.name || "an organizer";
+
+        await executeSendWorkspaceUserInviteEmail({
+          to: email.toLowerCase().trim(),
+          userName: email.split("@")[0],
+          initialPassword,
+          organizerName: orgName,
+        });
+      } catch (emailErr) {
+        console.error("Failed to send contributor invite email:", emailErr);
+      }
+    } else {
+      // User exists. Ensure workspace_id is in their workspaces array.
+      const existingWorkspaces = existingUser.workspaces || [];
+      if (!existingWorkspaces.includes(workspace_id)) {
+        const updateWorkspaces = `
+          mutation UpdateWorkspaces($id: uuid!, $workspaces: jsonb!) {
+            update_workspace_users_by_pk(pk_columns: {id: $id}, _set: {workspaces: $workspaces}) {
+              id
+            }
+          }
+        `;
+        await hasuraRequest(updateWorkspaces, {
+          id: existingUser.id,
+          workspaces: [...existingWorkspaces, workspace_id]
+        });
+      }
+
+      // Send the "Project Access Granted" email
+      try {
+        const orgQuery = `query { organizers_by_pk(id: "${organizer_id}") { name } }`;
+        const orgData = await hasuraRequest<any>(orgQuery, {});
+        const orgName = orgData?.organizers_by_pk?.name || "an organizer";
+
+        let projectLink = process.env.NODE_ENV === "production" ? "https://agatike.rw/dashboard" : "http://localhost:3000/dashboard";
+        let projectName = "a project";
+
+        const getWsQuery = `query { workspaces_by_pk(id: "${workspace_id}") { name } }`;
+        const wsData = await hasuraRequest<any>(getWsQuery, {});
+        const wsName = wsData?.workspaces_by_pk?.name || "";
+        const slug = wsName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+
+        if (resource_type === "ticket_project") {
+          const getProjQuery = `query { ticket_projects_by_pk(id: "${resource_id}") { name } }`;
+          const projData = await hasuraRequest<any>(getProjQuery, {});
+          projectName = projData?.ticket_projects_by_pk?.name || "Ticket Project";
+          if (slug) {
+            projectLink = `${process.env.NODE_ENV === "production" ? "https://agatike.rw" : "http://localhost:3000"}/dashboard/${slug}/ticket-designer/${resource_id}`;
+          }
+        }
+
+        await executeSendProjectAccessEmail({
+          to: email.toLowerCase().trim(),
+          userName: email.split("@")[0],
+          organizerName: orgName,
+          projectName,
+          projectLink,
+        });
+      } catch (emailErr) {
+        console.error("Failed to send project access email:", emailErr);
+      }
     }
 
     return res.insert_project_contributors_one;
@@ -143,7 +215,6 @@ export const removeContributor = createServerFn({ method: "POST" })
 export const getContributorAccessLevel = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
-  console.log("getContributorAccessLevel API hit", ctx.data);
   try {
     const session = await getSession();
     if (!session || !session.sub) return null;

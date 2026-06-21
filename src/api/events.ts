@@ -635,7 +635,6 @@ const GET_TICKET_PROJECT_BY_ID = `
 `;
 
 export const getTicketProjectById = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  console.log("getTicketProjectById API hit", ctx.data);
   try {
   const { id } = ctx.data as unknown as { id: string };
   const data = await hasuraRequest<{ ticket_projects_by_pk: any }>(GET_TICKET_PROJECT_BY_ID, {
