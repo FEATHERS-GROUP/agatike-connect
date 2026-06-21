@@ -657,9 +657,7 @@ function TicketDesignerPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="rounded-full">
-            <UserPlus className="mr-2 h-4 w-4" /> Invite Contributor
-          </Button>
+          
           <Button
             variant="outline"
             className="rounded-full border-border/60 bg-white/5 hover:bg-white/10"
