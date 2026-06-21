@@ -727,7 +727,7 @@ export function EventDetailsDesktop({
                   <div className="flex items-center gap-1.5 mt-0.5 text-sm font-medium text-muted-foreground">
                     <Star className="h-4 w-4 fill-primary text-primary" />
                     <span className="text-foreground">{avgRating}</span>
-                    <span>({feedbackData.aggregate.count} reviews)</span>
+                    <span>({feedbackData?.aggregate?.count} reviews)</span>
                   </div>
                 )}
               </div>
