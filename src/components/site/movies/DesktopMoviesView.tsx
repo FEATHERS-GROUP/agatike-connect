@@ -21,7 +21,7 @@ export function DesktopMoviesView({
 
   // Calculate the starting price across ALL schedules for this movie
   const allPrices = activeMovie.showtimes.flatMap((st: any) => 
-    st.tiers.length > 0 
+    st.tiers?.length > 0 
       ? st.tiers.map((t: any) => t.price_override || t.ticket_tier.price)
       : [st.basePrice]
   );

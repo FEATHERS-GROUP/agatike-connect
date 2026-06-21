@@ -197,7 +197,13 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
       {/* Header */}
       <div className="sticky top-0 z-40 px-4 py-3 pt-safe-top flex items-center bg-background/80 backdrop-blur-xl border-b border-border/40">
         <button
-          onClick={() => router.history.back()}
+          onClick={() => {
+            if (step > 1) {
+              setStep(step - 1);
+            } else {
+              router.history.back();
+            }
+          }}
           className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors"
         >
           <ArrowLeft className="h-6 w-6" />
@@ -243,9 +249,6 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
                 );
               })}
             </div>
-            <div className="pt-4">
-              <Button className="w-full" onClick={() => setStep(2)}>Continue to Tickets</Button>
-            </div>
           </div>
         )}
 
@@ -282,10 +285,6 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
                   </div>
                 );
               })}
-            </div>
-            <div className="grid grid-cols-2 gap-3 pt-4">
-              <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-              <Button disabled={totalTickets === 0} onClick={() => setStep(3)}>Continue</Button>
             </div>
           </div>
         )}
@@ -335,9 +334,6 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
                 className="bg-card/40"
               />
             </div>
-            <div className="pt-4">
-              <Button variant="outline" className="w-full" onClick={() => setStep(2)}>Back</Button>
-            </div>
           </div>
         )}
       </main>
@@ -378,10 +374,12 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
 
       <PaymentModal
         isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        onSuccess={doCheckout as any}
-        amount={totalPrice}
-        currency={currency}
+        onOpenChange={setIsPaymentModalOpen}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        onProceed={doCheckout as any}
+        isProcessing={isCheckingOut}
+        isGenerating={false}
       />
     </div>
   );

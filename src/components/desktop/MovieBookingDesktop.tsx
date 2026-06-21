@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Lock, MapPin, Calendar, CheckCircle2, Ticket } from "lucide-react";
+import { ChevronLeft, Lock, MapPin, Calendar, CheckCircle2, Ticket, Clock } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
@@ -217,20 +217,21 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                     <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
                       <MapPin className="h-5 w-5 text-primary" /> Step 1: Select Showtime
                     </h3>
-                    <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pb-6">
                       {schedulesForDate.map((st: any) => {
                         const isSelected = st.id === currentSchedule?.id;
                         return (
                           <button
                             key={st.id}
                             onClick={() => setSelectedScheduleId(st.id)}
-                            className={`shrink-0 rounded-xl px-6 py-3 text-sm font-bold border transition-all ${
+                            className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all duration-300 ${
                               isSelected
-                                ? "bg-primary border-primary text-primary-foreground shadow-[var(--shadow-glow)]"
-                                : "bg-white/5 border-white/10 hover:border-primary/50 text-white"
+                                ? "bg-primary/10 border-primary text-primary shadow-[var(--shadow-glow)] scale-105"
+                                : "bg-card/40 border-border/40 hover:border-primary/50 hover:bg-card/80 text-foreground"
                             }`}
                           >
-                            {st.start_time.substring(0, 5)}
+                            <Clock className={`h-6 w-6 mb-3 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className="text-3xl font-black tracking-tight">{st.start_time.substring(0, 5)}</span>
                           </button>
                         );
                       })}
@@ -416,10 +417,12 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
 
       <PaymentModal
         isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        onSuccess={doCheckout as any}
-        amount={totalPrice}
-        currency={currency}
+        onOpenChange={setIsPaymentModalOpen}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        onProceed={doCheckout as any}
+        isProcessing={isCheckingOut}
+        isGenerating={false}
       />
     </div>
   );

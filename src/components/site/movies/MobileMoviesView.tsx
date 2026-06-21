@@ -59,39 +59,15 @@ export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { mov
         </div>
       </div>
 
-      {/* Featured Header */}
-      <div className="px-4 py-6">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-primary mb-3">
-          Featured Premiere
-        </h2>
-        <div
-          className="relative aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl group active:scale-[0.98] transition-transform"
-          onClick={() => setSelectedMovie(featuredMovie)}
-        >
-          <img
-            src={featuredMovie.cover}
-            alt={featuredMovie.title}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
-          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-            <span className="inline-flex items-center gap-1 rounded-md bg-white/20 backdrop-blur-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider mb-2">
-              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> Top Rated
-            </span>
-            <h3 className="text-3xl font-black leading-tight mb-2">{featuredMovie.title}</h3>
-            <p className="text-sm text-white/80 line-clamp-2">{featuredMovie.synopsis}</p>
-          </div>
-        </div>
-      </div>
 
       {/* Now Showing Horizontal List */}
       <div className="py-4">
         <div className="px-5 flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold tracking-tight">Now Showing</h2>
         </div>
-        <div className="flex overflow-x-auto hide-scrollbar gap-4 px-5 pb-6">
-          {movies.slice(1).map((m) => (
+        <div className="flex overflow-x-auto hide-scrollbar gap-4 px-5 pb-6 pt-2">
+          {movies.map((m) => (
             <button
               key={m.id}
               onClick={() => setSelectedMovie(m)}
@@ -141,18 +117,20 @@ export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { mov
       {/* Movie Details Drawer */}
       <Drawer open={!!selectedMovie} onOpenChange={(open) => !open && setSelectedMovie(null)}>
         <DrawerContent
-          className="max-h-[90vh] p-0 border-border/60"
+          className="h-[100dvh] max-h-[100dvh] rounded-none p-0 border-none bg-background mt-0"
           aria-describedby="movie-description"
         >
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>{selectedMovie?.title || "Movie Details"}</DrawerTitle>
+            <DrawerDescription id="movie-description">
+              {selectedMovie?.synopsis || "Details about the movie"}
+            </DrawerDescription>
+          </DrawerHeader>
+          
           {selectedMovie && (
-            <div className="overflow-y-auto hide-scrollbar pb-safe">
-              <DrawerHeader className="sr-only">
-                <DrawerTitle>{selectedMovie.title}</DrawerTitle>
-                <DrawerDescription id="movie-description">
-                  {selectedMovie.synopsis}
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="relative aspect-video w-full">
+            <div className="h-full flex flex-col">
+              <div className="flex-1 overflow-y-auto hide-scrollbar pb-6 relative">
+              <div className="relative aspect-[4/5] w-full">
                 <img
                   src={selectedMovie.cover}
                   alt={selectedMovie.title}
@@ -180,35 +158,39 @@ export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { mov
                   {selectedMovie.synopsis}
                 </p>
 
-                <div className="bg-secondary/40 rounded-2xl p-4 mb-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-bold text-sm">{selectedMovie.cinema}</p>
-                      <p className="text-xs text-muted-foreground">{selectedMovie.city}</p>
+                  <div className="bg-secondary/40 rounded-2xl p-4">
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="font-bold text-sm">{selectedMovie.cinema}</p>
+                        <p className="text-xs text-muted-foreground">{selectedMovie.city}</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="border-t border-border/60 pt-3">
-                    <p className="text-xs font-semibold mb-2">Select Date</p>
-                    <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1 mb-3">
-                      {uniqueDates.map((d: string) => {
-                        const isSelected = d === currentDate;
-                        const dateObj = new Date(d);
-                        const today = new Date();
-                        const isToday = dateObj.toDateString() === today.toDateString();
-                        const label = isToday ? "Today" : dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-                        
-                        return (
-                          <button
-                            key={d}
-                            onClick={() => setSelectedDate(d)}
-                            className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold border ${isSelected ? "bg-primary border-primary text-primary-foreground" : "bg-background border-border/60"}`}
-                          >
-                            {label}
-                          </button>
-                        );
-                      })}
-                    </div>
+                </div>
+              </div>
+
+              {/* Fixed Bottom Action Area */}
+              <div className="shrink-0 bg-background border-t border-border/40 p-5 pb-8 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] relative z-20">
+                <div className="mb-4">
+                  <p className="text-xs font-semibold mb-2 text-muted-foreground">Select Date</p>
+                  <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+                    {uniqueDates.map((d: string) => {
+                      const isSelected = d === currentDate;
+                      const dateObj = new Date(d);
+                      const isToday = dateObj.toDateString() === new Date().toDateString();
+                      const label = isToday ? "Today" : dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                      
+                      return (
+                        <button
+                          key={d}
+                          onClick={() => setSelectedDate(d)}
+                          className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold border ${isSelected ? "bg-primary border-primary text-primary-foreground shadow-[var(--shadow-glow)]" : "bg-background border-border/60"}`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
