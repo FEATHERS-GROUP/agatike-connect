@@ -919,7 +919,7 @@ function CommunityPage() {
                   : null;
 
                 const senderName = msg.isMe
-                  ? currentOrganizerProfile?.name || activeWorkspace?.title || activeWorkspace?.name || "Me"
+                  ? currentOrganizerProfile?.name || activeWorkspace?.name || "Me"
                   : senderProfile?.handle
                     ? `@${senderProfile.handle}`
                     : senderProfile?.username || "Member";
@@ -934,7 +934,7 @@ function CommunityPage() {
                     : undefined;
 
                 const initials = msg.isMe 
-                  ? String(currentOrganizerProfile?.name || activeWorkspace?.title || activeWorkspace?.name || "M").substring(0, 1).toUpperCase()
+                  ? String(currentOrganizerProfile?.name || activeWorkspace?.name || "M").substring(0, 1).toUpperCase()
                   : String(senderName || "M").substring(0, 2).toUpperCase();
 
                 const senderFlag = !msg.isMe && senderProfile?.country
