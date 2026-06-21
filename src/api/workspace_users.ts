@@ -46,9 +46,11 @@ export const getWorkspaceUsers = createServerFn({ method: "GET" }).handler(async
         }
       }
     `;
-    const meData = await hasuraRequest<{ workspace_users_by_pk: any }>(meQuery, { id: session.sub });
+    const meData = await hasuraRequest<{ workspace_users_by_pk: any }>(meQuery, {
+      id: session.sub,
+    });
     const me = meData.workspace_users_by_pk;
-    
+
     if (!me) throw new Error("User not found");
 
     // Check if they have access to the Users module
@@ -80,10 +82,10 @@ export const getWorkspaceUsers = createServerFn({ method: "GET" }).handler(async
 
     const data = await hasuraRequest<{ workspace_users: any[] }>(query, variables);
     let allOrgUsers = data.workspace_users;
-    
+
     // Filter out users who don't share any workspaces with the requester
     if (me.workspaces && !me.workspaces.includes("ALL")) {
-      allOrgUsers = allOrgUsers.filter(u => {
+      allOrgUsers = allOrgUsers.filter((u) => {
         if (!u.workspaces) return false;
         if (u.workspaces.includes("ALL")) return true;
         // check intersection
@@ -156,8 +158,11 @@ export const addWorkspaceUser = createServerFn({ method: "POST" }).handler(async
     image: input.image || null,
   };
 
-  const data = await hasuraRequest<{ insert_workspace_users_one: { id: string } }>(mutation, variables);
-  
+  const data = await hasuraRequest<{ insert_workspace_users_one: { id: string } }>(
+    mutation,
+    variables,
+  );
+
   // Get organizer name
   const orgQuery = `query GetOrg { organizers_by_pk(id: "${session.sub}") { name } }`;
   let orgName = "an organizer";
@@ -174,18 +179,18 @@ export const addWorkspaceUser = createServerFn({ method: "POST" }).handler(async
         userName: input.name,
         initialPassword: input.password,
         organizerName: orgName,
-      }
+      },
     } as any);
   } catch (err) {
     console.error("Failed to send invite email:", err);
   }
-  
+
   return data.insert_workspace_users_one;
 });
 
 export const activateWorkspaceUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const input = ctx.data as any;
-  
+
   const query = `
     query FindUser($email: String!) {
       workspace_users(where: { email: { _ilike: $email } }) {
@@ -195,10 +200,10 @@ export const activateWorkspaceUser = createServerFn({ method: "POST" }).handler(
       }
     }
   `;
-  
+
   const result = await hasuraRequest<{ workspace_users: any[] }>(query, { email: input.email });
   const user = result.workspace_users[0];
-  
+
   if (!user) throw new Error("Invalid email or initial password");
   if (user.status === "active") throw new Error("Account is already active");
 
@@ -250,7 +255,8 @@ export const loginWorkspaceUser = createServerFn({ method: "POST" }).handler(asy
   const user = result.workspace_users[0];
 
   if (!user) throw new Error("Invalid email or password");
-  if (user.status === "disabled" || user.status === "deleted") throw new Error("This account has been disabled or no longer exists.");
+  if (user.status === "disabled" || user.status === "deleted")
+    throw new Error("This account has been disabled or no longer exists.");
   if (user.status !== "active") throw new Error("Please activate your account first");
 
   const isValid = await bcrypt.compare(password, user.password);
@@ -269,7 +275,7 @@ export const loginWorkspaceUser = createServerFn({ method: "POST" }).handler(asy
   });
 
   let redirectUrl = "/dashboard";
-  
+
   if (user.workspaces && !user.workspaces.includes("ALL") && user.workspaces.length > 0) {
     const firstWorkspaceId = user.workspaces[0];
     const wsQuery = `
@@ -279,13 +285,15 @@ export const loginWorkspaceUser = createServerFn({ method: "POST" }).handler(asy
         }
       }
     `;
-    const wsRes = await hasuraRequest<{ workspaces_by_pk: { name: string } }>(wsQuery, { id: firstWorkspaceId });
+    const wsRes = await hasuraRequest<{ workspaces_by_pk: { name: string } }>(wsQuery, {
+      id: firstWorkspaceId,
+    });
     if (wsRes.workspaces_by_pk) {
       const slug = wsRes.workspaces_by_pk.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)+/g, "");
-      
+
       let pagePath = "";
       if (user.pages && !user.pages.includes("ALL") && user.pages.length > 0) {
         pagePath = user.pages[0]; // e.g., "/events"
@@ -401,7 +409,7 @@ export const resendWorkspaceUserInvite = createServerFn({ method: "POST" }).hand
       userName: user.name,
       initialPassword: newPassword,
       organizerName: orgName,
-    }
+    },
   } as any);
 
   return { success: true };
@@ -411,7 +419,7 @@ export const checkWorkspaceUserStatus = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
     const { email } = ctx.data as any;
-    
+
     const query = `
       query CheckUserStatus($email: String!) {
         workspace_users(where: { email: { _ilike: $email } }) {
@@ -421,7 +429,7 @@ export const checkWorkspaceUserStatus = createServerFn({ method: "POST" })
     `;
     const data = await hasuraRequest<{ workspace_users: any[] }>(query, { email });
     const user = data.workspace_users[0];
-    
+
     if (!user) throw new Error("User not found");
     return user.status;
   });

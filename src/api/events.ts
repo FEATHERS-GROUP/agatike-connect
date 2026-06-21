@@ -636,11 +636,11 @@ const GET_TICKET_PROJECT_BY_ID = `
 
 export const getTicketProjectById = createServerFn({ method: "POST" }).handler(async (ctx) => {
   try {
-  const { id } = ctx.data as unknown as { id: string };
-  const data = await hasuraRequest<{ ticket_projects_by_pk: any }>(GET_TICKET_PROJECT_BY_ID, {
-    id,
-  });
-  return data.ticket_projects_by_pk || null;
+    const { id } = ctx.data as unknown as { id: string };
+    const data = await hasuraRequest<{ ticket_projects_by_pk: any }>(GET_TICKET_PROJECT_BY_ID, {
+      id,
+    });
+    return data.ticket_projects_by_pk || null;
   } catch (err) {
     console.error("getTicketProjectById Error:", err);
     throw err;
@@ -723,12 +723,12 @@ export const getWorkspaceTicketProjects = createServerFn({ method: "POST" }).han
   async (ctx) => {
     const session = await getSession();
     if (!session) return [];
-    
+
     const { workspaceId } = ctx.data as unknown as { workspaceId: string };
-    
+
     let isContributorOnly = false;
     let userEmail = "";
-    
+
     if (session.type === "workspace_user") {
       const q = `query { workspace_users_by_pk(id: "${session.sub}") { role, email } }`;
       const res = await hasuraRequest<any>(q, {});
@@ -737,7 +737,7 @@ export const getWorkspaceTicketProjects = createServerFn({ method: "POST" }).han
         userEmail = res.workspace_users_by_pk.email;
       }
     }
-    
+
     if (isContributorOnly) {
       const contribQuery = `
         query GetContributorProjects($workspaceId: uuid!, $email: String!) {
@@ -770,7 +770,7 @@ export const getWorkspaceTicketProjects = createServerFn({ method: "POST" }).han
           }
         }
       `;
-      
+
       // Wait, Hasura _exists requires relationships. Since we just created project_contributors, there is no Hasura relationship mapped to ticket_projects yet.
       // So we must fetch project_contributors first, then filter ticket_projects in JS.
       const getContributorsQuery = `
@@ -782,9 +782,9 @@ export const getWorkspaceTicketProjects = createServerFn({ method: "POST" }).han
       `;
       const contribs = await hasuraRequest<any>(getContributorsQuery, {});
       const projectIds = contribs.project_contributors.map((c: any) => c.resource_id);
-      
+
       if (projectIds.length === 0) return [];
-      
+
       const restrictedQuery = `
         query GetRestrictedProjects($workspaceId: uuid!, $ids: [uuid!]!) {
           ticket_projects(

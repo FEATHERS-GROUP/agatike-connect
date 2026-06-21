@@ -13,22 +13,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 
-
 export function MovieBookingMobile({ movieId }: { movieId: string }) {
   const navigate = useNavigate();
   const router = useRouter();
   const { user } = useUserAuth();
-  const { date: searchDate } = useSearch({ from: '/book-movie/$movieId' }) as any;
+  const { date: searchDate } = useSearch({ from: "/book-movie/$movieId" }) as any;
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [step, setStep] = useState(1);
-  
+
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(null);
   const [ticketQuantities, setTicketQuantities] = useState<Record<string, number>>({});
-  
+
   const [attendeeInfo, setAttendeeInfo] = useState({
     firstName: user?.username?.split(" ")[0] || "",
     lastName: user?.username?.split(" ").slice(1).join(" ") || "",
@@ -41,7 +40,10 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
 
   const { data: schedules = [], isLoading } = useQuery({
     queryKey: ["movie-schedules", actualMovieId, actualCinemaId],
-    queryFn: () => getMovieSchedulesByMovieId({ data: { movieId: actualMovieId, cinemaId: actualCinemaId } } as any),
+    queryFn: () =>
+      getMovieSchedulesByMovieId({
+        data: { movieId: actualMovieId, cinemaId: actualCinemaId },
+      } as any),
   });
 
   const activeMovie = schedules.length > 0 ? schedules[0].movie : null;
@@ -98,7 +100,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
         tierId: "default",
         name: "General Admission",
         price: currentSchedule.base_price || 10,
-      }
+      },
     ];
   }, [currentSchedule]);
 
@@ -117,23 +119,21 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
   }, 0);
 
   const isFormValid =
-    totalTickets > 0 &&
-    attendeeInfo.firstName &&
-    attendeeInfo.lastName &&
-    attendeeInfo.email;
+    totalTickets > 0 && attendeeInfo.firstName && attendeeInfo.lastName && attendeeInfo.email;
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async () => {
       const promises = [];
       const fullName = `${attendeeInfo.firstName} ${attendeeInfo.lastName}`.trim();
-      
+
       for (const [tierId, qty] of Object.entries(ticketQuantities)) {
         if (qty <= 0) continue;
-        
+
         const payload = {
           cinema_id: cinema.id,
           schedule_id: currentSchedule.id,
-          ticket_tier_id: tierId === "default" ? null : activeTiers.find((t: any) => t.id === tierId)?.tierId,
+          ticket_tier_id:
+            tierId === "default" ? null : activeTiers.find((t: any) => t.id === tierId)?.tierId,
           names: fullName,
           email: attendeeInfo.email,
           phone: attendeeInfo.phone,
@@ -211,12 +211,10 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
         </div>
         <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
         <p className="text-base text-muted-foreground max-w-md mx-auto mb-8">
-          Your tickets for {activeMovie.title} have been secured. 
-          A confirmation with your QR code has been sent to {attendeeInfo.email}.
+          Your tickets for {activeMovie.title} have been secured. A confirmation with your QR code
+          has been sent to {attendeeInfo.email}.
         </p>
-        <p className="text-sm text-muted-foreground animate-pulse">
-          Redirecting to movies...
-        </p>
+        <p className="text-sm text-muted-foreground animate-pulse">Redirecting to movies...</p>
       </div>
     );
   }
@@ -243,12 +241,14 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
       <main className="px-4 py-6 space-y-8">
         {/* Movie Info */}
         <div className="flex gap-4">
-          <img src={activeMovie.cover_url} alt={activeMovie.title} className="h-24 w-20 rounded-xl object-cover" />
+          <img
+            src={activeMovie.cover_url}
+            alt={activeMovie.title}
+            className="h-24 w-20 rounded-xl object-cover"
+          />
           <div className="flex flex-col">
             <h3 className="font-semibold leading-tight">{activeMovie.title}</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              {cinema?.name}
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">{cinema?.name}</p>
             <p className="text-sm text-muted-foreground mt-1">
               {currentSchedule?.show_date} • {currentSchedule?.start_time?.substring(0, 5)}
             </p>
@@ -290,10 +290,15 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
               {activeTiers.map((tier: any) => {
                 const qty = ticketQuantities[tier.id] || 0;
                 return (
-                  <div key={tier.id} className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-card/40 shadow-sm">
+                  <div
+                    key={tier.id}
+                    className="flex items-center justify-between p-4 rounded-2xl border border-border/60 bg-card/40 shadow-sm"
+                  >
                     <div>
                       <p className="font-bold">{tier.name}</p>
-                      <p className="text-sm text-muted-foreground">{formatCurrency(parseFloat(tier.price), currency)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatCurrency(parseFloat(tier.price), currency)}
+                      </p>
                     </div>
                     <div className="flex items-center gap-4">
                       <button
@@ -370,13 +375,15 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
       {/* Fixed Bottom Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe bg-background/80 backdrop-blur-xl border-t border-border/40 z-40">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-muted-foreground">{totalTickets} Ticket(s)</span>
+          <span className="text-sm font-medium text-muted-foreground">
+            {totalTickets} Ticket(s)
+          </span>
           <span className="font-black text-lg">{formatCurrency(totalPrice, currency)}</span>
         </div>
         <Button
           disabled={
-            (step === 1 && !selectedScheduleId) || 
-            (step === 2 && totalTickets === 0) || 
+            (step === 1 && !selectedScheduleId) ||
+            (step === 2 && totalTickets === 0) ||
             (step === 3 && (!isFormValid || isCheckingOut))
           }
           className="w-full h-14 rounded-2xl text-base font-bold shadow-[var(--shadow-glow)]"
@@ -390,7 +397,11 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           {step === 1 ? (
             "Continue to Tickets"
           ) : step === 2 ? (
-            totalTickets > 0 ? "Continue to Details" : "Select Tickets"
+            totalTickets > 0 ? (
+              "Continue to Details"
+            ) : (
+              "Select Tickets"
+            )
           ) : isCheckingOut ? (
             "Processing..."
           ) : (

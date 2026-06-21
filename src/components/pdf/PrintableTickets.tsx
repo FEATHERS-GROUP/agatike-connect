@@ -310,10 +310,10 @@ function DynamicPrintablePass({ ticket, config }: { ticket: any; config?: Ticket
               <p className="text-base font-bold truncate">{ticket.screen || "Main Screen"}</p>
             </div>
             <div className="bg-white/10 rounded px-3 py-2">
-              <p className="text-[9px] uppercase tracking-widest opacity-70 mb-0.5">
-                Quantity
+              <p className="text-[9px] uppercase tracking-widest opacity-70 mb-0.5">Quantity</p>
+              <p className="text-base font-bold">
+                {ticket.quantity || 1} Ticket{ticket.quantity !== 1 ? "s" : ""}
               </p>
-              <p className="text-base font-bold">{ticket.quantity || 1} Ticket{ticket.quantity !== 1 ? 's' : ''}</p>
             </div>
           </div>
         </div>

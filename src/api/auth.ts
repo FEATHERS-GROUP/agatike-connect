@@ -65,7 +65,7 @@ export const getSession = createServerFn({ method: "POST" }).handler(async () =>
   try {
     const { payload } = await jwtVerify(token, SECRET);
     const session = payload as unknown as { sub: string; type: string };
-    
+
     if (session.type === "workspace_user") {
       const query = `
         query GetStatus($id: uuid!) {
@@ -74,15 +74,17 @@ export const getSession = createServerFn({ method: "POST" }).handler(async () =>
           }
         }
       `;
-      const res = await hasuraRequest<{ workspace_users_by_pk: { status: string } | null }>(query, { id: session.sub });
+      const res = await hasuraRequest<{ workspace_users_by_pk: { status: string } | null }>(query, {
+        id: session.sub,
+      });
       const user = res.workspace_users_by_pk;
-      
+
       if (!user || user.status === "disabled" || user.status === "deleted") {
         deleteCookie("agatike_auth", { path: "/" });
         return null;
       }
     }
-    
+
     return session;
   } catch (e) {
     return null;

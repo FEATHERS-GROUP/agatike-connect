@@ -254,13 +254,15 @@ export const createSpaceSubscription = createServerFn({ method: "POST" })
       try {
         const spaceRes = await hasuraRequest<{ spaces_by_pk: { workspace_id: string } }>(
           `query GetSpaceWorkspace($id: uuid!) { spaces_by_pk(id: $id) { workspace_id } }`,
-          { id: space_id }
+          { id: space_id },
         );
         const workspace_id = spaceRes?.spaces_by_pk?.workspace_id;
-        
+
         if (workspace_id) {
           const { addMoneyToWorkspaceWallet } = await import("./wallet");
-          await addMoneyToWorkspaceWallet({ data: { workspace_id, amount: parseFloat(price) } } as any);
+          await addMoneyToWorkspaceWallet({
+            data: { workspace_id, amount: parseFloat(price) },
+          } as any);
         }
       } catch (e) {
         console.error("Failed to update wallet for space subscription:", e);

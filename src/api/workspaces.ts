@@ -23,15 +23,17 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
         }
       }
     `;
-    const meData = await hasuraRequest<{ workspace_users_by_pk: any }>(meQuery, { id: session.sub });
+    const meData = await hasuraRequest<{ workspace_users_by_pk: any }>(meQuery, {
+      id: session.sub,
+    });
     const me = meData.workspace_users_by_pk;
-    
+
     if (!me) throw new Error("User not found");
-    
+
     currentUser = {
       role: me.role,
       pages: me.pages || [],
-      modules: me.modules || []
+      modules: me.modules || [],
     };
 
     orgnizer_id = me.organizer_id;
@@ -45,7 +47,7 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
     currentUser = {
       role: "organizer",
       pages: ["ALL"],
-      modules: ["ALL"]
+      modules: ["ALL"],
     };
   }
 
@@ -72,14 +74,17 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
       }
     `;
 
-  const data = await hasuraRequest<{ workspaces: any[], platformModules: {id: string, label: string}[] }>(query, { orgnizer_id });
-  
+  const data = await hasuraRequest<{
+    workspaces: any[];
+    platformModules: { id: string; label: string }[];
+  }>(query, { orgnizer_id });
+
   let resultWorkspaces = data.workspaces;
 
   if (allowedWorkspaces) {
     resultWorkspaces = resultWorkspaces.filter((ws: any) => allowedWorkspaces!.includes(ws.id));
   }
-  
+
   if (allowedModules) {
     const legacyIdMap: Record<string, string> = {
       Dashboard: "dashboard",
@@ -101,12 +106,12 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
       Settings: "settings",
     };
 
-    const allowedLegacyIds = allowedModules!.map(uuid => {
+    const allowedLegacyIds = allowedModules!.map((uuid) => {
       const pMod = data.platformModules.find((p: any) => p.id === uuid);
       if (pMod && legacyIdMap[pMod.label]) {
         return legacyIdMap[pMod.label];
       }
-      return uuid; 
+      return uuid;
     });
 
     const allAllowedKeys = new Set([...allowedModules!, ...allowedLegacyIds]);
@@ -122,9 +127,9 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
       } else {
         wsModules = ["dashboard", "settings"];
       }
-      
+
       const intersectedModules = wsModules.filter((m) => allAllowedKeys.has(m));
-      
+
       return {
         ...ws,
         moduls: intersectedModules,
@@ -253,7 +258,7 @@ export const updateDatabaseWorkspace = createServerFn({ method: "POST" }).handle
   if (updateFields.country !== undefined) _set.country = updateFields.country;
   if (updateFields.currency !== undefined) {
     _set.currency = updateFields.currency;
-    
+
     // Update Wallet Currency to match workspace
     const updateWalletMutation = `
       mutation UpdateWalletCurrency($workspace_id: uuid!, $currency: String!, $updated_at: timestamptz!) {
@@ -268,7 +273,7 @@ export const updateDatabaseWorkspace = createServerFn({ method: "POST" }).handle
         currency: updateFields.currency,
         updated_at: new Date().toISOString(),
       });
-    } catch(err) {
+    } catch (err) {
       console.error("Failed to update wallet currency", err);
     }
   }

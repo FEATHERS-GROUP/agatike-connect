@@ -13,7 +13,8 @@ interface WorkspaceListProps {
 }
 
 export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
-  const { workspaces, activeWorkspace, setActiveWorkspace, isLoading, currentUser } = useWorkspace() as any;
+  const { workspaces, activeWorkspace, setActiveWorkspace, isLoading, currentUser } =
+    useWorkspace() as any;
   const navigate = useNavigate();
 
   const [modulesModalWorkspace, setModulesModalWorkspace] = useState<Workspace | null>(null);
@@ -75,32 +76,34 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                 }`}
               >
                 <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                  {currentUser?.role === "organizer" && (<>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Manage Modules"
-                    className="h-8 w-8 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setModulesModalWorkspace(w);
-                    }}
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Workspace Settings"
-                    className="h-8 w-8 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate({ to: `/dashboard/${w.slug}/settings` });
-                    }}
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                  </>)}
+                  {currentUser?.role === "organizer" && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Manage Modules"
+                        className="h-8 w-8 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModulesModalWorkspace(w);
+                        }}
+                      >
+                        <LayoutDashboard className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Workspace Settings"
+                        className="h-8 w-8 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate({ to: `/dashboard/${w.slug}/settings` });
+                        }}
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
                 </div>
                 <div className="flex items-center gap-4 mb-6 pr-10">
                   <div

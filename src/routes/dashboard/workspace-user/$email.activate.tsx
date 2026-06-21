@@ -5,7 +5,14 @@ import { activateWorkspaceUser } from "@/api/workspace_users";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { toast } from "sonner";
 
 import { getSession } from "@/api/auth";
@@ -16,7 +23,7 @@ export const Route = createFileRoute("/dashboard/workspace-user/$email/activate"
     try {
       const email = decodeURIComponent(params.email);
       const status = await checkWorkspaceUserStatus({ data: { email } } as any);
-      
+
       if (status === "active") {
         const session = await getSession();
         if (session) {
@@ -39,7 +46,7 @@ function ActivatePage() {
   const navigate = useNavigate();
   const { email: emailParam } = Route.useParams();
   const decodedEmail = decodeURIComponent(emailParam);
-  
+
   const [email, setEmail] = useState(decodedEmail);
   const [initialPassword, setInitialPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -53,7 +60,7 @@ function ActivatePage() {
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to activate account");
-    }
+    },
   });
 
   const handleActivate = (e: React.FormEvent) => {
@@ -71,8 +78,8 @@ function ActivatePage() {
       data: {
         email,
         initialPassword,
-        newPassword
-      }
+        newPassword,
+      },
     });
   };
 
@@ -89,10 +96,10 @@ function ActivatePage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="name@example.com" 
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
                 value={email}
                 readOnly
                 className="bg-secondary/50 text-muted-foreground"
@@ -101,41 +108,37 @@ function ActivatePage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="initial-password">Initial Password (from Organizer)</Label>
-              <Input 
-                id="initial-password" 
-                type="password" 
+              <Input
+                id="initial-password"
+                type="password"
                 value={initialPassword}
-                onChange={e => setInitialPassword(e.target.value)}
+                onChange={(e) => setInitialPassword(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2 pt-4">
               <Label htmlFor="new-password">New Password</Label>
-              <Input 
-                id="new-password" 
-                type="password" 
+              <Input
+                id="new-password"
+                type="password"
                 value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
+                onChange={(e) => setNewPassword(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input 
-                id="confirm-password" 
-                type="password" 
+              <Input
+                id="confirm-password"
+                type="password"
                 value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
             </div>
           </CardContent>
           <CardFooter>
-            <Button 
-              className="w-full" 
-              type="submit" 
-              disabled={activateMutation.isPending}
-            >
+            <Button className="w-full" type="submit" disabled={activateMutation.isPending}>
               {activateMutation.isPending ? "Activating..." : "Activate & Login"}
             </Button>
           </CardFooter>

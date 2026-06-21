@@ -413,11 +413,13 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       bookingId: booking.id,
       title: booking.schedule?.movie?.title || "Movie Ticket",
       cover: coverUrl,
-      date: booking.schedule?.show_date ? new Intl.DateTimeFormat("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      }).format(new Date(booking.schedule.show_date)) : "TBA",
+      date: booking.schedule?.show_date
+        ? new Intl.DateTimeFormat("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+          }).format(new Date(booking.schedule.show_date))
+        : "TBA",
       time: booking.schedule?.start_time ? booking.schedule.start_time.substring(0, 5) : "TBA",
       duration,
       seat: booking.names || "Guest",

@@ -16,7 +16,12 @@ function UsersPage() {
   const { workspaceSlug } = Route.useParams();
   const { workspaces } = useWorkspace();
 
-  const { data: users = [], isLoading: loadingUsers, isError: usersError, error: usersErr } = useQuery({
+  const {
+    data: users = [],
+    isLoading: loadingUsers,
+    isError: usersError,
+    error: usersErr,
+  } = useQuery({
     queryKey: ["workspace_users"],
     queryFn: () => getWorkspaceUsers(),
   });

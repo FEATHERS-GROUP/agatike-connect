@@ -1,5 +1,14 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Share2, MapPin, Navigation, Calendar, Clock, Star, Users } from "lucide-react";
+import {
+  ChevronLeft,
+  Share2,
+  MapPin,
+  Navigation,
+  Calendar,
+  Clock,
+  Star,
+  Users,
+} from "lucide-react";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -131,13 +140,13 @@ export function EventDetailsMobile({
 
         <div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-            <h2 className="text-xl font-semibold">{d.isExperience ? "Route & Schedule" : "Venue"}</h2>
+            <h2 className="text-xl font-semibold">
+              {d.isExperience ? "Route & Schedule" : "Venue"}
+            </h2>
             {d.isExperience && Number(d.totalDistance) > 0 && (
               <div className="bg-primary/10 text-primary px-4 py-2 rounded-2xl flex items-center gap-2 border border-primary/20 w-fit">
                 <Navigation className="h-4 w-4" />
-                <span className="font-semibold text-sm">
-                  {d.totalDistance} km total route
-                </span>
+                <span className="font-semibold text-sm">{d.totalDistance} km total route</span>
               </div>
             )}
           </div>
@@ -292,7 +301,8 @@ export function EventDetailsMobile({
                   <div>
                     <DrawerTitle className="text-lg font-bold">Select Seats</DrawerTitle>
                     <p className="text-xs text-muted-foreground">
-                      For {d.activeTicketTiers.find((t: any) => t.id === d.activeTicketIdForMap)?.name}
+                      For{" "}
+                      {d.activeTicketTiers.find((t: any) => t.id === d.activeTicketIdForMap)?.name}
                     </p>
                   </div>
                 </DrawerHeader>

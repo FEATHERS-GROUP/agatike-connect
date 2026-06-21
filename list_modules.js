@@ -11,7 +11,7 @@ async function run() {
       type: "run_sql",
       args: {
         source: "default",
-        sql: "SELECT id, label, href, icon, mandatory, category FROM public.\"platformModules\" ORDER BY label;",
+        sql: 'SELECT id, label, href, icon, mandatory, category FROM public."platformModules" ORDER BY label;',
       },
     }),
   });

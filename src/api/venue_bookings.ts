@@ -122,7 +122,9 @@ export const createVenueBooking = createServerFn({ method: "POST" })
     if (payment_status === "Paid" && parseFloat(amount || "0") > 0 && workspace_id) {
       try {
         const { addMoneyToWorkspaceWallet } = await import("./wallet");
-        await addMoneyToWorkspaceWallet({ data: { workspace_id, amount: parseFloat(amount) } } as any);
+        await addMoneyToWorkspaceWallet({
+          data: { workspace_id, amount: parseFloat(amount) },
+        } as any);
       } catch (e) {
         console.error("Failed to update wallet for venue booking:", e);
       }

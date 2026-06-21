@@ -35,7 +35,10 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
 
   const spots = isMock
     ? ev.spots || 0
-    : ev.event_tickets?.reduce((acc: number, t: any) => acc + parseInt(t.remaining || "0", 10), 0) || 0;
+    : ev.event_tickets?.reduce(
+        (acc: number, t: any) => acc + parseInt(t.remaining || "0", 10),
+        0,
+      ) || 0;
 
   const primaryDateStr = isMock ? ev.date : ev.event_requency?.date || ev.date || "TBD";
 
@@ -48,10 +51,8 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
                 date: primaryDateStr,
                 total_spots: spots,
                 spots_filled:
-                  ev.event_tickets?.reduce(
-                    (acc: number, t: any) => acc + Number(t.sold || 0),
-                    0,
-                  ) || 0,
+                  ev.event_tickets?.reduce((acc: number, t: any) => acc + Number(t.sold || 0), 0) ||
+                  0,
               },
             ]
           : []),
@@ -66,7 +67,7 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
 
   const [selectedStopIdx, setSelectedStopIdx] = useState(0);
   const [hasSelectedStop, setHasSelectedStop] = useState(
-    isExperience ? schedules.length <= 1 : tourStops.length <= 1
+    isExperience ? schedules.length <= 1 : tourStops.length <= 1,
   );
 
   const currentStop = tourStops[selectedStopIdx] || tourStops[0];
@@ -92,7 +93,7 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   const description = ev.description || ev.synopsis || "";
   const attendeesCount = isMock
     ? ev.attendees || ev.spots || 0
-    : ev.event_attendees_aggregate?.aggregate?.count ?? 0;
+    : (ev.event_attendees_aggregate?.aggregate?.count ?? 0);
 
   const lineup =
     Array.isArray(ev.lineup) && ev.lineup.length > 0
@@ -142,7 +143,7 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
           Number(prev.lat),
           Number(prev.lng),
           Number(stop.lat),
-          Number(stop.lng)
+          Number(stop.lng),
         );
       }
     });

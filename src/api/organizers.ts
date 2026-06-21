@@ -472,21 +472,21 @@ export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(asyn
 export const getOrganizerFollowerIds = createServerFn({ method: "POST" })
   .inputValidator((d: { organizerId: string }) => d)
   .handler(async (ctx) => {
-  const { organizerId } = ctx.data;
-  const fetchQuery = `
+    const { organizerId } = ctx.data;
+    const fetchQuery = `
     query GetFollowersRow($organizerId: uuid!) {
       organizer_followers(where: { organizer_id: { _eq: $organizerId } }) {
         user_id
       }
     }
   `;
-  const existing = await hasuraRequest<{ organizer_followers: { user_id: any }[] }>(fetchQuery, {
-    organizerId,
+    const existing = await hasuraRequest<{ organizer_followers: { user_id: any }[] }>(fetchQuery, {
+      organizerId,
+    });
+    if (!existing.organizer_followers[0]) return [];
+    const users = existing.organizer_followers[0].user_id;
+    return Array.isArray(users) ? users.map((u) => String(u).replace(/"/g, "")) : [];
   });
-  if (!existing.organizer_followers[0]) return [];
-  const users = existing.organizer_followers[0].user_id;
-  return Array.isArray(users) ? users.map((u) => String(u).replace(/"/g, "")) : [];
-});
 
 export const getOrganizersByIds = createServerFn({ method: "POST" })
   .inputValidator((d: { ids: string[] }) => d)

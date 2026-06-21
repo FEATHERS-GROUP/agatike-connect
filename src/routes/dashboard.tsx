@@ -115,7 +115,12 @@ function DashboardLayout() {
       const pathParts = location.pathname.split("/");
       const urlSlug = pathParts[2];
 
-      if (urlSlug && urlSlug !== "workspaces" && urlSlug !== "workspace-user" && urlSlug !== activeWorkspace.slug) {
+      if (
+        urlSlug &&
+        urlSlug !== "workspaces" &&
+        urlSlug !== "workspace-user" &&
+        urlSlug !== activeWorkspace.slug
+      ) {
         const workspaceFromUrl = workspaces.find((w) => w.slug === urlSlug);
         if (workspaceFromUrl) {
           // setActiveWorkspace(workspaceFromUrl);
@@ -125,20 +130,20 @@ function DashboardLayout() {
       }
 
       const protectedModules: Record<string, string> = {
-        "events": "events",
-        "tickets": "tickets",
-        "rsvps": "rsvps",
-        "scanner": "scanner",
-        "products": "products&add-ons",
-        "merchandise": "merchandise",
-        "vip": "vip",
-        "campaigns": "campaigns",
-        "venues": "venue_listings",
+        events: "events",
+        tickets: "tickets",
+        rsvps: "rsvps",
+        scanner: "scanner",
+        products: "products&add-ons",
+        merchandise: "merchandise",
+        vip: "vip",
+        campaigns: "campaigns",
+        venues: "venue_listings",
         "venue-designer": "venue_designer",
-        "experiences": "experiences",
-        "analytics": "analytics",
-        "users": "users",
-        "withdrawals": "withdrawals",
+        experiences: "experiences",
+        analytics: "analytics",
+        users: "users",
+        withdrawals: "withdrawals",
         "page-builder": "page_builder",
       };
 
@@ -150,13 +155,13 @@ function DashboardLayout() {
         // For subPaths like "/events", the module is index 1.
         let modName = "";
         if (path.startsWith("/dashboard/")) {
-           modName = pathParts[3];
+          modName = pathParts[3];
         } else {
-           modName = pathParts[1];
+          modName = pathParts[1];
         }
-        
+
         if (!modName) return true;
-        
+
         const reqMod = protectedModules[modName];
         if (!reqMod) return true; // not protected
 
@@ -180,7 +185,9 @@ function DashboardLayout() {
             Withdrawals: "withdrawals",
             Settings: "settings",
           };
-          return legacyIdMap[p.label] === reqMod || legacyIdMap[p.label] === reqMod.replace("_", "-");
+          return (
+            legacyIdMap[p.label] === reqMod || legacyIdMap[p.label] === reqMod.replace("_", "-")
+          );
         });
 
         return !!(
@@ -200,7 +207,7 @@ function DashboardLayout() {
         }
         return;
       }
-      
+
       // Page-level access check for workspace users
       if (currentUser && currentUser.pages && !currentUser.pages.includes("ALL")) {
         let subPath = location.pathname.substring(`/dashboard/${activeWorkspace.slug}`.length);
@@ -208,7 +215,7 @@ function DashboardLayout() {
           subPath = subPath.slice(0, -1);
         }
         if (subPath === "") subPath = "/";
-        
+
         let isAllowed = false;
         for (const p of currentUser.pages) {
           if (p === subPath) {
@@ -217,19 +224,27 @@ function DashboardLayout() {
           }
           if (p.includes("/:")) {
             const base = p.split("/:")[0];
-            if (subPath.startsWith(base + "/") && subPath.split("/").length === base.split("/").length + 1) {
+            if (
+              subPath.startsWith(base + "/") &&
+              subPath.split("/").length === base.split("/").length + 1
+            ) {
               isAllowed = true;
               break;
             }
           }
         }
-        
+
         if (!isAllowed) {
           if (subPath === "/") {
             // User is at root but not allowed, redirect to their first allowed page that also passes module checks
-            const validFirstPage = currentUser.pages.find((p: string) => p !== "/" && isModuleAllowedForPath(p));
+            const validFirstPage = currentUser.pages.find(
+              (p: string) => p !== "/" && isModuleAllowedForPath(p),
+            );
             if (validFirstPage) {
-              navigate({ to: `/dashboard/${activeWorkspace.slug}${validFirstPage}`, replace: true });
+              navigate({
+                to: `/dashboard/${activeWorkspace.slug}${validFirstPage}`,
+                replace: true,
+              });
             } else {
               // No valid pages. Stop loop by forcing a logout or just stop navigating.
               // For now, redirect to /dashboard/login to kick them out cleanly since they have no valid access.

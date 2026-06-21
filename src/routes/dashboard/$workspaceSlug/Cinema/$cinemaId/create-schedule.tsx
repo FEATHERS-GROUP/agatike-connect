@@ -20,7 +20,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -50,7 +56,9 @@ const EMPTY_FORM = {
 };
 
 const TIME_OPTIONS = Array.from({ length: 24 * 4 }).map((_, i) => {
-  const h = Math.floor(i / 4).toString().padStart(2, "0");
+  const h = Math.floor(i / 4)
+    .toString()
+    .padStart(2, "0");
   const m = ((i % 4) * 15).toString().padStart(2, "0");
   return `${h}:${m}`;
 });
@@ -142,7 +150,11 @@ function CreateSchedulePage() {
 
   const handleBack = () => {
     if (step > 0) setStep((s) => s - 1);
-    else navigate({ to: "/dashboard/$workspaceSlug/Cinema/$cinemaId/schedules", params: { workspaceSlug, cinemaId } });
+    else
+      navigate({
+        to: "/dashboard/$workspaceSlug/Cinema/$cinemaId/schedules",
+        params: { workspaceSlug, cinemaId },
+      });
   };
 
   const handleSave = async () => {
@@ -171,7 +183,10 @@ function CreateSchedulePage() {
       await createSchedule({ data: scheduleData });
       toast.success("Schedule created successfully!");
       await queryClient.invalidateQueries({ queryKey: ["cinema_schedules"] });
-      navigate({ to: "/dashboard/$workspaceSlug/Cinema/$cinemaId/schedules", params: { workspaceSlug, cinemaId } });
+      navigate({
+        to: "/dashboard/$workspaceSlug/Cinema/$cinemaId/schedules",
+        params: { workspaceSlug, cinemaId },
+      });
     } catch (err: any) {
       toast.error(err.message || "Failed to create schedule");
     } finally {
@@ -216,10 +231,21 @@ function CreateSchedulePage() {
                     {i + 1}
                   </div>
                   <div>
-                    <h3 className={cn("font-bold", active ? "text-primary" : past ? "text-foreground" : "text-muted-foreground")}>
+                    <h3
+                      className={cn(
+                        "font-bold",
+                        active
+                          ? "text-primary"
+                          : past
+                            ? "text-foreground"
+                            : "text-muted-foreground",
+                      )}
+                    >
                       {s.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground mt-0.5 leading-snug">{s.description}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5 leading-snug">
+                      {s.description}
+                    </p>
                   </div>
                 </div>
               );
@@ -245,7 +271,10 @@ function CreateSchedulePage() {
         <div className="max-w-5xl w-full mx-auto">
           {/* Mobile Header */}
           <div className="md:hidden flex items-center gap-4 mb-8">
-            <button onClick={handleBack} className="p-2 rounded-full bg-secondary text-muted-foreground">
+            <button
+              onClick={handleBack}
+              className="p-2 rounded-full bg-secondary text-muted-foreground"
+            >
               <ArrowLeft className="h-4 w-4" />
             </button>
             <div>
@@ -299,14 +328,20 @@ function CreateSchedulePage() {
                             />
                             <div className="h-16 w-12 rounded-md overflow-hidden bg-secondary shrink-0">
                               {m.cover_url ? (
-                                <img src={m.cover_url} alt={m.title} className="w-full h-full object-cover" />
+                                <img
+                                  src={m.cover_url}
+                                  alt={m.title}
+                                  className="w-full h-full object-cover"
+                                />
                               ) : (
                                 <Film className="w-full h-full p-3 text-muted-foreground/30" />
                               )}
                             </div>
                             <div>
                               <p className="font-bold">{m.title}</p>
-                              <p className="text-xs text-muted-foreground">{m.duration_minutes} mins</p>
+                              <p className="text-xs text-muted-foreground">
+                                {m.duration_minutes} mins
+                              </p>
                             </div>
                           </label>
                         ))}
@@ -344,7 +379,9 @@ function CreateSchedulePage() {
                             </div>
                             <div>
                               <p className="font-bold">{s.name}</p>
-                              <p className="text-xs text-muted-foreground">Capacity: {s.capacity}</p>
+                              <p className="text-xs text-muted-foreground">
+                                Capacity: {s.capacity}
+                              </p>
                             </div>
                           </label>
                         ))}
@@ -366,11 +403,15 @@ function CreateSchedulePage() {
                             variant={"outline"}
                             className={cn(
                               "w-full justify-start text-left font-normal rounded-xl h-12",
-                              !form.show_date && "text-muted-foreground"
+                              !form.show_date && "text-muted-foreground",
                             )}
                           >
                             <CalendarDays className="mr-2 h-4 w-4" />
-                            {form.show_date ? format(form.show_date, "PPP") : <span>Pick a date</span>}
+                            {form.show_date ? (
+                              format(form.show_date, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -383,10 +424,13 @@ function CreateSchedulePage() {
                         </PopoverContent>
                       </Popover>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label>Start Time</Label>
-                      <Select value={form.start_time} onValueChange={(val) => set("start_time", val)}>
+                      <Select
+                        value={form.start_time}
+                        onValueChange={(val) => set("start_time", val)}
+                      >
                         <SelectTrigger className="w-full rounded-xl h-12">
                           <SelectValue placeholder="Select start time" />
                         </SelectTrigger>
@@ -439,7 +483,9 @@ function CreateSchedulePage() {
                       <label
                         className={cn(
                           "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
-                          form.is_3d ? "border-primary bg-primary/5" : "border-border/60 hover:bg-secondary/50",
+                          form.is_3d
+                            ? "border-primary bg-primary/5"
+                            : "border-border/60 hover:bg-secondary/50",
                         )}
                       >
                         <input
@@ -453,7 +499,9 @@ function CreateSchedulePage() {
                       <label
                         className={cn(
                           "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
-                          form.is_imax ? "border-primary bg-primary/5" : "border-border/60 hover:bg-secondary/50",
+                          form.is_imax
+                            ? "border-primary bg-primary/5"
+                            : "border-border/60 hover:bg-secondary/50",
                         )}
                       >
                         <input
@@ -467,7 +515,9 @@ function CreateSchedulePage() {
                       <label
                         className={cn(
                           "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
-                          form.is_premiere ? "border-primary bg-primary/5" : "border-border/60 hover:bg-secondary/50",
+                          form.is_premiere
+                            ? "border-primary bg-primary/5"
+                            : "border-border/60 hover:bg-secondary/50",
                         )}
                       >
                         <input
@@ -519,15 +569,20 @@ function CreateSchedulePage() {
                                 {tier.currency} {tier.price}
                               </span>
                             </div>
-                            <p className="text-sm text-muted-foreground capitalize mb-3">{tier.type} Tier</p>
+                            <p className="text-sm text-muted-foreground capitalize mb-3">
+                              {tier.type} Tier
+                            </p>
                             {form.ticket_tiers.includes(tier.id) && (
-                              <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
+                              <div
+                                className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-2"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 <Label className="text-xs">Custom Price Override (Optional)</Label>
                                 <div className="relative">
                                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
                                     {tier.currency}
                                   </span>
-                                  <Input 
+                                  <Input
                                     type="number"
                                     placeholder={`Default: ${tier.price}`}
                                     value={form.tier_overrides[tier.id] || ""}
@@ -570,7 +625,11 @@ function CreateSchedulePage() {
               className="h-12 px-8 rounded-xl font-bold shadow-[var(--shadow-glow)]"
               style={{ background: "var(--gradient-primary)" }}
             >
-              {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+              {saving ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-5 w-5" />
+              )}
               {saving ? "Creating..." : "Create Schedule"}
             </Button>
           )}

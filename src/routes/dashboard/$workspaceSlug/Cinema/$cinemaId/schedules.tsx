@@ -1,10 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getSchedules,
-  deleteSchedule,
-} from "@/api/cinema_management";
+import { getSchedules, deleteSchedule } from "@/api/cinema_management";
 import {
   Plus,
   CalendarDays,
@@ -52,7 +49,10 @@ function CinemaSchedulesPage() {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleOpenCreate = () => {
-    navigate({ to: "/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule", params: { workspaceSlug, cinemaId } });
+    navigate({
+      to: "/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule",
+      params: { workspaceSlug, cinemaId },
+    });
   };
 
   const handleDelete = async (scheduleId: string) => {
@@ -198,7 +198,6 @@ function CinemaSchedulesPage() {
             ))}
           </div>
         )}
-
       </div>
     </div>
   );

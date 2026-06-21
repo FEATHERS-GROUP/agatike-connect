@@ -44,16 +44,22 @@ function EventCard({ event }: { event: any }) {
   const getVal = (key: string) => {
     if (isMock) return event[key];
     if (Array.isArray(event.tour_stops)) return event.tour_stops[0]?.[key];
-    if (event.tour_stops && typeof event.tour_stops === 'object') return event.tour_stops[key];
+    if (event.tour_stops && typeof event.tour_stops === "object") return event.tour_stops[key];
     return "";
   };
 
-  const date = getVal('date') || event.event_requency?.date || "TBD";
-  const time = isMock ? (event.time || event.duration) : getVal('time');
-  const venue = getVal('venue') || getVal('venueName') || "";
-  const city = getVal('city') || "";
-  
-  const tourStopsCount = isMock ? 1 : Array.isArray(event.tour_stops) ? event.tour_stops.length : (event.tour_stops?.itinerary?.length ? event.tour_stops.itinerary.length : 1);
+  const date = getVal("date") || event.event_requency?.date || "TBD";
+  const time = isMock ? event.time || event.duration : getVal("time");
+  const venue = getVal("venue") || getVal("venueName") || "";
+  const city = getVal("city") || "";
+
+  const tourStopsCount = isMock
+    ? 1
+    : Array.isArray(event.tour_stops)
+      ? event.tour_stops.length
+      : event.tour_stops?.itinerary?.length
+        ? event.tour_stops.itinerary.length
+        : 1;
   const organizerName = isMock
     ? event.organizer || event.host || event.cinema
     : event.workspaces?.organizer?.name || event.workspaces?.name || "Organizer";

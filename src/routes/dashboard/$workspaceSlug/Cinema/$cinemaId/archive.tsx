@@ -66,7 +66,7 @@ function CinemaArchive() {
   const filtered = archivedMovies.filter(
     (m) =>
       m.title.toLowerCase().includes(search.toLowerCase()) ||
-      m.genre.toLowerCase().includes(search.toLowerCase())
+      m.genre.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -116,10 +116,12 @@ function CinemaArchive() {
               {
                 label: "Total Revenue",
                 value:
-                  archivedMovies.length > 0 ? (
-                    archivedMovies[0].currency + " " +
-                    (archivedMovies.reduce((a, m) => a + m.revenue, 0) / 1_000_000).toFixed(1) + "M"
-                  ) : "0",
+                  archivedMovies.length > 0
+                    ? archivedMovies[0].currency +
+                      " " +
+                      (archivedMovies.reduce((a, m) => a + m.revenue, 0) / 1_000_000).toFixed(1) +
+                      "M"
+                    : "0",
               },
             ].map((stat, i) => (
               <div
@@ -150,8 +152,12 @@ function CinemaArchive() {
                   <th className="text-right px-4 py-4 font-semibold text-muted-foreground hidden lg:table-cell">
                     Tickets Sold
                   </th>
-                  <th className="text-right px-4 py-4 font-semibold text-muted-foreground">Revenue</th>
-                  <th className="text-right px-6 py-4 font-semibold text-muted-foreground">Actions</th>
+                  <th className="text-right px-4 py-4 font-semibold text-muted-foreground">
+                    Revenue
+                  </th>
+                  <th className="text-right px-6 py-4 font-semibold text-muted-foreground">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -169,7 +175,9 @@ function CinemaArchive() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <span className="text-[10px] text-muted-foreground font-bold">N/A</span>
+                              <span className="text-[10px] text-muted-foreground font-bold">
+                                N/A
+                              </span>
                             </div>
                           )}
                         </div>
@@ -213,7 +221,13 @@ function CinemaArchive() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => navigate({ to: "/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule", params: { workspaceSlug, cinemaId }, search: { movieId: movie.id } })}
+                          onClick={() =>
+                            navigate({
+                              to: "/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule",
+                              params: { workspaceSlug, cinemaId },
+                              search: { movieId: movie.id },
+                            })
+                          }
                           className="h-8 text-xs rounded-lg gap-1.5 border-primary/30 text-primary hover:bg-primary/10 hover:text-primary"
                         >
                           <RotateCcw className="h-3.5 w-3.5" />

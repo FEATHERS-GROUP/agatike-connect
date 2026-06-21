@@ -1,10 +1,12 @@
-const fs = require('fs');
-let content = fs.readFileSync('src/api/workspaces.ts', 'utf8');
+const fs = require("fs");
+let content = fs.readFileSync("src/api/workspaces.ts", "utf8");
 
 // Find the start and end of getUserWorkspaces
-const startIndex = content.indexOf('export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async () => {');
+const startIndex = content.indexOf(
+  'export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async () => {',
+);
 // Find the closing bracket of getUserWorkspaces handler
-let endIndex = content.indexOf('});', startIndex) + 3;
+let endIndex = content.indexOf("});", startIndex) + 3;
 // But wait, there might be other createServerFn... let's just use regex to replace it
 const newFunction = `export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async () => {
   const session = await getSession();
@@ -141,7 +143,10 @@ const newFunction = `export const getUserWorkspaces = createServerFn({ method: "
 });`;
 
 // Replace from export const getUserWorkspaces to the first });
-content = content.replace(/export const getUserWorkspaces = createServerFn\(\{ method: "GET" \}\)\.handler\(async \(\) => \{[\s\S]*?\n\}\);/, newFunction);
+content = content.replace(
+  /export const getUserWorkspaces = createServerFn\(\{ method: "GET" \}\)\.handler\(async \(\) => \{[\s\S]*?\n\}\);/,
+  newFunction,
+);
 
-fs.writeFileSync('src/api/workspaces.ts', content);
+fs.writeFileSync("src/api/workspaces.ts", content);
 console.log("Fixed workspaces.ts");

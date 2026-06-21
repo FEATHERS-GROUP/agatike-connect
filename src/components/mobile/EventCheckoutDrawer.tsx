@@ -89,13 +89,16 @@ export function EventCheckoutDrawer({
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                 {isExperience ? "Select Schedule" : "Select Tour Stop"}
               </p>
-              <div className={`flex ${hasSelectedStop ? 'gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x' : 'flex-col gap-3'}`}>
+              <div
+                className={`flex ${hasSelectedStop ? "gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x" : "flex-col gap-3"}`}
+              >
                 {(isExperience ? schedules : tourStops).map((stopOrSchedule: any, idx: number) => {
                   const isSelected = selectedStopIdx === idx;
 
                   if (isExperience) {
                     const totalSpots = stopOrSchedule.total_spots ?? stopOrSchedule.totalSpots ?? 0;
-                    const spotsFilled = stopOrSchedule.spots_filled ?? stopOrSchedule.spotsFilled ?? 0;
+                    const spotsFilled =
+                      stopOrSchedule.spots_filled ?? stopOrSchedule.spotsFilled ?? 0;
                     const dateStr = stopOrSchedule.start_date || stopOrSchedule.date || "TBD";
                     const isFull = spotsFilled >= totalSpots;
 
@@ -105,14 +108,18 @@ export function EventCheckoutDrawer({
                           key={idx}
                           onClick={() => !isFull && setSelectedStopIdx(idx)}
                           disabled={isFull}
-                          className={`relative snap-start flex flex-col items-start min-w-[160px] p-3.5 rounded-2xl border transition-all duration-300 shrink-0 text-left bg-card border-border/40 hover:border-border hover:bg-secondary/30 opacity-70 ${isFull ? 'cursor-not-allowed grayscale' : ''}`}
+                          className={`relative snap-start flex flex-col items-start min-w-[160px] p-3.5 rounded-2xl border transition-all duration-300 shrink-0 text-left bg-card border-border/40 hover:border-border hover:bg-secondary/30 opacity-70 ${isFull ? "cursor-not-allowed grayscale" : ""}`}
                         >
                           <div className="flex items-center justify-between w-full">
                             <span className="font-semibold text-[13px]">{dateStr}</span>
                             {isFull ? (
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">Sold Out</span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">
+                                Sold Out
+                              </span>
                             ) : (
-                              <span className="text-xs text-muted-foreground">{totalSpots - spotsFilled} spots</span>
+                              <span className="text-xs text-muted-foreground">
+                                {totalSpots - spotsFilled} spots
+                              </span>
                             )}
                           </div>
                         </button>
@@ -133,14 +140,22 @@ export function EventCheckoutDrawer({
                           isSelected && hasSelectedStop
                             ? "bg-primary/10 border-primary shadow-[0_4px_20px_rgba(var(--primary),0.15)] ring-1 ring-primary/20 snap-start min-w-[160px] shrink-0"
                             : "bg-card/50 border-border/60 hover:bg-card w-full"
-                        } ${isFull ? 'cursor-not-allowed opacity-60' : ''}`}
+                        } ${isFull ? "cursor-not-allowed opacity-60" : ""}`}
                       >
                         <div className="flex items-center justify-between w-full">
-                          <span className={`font-semibold text-sm ${isSelected && hasSelectedStop ? "text-foreground" : "text-foreground/90"}`}>{dateStr}</span>
+                          <span
+                            className={`font-semibold text-sm ${isSelected && hasSelectedStop ? "text-foreground" : "text-foreground/90"}`}
+                          >
+                            {dateStr}
+                          </span>
                           {isFull ? (
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">Sold Out</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">
+                              Sold Out
+                            </span>
                           ) : (
-                            <span className="text-xs text-muted-foreground">{totalSpots - spotsFilled} spots left</span>
+                            <span className="text-xs text-muted-foreground">
+                              {totalSpots - spotsFilled} spots left
+                            </span>
                           )}
                         </div>
                         {isSelected && hasSelectedStop && (
@@ -390,7 +405,7 @@ export function EventCheckoutDrawer({
                 background:
                   total === 0 && totalTickets > 0 ? "var(--foreground)" : "var(--gradient-primary)",
                 opacity: totalTickets === 0 && hasSelectedStop ? 0.5 : 1,
-                pointerEvents: (totalTickets === 0 && hasSelectedStop) ? "none" : "auto",
+                pointerEvents: totalTickets === 0 && hasSelectedStop ? "none" : "auto",
               }}
               onClick={() => {
                 if (!hasSelectedStop) {
@@ -411,7 +426,11 @@ export function EventCheckoutDrawer({
               }}
             >
               <span className="w-full block text-center leading-[48px]">
-                {!hasSelectedStop ? "Select Date" : (total === 0 && totalTickets > 0 ? "Register for Free" : "Get Tickets")}
+                {!hasSelectedStop
+                  ? "Select Date"
+                  : total === 0 && totalTickets > 0
+                    ? "Register for Free"
+                    : "Get Tickets"}
               </span>
             </Button>
           </div>

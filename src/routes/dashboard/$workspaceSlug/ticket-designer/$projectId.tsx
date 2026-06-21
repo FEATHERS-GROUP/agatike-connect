@@ -6,10 +6,10 @@ import QRCodeImport from "react-qr-code";
 const QRCode = (QRCodeImport as any).default || QRCodeImport;
 import { lazy, Suspense, useState as _useState, useEffect as _useEffect } from "react";
 
-function ClientOnly({ children, fallback }: { children: any, fallback?: any }) {
+function ClientOnly({ children, fallback }: { children: any; fallback?: any }) {
   const [mounted, setMounted] = _useState(false);
   _useEffect(() => setMounted(true), []);
-  return mounted ? children : (fallback || null);
+  return mounted ? children : fallback || null;
 }
 const ReactQuill = lazy(() => import("react-quill-new"));
 import "react-quill-new/dist/quill.snow.css";
@@ -217,13 +217,25 @@ function TicketDesignerPage() {
     enabled: !!activeWorkspace?.id,
   });
 
-  const { data: userAccessLevel = "edit", error: accessError, isError: isAccessError } = useQuery({
+  const {
+    data: userAccessLevel = "edit",
+    error: accessError,
+    isError: isAccessError,
+  } = useQuery({
     queryKey: ["project-access", projectId],
-    queryFn: () => getContributorAccessLevel({ data: { resource_type: "ticket_project", resource_id: projectId } } as any),
+    queryFn: () =>
+      getContributorAccessLevel({
+        data: { resource_type: "ticket_project", resource_id: projectId },
+      } as any),
     enabled: !!projectId && projectId.includes("-"),
   });
 
-  const { data: dbProject, isLoading: isProjectLoading, error: projectError, isError: isProjectError } = useQuery({
+  const {
+    data: dbProject,
+    isLoading: isProjectLoading,
+    error: projectError,
+    isError: isProjectError,
+  } = useQuery({
     queryKey: ["ticket-project", projectId],
     queryFn: () => getTicketProjectById({ data: { id: projectId } } as any),
     enabled: !!projectId && projectId.includes("-"), // ensure it looks like a uuid
@@ -236,7 +248,9 @@ function TicketDesignerPage() {
   );
 
   // Read template from URL if it's a new project
-  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const searchParams = new URLSearchParams(
+    typeof window !== "undefined" ? window.location.search : "",
+  );
   const initialTemplate = migrateTemplate((searchParams.get("template") as string) || "concert-1");
   const initialEventId = searchParams.get("eventId") || "";
   const initialName = searchParams.get("name") || "Untitled Project";
@@ -249,7 +263,11 @@ function TicketDesignerPage() {
   const initialCinemaId = searchParams.get("cinemaId") || "";
   const [cinemaId, setCinemaId] = useState(existingProject?.cinemaId || initialCinemaId);
   const [assignmentType, setAssignmentType] = useState<"event" | "venue" | "cinema">(
-    existingProject?.cinemaId || initialCinemaId ? "cinema" : (existingProject?.venueId || initialVenueId ? "venue" : "event")
+    existingProject?.cinemaId || initialCinemaId
+      ? "cinema"
+      : existingProject?.venueId || initialVenueId
+        ? "venue"
+        : "event",
   );
 
   const { data: cinemaTiers = [] } = useQuery({
@@ -263,8 +281,17 @@ function TicketDesignerPage() {
   const cinemaMatch = cinemas.find((c: any) => c.id === cinemaId);
   const allTicketTiers = useMemo(() => {
     if (assignmentType === "event") return eventMatch?.event_tickets || [];
-    if (assignmentType === "venue") return venueMatch?.pricing_tiers?.map((t: any) => ({ ...t, id: t.name, type: t.name, cost: t.amount })) || [];
-    if (assignmentType === "cinema") return cinemaTiers.map((t: any) => ({ id: t.id, type: t.name, cost: t.price })) || [];
+    if (assignmentType === "venue")
+      return (
+        venueMatch?.pricing_tiers?.map((t: any) => ({
+          ...t,
+          id: t.name,
+          type: t.name,
+          cost: t.amount,
+        })) || []
+      );
+    if (assignmentType === "cinema")
+      return cinemaTiers.map((t: any) => ({ id: t.id, type: t.name, cost: t.price })) || [];
     return [];
   }, [assignmentType, eventMatch?.event_tickets, venueMatch?.pricing_tiers, cinemaTiers]);
   const tourStops = Array.isArray(eventMatch?.tour_stops) ? eventMatch.tour_stops : [];
@@ -326,7 +353,7 @@ function TicketDesignerPage() {
       setEventId(dbProject.eventId || "");
       setVenueId(dbProject.venueId || "");
       setCinemaId(dbProject.cinemaId || "");
-      setAssignmentType(dbProject.cinemaId ? "cinema" : (dbProject.venueId ? "venue" : "event"));
+      setAssignmentType(dbProject.cinemaId ? "cinema" : dbProject.venueId ? "venue" : "event");
       const savedOverrides = dbProject.design_overrides || {};
       setBaseDesign({
         template: migrateTemplate((dbProject.template as string) || initialTemplate),
@@ -469,20 +496,20 @@ function TicketDesignerPage() {
       assignmentType === "event"
         ? eventMatch?.title || "Event Title"
         : assignmentType === "cinema"
-        ? cinemaMatch?.name || "Cinema Ticket"
-        : venueMatch?.name || "Venue Ticket",
+          ? cinemaMatch?.name || "Cinema Ticket"
+          : venueMatch?.name || "Venue Ticket",
     subtitle:
       assignmentType === "event"
         ? activeStop?.venue
           ? `${activeStop.venue} · ${activeStop.city}${activeStop.address ? `\n${activeStop.address}` : ""}`
           : eventMatch?.category || "Event"
         : assignmentType === "cinema"
-        ? cinemaMatch?.address
-          ? `${cinemaMatch.address}${cinemaMatch.city ? ` · ${cinemaMatch.city}` : ""}`
-          : "Cinema Location TBD"
-        : venueMatch?.address
-          ? `${venueMatch.address}${venueMatch.city ? ` · ${venueMatch.city}` : ""}`
-          : venueMatch?.type || "Location TBD",
+          ? cinemaMatch?.address
+            ? `${cinemaMatch.address}${cinemaMatch.city ? ` · ${cinemaMatch.city}` : ""}`
+            : "Cinema Location TBD"
+          : venueMatch?.address
+            ? `${venueMatch.address}${venueMatch.city ? ` · ${venueMatch.city}` : ""}`
+            : venueMatch?.type || "Location TBD",
     date: assignmentType === "event" ? activeStop?.date || "TBD" : "Valid for 1 Day",
     time: assignmentType === "event" ? activeStop?.time || "TBD" : "Anytime during opening hours",
 
@@ -657,7 +684,6 @@ function TicketDesignerPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          
           <Button
             variant="outline"
             className="rounded-full border-border/60 bg-white/5 hover:bg-white/10"
@@ -670,10 +696,19 @@ function TicketDesignerPage() {
             onClick={handleSave}
             disabled={saveMutation.isPending || userAccessLevel === "view"}
             className={`rounded-full shadow-[var(--shadow-glow)] transition-all ${isDirty && userAccessLevel !== "view" ? "animate-pulse" : ""}`}
-            style={{ background: isDirty && userAccessLevel !== "view" ? "var(--gradient-primary)" : "var(--border)" }}
+            style={{
+              background:
+                isDirty && userAccessLevel !== "view" ? "var(--gradient-primary)" : "var(--border)",
+            }}
           >
             <Save className="mr-1 h-4 w-4" />{" "}
-            {saveMutation.isPending ? "Saving..." : userAccessLevel === "view" ? "View Only" : isDirty ? "Save changes" : "Saved"}
+            {saveMutation.isPending
+              ? "Saving..."
+              : userAccessLevel === "view"
+                ? "View Only"
+                : isDirty
+                  ? "Save changes"
+                  : "Saved"}
           </Button>
         </div>
       </header>
@@ -741,8 +776,8 @@ function TicketDesignerPage() {
                           : assignmentType === "venue" && venueId
                             ? `venue:${venueId}`
                             : assignmentType === "cinema" && cinemaId
-                            ? `cinema:${cinemaId}`
-                            : ""
+                              ? `cinema:${cinemaId}`
+                              : ""
                       }
                       onChange={(e) => {
                         const val = e.target.value;
@@ -769,7 +804,9 @@ function TicketDesignerPage() {
                         }
                         setIsDirty(true);
                       }}
-                      disabled={!!dbProject?.eventId || !!dbProject?.venueId || !!dbProject?.cinemaId}
+                      disabled={
+                        !!dbProject?.eventId || !!dbProject?.venueId || !!dbProject?.cinemaId
+                      }
                       className="w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-secondary/20"
                     >
                       <option value="">-- No Assignment --</option>
@@ -849,9 +886,17 @@ function TicketDesignerPage() {
                       }}
                       className="w-full rounded-xl border border-primary/60 bg-primary/10 text-primary px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary transition-colors cursor-pointer"
                     >
-                      <option value="base">{assignmentType === "cinema" ? "Base Design (All Movies/Tiers)" : "Base Template (Applies to ALL tickets)"}</option>
+                      <option value="base">
+                        {assignmentType === "cinema"
+                          ? "Base Design (All Movies/Tiers)"
+                          : "Base Template (Applies to ALL tickets)"}
+                      </option>
                       {ticketTiers.length > 1 && (
-                        <option value="tier">{assignmentType === "cinema" ? "Specific Movie/Tier independently" : "Specific Tiers independently"}</option>
+                        <option value="tier">
+                          {assignmentType === "cinema"
+                            ? "Specific Movie/Tier independently"
+                            : "Specific Tiers independently"}
+                        </option>
                       )}
                     </select>
                   </Field>
@@ -1258,30 +1303,38 @@ function TicketDesignerPage() {
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Custom message / terms</Label>
                   <div className="quill-ticket-editor rounded-xl overflow-hidden border border-border/60">
-                    <ClientOnly fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><Suspense fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><ReactQuill
-                      theme="snow"
-                      value={
-                        mergedDesign.back?.backText ??
-                        (mergedDesign.template === "experience"
-                          ? DEFAULT_EXPERIENCE_BACK_HTML
-                          : DEFAULT_TERMS_HTML)
-                      }
-                      onChange={(val) =>
-                        updateDesign("back", {
-                          ...(mergedDesign.back || defaultBack),
-                          backText: val,
-                        })
-                      }
-                      modules={{
-                        toolbar: [
-                          [{ header: [false, 2, 3] }],
-                          ["bold", "italic", "underline"],
-                          [{ list: "ordered" }, { list: "bullet" }],
-                          ["clean"],
-                        ],
-                      }}
-                      formats={["header", "bold", "italic", "underline", "list"]}
-                    /></Suspense></ClientOnly>
+                    <ClientOnly
+                      fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}
+                    >
+                      <Suspense
+                        fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}
+                      >
+                        <ReactQuill
+                          theme="snow"
+                          value={
+                            mergedDesign.back?.backText ??
+                            (mergedDesign.template === "experience"
+                              ? DEFAULT_EXPERIENCE_BACK_HTML
+                              : DEFAULT_TERMS_HTML)
+                          }
+                          onChange={(val) =>
+                            updateDesign("back", {
+                              ...(mergedDesign.back || defaultBack),
+                              backText: val,
+                            })
+                          }
+                          modules={{
+                            toolbar: [
+                              [{ header: [false, 2, 3] }],
+                              ["bold", "italic", "underline"],
+                              [{ list: "ordered" }, { list: "bullet" }],
+                              ["clean"],
+                            ],
+                          }}
+                          formats={["header", "bold", "italic", "underline", "list"]}
+                        />
+                      </Suspense>
+                    </ClientOnly>
                   </div>
                 </div>
               </Section>
@@ -1422,8 +1475,8 @@ function TicketDesignerPage() {
                           (assignmentType === "cinema"
                             ? cinemaMatch?.cover_url
                             : assignmentType === "venue"
-                            ? venueMatch?.cover_url || venueMatch?.images?.[0]
-                            : eventMatch?.cover) ||
+                              ? venueMatch?.cover_url || venueMatch?.images?.[0]
+                              : eventMatch?.cover) ||
                           ""
                         }
                         logoText={tDesign.logoText || dynamicDefaults.brand}
@@ -1463,8 +1516,8 @@ function TicketDesignerPage() {
                     (assignmentType === "cinema"
                       ? cinemaMatch?.cover_url
                       : assignmentType === "venue"
-                      ? venueMatch?.cover_url || venueMatch?.images?.[0]
-                      : eventMatch?.cover) ||
+                        ? venueMatch?.cover_url || venueMatch?.images?.[0]
+                        : eventMatch?.cover) ||
                     ""
                   }
                   logoText={mergedDesign.logoText || dynamicDefaults.brand}

@@ -21,14 +21,15 @@ function CinemaTicketTiers() {
   });
 
   const unlinkMutation = useMutation({
-    mutationFn: (ticketTierId: string) => unlinkTierFromCinema({ data: { cinema_id: cinemaId, ticket_tier_id: ticketTierId } }),
+    mutationFn: (ticketTierId: string) =>
+      unlinkTierFromCinema({ data: { cinema_id: cinemaId, ticket_tier_id: ticketTierId } }),
     onSuccess: (_, tierId) => {
       toast.success("Ticket tier unlinked from all schedules in this cinema.");
       queryClient.invalidateQueries({ queryKey: ["cinema", cinemaId] });
     },
     onError: () => {
       toast.error("Failed to unlink ticket tier.");
-    }
+    },
   });
 
   if (isLoading) {
@@ -70,7 +71,9 @@ function CinemaTicketTiers() {
   }));
 
   const handleUnlink = (tierId: string) => {
-    if (confirm("This will remove this ticket tier from all schedules in this cinema. Are you sure?")) {
+    if (
+      confirm("This will remove this ticket tier from all schedules in this cinema. Are you sure?")
+    ) {
       unlinkMutation.mutate(tierId);
     }
   };
@@ -96,7 +99,10 @@ function CinemaTicketTiers() {
         ) : (
           <div className="space-y-4">
             {connectedTiers.map((tier: any) => (
-              <div key={tier.id} className="p-6 rounded-2xl border border-border/50 bg-secondary/20 transition-colors hover:bg-secondary/40">
+              <div
+                key={tier.id}
+                className="p-6 rounded-2xl border border-border/50 bg-secondary/20 transition-colors hover:bg-secondary/40"
+              >
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
                   <div>
                     <h4 className="font-bold text-xl">{tier.name}</h4>
@@ -106,9 +112,9 @@ function CinemaTicketTiers() {
                     <span className="font-bold text-lg bg-background px-3 py-1.5 rounded-lg border border-border/40 text-primary">
                       {tier.currency} {tier.price.toLocaleString()}
                     </span>
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
+                    <Button
+                      variant="destructive"
+                      size="sm"
                       className="rounded-xl"
                       disabled={unlinkMutation.isPending}
                       onClick={() => handleUnlink(tier.id)}
@@ -120,10 +126,15 @@ function CinemaTicketTiers() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Linked Movies</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                    Linked Movies
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {tier.movies.map((m: any) => (
-                      <span key={m.id} className="text-sm px-3 py-1.5 bg-background border border-border/60 rounded-full font-medium">
+                      <span
+                        key={m.id}
+                        className="text-sm px-3 py-1.5 bg-background border border-border/60 rounded-full font-medium"
+                      >
                         {m.title}
                       </span>
                     ))}

@@ -133,7 +133,9 @@ export function EventCheckoutSidebar({
               <div
                 key={t.id}
                 className={`w-full rounded-2xl border p-4 text-left transition ${
-                  isSelected ? "border-primary bg-accent/40" : "border-border bg-background hover:bg-secondary"
+                  isSelected
+                    ? "border-primary bg-accent/40"
+                    : "border-border bg-background hover:bg-secondary"
                 } ${isMapped ? "cursor-pointer" : ""}`}
                 onClick={() => {
                   if (isMapped) {
@@ -206,10 +208,7 @@ export function EventCheckoutSidebar({
           }}
           onClick={() => {
             localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
-            localStorage.setItem(
-              `event_checkout_seats_${ev.id}`,
-              JSON.stringify(selectedSeatsObj),
-            );
+            localStorage.setItem(`event_checkout_seats_${ev.id}`, JSON.stringify(selectedSeatsObj));
           }}
         >
           <Link to="/book/$eventId" params={{ eventId: ev.id }} className="w-full block">

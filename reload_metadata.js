@@ -14,8 +14,8 @@ async function run() {
       args: {
         reload_remote_schemas: true,
         reload_sources: true,
-        recreate_event_triggers: true
-      }
+        recreate_event_triggers: true,
+      },
     }),
   });
   console.log("Reload metadata result:", await trackRes.json());

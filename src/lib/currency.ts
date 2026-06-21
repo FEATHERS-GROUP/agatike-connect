@@ -43,7 +43,11 @@ export function getCurrencySymbol(currencyCode?: string): string {
   }
 }
 
-export function formatCurrency(amount: number | string, currencyCode: string = "USD", compact: boolean = false): string {
+export function formatCurrency(
+  amount: number | string,
+  currencyCode: string = "USD",
+  compact: boolean = false,
+): string {
   const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
   if (isNaN(numAmount)) return String(amount);
 
@@ -51,8 +55,10 @@ export function formatCurrency(amount: number | string, currencyCode: string = "
 
   // Custom formatting for specific currencies where Intl produces undesirable symbols
   if (["RWF", "KES", "UGX", "TZS"].includes(upperCode)) {
-    const formattedNum = compact 
-      ? Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(numAmount)
+    const formattedNum = compact
+      ? Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(
+          numAmount,
+        )
       : numAmount.toLocaleString("en-US");
     return `${upperCode} ${formattedNum}`;
   }
@@ -67,8 +73,10 @@ export function formatCurrency(amount: number | string, currencyCode: string = "
     }).format(numAmount);
   } catch (e) {
     const symbol = getCurrencySymbol(upperCode);
-    const formattedNum = compact 
-      ? Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(numAmount)
+    const formattedNum = compact
+      ? Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(
+          numAmount,
+        )
       : numAmount.toLocaleString("en-US");
     return `${symbol} ${formattedNum}`;
   }

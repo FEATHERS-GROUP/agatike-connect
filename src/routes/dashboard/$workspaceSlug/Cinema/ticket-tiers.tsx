@@ -252,7 +252,12 @@ function CinemaTicketTiersPage() {
             </p>
           </div>
           <Button
-            onClick={() => navigate({ to: "/dashboard/$workspaceSlug/Cinema/create-ticket-tier", params: { workspaceSlug } })}
+            onClick={() =>
+              navigate({
+                to: "/dashboard/$workspaceSlug/Cinema/create-ticket-tier",
+                params: { workspaceSlug },
+              })
+            }
             className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
           >

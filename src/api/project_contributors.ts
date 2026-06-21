@@ -62,7 +62,7 @@ export const inviteContributor = createServerFn({ method: "POST" })
           resource_id,
           access_level,
         },
-      }
+      },
     );
 
     // Now check if a workspace_user already exists globally
@@ -120,7 +120,7 @@ export const inviteContributor = createServerFn({ method: "POST" })
         workspace_id: [workspace_id],
         password: hashedPassword,
       });
-      
+
       try {
         const orgQuery = `query { organizers_by_pk(id: "${organizer_id}") { name } }`;
         const orgData = await hasuraRequest<any>(orgQuery, {});
@@ -148,7 +148,7 @@ export const inviteContributor = createServerFn({ method: "POST" })
         `;
         await hasuraRequest(updateWorkspaces, {
           id: existingUser.id,
-          workspaces: [...existingWorkspaces, workspace_id]
+          workspaces: [...existingWorkspaces, workspace_id],
         });
       }
 
@@ -158,13 +158,19 @@ export const inviteContributor = createServerFn({ method: "POST" })
         const orgData = await hasuraRequest<any>(orgQuery, {});
         const orgName = orgData?.organizers_by_pk?.name || "an organizer";
 
-        let projectLink = process.env.NODE_ENV === "production" ? "https://agatike.rw/dashboard" : "http://localhost:3000/dashboard";
+        let projectLink =
+          process.env.NODE_ENV === "production"
+            ? "https://agatike.rw/dashboard"
+            : "http://localhost:3000/dashboard";
         let projectName = "a project";
 
         const getWsQuery = `query { workspaces_by_pk(id: "${workspace_id}") { name } }`;
         const wsData = await hasuraRequest<any>(getWsQuery, {});
         const wsName = wsData?.workspaces_by_pk?.name || "";
-        const slug = wsName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+        const slug = wsName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)+/g, "");
 
         if (resource_type === "ticket_project") {
           const getProjQuery = `query { ticket_projects_by_pk(id: "${resource_id}") { name } }`;
@@ -207,7 +213,7 @@ export const removeContributor = createServerFn({ method: "POST" })
     const { id } = ctx.data;
     const res = await hasuraRequest<{ delete_project_contributors_by_pk: { id: string } }>(
       REMOVE_CONTRIBUTOR,
-      { id }
+      { id },
     );
     return res.delete_project_contributors_by_pk;
   });
@@ -215,21 +221,21 @@ export const removeContributor = createServerFn({ method: "POST" })
 export const getContributorAccessLevel = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
-  try {
-    const session = await getSession();
-    if (!session || !session.sub) return null;
+    try {
+      const session = await getSession();
+      if (!session || !session.sub) return null;
 
-    if (session.type === "organizer") return "edit"; // Organizer always has edit access
+      if (session.type === "organizer") return "edit"; // Organizer always has edit access
 
-    const { resource_type, resource_id } = ctx.data;
+      const { resource_type, resource_id } = ctx.data;
 
-    const q = `query { workspace_users_by_pk(id: "${session.sub}") { email } }`;
-    const res = await hasuraRequest<any>(q, {});
-    const email = res?.workspace_users_by_pk?.email;
+      const q = `query { workspace_users_by_pk(id: "${session.sub}") { email } }`;
+      const res = await hasuraRequest<any>(q, {});
+      const email = res?.workspace_users_by_pk?.email;
 
-    if (!email) return "view"; // fallback
+      if (!email) return "view"; // fallback
 
-    const contribQuery = `
+      const contribQuery = `
       query {
         project_contributors(
           where: { email: { _ilike: "${email}" }, resource_type: { _eq: "${resource_type}" }, resource_id: { _eq: "${resource_id}" } }
@@ -238,15 +244,15 @@ export const getContributorAccessLevel = createServerFn({ method: "POST" })
         }
       }
     `;
-    const contribRes = await hasuraRequest<any>(contribQuery, {});
-    
-    // If they have no specific record but they are a workspace_user, they might have access via general workspace module permissions.
-    // Usually workspace_users with full module access have edit access unless restricted.
-    if (!contribRes.project_contributors.length) return "edit"; 
+      const contribRes = await hasuraRequest<any>(contribQuery, {});
 
-    return contribRes.project_contributors[0].access_level as "view" | "edit";
-  } catch (err) {
-    console.error("getContributorAccessLevel Error:", err);
-    throw err;
-  }
+      // If they have no specific record but they are a workspace_user, they might have access via general workspace module permissions.
+      // Usually workspace_users with full module access have edit access unless restricted.
+      if (!contribRes.project_contributors.length) return "edit";
+
+      return contribRes.project_contributors[0].access_level as "view" | "edit";
+    } catch (err) {
+      console.error("getContributorAccessLevel Error:", err);
+      throw err;
+    }
   });

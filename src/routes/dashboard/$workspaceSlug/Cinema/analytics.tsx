@@ -235,7 +235,9 @@ function CinemaAnalyticsPage() {
               <BarChart3 className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-lg">Monthly Revenue</h3>
             </div>
-            <span className="text-xs text-muted-foreground">All cinemas combined · {workspaceCurrency}</span>
+            <span className="text-xs text-muted-foreground">
+              All cinemas combined · {workspaceCurrency}
+            </span>
           </div>
           <div className="flex items-end gap-3 h-44">
             {MONTHLY_DATA.map((d) => {

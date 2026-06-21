@@ -185,10 +185,7 @@ function EmptyCinemaMoviesState({ setSheetOpen }: { setSheetOpen: (v: boolean) =
       <p className="text-muted-foreground mb-6">
         Import movies from your global Film Library to start showing them in this cinema.
       </p>
-      <Button
-        onClick={() => setSheetOpen(true)}
-        className="gap-2 rounded-xl h-11 px-6 font-bold"
-      >
+      <Button onClick={() => setSheetOpen(true)} className="gap-2 rounded-xl h-11 px-6 font-bold">
         <Plus className="h-5 w-5" /> Import Movies
       </Button>
     </div>
@@ -322,11 +319,7 @@ function ImportMovieSheet({
                 >
                   <div className="h-20 w-14 rounded-lg bg-secondary shrink-0 overflow-hidden">
                     {movie.cover_url ? (
-                      <img
-                        src={movie.cover_url}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={movie.cover_url} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <Film className="h-6 w-6 m-auto mt-7 text-muted-foreground/30" />
                     )}

@@ -15,9 +15,7 @@ export function SuccessState({ eventTitle, recipientEmail }: SuccessStateProps) 
       <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
         Your tickets for {eventTitle} have been secured. We've sent them to {recipientEmail}.
       </p>
-      <p className="text-sm text-muted-foreground animate-pulse">
-        Redirecting to event details...
-      </p>
+      <p className="text-sm text-muted-foreground animate-pulse">Redirecting to event details...</p>
     </div>
   );
 }

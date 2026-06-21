@@ -127,10 +127,8 @@ function AddUserPage() {
   const { data: platformModules = [] } = usePlatformModules();
 
   const MODULE_ROUTES_MAP: Record<string, { id: string; label: string; path: string }[]> = {
-    "Dashboard": [
-      { id: "dashboard:view", label: "View Dashboard", path: "/" }
-    ],
-    "Events": [
+    Dashboard: [{ id: "dashboard:view", label: "View Dashboard", path: "/" }],
+    Events: [
       { id: "events:view", label: "View Events List", path: "/events" },
       { id: "events:create", label: "Create Event", path: "/events/create-event" },
       { id: "events:manage", label: "Manage Event Settings", path: "/events/:id" },
@@ -140,7 +138,7 @@ function AddUserPage() {
       { id: "cinema:create", label: "Create Cinema", path: "/Cinema/create" },
       { id: "cinema:movies", label: "Manage Movies", path: "/Cinema/movies" },
     ],
-    "Spaces": [
+    Spaces: [
       { id: "spaces:view", label: "View Spaces", path: "/spaces" },
       { id: "spaces:create", label: "Create Space", path: "/spaces/create-space" },
     ],
@@ -148,39 +146,37 @@ function AddUserPage() {
       { id: "venues:view", label: "View Venues", path: "/venues" },
       { id: "venues:create", label: "Create Venue", path: "/venues/create-venue" },
     ],
-    "Experiences": [
+    Experiences: [
       { id: "experiences:view", label: "View Experiences", path: "/experiences" },
-      { id: "experiences:create", label: "Create Experience", path: "/experiences/create-experience" },
+      {
+        id: "experiences:create",
+        label: "Create Experience",
+        path: "/experiences/create-experience",
+      },
     ],
-    "RSVPs": [
+    RSVPs: [
       { id: "rsvps:view", label: "View RSVPs", path: "/rsvps" },
       { id: "rsvps:create", label: "Create RSVP Form", path: "/rsvps/create" },
     ],
-    "Settings": [
-      { id: "settings:view", label: "View Settings", path: "/settings" },
-    ],
-    "Users": [
+    Settings: [{ id: "settings:view", label: "View Settings", path: "/settings" }],
+    Users: [
       { id: "users:view", label: "View Users", path: "/users" },
       { id: "users:create", label: "Add User", path: "/users/add-user" },
     ],
-    "Page Builder": [
-      { id: "pages:builder", label: "Page Builder", path: "/page-builder" },
-    ],
-    "Badge Designer": [
-      { id: "badge:designer", label: "Badge Designer", path: "/badge-designer" },
-    ],
-    "Venue Designer": [
-      { id: "venue:designer", label: "Venue Designer", path: "/venue-designer" },
-    ],
-    "Withdrawals": [
-      { id: "withdrawals:view", label: "View Withdrawals", path: "/withdrawals" },
-    ]
+    "Page Builder": [{ id: "pages:builder", label: "Page Builder", path: "/page-builder" }],
+    "Badge Designer": [{ id: "badge:designer", label: "Badge Designer", path: "/badge-designer" }],
+    "Venue Designer": [{ id: "venue:designer", label: "Venue Designer", path: "/venue-designer" }],
+    Withdrawals: [{ id: "withdrawals:view", label: "View Withdrawals", path: "/withdrawals" }],
   };
 
   function getRoutesForModule(module: any) {
     if (MODULE_ROUTES_MAP[module.label]) return MODULE_ROUTES_MAP[module.label];
     return [
-      { id: `${module.id}:view`, label: `View ${module.label}`, path: `/${module.href || module.id}` }
+      {
+        id: `${module.id}:view`,
+        label: `View ${module.label}`,
+        path: `/${module.href || module.id}`,
+      },
     ];
   }
 
@@ -262,16 +258,21 @@ function AddUserPage() {
   };
 
   const validateStep1 = () => {
-    if (!name.trim()) { toast.error("Name is required"); return false; }
+    if (!name.trim()) {
+      toast.error("Name is required");
+      return false;
+    }
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast.error("A valid email is required"); return false;
+      toast.error("A valid email is required");
+      return false;
     }
     return true;
   };
 
   const validateStep2 = () => {
     if (!isAllWorkspaces && selectedWorkspaces.length === 0) {
-      toast.error("Please select at least one workspace"); return false;
+      toast.error("Please select at least one workspace");
+      return false;
     }
     return true;
   };
@@ -280,24 +281,28 @@ function AddUserPage() {
 
   const validateStep4 = () => {
     if (!isAllRoutes && selectedRoutes.length === 0) {
-      toast.error("Please select at least one route access"); return false;
+      toast.error("Please select at least one route access");
+      return false;
     }
     return true;
   };
 
   const validateStep5 = () => {
     if (isTemporary && !expiresAt) {
-      toast.error("Please set an expiration date for temporary access"); return false;
+      toast.error("Please set an expiration date for temporary access");
+      return false;
     }
     return true;
   };
 
   const validateStep6 = () => {
     if (!password || password.length < 6) {
-      toast.error("Password must be at least 6 characters"); return false;
+      toast.error("Password must be at least 6 characters");
+      return false;
     }
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match"); return false;
+      toast.error("Passwords do not match");
+      return false;
     }
     return true;
   };
@@ -329,19 +334,19 @@ function AddUserPage() {
 
   const toggleModule = (id: string) => {
     setSelectedModules((prev) =>
-      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id],
     );
   };
 
   const toggleWorkspace = (id: string) => {
     setSelectedWorkspaces((prev) =>
-      prev.includes(id) ? prev.filter((w) => w !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((w) => w !== id) : [...prev, id],
     );
   };
 
   const toggleRoute = (path: string) => {
     setSelectedRoutes((prev) =>
-      prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path]
+      prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path],
     );
   };
 
@@ -367,39 +372,46 @@ function AddUserPage() {
       <aside className="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-border/60 bg-secondary/10 p-6 md:flex overflow-y-auto">
         <div className="mb-8">
           <Link to={`/dashboard/${workspaceSlug}/users`}>
-            <Button variant="ghost" className="rounded-full gap-2 -ml-3 text-muted-foreground hover:text-foreground">
+            <Button
+              variant="ghost"
+              className="rounded-full gap-2 -ml-3 text-muted-foreground hover:text-foreground"
+            >
               <ArrowLeft className="h-4 w-4" /> Back to Users
             </Button>
           </Link>
         </div>
         <div className="mb-6">
           <h2 className="text-xl font-bold">Add New User</h2>
-          <p className="text-sm text-muted-foreground">Follow the steps to configure the new user.</p>
+          <p className="text-sm text-muted-foreground">
+            Follow the steps to configure the new user.
+          </p>
         </div>
         <div className="space-y-4">
           {sidebarSteps.map((s) => (
             <div key={s.n} className="relative flex items-start gap-4">
               {/* Line connector */}
               {s.n < TOTAL_STEPS && (
-                <div 
+                <div
                   className={`absolute left-[1.125rem] top-10 h-full w-[2px] -translate-x-1/2 ${
                     step > s.n ? "bg-primary" : "bg-border/60"
-                  }`} 
+                  }`}
                 />
               )}
-              <div 
+              <div
                 className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                   step === s.n
                     ? "border-primary bg-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary),0.3)]"
                     : step > s.n
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border/60 bg-card text-muted-foreground"
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border/60 bg-card text-muted-foreground"
                 }`}
               >
                 {step > s.n ? <Check className="h-4 w-4" /> : <s.icon className="h-4 w-4" />}
               </div>
               <div className={`mt-1 flex flex-col ${step === s.n ? "opacity-100" : "opacity-60"}`}>
-                <span className={`text-sm font-semibold ${step === s.n ? "text-foreground" : "text-muted-foreground"}`}>
+                <span
+                  className={`text-sm font-semibold ${step === s.n ? "text-foreground" : "text-muted-foreground"}`}
+                >
                   {s.label}
                 </span>
                 <span className="text-xs text-muted-foreground">{s.desc}</span>
@@ -419,7 +431,9 @@ function AddUserPage() {
           </Link>
           <div className="text-center">
             <h1 className="text-sm font-bold">Add User</h1>
-            <p className="text-xs text-muted-foreground">Step {step} of {TOTAL_STEPS}</p>
+            <p className="text-xs text-muted-foreground">
+              Step {step} of {TOTAL_STEPS}
+            </p>
           </div>
           <div className="w-9" /> {/* Spacer */}
         </div>
@@ -446,7 +460,11 @@ function AddUserPage() {
             <div className="flex flex-col items-center gap-4 p-8 rounded-3xl border border-border/60 bg-card">
               <div className="relative group">
                 <div className="h-28 w-28 rounded-full overflow-hidden border-4 border-border/60 bg-secondary shadow-md">
-                  <img src={displayImage} alt="User avatar" className="w-full h-full object-cover" />
+                  <img
+                    src={displayImage}
+                    alt="User avatar"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <button
                   type="button"
@@ -469,7 +487,12 @@ function AddUserPage() {
                   Choose Avatar
                 </Button>
                 <label className="cursor-pointer">
-                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarFileUpload} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarFileUpload}
+                  />
                   <div className="inline-flex h-9 items-center gap-2 rounded-xl bg-secondary px-3 text-sm font-medium hover:bg-secondary/80 transition-colors">
                     <Upload className="h-4 w-4" />
                     Upload Photo
@@ -488,7 +511,9 @@ function AddUserPage() {
                   </Button>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">Pick a DiceBear avatar or upload a custom photo</p>
+              <p className="text-xs text-muted-foreground">
+                Pick a DiceBear avatar or upload a custom photo
+              </p>
             </div>
 
             {/* Form Fields */}
@@ -560,14 +585,18 @@ function AddUserPage() {
             <div className="rounded-3xl border border-border/60 bg-card p-6 md:p-8 space-y-4">
               <div
                 className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                  isAllWorkspaces ? "border-primary bg-primary/5" : "border-border/60 hover:border-border"
+                  isAllWorkspaces
+                    ? "border-primary bg-primary/5"
+                    : "border-border/60 hover:border-border"
                 }`}
                 onClick={() => setIsAllWorkspaces(true)}
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold">All Workspaces</p>
-                    <p className="text-sm text-muted-foreground">Access to every workspace you own</p>
+                    <p className="text-sm text-muted-foreground">
+                      Access to every workspace you own
+                    </p>
                   </div>
                   {isAllWorkspaces && <CheckCircle2 className="h-5 w-5 text-primary" />}
                 </div>
@@ -575,14 +604,18 @@ function AddUserPage() {
 
               <div
                 className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                  !isAllWorkspaces ? "border-primary bg-primary/5" : "border-border/60 hover:border-border"
+                  !isAllWorkspaces
+                    ? "border-primary bg-primary/5"
+                    : "border-border/60 hover:border-border"
                 }`}
                 onClick={() => setIsAllWorkspaces(false)}
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold">Specific Workspaces</p>
-                    <p className="text-sm text-muted-foreground">Limit access to selected workspaces only</p>
+                    <p className="text-sm text-muted-foreground">
+                      Limit access to selected workspaces only
+                    </p>
                   </div>
                   {!isAllWorkspaces && <CheckCircle2 className="h-5 w-5 text-primary" />}
                 </div>
@@ -591,7 +624,9 @@ function AddUserPage() {
               {!isAllWorkspaces && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 pl-2">
                   {workspaces.length === 0 ? (
-                    <p className="text-sm text-muted-foreground col-span-2">No workspaces available.</p>
+                    <p className="text-sm text-muted-foreground col-span-2">
+                      No workspaces available.
+                    </p>
                   ) : (
                     workspaces.map((ws: any) => (
                       <div
@@ -605,7 +640,11 @@ function AddUserPage() {
                       >
                         <div className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center shrink-0 overflow-hidden">
                           {ws.logo?.startsWith("http") || ws.logo?.startsWith("data:") ? (
-                            <img src={ws.logo} alt={ws.name} className="w-full h-full object-cover" />
+                            <img
+                              src={ws.logo}
+                              alt={ws.name}
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
                             <Building2 className="h-4 w-4 text-muted-foreground" />
                           )}
@@ -638,9 +677,9 @@ function AddUserPage() {
                 <span className="text-xs text-muted-foreground bg-secondary px-2 py-1 rounded-full">
                   {selectedModules.length} selected
                 </span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setSelectedModules(availableModules.map((m) => m.id))}
                   className="text-xs h-7 rounded-md text-primary"
                 >
@@ -663,18 +702,24 @@ function AddUserPage() {
                           : "border-border/60 hover:border-border bg-card"
                       }`}
                     >
-                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
-                        isSelected ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                      }`}>
+                      <div
+                        className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-muted-foreground"
+                        }`}
+                      >
                         {Icon ? <Icon className="h-5 w-5" /> : <Puzzle className="h-5 w-5" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm">{mod.label}</p>
                         <p className="text-xs text-muted-foreground line-clamp-1">{mod.desc}</p>
                       </div>
-                      <div className={`h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 ${
-                        isSelected ? "bg-primary border-primary" : "border-border"
-                      }`}>
+                      <div
+                        className={`h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 ${
+                          isSelected ? "bg-primary border-primary" : "border-border"
+                        }`}
+                      >
                         {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
                       </div>
                     </button>
@@ -696,21 +741,26 @@ function AddUserPage() {
             <div>
               <h2 className="text-3xl font-bold tracking-tight">App Route Access</h2>
               <p className="text-muted-foreground mt-1">
-                Control which specific application features this user is allowed to access within the selected modules.
+                Control which specific application features this user is allowed to access within
+                the selected modules.
               </p>
             </div>
 
             <div className="rounded-3xl border border-border/60 bg-card p-6 md:p-8 space-y-6">
               <div
                 className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                  isAllRoutes ? "border-primary bg-primary/5" : "border-border/60 hover:border-border"
+                  isAllRoutes
+                    ? "border-primary bg-primary/5"
+                    : "border-border/60 hover:border-border"
                 }`}
                 onClick={() => setIsAllRoutes(true)}
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold">All Routes</p>
-                    <p className="text-sm text-muted-foreground">Access to all features inside their assigned modules</p>
+                    <p className="text-sm text-muted-foreground">
+                      Access to all features inside their assigned modules
+                    </p>
                   </div>
                   {isAllRoutes && <CheckCircle2 className="h-5 w-5 text-primary" />}
                 </div>
@@ -718,14 +768,18 @@ function AddUserPage() {
 
               <div
                 className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                  !isAllRoutes ? "border-primary bg-primary/5" : "border-border/60 hover:border-border"
+                  !isAllRoutes
+                    ? "border-primary bg-primary/5"
+                    : "border-border/60 hover:border-border"
                 }`}
                 onClick={() => setIsAllRoutes(false)}
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold">Specific Routes</p>
-                    <p className="text-sm text-muted-foreground">Limit access to selected features only</p>
+                    <p className="text-sm text-muted-foreground">
+                      Limit access to selected features only
+                    </p>
                   </div>
                   {!isAllRoutes && <CheckCircle2 className="h-5 w-5 text-primary" />}
                 </div>
@@ -734,7 +788,9 @@ function AddUserPage() {
               {!isAllRoutes && (
                 <div className="space-y-6 pt-2 pl-2">
                   {selectedModules.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Please go back to Step 3 and select at least one module first.</p>
+                    <p className="text-sm text-muted-foreground">
+                      Please go back to Step 3 and select at least one module first.
+                    </p>
                   ) : (
                     selectedModules.map((modId) => {
                       const mod = availableModules.find((m) => m.id === modId);
@@ -762,8 +818,12 @@ function AddUserPage() {
                                   <FileText className="h-4 w-4 text-muted-foreground" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <span className="font-medium text-sm truncate block">{route.label}</span>
-                                  <span className="text-xs text-muted-foreground block truncate font-mono">{route.path}</span>
+                                  <span className="font-medium text-sm truncate block">
+                                    {route.label}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground block truncate font-mono">
+                                    {route.path}
+                                  </span>
                                 </div>
                                 {selectedRoutes.includes(route.path) && (
                                   <Check className="h-4 w-4 text-primary ml-auto shrink-0" />
@@ -794,7 +854,9 @@ function AddUserPage() {
             <div className="rounded-3xl border border-border/60 bg-card p-6 md:p-8 space-y-4">
               <div
                 className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                  !isTemporary ? "border-primary bg-primary/5" : "border-border/60 hover:border-border"
+                  !isTemporary
+                    ? "border-primary bg-primary/5"
+                    : "border-border/60 hover:border-border"
                 }`}
                 onClick={() => setIsTemporary(false)}
               >
@@ -805,7 +867,9 @@ function AddUserPage() {
                     </div>
                     <div>
                       <p className="font-semibold">Permanent Access</p>
-                      <p className="text-sm text-muted-foreground">No expiration — access until manually revoked</p>
+                      <p className="text-sm text-muted-foreground">
+                        No expiration — access until manually revoked
+                      </p>
                     </div>
                   </div>
                   {!isTemporary && <CheckCircle2 className="h-5 w-5 text-primary" />}
@@ -814,7 +878,9 @@ function AddUserPage() {
 
               <div
                 className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                  isTemporary ? "border-primary bg-primary/5" : "border-border/60 hover:border-border"
+                  isTemporary
+                    ? "border-primary bg-primary/5"
+                    : "border-border/60 hover:border-border"
                 }`}
                 onClick={() => setIsTemporary(true)}
               >
@@ -825,7 +891,9 @@ function AddUserPage() {
                     </div>
                     <div>
                       <p className="font-semibold">Temporary Access</p>
-                      <p className="text-sm text-muted-foreground">Set a date when access automatically expires</p>
+                      <p className="text-sm text-muted-foreground">
+                        Set a date when access automatically expires
+                      </p>
                     </div>
                   </div>
                   {isTemporary && <CheckCircle2 className="h-5 w-5 text-primary" />}
@@ -858,7 +926,7 @@ function AddUserPage() {
                 Configure the initial password for the user. They can change it later.
               </p>
             </div>
-            
+
             <div className="rounded-3xl border border-border/60 bg-card p-6 md:p-8 space-y-6">
               <h3 className="font-semibold text-lg flex items-center gap-2">
                 <Lock className="h-5 w-5 text-primary" />
@@ -889,9 +957,10 @@ function AddUserPage() {
                   />
                 </div>
               </div>
-              
+
               <p className="text-xs text-muted-foreground bg-secondary/30 p-3 rounded-xl border border-border/40">
-                💡 The user will receive an invitation email with this initial password and a link to activate their account.
+                💡 The user will receive an invitation email with this initial password and a link
+                to activate their account.
               </p>
             </div>
           </div>
@@ -917,7 +986,11 @@ function AddUserPage() {
                   <p className="text-2xl font-bold">{name || "—"}</p>
                   <p className="text-muted-foreground">{email || "—"}</p>
                   <span className="inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary capitalize">
-                    {role === "contributor" ? <Pencil className="h-3 w-3" /> : <User className="h-3 w-3" />}
+                    {role === "contributor" ? (
+                      <Pencil className="h-3 w-3" />
+                    ) : (
+                      <User className="h-3 w-3" />
+                    )}
                     {role}
                   </span>
                 </div>
@@ -938,7 +1011,10 @@ function AddUserPage() {
                         {selectedWorkspaces.map((wsId) => {
                           const ws = workspaces.find((w: any) => w.id === wsId);
                           return (
-                            <span key={wsId} className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-xs font-medium">
+                            <span
+                              key={wsId}
+                              className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-xs font-medium"
+                            >
                               {ws?.name || wsId}
                             </span>
                           );
@@ -957,7 +1033,8 @@ function AddUserPage() {
                       <div>
                         <p className="font-medium">Temporary</p>
                         <p className="text-sm text-muted-foreground">
-                          Expires {new Date(expiresAt).toLocaleDateString("en-US", { dateStyle: "long" })}
+                          Expires{" "}
+                          {new Date(expiresAt).toLocaleDateString("en-US", { dateStyle: "long" })}
                         </p>
                       </div>
                     ) : (
@@ -972,14 +1049,19 @@ function AddUserPage() {
                   </h4>
                   <div className="p-4 bg-secondary/30 rounded-2xl border border-border/40 min-h-[60px]">
                     {selectedModules.length === 0 ? (
-                      <p className="text-muted-foreground text-sm">No modules selected — user will have no module access</p>
+                      <p className="text-muted-foreground text-sm">
+                        No modules selected — user will have no module access
+                      </p>
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {selectedModules.map((modId) => {
                           const m = availableModules.find((x) => x.id === modId);
                           const Icon = m?.icon || Puzzle;
                           return (
-                            <span key={modId} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-xl text-sm font-medium">
+                            <span
+                              key={modId}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-xl text-sm font-medium"
+                            >
                               <Icon className="h-4 w-4" /> {m?.label || modId}
                             </span>
                           );
@@ -997,19 +1079,27 @@ function AddUserPage() {
                     {isAllRoutes ? (
                       <p className="font-medium">All Authorized Module Routes</p>
                     ) : selectedRoutes.length === 0 ? (
-                      <p className="text-muted-foreground text-sm">No routes selected — user cannot access specific application features</p>
+                      <p className="text-muted-foreground text-sm">
+                        No routes selected — user cannot access specific application features
+                      </p>
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {selectedRoutes.map((routePath) => {
                           // Find route label across all modules
                           let rLabel = routePath;
                           for (const modRoutes of Object.values(MODULE_ROUTES_MAP)) {
-                            const found = modRoutes.find(r => r.path === routePath);
-                            if (found) { rLabel = found.label; break; }
+                            const found = modRoutes.find((r) => r.path === routePath);
+                            if (found) {
+                              rLabel = found.label;
+                              break;
+                            }
                           }
 
                           return (
-                            <span key={routePath} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-xl text-sm font-medium">
+                            <span
+                              key={routePath}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-xl text-sm font-medium"
+                            >
                               <FileText className="h-4 w-4" /> {rLabel}
                             </span>
                           );
@@ -1023,7 +1113,8 @@ function AddUserPage() {
               <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex gap-3">
                 <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
                 <p className="text-sm text-amber-600 dark:text-amber-400">
-                  <strong>Password configured.</strong> An email will be sent to <strong>{email}</strong> containing their password and an activation link.
+                  <strong>Password configured.</strong> An email will be sent to{" "}
+                  <strong>{email}</strong> containing their password and an activation link.
                 </p>
               </div>
             </div>
@@ -1036,7 +1127,9 @@ function AddUserPage() {
             <Button
               variant="ghost"
               className="gap-2 rounded-xl"
-              onClick={() => step > 1 ? setStep(step - 1) : navigate({ to: `/dashboard/${workspaceSlug}/users` })}
+              onClick={() =>
+                step > 1 ? setStep(step - 1) : navigate({ to: `/dashboard/${workspaceSlug}/users` })
+              }
             >
               <ArrowLeft className="h-4 w-4" />
               {step === 1 ? "Cancel" : "Back"}
@@ -1093,7 +1186,12 @@ function AddUserPage() {
             {/* Upload own photo option */}
             <div className="p-4 border-b border-border/60 bg-secondary/10">
               <label className="cursor-pointer flex items-center gap-3 p-3 rounded-xl hover:bg-secondary/50 transition-colors">
-                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarFileUpload} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarFileUpload}
+                />
                 <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
                   <Upload className="h-4 w-4 text-primary" />
                 </div>

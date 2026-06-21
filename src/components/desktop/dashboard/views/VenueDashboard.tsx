@@ -6,14 +6,7 @@ import { getAllWorkspacePages } from "@/api/workspace-pages";
 import { getWorkspaceWallet } from "@/api/wallet";
 import { getWorkspaceTicketProjects } from "@/api/events";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import {
-  Wallet,
-  LayoutTemplate,
-  Ticket,
-  MapPin,
-  Building2,
-  Brush,
-} from "lucide-react";
+import { Wallet, LayoutTemplate, Ticket, MapPin, Building2, Brush } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 
 export function VenueDashboard() {

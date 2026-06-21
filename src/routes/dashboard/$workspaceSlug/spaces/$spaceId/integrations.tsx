@@ -160,8 +160,8 @@ function SpaceIntegrationsPage() {
             <div>
               <h3 className="font-bold text-lg">Custom Landing Page</h3>
               <p className="text-sm text-muted-foreground">
-                Connect a custom page built with the Page Builder to this space. This serves as
-                your personal sharing link.
+                Connect a custom page built with the Page Builder to this space. This serves as your
+                personal sharing link.
               </p>
             </div>
           </div>
@@ -250,12 +250,7 @@ function SpaceIntegrationsPage() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addForm}
-              className="gap-1.5 rounded-full"
-            >
+            <Button variant="outline" size="sm" onClick={addForm} className="gap-1.5 rounded-full">
               <Plus className="h-4 w-4" /> Add Form
             </Button>
           </div>
@@ -337,9 +332,7 @@ function SpaceIntegrationsPage() {
                           {selectedForm && (
                             <Switch
                               checked={cForm.showButton}
-                              onCheckedChange={(val) =>
-                                updateForm(cForm.id, { showButton: val })
-                              }
+                              onCheckedChange={(val) => updateForm(cForm.id, { showButton: val })}
                             />
                           )}
                         </TableCell>
@@ -348,9 +341,7 @@ function SpaceIntegrationsPage() {
                             <Input
                               className="h-9 text-sm w-full max-w-[200px]"
                               value={cForm.buttonText}
-                              onChange={(e) =>
-                                updateForm(cForm.id, { buttonText: e.target.value })
-                              }
+                              onChange={(e) => updateForm(cForm.id, { buttonText: e.target.value })}
                               placeholder="Button text..."
                             />
                           )}

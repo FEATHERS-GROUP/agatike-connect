@@ -15,10 +15,7 @@ export function EventMerch({
       <h2 className="text-xl font-semibold">Merchandise & add-ons</h2>
       <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
         {activeMerch.map((m: any) => (
-          <div
-            key={m.id}
-            className="overflow-hidden rounded-2xl border border-border/60 bg-card"
-          >
+          <div key={m.id} className="overflow-hidden rounded-2xl border border-border/60 bg-card">
             <img
               src={m.image}
               alt={m.name}

@@ -6,15 +6,7 @@ import { getAllWorkspacePages } from "@/api/workspace-pages";
 import { getWorkspaceWallet } from "@/api/wallet";
 import { getWorkspaceTicketProjects } from "@/api/events";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import {
-  Wallet,
-  LayoutTemplate,
-  Ticket,
-  MapPin,
-  Building2,
-  Users,
-  Box,
-} from "lucide-react";
+import { Wallet, LayoutTemplate, Ticket, MapPin, Building2, Users, Box } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 
 export function SpaceDashboard() {
@@ -148,8 +140,8 @@ export function SpaceDashboard() {
           <Building2 className="h-16 w-16 text-muted-foreground/30 mb-4" />
           <h2 className="text-xl font-bold">Space Subscriptions & Analytics</h2>
           <p className="text-muted-foreground text-sm max-w-md mt-2">
-            Detailed tracking of members and subscription renewals will appear here once you
-            start onboarding members to your spaces.
+            Detailed tracking of members and subscription renewals will appear here once you start
+            onboarding members to your spaces.
           </p>
         </section>
 

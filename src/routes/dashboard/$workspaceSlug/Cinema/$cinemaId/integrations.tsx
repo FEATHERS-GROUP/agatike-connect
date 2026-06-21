@@ -242,12 +242,7 @@ function CinemaIntegrationsPage() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addForm}
-              className="gap-1.5 rounded-full"
-            >
+            <Button variant="outline" size="sm" onClick={addForm} className="gap-1.5 rounded-full">
               <Plus className="h-4 w-4" /> Add Form
             </Button>
           </div>
@@ -329,9 +324,7 @@ function CinemaIntegrationsPage() {
                           {selectedForm && (
                             <Switch
                               checked={cForm.showButton}
-                              onCheckedChange={(val) =>
-                                updateForm(cForm.id, { showButton: val })
-                              }
+                              onCheckedChange={(val) => updateForm(cForm.id, { showButton: val })}
                             />
                           )}
                         </TableCell>
@@ -340,9 +333,7 @@ function CinemaIntegrationsPage() {
                             <Input
                               className="h-9 text-sm w-full max-w-[200px]"
                               value={cForm.buttonText}
-                              onChange={(e) =>
-                                updateForm(cForm.id, { buttonText: e.target.value })
-                              }
+                              onChange={(e) => updateForm(cForm.id, { buttonText: e.target.value })}
                               placeholder="Button text..."
                             />
                           )}

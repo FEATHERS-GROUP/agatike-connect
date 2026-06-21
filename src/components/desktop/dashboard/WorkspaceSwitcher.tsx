@@ -1,5 +1,15 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Check, ChevronsUpDown, Plus, Building2, CalendarDays, Film, Mountain, Sun, Moon } from "lucide-react";
+import {
+  Check,
+  ChevronsUpDown,
+  Plus,
+  Building2,
+  CalendarDays,
+  Film,
+  Mountain,
+  Sun,
+  Moon,
+} from "lucide-react";
 import { useWorkspace, WorkspaceType } from "@/contexts/WorkspaceContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
@@ -19,7 +29,8 @@ const typeIcons: Record<WorkspaceType, any> = {
 };
 
 export function WorkspaceSwitcher() {
-  const { workspaces, activeWorkspace, setActiveWorkspace, isLoaded, currentUser } = useWorkspace() as any;
+  const { workspaces, activeWorkspace, setActiveWorkspace, isLoaded, currentUser } =
+    useWorkspace() as any;
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -103,8 +114,8 @@ export function WorkspaceSwitcher() {
               <span>My Workspaces</span>
             </DropdownMenuItem>
           </Link>
-          
-          {currentUser?.role === 'organizer' && (
+
+          {currentUser?.role === "organizer" && (
             <Link to="/dashboard/create-organizer">
               <DropdownMenuItem className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-primary focus:bg-primary/10 focus:text-primary">
                 <Plus className="h-4 w-4" />
@@ -112,9 +123,9 @@ export function WorkspaceSwitcher() {
               </DropdownMenuItem>
             </Link>
           )}
-          
+
           <DropdownMenuSeparator className="bg-border/60" />
-          <DropdownMenuItem 
+          <DropdownMenuItem
             className="flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-foreground focus:bg-secondary"
             onClick={(e) => {
               e.preventDefault(); // keep the dropdown open or let it close depending on preference

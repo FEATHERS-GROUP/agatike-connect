@@ -31,7 +31,7 @@ async function run() {
   // but Hasura V2 query can run `track_table` or we just rely on auto-tracking or `track_column`.
   // Wait, ALTER TABLE might automatically expose them in Hasura if tracking is configured,
   // or we need to send track_table or reload metadata.
-  
+
   const reload = await fetch(process.env.HASURA_ADMIN_API.replace("/v1/graphql", "/v1/metadata"), {
     method: "POST",
     headers: {

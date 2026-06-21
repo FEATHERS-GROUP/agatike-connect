@@ -81,11 +81,14 @@ const ADD_MONEY_TO_WORKSPACE_WALLET = `
 
 export const addMoneyToWorkspaceWallet = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { workspace_id, amount } = ctx.data as any;
-  const data = await hasuraRequest<{ update_wallets: { returning: any[] } }>(ADD_MONEY_TO_WORKSPACE_WALLET, {
-    workspace_id,
-    amount,
-    updated_at: new Date().toISOString(),
-  });
+  const data = await hasuraRequest<{ update_wallets: { returning: any[] } }>(
+    ADD_MONEY_TO_WORKSPACE_WALLET,
+    {
+      workspace_id,
+      amount,
+      updated_at: new Date().toISOString(),
+    },
+  );
 
   return data.update_wallets?.returning?.[0] || null;
 });

@@ -726,22 +726,21 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
     return data;
   });
 
-
 export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
-    const { to, userName, initialPassword, organizerName } = data;
+  const { to, userName, initialPassword, organizerName } = data;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : process.env.NODE_ENV === "production"
-          ? "https://agatike.rw"
-          : "http://localhost:3000";
+  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NODE_ENV === "production"
+        ? "https://agatike.rw"
+        : "http://localhost:3000";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
-    const activationLink = `${baseUrl}/dashboard/workspace-user/${encodeURIComponent(to)}/activate`;
+  const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+  const activationLink = `${baseUrl}/dashboard/workspace-user/${encodeURIComponent(to)}/activate`;
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
@@ -770,24 +769,24 @@ export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
     </div>
   `;
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: "Agatike Connect <hello@agatike.rw>",
-        to: [to],
-        subject: `You've been invited to join ${organizerName || "a workspace"}`,
-        html,
-      }),
-    });
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `You've been invited to join ${organizerName || "a workspace"}`,
+      html,
+    }),
+  });
 
-    const resData = await res.json();
-    if (!res.ok) throw new Error(resData.message || "Failed to send invite email");
-    return resData;
-  };
+  const resData = await res.json();
+  if (!res.ok) throw new Error(resData.message || "Failed to send invite email");
+  return resData;
+};
 
 export const sendWorkspaceUserInviteEmail = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)

@@ -72,7 +72,13 @@ function CreateTicketTierWizard() {
     }
     setSaving(true);
     try {
-      await createCinemaTicketTier({ data: { ...form, currency: activeWorkspace?.currency || "RWF", workspace_id: activeWorkspace?.id } });
+      await createCinemaTicketTier({
+        data: {
+          ...form,
+          currency: activeWorkspace?.currency || "RWF",
+          workspace_id: activeWorkspace?.id,
+        },
+      });
       toast.success("Ticket tier created!");
       await queryClient.invalidateQueries({ queryKey: ["cinema_ticket_tiers"] });
       navigate({ to: "/dashboard/$workspaceSlug/Cinema/ticket-tiers", params: { workspaceSlug } });
@@ -95,7 +101,12 @@ function CreateTicketTierWizard() {
       {/* Left Sidebar - Sticky Progress */}
       <div className="hidden lg:flex w-80 flex-col border-r border-border/60 bg-secondary/10 p-6 shadow-[4px_0_24px_rgba(0,0,0,0.02)] h-full shrink-0">
         <button
-          onClick={() => navigate({ to: "/dashboard/$workspaceSlug/Cinema/ticket-tiers", params: { workspaceSlug } })}
+          onClick={() =>
+            navigate({
+              to: "/dashboard/$workspaceSlug/Cinema/ticket-tiers",
+              params: { workspaceSlug },
+            })
+          }
           className="mb-8 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group w-fit"
         >
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
@@ -127,7 +138,9 @@ function CreateTicketTierWizard() {
                 {step > i ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
               </div>
               <div className="-mt-1">
-                <p className={cn("font-semibold text-sm", step === i ? "text-primary" : "")}>{s.label}</p>
+                <p className={cn("font-semibold text-sm", step === i ? "text-primary" : "")}>
+                  {s.label}
+                </p>
                 <p className="text-xs text-muted-foreground">{s.desc}</p>
               </div>
             </div>
@@ -141,7 +154,12 @@ function CreateTicketTierWizard() {
           {/* Mobile Header */}
           <div className="lg:hidden flex items-center gap-4 mb-8">
             <button
-              onClick={() => navigate({ to: "/dashboard/$workspaceSlug/Cinema/ticket-tiers", params: { workspaceSlug } })}
+              onClick={() =>
+                navigate({
+                  to: "/dashboard/$workspaceSlug/Cinema/ticket-tiers",
+                  params: { workspaceSlug },
+                })
+              }
               className="p-2 rounded-full bg-secondary text-muted-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -163,18 +181,33 @@ function CreateTicketTierWizard() {
                     <Ticket className="h-6 w-6 text-primary" />
                     Basic Details
                   </h2>
-                  <p className="text-muted-foreground">Give your ticket tier a name and choose its core type.</p>
+                  <p className="text-muted-foreground">
+                    Give your ticket tier a name and choose its core type.
+                  </p>
                 </div>
 
                 <div className="space-y-4 max-w-2xl">
                   <div className="space-y-2">
-                    <Label>Tier Name <span className="text-destructive">*</span></Label>
-                    <Input autoFocus value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. VIP Front Row" className="rounded-xl h-12" />
+                    <Label>
+                      Tier Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      autoFocus
+                      value={form.name}
+                      onChange={(e) => set("name", e.target.value)}
+                      placeholder="e.g. VIP Front Row"
+                      className="rounded-xl h-12"
+                    />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label>Description</Label>
-                    <Textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Describe what this ticket includes..." className="rounded-xl min-h-[120px] resize-none" />
+                    <Textarea
+                      value={form.description}
+                      onChange={(e) => set("description", e.target.value)}
+                      placeholder="Describe what this ticket includes..."
+                      className="rounded-xl min-h-[120px] resize-none"
+                    />
                   </div>
 
                   <div className="space-y-2 pt-2">
@@ -188,7 +221,7 @@ function CreateTicketTierWizard() {
                             "py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-all",
                             form.type === t.value
                               ? "border-primary bg-primary/5 text-primary"
-                              : "border-border/60 bg-secondary/20 hover:border-border hover:bg-secondary/50 text-muted-foreground"
+                              : "border-border/60 bg-secondary/20 hover:border-border hover:bg-secondary/50 text-muted-foreground",
                           )}
                         >
                           {t.label}
@@ -208,19 +241,30 @@ function CreateTicketTierWizard() {
                     <DollarSign className="h-6 w-6 text-primary" />
                     Pricing
                   </h2>
-                  <p className="text-muted-foreground">Set the default global price for this ticket tier.</p>
+                  <p className="text-muted-foreground">
+                    Set the default global price for this ticket tier.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
                   <div className="space-y-2">
-                    <Label>Price <span className="text-destructive">*</span></Label>
-                    <Input type="number" value={form.price} onChange={(e) => set("price", parseInt(e.target.value) || 0)} className="rounded-xl h-12 text-lg font-bold" />
+                    <Label>
+                      Price <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      type="number"
+                      value={form.price}
+                      onChange={(e) => set("price", parseInt(e.target.value) || 0)}
+                      className="rounded-xl h-12 text-lg font-bold"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Currency</Label>
                     <div className="flex h-12 w-full items-center rounded-xl border border-input bg-secondary/30 px-4 text-sm font-semibold text-muted-foreground">
                       {activeWorkspace?.currency || "RWF"}
-                      <span className="ml-2 text-xs font-normal opacity-70">(Workspace Default)</span>
+                      <span className="ml-2 text-xs font-normal opacity-70">
+                        (Workspace Default)
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -235,19 +279,33 @@ function CreateTicketTierWizard() {
                     <Star className="h-6 w-6 text-primary" />
                     Features & Perks
                   </h2>
-                  <p className="text-muted-foreground">Select the special attributes and perks associated with this ticket.</p>
+                  <p className="text-muted-foreground">
+                    Select the special attributes and perks associated with this ticket.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
                   {[
-                    { key: "includes_glasses", label: "Includes 3D Glasses", icon: <Glasses className="h-5 w-5" /> },
+                    {
+                      key: "includes_glasses",
+                      label: "Includes 3D Glasses",
+                      icon: <Glasses className="h-5 w-5" />,
+                    },
                     { key: "is_kids", label: "Kids Ticket", icon: <Baby className="h-5 w-5" /> },
                     { key: "is_vip", label: "VIP Ticket", icon: <Star className="h-5 w-5" /> },
                     { key: "is_3d", label: "3D Ready", icon: <Box className="h-5 w-5" /> },
                     { key: "is_imax", label: "IMAX Ready", icon: <Layers className="h-5 w-5" /> },
                   ].map((feat) => (
-                    <label key={feat.key} className="flex items-center gap-4 cursor-pointer p-5 border border-border/60 rounded-2xl hover:bg-secondary/50 transition-colors">
-                      <input type="checkbox" checked={form[feat.key]} onChange={(e) => set(feat.key, e.target.checked)} className="rounded border-border text-primary focus:ring-primary h-5 w-5" />
+                    <label
+                      key={feat.key}
+                      className="flex items-center gap-4 cursor-pointer p-5 border border-border/60 rounded-2xl hover:bg-secondary/50 transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={form[feat.key]}
+                        onChange={(e) => set(feat.key, e.target.checked)}
+                        className="rounded border-border text-primary focus:ring-primary h-5 w-5"
+                      />
                       <div className="flex items-center gap-3">
                         <div className="text-muted-foreground">{feat.icon}</div>
                         <span className="font-bold">{feat.label}</span>
@@ -266,33 +324,67 @@ function CreateTicketTierWizard() {
                     <CheckCircle2 className="h-6 w-6 text-primary" />
                     Review & Save
                   </h2>
-                  <p className="text-muted-foreground">Verify the ticket tier details before adding it to your catalog.</p>
+                  <p className="text-muted-foreground">
+                    Verify the ticket tier details before adding it to your catalog.
+                  </p>
                 </div>
 
                 <div className="p-6 rounded-3xl bg-secondary/30 border border-border/40 max-w-2xl">
                   <div className="flex items-start justify-between mb-6 pb-6 border-b border-border/50">
                     <div>
                       <h3 className="text-2xl font-black">{form.name || "Unnamed Tier"}</h3>
-                      <p className="text-muted-foreground mt-1 text-sm">{form.description || "No description provided."}</p>
+                      <p className="text-muted-foreground mt-1 text-sm">
+                        {form.description || "No description provided."}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-muted-foreground uppercase">{form.type}</p>
-                      <p className="text-2xl font-bold text-primary mt-1">{formatCurrency(form.price, activeWorkspace?.currency || "RWF")}</p>
+                      <p className="text-sm font-semibold text-muted-foreground uppercase">
+                        {form.type}
+                      </p>
+                      <p className="text-2xl font-bold text-primary mt-1">
+                        {formatCurrency(form.price, activeWorkspace?.currency || "RWF")}
+                      </p>
                     </div>
                   </div>
-                  
+
                   <div>
                     <p className="text-sm font-semibold mb-3">Included Perks & Tags:</p>
                     <div className="flex flex-wrap gap-2">
-                      {form.includes_glasses && <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center gap-2"><Glasses className="h-4 w-4" /> Glasses</span>}
-                      {form.is_kids && <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center gap-2"><Baby className="h-4 w-4" /> Kids</span>}
-                      {form.is_vip && <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center gap-2"><Star className="h-4 w-4" /> VIP</span>}
-                      {form.is_3d && <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center gap-2"><Box className="h-4 w-4" /> 3D</span>}
-                      {form.is_imax && <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center gap-2"><Layers className="h-4 w-4" /> IMAX</span>}
-                      
-                      {!form.includes_glasses && !form.is_kids && !form.is_vip && !form.is_3d && !form.is_imax && (
-                        <span className="text-sm text-muted-foreground">Standard admission ticket</span>
+                      {form.includes_glasses && (
+                        <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center gap-2">
+                          <Glasses className="h-4 w-4" /> Glasses
+                        </span>
                       )}
+                      {form.is_kids && (
+                        <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center gap-2">
+                          <Baby className="h-4 w-4" /> Kids
+                        </span>
+                      )}
+                      {form.is_vip && (
+                        <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center gap-2">
+                          <Star className="h-4 w-4" /> VIP
+                        </span>
+                      )}
+                      {form.is_3d && (
+                        <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center gap-2">
+                          <Box className="h-4 w-4" /> 3D
+                        </span>
+                      )}
+                      {form.is_imax && (
+                        <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-sm font-bold flex items-center gap-2">
+                          <Layers className="h-4 w-4" /> IMAX
+                        </span>
+                      )}
+
+                      {!form.includes_glasses &&
+                        !form.is_kids &&
+                        !form.is_vip &&
+                        !form.is_3d &&
+                        !form.is_imax && (
+                          <span className="text-sm text-muted-foreground">
+                            Standard admission ticket
+                          </span>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -308,7 +400,10 @@ function CreateTicketTierWizard() {
                 className="rounded-xl h-11 px-6"
                 onClick={() => {
                   if (step === 0) {
-                    navigate({ to: "/dashboard/$workspaceSlug/Cinema/ticket-tiers", params: { workspaceSlug } });
+                    navigate({
+                      to: "/dashboard/$workspaceSlug/Cinema/ticket-tiers",
+                      params: { workspaceSlug },
+                    });
                   } else {
                     setStep(step - 1);
                   }
@@ -332,14 +427,17 @@ function CreateTicketTierWizard() {
                     onClick={handleSave}
                     disabled={saving}
                   >
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {saving ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
                     {saving ? "Saving..." : "Create Tier"}
                   </Button>
                 )}
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>

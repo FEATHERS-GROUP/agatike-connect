@@ -96,9 +96,7 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
           </main>
         </div>
       )}
-      <div className={showPageLoader ? "hidden" : "contents"}>
-        {children}
-      </div>
+      <div className={showPageLoader ? "hidden" : "contents"}>{children}</div>
 
       {/* For background tasks (isLoading), we might just show a subtle overlay or nothing, 
           since nprogress is already running at the top. */}

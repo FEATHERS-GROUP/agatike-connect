@@ -22,15 +22,12 @@ export function HiddenPDFGenerator({
   getTierDetails,
 }: HiddenPDFGeneratorProps) {
   return (
-    <div
-      className="absolute -z-50 pointer-events-none"
-      style={{ top: "-9999px", left: "-9999px" }}
-    >
+    <div className="absolute -z-50 pointer-events-none" style={{ top: "-9999px", left: "-9999px" }}>
       {issuedTickets.map((ticket: any) => {
         const mergedProject = getMergedProjectDesign(
           eventProject,
           ticket.attendee.stopIdx,
-          ticket.attendee.tierId
+          ticket.attendee.tierId,
         );
         return (
           <div
@@ -51,7 +48,7 @@ export function HiddenPDFGenerator({
                 ticket.attendee.seat
                   ? formatSeatDisplay(
                       ticket.attendee.seatName || ticket.attendee.seat,
-                      ticket.attendee.sectionName
+                      ticket.attendee.sectionName,
                     )
                   : `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()
               }
@@ -72,7 +69,7 @@ export function HiddenPDFGenerator({
               logoOpacity={Number(mergedProject.logoOpacity ?? 1)}
               logoColorMode={mergedProject.logoColorMode || "original"}
               orderId={ticket.otp}
-              qrValue={`${typeof window !== 'undefined' ? window.location.origin : ''}/v/${ticket.otp}`}
+              qrValue={`${typeof window !== "undefined" ? window.location.origin : ""}/v/${ticket.otp}`}
               previewMode="Front"
               layout={
                 mergedProject.design_overrides?.layout || {

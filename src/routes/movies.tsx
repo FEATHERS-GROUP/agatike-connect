@@ -50,7 +50,8 @@ export const Route = createFileRoute("/movies")({
 function Movies() {
   const { data: schedules = [], isLoading } = useQuery({
     queryKey: ["public_schedules"],
-    queryFn: () => getPublicMovieSchedules({ data: { date: new Date().toISOString().split("T")[0] } } as any),
+    queryFn: () =>
+      getPublicMovieSchedules({ data: { date: new Date().toISOString().split("T")[0] } } as any),
   });
 
   const { movies, cinemas } = useMemo(() => {
@@ -65,7 +66,8 @@ function Movies() {
           name: c.name,
           city: c.city,
           screens: 1,
-          image: c.cover_url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800",
+          image:
+            c.cover_url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800",
         });
       }
 
@@ -82,18 +84,21 @@ function Movies() {
           genre: m.genre || "Drama",
           duration: `${m.duration_minutes || 120}m`,
           rating: m.rating || "PG",
-          cover: m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
+          cover:
+            m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
           cinema: c.name,
           city: c.city,
           synopsis: m.synopsis || "No synopsis available.",
-          showtimes: [{
-            date: s.show_date,
-            time: timeStr,
-            scheduleId: s.id,
-            basePrice: s.base_price || 10,
-            currency: s.currency || "RWF",
-            tiers: s.ticket_tiers || []
-          }],
+          showtimes: [
+            {
+              date: s.show_date,
+              time: timeStr,
+              scheduleId: s.id,
+              basePrice: s.base_price || 10,
+              currency: s.currency || "RWF",
+              tiers: s.ticket_tiers || [],
+            },
+          ],
         });
       } else {
         const existing = moviesMap.get(movieKey);
@@ -104,7 +109,7 @@ function Movies() {
             scheduleId: s.id,
             basePrice: s.base_price || 10,
             currency: s.currency || "RWF",
-            tiers: s.ticket_tiers || []
+            tiers: s.ticket_tiers || [],
           });
         }
       }
@@ -119,7 +124,7 @@ function Movies() {
   const [active, setActive] = useState("");
 
   useEffect(() => {
-    if (movies.length > 0 && (!active || !movies.find(m => m.id === active))) {
+    if (movies.length > 0 && (!active || !movies.find((m) => m.id === active))) {
       setActive(movies[0].id);
     }
   }, [movies, active]);
@@ -150,11 +155,21 @@ function Movies() {
     <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0">
       <div className="hidden md:block">
         <Navbar />
-        <DesktopMoviesView active={activeId} setActive={setActive} movies={movies} cinemas={cinemas} />
+        <DesktopMoviesView
+          active={activeId}
+          setActive={setActive}
+          movies={movies}
+          cinemas={cinemas}
+        />
         <Footer />
       </div>
       <div className="md:hidden">
-        <MobileMoviesView movies={movies} cinemas={cinemas} activeId={activeId} setActive={setActive} />
+        <MobileMoviesView
+          movies={movies}
+          cinemas={cinemas}
+          activeId={activeId}
+          setActive={setActive}
+        />
       </div>
     </div>
   );

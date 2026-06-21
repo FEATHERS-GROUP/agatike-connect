@@ -745,12 +745,13 @@ export function CreateExperienceDesktop({
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center justify-between p-5 bg-card rounded-2xl border border-border/60 shadow-sm mt-4">
               <div className="space-y-1">
                 <Label className="text-base font-semibold">Make Experience Public</Label>
                 <p className="text-sm text-muted-foreground">
-                  If public, anyone can view and book this experience. If private, only people with the link can access it.
+                  If public, anyone can view and book this experience. If private, only people with
+                  the link can access it.
                 </p>
               </div>
               <Switch

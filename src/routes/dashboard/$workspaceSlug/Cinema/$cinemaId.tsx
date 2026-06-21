@@ -6,7 +6,9 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId
 });
 
 function CinemaLayout() {
-  const { workspaceSlug, cinemaId } = useParams({ from: "/dashboard/$workspaceSlug/Cinema/$cinemaId" });
+  const { workspaceSlug, cinemaId } = useParams({
+    from: "/dashboard/$workspaceSlug/Cinema/$cinemaId",
+  });
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">

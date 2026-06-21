@@ -177,7 +177,11 @@ export function CinemaDashboard() {
                   <div className="w-8 text-center font-bold text-muted-foreground">#{idx + 1}</div>
                   <div className="w-12 h-12 rounded-xl bg-secondary overflow-hidden shrink-0">
                     {cinema.cover ? (
-                      <img src={cinema.cover} alt={cinema.name} className="w-full h-full object-cover" />
+                      <img
+                        src={cinema.cover}
+                        alt={cinema.name}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-red-500/10 text-red-500 font-bold">
                         {cinema.name.charAt(0)}
@@ -196,9 +200,7 @@ export function CinemaDashboard() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-amber-500">
-                      {cinema.moviesCount} movies
-                    </p>
+                    <p className="text-sm font-bold text-amber-500">{cinema.moviesCount} movies</p>
                   </div>
                 </div>
               ))}

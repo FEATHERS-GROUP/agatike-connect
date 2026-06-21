@@ -11,10 +11,10 @@ import { getOrganizerProfile } from "@/api/organizers";
 import { useState } from "react";
 import { lazy, Suspense, useState as _useState, useEffect as _useEffect } from "react";
 
-function ClientOnly({ children, fallback }: { children: any, fallback?: any }) {
+function ClientOnly({ children, fallback }: { children: any; fallback?: any }) {
   const [mounted, setMounted] = _useState(false);
   _useEffect(() => setMounted(true), []);
-  return mounted ? children : (fallback || null);
+  return mounted ? children : fallback || null;
 }
 
 const ReactQuill = lazy(() => import("react-quill-new"));
@@ -604,12 +604,20 @@ function AttendeeDetailsModal({
             )}
             {contactMethod === "email" ? (
               <div className="bg-background rounded-md border border-input">
-                <ClientOnly fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><Suspense fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><ReactQuill
-                  theme="snow"
-                  value={message}
-                  onChange={setMessage}
-                  className="h-[200px] mb-12"
-                /></Suspense></ClientOnly>
+                <ClientOnly
+                  fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}
+                >
+                  <Suspense
+                    fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}
+                  >
+                    <ReactQuill
+                      theme="snow"
+                      value={message}
+                      onChange={setMessage}
+                      className="h-[200px] mb-12"
+                    />
+                  </Suspense>
+                </ClientOnly>
               </div>
             ) : (
               <Textarea
@@ -807,13 +815,21 @@ function BulkEmailModal({
           <div className="space-y-2">
             <label className="text-sm font-medium">Message Body</label>
             <div className="bg-background rounded-md border border-input">
-              <ClientOnly fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><Suspense fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><ReactQuill
-                theme="snow"
-                value={message}
-                onChange={setMessage}
-                readOnly={isSending}
-                className="h-[250px] mb-12"
-              /></Suspense></ClientOnly>
+              <ClientOnly
+                fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}
+              >
+                <Suspense
+                  fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}
+                >
+                  <ReactQuill
+                    theme="snow"
+                    value={message}
+                    onChange={setMessage}
+                    readOnly={isSending}
+                    className="h-[250px] mb-12"
+                  />
+                </Suspense>
+              </ClientOnly>
             </div>
           </div>
 

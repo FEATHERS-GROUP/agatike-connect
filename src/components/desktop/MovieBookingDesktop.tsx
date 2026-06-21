@@ -15,21 +15,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 
-
 export function MovieBookingDesktop({ movieId }: { movieId: string }) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
-  const { date: searchDate } = useSearch({ from: '/book-movie/$movieId' }) as any;
+  const { date: searchDate } = useSearch({ from: "/book-movie/$movieId" }) as any;
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [step, setStep] = useState(1);
-  
+
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(null);
   const [ticketQuantities, setTicketQuantities] = useState<Record<string, number>>({});
-  
+
   const [attendeeInfo, setAttendeeInfo] = useState({
     firstName: user?.username?.split(" ")[0] || "",
     lastName: user?.username?.split(" ").slice(1).join(" ") || "",
@@ -42,7 +41,10 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
 
   const { data: schedules = [], isLoading } = useQuery({
     queryKey: ["movie-schedules", actualMovieId, actualCinemaId],
-    queryFn: () => getMovieSchedulesByMovieId({ data: { movieId: actualMovieId, cinemaId: actualCinemaId } } as any),
+    queryFn: () =>
+      getMovieSchedulesByMovieId({
+        data: { movieId: actualMovieId, cinemaId: actualCinemaId },
+      } as any),
   });
 
   const activeMovie = schedules.length > 0 ? schedules[0].movie : null;
@@ -99,7 +101,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
         tierId: "default",
         name: "General Admission",
         price: currentSchedule.base_price || 10,
-      }
+      },
     ];
   }, [currentSchedule]);
 
@@ -118,23 +120,21 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
   }, 0);
 
   const isFormValid =
-    totalTickets > 0 &&
-    attendeeInfo.firstName &&
-    attendeeInfo.lastName &&
-    attendeeInfo.email;
+    totalTickets > 0 && attendeeInfo.firstName && attendeeInfo.lastName && attendeeInfo.email;
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async () => {
       const promises = [];
       const fullName = `${attendeeInfo.firstName} ${attendeeInfo.lastName}`.trim();
-      
+
       for (const [tierId, qty] of Object.entries(ticketQuantities)) {
         if (qty <= 0) continue;
-        
+
         const payload = {
           cinema_id: cinema.id,
           schedule_id: currentSchedule.id,
-          ticket_tier_id: tierId === "default" ? null : activeTiers.find((t: any) => t.id === tierId)?.tierId,
+          ticket_tier_id:
+            tierId === "default" ? null : activeTiers.find((t: any) => t.id === tierId)?.tierId,
           names: fullName,
           email: attendeeInfo.email,
           phone: attendeeInfo.phone,
@@ -217,12 +217,10 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
         </div>
         <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
         <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
-          Your tickets for {activeMovie.title} have been secured. 
-          A confirmation with your QR code has been sent to {attendeeInfo.email}.
+          Your tickets for {activeMovie.title} have been secured. A confirmation with your QR code
+          has been sent to {attendeeInfo.email}.
         </p>
-        <p className="text-sm text-muted-foreground animate-pulse">
-          Redirecting to movies...
-        </p>
+        <p className="text-sm text-muted-foreground animate-pulse">Redirecting to movies...</p>
       </div>
     );
   }
@@ -264,8 +262,12 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                                 : "bg-card/40 border-border/40 hover:border-primary/50 hover:bg-card/80 text-foreground"
                             }`}
                           >
-                            <Clock className={`h-6 w-6 mb-3 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
-                            <span className="text-3xl font-black tracking-tight">{st.start_time.substring(0, 5)}</span>
+                            <Clock
+                              className={`h-6 w-6 mb-3 ${isSelected ? "text-primary" : "text-muted-foreground"}`}
+                            />
+                            <span className="text-3xl font-black tracking-tight">
+                              {st.start_time.substring(0, 5)}
+                            </span>
                           </button>
                         );
                       })}
@@ -285,10 +287,15 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                       {activeTiers.map((tier: any) => {
                         const qty = ticketQuantities[tier.id] || 0;
                         return (
-                          <div key={tier.id} className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-background/50">
+                          <div
+                            key={tier.id}
+                            className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-background/50"
+                          >
                             <div>
                               <p className="font-bold">{tier.name}</p>
-                              <p className="text-sm text-muted-foreground">{formatCurrency(parseFloat(tier.price), currency)}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {formatCurrency(parseFloat(tier.price), currency)}
+                              </p>
                             </div>
                             <div className="flex items-center gap-4">
                               <button
@@ -311,8 +318,12 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                       })}
                     </div>
                     <div className="flex justify-between pt-4 border-t border-border/60">
-                      <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-                      <Button disabled={totalTickets === 0} onClick={() => setStep(3)}>Continue to Details</Button>
+                      <Button variant="outline" onClick={() => setStep(1)}>
+                        Back
+                      </Button>
+                      <Button disabled={totalTickets === 0} onClick={() => setStep(3)}>
+                        Continue to Details
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -327,7 +338,9 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                         <Label>First Name</Label>
                         <Input
                           value={attendeeInfo.firstName}
-                          onChange={(e) => setAttendeeInfo({ ...attendeeInfo, firstName: e.target.value })}
+                          onChange={(e) =>
+                            setAttendeeInfo({ ...attendeeInfo, firstName: e.target.value })
+                          }
                           placeholder="Alex"
                         />
                       </div>
@@ -335,7 +348,9 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                         <Label>Last Name</Label>
                         <Input
                           value={attendeeInfo.lastName}
-                          onChange={(e) => setAttendeeInfo({ ...attendeeInfo, lastName: e.target.value })}
+                          onChange={(e) =>
+                            setAttendeeInfo({ ...attendeeInfo, lastName: e.target.value })
+                          }
                           placeholder="Doe"
                         />
                       </div>
@@ -346,7 +361,9 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                         <Input
                           type="email"
                           value={attendeeInfo.email}
-                          onChange={(e) => setAttendeeInfo({ ...attendeeInfo, email: e.target.value })}
+                          onChange={(e) =>
+                            setAttendeeInfo({ ...attendeeInfo, email: e.target.value })
+                          }
                           placeholder="alex@example.com"
                         />
                       </div>
@@ -355,13 +372,17 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                         <Input
                           type="tel"
                           value={attendeeInfo.phone}
-                          onChange={(e) => setAttendeeInfo({ ...attendeeInfo, phone: e.target.value })}
+                          onChange={(e) =>
+                            setAttendeeInfo({ ...attendeeInfo, phone: e.target.value })
+                          }
                           placeholder="+250 788 123 456"
                         />
                       </div>
                     </div>
                     <div className="pt-4 border-t border-border/60">
-                      <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
+                      <Button variant="outline" onClick={() => setStep(2)}>
+                        Back
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -375,12 +396,14 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
               <h2 className="text-xl font-semibold mb-6">Booking Summary</h2>
 
               <div className="flex gap-4 mb-6">
-                <img src={activeMovie.cover_url} alt={activeMovie.title} className="h-24 w-20 rounded-xl object-cover" />
+                <img
+                  src={activeMovie.cover_url}
+                  alt={activeMovie.title}
+                  className="h-24 w-20 rounded-xl object-cover"
+                />
                 <div className="flex flex-col">
                   <h3 className="font-semibold leading-tight">{activeMovie.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {cinema?.name}
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">{cinema?.name}</p>
                   <p className="text-sm text-muted-foreground mt-1">
                     {currentSchedule?.show_date} • {currentSchedule?.start_time?.substring(0, 5)}
                   </p>
@@ -396,8 +419,12 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                       if (!tier) return null;
                       return (
                         <div key={tierId} className="flex justify-between items-center">
-                          <span>{qty}x {tier.name}</span>
-                          <span className="font-medium">{formatCurrency(parseFloat(tier.price) * qty, currency)}</span>
+                          <span>
+                            {qty}x {tier.name}
+                          </span>
+                          <span className="font-medium">
+                            {formatCurrency(parseFloat(tier.price) * qty, currency)}
+                          </span>
                         </div>
                       );
                     })}
@@ -415,8 +442,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
 
               <Button
                 disabled={
-                  (step === 1 && !selectedScheduleId) || 
-                  (step === 2 && totalTickets === 0) || 
+                  (step === 1 && !selectedScheduleId) ||
+                  (step === 2 && totalTickets === 0) ||
                   (step === 3 && (!isFormValid || isCheckingOut))
                 }
                 className="w-full h-14 rounded-2xl text-base font-bold shadow-[var(--shadow-glow)]"
@@ -430,7 +457,11 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                 {step === 1 ? (
                   "Continue to Tickets"
                 ) : step === 2 ? (
-                  totalTickets > 0 ? "Continue to Details" : "Select Tickets"
+                  totalTickets > 0 ? (
+                    "Continue to Details"
+                  ) : (
+                    "Select Tickets"
+                  )
                 ) : isCheckingOut ? (
                   "Processing..."
                 ) : (
@@ -441,7 +472,15 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
               </Button>
 
               <p className="text-xs text-center text-muted-foreground mt-4 leading-relaxed">
-                By clicking pay, you agree to our <Link to="/terms" className="underline">Terms of Service</Link> and <Link to="/privacy" className="underline">Privacy Policy</Link>.
+                By clicking pay, you agree to our{" "}
+                <Link to="/terms" className="underline">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link to="/privacy" className="underline">
+                  Privacy Policy
+                </Link>
+                .
               </p>
             </div>
           </div>

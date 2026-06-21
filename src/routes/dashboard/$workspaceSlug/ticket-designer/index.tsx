@@ -143,7 +143,8 @@ function TicketDesignerIndex() {
     let cinemaId = null;
     if (selectedAssignment.startsWith("event:")) eventId = selectedAssignment.replace("event:", "");
     if (selectedAssignment.startsWith("venue:")) venueId = selectedAssignment.replace("venue:", "");
-    if (selectedAssignment.startsWith("cinema:")) cinemaId = selectedAssignment.replace("cinema:", "");
+    if (selectedAssignment.startsWith("cinema:"))
+      cinemaId = selectedAssignment.replace("cinema:", "");
 
     createMutation.mutate({
       name: newProjectName,
@@ -313,8 +314,13 @@ function TicketDesignerIndex() {
                   proj.rentable_venues || venues.find((v: any) => v.id === proj.venueId);
                 const cinemaObj = cinemas.find((c: any) => c.id === proj.cinemaId);
                 const displayTitle =
-                  eventObj?.title || venueObj?.name || cinemaObj?.name || proj.name || "Untitled Design";
-                const displaySubtitle = eventObj?.category || venueObj?.type || (cinemaObj ? "Cinema" : "Ticket Design");
+                  eventObj?.title ||
+                  venueObj?.name ||
+                  cinemaObj?.name ||
+                  proj.name ||
+                  "Untitled Design";
+                const displaySubtitle =
+                  eventObj?.category || venueObj?.type || (cinemaObj ? "Cinema" : "Ticket Design");
                 const palette = proj.palette || { from: "#f97316", to: "#db2777", name: "Sunset" };
                 const updatedAt = proj.updated_on || new Date().toISOString();
                 const coverUrl =

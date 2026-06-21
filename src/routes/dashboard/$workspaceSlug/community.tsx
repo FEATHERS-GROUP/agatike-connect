@@ -546,7 +546,9 @@ function CommunityPage() {
 
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
                           <div className="flex justify-between items-center">
-                            <span className={`font-medium text-[14px] truncate pr-2 ${activeChatId === chat.id ? "text-foreground" : ""}`}>
+                            <span
+                              className={`font-medium text-[14px] truncate pr-2 ${activeChatId === chat.id ? "text-foreground" : ""}`}
+                            >
                               {chat.name} {chat.country ? getCountryFlag(chat.country) : ""}
                             </span>
                             <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
@@ -555,7 +557,9 @@ function CommunityPage() {
                           </div>
                           {chat.lastMessage && (
                             <div className="flex justify-between items-center mt-0.5">
-                              <p className={`text-[12px] truncate pr-2 opacity-80 ${displayUnread > 0 ? "text-foreground font-semibold opacity-100" : ""}`}>
+                              <p
+                                className={`text-[12px] truncate pr-2 opacity-80 ${displayUnread > 0 ? "text-foreground font-semibold opacity-100" : ""}`}
+                              >
                                 {chat.lastMessage}
                               </p>
                               {displayUnread > 0 && (
@@ -924,22 +928,28 @@ function CommunityPage() {
                     ? `@${senderProfile.handle}`
                     : senderProfile?.username || "Member";
 
-                const profileStr = typeof senderProfile?.profile === "string" ? senderProfile.profile : "";
-                
+                const profileStr =
+                  typeof senderProfile?.profile === "string" ? senderProfile.profile : "";
+
                 const myAvatar = currentOrganizerProfile?.image || activeWorkspace?.logo;
                 const avatarSrc = msg.isMe
-                  ? myAvatar && !myAvatar.includes("pravatar.cc") ? myAvatar : undefined
+                  ? myAvatar && !myAvatar.includes("pravatar.cc")
+                    ? myAvatar
+                    : undefined
                   : profileStr && !profileStr.includes("pravatar.cc")
                     ? profileStr
                     : undefined;
 
-                const initials = msg.isMe 
-                  ? String(currentOrganizerProfile?.name || activeWorkspace?.name || "M").substring(0, 1).toUpperCase()
-                  : String(senderName || "M").substring(0, 2).toUpperCase();
+                const initials = msg.isMe
+                  ? String(currentOrganizerProfile?.name || activeWorkspace?.name || "M")
+                      .substring(0, 1)
+                      .toUpperCase()
+                  : String(senderName || "M")
+                      .substring(0, 2)
+                      .toUpperCase();
 
-                const senderFlag = !msg.isMe && senderProfile?.country
-                  ? getCountryFlag(senderProfile.country)
-                  : "";
+                const senderFlag =
+                  !msg.isMe && senderProfile?.country ? getCountryFlag(senderProfile.country) : "";
 
                 return (
                   <React.Fragment key={msg.id}>
@@ -952,13 +962,17 @@ function CommunityPage() {
                         <div className="flex-1 h-px bg-border/50"></div>
                       </div>
                     )}
-                    
-                    <div className={`group flex gap-4 hover:bg-muted/30 px-6 py-0.5 -mx-6 transition-colors ${showAvatar ? "mt-4" : ""}`}>
+
+                    <div
+                      className={`group flex gap-4 hover:bg-muted/30 px-6 py-0.5 -mx-6 transition-colors ${showAvatar ? "mt-4" : ""}`}
+                    >
                       <div className="w-10 shrink-0 flex justify-center select-none pt-0.5">
                         {showAvatar ? (
                           <Avatar className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity">
                             <AvatarImage src={avatarSrc} />
-                            <AvatarFallback className={msg.isMe ? "bg-primary/10 text-primary" : "bg-muted"}>
+                            <AvatarFallback
+                              className={msg.isMe ? "bg-primary/10 text-primary" : "bg-muted"}
+                            >
                               {initials}
                             </AvatarFallback>
                           </Avatar>
@@ -968,7 +982,7 @@ function CommunityPage() {
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0 flex flex-col justify-start">
                         {showAvatar && (
                           <div className="flex items-baseline gap-2 mb-0.5">
@@ -979,13 +993,16 @@ function CommunityPage() {
                               {msg.timestamp}
                             </span>
                             {msg.isMe && (
-                              <Badge variant="secondary" className="h-4 px-1 text-[9px] rounded-sm font-semibold uppercase tracking-wider bg-primary/10 text-primary hover:bg-primary/20">
+                              <Badge
+                                variant="secondary"
+                                className="h-4 px-1 text-[9px] rounded-sm font-semibold uppercase tracking-wider bg-primary/10 text-primary hover:bg-primary/20"
+                              >
                                 Organizer
                               </Badge>
                             )}
                           </div>
                         )}
-                        
+
                         <div className="text-[15px] text-foreground/90 whitespace-pre-wrap leading-[1.375rem]">
                           {msg.mediaUrl && (
                             <img
@@ -1029,7 +1046,9 @@ function CommunityPage() {
                     className="p-0 border-none shadow-xl bg-transparent mb-2"
                   >
                     <EmojiPicker
-                      onEmojiClick={(emojiData) => setMessageInput((prev) => prev + emojiData.emoji)}
+                      onEmojiClick={(emojiData) =>
+                        setMessageInput((prev) => prev + emojiData.emoji)
+                      }
                       theme={Theme.AUTO}
                     />
                   </PopoverContent>
@@ -1096,7 +1115,9 @@ function CommunityPage() {
                   type="submit"
                   size="sm"
                   className="h-8 px-3 rounded-lg font-medium transition-all"
-                  style={messageInput.trim() ? { background: "var(--gradient-primary)" } : undefined}
+                  style={
+                    messageInput.trim() ? { background: "var(--gradient-primary)" } : undefined
+                  }
                   variant={messageInput.trim() ? "default" : "secondary"}
                   disabled={!messageInput.trim()}
                 >

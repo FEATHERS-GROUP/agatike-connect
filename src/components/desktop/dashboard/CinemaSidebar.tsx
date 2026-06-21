@@ -39,7 +39,13 @@ export function CinemaSidebar() {
   const { data: cinema } = useQuery({
     queryKey: ["cinema", cinemaId],
     queryFn: () => getCinemaById({ data: { id: cinemaId } } as any),
-    enabled: !!cinemaId && cinemaId !== "create" && cinemaId !== "movies" && cinemaId !== "ticket-tiers" && cinemaId !== "create-movie" && cinemaId !== "create-ticket-tier",
+    enabled:
+      !!cinemaId &&
+      cinemaId !== "create" &&
+      cinemaId !== "movies" &&
+      cinemaId !== "ticket-tiers" &&
+      cinemaId !== "create-movie" &&
+      cinemaId !== "create-ticket-tier",
   });
 
   const nav = [
@@ -108,8 +114,6 @@ export function CinemaSidebar() {
     },
   ];
 
-
-
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:flex flex-col">
       <Link
@@ -122,21 +126,25 @@ export function CinemaSidebar() {
       </Link>
 
       <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary overflow-hidden">
-            {cinema?.logo_url || cinema?.cover_url ? (
-              <img src={cinema?.logo_url || cinema?.cover_url} alt={cinema.name} className="h-full w-full object-cover" />
-            ) : (
-              <Film className="h-6 w-6 text-muted-foreground" />
-            )}
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className="font-bold truncate" title={cinema?.name || "Loading..."}>
-              {cinema?.name || "Loading..."}
-            </span>
-            <span className="text-xs text-muted-foreground truncate" title={cinema?.city || "..."}>
-              {cinema?.city || "..."}
-            </span>
-          </div>
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary overflow-hidden">
+          {cinema?.logo_url || cinema?.cover_url ? (
+            <img
+              src={cinema?.logo_url || cinema?.cover_url}
+              alt={cinema.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <Film className="h-6 w-6 text-muted-foreground" />
+          )}
+        </div>
+        <div className="flex flex-col min-w-0">
+          <span className="font-bold truncate" title={cinema?.name || "Loading..."}>
+            {cinema?.name || "Loading..."}
+          </span>
+          <span className="text-xs text-muted-foreground truncate" title={cinema?.city || "..."}>
+            {cinema?.city || "..."}
+          </span>
+        </div>
       </div>
 
       <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-4 px-1">
@@ -189,7 +197,6 @@ export function CinemaSidebar() {
           })}
         </nav>
       </div>
-
     </aside>
   );
 }

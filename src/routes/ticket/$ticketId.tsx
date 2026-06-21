@@ -305,7 +305,9 @@ function DynamicPass({ ticket }: { ticket: any }) {
           </div>
           <div className="text-right">
             <p className="text-gray-500 text-xs font-medium mb-1">Quantity</p>
-            <p className="font-bold text-sm truncate">{ticket.quantity || 1} Ticket{ticket.quantity !== 1 ? 's' : ''}</p>
+            <p className="font-bold text-sm truncate">
+              {ticket.quantity || 1} Ticket{ticket.quantity !== 1 ? "s" : ""}
+            </p>
           </div>
         </div>
 

@@ -151,9 +151,8 @@ export const unlinkTierFromCinema = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
     const { cinema_id, ticket_tier_id } = ctx.data;
-    const res = await hasuraRequest<{ delete_cinema_schedule_ticket_tiers: { affected_rows: number } }>(
-      UNLINK_TIER_FROM_CINEMA,
-      { cinema_id, ticket_tier_id }
-    );
+    const res = await hasuraRequest<{
+      delete_cinema_schedule_ticket_tiers: { affected_rows: number };
+    }>(UNLINK_TIER_FROM_CINEMA, { cinema_id, ticket_tier_id });
     return res.delete_cinema_schedule_ticket_tiers;
   });

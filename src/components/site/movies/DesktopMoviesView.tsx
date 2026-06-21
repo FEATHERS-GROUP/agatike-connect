@@ -1,9 +1,27 @@
 import { Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Clock, MapPin, Film, Ticket, ArrowLeft, Play, Star, Calendar, X, Search } from "lucide-react";
+import {
+  Clock,
+  MapPin,
+  Film,
+  Ticket,
+  ArrowLeft,
+  Play,
+  Star,
+  Calendar,
+  X,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { formatCurrency } from "@/lib/currency";
 
 export function DesktopMoviesView({
@@ -20,16 +38,19 @@ export function DesktopMoviesView({
   const activeMovie = movies.find((m) => m.id === active)!;
 
   // Calculate the starting price across ALL schedules for this movie
-  const allPrices = activeMovie.showtimes.flatMap((st: any) => 
-    st.tiers?.length > 0 
+  const allPrices = activeMovie.showtimes.flatMap((st: any) =>
+    st.tiers?.length > 0
       ? st.tiers.map((t: any) => t.price_override || t.ticket_tier.price)
-      : [st.basePrice]
+      : [st.basePrice],
   );
   const startingPrice = Math.min(...allPrices);
 
-  const uniqueDates = Array.from(new Set(activeMovie.showtimes.map((st: any) => st.date))).sort() as string[];
+  const uniqueDates = Array.from(
+    new Set(activeMovie.showtimes.map((st: any) => st.date)),
+  ).sort() as string[];
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const currentDate = selectedDate && uniqueDates.includes(selectedDate) ? selectedDate : uniqueDates[0];
+  const currentDate =
+    selectedDate && uniqueDates.includes(selectedDate) ? selectedDate : uniqueDates[0];
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -101,7 +122,13 @@ export function DesktopMoviesView({
                     const dateObj = new Date(d);
                     const today = new Date();
                     const isToday = dateObj.toDateString() === today.toDateString();
-                    const label = isToday ? "Today" : dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", weekday: "short" });
+                    const label = isToday
+                      ? "Today"
+                      : dateObj.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          weekday: "short",
+                        });
 
                     return (
                       <button
@@ -126,9 +153,13 @@ export function DesktopMoviesView({
                   className="h-14 rounded-2xl shadow-[var(--shadow-glow)] text-base font-bold px-8"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  <Link to="/book-movie/$movieId" params={{ movieId: activeMovie.id }} search={{ date: currentDate }}>
-                    <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
-                    Starting at {formatCurrency(startingPrice, activeMovie.showtimes[0]?.currency || "RWF")}
+                  <Link
+                    to="/book-movie/$movieId"
+                    params={{ movieId: activeMovie.id }}
+                    search={{ date: currentDate }}
+                  >
+                    <Ticket className="mr-2 h-5 w-5" /> Book Ticket — Starting at{" "}
+                    {formatCurrency(startingPrice, activeMovie.showtimes[0]?.currency || "RWF")}
                   </Link>
                 </Button>
                 <Button

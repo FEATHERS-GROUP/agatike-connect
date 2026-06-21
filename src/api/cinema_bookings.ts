@@ -139,7 +139,7 @@ export const getCinemaBookings = createServerFn({ method: "POST" })
     const res = await hasuraRequest<{ cinema_bookings: any[] }>(GET_CINEMA_BOOKINGS, {
       cinema_id,
       limit,
-      offset
+      offset,
     });
     return res.cinema_bookings;
   });
@@ -149,7 +149,7 @@ export const getCinemaStats = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { cinema_id } = ctx.data;
     if (!cinema_id) throw new Error("cinema_id is required");
-    
+
     // We replace 'today' with actual ISO string for midnight UTC
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -160,7 +160,7 @@ export const getCinemaStats = createServerFn({ method: "POST" })
     const res = await hasuraRequest<any>(query, {
       cinema_id,
     });
-    
+
     return {
       total_quantity: res.cinema_bookings_aggregate?.aggregate?.sum?.quantity || 0,
       total_revenue: res.cinema_bookings_aggregate?.aggregate?.sum?.total_price || 0,
@@ -173,11 +173,11 @@ export const getCinemaChartData = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { cinema_id } = ctx.data;
     if (!cinema_id) throw new Error("cinema_id is required");
-    
+
     const res = await hasuraRequest<{ cinema_bookings: any[] }>(GET_CINEMA_CHART_DATA, {
       cinema_id,
     });
-    
+
     return res.cinema_bookings;
   });
 
@@ -196,13 +196,13 @@ export const createCinemaBooking = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
     const { object } = ctx.data;
-    
+
     // We need to increment the booked_seats for the schedule.
     // Hasura doesn't easily do a nested update during an insert, so we'll do both via a multi-query string.
-    
+
     // Generate a simple unique QR code number
     const qrcode_number = `CBK-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-    
+
     const objWithQr = {
       ...object,
       qrcode_number,
@@ -230,24 +230,26 @@ export const createCinemaBooking = createServerFn({ method: "POST" })
 
     const res = await hasuraRequest<{ insert_cinema_bookings_one: { id: string } }>(
       CREATE_AND_UPDATE,
-      { 
-        object: objWithQr, 
+      {
+        object: objWithQr,
         schedule_id: object.schedule_id,
         qty: object.quantity || 1,
-        ticket_tier_id: object.ticket_tier_id || null
+        ticket_tier_id: object.ticket_tier_id || null,
       },
     );
-    
+
     if (object.status === "Confirmed" && parseFloat(object.total_price || "0") > 0) {
       try {
         const cinemaRes = await hasuraRequest<{ cinemas_by_pk: { workspace_id: string } }>(
           `query GetCinemaWorkspace($id: uuid!) { cinemas_by_pk(id: $id) { workspace_id } }`,
-          { id: object.cinema_id }
+          { id: object.cinema_id },
         );
         const workspace_id = cinemaRes?.cinemas_by_pk?.workspace_id;
         if (workspace_id) {
           const { addMoneyToWorkspaceWallet } = await import("./wallet");
-          await addMoneyToWorkspaceWallet({ data: { workspace_id, amount: parseFloat(object.total_price) } } as any);
+          await addMoneyToWorkspaceWallet({
+            data: { workspace_id, amount: parseFloat(object.total_price) },
+          } as any);
         }
       } catch (e) {
         console.error("Failed to update wallet for cinema booking:", e);

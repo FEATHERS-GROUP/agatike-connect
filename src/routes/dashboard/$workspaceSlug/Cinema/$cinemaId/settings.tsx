@@ -38,7 +38,9 @@ function CinemaSettings() {
         city: cinema.city || "",
         address: cinema.address || "",
         description: cinema.description || "",
-        cover_url: cinema.cover_url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600",
+        cover_url:
+          cinema.cover_url ||
+          "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1600",
       });
     }
   }, [cinema]);
@@ -85,7 +87,11 @@ function CinemaSettings() {
           className="gap-2 rounded-xl h-11 px-6 font-bold shadow-sm"
           style={{ background: "var(--gradient-primary)" }}
         >
-          {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {updateMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
           {updateMutation.isPending ? "Saving..." : "Save Changes"}
         </Button>
       </div>
@@ -94,15 +100,11 @@ function CinemaSettings() {
         <div className="space-y-4">
           <h3 className="font-bold text-lg">Cover Image</h3>
           <div className="flex flex-col sm:flex-row gap-6 items-start">
-            <div 
+            <div
               onClick={handleUploadClick}
               className="h-40 w-full sm:w-64 rounded-2xl overflow-hidden bg-secondary border border-border/60 shrink-0 relative group cursor-pointer"
             >
-              <img
-                src={form.cover_url}
-                alt="Cover"
-                className="h-full w-full object-cover"
-              />
+              <img src={form.cover_url} alt="Cover" className="h-full w-full object-cover" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                 <UploadCloud className="w-8 h-8 text-white" />
               </div>
@@ -125,26 +127,26 @@ function CinemaSettings() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label>Cinema Name</Label>
-              <Input 
-                value={form.name} 
-                onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
-                className="rounded-xl h-11" 
+              <Input
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                className="rounded-xl h-11"
               />
             </div>
             <div className="space-y-2">
               <Label>City / Location</Label>
-              <Input 
-                value={form.city} 
-                onChange={(e) => setForm(f => ({ ...f, city: e.target.value }))}
-                className="rounded-xl h-11" 
+              <Input
+                value={form.city}
+                onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+                className="rounded-xl h-11"
               />
             </div>
             <div className="space-y-2">
               <Label>Address</Label>
-              <Input 
-                value={form.address} 
-                onChange={(e) => setForm(f => ({ ...f, address: e.target.value }))}
-                className="rounded-xl h-11" 
+              <Input
+                value={form.address}
+                onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+                className="rounded-xl h-11"
               />
             </div>
           </div>
@@ -152,7 +154,7 @@ function CinemaSettings() {
             <Label>Description</Label>
             <Textarea
               value={form.description}
-              onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               className="rounded-xl min-h-[120px] resize-y"
             />
           </div>

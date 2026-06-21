@@ -1,12 +1,40 @@
 import { Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Clock, MapPin, Film, Ticket, ArrowLeft, Play, Star, Calendar, X, Search } from "lucide-react";
+import {
+  Clock,
+  MapPin,
+  Film,
+  Ticket,
+  ArrowLeft,
+  Play,
+  Star,
+  Calendar,
+  X,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { formatCurrency } from "@/lib/currency";
 
-export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { movies: any[]; cinemas: any[]; activeId?: string; setActive?: (id: string) => void; }) {
+export function MobileMoviesView({
+  movies,
+  cinemas,
+  activeId,
+  setActive,
+}: {
+  movies: any[];
+  cinemas: any[];
+  activeId?: string;
+  setActive?: (id: string) => void;
+}) {
   const router = useRouter();
   const [selectedMovie, setSelectedMovie] = useState<(typeof movies)[0] | null>(null);
 
@@ -14,22 +42,29 @@ export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { mov
 
   useEffect(() => {
     if (selectedMovie) {
-      const uniqueDates = Array.from(new Set(selectedMovie.showtimes.map((st: any) => st.date))).sort() as string[];
+      const uniqueDates = Array.from(
+        new Set(selectedMovie.showtimes.map((st: any) => st.date)),
+      ).sort() as string[];
       setSelectedDate(uniqueDates[0]);
     }
   }, [selectedMovie]);
 
-  const uniqueDates = selectedMovie ? (Array.from(new Set(selectedMovie.showtimes.map((st: any) => st.date))).sort() as string[]) : [];
-  const currentDate = selectedDate && uniqueDates.includes(selectedDate) ? selectedDate : uniqueDates[0];
+  const uniqueDates = selectedMovie
+    ? (Array.from(new Set(selectedMovie.showtimes.map((st: any) => st.date))).sort() as string[])
+    : [];
+  const currentDate =
+    selectedDate && uniqueDates.includes(selectedDate) ? selectedDate : uniqueDates[0];
 
   // Calculate starting price for selected movie
-  const startingPrice = selectedMovie ? Math.min(
-    ...selectedMovie.showtimes.flatMap((st: any) => 
-      st.tiers?.length > 0 
-        ? st.tiers.map((t: any) => t.price_override || t.ticket_tier.price)
-        : [st.basePrice || 10]
-    )
-  ) : 10;
+  const startingPrice = selectedMovie
+    ? Math.min(
+        ...selectedMovie.showtimes.flatMap((st: any) =>
+          st.tiers?.length > 0
+            ? st.tiers.map((t: any) => t.price_override || t.ticket_tier.price)
+            : [st.basePrice || 10],
+        ),
+      )
+    : 10;
 
   const featuredMovie = movies[0];
 
@@ -58,8 +93,6 @@ export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { mov
           />
         </div>
       </div>
-
-
 
       {/* Now Showing Horizontal List */}
       <div className="py-4">
@@ -126,37 +159,37 @@ export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { mov
               {selectedMovie?.synopsis || "Details about the movie"}
             </DrawerDescription>
           </DrawerHeader>
-          
+
           {selectedMovie && (
             <div className="h-full flex flex-col">
               <div className="flex-1 overflow-y-auto hide-scrollbar pb-6 relative">
-              <div className="relative aspect-[4/5] w-full">
-                <img
-                  src={selectedMovie.cover}
-                  alt={selectedMovie.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-                <button
-                  onClick={() => setSelectedMovie(null)}
-                  className="absolute top-4 right-4 p-2 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/10"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="px-5 -mt-6 relative z-10">
-                <h2 className="text-3xl font-black tracking-tight mb-2">{selectedMovie.title}</h2>
-                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground font-medium mb-4">
-                  <span>{selectedMovie.genre}</span> • <span>{selectedMovie.duration}</span> •{" "}
-                  <span className="border border-border/60 px-1 rounded">
-                    {selectedMovie.rating}
-                  </span>
+                <div className="relative aspect-[4/5] w-full">
+                  <img
+                    src={selectedMovie.cover}
+                    alt={selectedMovie.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+                  <button
+                    onClick={() => setSelectedMovie(null)}
+                    className="absolute top-4 right-4 p-2 rounded-full bg-black/40 backdrop-blur-md text-white border border-white/10"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
                 </div>
 
-                <p className="text-sm text-foreground/90 leading-relaxed mb-6">
-                  {selectedMovie.synopsis}
-                </p>
+                <div className="px-5 -mt-6 relative z-10">
+                  <h2 className="text-3xl font-black tracking-tight mb-2">{selectedMovie.title}</h2>
+                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground font-medium mb-4">
+                    <span>{selectedMovie.genre}</span> • <span>{selectedMovie.duration}</span> •{" "}
+                    <span className="border border-border/60 px-1 rounded">
+                      {selectedMovie.rating}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-foreground/90 leading-relaxed mb-6">
+                    {selectedMovie.synopsis}
+                  </p>
 
                   <div className="bg-secondary/40 rounded-2xl p-4">
                     <div className="flex items-center gap-3">
@@ -179,8 +212,10 @@ export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { mov
                       const isSelected = d === currentDate;
                       const dateObj = new Date(d);
                       const isToday = dateObj.toDateString() === new Date().toDateString();
-                      const label = isToday ? "Today" : dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-                      
+                      const label = isToday
+                        ? "Today"
+                        : dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
                       return (
                         <button
                           key={d}
@@ -199,9 +234,13 @@ export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { mov
                   className="w-full h-14 rounded-2xl shadow-[var(--shadow-glow)] text-base font-bold"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  <Link to="/book-movie/$movieId" params={{ movieId: selectedMovie.id }} search={{ date: currentDate }}>
-                    <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
-                    Starting at {formatCurrency(startingPrice, selectedMovie.showtimes[0]?.currency || "RWF")}
+                  <Link
+                    to="/book-movie/$movieId"
+                    params={{ movieId: selectedMovie.id }}
+                    search={{ date: currentDate }}
+                  >
+                    <Ticket className="mr-2 h-5 w-5" /> Book Ticket — Starting at{" "}
+                    {formatCurrency(startingPrice, selectedMovie.showtimes[0]?.currency || "RWF")}
                   </Link>
                 </Button>
               </div>
