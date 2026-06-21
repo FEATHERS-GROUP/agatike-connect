@@ -4,7 +4,14 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import QRCodeImport from "react-qr-code";
 const QRCode = (QRCodeImport as any).default || QRCodeImport;
-import ReactQuill from "react-quill-new";
+import { lazy, Suspense, useState as _useState, useEffect as _useEffect } from "react";
+
+function ClientOnly({ children, fallback }: { children: any, fallback?: any }) {
+  const [mounted, setMounted] = _useState(false);
+  _useEffect(() => setMounted(true), []);
+  return mounted ? children : (fallback || null);
+}
+const ReactQuill = lazy(() => import("react-quill-new"));
 import "react-quill-new/dist/quill.snow.css";
 import {
   ArrowLeft,
@@ -47,6 +54,7 @@ import {
 } from "@/api/events";
 import { uploadFile } from "@/api/storage";
 import { toast } from "sonner";
+import { getContributorAccessLevel } from "@/api/project_contributors";
 
 function getCurrencySymbol(currency?: string) {
   if (!currency) return "$";
@@ -208,7 +216,13 @@ function TicketDesignerPage() {
     enabled: !!activeWorkspace?.id,
   });
 
-  const { data: dbProject, isLoading: isProjectLoading } = useQuery({
+  const { data: userAccessLevel = "edit", error: accessError, isError: isAccessError } = useQuery({
+    queryKey: ["project-access", projectId],
+    queryFn: () => getContributorAccessLevel({ data: { resource_type: "ticket_project", resource_id: projectId } } as any),
+    enabled: !!projectId && projectId.includes("-"),
+  });
+
+  const { data: dbProject, isLoading: isProjectLoading, error: projectError, isError: isProjectError } = useQuery({
     queryKey: ["ticket-project", projectId],
     queryFn: () => getTicketProjectById({ data: { id: projectId } } as any),
     enabled: !!projectId && projectId.includes("-"), // ensure it looks like a uuid
@@ -221,7 +235,7 @@ function TicketDesignerPage() {
   );
 
   // Read template from URL if it's a new project
-  const searchParams = new URLSearchParams(window.location.search);
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const initialTemplate = migrateTemplate((searchParams.get("template") as string) || "concert-1");
   const initialEventId = searchParams.get("eventId") || "";
   const initialName = searchParams.get("name") || "Untitled Project";
@@ -246,23 +260,12 @@ function TicketDesignerPage() {
   const eventMatch = events.find((e: any) => e.id === eventId);
   const venueMatch = venues.find((v: any) => v.id === venueId);
   const cinemaMatch = cinemas.find((c: any) => c.id === cinemaId);
-  const allTicketTiers =
-    assignmentType === "event"
-      ? eventMatch?.event_tickets || []
-      : assignmentType === "venue"
-      ? venueMatch?.pricing_tiers?.map((t: any) => ({
-          ...t,
-          id: t.name,
-          type: t.name,
-          cost: t.amount,
-        })) || []
-      : assignmentType === "cinema"
-      ? cinemaTiers.map((t: any) => ({
-          id: t.id,
-          type: t.name,
-          cost: t.price,
-        })) || []
-      : [];
+  const allTicketTiers = useMemo(() => {
+    if (assignmentType === "event") return eventMatch?.event_tickets || [];
+    if (assignmentType === "venue") return venueMatch?.pricing_tiers?.map((t: any) => ({ ...t, id: t.name, type: t.name, cost: t.amount })) || [];
+    if (assignmentType === "cinema") return cinemaTiers.map((t: any) => ({ id: t.id, type: t.name, cost: t.price })) || [];
+    return [];
+  }, [assignmentType, eventMatch?.event_tickets, venueMatch?.pricing_tiers, cinemaTiers]);
   const tourStops = Array.isArray(eventMatch?.tour_stops) ? eventMatch.tour_stops : [];
 
   const [activeTourStopIdx, setActiveTourStopIdx] = useState<number>(-1);
@@ -274,6 +277,7 @@ function TicketDesignerPage() {
     );
   }, [allTicketTiers, activeTourStopIdx]);
   const [activeTierId, setActiveTierId] = useState<string>("");
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [editScope, setEditScope] = useState<"base" | "tier">("base");
   const [sameDesignForLocations, setSameDesignForLocations] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<
@@ -388,10 +392,22 @@ function TicketDesignerPage() {
     },
   });
 
+  console.log("TicketDesigner Render: ", { isProjectLoading, dbProject, projectError, isProjectError, userAccessLevel, accessError, isAccessError });
+  if (isProjectError || isAccessError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center text-red-500">
+        <h2 className="text-2xl font-bold mb-4">Error Loading Project</h2>
+        <p className="mb-2">Project Error: {projectError?.message || "None"}</p>
+        <p>Access Error: {accessError?.message || "None"}</p>
+      </div>
+    );
+  }
+
   if (isProjectLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <p className="mt-4 text-muted-foreground animate-pulse">Loading Ticket Project...</p>
       </div>
     );
   }
@@ -645,13 +661,21 @@ function TicketDesignerPage() {
             <UserPlus className="mr-2 h-4 w-4" /> Invite Contributor
           </Button>
           <Button
+            variant="outline"
+            className="rounded-full border-border/60 bg-white/5 hover:bg-white/10"
+            onClick={() => setIsInviteModalOpen(true)}
+          >
+            <UserPlus className="mr-2 h-4 w-4" /> Invite Contributor
+          </Button>
+
+          <Button
             onClick={handleSave}
-            disabled={saveMutation.isPending}
-            className={`rounded-full shadow-[var(--shadow-glow)] transition-all ${isDirty ? "animate-pulse" : ""}`}
-            style={{ background: isDirty ? "var(--gradient-primary)" : "var(--border)" }}
+            disabled={saveMutation.isPending || userAccessLevel === "view"}
+            className={`rounded-full shadow-[var(--shadow-glow)] transition-all ${isDirty && userAccessLevel !== "view" ? "animate-pulse" : ""}`}
+            style={{ background: isDirty && userAccessLevel !== "view" ? "var(--gradient-primary)" : "var(--border)" }}
           >
             <Save className="mr-1 h-4 w-4" />{" "}
-            {saveMutation.isPending ? "Saving..." : isDirty ? "Save changes" : "Saved"}
+            {saveMutation.isPending ? "Saving..." : userAccessLevel === "view" ? "View Only" : isDirty ? "Save changes" : "Saved"}
           </Button>
         </div>
       </header>
@@ -827,9 +851,9 @@ function TicketDesignerPage() {
                       }}
                       className="w-full rounded-xl border border-primary/60 bg-primary/10 text-primary px-3 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary transition-colors cursor-pointer"
                     >
-                      <option value="base">Base Template (Applies to ALL tickets)</option>
+                      <option value="base">{assignmentType === "cinema" ? "Base Design (All Movies/Tiers)" : "Base Template (Applies to ALL tickets)"}</option>
                       {ticketTiers.length > 1 && (
-                        <option value="tier">Specific Tiers independently</option>
+                        <option value="tier">{assignmentType === "cinema" ? "Specific Movie/Tier independently" : "Specific Tiers independently"}</option>
                       )}
                     </select>
                   </Field>
@@ -1236,7 +1260,7 @@ function TicketDesignerPage() {
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Custom message / terms</Label>
                   <div className="quill-ticket-editor rounded-xl overflow-hidden border border-border/60">
-                    <ReactQuill
+                    <ClientOnly fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><Suspense fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><ReactQuill
                       theme="snow"
                       value={
                         mergedDesign.back?.backText ??
@@ -1259,7 +1283,7 @@ function TicketDesignerPage() {
                         ],
                       }}
                       formats={["header", "bold", "italic", "underline", "list"]}
-                    />
+                    /></Suspense></ClientOnly>
                   </div>
                 </div>
               </Section>

@@ -9,7 +9,15 @@ import { getWorkspaceForms, getFormDetails } from "@/api/rsvps";
 import { getAllBadgeProjects } from "@/api/badges";
 import { getOrganizerProfile } from "@/api/organizers";
 import { useState } from "react";
-import ReactQuill from "react-quill-new";
+import { lazy, Suspense, useState as _useState, useEffect as _useEffect } from "react";
+
+function ClientOnly({ children, fallback }: { children: any, fallback?: any }) {
+  const [mounted, setMounted] = _useState(false);
+  _useEffect(() => setMounted(true), []);
+  return mounted ? children : (fallback || null);
+}
+
+const ReactQuill = lazy(() => import("react-quill-new"));
 import "react-quill-new/dist/quill.snow.css";
 import {
   Dialog,
@@ -388,7 +396,7 @@ function AttendeeDetailsModal({
     workspaceBadges?.find((b: any) => b.event_id === eventId)?.id || workspaceBadges?.[0]?.id || "",
   );
 
-  const origin = window.location.origin;
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
   const badgeLink =
     attendee.qrcode_number && selectedBadgeId
       ? `${origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}`
@@ -446,7 +454,7 @@ function AttendeeDetailsModal({
             organizerLogo: activeWorkspace?.logo_url,
             organizerSocials: organizer?.socials,
             badgeLink: selectedBadgeId ? badgeLink : "",
-            appUrl: window.location.origin,
+            appUrl: typeof window !== "undefined" ? window.location.origin : "",
           },
         } as any);
       }
@@ -596,12 +604,12 @@ function AttendeeDetailsModal({
             )}
             {contactMethod === "email" ? (
               <div className="bg-background rounded-md border border-input">
-                <ReactQuill
+                <ClientOnly fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><Suspense fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><ReactQuill
                   theme="snow"
                   value={message}
                   onChange={setMessage}
                   className="h-[200px] mb-12"
-                />
+                /></Suspense></ClientOnly>
               </div>
             ) : (
               <Textarea
@@ -705,7 +713,7 @@ function BulkEmailModal({
         continue;
       }
 
-      const origin = window.location.origin;
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
       const badgeLink =
         attendee.qrcode_number && selectedBadgeId
           ? `${origin}/a/${attendee.qrcode_number}?badgeId=${selectedBadgeId}`
@@ -757,7 +765,7 @@ function BulkEmailModal({
             organizerLogo: activeWorkspace?.logo_url,
             organizerSocials: organizer?.socials,
             badgeLink,
-            appUrl: window.location.origin,
+            appUrl: typeof window !== "undefined" ? window.location.origin : "",
           },
         } as any);
       } catch (err) {
@@ -799,13 +807,13 @@ function BulkEmailModal({
           <div className="space-y-2">
             <label className="text-sm font-medium">Message Body</label>
             <div className="bg-background rounded-md border border-input">
-              <ReactQuill
+              <ClientOnly fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><Suspense fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><ReactQuill
                 theme="snow"
                 value={message}
                 onChange={setMessage}
                 readOnly={isSending}
                 className="h-[250px] mb-12"
-              />
+              /></Suspense></ClientOnly>
             </div>
           </div>
 

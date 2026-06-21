@@ -35,7 +35,15 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { COUNTRIES } from "@/lib/countries";
 import { getCoordinates, getPlacesAutocomplete } from "@/api/geocoding";
 import { Switch } from "@/components/ui/switch";
-import ReactQuill from "react-quill-new";
+import { lazy, Suspense, useState as _useState, useEffect as _useEffect } from "react";
+
+function ClientOnly({ children, fallback }: { children: any, fallback?: any }) {
+  const [mounted, setMounted] = _useState(false);
+  _useEffect(() => setMounted(true), []);
+  return mounted ? children : (fallback || null);
+}
+
+const ReactQuill = lazy(() => import("react-quill-new"));
 import "react-quill-new/dist/quill.snow.css";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/create-venue")({
@@ -880,13 +888,13 @@ function NewVenueWizard() {
               <div className="space-y-4 pt-4">
                 <Label className="text-lg">Instructions / Rules</Label>
                 <div className="bg-background rounded-xl overflow-hidden border border-input">
-                  <ReactQuill
+                  <ClientOnly fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><Suspense fallback={<div className="h-32 w-full animate-pulse bg-muted rounded-xl" />}><ReactQuill
                     theme="snow"
                     value={formData.instructions}
                     onChange={(val) => setFormData((p) => ({ ...p, instructions: val }))}
                     className="h-48 [&_.ql-editor]:text-base [&_.ql-container]:border-0 [&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b"
                     placeholder="e.g. No loud music after 10PM. Please ensure the kitchen is cleaned before leaving."
-                  />
+                  /></Suspense></ClientOnly>
                 </div>
               </div>
             </div>

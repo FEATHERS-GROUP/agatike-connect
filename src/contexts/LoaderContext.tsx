@@ -51,7 +51,7 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
   return (
     <LoaderContext.Provider value={{ isLoading, setIsLoading, isPageLoading, setIsPageLoading }}>
       {/* If showPageLoader is true, we display a dashboard skeleton with a centered logo */}
-      {showPageLoader ? (
+      {showPageLoader && (
         <div className="fixed inset-0 z-[9999] flex bg-background">
           {/* Centered Logo Overlay */}
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/40 backdrop-blur-sm">
@@ -95,9 +95,10 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
             </div>
           </main>
         </div>
-      ) : (
-        children
       )}
+      <div className={showPageLoader ? "hidden" : "contents"}>
+        {children}
+      </div>
 
       {/* For background tasks (isLoading), we might just show a subtle overlay or nothing, 
           since nprogress is already running at the top. */}

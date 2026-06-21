@@ -161,7 +161,7 @@ function RootComponent() {
   const location = useRouterState({ select: (s) => s.location });
 
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
+    if ("serviceWorker" in navigator && import.meta.env.PROD) {
       navigator.serviceWorker
         .register("/sw.js")
         .then((registration) => {
@@ -170,6 +170,13 @@ function RootComponent() {
         .catch((registrationError) => {
           console.log("SW registration failed: ", registrationError);
         });
+    } else if ("serviceWorker" in navigator && !import.meta.env.PROD) {
+      // Unregister in dev to prevent Vite HMR loops
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
     }
   }, []);
 
