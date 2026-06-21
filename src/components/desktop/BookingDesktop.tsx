@@ -1,10 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Lock, MapPin, Calendar, CheckCircle2 } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
-import { formatCurrency } from "@/lib/currency";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
@@ -16,19 +12,14 @@ import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
-import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { PaymentModal } from "@/components/shared/PaymentModal";
-import { COUNTRIES } from "@/lib/countries";
-import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
+
+import { CheckoutSkeleton } from "@/components/desktop/booking/CheckoutSkeleton";
+import { SuccessState } from "@/components/desktop/booking/SuccessState";
+import { OrderSummary } from "@/components/desktop/booking/OrderSummary";
+import { BookingForm } from "@/components/desktop/booking/BookingForm";
+import { HiddenPDFGenerator } from "@/components/desktop/booking/HiddenPDFGenerator";
 
 export function BookingDesktop({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
@@ -191,15 +182,6 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     }
     return str;
   };
-
-  // Memoize countries to prevent massive re-rendering lag
-  const countrySelectItems = useMemo(() => {
-    return COUNTRIES.map((c) => (
-      <SelectItem key={c.name} value={c.name}>
-        {c.name}
-      </SelectItem>
-    ));
-  }, []);
 
   const getTierDetails = (tierId: string) => {
     return event?.event_tickets?.find((t: any) => t.id === tierId);
@@ -511,62 +493,11 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   }, [isSuccess, navigate, eventId]);
 
   if (!event || attendees.length === 0) {
-    return (
-      <div className="min-h-screen bg-background text-foreground relative">
-        <Navbar />
-        <main className="mx-auto max-w-6xl px-6 py-12">
-          <Skeleton className="h-4 w-32 mb-8" />
-          <div className="grid lg:grid-cols-[1fr_400px] gap-12">
-            <div className="space-y-10">
-              <Skeleton className="h-10 w-80 mb-8" />
-              <div className="p-6 rounded-3xl border border-border/60 bg-card/40 space-y-6">
-                <Skeleton className="h-8 w-48 mb-2" />
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
-                  <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
-                </div>
-                <div className="space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-10 w-full" /></div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
-                  <div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-10 w-full" /></div>
-                </div>
-              </div>
-            </div>
-            <div>
-              <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
-                <Skeleton className="h-8 w-48 mb-6" />
-                <div className="flex gap-4 mb-6">
-                  <Skeleton className="h-24 w-20 rounded-xl" />
-                  <div className="flex flex-col space-y-2 flex-1">
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
-                </div>
-                <Skeleton className="h-14 w-full rounded-2xl mt-8" />
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
+    return <CheckoutSkeleton />;
   }
 
   if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-        <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
-          <CheckCircle2 className="h-12 w-12 text-green-500" />
-        </div>
-        <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
-        <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
-          Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}
-          .
-        </p>
-        <p className="text-sm text-muted-foreground animate-pulse">
-          Redirecting to event details...
-        </p>
-      </div>
-    );
+    return <SuccessState eventTitle={event.title} recipientEmail={attendees[0]?.email} />;
   }
 
   return (
@@ -584,294 +515,37 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
         <div className="grid lg:grid-cols-[1fr_400px] gap-12">
           {/* Left Column: Form & Payment */}
-          <div className="space-y-10">
-            <div>
-              <h1 className="text-3xl font-bold mb-6">Checkout ({totalTickets} Tickets)</h1>
-
-              {totalTickets > 1 && (
-                <div className="flex bg-muted/50 p-1 rounded-xl mb-6 w-fit">
-                  <button
-                    onClick={() => setAssignMode("me")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      assignMode === "me"
-                        ? "bg-background shadow text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Assign to Me (Faster)
-                  </button>
-                  <button
-                    onClick={() => setAssignMode("others")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      assignMode === "others"
-                        ? "bg-background shadow text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Assign Individually
-                  </button>
-                </div>
-              )}
-
-              <div className="space-y-8">
-                {(assignMode === "me" ? [attendees[0]] : attendees).map((attendee, idx) => {
-                  if (!attendee) return null;
-                  const tier = getTierDetails(attendee.tierId);
-                  const stop = getStopDetails(attendee.stopIdx);
-
-                  const projectForStop = stopsWithVenues.find(
-                    (s) => s.stopIdx === attendee.stopIdx,
-                  )?.project;
-                  const isSeatRequired = projectForStop?.sections_data?.some(
-                    (s: any) => s.ticketId === attendee.tierId,
-                  );
-
-                  // Calculate VIP Perks and Inputs
-                  const tierPrivileges =
-                    tier?.vip_privilege_ids
-                      ?.map((pid: string) => vipPrivileges.find((vp: any) => vp.id === pid))
-                      .filter(Boolean) || [];
-                  const dynamicFields = tierPrivileges.flatMap((p: any) => p.fields || []);
-
-                  // Calculate assigned seats to show
-                  const seatsList =
-                    assignMode === "me"
-                      ? attendees
-                          .filter(
-                            (a) => a.tierId === attendee.tierId && a.stopIdx === attendee.stopIdx,
-                          )
-                          .map((a) => formatSeatDisplay(a.seatName || a.seat, a.sectionName))
-                          .filter(Boolean)
-                      : [
-                          formatSeatDisplay(
-                            attendee.seatName || attendee.seat,
-                            attendee.sectionName,
-                          ),
-                        ].filter(Boolean);
-
-                  return (
-                    <div
-                      key={idx}
-                      className="p-6 rounded-3xl border border-border/60 bg-card/40 space-y-6"
-                    >
-                      <div className="flex items-start justify-between pb-4 border-b border-border/60">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                            {idx + 1}
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-lg leading-tight">
-                              {assignMode === "me"
-                                ? "Your Details (Applied to all tickets)"
-                                : tier
-                                  ? tier.type
-                                  : "Ticket"}
-                            </h3>
-                            {assignMode === "others" && (
-                              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
-                                <MapPin className="h-3 w-3" /> {stop.city} &middot;{" "}
-                                <Calendar className="h-3 w-3" /> {stop.date}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        {isSeatRequired && seatsList.length > 0 && (
-                          <div className="flex flex-col items-end">
-                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
-                              Assigned Seat{seatsList.length > 1 ? "s" : ""}
-                            </span>
-                            <div className="flex gap-1.5 flex-wrap justify-end">
-                              {seatsList.map((sName, sIdx) => (
-                                <span
-                                  key={sIdx}
-                                  className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-xs font-bold"
-                                >
-                                  {sName}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>First Name</Label>
-                          <Input
-                            value={attendee.firstName || ""}
-                            onChange={(e) => updateAttendee(idx, "firstName", e.target.value)}
-                            placeholder="Alex"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Last Name</Label>
-                          <Input
-                            value={attendee.lastName || ""}
-                            onChange={(e) => updateAttendee(idx, "lastName", e.target.value)}
-                            placeholder="Doe"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Email</Label>
-                        <Input
-                          type="email"
-                          value={attendee.email || ""}
-                          onChange={(e) => updateAttendee(idx, "email", e.target.value)}
-                          placeholder="alex@example.com"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Phone Number</Label>
-                          <Input
-                            type="tel"
-                            value={attendee.phone || ""}
-                            onChange={(e) => updateAttendee(idx, "phone", e.target.value)}
-                            placeholder="+250 788 123 456"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Country</Label>
-                          <Select
-                            value={attendee.country}
-                            onValueChange={(val) => updateAttendee(idx, "country", val)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Country" />
-                            </SelectTrigger>
-                            <SelectContent>{countrySelectItems}</SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      {dynamicFields.length > 0 && (
-                        <div className="pt-4 border-t border-border/60">
-                          <h4 className="text-sm font-semibold mb-4 text-primary flex items-center gap-2">
-                            Ticket Privileges Required Info
-                          </h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {dynamicFields.map((field: any) => (
-                              <div key={field.id} className="space-y-2">
-                                <Label>
-                                  {field.name}{" "}
-                                  {field.required && <span className="text-red-500">*</span>}
-                                </Label>
-                                {field.type === "text" || field.type === "license_plate" ? (
-                                  <Input
-                                    value={attendee.dynamic_fields?.[field.id] || ""}
-                                    onChange={(e) =>
-                                      updateDynamicField(idx, field.id, e.target.value)
-                                    }
-                                    placeholder={
-                                      field.type === "license_plate" ? "e.g. RAA 123 A" : ""
-                                    }
-                                    required={field.required}
-                                  />
-                                ) : field.type === "boolean" ? (
-                                  <div className="flex items-center space-x-2 h-10 px-3 border rounded-md">
-                                    <input
-                                      type="checkbox"
-                                      id={`${idx}-${field.id}`}
-                                      checked={attendee.dynamic_fields?.[field.id] === "true"}
-                                      onChange={(e) =>
-                                        updateDynamicField(
-                                          idx,
-                                          field.id,
-                                          e.target.checked ? "true" : "",
-                                        )
-                                      }
-                                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                    />
-                                    <label
-                                      htmlFor={`${idx}-${field.id}`}
-                                      className="text-sm text-foreground cursor-pointer"
-                                    >
-                                      Yes
-                                    </label>
-                                  </div>
-                                ) : null}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+          <BookingForm
+            attendees={attendees}
+            assignMode={assignMode}
+            setAssignMode={setAssignMode}
+            updateAttendee={updateAttendee}
+            updateDynamicField={updateDynamicField}
+            getTierDetails={getTierDetails}
+            getStopDetails={getStopDetails}
+            stopsWithVenues={stopsWithVenues}
+            vipPrivileges={vipPrivileges}
+            formatSeatDisplay={formatSeatDisplay}
+          />
 
           {/* Right Column: Summary */}
           <div>
-            <div className="sticky top-24 rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
-              <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
-
-              <div className="flex gap-4 mb-6">
-                <img src={event.cover} className="h-24 w-20 rounded-xl object-cover" />
-                <div className="flex flex-col">
-                  <h3 className="font-semibold leading-tight">{event.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {(event as any).date} • {(event as any).venue || (event as any).city}
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4 text-sm border-y border-border/60 py-4 mb-4">
-                {Object.entries(cart).map(([cartKey, qty]) => {
-                  if (qty <= 0) return null;
-                  const [, tierId] = cartKey.split("_");
-                  const tier = getTierDetails(tierId);
-                  if (!tier) return null;
-                  return (
-                    <div key={cartKey} className="flex justify-between items-center">
-                      <span>
-                        {qty}x {tier.type}
-                      </span>
-                      <span className="font-medium">
-                        {formatCurrency(parseFloat(tier.cost || 0) * qty, currency)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex justify-between items-end mb-8">
-                <span className="font-semibold">Total</span>
-                <span className="text-2xl font-bold">{formatCurrency(total, currency)}</span>
-              </div>
-
-              {issuedTickets.length > 0 ? (
-                <Button
-                  onClick={() => {
-                    setIsGenerating(true);
-                    setIsPaymentModalOpen(true);
-                  }}
-                  disabled={isGenerating}
-                  className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide mb-4"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  Retry Ticket Generation
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => setIsPaymentModalOpen(true)}
-                  disabled={!isFormValid || isCheckingOut || isGenerating}
-                  className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide mb-4"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  Pay {formatCurrency(total, currency)}
-                </Button>
-              )}
-
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Lock className="h-4 w-4" /> SSL Encrypted Checkout
-              </div>
-            </div>
+            <OrderSummary
+              event={event}
+              cart={cart}
+              total={total}
+              currency={currency}
+              issuedTicketsLength={issuedTickets.length}
+              isGenerating={isGenerating}
+              isCheckingOut={isCheckingOut}
+              isFormValid={isFormValid}
+              getTierDetails={getTierDetails}
+              onRetryGeneration={() => {
+                setIsGenerating(true);
+                setIsPaymentModalOpen(true);
+              }}
+              onPay={() => setIsPaymentModalOpen(true)}
+            />
           </div>
         </div>
       </main>
@@ -889,81 +563,16 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
       {/* Hidden container for PDF rendering */}
       {isGenerating && issuedTickets.length > 0 && eventProject && (
-        <div
-          className="absolute -z-50 pointer-events-none"
-          style={{ top: "-9999px", left: "-9999px" }}
-        >
-          {issuedTickets.map((ticket: any) => {
-            const mergedProject = getMergedProjectDesign(
-              eventProject,
-              ticket.attendee.stopIdx,
-              ticket.attendee.tierId,
-            );
-            return (
-              <div
-                key={ticket.id}
-                id={`ticket-render-${ticket.id}`}
-                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
-              >
-                <TicketPreview
-                  template={mergedProject.template || "Concert 1"}
-                  palette={mergedProject.palette || { from: "#000", to: "#000", name: "Black" }}
-                  font={mergedProject.font || { css: "sans-serif", name: "Modern" }}
-                  tier={ticket.tier}
-                  title={event.title}
-                  subtitle={event.venue || ""}
-                  date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
-                  time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
-                  seat={
-                    ticket.attendee.seat
-                      ? formatSeatDisplay(
-                          ticket.attendee.seatName || ticket.attendee.seat,
-                          ticket.attendee.sectionName,
-                        )
-                      : `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()
-                  }
-                  price={
-                    getTierDetails(ticket.attendee.tierId)?.cost?.toString() ||
-                    getTierDetails(ticket.attendee.tierId)?.price?.toString() ||
-                    "0"
-                  }
-                  currency={currency === "FRWS" ? "RWF" : currency}
-                  cover={mergedProject.coverImage || event.cover || ""}
-                  logoText={
-                    mergedProject.logoText !== undefined && mergedProject.logoText !== null
-                      ? mergedProject.logoText
-                      : event.organizer || "Agatike"
-                  }
-                  logoImage={mergedProject.logoImage}
-                  logoScale={Number(mergedProject.logoScale || 24)}
-                  logoOpacity={Number(mergedProject.logoOpacity ?? 1)}
-                  logoColorMode={mergedProject.logoColorMode || "original"}
-                  orderId={ticket.otp}
-                  qrValue={`${window.location.origin}/v/${ticket.otp}`}
-                  previewMode="Front"
-                  layout={
-                    mergedProject.design_overrides?.layout || {
-                      titleSize: 30,
-                      subtitleSize: 14,
-                      metaSize: 11,
-                      titleAlign: "left",
-                      titleOffsetY: 0,
-                      subtitleOffsetY: 0,
-                      metaOffsetY: 0,
-                    }
-                  }
-                  back={
-                    mergedProject.design_overrides?.back || {
-                      backText: "",
-                      backImage: "",
-                      backImageOpacity: 0.3,
-                    }
-                  }
-                />
-              </div>
-            );
-          })}
-        </div>
+        <HiddenPDFGenerator
+          issuedTickets={issuedTickets}
+          eventProject={eventProject}
+          event={event}
+          currency={currency}
+          getMergedProjectDesign={getMergedProjectDesign}
+          getStopDetails={getStopDetails}
+          formatSeatDisplay={formatSeatDisplay}
+          getTierDetails={getTierDetails}
+        />
       )}
 
       <Footer />
