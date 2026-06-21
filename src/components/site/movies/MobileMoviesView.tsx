@@ -10,6 +10,27 @@ export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { mov
   const router = useRouter();
   const [selectedMovie, setSelectedMovie] = useState<(typeof movies)[0] | null>(null);
 
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedMovie) {
+      const uniqueDates = Array.from(new Set(selectedMovie.showtimes.map((st: any) => st.date))).sort() as string[];
+      setSelectedDate(uniqueDates[0]);
+    }
+  }, [selectedMovie]);
+
+  const uniqueDates = selectedMovie ? (Array.from(new Set(selectedMovie.showtimes.map((st: any) => st.date))).sort() as string[]) : [];
+  const currentDate = selectedDate && uniqueDates.includes(selectedDate) ? selectedDate : uniqueDates[0];
+
+  // Calculate starting price for selected movie
+  const startingPrice = selectedMovie ? Math.min(
+    ...selectedMovie.showtimes.flatMap((st: any) => 
+      st.tiers?.length > 0 
+        ? st.tiers.map((t: any) => t.price_override || t.ticket_tier.price)
+        : [st.basePrice || 10]
+    )
+  ) : 10;
+
   const featuredMovie = movies[0];
 
   if (!featuredMovie) return null;
@@ -168,16 +189,25 @@ export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { mov
                     </div>
                   </div>
                   <div className="border-t border-border/60 pt-3">
-                    <p className="text-xs font-semibold mb-2">Today's Showtimes</p>
-                    <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-                      {selectedMovie.showtimes.map((t: string, i: number) => (
-                        <button
-                          key={t}
-                          className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold border ${i === 0 ? "bg-primary border-primary text-primary-foreground" : "bg-background border-border/60"}`}
-                        >
-                          {t}
-                        </button>
-                      ))}
+                    <p className="text-xs font-semibold mb-2">Select Date</p>
+                    <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1 mb-3">
+                      {uniqueDates.map((d: string) => {
+                        const isSelected = d === currentDate;
+                        const dateObj = new Date(d);
+                        const today = new Date();
+                        const isToday = dateObj.toDateString() === today.toDateString();
+                        const label = isToday ? "Today" : dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                        
+                        return (
+                          <button
+                            key={d}
+                            onClick={() => setSelectedDate(d)}
+                            className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold border ${isSelected ? "bg-primary border-primary text-primary-foreground" : "bg-background border-border/60"}`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -187,9 +217,9 @@ export function MobileMoviesView({ movies, cinemas, activeId, setActive }: { mov
                   className="w-full h-14 rounded-2xl shadow-[var(--shadow-glow)] text-base font-bold"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  <Link to="/book/$eventId" params={{ eventId: selectedMovie.scheduleId }}>
+                  <Link to="/book-movie/$movieId" params={{ movieId: selectedMovie.id }} search={{ date: currentDate }}>
                     <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
-                    {formatCurrency(selectedMovie.price || 8, selectedMovie.currency)}
+                    Starting at {formatCurrency(startingPrice, selectedMovie.showtimes[0]?.currency || "RWF")}
                   </Link>
                 </Button>
               </div>

@@ -51,6 +51,7 @@ import { Route as CinemasCinemaIdRouteImport } from './routes/cinemas/$cinemaId'
 import { Route as BusesMobileRouteImport } from './routes/buses/mobile'
 import { Route as BusesTripIdRouteImport } from './routes/buses/$tripId'
 import { Route as BookEventIdRouteImport } from './routes/book/$eventId'
+import { Route as BookMovieMovieIdRouteImport } from './routes/book-movie/$movieId'
 import { Route as BQrStringRouteImport } from './routes/b/$qrString'
 import { Route as AQrStringRouteImport } from './routes/a/$qrString'
 import { Route as UserIdMessageRouteImport } from './routes/$userId/message'
@@ -344,6 +345,11 @@ const BusesTripIdRoute = BusesTripIdRouteImport.update({
 const BookEventIdRoute = BookEventIdRouteImport.update({
   id: '/book/$eventId',
   path: '/book/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookMovieMovieIdRoute = BookMovieMovieIdRouteImport.update({
+  id: '/book-movie/$movieId',
+  path: '/book-movie/$movieId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BQrStringRoute = BQrStringRouteImport.update({
@@ -865,6 +871,7 @@ export interface FileRoutesByFullPath {
   '/$userId/message': typeof UserIdMessageRoute
   '/a/$qrString': typeof AQrStringRoute
   '/b/$qrString': typeof BQrStringRoute
+  '/book-movie/$movieId': typeof BookMovieMovieIdRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
@@ -992,6 +999,7 @@ export interface FileRoutesByTo {
   '/$userId/message': typeof UserIdMessageRoute
   '/a/$qrString': typeof AQrStringRoute
   '/b/$qrString': typeof BQrStringRoute
+  '/book-movie/$movieId': typeof BookMovieMovieIdRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
@@ -1118,6 +1126,7 @@ export interface FileRoutesById {
   '/$userId/message': typeof UserIdMessageRoute
   '/a/$qrString': typeof AQrStringRoute
   '/b/$qrString': typeof BQrStringRoute
+  '/book-movie/$movieId': typeof BookMovieMovieIdRoute
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
@@ -1247,6 +1256,7 @@ export interface FileRouteTypes {
     | '/$userId/message'
     | '/a/$qrString'
     | '/b/$qrString'
+    | '/book-movie/$movieId'
     | '/book/$eventId'
     | '/buses/$tripId'
     | '/buses/mobile'
@@ -1374,6 +1384,7 @@ export interface FileRouteTypes {
     | '/$userId/message'
     | '/a/$qrString'
     | '/b/$qrString'
+    | '/book-movie/$movieId'
     | '/book/$eventId'
     | '/buses/$tripId'
     | '/buses/mobile'
@@ -1499,6 +1510,7 @@ export interface FileRouteTypes {
     | '/$userId/message'
     | '/a/$qrString'
     | '/b/$qrString'
+    | '/book-movie/$movieId'
     | '/book/$eventId'
     | '/buses/$tripId'
     | '/buses/mobile'
@@ -1627,6 +1639,7 @@ export interface RootRouteChildren {
   UserIdMessageRoute: typeof UserIdMessageRoute
   AQrStringRoute: typeof AQrStringRoute
   BQrStringRoute: typeof BQrStringRoute
+  BookMovieMovieIdRoute: typeof BookMovieMovieIdRoute
   BookEventIdRoute: typeof BookEventIdRoute
   BusesTripIdRoute: typeof BusesTripIdRoute
   BusesMobileRoute: typeof BusesMobileRoute
@@ -1943,6 +1956,13 @@ declare module '@tanstack/react-router' {
       path: '/book/$eventId'
       fullPath: '/book/$eventId'
       preLoaderRoute: typeof BookEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book-movie/$movieId': {
+      id: '/book-movie/$movieId'
+      path: '/book-movie/$movieId'
+      fullPath: '/book-movie/$movieId'
+      preLoaderRoute: typeof BookMovieMovieIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/b/$qrString': {
@@ -2829,6 +2849,7 @@ const rootRouteChildren: RootRouteChildren = {
   UserIdMessageRoute: UserIdMessageRoute,
   AQrStringRoute: AQrStringRoute,
   BQrStringRoute: BQrStringRoute,
+  BookMovieMovieIdRoute: BookMovieMovieIdRoute,
   BookEventIdRoute: BookEventIdRoute,
   BusesTripIdRoute: BusesTripIdRoute,
   BusesMobileRoute: BusesMobileRoute,

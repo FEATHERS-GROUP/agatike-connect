@@ -115,6 +115,15 @@ const GET_PUBLIC_MOVIE_SCHEDULES = `
         cover_url
         synopsis
       }
+      ticket_tiers {
+        id
+        price_override
+        ticket_tier {
+          id
+          name
+          price
+        }
+      }
     }
   }
 `;
@@ -209,6 +218,74 @@ export const getPublicMovieSchedules = createServerFn({ method: "POST" })
     // Fetch workspaces to get currency
     const workspaceRes = await hasuraRequest<{ workspaces: any[] }>(`
       query GetWorkspacesForSchedules {
+        workspaces {
+          id
+          currency
+        }
+      }
+    `);
+    const workspaces = workspaceRes.workspaces || [];
+    const workspaceMap = new Map(workspaces.map(w => [w.id, w]));
+
+    return schedules.map((s: any) => {
+      const workspace = workspaceMap.get(s.cinema?.workspace_id);
+      return {
+        ...s,
+        currency: workspace?.currency || "RWF"
+      };
+    });
+  });
+
+const GET_MOVIE_SCHEDULES_BY_MOVIE_ID = `
+  query GetMovieSchedulesByMovieId($movie_id: uuid!, $cinema_id: uuid!, $date: date!) {
+    cinema_schedules(
+      where: { movie_id: { _eq: $movie_id }, cinema_id: { _eq: $cinema_id }, show_date: { _gte: $date } }
+      order_by: { show_date: asc, start_time: asc }
+    ) {
+      id
+      show_date
+      start_time
+      base_price
+      cinema {
+        id
+        name
+        city
+        cover_url
+        workspace_id
+      }
+      movie {
+        id
+        title
+        genre
+        duration_minutes
+        rating
+        cover_url
+        synopsis
+      }
+      ticket_tiers {
+        id
+        price_override
+        ticket_tier {
+          id
+          name
+          price
+        }
+      }
+    }
+  }
+`;
+
+export const getMovieSchedulesByMovieId = createServerFn({ method: "POST" })
+  .inputValidator((d: { movieId: string, cinemaId: string }) => d)
+  .handler(async (ctx) => {
+    const { movieId, cinemaId } = ctx.data;
+    const date = new Date().toISOString().split('T')[0];
+    const res = await hasuraRequest<any>(GET_MOVIE_SCHEDULES_BY_MOVIE_ID, { movie_id: movieId, cinema_id: cinemaId, date });
+    const schedules = res.cinema_schedules || [];
+
+    // Fetch workspaces to get currency
+    const workspaceRes = await hasuraRequest<{ workspaces: any[] }>(`
+      query GetWorkspacesForMovieSchedules {
         workspaces {
           id
           currency

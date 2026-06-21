@@ -78,7 +78,6 @@ function Movies() {
       if (!moviesMap.has(movieKey)) {
         moviesMap.set(movieKey, {
           id: movieKey,
-          scheduleId: s.id,
           title: m.title,
           genre: m.genre || "Drama",
           duration: `${m.duration_minutes || 120}m`,
@@ -86,14 +85,27 @@ function Movies() {
           cover: m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
           cinema: c.name,
           city: c.city,
-          showtimes: [timeStr],
           synopsis: m.synopsis || "No synopsis available.",
-          price: s.base_price || 10,
-          currency: s.currency || "RWF",
+          showtimes: [{
+            date: s.show_date,
+            time: timeStr,
+            scheduleId: s.id,
+            basePrice: s.base_price || 10,
+            currency: s.currency || "RWF",
+            tiers: s.ticket_tiers || []
+          }],
         });
       } else {
-        if (!moviesMap.get(movieKey).showtimes.includes(timeStr)) {
-          moviesMap.get(movieKey).showtimes.push(timeStr);
+        const existing = moviesMap.get(movieKey);
+        if (!existing.showtimes.find((st: any) => st.date === s.show_date && st.time === timeStr)) {
+          existing.showtimes.push({
+            date: s.show_date,
+            time: timeStr,
+            scheduleId: s.id,
+            basePrice: s.base_price || 10,
+            currency: s.currency || "RWF",
+            tiers: s.ticket_tiers || []
+          });
         }
       }
     });

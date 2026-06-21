@@ -19,6 +19,18 @@ export function DesktopMoviesView({
 }) {
   const activeMovie = movies.find((m) => m.id === active)!;
 
+  // Calculate the starting price across ALL schedules for this movie
+  const allPrices = activeMovie.showtimes.flatMap((st: any) => 
+    st.tiers.length > 0 
+      ? st.tiers.map((t: any) => t.price_override || t.ticket_tier.price)
+      : [st.basePrice]
+  );
+  const startingPrice = Math.min(...allPrices);
+
+  const uniqueDates = Array.from(new Set(activeMovie.showtimes.map((st: any) => st.date))).sort() as string[];
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const currentDate = selectedDate && uniqueDates.includes(selectedDate) ? selectedDate : uniqueDates[0];
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [active]);
@@ -79,27 +91,32 @@ export function DesktopMoviesView({
                   <MapPin className="h-4 w-4 text-primary" />
                   <span className="font-medium">{activeMovie.cinema}</span>
                 </div>
-                <div className="flex items-center gap-2 text-white/80">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  <span className="font-medium">Today</span>
-                </div>
               </div>
 
-              <div className="mb-8">
-                <h3 className="text-sm font-semibold mb-3 text-white/90">Select Showtime</h3>
-                <div className="flex gap-3">
-                  {activeMovie.showtimes.map((t: string, i: number) => (
-                    <button
-                      key={t}
-                      className={`shrink-0 rounded-xl px-6 py-3 text-sm font-bold border transition-all ${
-                        i === 0
-                          ? "bg-primary border-primary text-primary-foreground shadow-[var(--shadow-glow)]"
-                          : "bg-white/5 border-white/10 hover:border-primary/50 text-white"
-                      }`}
-                    >
-                      {t}
-                    </button>
-                  ))}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold mb-3 text-white/90">Select Date</h3>
+                <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
+                  {uniqueDates.map((d: string) => {
+                    const isSelected = d === currentDate;
+                    const dateObj = new Date(d);
+                    const today = new Date();
+                    const isToday = dateObj.toDateString() === today.toDateString();
+                    const label = isToday ? "Today" : dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", weekday: "short" });
+
+                    return (
+                      <button
+                        key={d}
+                        onClick={() => setSelectedDate(d)}
+                        className={`shrink-0 rounded-xl px-5 py-2 text-sm font-bold border transition-all ${
+                          isSelected
+                            ? "bg-primary border-primary text-primary-foreground shadow-[var(--shadow-glow)]"
+                            : "bg-white/5 border-white/10 hover:border-primary/50 text-white"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -109,9 +126,9 @@ export function DesktopMoviesView({
                   className="h-14 rounded-2xl shadow-[var(--shadow-glow)] text-base font-bold px-8"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  <Link to="/book/$eventId" params={{ eventId: activeMovie.scheduleId }}>
+                  <Link to="/book-movie/$movieId" params={{ movieId: activeMovie.id }} search={{ date: currentDate }}>
                     <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
-                    {formatCurrency(activeMovie.price || 8, activeMovie.currency)}
+                    Starting at {formatCurrency(startingPrice, activeMovie.showtimes[0]?.currency || "RWF")}
                   </Link>
                 </Button>
                 <Button
