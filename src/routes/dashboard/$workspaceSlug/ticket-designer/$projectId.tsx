@@ -38,6 +38,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getRentableVenues } from "@/api/rentable_venues";
 import { getCinemas } from "@/api/cinemas";
+import { getCinemaTicketTiers } from "@/api/cinema_ticket_tiers";
 import {
   getWorkspaceEvents,
   saveTicketProject,
@@ -236,6 +237,12 @@ function TicketDesignerPage() {
     existingProject?.cinemaId || initialCinemaId ? "cinema" : (existingProject?.venueId || initialVenueId ? "venue" : "event")
   );
 
+  const { data: cinemaTiers = [] } = useQuery({
+    queryKey: ["cinema-tiers", activeWorkspace?.id],
+    queryFn: () => getCinemaTicketTiers({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id && assignmentType === "cinema",
+  });
+
   const eventMatch = events.find((e: any) => e.id === eventId);
   const venueMatch = venues.find((v: any) => v.id === venueId);
   const cinemaMatch = cinemas.find((c: any) => c.id === cinemaId);
@@ -249,7 +256,13 @@ function TicketDesignerPage() {
           type: t.name,
           cost: t.amount,
         })) || []
-      : []; // Cinema tiers can be fetched if needed, or left empty
+      : assignmentType === "cinema"
+      ? cinemaTiers.map((t: any) => ({
+          id: t.id,
+          type: t.name,
+          cost: t.price,
+        })) || []
+      : [];
   const tourStops = Array.isArray(eventMatch?.tour_stops) ? eventMatch.tour_stops : [];
 
   const [activeTourStopIdx, setActiveTourStopIdx] = useState<number>(-1);
@@ -830,7 +843,7 @@ function TicketDesignerPage() {
                       >
                         {ticketTiers.map((t: any) => (
                           <option key={t.id} value={t.id}>
-                            {t.type} (${t.cost})
+                            {t.type} {assignmentType !== "cinema" && `(${t.cost})`}
                           </option>
                         ))}
                       </select>
@@ -1384,7 +1397,9 @@ function TicketDesignerPage() {
                         currency={tDesign.currency || dynamicDefaults.currency}
                         cover={
                           tDesign.cover ||
-                          (assignmentType === "venue"
+                          (assignmentType === "cinema"
+                            ? cinemaMatch?.cover_url
+                            : assignmentType === "venue"
                             ? venueMatch?.cover_url || venueMatch?.images?.[0]
                             : eventMatch?.cover) ||
                           ""
@@ -1423,7 +1438,9 @@ function TicketDesignerPage() {
                   currency={mergedDesign.currency || dynamicDefaults.currency}
                   cover={
                     mergedDesign.cover ||
-                    (assignmentType === "venue"
+                    (assignmentType === "cinema"
+                      ? cinemaMatch?.cover_url
+                      : assignmentType === "venue"
                       ? venueMatch?.cover_url || venueMatch?.images?.[0]
                       : eventMatch?.cover) ||
                     ""

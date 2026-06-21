@@ -1,5 +1,5 @@
 query IntrospectionQuery {
-  __type(name: "event_feedback") {
+  __type(name: "cinema_ticket_tiers") {
     fields {
       name
     }
