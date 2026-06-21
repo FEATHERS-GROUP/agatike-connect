@@ -5,6 +5,7 @@ import { getUserWorkspaces } from "@/api/workspaces";
 import { UsersTable } from "@/components/dashboard/users/UsersTable";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/users/")({
   component: UsersPage,
@@ -13,25 +14,14 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/users/")({
 function UsersPage() {
   const navigate = useNavigate();
   const { workspaceSlug } = Route.useParams();
+  const { workspaces } = useWorkspace();
 
   const { data: users = [], isLoading: loadingUsers, isError: usersError, error: usersErr } = useQuery({
     queryKey: ["workspace_users"],
     queryFn: () => getWorkspaceUsers(),
   });
 
-  const { data: workspaces = [] } = useQuery({
-    queryKey: ["organizer_workspaces"],
-    queryFn: async () => {
-      try {
-        return await getUserWorkspaces();
-      } catch (e) {
-        return [];
-      }
-    },
-    retry: false,
-  });
-
-  const isOrganizer = workspaces.length > 0;
+  const isOrganizer = workspaces && workspaces.length > 0;
 
   return (
     <div className="p-6 space-y-6">
