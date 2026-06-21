@@ -13,6 +13,7 @@ import { SpaceSidebar } from "@/components/desktop/dashboard/SpaceSidebar";
 import { CinemaSidebar } from "@/components/desktop/dashboard/CinemaSidebar";
 import { TheatresSidebar } from "@/components/desktop/dashboard/TheatresSidebar";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { usePlatformModules } from "@/hooks/usePlatformModules";
 import { useEffect } from "react";
 import { getSession } from "@/api/auth";
 
@@ -52,6 +53,7 @@ function DashboardLayout() {
   const location = useRouterState({ select: (s) => s.location });
   const navigate = useNavigate();
   const { workspaces, activeWorkspace, isLoaded, currentUser } = useWorkspace() as any;
+  const { data: platformModules = [] } = usePlatformModules();
 
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isExperienceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/experiences\/[^/]+/);
@@ -158,7 +160,31 @@ function DashboardLayout() {
         const reqMod = protectedModules[modName];
         if (!reqMod) return true; // not protected
 
+        const pMod = platformModules?.find((p: any) => {
+          const legacyIdMap: Record<string, string> = {
+            Dashboard: "dashboard",
+            Events: "events",
+            Tickets: "tickets",
+            RSVPs: "rsvps",
+            Attendees: "rsvps",
+            Scanning: "scanner",
+            "Products & Add-ons": "products&add-ons",
+            Merchandise: "merchandise",
+            "VIP Access": "vip",
+            Campaigns: "campaigns",
+            "Venue Listings": "venue_listings",
+            "Venue Designer": "venue_designer",
+            Experiences: "experiences",
+            Analytics: "analytics",
+            Users: "users",
+            Withdrawals: "withdrawals",
+            Settings: "settings",
+          };
+          return legacyIdMap[p.label] === reqMod || legacyIdMap[p.label] === reqMod.replace("_", "-");
+        });
+
         return !!(
+          (pMod && activeWorkspace.modules?.includes(pMod.id)) ||
           activeWorkspace.modules?.includes(reqMod) ||
           activeWorkspace.modules?.includes(reqMod.replace("_", "-")) ||
           activeWorkspace.modules?.includes("ALL")
@@ -167,7 +193,11 @@ function DashboardLayout() {
 
       // Enforce module-level route protection for current path
       if (!isModuleAllowedForPath(location.pathname)) {
-        navigate({ to: `/dashboard/${activeWorkspace.slug}`, replace: true });
+        if (window.history.length > 2) {
+          window.history.back();
+        } else {
+          navigate({ to: `/dashboard/${activeWorkspace.slug}`, replace: true });
+        }
         return;
       }
       
@@ -206,8 +236,12 @@ function DashboardLayout() {
               navigate({ to: "/dashboard/login", replace: true });
             }
           } else {
-            // User tried to access a protected route, redirect to root (which will redirect to first page if needed)
-            navigate({ to: `/dashboard/${activeWorkspace.slug}`, replace: true });
+            // User tried to access a protected route, redirect back if possible
+            if (window.history.length > 2) {
+              window.history.back();
+            } else {
+              navigate({ to: `/dashboard/${activeWorkspace.slug}`, replace: true });
+            }
           }
           return;
         }

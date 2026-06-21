@@ -13,7 +13,7 @@ interface WorkspaceListProps {
 }
 
 export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
-  const { workspaces, activeWorkspace, setActiveWorkspace, isLoading } = useWorkspace();
+  const { workspaces, activeWorkspace, setActiveWorkspace, isLoading, currentUser } = useWorkspace() as any;
   const navigate = useNavigate();
 
   const [modulesModalWorkspace, setModulesModalWorkspace] = useState<Workspace | null>(null);
@@ -28,13 +28,15 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
             payouts.
           </p>
         </div>
-        <Button
-          onClick={onOpenWizard}
-          className="rounded-full shadow-[var(--shadow-glow)] gap-2"
-          style={{ background: "var(--gradient-primary)" }}
-        >
-          <Plus className="h-4 w-4" /> New Workspace
-        </Button>
+        {currentUser?.role === "organizer" && (
+          <Button
+            onClick={onOpenWizard}
+            className="rounded-full shadow-[var(--shadow-glow)] gap-2"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            <Plus className="h-4 w-4" /> New Workspace
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -49,13 +51,15 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
             You haven't created a workspace yet. Create one to start managing your events, venues,
             and experiences.
           </p>
-          <Button
-            onClick={onOpenWizard}
-            className="rounded-full shadow-[var(--shadow-glow)] gap-2"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            <Plus className="h-4 w-4" /> Create Your First Workspace
-          </Button>
+          {currentUser?.role === "organizer" && (
+            <Button
+              onClick={onOpenWizard}
+              className="rounded-full shadow-[var(--shadow-glow)] gap-2"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Plus className="h-4 w-4" /> Create Your First Workspace
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -71,6 +75,7 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                 }`}
               >
                 <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                  {currentUser?.role === "organizer" && (<>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -95,6 +100,7 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                   >
                     <Settings className="h-4 w-4" />
                   </Button>
+                  </>)}
                 </div>
                 <div className="flex items-center gap-4 mb-6 pr-10">
                   <div
@@ -152,13 +158,15 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
           <LogOut className="h-4 w-4" /> Sign out
         </Button>
 
-        <Button
-          variant="outline"
-          className="rounded-full gap-2"
-          onClick={() => navigate({ to: "/dashboard/settings" })}
-        >
-          <User className="h-4 w-4" /> Organizer Profile
-        </Button>
+        {currentUser?.role === "organizer" && (
+          <Button
+            variant="outline"
+            className="rounded-full gap-2"
+            onClick={() => navigate({ to: "/dashboard/settings" })}
+          >
+            <User className="h-4 w-4" /> Organizer Profile
+          </Button>
+        )}
       </div>
 
       <WorkspaceModulesModal
