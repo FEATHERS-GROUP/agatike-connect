@@ -37,6 +37,7 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getRentableVenues } from "@/api/rentable_venues";
+import { getCinemas } from "@/api/cinemas";
 import {
   getWorkspaceEvents,
   saveTicketProject,
@@ -200,6 +201,12 @@ function TicketDesignerPage() {
     enabled: !!activeWorkspace?.id,
   });
 
+  const { data: cinemas = [] } = useQuery({
+    queryKey: ["workspace-cinemas", activeWorkspace?.id],
+    queryFn: () => getCinemas({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
   const { data: dbProject, isLoading: isProjectLoading } = useQuery({
     queryKey: ["ticket-project", projectId],
     queryFn: () => getTicketProjectById({ data: { id: projectId } } as any),
@@ -222,21 +229,27 @@ function TicketDesignerPage() {
   const [eventId, setEventId] = useState(existingProject?.eventId || initialEventId);
   const initialVenueId = searchParams.get("venueId") || "";
   const [venueId, setVenueId] = useState(existingProject?.venueId || initialVenueId);
-  const [assignmentType, setAssignmentType] = useState<"event" | "venue">(
-    existingProject?.venueId || initialVenueId ? "venue" : "event",
+  // Check if initialVenueId belongs to a cinema
+  const initialCinemaId = searchParams.get("cinemaId") || "";
+  const [cinemaId, setCinemaId] = useState(existingProject?.cinemaId || initialCinemaId);
+  const [assignmentType, setAssignmentType] = useState<"event" | "venue" | "cinema">(
+    existingProject?.cinemaId || initialCinemaId ? "cinema" : (existingProject?.venueId || initialVenueId ? "venue" : "event")
   );
 
   const eventMatch = events.find((e: any) => e.id === eventId);
   const venueMatch = venues.find((v: any) => v.id === venueId);
+  const cinemaMatch = cinemas.find((c: any) => c.id === cinemaId);
   const allTicketTiers =
     assignmentType === "event"
       ? eventMatch?.event_tickets || []
-      : venueMatch?.pricing_tiers?.map((t: any) => ({
+      : assignmentType === "venue"
+      ? venueMatch?.pricing_tiers?.map((t: any) => ({
           ...t,
           id: t.name,
           type: t.name,
           cost: t.amount,
-        })) || [];
+        })) || []
+      : []; // Cinema tiers can be fetched if needed, or left empty
   const tourStops = Array.isArray(eventMatch?.tour_stops) ? eventMatch.tour_stops : [];
 
   const [activeTourStopIdx, setActiveTourStopIdx] = useState<number>(-1);
@@ -294,7 +307,8 @@ function TicketDesignerPage() {
       setProjectName(dbProject.name || "Untitled Project");
       setEventId(dbProject.eventId || "");
       setVenueId(dbProject.venueId || "");
-      setAssignmentType(dbProject.venueId ? "venue" : "event");
+      setCinemaId(dbProject.cinemaId || "");
+      setAssignmentType(dbProject.cinemaId ? "cinema" : (dbProject.venueId ? "venue" : "event"));
       const savedOverrides = dbProject.design_overrides || {};
       setBaseDesign({
         template: migrateTemplate((dbProject.template as string) || initialTemplate),
@@ -425,12 +439,18 @@ function TicketDesignerPage() {
     title:
       assignmentType === "event"
         ? eventMatch?.title || "Event Title"
+        : assignmentType === "cinema"
+        ? cinemaMatch?.name || "Cinema Ticket"
         : venueMatch?.name || "Venue Ticket",
     subtitle:
       assignmentType === "event"
         ? activeStop?.venue
           ? `${activeStop.venue} · ${activeStop.city}${activeStop.address ? `\n${activeStop.address}` : ""}`
           : eventMatch?.category || "Event"
+        : assignmentType === "cinema"
+        ? cinemaMatch?.address
+          ? `${cinemaMatch.address}${cinemaMatch.city ? ` · ${cinemaMatch.city}` : ""}`
+          : "Cinema Location TBD"
         : venueMatch?.address
           ? `${venueMatch.address}${venueMatch.city ? ` · ${venueMatch.city}` : ""}`
           : venueMatch?.type || "Location TBD",
@@ -500,6 +520,7 @@ function TicketDesignerPage() {
       },
       eventId: assignmentType === "event" ? eventId || null : null,
       venueId: assignmentType === "venue" ? venueId || null : null,
+      cinemaId: assignmentType === "cinema" ? cinemaId || null : null,
       font: baseDesign.font,
       logoText: baseDesign.logoText,
       name: projectName,
@@ -684,6 +705,8 @@ function TicketDesignerPage() {
                           ? `event:${eventId}`
                           : assignmentType === "venue" && venueId
                             ? `venue:${venueId}`
+                            : assignmentType === "cinema" && cinemaId
+                            ? `cinema:${cinemaId}`
                             : ""
                       }
                       onChange={(e) => {
@@ -692,18 +715,26 @@ function TicketDesignerPage() {
                           setAssignmentType("event");
                           setEventId("");
                           setVenueId("");
+                          setCinemaId("");
                         } else if (val.startsWith("event:")) {
                           setAssignmentType("event");
                           setEventId(val.replace("event:", ""));
                           setVenueId("");
+                          setCinemaId("");
                         } else if (val.startsWith("venue:")) {
                           setAssignmentType("venue");
                           setVenueId(val.replace("venue:", ""));
                           setEventId("");
+                          setCinemaId("");
+                        } else if (val.startsWith("cinema:")) {
+                          setAssignmentType("cinema");
+                          setCinemaId(val.replace("cinema:", ""));
+                          setVenueId("");
+                          setEventId("");
                         }
                         setIsDirty(true);
                       }}
-                      disabled={!!dbProject?.eventId || !!dbProject?.venueId}
+                      disabled={!!dbProject?.eventId || !!dbProject?.venueId || !!dbProject?.cinemaId}
                       className="w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-secondary/20"
                     >
                       <option value="">-- No Assignment --</option>
@@ -721,6 +752,15 @@ function TicketDesignerPage() {
                           {venues.map((v: any) => (
                             <option key={v.id} value={`venue:${v.id}`}>
                               {v.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {cinemas.length > 0 && (
+                        <optgroup label="Cinemas / Theatres">
+                          {cinemas.map((c: any) => (
+                            <option key={c.id} value={`cinema:${c.id}`}>
+                              {c.name}
                             </option>
                           ))}
                         </optgroup>

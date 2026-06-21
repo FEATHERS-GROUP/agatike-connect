@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects } from "@/api/events";
 import { getRentableVenues } from "@/api/rentable_venues";
+import { getCinemas } from "@/api/cinemas";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
@@ -85,6 +86,12 @@ function TicketDesignerIndex() {
     enabled: !!activeWorkspace?.id,
   });
 
+  const { data: cinemas = [] } = useQuery({
+    queryKey: ["workspace-cinemas", activeWorkspace?.id],
+    queryFn: () => getCinemas({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
   const { data: events = [] } = useQuery({
     queryKey: ["workspace-events", activeWorkspace?.id],
     queryFn: () => getWorkspaceEvents({ data: { workspace_id: activeWorkspace?.id! } } as any),
@@ -133,13 +140,16 @@ function TicketDesignerIndex() {
 
     let eventId = null;
     let venueId = null;
+    let cinemaId = null;
     if (selectedAssignment.startsWith("event:")) eventId = selectedAssignment.replace("event:", "");
     if (selectedAssignment.startsWith("venue:")) venueId = selectedAssignment.replace("venue:", "");
+    if (selectedAssignment.startsWith("cinema:")) cinemaId = selectedAssignment.replace("cinema:", "");
 
     createMutation.mutate({
       name: newProjectName,
       eventId: eventId,
       venueId: venueId,
+      cinemaId: cinemaId,
       template: selectedTemplate,
       workspaceId: activeWorkspace?.id || "",
       updated_on: new Date().toISOString(),
@@ -247,6 +257,15 @@ function TicketDesignerIndex() {
                       ))}
                     </optgroup>
                   )}
+                  {cinemas.length > 0 && (
+                    <optgroup label="Cinemas / Theatres">
+                      {cinemas.map((c: any) => (
+                        <option key={c.id} value={`cinema:${c.id}`}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
 
@@ -292,16 +311,18 @@ function TicketDesignerIndex() {
                 const eventObj = proj.events || events.find((e: any) => e.id === proj.eventId);
                 const venueObj =
                   proj.rentable_venues || venues.find((v: any) => v.id === proj.venueId);
+                const cinemaObj = cinemas.find((c: any) => c.id === proj.cinemaId);
                 const displayTitle =
-                  eventObj?.title || venueObj?.name || proj.name || "Untitled Design";
-                const displaySubtitle = eventObj?.category || venueObj?.type || "Ticket Design";
+                  eventObj?.title || venueObj?.name || cinemaObj?.name || proj.name || "Untitled Design";
+                const displaySubtitle = eventObj?.category || venueObj?.type || (cinemaObj ? "Cinema" : "Ticket Design");
                 const palette = proj.palette || { from: "#f97316", to: "#db2777", name: "Sunset" };
                 const updatedAt = proj.updated_on || new Date().toISOString();
                 const coverUrl =
                   proj.coverImage ||
                   eventObj?.cover ||
                   venueObj?.cover_url ||
-                  venueObj?.images?.[0];
+                  venueObj?.images?.[0] ||
+                  cinemaObj?.cover_url;
 
                 return (
                   <Link
