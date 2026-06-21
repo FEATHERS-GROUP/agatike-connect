@@ -37,6 +37,7 @@ import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
+const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
 
 export function EventDetailsMobile({
   eventId,
@@ -99,12 +100,45 @@ export function EventDetailsMobile({
   const currencyCode = isMock ? ev.currency : ev.workspaces?.currency;
   const description = ev.description || ev.synopsis || "";
   const category = ev.category || ev.genre || "Event";
-  const isExperience = ev.event_type === "experience" || experienceCategories.includes(category);
+  const isExperience = ev.event_type === "experience" || ev.eventType === "experience" || category.toLowerCase() === "experience" || experienceCategories.includes(category);
   const included = isExperience
     ? Array.isArray(ev.included) && ev.included.length > 0
       ? ev.included
       : ev.tour_stops?.included || []
     : [];
+  let itinerary: any[] = [];
+  if (isExperience) {
+    if (Array.isArray(ev.itinerary) && ev.itinerary.length > 0) {
+      itinerary = ev.itinerary;
+    } else if (ev.tour_stops && Array.isArray(ev.tour_stops.itinerary) && ev.tour_stops.itinerary.length > 0) {
+      itinerary = ev.tour_stops.itinerary;
+    } else if (Array.isArray(ev.tour_stops) && ev.tour_stops[0]?.itinerary && Array.isArray(ev.tour_stops[0].itinerary) && ev.tour_stops[0].itinerary.length > 0) {
+      itinerary = ev.tour_stops[0].itinerary;
+    }
+  }
+
+  const polylinePositions: [number, number][] = itinerary
+    .filter(
+      (stop: any) =>
+        stop.lat != null &&
+        stop.lng != null &&
+        !isNaN(Number(stop.lat)) &&
+        !isNaN(Number(stop.lng)),
+    )
+    .map((stop: any) => [Number(stop.lat), Number(stop.lng)] as [number, number]);
+
+  let mapCenter: [number, number] =
+    polylinePositions.length > 0 ? polylinePositions[0] : [lat, lng];
+  let bounds: any = undefined;
+  if (polylinePositions.length > 1) {
+    const lats = polylinePositions.map((p: any) => p[0]);
+    const lngs = polylinePositions.map((p: any) => p[1]);
+    bounds = [
+      [Math.min(...lats), Math.min(...lngs)],
+      [Math.max(...lats), Math.max(...lngs)],
+    ];
+  }
+
   const attendeesCount = isMock
     ? ev.attendees || ev.spots || 0
     : (ev.event_attendees_aggregate?.aggregate?.count ?? 0);
@@ -326,34 +360,85 @@ export function EventDetailsMobile({
           </div>
         </div>
 
-        {/* Location */}
+        {/* Location or Route */}
         <div>
-          <h2 className="text-lg font-bold mb-4">Venue</h2>
-          <div className="aspect-[16/9] w-full rounded-2xl overflow-hidden bg-secondary relative z-0 border border-border/40">
-            {isClient ? (
-              <Suspense
-                fallback={
-                  <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground text-sm font-medium">
-                    Loading map...
+          <h2 className="text-lg font-bold mb-4">{isExperience ? "Route & Schedule" : "Venue"}</h2>
+          {isExperience && itinerary.length > 0 ? (
+            <div className="flex flex-col gap-6">
+              {polylinePositions.length > 0 && (
+                <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden bg-secondary relative z-0 border border-border/40">
+                  {isClient ? (
+                    <Suspense
+                      fallback={
+                        <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground text-sm font-medium">
+                          Loading map...
+                        </div>
+                      }
+                    >
+                      <ExperienceMap
+                        itinerary={itinerary}
+                        bounds={bounds}
+                        mapCenter={mapCenter}
+                        polylinePositions={polylinePositions}
+                      />
+                    </Suspense>
+                  ) : (
+                    <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground text-sm font-medium">
+                      Loading map...
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div className="space-y-0 relative before:absolute before:top-0 before:bottom-0 before:left-4 before:-ml-px before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent pt-2">
+                {itinerary.map((stop: any) => (
+                  <div key={stop.id} className="relative flex items-start group py-4">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full border-4 border-background bg-primary shadow-sm shrink-0 relative z-10">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
+                    </div>
+                    <div className="ml-3 bg-card/60 backdrop-blur w-full p-3.5 rounded-2xl border border-border/40 shadow-sm">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="font-bold text-sm">{stop.title}</h4>
+                        <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                          {stop.time}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{stop.address}</span>
+                      </div>
+                    </div>
                   </div>
-                }
-              >
-                <VenueMap
-                  lat={lat}
-                  lng={lng}
-                  venue={venue}
-                  city={city}
-                  tourStops={tourStops}
-                  selectedStopIdx={selectedStopIdx}
-                />
-              </Suspense>
-            ) : (
-              <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground text-sm font-medium">
-                <MapPin className="h-4 w-4 mr-2" /> {venue ? `${venue}, ` : ""}
-                {city}
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="aspect-[16/9] w-full rounded-2xl overflow-hidden bg-secondary relative z-0 border border-border/40">
+              {isClient ? (
+                <Suspense
+                  fallback={
+                    <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground text-sm font-medium">
+                      Loading map...
+                    </div>
+                  }
+                >
+                  <VenueMap
+                    lat={lat}
+                    lng={lng}
+                    venue={venue}
+                    city={city}
+                    tourStops={tourStops}
+                    selectedStopIdx={selectedStopIdx}
+                  />
+                </Suspense>
+              ) : (
+                <div className="h-full w-full bg-[linear-gradient(135deg,oklch(0.95_0.02_60),oklch(0.85_0.05_50))] flex items-center justify-center text-muted-foreground text-sm font-medium">
+                  <MapPin className="h-4 w-4 mr-2" /> {venue ? `${venue}, ` : ""}
+                  {city}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* About */}

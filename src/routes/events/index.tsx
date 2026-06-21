@@ -17,8 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getPublicEvents } from "@/api/events";
 
-// Stubbed mock data
-const categories: any[] = [];
+import { categories } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/events/")({
   head: () => ({
@@ -42,27 +41,19 @@ function EventCard({ event }: { event: any }) {
   // Support both DB and mock data shapes
   const isMock = !!event.organizer || !!event.host || !!event.cinema;
 
-  const date = isMock
-    ? event.date
-    : Array.isArray(event.tour_stops)
-      ? event.tour_stops[0]?.date
-      : "TBD";
-  const time = isMock
-    ? event.time || event.duration
-    : Array.isArray(event.tour_stops)
-      ? event.tour_stops[0]?.time
-      : "";
-  const venue = isMock
-    ? event.venue || event.cinema
-    : Array.isArray(event.tour_stops)
-      ? event.tour_stops[0]?.venue
-      : "";
-  const city = isMock
-    ? event.city
-    : Array.isArray(event.tour_stops)
-      ? event.tour_stops[0]?.city
-      : "";
-  const tourStopsCount = isMock ? 1 : event.tour_stops?.length || 1;
+  const getVal = (key: string) => {
+    if (isMock) return event[key];
+    if (Array.isArray(event.tour_stops)) return event.tour_stops[0]?.[key];
+    if (event.tour_stops && typeof event.tour_stops === 'object') return event.tour_stops[key];
+    return "";
+  };
+
+  const date = getVal('date') || event.event_requency?.date || "TBD";
+  const time = isMock ? (event.time || event.duration) : getVal('time');
+  const venue = getVal('venue') || getVal('venueName') || "";
+  const city = getVal('city') || "";
+  
+  const tourStopsCount = isMock ? 1 : Array.isArray(event.tour_stops) ? event.tour_stops.length : (event.tour_stops?.itinerary?.length ? event.tour_stops.itinerary.length : 1);
   const organizerName = isMock
     ? event.organizer || event.host || event.cinema
     : event.workspaces?.organizer?.name || event.workspaces?.name || "Organizer";

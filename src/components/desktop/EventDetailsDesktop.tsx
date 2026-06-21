@@ -93,7 +93,7 @@ export function EventDetailsDesktop({
     ? ev.attendees || ev.spots || 0
     : (ev.event_attendees_aggregate?.aggregate?.count ?? 0);
 
-  const isExperience = experienceCategories.includes(category);
+  const isExperience = ev.event_type === "experience" || ev.eventType === "experience" || category.toLowerCase() === "experience" || experienceCategories.includes(category);
 
   const lineup =
     Array.isArray(ev.lineup) && ev.lineup.length > 0
@@ -107,8 +107,17 @@ export function EventDetailsDesktop({
           ]
         : [];
 
-  const itinerary =
-    isExperience && Array.isArray(ev.itinerary) && ev.itinerary.length > 0 ? ev.itinerary : [];
+  let itinerary: any[] = [];
+  if (isExperience) {
+    if (Array.isArray(ev.itinerary) && ev.itinerary.length > 0) {
+      itinerary = ev.itinerary;
+    } else if (ev.tour_stops && Array.isArray(ev.tour_stops.itinerary) && ev.tour_stops.itinerary.length > 0) {
+      itinerary = ev.tour_stops.itinerary;
+    } else if (Array.isArray(ev.tour_stops) && ev.tour_stops[0]?.itinerary && Array.isArray(ev.tour_stops[0].itinerary) && ev.tour_stops[0].itinerary.length > 0) {
+      itinerary = ev.tour_stops[0].itinerary;
+    }
+  }
+
   const included = isExperience
     ? Array.isArray(ev.included) && ev.included.length > 0
       ? ev.included
@@ -116,8 +125,14 @@ export function EventDetailsDesktop({
     : [];
 
   const polylinePositions: [number, number][] = itinerary
-    .filter((stop: any) => stop.lat && stop.lng)
-    .map((stop: any) => [stop.lat, stop.lng] as [number, number]);
+    .filter(
+      (stop: any) =>
+        stop.lat != null &&
+        stop.lng != null &&
+        !isNaN(Number(stop.lat)) &&
+        !isNaN(Number(stop.lng)),
+    )
+    .map((stop: any) => [Number(stop.lat), Number(stop.lng)] as [number, number]);
 
   let mapCenter: [number, number] =
     polylinePositions.length > 0 ? polylinePositions[0] : [lat, lng];
@@ -131,8 +146,30 @@ export function EventDetailsDesktop({
     ];
   }
 
-  const schedules =
-    isExperience && Array.isArray(ev.schedules) && ev.schedules.length > 0 ? ev.schedules : [];
+  const spots = isMock
+    ? ev.spots || 0
+    : ev.event_tickets?.reduce((acc: number, t: any) => acc + parseInt(t.remaining || "0", 10), 0) || 0;
+
+  const primaryDateStr = isMock ? ev.date : (ev.event_requency?.date || date);
+
+  const schedules = isExperience
+    ? [
+        ...(primaryDateStr && primaryDateStr !== "TBD"
+          ? [
+              {
+                id: `primary-${ev.id}`,
+                date: primaryDateStr,
+                total_spots: spots,
+                spots_filled: ev.event_tickets?.reduce(
+                  (acc: number, t: any) => acc + Number(t.sold || 0),
+                  0,
+                ) || 0,
+              },
+            ]
+          : []),
+        ...(Array.isArray(ev.schedules) ? ev.schedules : []),
+      ]
+    : [];
 
   const allTicketTiers = isMock
     ? ticketTiers
@@ -316,7 +353,7 @@ export function EventDetailsDesktop({
                 <Button asChild variant="outline" size="icon" className="rounded-full">
                   <Link
                     to="/$userId/message"
-                    params={{ userId: user?.id }}
+                    params={{ userId: user?.id || "" }}
                     search={{ chatId: organizerId, eventId: ev.id }}
                   >
                     <MessageCircle className="h-4 w-4" />
@@ -544,7 +581,7 @@ export function EventDetailsDesktop({
                     )}
                   </div>
                 )}
-                <div className="space-y-0 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent pt-2">
+                <div className="space-y-0 relative before:absolute before:top-0 before:bottom-0 before:left-5 before:-ml-px before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent pt-2">
                   {itinerary.map((stop: any) => (
                     <div key={stop.id} className="relative flex items-start group py-4">
                       <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-primary shadow-sm shrink-0 relative z-10">
@@ -697,7 +734,10 @@ export function EventDetailsDesktop({
                     </p>
                     <div className="grid grid-cols-1 gap-2">
                       {schedules.map((schedule: any, idx: number) => {
-                        const isFull = schedule.spotsFilled >= schedule.totalSpots;
+                        const totalSpots = schedule.total_spots ?? schedule.totalSpots ?? 0;
+                        const spotsFilled = schedule.spots_filled ?? schedule.spotsFilled ?? 0;
+                        const dateStr = schedule.start_date || schedule.date || "TBD";
+                        const isFull = spotsFilled >= totalSpots;
                         return (
                           <button
                             key={schedule.id || idx}
@@ -716,14 +756,14 @@ export function EventDetailsDesktop({
                             }`}
                           >
                             <div className="flex items-center justify-between">
-                              <span className="font-semibold text-[13px]">{schedule.date}</span>
+                              <span className="font-semibold text-[13px]">{dateStr}</span>
                               {isFull ? (
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">
                                   Sold Out
                                 </span>
                               ) : (
                                 <span className="text-xs text-muted-foreground">
-                                  {schedule.totalSpots - (schedule.spotsFilled || 0)} spots
+                                  {totalSpots - spotsFilled} spots
                                 </span>
                               )}
                             </div>

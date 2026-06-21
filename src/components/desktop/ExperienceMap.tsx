@@ -61,9 +61,11 @@ export default function ExperienceMap({
       />
       {itinerary.map(
         (stop) =>
-          stop.lat &&
-          stop.lng && (
-            <Marker key={stop.id} position={[stop.lat, stop.lng]} icon={orangeIcon}>
+          stop.lat != null &&
+          stop.lng != null &&
+          !isNaN(Number(stop.lat)) &&
+          !isNaN(Number(stop.lng)) && (
+            <Marker key={stop.id} position={[Number(stop.lat), Number(stop.lng)]} icon={orangeIcon}>
               <Popup className="rounded-xl">
                 <p className="font-semibold">{stop.title}</p>
                 <p className="text-xs text-muted-foreground">{stop.time}</p>
