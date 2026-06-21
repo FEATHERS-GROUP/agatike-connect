@@ -7,10 +7,41 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Eye, User, Clock, Building2, Puzzle, FileText } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { removeWorkspaceUser } from "@/api/workspace_users";
+import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
+import { Route as UsersRoute } from "@/routes/dashboard/$workspaceSlug/users/index";
 
 export function UsersTable({ users, workspaces = [] }: { users: any[], workspaces?: any[] }) {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { workspaceSlug } = UsersRoute.useParams();
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      for (const id of selectedUsers) {
+        await removeWorkspaceUser({ data: { id } } as any);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workspace_users"] });
+      toast.success(`${selectedUsers.length} user(s) deleted successfully`);
+      setSelectedUsers([]);
+      setDetailsOpen(false);
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to delete users");
+    }
+  });
+
+  const handleDelete = () => {
+    if (confirm(`Are you sure you want to delete ${selectedUsers.length} user(s)?`)) {
+      deleteMutation.mutate();
+    }
+  };
 
   
   const getWorkspaceNames = (wsIds: any) => {
@@ -60,12 +91,17 @@ export function UsersTable({ users, workspaces = [] }: { users: any[], workspace
                 <Button size="sm" variant="outline" className="h-8 gap-2" onClick={() => setDetailsOpen(true)}>
                   <Eye className="h-4 w-4" /> View Details
                 </Button>
-                <Button size="sm" variant="outline" className="h-8 gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="h-8 gap-2"
+                  onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/users/${selectedUsers[0]}/edit` })}
+                >
                   <Pencil className="h-4 w-4" /> Edit
                 </Button>
               </>
             )}
-            <Button size="sm" variant="destructive" className="h-8 gap-2">
+            <Button size="sm" variant="destructive" className="h-8 gap-2" onClick={handleDelete} disabled={deleteMutation.isPending}>
               <Trash2 className="h-4 w-4" /> Delete
             </Button>
           </div>

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import { loginOrganizer, googleAuthOrganizer } from "@/api/auth";
+import { loginWorkspaceUser } from "@/api/workspace_users";
 import { useGoogleLogin } from "@react-oauth/google";
 
 export const Route = createFileRoute("/dashboard/login")({
@@ -40,16 +41,36 @@ function DashboardLoginPage() {
 
   const mutation = useMutation({
     mutationFn: async (values: LoginValues) => {
-      return await loginOrganizer({ data: values } as any);
+      let orgError = null;
+      try {
+        const res = await loginOrganizer({ data: values } as any);
+        return { ...res, redirectUrl: "/dashboard" };
+      } catch (err: any) {
+        orgError = err;
+      }
+
+      let wsError = null;
+      try {
+        const res = await loginWorkspaceUser({ data: values } as any);
+        return res; // Already contains success and redirectUrl
+      } catch (err: any) {
+        wsError = err;
+      }
+
+      // If workspace user found but not activated, bubble up that specific error
+      if (wsError && wsError.message === "Please activate your account first") {
+        throw new Error(wsError.message);
+      }
+
+      throw new Error("Invalid credentials. User not found or Organizer not found.");
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       setIsRedirecting(true);
       toast.success("Welcome back!");
       queryClient.clear();
-      // Adding a tiny delay so the toast is visible before navigating
       setTimeout(async () => {
         await router.invalidate();
-        navigate({ to: "/dashboard" });
+        navigate({ to: data.redirectUrl || "/dashboard" });
       }, 1000);
     },
     onError: (error: any) => {

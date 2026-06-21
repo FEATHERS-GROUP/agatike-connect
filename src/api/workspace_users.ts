@@ -247,7 +247,33 @@ export const loginWorkspaceUser = createServerFn({ method: "POST" }).handler(asy
     maxAge: 60 * 60 * 24 * 7,
   });
 
-  return { success: true };
+  let redirectUrl = "/dashboard";
+  
+  if (user.workspaces && !user.workspaces.includes("ALL") && user.workspaces.length > 0) {
+    const firstWorkspaceId = user.workspaces[0];
+    const wsQuery = `
+      query GetWs($id: uuid!) {
+        workspaces_by_pk(id: $id) {
+          name
+        }
+      }
+    `;
+    const wsRes = await hasuraRequest<{ workspaces_by_pk: { name: string } }>(wsQuery, { id: firstWorkspaceId });
+    if (wsRes.workspaces_by_pk) {
+      const slug = wsRes.workspaces_by_pk.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)+/g, "");
+      
+      let pagePath = "";
+      if (user.pages && !user.pages.includes("ALL") && user.pages.length > 0) {
+        pagePath = user.pages[0]; // e.g., "/events"
+      }
+      redirectUrl = `/dashboard/${slug}${pagePath}`;
+    }
+  }
+
+  return { success: true, redirectUrl };
 });
 
 export const updateWorkspaceUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
