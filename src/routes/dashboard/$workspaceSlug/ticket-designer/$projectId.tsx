@@ -54,6 +54,7 @@ import {
 } from "@/api/events";
 import { uploadFile } from "@/api/storage";
 import { toast } from "sonner";
+import { InviteContributorModal } from "@/components/dashboard/projects/InviteContributorModal";
 import { getContributorAccessLevel } from "@/api/project_contributors";
 
 function getCurrencySymbol(currency?: string) {
@@ -1503,6 +1504,13 @@ function TicketDesignerPage() {
           </div>
         </section>
       </div>
+
+      <InviteContributorModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        resourceType="ticket_project"
+        resourceId={projectId}
+      />
     </div>
   );
 }
