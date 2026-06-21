@@ -65,6 +65,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getOrganizerFollowersProfiles } from "@/api/users";
 import { getCommunityChannels, createCommunityChannel } from "@/api/community";
 import { getWorkspaceEvents, getEventAttendeesCount } from "@/api/events";
+import { getOrganizersByIds } from "@/api/organizers";
 import { uploadFile } from "@/api/storage";
 import { formatMessageDate } from "@/lib/utils";
 
@@ -145,6 +146,16 @@ function CommunityPage() {
     },
     enabled: !!activeWorkspace?.id,
   });
+
+  const { data: organizerProfiles = [] } = useQuery({
+    queryKey: ["organizerProfile", organizerId],
+    queryFn: async () => {
+      if (!organizerId) return [];
+      return await getOrganizersByIds({ data: { ids: [organizerId] } });
+    },
+    enabled: !!organizerId,
+  });
+  const currentOrganizerProfile = organizerProfiles[0];
 
   const [messageInput, setMessageInput] = useState("");
 
@@ -908,20 +919,22 @@ function CommunityPage() {
                   : null;
 
                 const senderName = msg.isMe
-                  ? activeWorkspace?.title || activeWorkspace?.name || "Me"
+                  ? currentOrganizerProfile?.name || activeWorkspace?.title || activeWorkspace?.name || "Me"
                   : senderProfile?.handle
                     ? `@${senderProfile.handle}`
                     : senderProfile?.username || "Member";
 
                 const profileStr = typeof senderProfile?.profile === "string" ? senderProfile.profile : "";
+                
+                const myAvatar = currentOrganizerProfile?.image || activeWorkspace?.logo;
                 const avatarSrc = msg.isMe
-                  ? activeWorkspace?.logo && !activeWorkspace.logo.includes("pravatar.cc") ? activeWorkspace.logo : undefined
+                  ? myAvatar && !myAvatar.includes("pravatar.cc") ? myAvatar : undefined
                   : profileStr && !profileStr.includes("pravatar.cc")
                     ? profileStr
                     : undefined;
 
                 const initials = msg.isMe 
-                  ? String(activeWorkspace?.title || activeWorkspace?.name || "M").substring(0, 1).toUpperCase()
+                  ? String(currentOrganizerProfile?.name || activeWorkspace?.title || activeWorkspace?.name || "M").substring(0, 1).toUpperCase()
                   : String(senderName || "M").substring(0, 2).toUpperCase();
 
                 const senderFlag = !msg.isMe && senderProfile?.country
