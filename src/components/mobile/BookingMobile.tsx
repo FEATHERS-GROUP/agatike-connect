@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getEventById, getWorkspaceTicketProjects, incrementTicketSold } from "@/api/events";
+import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
 import { getWorkspaceVenueProjects } from "@/api/venues";
 import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
@@ -26,6 +26,7 @@ import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { COUNTRIES } from "@/lib/countries";
 import {
   Select,
@@ -108,7 +109,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       if (savedSeats) {
         setSelectedSeats(JSON.parse(savedSeats));
       }
-    } catch {}
+    } catch { }
     setIsHydrated(true);
   }, [storageKey, eventId]);
 
@@ -257,10 +258,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   const isFormValid =
     (assignMode === "me"
       ? attendees.length > 0 &&
-        !!attendees[0].firstName &&
-        !!attendees[0].lastName &&
-        !!attendees[0].email &&
-        !!attendees[0].country
+      !!attendees[0].firstName &&
+      !!attendees[0].lastName &&
+      !!attendees[0].email &&
+      !!attendees[0].country
       : attendees.every((a) => a.firstName && a.lastName && a.email && a.country)) &&
     attendees.every((a) => {
       const projectForStop = stopsWithVenues.find((s) => s.stopIdx === a.stopIdx)?.project;
@@ -278,13 +279,13 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         const sourceAttendee =
           assignMode === "me"
             ? {
-                ...a,
-                firstName: attendees[0].firstName,
-                lastName: attendees[0].lastName,
-                email: attendees[0].email,
-                phone: attendees[0].phone,
-                country: attendees[0].country,
-              }
+              ...a,
+              firstName: attendees[0].firstName,
+              lastName: attendees[0].lastName,
+              email: attendees[0].email,
+              phone: attendees[0].phone,
+              country: attendees[0].country,
+            }
             : a;
 
         return {
@@ -323,13 +324,13 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         const sourceAttendee =
           assignMode === "me"
             ? {
-                ...a,
-                firstName: attendees[0].firstName,
-                lastName: attendees[0].lastName,
-                email: attendees[0].email,
-                phone: attendees[0].phone,
-                country: attendees[0].country,
-              }
+              ...a,
+              firstName: attendees[0].firstName,
+              lastName: attendees[0].lastName,
+              email: attendees[0].email,
+              phone: attendees[0].phone,
+              country: attendees[0].country,
+            }
             : a;
         return {
           id: returned[idx]?.id || `temp_${idx}`,
@@ -474,12 +475,54 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     }
   }, [isSuccess, navigate, eventId]);
 
-  if (!event || attendees.length === 0)
+  if (!event || attendees.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Loading cart...</p>
+      <div className="min-h-screen bg-background text-foreground pb-40 relative">
+        <div className="px-4 py-3 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-30 pt-safe-top border-b border-border/40">
+          <Skeleton className="h-6 w-6 rounded-full" />
+          <Skeleton className="h-6 w-24" />
+          <div className="w-10" />
+        </div>
+        <div className="px-4 py-6 space-y-8">
+          <div>
+            <Skeleton className="h-6 w-48 mb-4" />
+            <div className="flex gap-4 bg-card/60 rounded-3xl p-4 border border-border/40 mb-4">
+              <Skeleton className="h-24 w-20 rounded-xl" />
+              <div className="flex flex-col flex-1 py-1 space-y-2">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <Skeleton className="h-8 w-40 mb-5" />
+            <div className="p-5 rounded-3xl border border-border/60 bg-card/40 space-y-5">
+              <div className="flex items-center gap-3 pb-3 border-b border-border/60">
+                <Skeleton className="h-7 w-7 rounded-full" />
+                <Skeleton className="h-5 w-32" />
+              </div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5"><Skeleton className="h-4 w-16" /><Skeleton className="h-10 w-full" /></div>
+                  <div className="space-y-1.5"><Skeleton className="h-4 w-16" /><Skeleton className="h-10 w-full" /></div>
+                </div>
+                <div className="space-y-1.5"><Skeleton className="h-4 w-12" /><Skeleton className="h-10 w-full" /></div>
+                <div className="space-y-1.5"><Skeleton className="h-4 w-20" /><Skeleton className="h-10 w-full" /></div>
+                <div className="space-y-1.5"><Skeleton className="h-4 w-16" /><Skeleton className="h-10 w-full" /></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 z-40 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+          <div className="flex items-center justify-between mb-3 px-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-6 w-20" />
+          </div>
+          <Skeleton className="h-14 w-full rounded-2xl" />
+        </div>
       </div>
     );
+  }
 
   if (isSuccess) {
     return (
@@ -552,21 +595,19 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             <div className="flex bg-muted/50 p-1 rounded-xl mb-6 mx-1 w-fit">
               <button
                 onClick={() => setAssignMode("me")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  assignMode === "me"
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${assignMode === "me"
                     ? "bg-background shadow text-foreground"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 Assign to Me (Faster)
               </button>
               <button
                 onClick={() => setAssignMode("others")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  assignMode === "others"
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${assignMode === "others"
                     ? "bg-background shadow text-foreground"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 Assign Individually
               </button>
@@ -590,12 +631,12 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               const seatsList =
                 assignMode === "me"
                   ? attendees
-                      .filter((a) => a.tierId === attendee.tierId && a.stopIdx === attendee.stopIdx)
-                      .map((a) => formatSeatDisplay(a.seatName || a.seat, a.sectionName))
-                      .filter(Boolean)
+                    .filter((a) => a.tierId === attendee.tierId && a.stopIdx === attendee.stopIdx)
+                    .map((a) => formatSeatDisplay(a.seatName || a.seat, a.sectionName))
+                    .filter(Boolean)
                   : [
-                      formatSeatDisplay(attendee.seatName || attendee.seat, attendee.sectionName),
-                    ].filter(Boolean);
+                    formatSeatDisplay(attendee.seatName || attendee.seat, attendee.sectionName),
+                  ].filter(Boolean);
 
               return (
                 <div
@@ -779,9 +820,9 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   seat={
                     ticket.attendee.seat
                       ? formatSeatDisplay(
-                          ticket.attendee.seatName || ticket.attendee.seat,
-                          ticket.attendee.sectionName,
-                        )
+                        ticket.attendee.seatName || ticket.attendee.seat,
+                        ticket.attendee.sectionName,
+                      )
                       : `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()
                   }
                   price={

@@ -11,11 +11,13 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getWorkspaceVenueProjects } from "@/api/venues";
 import { getWorkspaceVipPrivileges } from "@/api/vip";
+import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
 import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
   Select,
@@ -508,12 +510,46 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     }
   }, [isSuccess, navigate, eventId]);
 
-  if (!event || attendees.length === 0)
+  if (!event || attendees.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Loading cart...</p>
+      <div className="min-h-screen bg-background text-foreground relative">
+        <Navbar />
+        <main className="mx-auto max-w-6xl px-6 py-12">
+          <Skeleton className="h-4 w-32 mb-8" />
+          <div className="grid lg:grid-cols-[1fr_400px] gap-12">
+            <div className="space-y-10">
+              <Skeleton className="h-10 w-80 mb-8" />
+              <div className="p-6 rounded-3xl border border-border/60 bg-card/40 space-y-6">
+                <Skeleton className="h-8 w-48 mb-2" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+                  <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+                </div>
+                <div className="space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-10 w-full" /></div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+                  <div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-10 w-full" /></div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
+                <Skeleton className="h-8 w-48 mb-6" />
+                <div className="flex gap-4 mb-6">
+                  <Skeleton className="h-24 w-20 rounded-xl" />
+                  <div className="flex flex-col space-y-2 flex-1">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                </div>
+                <Skeleton className="h-14 w-full rounded-2xl mt-8" />
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     );
+  }
 
   if (isSuccess) {
     return (

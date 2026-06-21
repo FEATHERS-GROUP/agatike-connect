@@ -65,8 +65,12 @@ export const getWalletTransactions = createServerFn({ method: "POST" }).handler(
 });
 
 const ADD_MONEY_TO_WORKSPACE_WALLET = `
-  mutation AddMoneyToWorkspaceWallet($workspace_id: uuid!, $amount: numeric!) {
-    update_wallets(where: { workspace_id: { _eq: $workspace_id } }, _inc: { amount: $amount }) {
+  mutation AddMoneyToWorkspaceWallet($workspace_id: uuid!, $amount: numeric!, $updated_at: timestamptz!) {
+    update_wallets(
+      where: { workspace_id: { _eq: $workspace_id } }, 
+      _inc: { amount: $amount },
+      _set: { updated_at: $updated_at }
+    ) {
       returning {
         id
         amount
@@ -79,6 +83,7 @@ export const addMoneyToWorkspaceWallet = async (workspace_id: string, amount: nu
   const data = await hasuraRequest<{ update_wallets: { returning: any[] } }>(ADD_MONEY_TO_WORKSPACE_WALLET, {
     workspace_id,
     amount,
+    updated_at: new Date().toISOString(),
   });
 
   return data.update_wallets?.returning?.[0] || null;

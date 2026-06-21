@@ -145,7 +145,27 @@ export const updateDatabaseWorkspace = createServerFn({ method: "POST" }).handle
   if (updateFields.address !== undefined) _set.address = updateFields.address;
   if (updateFields.city !== undefined) _set.city = updateFields.city;
   if (updateFields.country !== undefined) _set.country = updateFields.country;
-  if (updateFields.currency !== undefined) _set.currency = updateFields.currency;
+  if (updateFields.currency !== undefined) {
+    _set.currency = updateFields.currency;
+    
+    // Update Wallet Currency to match workspace
+    const updateWalletMutation = `
+      mutation UpdateWalletCurrency($workspace_id: uuid!, $currency: String!, $updated_at: timestamptz!) {
+        update_wallets(where: { workspace_id: { _eq: $workspace_id } }, _set: { currency: $currency, updated_at: $updated_at }) {
+          affected_rows
+        }
+      }
+    `;
+    try {
+      hasuraRequest(updateWalletMutation, {
+        workspace_id: id,
+        currency: updateFields.currency,
+        updated_at: new Date().toISOString(),
+      });
+    } catch(err) {
+      console.error("Failed to update wallet currency", err);
+    }
+  }
   if (updateFields.name !== undefined) _set.name = updateFields.name;
   if (updateFields.type !== undefined) _set.type = updateFields.type;
   if (updateFields.moduls !== undefined) _set.moduls = updateFields.moduls;

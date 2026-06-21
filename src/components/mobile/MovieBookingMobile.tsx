@@ -9,6 +9,7 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getMovieSchedulesByMovieId } from "@/api/cinemas";
 import { createCinemaBooking } from "@/api/cinema_bookings";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 
@@ -168,8 +169,36 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
 
   if (isLoading || !activeMovie) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Loading checkout...</p>
+      <div className="min-h-screen bg-background text-foreground pb-32">
+        <div className="sticky top-0 z-40 px-4 py-3 pt-safe-top flex items-center bg-background/80 backdrop-blur-xl border-b border-border/40">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <Skeleton className="h-6 w-24 ml-4" />
+        </div>
+        <main className="px-4 py-6 space-y-8">
+          <div className="flex gap-4">
+            <Skeleton className="h-24 w-20 rounded-xl" />
+            <div className="flex flex-col space-y-2 flex-1 pt-1">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-5 w-48" />
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
+              <Skeleton className="h-10 w-20 shrink-0 rounded-xl" />
+              <Skeleton className="h-10 w-20 shrink-0 rounded-xl" />
+              <Skeleton className="h-10 w-20 shrink-0 rounded-xl" />
+            </div>
+          </div>
+        </main>
+        <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe bg-background/80 backdrop-blur-xl border-t border-border/40 z-40">
+          <div className="flex items-center justify-between mb-3">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-6 w-24" />
+          </div>
+          <Skeleton className="h-14 w-full rounded-2xl" />
+        </div>
       </div>
     );
   }
