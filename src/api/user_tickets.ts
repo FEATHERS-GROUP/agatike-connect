@@ -116,6 +116,49 @@ const GET_USER_VENUE_BOOKINGS = `
   }
 `;
 
+const GET_USER_CINEMA_BOOKINGS = `
+  query GetUserCinemaBookings($email: String!) {
+    cinema_bookings(
+      where: {
+        email: { _eq: $email }
+      },
+      order_by: { created_at: desc }
+    ) {
+      id
+      names
+      email
+      phone
+      quantity
+      total_price
+      currency
+      payment_method
+      status
+      qrcode_number
+      created_at
+      schedule {
+        show_date
+        start_time
+        movie {
+          title
+          cover_url
+        }
+        screen {
+          name
+        }
+        cinema {
+          name
+          city
+        }
+      }
+      ticket_tier {
+        name
+        type
+        price
+      }
+    }
+  }
+`;
+
 const getMergedProjectDesign = (baseProject: any, stopIdx: number, tierId: string) => {
   if (!baseProject) return null;
   const overrides = baseProject.design_overrides?.overrides;
@@ -148,7 +191,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
   const userId = user.id || null;
   const email = user.email;
 
-  const [attendeesRes, bookingsRes] = await Promise.all([
+  const [attendeesRes, bookingsRes, cinemaRes] = await Promise.all([
     hasuraRequest<{ event_attendees: any[] }>(GET_USER_EVENT_ATTENDEES, {
       user_id: userId,
       email,
@@ -157,10 +200,14 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       user_id: userId,
       email,
     }),
+    hasuraRequest<{ cinema_bookings: any[] }>(GET_USER_CINEMA_BOOKINGS, {
+      email,
+    }),
   ]);
 
   const attendees = attendeesRes.event_attendees || [];
   const bookings = bookingsRes.venue_bookings || [];
+  const cinemaBookings = cinemaRes.cinema_bookings || [];
 
   const tickets: any[] = [];
 
@@ -348,6 +395,39 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         design,
       });
     }
+  }
+
+  // Map cinema bookings
+  for (const booking of cinemaBookings) {
+    const venueName = booking.schedule?.cinema?.name || "Cinema";
+    const city = booking.schedule?.cinema?.city || "Unknown City";
+    const coverUrl = booking.schedule?.movie?.cover_url || "/venues.png";
+
+    tickets.push({
+      id: booking.id,
+      bookingId: booking.id,
+      title: booking.schedule?.movie?.title || "Movie Ticket",
+      cover: coverUrl,
+      date: booking.schedule?.show_date ? new Intl.DateTimeFormat("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      }).format(new Date(booking.schedule.show_date)) : "TBA",
+      time: booking.schedule?.start_time ? booking.schedule.start_time.substring(0, 5) : "TBA",
+      seat: booking.names || "Guest",
+      passengerName: booking.names || user.username || "Guest",
+      passengerProfile: user.profile || null,
+      orderId: booking.qrcode_number || booking.id.substring(0, 8),
+      ticketType: booking.ticket_tier?.name || "Standard",
+      ticketCategory: "movie",
+      price: booking.total_price,
+      isVenueBooking: false,
+      status: booking.status || "Confirmed",
+      eventDate: booking.schedule?.show_date || booking.created_at,
+      venueName,
+      city,
+      design: null,
+    });
   }
 
   return tickets;
