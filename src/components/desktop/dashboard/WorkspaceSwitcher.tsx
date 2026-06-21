@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Check, ChevronsUpDown, Plus, Building2, CalendarDays, Film, Mountain } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, Building2, CalendarDays, Film, Mountain, Sun, Moon } from "lucide-react";
 import { useWorkspace, WorkspaceType } from "@/contexts/WorkspaceContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,7 @@ const typeIcons: Record<WorkspaceType, any> = {
 
 export function WorkspaceSwitcher() {
   const { workspaces, activeWorkspace, setActiveWorkspace, isLoaded } = useWorkspace();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
   if (!isLoaded || !activeWorkspace) return null;
@@ -107,6 +109,20 @@ export function WorkspaceSwitcher() {
               <span>Create Workspace</span>
             </DropdownMenuItem>
           </Link>
+          
+          <DropdownMenuSeparator className="bg-border/60" />
+          <DropdownMenuItem 
+            className="flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-foreground focus:bg-secondary"
+            onClick={(e) => {
+              e.preventDefault(); // keep the dropdown open or let it close depending on preference
+              setTheme(theme === "dark" ? "light" : "dark");
+            }}
+          >
+            <div className="flex items-center gap-2">
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+            </div>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
