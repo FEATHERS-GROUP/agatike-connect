@@ -109,7 +109,6 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
       return uuid; 
     });
 
-    allowedLegacyIds.push("dashboard", "settings");
     const allAllowedKeys = new Set([...allowedModules!, ...allowedLegacyIds]);
 
     resultWorkspaces = resultWorkspaces.map((ws: any) => {

@@ -122,66 +122,93 @@ function DashboardLayout() {
         }
       }
 
-      // Enforce module-level route protection
-      const urlModule = pathParts[3];
-      if (urlModule) {
-        const protectedModules: Record<string, string> = {
-          "events": "events",
-          "tickets": "tickets",
-          "rsvps": "rsvps",
-          "scanner": "scanner",
-          "products": "products&add-ons",
-          "merchandise": "merchandise",
-          "vip": "vip",
-          "campaigns": "campaigns",
-          "venues": "venue_listings",
-          "venue-designer": "venue_designer",
-          "experiences": "experiences",
-          "analytics": "analytics",
-          "users": "users",
-          "withdrawals": "withdrawals",
-          "page-builder": "page_builder",
-        };
+      const protectedModules: Record<string, string> = {
+        "events": "events",
+        "tickets": "tickets",
+        "rsvps": "rsvps",
+        "scanner": "scanner",
+        "products": "products&add-ons",
+        "merchandise": "merchandise",
+        "vip": "vip",
+        "campaigns": "campaigns",
+        "venues": "venue_listings",
+        "venue-designer": "venue_designer",
+        "experiences": "experiences",
+        "analytics": "analytics",
+        "users": "users",
+        "withdrawals": "withdrawals",
+        "page-builder": "page_builder",
+      };
 
-        const requiredModule = protectedModules[urlModule];
-        if (requiredModule) {
-          const allowed = 
-            activeWorkspace.modules?.includes(requiredModule) || 
-            activeWorkspace.modules?.includes(requiredModule.replace("_", "-"));
-          
-          if (!allowed && !activeWorkspace.modules?.includes("ALL")) {
-            navigate({ to: `/dashboard/${activeWorkspace.slug}`, replace: true });
-            return;
-          }
+      const isModuleAllowedForPath = (path: string) => {
+        const pathParts = path.split("/");
+        // e.g. path is "/events" -> parts are ["", "events"] -> module string is "events"
+        // e.g. path is "/dashboard/slug/events" -> parts are ["", "dashboard", "slug", "events"]
+        // We need to handle both absolute paths and subPaths.
+        // For subPaths like "/events", the module is index 1.
+        let modName = "";
+        if (path.startsWith("/dashboard/")) {
+           modName = pathParts[3];
+        } else {
+           modName = pathParts[1];
         }
+        
+        if (!modName) return true;
+        
+        const reqMod = protectedModules[modName];
+        if (!reqMod) return true; // not protected
+
+        return !!(
+          activeWorkspace.modules?.includes(reqMod) ||
+          activeWorkspace.modules?.includes(reqMod.replace("_", "-")) ||
+          activeWorkspace.modules?.includes("ALL")
+        );
+      };
+
+      // Enforce module-level route protection for current path
+      if (!isModuleAllowedForPath(location.pathname)) {
+        navigate({ to: `/dashboard/${activeWorkspace.slug}`, replace: true });
+        return;
       }
       
       // Page-level access check for workspace users
       if (currentUser && currentUser.pages && !currentUser.pages.includes("ALL")) {
         let subPath = location.pathname.substring(`/dashboard/${activeWorkspace.slug}`.length);
+        if (subPath.length > 1 && subPath.endsWith("/")) {
+          subPath = subPath.slice(0, -1);
+        }
         if (subPath === "") subPath = "/";
         
         let isAllowed = false;
-        if (subPath === "/" || subPath === "/settings") {
-          isAllowed = true;
-        } else {
-          for (const p of currentUser.pages) {
-            if (p === subPath) {
+        for (const p of currentUser.pages) {
+          if (p === subPath) {
+            isAllowed = true;
+            break;
+          }
+          if (p.includes("/:")) {
+            const base = p.split("/:")[0];
+            if (subPath.startsWith(base + "/") && subPath.split("/").length === base.split("/").length + 1) {
               isAllowed = true;
               break;
-            }
-            if (p.includes("/:")) {
-              const base = p.split("/:")[0];
-              if (subPath.startsWith(base + "/") && subPath.split("/").length === base.split("/").length + 1) {
-                isAllowed = true;
-                break;
-              }
             }
           }
         }
         
         if (!isAllowed) {
-          navigate({ to: `/dashboard/${activeWorkspace.slug}`, replace: true });
+          if (subPath === "/") {
+            // User is at root but not allowed, redirect to their first allowed page that also passes module checks
+            const validFirstPage = currentUser.pages.find((p: string) => p !== "/" && isModuleAllowedForPath(p));
+            if (validFirstPage) {
+              navigate({ to: `/dashboard/${activeWorkspace.slug}${validFirstPage}`, replace: true });
+            } else {
+              // No valid pages. Stop loop by forcing a logout or just stop navigating.
+              // For now, redirect to /dashboard/login to kick them out cleanly since they have no valid access.
+              navigate({ to: "/dashboard/login", replace: true });
+            }
+          } else {
+            // User tried to access a protected route, redirect to root (which will redirect to first page if needed)
+            navigate({ to: `/dashboard/${activeWorkspace.slug}`, replace: true });
+          }
           return;
         }
       }

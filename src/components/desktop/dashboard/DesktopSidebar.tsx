@@ -10,7 +10,7 @@ import { ExperienceBadge } from "./ExperienceBadge";
 
 export function DesktopSidebar() {
   const location = useRouterState({ select: (s) => s.location });
-  const { activeWorkspace } = useWorkspace();
+  const { activeWorkspace, currentUser } = useWorkspace();
   const [isStudioOpen, setIsStudioOpen] = useState(false);
 
   const { data: platformModules = [] } = usePlatformModules();
@@ -21,7 +21,7 @@ export function DesktopSidebar() {
   // Filter platform modules based on user's active workspace modules.
   // We maintain the order defined in the database.
   const nav = platformModules.filter((m) => {
-    if (m.mandatory) return true;
+    if (m.mandatory && currentUser?.role === "organizer") return true;
     if (userModuleIds.includes(m.id)) return true;
 
     // Fallback for legacy workspaces created before DB migration
