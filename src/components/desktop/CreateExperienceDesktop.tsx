@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { COUNTRIES } from "@/lib/countries";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -102,6 +103,7 @@ export function CreateExperienceDesktop({
     venueAddress: initialData?.venueAddress || "",
     venueLat: initialData?.venueLat || null,
     venueLng: initialData?.venueLng || null,
+    allowed_public: initialData?.allowed_public ?? true,
     published: false,
   };
 
@@ -216,6 +218,7 @@ export function CreateExperienceDesktop({
         cover: data.coverUrl || "",
         workspace_id: activeWorkspace?.id,
         event_type: "experience",
+        allowed_public: data.allowed_public,
         tour_stops: {
           country: data.country,
           city: data.city,
@@ -741,6 +744,19 @@ export function CreateExperienceDesktop({
                   )}
                 </div>
               </div>
+            </div>
+            
+            <div className="flex items-center justify-between p-5 bg-card rounded-2xl border border-border/60 shadow-sm mt-4">
+              <div className="space-y-1">
+                <Label className="text-base font-semibold">Make Experience Public</Label>
+                <p className="text-sm text-muted-foreground">
+                  If public, anyone can view and book this experience. If private, only people with the link can access it.
+                </p>
+              </div>
+              <Switch
+                checked={data.allowed_public}
+                onCheckedChange={(c) => updateField("allowed_public", c)}
+              />
             </div>
           </div>
         )}

@@ -13,6 +13,7 @@ import {
   Instagram,
   CheckCircle2,
   MessageCircle,
+  Navigation,
 } from "lucide-react";
 import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { Navbar } from "@/components/site/Navbar";
@@ -33,7 +34,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 import { checkUserAttendance, getEventAttendees } from "@/api/attendees";
 import { getEventVenueProjects } from "@/api/venues";
+import { getEventStaff } from "@/api/staff";
 import { formatCurrency } from "@/lib/currency";
+import { getDistanceFromLatLonInKm } from "@/lib/utils";
 import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
@@ -117,6 +120,24 @@ export function EventDetailsDesktop({
       itinerary = ev.tour_stops[0].itinerary;
     }
   }
+
+  const totalDistance = useMemo(() => {
+    let distance = 0;
+    const validStops = itinerary.filter(
+      (stop: any) =>
+        stop.lat != null &&
+        stop.lng != null &&
+        !isNaN(Number(stop.lat)) &&
+        !isNaN(Number(stop.lng)),
+    );
+    validStops.forEach((stop: any, i: number) => {
+      if (i > 0) {
+        const prev = validStops[i - 1];
+        distance += getDistanceFromLatLonInKm(Number(prev.lat), Number(prev.lng), Number(stop.lat), Number(stop.lng));
+      }
+    });
+    return distance.toFixed(1);
+  }, [itinerary]);
 
   const included = isExperience
     ? Array.isArray(ev.included) && ev.included.length > 0
@@ -251,6 +272,32 @@ export function EventDetailsDesktop({
     queryKey: ["public-feedback", eventId],
     queryFn: () => getEventFeedbackPublic({ data: { event_id: eventId } } as any),
   });
+
+  const { data: staffData = [] } = useQuery({
+    queryKey: ["event-staff", eventId],
+    queryFn: async () => {
+      if (isMock) return [];
+      const res = await getEventStaff({ data: { event_id: eventId } } as any);
+      return res || [];
+    },
+    enabled: !!eventId && !isMock,
+  });
+
+  const staffList = useMemo(() => {
+    if (isMock) return lineup;
+    return staffData.map((s: any) => {
+      const isUnregistered = !s.user_id && (s.first_name || s.last_name);
+      const displayName = isUnregistered
+        ? `${s.first_name || ""} ${s.last_name || ""}`.trim()
+        : `User ${s.user_id?.substring(0, 6) || "Unknown"}`;
+      return {
+        id: s.id,
+        name: displayName,
+        role: s.role,
+        avatar: s.profile_image,
+      };
+    });
+  }, [staffData, lineup, isMock]);
 
   const { data: attendeeRecord } = useQuery({
     queryKey: ["check-attendance", eventId],
@@ -489,6 +536,42 @@ export function EventDetailsDesktop({
           </div>
 
           <div>
+            <h2 className="text-xl font-semibold mb-4">{isExperience ? "Who will help" : "Lineup & Guests"}</h2>
+            {staffList.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4">
+                {staffList.map((person: any, i: number) => (
+                  <div
+                    key={person.id || i}
+                    className="flex items-center gap-3 rounded-2xl border border-border/60 p-3"
+                  >
+                    <div className="h-12 w-12 rounded-full overflow-hidden shrink-0 border border-border/60">
+                      {person.avatar || person.image ? (
+                        <img
+                          src={person.avatar || person.image}
+                          alt={person.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-secondary/50 flex items-center justify-center">
+                          <Users className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{person.name}</p>
+                      <p className="text-xs text-muted-foreground">{person.role}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-border/60 bg-card p-6 text-center">
+                <p className="text-sm text-muted-foreground">No staff or lineup announced yet.</p>
+              </div>
+            )}
+          </div>
+
+          <div>
             <h2 className="text-xl font-semibold">Merchandise & add-ons</h2>
             <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
               {activeMerch.map((m: any) => (
@@ -547,7 +630,17 @@ export function EventDetailsDesktop({
           )}
 
           <div>
-            <h2 className="text-xl font-semibold">{isExperience ? "Route & Schedule" : "Venue"}</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <h2 className="text-xl font-semibold">{isExperience ? "Route & Schedule" : "Venue"}</h2>
+              {isExperience && Number(totalDistance) > 0 && (
+                <div className="bg-primary/10 text-primary px-4 py-2 rounded-2xl flex items-center gap-2 border border-primary/20">
+                  <Navigation className="h-4 w-4" />
+                  <span className="font-semibold text-sm">
+                    {totalDistance} km total route
+                  </span>
+                </div>
+              )}
+            </div>
 
             {isExperience && itinerary.length > 0 ? (
               <div className="mt-4 flex flex-col gap-8 w-full">

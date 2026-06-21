@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Calendar,
   Clock,
@@ -14,6 +14,7 @@ import {
   Instagram,
   CheckCircle2,
   MessageCircle,
+  Navigation,
 } from "lucide-react";
 import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 import { checkUserAttendance, getEventAttendees } from "@/api/attendees";
 import { getEventVenueProjects } from "@/api/venues";
+import { getEventStaff } from "@/api/staff";
 import { formatCurrency } from "@/lib/currency";
+import { getDistanceFromLatLonInKm } from "@/lib/utils";
 import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
@@ -56,12 +59,43 @@ export function EventDetailsMobile({
     movies.find((m) => m.id === eventId) ||
     events[0];
 
+  const navigate = useNavigate();
+
   const isMock = !!ev.organizer || !!ev.host || !!ev.cinema;
+  const category = ev.category || ev.genre || "Event";
+  const isExperience = ev.event_type === "experience" || ev.eventType === "experience" || category.toLowerCase() === "experience" || experienceCategories.includes(category);
+
+  const spots = isMock
+    ? ev.spots || 0
+    : ev.event_tickets?.reduce((acc: number, t: any) => acc + parseInt(t.remaining || "0", 10), 0) || 0;
+  
+  const primaryDateStr = isMock ? ev.date : (ev.event_requency?.date || ev.date || "TBD");
+
+  const schedules = isExperience
+    ? [
+        ...(primaryDateStr && primaryDateStr !== "TBD"
+          ? [
+              {
+                id: `primary-${ev.id}`,
+                date: primaryDateStr,
+                total_spots: spots,
+                spots_filled: ev.event_tickets?.reduce(
+                  (acc: number, t: any) => acc + Number(t.sold || 0),
+                  0,
+                ) || 0,
+              },
+            ]
+          : []),
+        ...(Array.isArray(ev.schedules) ? ev.schedules : []),
+      ]
+    : [];
+
   const tourStops =
     Array.isArray(ev.tour_stops) && ev.tour_stops.length > 0
       ? ev.tour_stops
       : [{ city: ev.city, venue: ev.venue, date: ev.date, time: ev.time }];
   const [selectedStopIdx, setSelectedStopIdx] = useState(0);
+  const [hasSelectedStop, setHasSelectedStop] = useState(isExperience ? schedules.length <= 1 : tourStops.length <= 1);
   const [isTicketsExpanded, setIsTicketsExpanded] = useState(false);
 
   useEffect(() => {
@@ -99,8 +133,6 @@ export function EventDetailsMobile({
   const following = organizerId ? isFollowing(organizerId) : false;
   const currencyCode = isMock ? ev.currency : ev.workspaces?.currency;
   const description = ev.description || ev.synopsis || "";
-  const category = ev.category || ev.genre || "Event";
-  const isExperience = ev.event_type === "experience" || ev.eventType === "experience" || category.toLowerCase() === "experience" || experienceCategories.includes(category);
   const included = isExperience
     ? Array.isArray(ev.included) && ev.included.length > 0
       ? ev.included
@@ -116,6 +148,24 @@ export function EventDetailsMobile({
       itinerary = ev.tour_stops[0].itinerary;
     }
   }
+
+  const totalDistance = useMemo(() => {
+    let distance = 0;
+    const validStops = itinerary.filter(
+      (stop: any) =>
+        stop.lat != null &&
+        stop.lng != null &&
+        !isNaN(Number(stop.lat)) &&
+        !isNaN(Number(stop.lng)),
+    );
+    validStops.forEach((stop: any, i: number) => {
+      if (i > 0) {
+        const prev = validStops[i - 1];
+        distance += getDistanceFromLatLonInKm(Number(prev.lat), Number(prev.lng), Number(stop.lat), Number(stop.lng));
+      }
+    });
+    return distance.toFixed(1);
+  }, [itinerary]);
 
   const polylinePositions: [number, number][] = itinerary
     .filter(
@@ -178,7 +228,9 @@ export function EventDetailsMobile({
 
   const activeTicketTiers = allTicketTiers.filter((t: any) => {
     // Filter by tour stop
-    const rightStop = t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
+    const rightStop = isExperience
+      ? true
+      : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
     // Hide sold-out tiers
     const hasInventory = t.remaining > 0;
     // Hide expired tiers
@@ -233,6 +285,32 @@ export function EventDetailsMobile({
     queryKey: ["public-feedback", eventId],
     queryFn: () => getEventFeedbackPublic({ data: { event_id: eventId } } as any),
   });
+
+  const { data: staffData = [] } = useQuery({
+    queryKey: ["event-staff", eventId],
+    queryFn: async () => {
+      if (isMock) return [];
+      const res = await getEventStaff({ data: { event_id: eventId } } as any);
+      return res || [];
+    },
+    enabled: !!eventId && !isMock,
+  });
+
+  const staffList = useMemo(() => {
+    if (isMock) return lineup;
+    return staffData.map((s: any) => {
+      const isUnregistered = !s.user_id && (s.first_name || s.last_name);
+      const displayName = isUnregistered
+        ? `${s.first_name || ""} ${s.last_name || ""}`.trim()
+        : `User ${s.user_id?.substring(0, 6) || "Unknown"}`;
+      return {
+        id: s.id,
+        name: displayName,
+        role: s.role,
+        avatar: s.profile_image,
+      };
+    });
+  }, [staffData, lineup, isMock]);
 
   const { data: attendeeRecord } = useQuery({
     queryKey: ["check-attendance", eventId],
@@ -362,7 +440,17 @@ export function EventDetailsMobile({
 
         {/* Location or Route */}
         <div>
-          <h2 className="text-lg font-bold mb-4">{isExperience ? "Route & Schedule" : "Venue"}</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold">{isExperience ? "Route & Schedule" : "Venue"}</h2>
+            {isExperience && Number(totalDistance) > 0 && (
+              <div className="bg-primary/10 text-primary px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                <Navigation className="h-3.5 w-3.5" />
+                <span className="font-semibold text-xs">
+                  {totalDistance} km
+                </span>
+              </div>
+            )}
+          </div>
           {isExperience && itinerary.length > 0 ? (
             <div className="relative w-full rounded-2xl overflow-hidden border border-border/40 h-[500px]">
               {polylinePositions.length > 0 ? (
@@ -503,27 +591,61 @@ export function EventDetailsMobile({
           </div>
         )}
 
-        {/* Lineup & Speakers */}
-        {lineup.length > 0 && (
+        {/* Merchandise & Add-ons */}
+        {activeMerch && activeMerch.length > 0 && (
           <div>
-            <h2 className="text-lg font-bold mb-3">Lineup & Speakers</h2>
+            <h2 className="text-lg font-bold mb-3">Merchandise & Add-ons</h2>
             <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
-              {lineup.map((member: any) => (
+              {activeMerch.map((m: any) => (
+                <div
+                  key={m.id}
+                  className="snap-start shrink-0 w-[160px] overflow-hidden rounded-3xl border border-border/40 bg-card/60 backdrop-blur"
+                >
+                  <img
+                    src={m.image}
+                    alt={m.name}
+                    className="aspect-square w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="p-3">
+                    <p className="text-sm font-medium truncate">{m.name}</p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-primary">
+                        {formatCurrency(m.price, currencyCode)}
+                      </span>
+                      <Button size="sm" variant="outline" className="h-7 px-3 text-xs rounded-full">
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Lineup & Speakers */}
+        {staffList.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold mb-3">{isExperience ? "Who will help" : "Lineup & Guests"}</h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+              {staffList.map((member: any) => (
                 <div
                   key={member.id || member.name}
                   className="snap-start shrink-0 w-[140px] rounded-3xl border border-border/40 bg-card/60 p-4 text-center backdrop-blur"
                 >
-                  {member.avatarUrl ? (
+                  {member.avatarUrl || member.avatar || member.image ? (
                     <img
-                      src={member.avatarUrl}
+                      src={member.avatarUrl || member.avatar || member.image}
                       alt={member.name}
                       className="mx-auto h-16 w-16 rounded-full object-cover shadow-sm border-2 border-primary/20"
                     />
                   ) : (
                     <div
-                      className="mx-auto h-16 w-16 rounded-full shadow-sm border-2 border-primary/20"
-                      style={{ background: "var(--gradient-primary)" }}
-                    />
+                      className="mx-auto flex h-16 w-16 items-center justify-center rounded-full shadow-sm border-2 border-primary/20 bg-secondary"
+                    >
+                      <Users className="h-6 w-6 text-muted-foreground" />
+                    </div>
                   )}
                   <p className="mt-3 text-sm font-bold truncate">{member.name}</p>
                   <p className="text-xs text-muted-foreground truncate">
@@ -733,49 +855,140 @@ export function EventDetailsMobile({
             )}
           </div>
 
-          {/* Tour Stops selection as Tabs inside the bottom sheet (Visible when expanded) */}
-          {isTicketsExpanded && tourStops.length > 1 && (
+          {/* Schedule/Tour Stops selection */}
+          {isTicketsExpanded && (isExperience ? schedules.length > 1 : tourStops.length > 1) && (
             <div className="mb-4 border-t border-border/40 pt-4 animate-in slide-in-from-bottom-2 fade-in duration-200">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                Select Tour Stop
+                {isExperience ? "Select Schedule" : "Select Tour Stop"}
               </p>
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
-                {tourStops.map((stop: any, idx: number) => {
+              <div className={`flex ${hasSelectedStop ? 'gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x' : 'flex-col gap-3'}`}>
+                {(isExperience ? schedules : tourStops).map((stopOrSchedule: any, idx: number) => {
                   const isSelected = selectedStopIdx === idx;
+
+                  if (isExperience) {
+                    const totalSpots = stopOrSchedule.total_spots ?? stopOrSchedule.totalSpots ?? 0;
+                    const spotsFilled = stopOrSchedule.spots_filled ?? stopOrSchedule.spotsFilled ?? 0;
+                    const dateStr = stopOrSchedule.start_date || stopOrSchedule.date || "TBD";
+                    const isFull = spotsFilled >= totalSpots;
+
+                    if (hasSelectedStop && !isSelected) {
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => !isFull && setSelectedStopIdx(idx)}
+                          disabled={isFull}
+                          className={`relative snap-start flex flex-col items-start min-w-[160px] p-3.5 rounded-2xl border transition-all duration-300 shrink-0 text-left bg-card border-border/40 hover:border-border hover:bg-secondary/30 opacity-70 ${isFull ? 'cursor-not-allowed grayscale' : ''}`}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <span className="font-semibold text-[13px]">{dateStr}</span>
+                            {isFull ? (
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">Sold Out</span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">{totalSpots - spotsFilled} spots</span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          if (!isFull) {
+                            setSelectedStopIdx(idx);
+                            setHasSelectedStop(true);
+                          }
+                        }}
+                        disabled={isFull}
+                        className={`relative flex flex-col items-start p-4 rounded-2xl border transition-all duration-300 text-left ${
+                          isSelected && hasSelectedStop
+                            ? "bg-primary/10 border-primary shadow-[0_4px_20px_rgba(var(--primary),0.15)] ring-1 ring-primary/20 snap-start min-w-[160px] shrink-0"
+                            : "bg-card/50 border-border/60 hover:bg-card w-full"
+                        } ${isFull ? 'cursor-not-allowed opacity-60' : ''}`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className={`font-semibold text-sm ${isSelected && hasSelectedStop ? "text-foreground" : "text-foreground/90"}`}>{dateStr}</span>
+                          {isFull ? (
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">Sold Out</span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">{totalSpots - spotsFilled} spots left</span>
+                          )}
+                        </div>
+                        {isSelected && hasSelectedStop && (
+                          <div className="absolute top-4 right-4 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),1)]" />
+                        )}
+                      </button>
+                    );
+                  }
+
+                  const stop = stopOrSchedule;
+                  if (hasSelectedStop && !isSelected) {
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedStopIdx(idx)}
+                        className="relative snap-start flex flex-col items-start min-w-[160px] p-3.5 rounded-2xl border transition-all duration-300 shrink-0 text-left bg-card border-border/40 hover:border-border hover:bg-secondary/30 opacity-70"
+                      >
+                        <div className="flex items-center gap-2 mb-1 w-full">
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <span className="text-sm font-bold truncate text-foreground/80">
+                            {stop.venue || stop.city || `Stop ${idx + 1}`}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-0.5 mt-1">
+                          <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                            <Calendar className="h-3 w-3 shrink-0" />
+                            {stop.date || "TBD"}
+                          </span>
+                          {stop.time && (
+                            <span className="text-[10px] font-medium text-muted-foreground/80 flex items-center gap-1.5 ml-0.5">
+                              <Clock className="h-2.5 w-2.5 shrink-0" />
+                              {stop.time}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  }
+
                   return (
                     <button
                       key={idx}
-                      onClick={() => setSelectedStopIdx(idx)}
-                      className={`relative snap-start flex flex-col items-start min-w-[160px] p-3.5 rounded-2xl border transition-all duration-300 shrink-0 text-left ${
-                        isSelected
-                          ? "bg-primary/10 border-primary shadow-[0_4px_20px_rgba(var(--primary),0.15)] ring-1 ring-primary/20"
-                          : "bg-card border-border/40 hover:border-border hover:bg-secondary/30"
+                      onClick={() => {
+                        setSelectedStopIdx(idx);
+                        setHasSelectedStop(true);
+                      }}
+                      className={`relative flex flex-col items-start p-4 rounded-2xl border transition-all duration-300 text-left ${
+                        isSelected && hasSelectedStop
+                          ? "bg-primary/10 border-primary shadow-[0_4px_20px_rgba(var(--primary),0.15)] ring-1 ring-primary/20 snap-start min-w-[160px] shrink-0"
+                          : "bg-card/50 border-border/60 hover:bg-card w-full"
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1 w-full">
                         <MapPin
-                          className={`h-3.5 w-3.5 shrink-0 ${isSelected ? "text-primary" : "text-muted-foreground"}`}
+                          className={`h-4 w-4 shrink-0 ${isSelected && hasSelectedStop ? "text-primary" : "text-muted-foreground"}`}
                         />
                         <span
-                          className={`text-sm font-bold truncate ${isSelected ? "text-foreground" : "text-foreground/80"}`}
+                          className={`text-sm font-bold ${isSelected && hasSelectedStop ? "text-foreground" : "text-foreground/90"}`}
                         >
                           {stop.venue || stop.city || `Stop ${idx + 1}`}
                         </span>
                       </div>
-                      <div className="flex flex-col gap-0.5 mt-1">
+                      <div className="flex items-center gap-4 mt-2">
                         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                          <Calendar className="h-3 w-3 shrink-0" />
+                          <Calendar className="h-3.5 w-3.5 shrink-0" />
                           {stop.date || "TBD"}
                         </span>
                         {stop.time && (
-                          <span className="text-[10px] font-medium text-muted-foreground/80 flex items-center gap-1.5 ml-0.5">
-                            <Clock className="h-2.5 w-2.5 shrink-0" />
+                          <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                            <Clock className="h-3.5 w-3.5 shrink-0" />
                             {stop.time}
                           </span>
                         )}
                       </div>
-                      {isSelected && (
-                        <div className="absolute top-3.5 right-3.5 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),1)]" />
+                      {isSelected && hasSelectedStop && (
+                        <div className="absolute top-4 right-4 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),1)]" />
                       )}
                     </button>
                   );
@@ -785,7 +998,7 @@ export function EventDetailsMobile({
           )}
 
           {/* Tickets List */}
-          {isTicketsExpanded && (
+          {isTicketsExpanded && hasSelectedStop && (
             <div className="max-h-[35vh] overflow-y-auto space-y-2.5 pr-1 border-t border-border/40 pt-3 mb-4 scrollbar-hide animate-in slide-in-from-bottom-2 fade-in duration-200">
               {activeTicketTiers.map((t: any) => {
                 const cartKey = `${selectedStopIdx}_${t.id}`;
@@ -860,7 +1073,7 @@ export function EventDetailsMobile({
           )}
 
           {/* If minimized, show exactly one ticket option */}
-          {!isTicketsExpanded && activeTicketTiers.length > 0 && (
+          {!isTicketsExpanded && hasSelectedStop && activeTicketTiers.length > 0 && (
             <div className="mb-4 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
               {activeTicketTiers.slice(0, 1).map((t: any) => {
                 const cartKey = `${selectedStopIdx}_${t.id}`;
@@ -944,29 +1157,34 @@ export function EventDetailsMobile({
               </span>
             </div>
             <Button
-              asChild
               className="flex-1 h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] tracking-wide"
               style={{
                 background:
                   total === 0 && totalTickets > 0 ? "var(--foreground)" : "var(--gradient-primary)",
-                opacity: totalTickets === 0 ? 0.5 : 1,
-                pointerEvents: totalTickets === 0 ? "none" : "auto",
+                opacity: totalTickets === 0 && hasSelectedStop ? 0.5 : 1,
+                pointerEvents: (totalTickets === 0 && hasSelectedStop) ? "none" : "auto",
               }}
               onClick={() => {
-                localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
-                localStorage.setItem(
-                  `event_checkout_seats_${ev.id}`,
-                  JSON.stringify(selectedSeatsObj),
-                );
+                if (!hasSelectedStop) {
+                  setIsTicketsExpanded(true);
+                  return;
+                }
+                if (totalTickets > 0) {
+                  localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
+                  localStorage.setItem(
+                    `event_checkout_seats_${ev.id}`,
+                    JSON.stringify(selectedSeatsObj),
+                  );
+                  navigate({
+                    to: "/book/$eventId",
+                    params: { eventId: ev.id },
+                  });
+                }
               }}
             >
-              <Link
-                to="/book/$eventId"
-                params={{ eventId: ev.id }}
-                className="w-full block text-center leading-[48px]"
-              >
-                {total === 0 && totalTickets > 0 ? "Register for Free" : "Get Tickets"}
-              </Link>
+              <span className="w-full block text-center leading-[48px]">
+                {!hasSelectedStop ? "Select Date" : (total === 0 && totalTickets > 0 ? "Register for Free" : "Get Tickets")}
+              </span>
             </Button>
           </div>
         </div>

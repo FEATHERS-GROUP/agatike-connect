@@ -23,10 +23,11 @@ import { formatCurrency } from "@/lib/currency";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useMemo, useState, useEffect, lazy, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getEventById, createEventSchedule } from "@/api/events";
+import { getEventById, createEventSchedule, updateEvent } from "@/api/events";
 import { getEventStaff } from "@/api/staff";
 import { getEventFeedback } from "@/api/feedback";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -301,9 +302,26 @@ function DashboardExperienceDetails() {
     };
   }, [experience]);
 
-  if (isLoading) {
+  const togglePublicMutation = useMutation({
+    mutationFn: async (newValue: boolean) => {
+      const payload = {
+        id: experienceId,
+        allowed_public: newValue,
+      };
+      return await updateEvent({ data: payload } as any);
+    },
+    onSuccess: (data, variables) => {
+      toast.success(variables ? "Experience is now public!" : "Experience is now private.");
+      queryClient.invalidateQueries({ queryKey: ["event", experienceId] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to update visibility");
+    },
+  });
+
+  if (isLoading || !experience) {
     return (
-      <div className="flex justify-center items-center h-[50vh]">
+      <div className="flex h-[50vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -357,7 +375,18 @@ function DashboardExperienceDetails() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight truncate">{experience.title}</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 px-4 py-2 bg-secondary/50 rounded-full border border-border/50">
+            <Label htmlFor="public-toggle" className="text-sm font-medium cursor-pointer">
+              Public
+            </Label>
+            <Switch
+              id="public-toggle"
+              checked={rawEvent?.allowed_public || false}
+              onCheckedChange={(checked) => togglePublicMutation.mutate(checked)}
+              disabled={togglePublicMutation.isPending}
+            />
+          </div>
           <Button variant="outline" className="rounded-full shadow-sm hidden md:flex">
             <Share2 className="mr-2 h-4 w-4" /> Share
           </Button>
