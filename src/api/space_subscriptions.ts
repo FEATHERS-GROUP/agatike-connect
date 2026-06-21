@@ -125,6 +125,8 @@ export const createSpaceSubscription = createServerFn({ method: "POST" })
       }
     }
 
+    let result = null;
+
     if (existingSubscriptionId) {
       const updateMutation = `
       mutation UpdateSpaceSubscription(
@@ -183,7 +185,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" })
         updateMutation,
         updateVariables,
       );
-      return data.update_space_subscriptions_by_pk;
+      result = data.update_space_subscriptions_by_pk;
     } else {
       const insertMutation = `
       mutation CreateSpaceSubscription(
@@ -245,8 +247,27 @@ export const createSpaceSubscription = createServerFn({ method: "POST" })
         insertMutation,
         insertVariables,
       );
-      return data.insert_space_subscriptions_one;
+      result = data.insert_space_subscriptions_one;
     }
+
+    if (parseFloat(price || "0") > 0) {
+      try {
+        const spaceRes = await hasuraRequest<{ spaces_by_pk: { workspace_id: string } }>(
+          `query GetSpaceWorkspace($id: uuid!) { spaces_by_pk(id: $id) { workspace_id } }`,
+          { id: space_id }
+        );
+        const workspace_id = spaceRes?.spaces_by_pk?.workspace_id;
+        
+        if (workspace_id) {
+          const { addMoneyToWorkspaceWallet } = await import("./wallet");
+          await addMoneyToWorkspaceWallet(workspace_id, parseFloat(price));
+        }
+      } catch (e) {
+        console.error("Failed to update wallet for space subscription:", e);
+      }
+    }
+
+    return result;
   });
 
 export const getUserSubscriptions = createServerFn({ method: "POST" })

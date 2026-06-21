@@ -1,4 +1,4 @@
-import { Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, Lock, MapPin, Calendar, CheckCircle2, Ticket } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
@@ -11,13 +11,13 @@ import { getMovieSchedulesByMovieId } from "@/api/cinemas";
 import { createCinemaBooking } from "@/api/cinema_bookings";
 import { toast } from "sonner";
 import { PaymentModal } from "@/components/shared/PaymentModal";
-import { Route } from "@/routes/book-movie/$movieId";
+
 
 export function MovieBookingMobile({ movieId }: { movieId: string }) {
   const navigate = useNavigate();
   const router = useRouter();
   const { user } = useUserAuth();
-  const { date: searchDate } = Route.useSearch();
+  const { date: searchDate } = useSearch({ from: '/book-movie/$movieId' }) as any;
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);

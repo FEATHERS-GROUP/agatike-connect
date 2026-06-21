@@ -231,5 +231,21 @@ export const createCinemaBooking = createServerFn({ method: "POST" })
       },
     );
     
+    if (object.status === "Confirmed" && parseFloat(object.total_price || "0") > 0) {
+      try {
+        const cinemaRes = await hasuraRequest<{ cinemas_by_pk: { workspace_id: string } }>(
+          `query GetCinemaWorkspace($id: uuid!) { cinemas_by_pk(id: $id) { workspace_id } }`,
+          { id: object.cinema_id }
+        );
+        const workspace_id = cinemaRes?.cinemas_by_pk?.workspace_id;
+        if (workspace_id) {
+          const { addMoneyToWorkspaceWallet } = await import("./wallet");
+          await addMoneyToWorkspaceWallet(workspace_id, parseFloat(object.total_price));
+        }
+      } catch (e) {
+        console.error("Failed to update wallet for cinema booking:", e);
+      }
+    }
+
     return res.insert_cinema_bookings_one;
   });

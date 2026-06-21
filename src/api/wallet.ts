@@ -63,3 +63,23 @@ export const getWalletTransactions = createServerFn({ method: "POST" }).handler(
 
   return data.wallet_transactions || [];
 });
+
+const ADD_MONEY_TO_WORKSPACE_WALLET = `
+  mutation AddMoneyToWorkspaceWallet($workspace_id: uuid!, $amount: numeric!) {
+    update_wallets(where: { workspace_id: { _eq: $workspace_id } }, _inc: { amount: $amount }) {
+      returning {
+        id
+        amount
+      }
+    }
+  }
+`;
+
+export const addMoneyToWorkspaceWallet = async (workspace_id: string, amount: number) => {
+  const data = await hasuraRequest<{ update_wallets: { returning: any[] } }>(ADD_MONEY_TO_WORKSPACE_WALLET, {
+    workspace_id,
+    amount,
+  });
+
+  return data.update_wallets?.returning?.[0] || null;
+};

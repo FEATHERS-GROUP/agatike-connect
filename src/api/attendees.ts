@@ -107,6 +107,8 @@ export const addEventAttendees = createServerFn({ method: "POST" }).handler(asyn
           id
           sold
           remaining
+          cost
+          event_id
         }
       }
     `;
@@ -155,7 +157,39 @@ export const addEventAttendees = createServerFn({ method: "POST" }).handler(asyn
 
     mutationStr += `\n}`;
 
-    return hasuraRequest(mutationStr, { objects });
+    let totalCost = 0;
+    let eventId = null;
+    for (const tid of ticketIds) {
+      const dbTier = dbTickets.find((t: any) => t.id === tid);
+      if (dbTier) {
+        totalCost += (parseFloat(dbTier.cost || "0") * qtyByTier[tid]);
+        eventId = dbTier.event_id;
+      }
+    }
+
+    const res = await hasuraRequest(mutationStr, { objects });
+
+    if (totalCost > 0 && eventId) {
+      try {
+        const GET_EVENT_WORKSPACE = `
+          query GetEventWorkspace($id: uuid!) {
+            events_by_pk(id: $id) {
+              workspace_id
+            }
+          }
+        `;
+        const wsData = await hasuraRequest<{ events_by_pk: { workspace_id: string } }>(GET_EVENT_WORKSPACE, { id: eventId });
+        const workspace_id = wsData?.events_by_pk?.workspace_id;
+        if (workspace_id) {
+          const { addMoneyToWorkspaceWallet } = await import("./wallet");
+          await addMoneyToWorkspaceWallet(workspace_id, totalCost);
+        }
+      } catch (e) {
+        console.error("Failed to update wallet for event tickets:", e);
+      }
+    }
+
+    return res;
   }
 
   // Fallback for "ga" or free events without specific DB ticket ids

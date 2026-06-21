@@ -119,6 +119,15 @@ export const createVenueBooking = createServerFn({ method: "POST" })
       },
     });
 
+    if (payment_status === "Paid" && parseFloat(amount || "0") > 0 && workspace_id) {
+      try {
+        const { addMoneyToWorkspaceWallet } = await import("./wallet");
+        await addMoneyToWorkspaceWallet(workspace_id, parseFloat(amount));
+      } catch (e) {
+        console.error("Failed to update wallet for venue booking:", e);
+      }
+    }
+
     return res.insert_venue_bookings_one;
   });
 
