@@ -95,6 +95,12 @@ export function WorkspaceSwitcher() {
             );
           })}
           <DropdownMenuSeparator className="bg-border/60" />
+          <Link to="/dashboard/workspaces">
+            <DropdownMenuItem className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-foreground focus:bg-secondary">
+              <Building2 className="h-4 w-4" />
+              <span>My Workspaces</span>
+            </DropdownMenuItem>
+          </Link>
           <Link to="/dashboard/create-organizer">
             <DropdownMenuItem className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-primary focus:bg-primary/10 focus:text-primary">
               <Plus className="h-4 w-4" />

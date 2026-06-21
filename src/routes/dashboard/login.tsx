@@ -106,7 +106,7 @@ function DashboardLoginPage() {
   });
 
   return (
-    <div className="relative h-[100dvh] w-full bg-[#0a0a0a] text-white overflow-hidden flex items-center justify-center px-4">
+    <div className="relative min-h-[100dvh] w-full bg-[#0a0a0a] text-white overflow-x-hidden overflow-y-auto flex items-center justify-center px-4 py-12 sm:py-24">
       {/* Immersive Background Glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] opacity-60 mix-blend-screen" />
