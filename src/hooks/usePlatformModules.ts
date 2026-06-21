@@ -31,6 +31,7 @@ const CANONICAL_ORDER: string[] = [
   "Page Builder",
   "Experiences",
   "Analytics",
+  "Users",
   "Withdrawals",
   "Settings",
 ];

@@ -78,7 +78,8 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-movie/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-ticket-tier/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\/create-schedule/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/);
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/);
 
   const isDesigner =
     isDesigningVenue ||
@@ -88,7 +89,8 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-movie/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-ticket-tier/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\/create-schedule/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/);
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -98,7 +100,8 @@ function DashboardLayout() {
       location.pathname === "/dashboard/login" ||
       location.pathname === "/dashboard/create-organizer" ||
       location.pathname === "/dashboard/settings" ||
-      location.pathname === "/dashboard/workspaces"
+      location.pathname === "/dashboard/workspaces" ||
+      location.pathname === "/dashboard/workspace-user/activate"
     )
       return;
 
@@ -107,19 +110,14 @@ function DashboardLayout() {
     } else if (activeWorkspace && location.pathname === "/dashboard") {
       navigate({ to: `/dashboard/${activeWorkspace.slug}` });
     } else if (activeWorkspace) {
-      // Check if current URL slug matches active workspace slug.
-      // E.g. /dashboard/kigali-arenas/events
       const pathParts = location.pathname.split("/");
       const urlSlug = pathParts[2];
 
-      if (urlSlug && urlSlug !== "workspaces" && urlSlug !== activeWorkspace.slug) {
-        // If URL slug doesn't match active workspace, update active workspace to match URL
+      if (urlSlug && urlSlug !== "workspaces" && urlSlug !== "workspace-user" && urlSlug !== activeWorkspace.slug) {
         const workspaceFromUrl = workspaces.find((w) => w.slug === urlSlug);
         if (workspaceFromUrl) {
-          // Temporarily disable this switch to avoid infinite loops with useWorkspace setActiveWorkspace
           // setActiveWorkspace(workspaceFromUrl);
         } else {
-          // If URL slug is invalid, redirect to active workspace
           navigate({ to: `/dashboard/${activeWorkspace.slug}` });
         }
       }

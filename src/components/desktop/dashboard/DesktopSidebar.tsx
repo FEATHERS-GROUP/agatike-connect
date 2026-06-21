@@ -40,6 +40,7 @@ export function DesktopSidebar() {
       "Venue Designer": "venue_designer",
       Experiences: "experiences",
       Analytics: "analytics",
+      Users: "users",
       Withdrawals: "withdrawals",
       Settings: "settings",
     };
