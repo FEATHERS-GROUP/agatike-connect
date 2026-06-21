@@ -28,6 +28,7 @@ export type Workspace = {
 
 interface WorkspaceContextType {
   workspaces: Workspace[];
+  currentUser: any;
   activeWorkspace: Workspace | null;
   setActiveWorkspace: (workspace: Workspace) => void;
   createWorkspace: (workspace: Partial<Workspace>) => Promise<Workspace>;
@@ -50,8 +51,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   } = useQuery({
     queryKey: ["workspaces"],
     queryFn: async () => {
-      const data = await getUserWorkspaces();
-      return data.map((w: any) => ({
+      const { workspaces: data, currentUser } = await getUserWorkspaces();
+      const mappedWorkspaces = data.map((w: any) => ({
         ...w,
         slug: w.name
           .toLowerCase()
@@ -65,11 +66,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
           : ["dashboard", "settings"],
         currency: w.currency || "RWF",
       })) as Workspace[];
+      return { workspaces: mappedWorkspaces, currentUser };
     },
     retry: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
-  const workspaces = workspacesData || [];
+  const workspaces = workspacesData?.workspaces || [];
+  const currentUser = workspacesData?.currentUser || null;
 
   useEffect(() => {
     if (isSuccess && workspaces.length > 0) {
@@ -146,6 +151,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     <WorkspaceContext.Provider
       value={{
         workspaces,
+        currentUser,
         activeWorkspace: activeWorkspaceState,
         setActiveWorkspace,
         createWorkspace,

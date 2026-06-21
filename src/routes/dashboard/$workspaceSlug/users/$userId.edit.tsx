@@ -131,7 +131,7 @@ function EditUserPage() {
     queryKey: ["organizer_workspaces"],
     queryFn: async () => {
       try {
-        return await getUserWorkspaces();
+        return (await getUserWorkspaces()).workspaces;
       } catch {
         return [];
       }

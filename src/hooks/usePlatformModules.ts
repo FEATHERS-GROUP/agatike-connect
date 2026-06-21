@@ -70,5 +70,7 @@ export function usePlatformModules() {
 
       return mapped;
     },
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours for platform modules
+    refetchOnWindowFocus: false,
   });
 }

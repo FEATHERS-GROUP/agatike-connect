@@ -51,7 +51,7 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardLayout() {
   const location = useRouterState({ select: (s) => s.location });
   const navigate = useNavigate();
-  const { workspaces, activeWorkspace, isLoaded } = useWorkspace();
+  const { workspaces, activeWorkspace, isLoaded, currentUser } = useWorkspace() as any;
 
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isExperienceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/experiences\/[^/]+/);
@@ -121,8 +121,72 @@ function DashboardLayout() {
           navigate({ to: `/dashboard/${activeWorkspace.slug}` });
         }
       }
+
+      // Enforce module-level route protection
+      const urlModule = pathParts[3];
+      if (urlModule) {
+        const protectedModules: Record<string, string> = {
+          "events": "events",
+          "tickets": "tickets",
+          "rsvps": "rsvps",
+          "scanner": "scanner",
+          "products": "products&add-ons",
+          "merchandise": "merchandise",
+          "vip": "vip",
+          "campaigns": "campaigns",
+          "venues": "venue_listings",
+          "venue-designer": "venue_designer",
+          "experiences": "experiences",
+          "analytics": "analytics",
+          "users": "users",
+          "withdrawals": "withdrawals",
+          "page-builder": "page_builder",
+        };
+
+        const requiredModule = protectedModules[urlModule];
+        if (requiredModule) {
+          const allowed = 
+            activeWorkspace.modules?.includes(requiredModule) || 
+            activeWorkspace.modules?.includes(requiredModule.replace("_", "-"));
+          
+          if (!allowed && !activeWorkspace.modules?.includes("ALL")) {
+            navigate({ to: `/dashboard/${activeWorkspace.slug}`, replace: true });
+            return;
+          }
+        }
+      }
+      
+      // Page-level access check for workspace users
+      if (currentUser && currentUser.pages && !currentUser.pages.includes("ALL")) {
+        let subPath = location.pathname.substring(`/dashboard/${activeWorkspace.slug}`.length);
+        if (subPath === "") subPath = "/";
+        
+        let isAllowed = false;
+        if (subPath === "/" || subPath === "/settings") {
+          isAllowed = true;
+        } else {
+          for (const p of currentUser.pages) {
+            if (p === subPath) {
+              isAllowed = true;
+              break;
+            }
+            if (p.includes("/:")) {
+              const base = p.split("/:")[0];
+              if (subPath.startsWith(base + "/") && subPath.split("/").length === base.split("/").length + 1) {
+                isAllowed = true;
+                break;
+              }
+            }
+          }
+        }
+        
+        if (!isAllowed) {
+          navigate({ to: `/dashboard/${activeWorkspace.slug}`, replace: true });
+          return;
+        }
+      }
     }
-  }, [isLoaded, workspaces, activeWorkspace, location.pathname, navigate]);
+  }, [isLoaded, workspaces, activeWorkspace, location.pathname, navigate, currentUser]);
 
   return (
     <>
