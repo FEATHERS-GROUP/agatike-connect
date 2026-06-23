@@ -29,8 +29,14 @@ const movieStories: any[] = [
     name: "Century Cinemax",
     avatar: "https://ui-avatars.com/api/?name=Century+Cinemax&background=000&color=fff",
     items: [
-      { id: "cs1i1", image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg" },
-      { id: "cs1i2", image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg" },
+      {
+        id: "cs1i1",
+        image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg",
+      },
+      {
+        id: "cs1i2",
+        image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg",
+      },
     ],
   },
   {
@@ -38,8 +44,15 @@ const movieStories: any[] = [
     name: "Silverbird Cinemas",
     avatar: "https://ui-avatars.com/api/?name=Silverbird+Cinemas&background=1D4ED8&color=fff",
     items: [
-      { id: "cs2i1", image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg" },
-      { id: "cs2i2", image: "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg" },
+      {
+        id: "cs2i1",
+        image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg",
+      },
+      {
+        id: "cs2i2",
+        image:
+          "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg",
+      },
     ],
   },
   {
@@ -47,8 +60,14 @@ const movieStories: any[] = [
     name: "Ster-Kinekor",
     avatar: "https://ui-avatars.com/api/?name=Ster-Kinekor&background=E11D48&color=fff",
     items: [
-      { id: "cs3i1", image: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&fit=crop" },
-      { id: "cs3i2", image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg" },
+      {
+        id: "cs3i1",
+        image: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&fit=crop",
+      },
+      {
+        id: "cs3i2",
+        image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg",
+      },
     ],
   },
   {
@@ -56,8 +75,15 @@ const movieStories: any[] = [
     name: "Canal Olympia",
     avatar: "https://ui-avatars.com/api/?name=Canal+Olympia&background=047857&color=fff",
     items: [
-      { id: "cs4i1", image: "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg" },
-      { id: "cs4i2", image: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&fit=crop" },
+      {
+        id: "cs4i1",
+        image:
+          "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg",
+      },
+      {
+        id: "cs4i2",
+        image: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&fit=crop",
+      },
     ],
   },
   {
@@ -65,8 +91,14 @@ const movieStories: any[] = [
     name: "Nu Metro",
     avatar: "https://ui-avatars.com/api/?name=Nu+Metro&background=7C3AED&color=fff",
     items: [
-      { id: "cs5i1", image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg" },
-      { id: "cs5i2", image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg" },
+      {
+        id: "cs5i1",
+        image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg",
+      },
+      {
+        id: "cs5i2",
+        image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg",
+      },
     ],
   },
 ];
@@ -136,7 +168,10 @@ export function HomeDesktop() {
         cinemasMap.set(c.id, {
           id: c.id,
           name: c.name,
-          avatar: c.logo_url || c.cover_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random`,
+          avatar:
+            c.logo_url ||
+            c.cover_url ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random`,
           items: [],
           _movieIds: new Set(),
         });
@@ -146,15 +181,16 @@ export function HomeDesktop() {
         cinemaObj._movieIds.add(m.id);
         cinemaObj.items.push({
           id: `${c.id}-${m.id}`,
-          image: m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800",
+          image:
+            m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800",
         });
       }
     });
-    
+
     const result = Array.from(cinemasMap.values());
-    
+
     // Fill the rest with mock data to make it look populated
-    const mockToAdd = movieStories.filter(mock => !result.some(r => r.name === mock.name));
+    const mockToAdd = movieStories.filter((mock) => !result.some((r) => r.name === mock.name));
     return [...result, ...mockToAdd].slice(0, 6);
   }, [schedules]);
 
@@ -173,15 +209,16 @@ export function HomeDesktop() {
           genre: m.genre || "Drama",
           duration: m.duration ? `${m.duration}m` : "2h",
           rating: m.rating || "PG",
-          cover: m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
+          cover:
+            m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
           cinema: c.name,
         });
       }
     });
     const result = Array.from(moviesMap.values());
-    
+
     // Fill the rest with mock data
-    const mockToAdd = MOCK_MOVIES.filter(mock => !result.some(r => r.title === mock.title));
+    const mockToAdd = MOCK_MOVIES.filter((mock) => !result.some((r) => r.title === mock.title));
     return [...result, ...mockToAdd].slice(0, 4); // Grid shows 4
   }, [schedules]);
 
@@ -295,7 +332,12 @@ export function HomeDesktop() {
         </div>
         <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
           {dynamicMovies.map((m: any) => (
-            <Link key={m.id} to="/book-movie/$movieId" params={{ movieId: m.id }} className="group block">
+            <Link
+              key={m.id}
+              to="/book-movie/$movieId"
+              params={{ movieId: m.id }}
+              className="group block"
+            >
               <div className="relative aspect-[2/3] overflow-hidden rounded-2xl">
                 <img
                   src={m.cover}
@@ -340,7 +382,10 @@ export function HomeDesktop() {
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {list.slice(0, 4).map((org) => {
               const followerCount = org.followers ?? 0;
-              const avatar = org.avatar || org.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(org.name)}&background=random`;
+              const avatar =
+                org.avatar ||
+                org.image ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(org.name)}&background=random`;
               return (
                 <div
                   key={org.id}

@@ -18,12 +18,12 @@ const movies = [
   "Joker Folie",
   "The Fall Guy",
   "Civil War",
-  "Kung Fu Panda 4"
+  "Kung Fu Panda 4",
 ];
 
 async function getPoster(title) {
   try {
-    const query = encodeURIComponent(title.toLowerCase().replace(/ /g, '_'));
+    const query = encodeURIComponent(title.toLowerCase().replace(/ /g, "_"));
     const letter = query.charAt(0);
     const url = `https://v3.sg.media-imdb.com/suggestion/x/${query}.json`;
     const res = await fetch(url);

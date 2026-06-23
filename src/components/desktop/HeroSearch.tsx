@@ -1,7 +1,24 @@
-import { Search, MapPin, Music, Ticket, Trophy, Palette, Pizza, Mic, Film, Globe } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  Music,
+  Ticket,
+  Trophy,
+  Palette,
+  Pizza,
+  Mic,
+  Film,
+  Globe,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -25,7 +42,7 @@ const CITIES = [
   "Sydney, Australia",
   "Berlin, Germany",
   "Doha, Qatar",
-  "Lisbon, Portugal"
+  "Lisbon, Portugal",
 ].sort();
 
 const CATEGORIES = [
@@ -47,7 +64,7 @@ export function HeroSearch() {
     const q = category || query;
     const finalCity = city === "all" ? "" : city;
     if (!q && !finalCity) return;
-    
+
     // Navigate to explore page with search params
     navigate({
       to: "/explore",
@@ -57,7 +74,10 @@ export function HeroSearch() {
 
   return (
     <div className="mt-8 max-w-2xl rounded-2xl border border-border/60 bg-background/80 p-2 shadow-[var(--shadow-card)] backdrop-blur-xl">
-      <form onSubmit={handleSearch} className="grid grid-cols-1 gap-2 md:grid-cols-[1.5fr_1fr_auto]">
+      <form
+        onSubmit={handleSearch}
+        className="grid grid-cols-1 gap-2 md:grid-cols-[1.5fr_1fr_auto]"
+      >
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -76,7 +96,9 @@ export function HeroSearch() {
             <SelectContent className="max-h-[300px]">
               <SelectItem value="all">All Cities</SelectItem>
               {CITIES.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

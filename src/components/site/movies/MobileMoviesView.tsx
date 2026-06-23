@@ -50,7 +50,9 @@ export function MobileMoviesView({
   }, [selectedMovie]);
 
   const uniqueDates = selectedMovie
-    ? (Array.from(new Set((selectedMovie.showtimes || []).map((st: any) => st.date))).sort() as string[])
+    ? (Array.from(
+        new Set((selectedMovie.showtimes || []).map((st: any) => st.date)),
+      ).sort() as string[])
     : [];
   const currentDate =
     selectedDate && uniqueDates.includes(selectedDate) ? selectedDate : uniqueDates[0];
@@ -60,9 +62,9 @@ export function MobileMoviesView({
         const allPrices = (selectedMovie.showtimes || []).flatMap((st: any) =>
           st.tiers?.length > 0
             ? st.tiers.map((t: any) => t.price_override || t.ticket_tier.price)
-            : [st.basePrice]
+            : [st.basePrice],
         );
-        return allPrices.length > 0 ? Math.min(...allPrices) : (selectedMovie.price || 10);
+        return allPrices.length > 0 ? Math.min(...allPrices) : selectedMovie.price || 10;
       })()
     : null;
 

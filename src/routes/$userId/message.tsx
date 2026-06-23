@@ -471,7 +471,7 @@ function UserMessagesPage() {
           !activeChatId ? "hidden md:block" : "block"
         }`}
       >
-        <ChatConversation 
+        <ChatConversation
           activeChat={activeChat}
           sendMessage={sendMessage}
           onBack={() => setActiveChatId(null)}

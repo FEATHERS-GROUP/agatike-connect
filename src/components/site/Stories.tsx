@@ -9,7 +9,11 @@ const defaultStories: any[] = [
     name: "Sydney Fest",
     avatar: "https://ui-avatars.com/api/?name=Sydney+Fest&background=000&color=fff",
     items: [
-      { id: "s1i1", image: "https://upload.wikimedia.org/wikipedia/commons/0/02/Vivid_Sydney_2024_-_Bright_Lights_Big_City.jpg" },
+      {
+        id: "s1i1",
+        image:
+          "https://upload.wikimedia.org/wikipedia/commons/0/02/Vivid_Sydney_2024_-_Bright_Lights_Big_City.jpg",
+      },
     ],
   },
   {
@@ -17,7 +21,10 @@ const defaultStories: any[] = [
     name: "Tomorrowland",
     avatar: "https://ui-avatars.com/api/?name=Tomorrowland&background=8B5CF6&color=fff",
     items: [
-      { id: "s2i1", image: "https://upload.wikimedia.org/wikipedia/commons/e/ed/Tomorrowland2016mainstage.jpg" },
+      {
+        id: "s2i1",
+        image: "https://upload.wikimedia.org/wikipedia/commons/e/ed/Tomorrowland2016mainstage.jpg",
+      },
     ],
   },
   {
@@ -25,7 +32,11 @@ const defaultStories: any[] = [
     name: "Berlin Lights",
     avatar: "https://ui-avatars.com/api/?name=Berlin+Lights&background=EC4899&color=fff",
     items: [
-      { id: "s3i1", image: "https://upload.wikimedia.org/wikipedia/commons/e/e9/Berliner_Dom_Festival_of_Lights.jpg" },
+      {
+        id: "s3i1",
+        image:
+          "https://upload.wikimedia.org/wikipedia/commons/e/e9/Berliner_Dom_Festival_of_Lights.jpg",
+      },
     ],
   },
   {
@@ -33,7 +44,10 @@ const defaultStories: any[] = [
     name: "Cairo Fest",
     avatar: "https://ui-avatars.com/api/?name=Cairo+Fest&background=10B981&color=fff",
     items: [
-      { id: "s4i1", image: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Cairo_at_night.jpg" },
+      {
+        id: "s4i1",
+        image: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Cairo_at_night.jpg",
+      },
     ],
   },
   {
@@ -41,7 +55,10 @@ const defaultStories: any[] = [
     name: "Doha Expo",
     avatar: "https://ui-avatars.com/api/?name=Doha+Expo&background=F59E0B&color=fff",
     items: [
-      { id: "s5i1", image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Doha_skyline_at_night.jpg" },
+      {
+        id: "s5i1",
+        image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Doha_skyline_at_night.jpg",
+      },
     ],
   },
   {
@@ -49,7 +66,11 @@ const defaultStories: any[] = [
     name: "Web Summit",
     avatar: "https://ui-avatars.com/api/?name=Web+Summit&background=3B82F6&color=fff",
     items: [
-      { id: "s6i1", image: "https://upload.wikimedia.org/wikipedia/commons/6/66/SXSW_Center_%2854987238776%29.jpg" },
+      {
+        id: "s6i1",
+        image:
+          "https://upload.wikimedia.org/wikipedia/commons/6/66/SXSW_Center_%2854987238776%29.jpg",
+      },
     ],
   },
   {
@@ -57,7 +78,10 @@ const defaultStories: any[] = [
     name: "Paris Fashion",
     avatar: "https://ui-avatars.com/api/?name=Paris+Fashion&background=EF4444&color=fff",
     items: [
-      { id: "s7i1", image: "https://upload.wikimedia.org/wikipedia/commons/3/3d/Magdalena_Frackowiak.jpg" },
+      {
+        id: "s7i1",
+        image: "https://upload.wikimedia.org/wikipedia/commons/3/3d/Magdalena_Frackowiak.jpg",
+      },
     ],
   },
   {
@@ -65,9 +89,13 @@ const defaultStories: any[] = [
     name: "TechCrunch",
     avatar: "https://ui-avatars.com/api/?name=TechCrunch&background=14B8A6&color=fff",
     items: [
-      { id: "s8i1", image: "https://upload.wikimedia.org/wikipedia/commons/6/66/SXSW_Center_%2854987238776%29.jpg" },
+      {
+        id: "s8i1",
+        image:
+          "https://upload.wikimedia.org/wikipedia/commons/6/66/SXSW_Center_%2854987238776%29.jpg",
+      },
     ],
-  }
+  },
 ];
 
 type Story = { id: string; name: string; avatar: string; items: { id: string; image: string }[] };

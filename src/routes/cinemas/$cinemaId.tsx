@@ -18,11 +18,46 @@ import { getCinemaById } from "@/api/cinemas";
 import { MOCK_MOVIES } from "@/lib/mock-movies";
 
 const MOCK_CINEMAS = [
-  { id: "mc1", name: "Palace Cinema", city: "Sydney", screens: 4, image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800", isClosed: true },
-  { id: "mc2", name: "Kinepolis", city: "Brussels", screens: 12, image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800", isClosed: true },
-  { id: "mc3", name: "Zoo Palast", city: "Berlin", screens: 6, image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800", isClosed: true },
-  { id: "mc4", name: "Zawya Cinema", city: "Cairo", screens: 2, image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800", isClosed: true },
-  { id: "mc5", name: "Novo Cinemas", city: "Doha", screens: 8, image: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=800", isClosed: true },
+  {
+    id: "mc1",
+    name: "Palace Cinema",
+    city: "Sydney",
+    screens: 4,
+    image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800",
+    isClosed: true,
+  },
+  {
+    id: "mc2",
+    name: "Kinepolis",
+    city: "Brussels",
+    screens: 12,
+    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800",
+    isClosed: true,
+  },
+  {
+    id: "mc3",
+    name: "Zoo Palast",
+    city: "Berlin",
+    screens: 6,
+    image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800",
+    isClosed: true,
+  },
+  {
+    id: "mc4",
+    name: "Zawya Cinema",
+    city: "Cairo",
+    screens: 2,
+    image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800",
+    isClosed: true,
+  },
+  {
+    id: "mc5",
+    name: "Novo Cinemas",
+    city: "Doha",
+    screens: 8,
+    image: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=800",
+    isClosed: true,
+  },
 ];
 
 export const Route = createFileRoute("/cinemas/$cinemaId")({
@@ -43,7 +78,7 @@ function CinemaDetail() {
 
   const { cinema, cinemaMovies } = useMemo(() => {
     if (isMock) {
-      const mockCinema = MOCK_CINEMAS.find(c => c.id === cinemaId);
+      const mockCinema = MOCK_CINEMAS.find((c) => c.id === cinemaId);
       return { cinema: mockCinema, cinemaMovies: [] };
     }
 
@@ -54,7 +89,8 @@ function CinemaDetail() {
       name: dbCinema.name,
       city: dbCinema.city,
       screens: dbCinema.screens?.length || 1,
-      image: dbCinema.cover_url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800"
+      image:
+        dbCinema.cover_url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800",
     };
 
     const moviesMap = new Map();
@@ -65,14 +101,15 @@ function CinemaDetail() {
         moviesMap.set(m.id, {
           id: m.id,
           title: m.title,
-          cover: m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
+          cover:
+            m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
           rating: m.rating || "PG",
           genre: m.genre || "Drama",
           duration: `${m.duration_minutes || 120}m`,
           price: s.ticket_tiers?.[0]?.price_override || 3000,
           currency: s.ticket_tiers?.[0]?.currency || "RWF",
           synopsis: m.synopsis || "No synopsis available.",
-          showtimes: []
+          showtimes: [],
         });
       }
       const timeStr = s.start_time ? s.start_time.substring(0, 5) : "12:00";
@@ -88,7 +125,9 @@ function CinemaDetail() {
   const [selectedMovie, setSelectedMovie] = useState<any | null>(null);
 
   if (isLoading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>
+    );
   }
 
   if (!cinema) {
@@ -101,8 +140,6 @@ function CinemaDetail() {
       </div>
     );
   }
-
-
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0">
@@ -194,7 +231,7 @@ function CinemaDetail() {
 
                   <div className="mt-auto">
                     <div className="flex flex-wrap gap-1 mb-3">
-                      {movie.showtimes.slice(0, 3).map((t) => (
+                      {movie.showtimes.slice(0, 3).map((t: string) => (
                         <span
                           key={t}
                           className="px-2 py-1 bg-secondary text-[10px] font-semibold rounded-md border border-border/60"
@@ -282,7 +319,7 @@ function CinemaDetail() {
                   </div>
 
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {selectedMovie.showtimes.map((t, i) => (
+                    {selectedMovie.showtimes.map((t: string, i: number) => (
                       <button
                         key={t}
                         className={`py-3 rounded-xl text-sm font-bold border transition-colors ${
@@ -303,7 +340,7 @@ function CinemaDetail() {
                     className="flex-1 h-14 rounded-2xl shadow-[var(--shadow-glow)] text-base font-bold"
                     style={{ background: "var(--gradient-primary)" }}
                   >
-                    <Link to="/book-movie/$movieId" params={{ movieId: selectedMovie.id }}>
+                    <Link to="/book-movie/$movieId" params={{ movieId: selectedMovie.id }} search={{ date: new Date().toISOString().split('T')[0] }}>
                       <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
                       {formatCurrency(selectedMovie.price || 3000, selectedMovie.currency)}
                     </Link>

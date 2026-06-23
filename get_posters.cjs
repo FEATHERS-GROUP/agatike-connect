@@ -18,7 +18,7 @@ const movies = [
   "Joker: Folie à Deux",
   "The Fall Guy (2024 film)",
   "Civil War (film)",
-  "Kung Fu Panda 4"
+  "Kung Fu Panda 4",
 ];
 
 async function getPoster(title) {
@@ -45,7 +45,7 @@ async function run() {
   const results = {};
   for (const movie of movies) {
     const url = await getPoster(movie);
-    results[movie] = url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800"; 
+    results[movie] = url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800";
   }
   console.log(JSON.stringify(results, null, 2));
 }

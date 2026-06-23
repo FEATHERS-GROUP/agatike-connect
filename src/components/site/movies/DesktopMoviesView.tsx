@@ -38,12 +38,13 @@ export function DesktopMoviesView({
   const activeMovie = movies.find((m) => m.id === active)!;
 
   // Calculate the starting price across ALL schedules for this movie
-  const allPrices = activeMovie?.showtimes?.flatMap((st: any) =>
-    st.tiers?.length > 0
-      ? st.tiers.map((t: any) => t.price_override || t.ticket_tier.price)
-      : [st.basePrice],
-  ) || [];
-  const startingPrice = allPrices.length > 0 ? Math.min(...allPrices) : (activeMovie?.price || 10);
+  const allPrices =
+    activeMovie?.showtimes?.flatMap((st: any) =>
+      st.tiers?.length > 0
+        ? st.tiers.map((t: any) => t.price_override || t.ticket_tier.price)
+        : [st.basePrice],
+    ) || [];
+  const startingPrice = allPrices.length > 0 ? Math.min(...allPrices) : activeMovie?.price || 10;
 
   const uniqueDates = Array.from(
     new Set((activeMovie?.showtimes || []).map((st: any) => st.date)),

@@ -240,9 +240,7 @@ export function ChatConversation({
                             className="w-full h-32 object-cover"
                           />
                           <div className="p-3">
-                            <p className="font-bold text-sm truncate">
-                              {msg.eventCard.title}
-                            </p>
+                            <p className="font-bold text-sm truncate">{msg.eventCard.title}</p>
                             <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                               <Calendar className="h-3 w-3" />
                               <span>{msg.eventCard.info}</span>
@@ -319,9 +317,7 @@ export function ChatConversation({
                 className="p-0 border-none shadow-xl bg-transparent mb-2"
               >
                 <EmojiPicker
-                  onEmojiClick={(emojiData) =>
-                    setMessageInput((prev) => prev + emojiData.emoji)
-                  }
+                  onEmojiClick={(emojiData) => setMessageInput((prev) => prev + emojiData.emoji)}
                   theme={Theme.AUTO}
                 />
               </PopoverContent>

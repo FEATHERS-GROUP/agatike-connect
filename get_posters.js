@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require("fs");
 
 const movies = [
   "Deadpool & Wolverine",
@@ -20,7 +20,7 @@ const movies = [
   "Joker: Folie à Deux",
   "The Fall Guy (2024 film)",
   "Civil War (film)",
-  "Kung Fu Panda 4"
+  "Kung Fu Panda 4",
 ];
 
 async function getPoster(title) {

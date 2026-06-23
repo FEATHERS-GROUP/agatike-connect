@@ -79,7 +79,9 @@ function SignIn() {
         if (redirectUrl) {
           navigate({ to: redirectUrl as any });
         } else {
-          navigate({ to: typeof window !== "undefined" && window.innerWidth < 768 ? "/" : "/feed" });
+          navigate({
+            to: typeof window !== "undefined" && window.innerWidth < 768 ? "/" : "/feed",
+          });
         }
       } catch (err: any) {
         const message = err?.message || "Google Login Failed";

@@ -50,8 +50,11 @@ function Feed() {
   const [showAllUpcoming, setShowAllUpcoming] = useState(false);
   const [showAllMovies, setShowAllMovies] = useState(false);
 
-  const { channels, activeChatId, setActiveChatId, sendMessage } = useFirestoreUserMessages(user?.id || "", followedIds);
-  
+  const { channels, activeChatId, setActiveChatId, sendMessage } = useFirestoreUserMessages(
+    user?.id || "",
+    followedIds,
+  );
+
   const { data: dbOrganizers = [] } = useQuery({
     queryKey: ["organizers"],
     queryFn: () => getOrganizers(),
@@ -99,7 +102,8 @@ function Feed() {
           title: m.title,
           genre: m.genre || "Drama",
           rating: m.rating || "PG",
-          cover: m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
+          cover:
+            m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
           cinema: c.name,
         });
       }
@@ -108,7 +112,10 @@ function Feed() {
   }, [schedules]);
 
   const mappedEvents = useMemo(() => {
-    return dbEvents.filter((e: any) => e.allowed_public === true && e.deleted !== true).map(mapDbEventToEvent).filter(Boolean);
+    return dbEvents
+      .filter((e: any) => e.allowed_public === true && e.deleted !== true)
+      .map(mapDbEventToEvent)
+      .filter(Boolean);
   }, [dbEvents]);
 
   const upcomingEvents = useMemo(() => {
@@ -121,21 +128,21 @@ function Feed() {
     if (filtered.length === 0) filtered = mappedEvents;
     return filtered;
   }, [mappedEvents]);
-  
+
   const unreadChatsCount = channels.filter((c) => {
     const isUnread =
       c.lastMessageSenderId !== user?.id &&
       c.rawTimeMillis > parseInt(localStorage.getItem(`chat_read_${c.id}`) || "0", 10);
     return c.lastMessageSenderId !== user?.id && (c.unread > 0 || isUnread);
   }).length;
-  
+
   // Conditionally fetch posts only if logged in
   const { data: dbPosts = [], isLoading: isPostsLoading } = useQuery({
     queryKey: ["global-feed-posts"],
     queryFn: () => getGlobalFeedPosts(),
     enabled: isLoggedIn,
   });
-  
+
   const isLoading = isLoggedIn ? isPostsLoading : true; // Show loading skeletons if not logged in
 
   // Filter feed posts to only show those from followed organizers
@@ -216,12 +223,14 @@ function Feed() {
                 </Link>
               ))}
               {upcomingEvents.length === 0 && (
-                <p className="text-xs text-muted-foreground italic px-2">No upcoming events or experiences.</p>
+                <p className="text-xs text-muted-foreground italic px-2">
+                  No upcoming events or experiences.
+                </p>
               )}
               {upcomingEvents.length > 3 && (
-                <Button 
-                  variant="ghost" 
-                  className="w-full text-xs mt-2" 
+                <Button
+                  variant="ghost"
+                  className="w-full text-xs mt-2"
                   onClick={() => setShowAllUpcoming(!showAllUpcoming)}
                 >
                   {showAllUpcoming ? "Show less" : "Show more"}
@@ -244,8 +253,8 @@ function Feed() {
                     <p className="truncate text-sm font-medium">{org.name}</p>
                     <p className="text-xs text-muted-foreground">@{org.handle}</p>
                   </div>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant={isFollowing(org.id) ? "default" : "outline"}
                     className="ml-auto rounded-full text-xs h-7 px-3"
                     onClick={() => toggleFollow(org.id)}
@@ -255,9 +264,9 @@ function Feed() {
                 </div>
               ))}
               {dbOrganizers.length > 4 && (
-                <Button 
-                  variant="ghost" 
-                  className="w-full text-xs mt-2" 
+                <Button
+                  variant="ghost"
+                  className="w-full text-xs mt-2"
                   onClick={() => setShowAllOrganizers(!showAllOrganizers)}
                 >
                   {showAllOrganizers ? "Show less" : "Show more"}
@@ -276,7 +285,11 @@ function Feed() {
                   className="flex items-center gap-3 rounded-xl p-2 hover:bg-secondary transition"
                 >
                   <div className="relative h-14 w-10 shrink-0">
-                    <img src={m.cover} className="h-full w-full rounded-md object-cover" alt={m.title} />
+                    <img
+                      src={m.cover}
+                      className="h-full w-full rounded-md object-cover"
+                      alt={m.title}
+                    />
                     <div className="absolute top-0.5 left-0.5 bg-background/90 backdrop-blur rounded px-1 py-0.5 text-[8px] font-bold shadow-sm">
                       {m.rating}
                     </div>
@@ -288,12 +301,14 @@ function Feed() {
                 </Link>
               ))}
               {feedMovies.length === 0 && (
-                <p className="text-xs text-muted-foreground italic px-2">No movies showing today.</p>
+                <p className="text-xs text-muted-foreground italic px-2">
+                  No movies showing today.
+                </p>
               )}
               {feedMovies.length > 3 && (
-                <Button 
-                  variant="ghost" 
-                  className="w-full text-xs mt-2" 
+                <Button
+                  variant="ghost"
+                  className="w-full text-xs mt-2"
                   onClick={() => setShowAllMovies(!showAllMovies)}
                 >
                   {showAllMovies ? "Show less" : "Show more"}
@@ -311,9 +326,12 @@ function Feed() {
             <div className="mx-auto h-12 w-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
               <Users className="h-6 w-6" />
             </div>
-            <h3 className="text-xl font-black tracking-tight text-foreground mb-2">Join the Community</h3>
+            <h3 className="text-xl font-black tracking-tight text-foreground mb-2">
+              Join the Community
+            </h3>
             <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-              Log in to see live moments, reels, and exclusive updates from your favorite event organizers and friends.
+              Log in to see live moments, reels, and exclusive updates from your favorite event
+              organizers and friends.
             </p>
             <div className="flex flex-col gap-3">
               <Link to="/signin" className="w-full">
@@ -356,13 +374,19 @@ function Feed() {
             )}
           </button>
 
-          <Sheet open={isMessagesOpen} onOpenChange={(open) => {
-            setIsMessagesOpen(open);
-            if (!open) setActiveChatId(null);
-          }}>
-            <SheetContent side="left" className="h-full bg-background/95 backdrop-blur-xl border-border/40 p-0 flex flex-col w-[90vw] sm:max-w-[500px] md:max-w-[600px]">
+          <Sheet
+            open={isMessagesOpen}
+            onOpenChange={(open) => {
+              setIsMessagesOpen(open);
+              if (!open) setActiveChatId(null);
+            }}
+          >
+            <SheetContent
+              side="left"
+              className="h-full bg-background/95 backdrop-blur-xl border-border/40 p-0 flex flex-col w-[90vw] sm:max-w-[500px] md:max-w-[600px]"
+            >
               {activeChat ? (
-                <ChatConversation 
+                <ChatConversation
                   activeChat={activeChat}
                   sendMessage={sendMessage}
                   onBack={() => setActiveChatId(null)}
@@ -377,10 +401,10 @@ function Feed() {
                   <ScrollArea className="flex-1 p-3">
                     <div className="flex flex-col gap-1 pb-safe">
                       {displayChannels.length === 0 ? (
-                    <div className="text-center py-10 text-muted-foreground">
-                      <MessageCircle className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                      <p className="text-sm font-medium">No messages yet</p>
-                    </div>
+                        <div className="text-center py-10 text-muted-foreground">
+                          <MessageCircle className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                          <p className="text-sm font-medium">No messages yet</p>
+                        </div>
                       ) : (
                         displayChannels.map((chat) => {
                           const isUnread =
@@ -400,45 +424,45 @@ function Feed() {
                               onClick={() => setActiveChatId(chat.id)}
                               className="flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left hover:bg-accent/50"
                             >
-                          <Avatar className="h-12 w-12 border border-border/50">
-                            <AvatarImage src={chat.avatar} alt={chat.name} />
-                            <AvatarFallback className="bg-primary/10 text-primary">
-                              {chat.type === "group" ? (
-                                <Users className="h-5 w-5" />
-                              ) : (
-                                chat.name?.substring(0, 2).toUpperCase()
-                              )}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="font-semibold text-sm truncate pr-2">
-                                {chat.name}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                                {chat.time}
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <p
-                                className={`text-xs truncate pr-2 ${
-                                  displayUnread > 0
-                                    ? "text-foreground font-medium"
-                                    : "text-muted-foreground"
-                                }`}
-                              >
-                                {chat.lastMessage || "Tap to chat"}
-                              </p>
-                              {displayUnread > 0 && (
-                                <Badge
-                                  className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
-                                  style={{ background: "var(--gradient-primary)" }}
-                                >
-                                  {displayUnread}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
+                              <Avatar className="h-12 w-12 border border-border/50">
+                                <AvatarImage src={chat.avatar} alt={chat.name} />
+                                <AvatarFallback className="bg-primary/10 text-primary">
+                                  {chat.type === "group" ? (
+                                    <Users className="h-5 w-5" />
+                                  ) : (
+                                    chat.name?.substring(0, 2).toUpperCase()
+                                  )}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="font-semibold text-sm truncate pr-2">
+                                    {chat.name}
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                    {chat.time}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <p
+                                    className={`text-xs truncate pr-2 ${
+                                      displayUnread > 0
+                                        ? "text-foreground font-medium"
+                                        : "text-muted-foreground"
+                                    }`}
+                                  >
+                                    {chat.lastMessage || "Tap to chat"}
+                                  </p>
+                                  {displayUnread > 0 && (
+                                    <Badge
+                                      className="h-5 min-w-5 flex items-center justify-center rounded-full px-1.5 text-[10px]"
+                                      style={{ background: "var(--gradient-primary)" }}
+                                    >
+                                      {displayUnread}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
                             </button>
                           );
                         })
@@ -451,7 +475,6 @@ function Feed() {
           </Sheet>
         </>
       )}
-
     </div>
   );
 }

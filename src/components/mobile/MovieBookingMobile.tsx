@@ -56,14 +56,25 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
         <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
           <Ticket className="h-8 w-8 text-primary opacity-50" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground">{MOCK_MOVIES_MAP[movieId]?.title || "Upcoming Movie"}</h2>
+        <h2 className="text-2xl font-bold text-foreground">
+          {MOCK_MOVIES_MAP[movieId]?.title || "Upcoming Movie"}
+        </h2>
         {MOCK_MOVIES_MAP[movieId]?.cover && (
-          <img src={MOCK_MOVIES_MAP[movieId].cover} alt="Movie Poster" className="w-32 h-48 object-cover rounded-xl mt-6 shadow-md" />
+          <img
+            src={MOCK_MOVIES_MAP[movieId].cover}
+            alt="Movie Poster"
+            className="w-32 h-48 object-cover rounded-xl mt-6 shadow-md"
+          />
         )}
         <p className="mt-6 text-muted-foreground leading-relaxed">
-          Due to incredibly high demand, tickets for this showing are either completely <strong>sold out</strong> or <strong>not yet published</strong> by the cinema.
+          Due to incredibly high demand, tickets for this showing are either completely{" "}
+          <strong>sold out</strong> or <strong>not yet published</strong> by the cinema.
         </p>
-        <Button size="lg" className="mt-8 w-full rounded-full h-14 font-semibold" onClick={() => router.history.back()}>
+        <Button
+          size="lg"
+          className="mt-8 w-full rounded-full h-14 font-semibold"
+          onClick={() => router.history.back()}
+        >
           Go Back
         </Button>
       </div>
