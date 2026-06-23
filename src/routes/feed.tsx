@@ -12,7 +12,7 @@ import { getGlobalFeedPosts } from "@/api/experience";
 import { useQuery } from "@tanstack/react-query";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useFirestoreUserMessages } from "@/hooks/useFirestoreUserMessages";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -307,13 +307,13 @@ function Feed() {
             )}
           </button>
 
-          <Drawer open={isMessagesOpen} onOpenChange={setIsMessagesOpen}>
-            <DrawerContent className="h-[80vh] bg-background/95 backdrop-blur-xl border-border/40 p-0 flex flex-col">
-              <DrawerHeader className="border-b border-border/40 pb-4 text-left px-5 pt-5">
-                <DrawerTitle className="text-xl font-bold flex items-center gap-2">
+          <Sheet open={isMessagesOpen} onOpenChange={setIsMessagesOpen}>
+            <SheetContent side="left" className="h-full bg-background/95 backdrop-blur-xl border-border/40 p-0 flex flex-col w-[85vw] sm:max-w-[400px]">
+              <SheetHeader className="border-b border-border/40 pb-4 text-left px-5 pt-5 mt-safe-top">
+                <SheetTitle className="text-xl font-bold flex items-center gap-2">
                   <MessageCircle className="h-5 w-5 text-primary" /> Messages
-                </DrawerTitle>
-              </DrawerHeader>
+                </SheetTitle>
+              </SheetHeader>
               <ScrollArea className="flex-1 p-3">
                 <div className="flex flex-col gap-1 pb-safe">
                   {channels.length === 0 ? (
@@ -392,12 +392,11 @@ function Feed() {
                   )}
                 </div>
               </ScrollArea>
-            </DrawerContent>
-          </Drawer>
+            </SheetContent>
+          </Sheet>
         </>
       )}
 
-      <Footer />
     </div>
   );
 }

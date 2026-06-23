@@ -40,13 +40,6 @@ export function Navbar({ hideOnMobile }: { hideOnMobile?: boolean } = {}) {
             Movies
           </Link>
           <Link
-            to="/feed"
-            className="hover:text-foreground transition-colors"
-            activeProps={{ className: "text-foreground font-medium" }}
-          >
-            Stories
-          </Link>
-          <Link
             to="/buses"
             className="hover:text-foreground transition-colors"
             activeProps={{ className: "text-foreground font-medium" }}
