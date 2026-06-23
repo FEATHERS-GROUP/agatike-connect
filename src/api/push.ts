@@ -5,14 +5,14 @@ import { hasuraRequest } from "./graphql.server";
 export const sendPushNotification = createServerFn({ method: "POST" })
   .inputValidator((d: { userIds: string[]; title: string; body: string; data?: any }) => d)
   .handler(async (ctx) => {
-    const { default: admin } = await import("firebase-admin");
+    const { initializeApp, applicationDefault, getApps } = await import("firebase-admin/app");
     const { getMessaging } = await import("firebase-admin/messaging");
 
     // Initialize Firebase Admin (Only once)
-    if (admin.getApps().length === 0) {
+    if (getApps().length === 0) {
       try {
-        admin.initializeApp({
-          credential: admin.credential.applicationDefault(),
+        initializeApp({
+          credential: applicationDefault(),
         });
       } catch (error) {
         console.warn("Firebase Admin Initialization Warning:", error);

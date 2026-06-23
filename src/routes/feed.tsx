@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChatConversation } from "@/components/shared/ChatConversation";
 import { useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { getPublicEvents } from "@/api/events";
@@ -45,8 +46,9 @@ function Feed() {
   const { isLoggedIn, user } = useUserAuth();
   const navigate = useNavigate();
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
+  const [showAllOrganizers, setShowAllOrganizers] = useState(false);
 
-  const { channels } = useFirestoreUserMessages(user?.id || "", followedIds);
+  const { channels, activeChatId, setActiveChatId, sendMessage } = useFirestoreUserMessages(user?.id || "", followedIds);
   
   const { data: dbOrganizers = [] } = useQuery({
     queryKey: ["organizers"],
@@ -57,6 +59,24 @@ function Feed() {
     queryKey: ["public-events"],
     queryFn: () => getPublicEvents(),
   });
+
+  const displayChannels = useMemo(() => {
+    return channels.map((c) => {
+      if (c.type === "user") {
+        const org = dbOrganizers.find((o: any) => o.id === c.organizerId);
+        if (org) {
+          return {
+            ...c,
+            name: org.name || "Organizer",
+            avatar: org.image || org.avatar || "",
+          };
+        }
+      }
+      return c;
+    });
+  }, [channels, dbOrganizers]);
+
+  const activeChat = displayChannels.find((c) => c.id === activeChatId);
 
   const { data: schedules = [] } = useQuery({
     queryKey: ["public_schedules_feed"],
@@ -94,8 +114,6 @@ function Feed() {
     if (filtered.length === 0) filtered = mappedEvents;
     return filtered;
   }, [mappedEvents]);
-
-  const suggestedOrganizers = dbOrganizers.filter((org: any) => !isFollowing(org.id));
   
   const unreadChatsCount = channels.filter((c) => {
     const isUnread =
@@ -199,7 +217,7 @@ function Feed() {
           <div className="rounded-2xl border border-border/60 bg-card p-5">
             <p className="text-sm font-semibold">Suggested organizers</p>
             <div className="mt-4 space-y-3">
-              {suggestedOrganizers.slice(0, 5).map((org: any) => (
+              {(showAllOrganizers ? dbOrganizers : dbOrganizers.slice(0, 4)).map((org: any) => (
                 <div key={org.id} className="flex items-center gap-3">
                   <img
                     src={org.image || org.avatar || `https://i.pravatar.cc/150?u=${org.id}`}
@@ -212,16 +230,22 @@ function Feed() {
                   </div>
                   <Button 
                     size="sm" 
-                    variant="outline" 
+                    variant={isFollowing(org.id) ? "default" : "outline"}
                     className="ml-auto rounded-full text-xs h-7 px-3"
                     onClick={() => toggleFollow(org.id)}
                   >
-                    Follow
+                    {isFollowing(org.id) ? "Following" : "Follow"}
                   </Button>
                 </div>
               ))}
-              {suggestedOrganizers.length === 0 && (
-                <p className="text-xs text-muted-foreground italic px-2">You follow everyone!</p>
+              {dbOrganizers.length > 4 && (
+                <Button 
+                  variant="ghost" 
+                  className="w-full text-xs mt-2" 
+                  onClick={() => setShowAllOrganizers(!showAllOrganizers)}
+                >
+                  {showAllOrganizers ? "Show less" : "Show more"}
+                </Button>
               )}
             </div>
           </div>
@@ -307,46 +331,50 @@ function Feed() {
             )}
           </button>
 
-          <Sheet open={isMessagesOpen} onOpenChange={setIsMessagesOpen}>
-            <SheetContent side="left" className="h-full bg-background/95 backdrop-blur-xl border-border/40 p-0 flex flex-col w-[85vw] sm:max-w-[400px]">
-              <SheetHeader className="border-b border-border/40 pb-4 text-left px-5 pt-5 mt-safe-top">
-                <SheetTitle className="text-xl font-bold flex items-center gap-2">
-                  <MessageCircle className="h-5 w-5 text-primary" /> Messages
-                </SheetTitle>
-              </SheetHeader>
-              <ScrollArea className="flex-1 p-3">
-                <div className="flex flex-col gap-1 pb-safe">
-                  {channels.length === 0 ? (
+          <Sheet open={isMessagesOpen} onOpenChange={(open) => {
+            setIsMessagesOpen(open);
+            if (!open) setActiveChatId(null);
+          }}>
+            <SheetContent side="left" className="h-full bg-background/95 backdrop-blur-xl border-border/40 p-0 flex flex-col w-[90vw] sm:max-w-[500px] md:max-w-[600px]">
+              {activeChat ? (
+                <ChatConversation 
+                  activeChat={activeChat}
+                  sendMessage={sendMessage}
+                  onBack={() => setActiveChatId(null)}
+                />
+              ) : (
+                <>
+                  <SheetHeader className="border-b border-border/40 pb-4 text-left px-5 pt-5 mt-safe-top">
+                    <SheetTitle className="text-xl font-bold flex items-center gap-2">
+                      <MessageCircle className="h-5 w-5 text-primary" /> Messages
+                    </SheetTitle>
+                  </SheetHeader>
+                  <ScrollArea className="flex-1 p-3">
+                    <div className="flex flex-col gap-1 pb-safe">
+                      {displayChannels.length === 0 ? (
                     <div className="text-center py-10 text-muted-foreground">
                       <MessageCircle className="h-10 w-10 mx-auto mb-3 opacity-20" />
                       <p className="text-sm font-medium">No messages yet</p>
                     </div>
-                  ) : (
-                    channels.map((chat) => {
-                      const isUnread =
-                        chat.lastMessageSenderId !== user?.id &&
-                        chat.rawTimeMillis >
-                          parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
-                      const displayUnread =
-                        chat.lastMessageSenderId !== user?.id && chat.unread > 0
-                          ? chat.unread
-                          : isUnread
-                            ? 1
-                            : 0;
+                      ) : (
+                        displayChannels.map((chat) => {
+                          const isUnread =
+                            chat.lastMessageSenderId !== user?.id &&
+                            chat.rawTimeMillis >
+                              parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
+                          const displayUnread =
+                            chat.lastMessageSenderId !== user?.id && chat.unread > 0
+                              ? chat.unread
+                              : isUnread
+                                ? 1
+                                : 0;
 
-                      return (
-                        <button
-                          key={chat.id}
-                          onClick={() => {
-                            setIsMessagesOpen(false);
-                            navigate({
-                              to: "/$userId/message",
-                              params: { userId: user?.id || "me" },
-                              search: { chatId: chat.id } as any,
-                            });
-                          }}
-                          className="flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left hover:bg-accent/50"
-                        >
+                          return (
+                            <button
+                              key={chat.id}
+                              onClick={() => setActiveChatId(chat.id)}
+                              className="flex items-center gap-3 w-full p-3 rounded-2xl transition-all text-left hover:bg-accent/50"
+                            >
                           <Avatar className="h-12 w-12 border border-border/50">
                             <AvatarImage src={chat.avatar} alt={chat.name} />
                             <AvatarFallback className="bg-primary/10 text-primary">
@@ -386,12 +414,14 @@ function Feed() {
                               )}
                             </div>
                           </div>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-              </ScrollArea>
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </ScrollArea>
+                </>
+              )}
             </SheetContent>
           </Sheet>
         </>
