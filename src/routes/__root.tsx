@@ -258,7 +258,7 @@ function AuthDependentFeedBubble({ hideNav }: { hideNav: boolean }) {
   return (
     <Link
       to="/feed"
-      className="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-transform hover:scale-105 active:scale-95"
+      className="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-50 hidden md:flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-transform hover:scale-105 active:scale-95"
       style={{ background: "var(--gradient-primary)" }}
       aria-label="Go to Feed"
     >
