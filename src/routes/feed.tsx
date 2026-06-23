@@ -47,6 +47,8 @@ function Feed() {
   const navigate = useNavigate();
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   const [showAllOrganizers, setShowAllOrganizers] = useState(false);
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false);
+  const [showAllMovies, setShowAllMovies] = useState(false);
 
   const { channels, activeChatId, setActiveChatId, sendMessage } = useFirestoreUserMessages(user?.id || "", followedIds);
   
@@ -110,7 +112,12 @@ function Feed() {
   }, [dbEvents]);
 
   const upcomingEvents = useMemo(() => {
-    let filtered = mappedEvents.filter((e: any) => isWeekendEvent(e.date));
+    let filtered = mappedEvents.filter(
+      (e: any) =>
+        isWeekendEvent(e.date) ||
+        e.category?.toLowerCase() === "experience" ||
+        e.event_type?.toLowerCase() === "experience",
+    );
     if (filtered.length === 0) filtered = mappedEvents;
     return filtered;
   }, [mappedEvents]);
@@ -192,7 +199,7 @@ function Feed() {
           <div className="rounded-2xl border border-border/60 bg-card p-5">
             <p className="text-sm font-semibold">Upcoming for you</p>
             <div className="mt-4 space-y-3">
-              {upcomingEvents.slice(0, 3).map((e: any) => (
+              {(showAllUpcoming ? upcomingEvents : upcomingEvents.slice(0, 3)).map((e: any) => (
                 <Link
                   key={e.id}
                   to="/events/$eventId"
@@ -209,7 +216,16 @@ function Feed() {
                 </Link>
               ))}
               {upcomingEvents.length === 0 && (
-                <p className="text-xs text-muted-foreground italic px-2">No upcoming events.</p>
+                <p className="text-xs text-muted-foreground italic px-2">No upcoming events or experiences.</p>
+              )}
+              {upcomingEvents.length > 3 && (
+                <Button 
+                  variant="ghost" 
+                  className="w-full text-xs mt-2" 
+                  onClick={() => setShowAllUpcoming(!showAllUpcoming)}
+                >
+                  {showAllUpcoming ? "Show less" : "Show more"}
+                </Button>
               )}
             </div>
           </div>
@@ -253,7 +269,7 @@ function Feed() {
           <div className="rounded-2xl border border-border/60 bg-card p-5">
             <p className="text-sm font-semibold">Now showing</p>
             <div className="mt-4 space-y-3">
-              {feedMovies.slice(0, 3).map((m: any) => (
+              {(showAllMovies ? feedMovies : feedMovies.slice(0, 3)).map((m: any) => (
                 <Link
                   key={m.id}
                   to="/movies"
@@ -273,6 +289,15 @@ function Feed() {
               ))}
               {feedMovies.length === 0 && (
                 <p className="text-xs text-muted-foreground italic px-2">No movies showing today.</p>
+              )}
+              {feedMovies.length > 3 && (
+                <Button 
+                  variant="ghost" 
+                  className="w-full text-xs mt-2" 
+                  onClick={() => setShowAllMovies(!showAllMovies)}
+                >
+                  {showAllMovies ? "Show less" : "Show more"}
+                </Button>
               )}
             </div>
           </div>
