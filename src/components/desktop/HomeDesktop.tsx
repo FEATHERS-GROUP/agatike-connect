@@ -14,6 +14,7 @@ import { getOrganizers } from "@/api/organizers";
 import { getOrganizersRatings } from "@/api/feedback";
 import { getGlobalFeedPosts } from "@/api/experience";
 import { getPublicEvents } from "@/api/events";
+import { getPublicMovieSchedules } from "@/api/cinemas";
 import { mapDbEventToEvent, isWeekendEvent } from "@/lib/utils";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 
@@ -148,6 +149,12 @@ export function HomeDesktop() {
     queryFn: () => getPublicEvents(),
   });
 
+  const { data: schedules = [] } = useQuery({
+    queryKey: ["public_schedules_home_desktop"],
+    queryFn: () =>
+      getPublicMovieSchedules({ data: { date: new Date().toISOString().split("T")[0] } } as any),
+  });
+
   const mappedEvents = useMemo(() => {
     const publicEvents = dbEvents.filter(
       (e: any) => e.allowed_public === true && e.deleted !== true,
@@ -168,6 +175,61 @@ export function HomeDesktop() {
     }
     return filtered.slice(0, 4);
   }, [mappedEvents]);
+
+  const dynamicMovieStories = useMemo(() => {
+    if (!schedules || schedules.length === 0) return movieStories;
+    const cinemasMap = new Map<string, any>();
+    schedules.forEach((s: any) => {
+      const c = s.cinema;
+      const m = s.movie;
+      if (!c || !m) return;
+      if (!cinemasMap.has(c.id)) {
+        cinemasMap.set(c.id, {
+          id: c.id,
+          name: c.name,
+          avatar: c.logo_url || c.cover_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random`,
+          items: [],
+          _movieIds: new Set(),
+        });
+      }
+      const cinemaObj = cinemasMap.get(c.id);
+      if (!cinemaObj._movieIds.has(m.id)) {
+        cinemaObj._movieIds.add(m.id);
+        cinemaObj.items.push({
+          id: `${c.id}-${m.id}`,
+          image: m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800",
+        });
+      }
+    });
+    const result = Array.from(cinemasMap.values());
+    if (result.length > 0) return result;
+    return movieStories; // Fallback
+  }, [schedules]);
+
+  const dynamicMovies = useMemo(() => {
+    if (!schedules || schedules.length === 0) return movies;
+    const moviesMap = new Map<string, any>();
+    schedules.forEach((s: any) => {
+      const m = s.movie;
+      const c = s.cinema;
+      if (!m || !c) return;
+      const movieKey = `${m.id}-${c.id}`;
+      if (!moviesMap.has(movieKey)) {
+        moviesMap.set(movieKey, {
+          id: m.id,
+          title: m.title,
+          genre: m.genre || "Drama",
+          duration: m.duration ? `${m.duration}m` : "2h",
+          rating: m.rating || "PG",
+          cover: m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
+          cinema: c.name,
+        });
+      }
+    });
+    const result = Array.from(moviesMap.values());
+    if (result.length > 0) return result.slice(0, 4); // Grid shows 4
+    return movies; // Fallback
+  }, [schedules]);
 
   const allOrganizers = dbOrganizers && dbOrganizers.length > 0 ? dbOrganizers : organizers;
   // On home, hide organizers the user is already following
@@ -276,7 +338,7 @@ export function HomeDesktop() {
             All movies →
           </Link>
         </div>
-        <Stories items={movieStories} />
+        <Stories items={dynamicMovieStories} />
       </section>
 
       {/* Trending */}
@@ -311,7 +373,7 @@ export function HomeDesktop() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-          {movies.map((m) => (
+          {dynamicMovies.map((m: any) => (
             <Link key={m.id} to="/movies" className="group block">
               <div className="relative aspect-[2/3] overflow-hidden rounded-2xl">
                 <img
@@ -357,7 +419,7 @@ export function HomeDesktop() {
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {list.slice(0, 4).map((org) => {
               const followerCount = org.followers ?? 0;
-              const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
+              const avatar = org.avatar || org.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(org.name)}&background=random`;
               return (
                 <div
                   key={org.id}

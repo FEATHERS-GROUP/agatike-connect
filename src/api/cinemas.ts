@@ -104,6 +104,7 @@ const GET_PUBLIC_MOVIE_SCHEDULES = `
         name
         city
         cover_url
+        logo_url
         workspace_id
       }
       movie {
@@ -250,6 +251,7 @@ const GET_MOVIE_SCHEDULES_BY_MOVIE_ID = `
         name
         city
         cover_url
+        logo_url
         workspace_id
       }
       movie {
