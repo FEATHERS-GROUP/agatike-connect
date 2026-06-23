@@ -43,28 +43,28 @@ export function MobileMoviesView({
   useEffect(() => {
     if (selectedMovie) {
       const uniqueDates = Array.from(
-        new Set(selectedMovie.showtimes.map((st: any) => st.date)),
+        new Set((selectedMovie.showtimes || []).map((st: any) => st.date)),
       ).sort() as string[];
       setSelectedDate(uniqueDates[0]);
     }
   }, [selectedMovie]);
 
   const uniqueDates = selectedMovie
-    ? (Array.from(new Set(selectedMovie.showtimes.map((st: any) => st.date))).sort() as string[])
+    ? (Array.from(new Set((selectedMovie.showtimes || []).map((st: any) => st.date))).sort() as string[])
     : [];
   const currentDate =
     selectedDate && uniqueDates.includes(selectedDate) ? selectedDate : uniqueDates[0];
 
-  // Calculate starting price for selected movie
   const startingPrice = selectedMovie
-    ? Math.min(
-        ...selectedMovie.showtimes.flatMap((st: any) =>
+    ? (() => {
+        const allPrices = (selectedMovie.showtimes || []).flatMap((st: any) =>
           st.tiers?.length > 0
             ? st.tiers.map((t: any) => t.price_override || t.ticket_tier.price)
-            : [st.basePrice || 10],
-        ),
-      )
-    : 10;
+            : [st.basePrice]
+        );
+        return allPrices.length > 0 ? Math.min(...allPrices) : (selectedMovie.price || 10);
+      })()
+    : null;
 
   const featuredMovie = movies[0];
 
@@ -125,25 +125,48 @@ export function MobileMoviesView({
           <h2 className="text-xl font-bold tracking-tight">Cinemas</h2>
         </div>
         <div className="flex overflow-x-auto hide-scrollbar gap-4 px-5 pb-6">
-          {cinemas.map((c) => (
-            <Link
-              key={c.id}
-              to="/cinemas/$cinemaId"
-              params={{ cinemaId: c.id }}
-              className="w-[260px] shrink-0 rounded-3xl border border-border/40 bg-card shadow-sm overflow-hidden"
-            >
-              <div className="aspect-video relative">
-                <img src={c.image} alt={c.name} className="w-full h-full object-cover" />
-              </div>
-              <div className="p-4">
-                <h4 className="font-bold truncate">{c.name}</h4>
-                <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
-                  <span>{c.city}</span>
-                  <span>{c.screens} screens</span>
+          {cinemas.map((c) => {
+            const content = (
+              <>
+                <div className="aspect-video relative w-full">
+                  <img src={c.image} alt={c.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-2 left-2 flex items-center justify-between w-[calc(100%-16px)]">
+                    <p className="font-bold text-xs text-white">{c.city}</p>
+                    {c.isClosed && (
+                      <span className="bg-red-500/90 text-white text-[9px] uppercase font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
+                        Closed
+                      </span>
+                    )}
+                  </div>
                 </div>
+                <div className="p-4">
+                  <h4 className="font-bold truncate">{c.name}</h4>
+                  <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
+                    <span>{c.screens} screens</span>
+                  </div>
+                </div>
+              </>
+            );
+
+            return c.isClosed ? (
+              <div
+                key={c.id}
+                className="w-[260px] shrink-0 opacity-70 cursor-not-allowed rounded-3xl border border-border/40 bg-card shadow-sm overflow-hidden"
+              >
+                {content}
               </div>
-            </Link>
-          ))}
+            ) : (
+              <Link
+                key={c.id}
+                to="/cinemas/$cinemaId"
+                params={{ cinemaId: c.id }}
+                className="w-[260px] shrink-0 rounded-3xl border border-border/40 bg-card shadow-sm overflow-hidden"
+              >
+                {content}
+              </Link>
+            );
+          })}
         </div>
       </div>
 

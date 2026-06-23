@@ -38,15 +38,15 @@ export function DesktopMoviesView({
   const activeMovie = movies.find((m) => m.id === active)!;
 
   // Calculate the starting price across ALL schedules for this movie
-  const allPrices = activeMovie.showtimes.flatMap((st: any) =>
+  const allPrices = activeMovie?.showtimes?.flatMap((st: any) =>
     st.tiers?.length > 0
       ? st.tiers.map((t: any) => t.price_override || t.ticket_tier.price)
       : [st.basePrice],
-  );
-  const startingPrice = Math.min(...allPrices);
+  ) || [];
+  const startingPrice = allPrices.length > 0 ? Math.min(...allPrices) : (activeMovie?.price || 10);
 
   const uniqueDates = Array.from(
-    new Set(activeMovie.showtimes.map((st: any) => st.date)),
+    new Set((activeMovie?.showtimes || []).map((st: any) => st.date)),
   ).sort() as string[];
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const currentDate =
@@ -228,14 +228,9 @@ export function DesktopMoviesView({
           </Button>
         </div>
         <div className="grid grid-cols-4 gap-4 pb-6">
-          {cinemas.map((c) => (
-            <Link
-              key={c.id}
-              to="/cinemas/$cinemaId"
-              params={{ cinemaId: c.id }}
-              className="group cursor-pointer"
-            >
-              <div className="overflow-hidden rounded-3xl border border-border/40 bg-card shadow-sm transition-all duration-300 group-hover:shadow-[var(--shadow-card)] group-hover:border-primary/30">
+          {cinemas.map((c) => {
+            const content = (
+              <>
                 <div className="relative aspect-video w-full overflow-hidden">
                   <img
                     src={c.image}
@@ -244,26 +239,44 @@ export function DesktopMoviesView({
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-3 left-3 text-white">
-                    <p className="font-bold text-sm">{c.city}</p>
+                  <div className="absolute bottom-3 left-3 flex items-center justify-between w-[calc(100%-24px)]">
+                    <p className="font-bold text-sm text-white">{c.city}</p>
+                    {c.isClosed && (
+                      <span className="bg-red-500/90 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
+                        Closed
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="p-5">
-                  <p className="font-bold text-base truncate">{c.name}</p>
-                  <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                    <Film className="h-3.5 w-3.5" />
-                    <span>{c.screens} premium screens</span>
+                  <h4 className="font-bold text-lg mb-1 truncate">{c.name}</h4>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <span>{c.screens} screens</span>
                   </div>
                 </div>
+              </>
+            );
+
+            return c.isClosed ? (
+              <div
+                key={c.id}
+                className="group opacity-70 cursor-not-allowed overflow-hidden rounded-3xl border border-border/40 bg-card shadow-sm"
+              >
+                {content}
               </div>
-            </Link>
-          ))}
+            ) : (
+              <Link
+                key={c.id}
+                to="/cinemas/$cinemaId"
+                params={{ cinemaId: c.id }}
+                className="group cursor-pointer overflow-hidden rounded-3xl border border-border/40 bg-card shadow-sm transition-all duration-300 hover:shadow-[var(--shadow-card)] hover:border-primary/30"
+              >
+                {content}
+              </Link>
+            );
+          })}
         </div>
       </section>
     </>
   );
 }
-
-// --------------------------------------------------------
-// MOBILE VIEW
-// --------------------------------------------------------

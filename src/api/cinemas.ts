@@ -70,7 +70,7 @@ const GET_CINEMA_BY_ID = `
         show_date
         start_time
         status
-        movie { id title cover_url }
+        movie { id title cover_url genre rating duration_minutes synopsis }
         screen { id name }
         ticket_tiers {
           id

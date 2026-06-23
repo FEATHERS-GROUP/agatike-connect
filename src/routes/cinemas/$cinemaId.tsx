@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { MapPin, Film, Ticket, ArrowLeft, Calendar, Info, Clock, Play } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
@@ -13,28 +13,83 @@ import {
   DrawerDescription,
 } from "@/components/ui/drawer";
 
-// Stubbed mock data
-const cinemas: any[] = [];
-const movies: any[] = [];
+import { useQuery } from "@tanstack/react-query";
+import { getCinemaById } from "@/api/cinemas";
+import { MOCK_MOVIES } from "@/lib/mock-movies";
+
+const MOCK_CINEMAS = [
+  { id: "mc1", name: "Palace Cinema", city: "Sydney", screens: 4, image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800", isClosed: true },
+  { id: "mc2", name: "Kinepolis", city: "Brussels", screens: 12, image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800", isClosed: true },
+  { id: "mc3", name: "Zoo Palast", city: "Berlin", screens: 6, image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800", isClosed: true },
+  { id: "mc4", name: "Zawya Cinema", city: "Cairo", screens: 2, image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800", isClosed: true },
+  { id: "mc5", name: "Novo Cinemas", city: "Doha", screens: 8, image: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=800", isClosed: true },
+];
 
 export const Route = createFileRoute("/cinemas/$cinemaId")({
-  head: ({ params }) => {
-    const cinema = cinemas.find((c) => c.id === params.cinemaId);
-    return {
-      meta: [
-        { title: `${cinema?.name || "Cinema"} — Agatike Connect` },
-        { name: "description", content: `View showtimes and tickets at ${cinema?.name}.` },
-      ],
-    };
-  },
   component: CinemaDetail,
 });
 
 function CinemaDetail() {
   const { cinemaId } = Route.useParams();
   const router = useRouter();
-  const cinema = cinemas.find((c) => c.id === cinemaId);
-  const [selectedMovie, setSelectedMovie] = useState<(typeof movies)[0] | null>(null);
+
+  const isMock = cinemaId.startsWith("m");
+
+  const { data: dbCinema, isLoading } = useQuery({
+    queryKey: ["cinema", cinemaId],
+    queryFn: () => getCinemaById({ data: { id: cinemaId } }),
+    enabled: !isMock,
+  });
+
+  const { cinema, cinemaMovies } = useMemo(() => {
+    if (isMock) {
+      const mockCinema = MOCK_CINEMAS.find(c => c.id === cinemaId);
+      return { cinema: mockCinema, cinemaMovies: [] };
+    }
+
+    if (!dbCinema) return { cinema: null, cinemaMovies: [] };
+
+    const formattedCinema = {
+      id: dbCinema.id,
+      name: dbCinema.name,
+      city: dbCinema.city,
+      screens: dbCinema.screens?.length || 1,
+      image: dbCinema.cover_url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800"
+    };
+
+    const moviesMap = new Map();
+    (dbCinema.schedules || []).forEach((s: any) => {
+      const m = s.movie;
+      if (!m) return;
+      if (!moviesMap.has(m.id)) {
+        moviesMap.set(m.id, {
+          id: m.id,
+          title: m.title,
+          cover: m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
+          rating: m.rating || "PG",
+          genre: m.genre || "Drama",
+          duration: `${m.duration_minutes || 120}m`,
+          price: s.ticket_tiers?.[0]?.price_override || 3000,
+          currency: s.ticket_tiers?.[0]?.currency || "RWF",
+          synopsis: m.synopsis || "No synopsis available.",
+          showtimes: []
+        });
+      }
+      const timeStr = s.start_time ? s.start_time.substring(0, 5) : "12:00";
+      const movieEntry = moviesMap.get(m.id);
+      if (!movieEntry.showtimes.includes(timeStr)) {
+        movieEntry.showtimes.push(timeStr);
+      }
+    });
+
+    return { cinema: formattedCinema, cinemaMovies: Array.from(moviesMap.values()) };
+  }, [dbCinema, cinemaId, isMock]);
+
+  const [selectedMovie, setSelectedMovie] = useState<any | null>(null);
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
+  }
 
   if (!cinema) {
     return (
@@ -47,7 +102,7 @@ function CinemaDetail() {
     );
   }
 
-  const cinemaMovies = movies.filter((m) => m.cinema === cinema.name);
+
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0">
@@ -248,9 +303,9 @@ function CinemaDetail() {
                     className="flex-1 h-14 rounded-2xl shadow-[var(--shadow-glow)] text-base font-bold"
                     style={{ background: "var(--gradient-primary)" }}
                   >
-                    <Link to="/book/$eventId" params={{ eventId: selectedMovie.id }}>
+                    <Link to="/book-movie/$movieId" params={{ movieId: selectedMovie.id }}>
                       <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
-                      {formatCurrency(selectedMovie.price || 8, selectedMovie.currency)}
+                      {formatCurrency(selectedMovie.price || 3000, selectedMovie.currency)}
                     </Link>
                   </Button>
                   <Button

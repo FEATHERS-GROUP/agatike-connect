@@ -117,11 +117,20 @@ function Movies() {
     });
 
     const realMovies = Array.from(moviesMap.values());
-    const mockToAdd = MOCK_MOVIES.filter(mock => !realMovies.some(r => r.title === mock.title));
+    const mockToAdd = MOCK_MOVIES.filter(mock => !realMovies.some(r => r.title === mock.title)).map(m => ({ ...m, showtimes: [] }));
+
+    const MOCK_CINEMAS = [
+      { id: "mc1", name: "Palace Cinema", city: "Sydney", screens: 4, image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800", isClosed: true },
+      { id: "mc2", name: "Kinepolis", city: "Brussels", screens: 12, image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800", isClosed: true },
+      { id: "mc3", name: "Zoo Palast", city: "Berlin", screens: 6, image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800", isClosed: true },
+      { id: "mc4", name: "Zawya Cinema", city: "Cairo", screens: 2, image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800", isClosed: true },
+      { id: "mc5", name: "Novo Cinemas", city: "Doha", screens: 8, image: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=800", isClosed: true },
+    ];
+    const realCinemas = Array.from(cinemasMap.values());
 
     return {
       movies: [...realMovies, ...mockToAdd],
-      cinemas: Array.from(cinemasMap.values()),
+      cinemas: [...realCinemas, ...MOCK_CINEMAS],
     };
   }, [schedules]);
 
