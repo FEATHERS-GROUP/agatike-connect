@@ -6,55 +6,68 @@ import { Skeleton } from "@/components/ui/skeleton";
 const defaultStories: any[] = [
   {
     id: "s1",
-    name: "AfroBeat Fest",
-    avatar: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=150&h=150&fit=crop",
+    name: "Sydney Fest",
+    avatar: "https://ui-avatars.com/api/?name=Sydney+Fest&background=000&color=fff",
     items: [
-      { id: "s1i1", image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800" },
-      { id: "s1i2", image: "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800" },
+      { id: "s1i1", image: "https://upload.wikimedia.org/wikipedia/commons/0/02/Vivid_Sydney_2024_-_Bright_Lights_Big_City.jpg" },
     ],
   },
   {
     id: "s2",
-    name: "Lagos Nights",
-    avatar: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=150&h=150&fit=crop",
+    name: "Tomorrowland",
+    avatar: "https://ui-avatars.com/api/?name=Tomorrowland&background=8B5CF6&color=fff",
     items: [
-      { id: "s2i1", image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800" },
+      { id: "s2i1", image: "https://upload.wikimedia.org/wikipedia/commons/e/ed/Tomorrowland2016mainstage.jpg" },
     ],
   },
   {
     id: "s3",
-    name: "Cape Jazz",
-    avatar: "https://images.unsplash.com/photo-1511735111819-9a3efd16269a?w=150&h=150&fit=crop",
+    name: "Berlin Lights",
+    avatar: "https://ui-avatars.com/api/?name=Berlin+Lights&background=EC4899&color=fff",
     items: [
-      { id: "s3i1", image: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800" },
-      { id: "s3i2", image: "https://images.unsplash.com/photo-1501386761578-eaa54b8b9f8f?w=800" },
+      { id: "s3i1", image: "https://upload.wikimedia.org/wikipedia/commons/e/e9/Berliner_Dom_Festival_of_Lights.jpg" },
     ],
   },
   {
     id: "s4",
-    name: "Nairobi FC",
-    avatar: "https://images.unsplash.com/photo-1459865264687-595d652de67e?w=150&h=150&fit=crop",
+    name: "Cairo Fest",
+    avatar: "https://ui-avatars.com/api/?name=Cairo+Fest&background=10B981&color=fff",
     items: [
-      { id: "s4i1", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800" },
+      { id: "s4i1", image: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Cairo_at_night.jpg" },
     ],
   },
   {
     id: "s5",
-    name: "Accra Vibes",
-    avatar: "https://images.unsplash.com/photo-1545484152-c8e5b50c6fce?w=150&h=150&fit=crop",
+    name: "Doha Expo",
+    avatar: "https://ui-avatars.com/api/?name=Doha+Expo&background=F59E0B&color=fff",
     items: [
-      { id: "s5i1", image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800" },
-      { id: "s5i2", image: "https://images.unsplash.com/photo-1563841930606-67e2bce48b78?w=800" },
+      { id: "s5i1", image: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Doha_skyline_at_night.jpg" },
     ],
   },
   {
     id: "s6",
-    name: "Kigali Art",
-    avatar: "https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=150&h=150&fit=crop",
+    name: "Web Summit",
+    avatar: "https://ui-avatars.com/api/?name=Web+Summit&background=3B82F6&color=fff",
     items: [
-      { id: "s6i1", image: "https://images.unsplash.com/photo-1504680177321-2e6a879aac86?w=800" },
+      { id: "s6i1", image: "https://upload.wikimedia.org/wikipedia/commons/6/66/SXSW_Center_%2854987238776%29.jpg" },
     ],
   },
+  {
+    id: "s7",
+    name: "Paris Fashion",
+    avatar: "https://ui-avatars.com/api/?name=Paris+Fashion&background=EF4444&color=fff",
+    items: [
+      { id: "s7i1", image: "https://upload.wikimedia.org/wikipedia/commons/3/3d/Magdalena_Frackowiak.jpg" },
+    ],
+  },
+  {
+    id: "s8",
+    name: "TechCrunch",
+    avatar: "https://ui-avatars.com/api/?name=TechCrunch&background=14B8A6&color=fff",
+    items: [
+      { id: "s8i1", image: "https://upload.wikimedia.org/wikipedia/commons/6/66/SXSW_Center_%2854987238776%29.jpg" },
+    ],
+  }
 ];
 
 type Story = { id: string; name: string; avatar: string; items: { id: string; image: string }[] };
@@ -81,7 +94,7 @@ export function Stories({
     <>
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
         {isLoading
-          ? [1, 2, 3, 4, 5, 6, 7].map((i) => (
+          ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
               <div key={i} className="flex shrink-0 flex-col items-center gap-2">
                 <Skeleton className="h-[72px] w-[72px] rounded-full" />
                 <Skeleton className="h-3 w-12" />

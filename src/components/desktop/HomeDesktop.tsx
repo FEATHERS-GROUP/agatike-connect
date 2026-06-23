@@ -19,16 +19,7 @@ import { mapDbEventToEvent, isWeekendEvent } from "@/lib/utils";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 
 // Stubbed mock data
-const categories: any[] = [
-  "🎵 Music",
-  "🎭 Theatre",
-  "🏀 Sports",
-  "🎨 Art",
-  "🍔 Food",
-  "🎤 Comedy",
-  "🎬 Film",
-  "🌍 Culture",
-];
+import { HeroSearch } from "@/components/desktop/HeroSearch";
 
 const movies: any[] = [
   {
@@ -279,40 +270,7 @@ export function HomeDesktop() {
               experiences — all in one place.
             </p>
 
-            <div className="mt-8 max-w-2xl rounded-2xl border border-border/60 bg-background/80 p-2 shadow-[var(--shadow-card)] backdrop-blur-xl">
-              <div className="grid grid-cols-1 gap-2 md:grid-cols-[1.5fr_1fr_auto]">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Events, organizers, artists…"
-                    className="h-12 border-transparent bg-secondary/60 pl-9"
-                  />
-                </div>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="City"
-                    className="h-12 border-transparent bg-secondary/60 pl-9"
-                  />
-                </div>
-                <Button
-                  className="h-12 rounded-xl px-6"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  Search
-                </Button>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2 px-1">
-                {categories.map((c) => (
-                  <button
-                    key={c}
-                    className="rounded-full border border-border/60 bg-background px-3 py-1 text-xs text-muted-foreground transition hover:bg-accent hover:text-accent-foreground"
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <HeroSearch />
           </div>
         </div>
       </section>
