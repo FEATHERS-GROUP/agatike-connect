@@ -1,0 +1,96 @@
+import { hasuraRequest } from "./graphql.server";
+
+export async function handlePawaPayWebhook(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  const path = url.pathname;
+
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    const body = await request.json();
+    console.log(`[PawaPay Webhook] Received callback for ${path}:`, body);
+
+    const providerReference = body.depositId || body.payoutId || body.refundId;
+    const providerStatus = body.status; // e.g., "COMPLETED", "FAILED"
+
+    if (providerReference) {
+      // 1. Update the wallet transaction status
+      const updateQuery = `
+        mutation UpdateWalletTransaction($provider_reference: String!, $provider_status: String!, $status: String!, $raw_callback_data: jsonb) {
+          update_wallet_transactions(
+            where: { provider_reference: { _eq: $provider_reference } }, 
+            _set: { 
+              provider_status: $provider_status, 
+              status: $status,
+              raw_callback_data: $raw_callback_data,
+              updated_at: "now()"
+            }
+          ) {
+            returning {
+              id
+              status
+              reference_id
+              type
+            }
+          }
+        }
+      `;
+
+      const res = await hasuraRequest<{ update_wallet_transactions: any }>(updateQuery, {
+        provider_reference: providerReference,
+        provider_status: providerStatus || "UNKNOWN",
+        status: providerStatus === "COMPLETED" ? "completed" : providerStatus === "FAILED" ? "failed" : "pending",
+        raw_callback_data: body,
+      });
+
+      const tx = res.update_wallet_transactions?.returning?.[0];
+
+      // 2. If it's a completed deposit, activate the associated ticket/subscription
+      if (tx && tx.status === "completed") {
+        if (tx.type === "event_ticket") {
+          // Update event_attendees status to "Confirmed" based on a unique custom group ID (reference_id)
+          const confirmQuery = `
+            mutation ConfirmEventAttendees($booking_ref: String!) {
+              update_event_attendees(
+                where: { custom_fields: { _contains: { booking_ref: $booking_ref } } },
+                _set: { status: "Confirmed" }
+              ) {
+                affected_rows
+              }
+            }
+          `;
+          await hasuraRequest(confirmQuery, { booking_ref: tx.reference_id });
+          // Note: Email sending logic might need to be hooked up here if we want background PDF generation
+        } else if (tx.type === "space_subscription") {
+          const activateSubQuery = `
+            mutation ActivateSpaceSubscription($id: uuid!) {
+              update_space_subscriptions_by_pk(
+                pk_columns: { id: $id },
+                _set: { status: "active" }
+              ) {
+                id
+              }
+            }
+          `;
+          await hasuraRequest(activateSubQuery, { id: tx.reference_id });
+        }
+      }
+    }
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error(`[PawaPay Webhook] Error processing ${path}:`, error);
+    return new Response(JSON.stringify({ error: "Invalid request" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}

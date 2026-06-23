@@ -22,6 +22,7 @@ import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
 import { getWorkspaceVenueProjects } from "@/api/venues";
 import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
+import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
@@ -55,6 +56,9 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
+  const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
 
   // State for attendees dynamic form
   const [attendees, setAttendees] = useState<any[]>([]);
@@ -272,7 +276,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     });
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (paymentDetails?: { phone?: string; network?: string }) => {
+      const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
+      const isPawaPay = total > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+
       const attendeesPayload = attendees.map((a, idx) => {
         const otp = Math.random().toString(36).substring(2, 10).toUpperCase();
         const tier = getTierDetails(a.tierId);
@@ -296,12 +303,13 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           phone: sourceAttendee.phone || "",
           qrcode_number: otp,
           quanity: "1",
-          status: "Confirmed",
+          status: isPawaPay ? "Pending Payment" : "Confirmed",
           ticket_id: a.tierId,
           ticket_type: tier ? tier.type : "General Admission",
           type: "Booking",
           payment_method: paymentMethod,
           custom_fields: {
+            booking_ref,
             country: sourceAttendee.country,
             tour_stop_idx: a.stopIdx,
             seat: a.seat,
@@ -314,9 +322,30 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       });
 
       const res = await addEventAttendees({ data: { objects: attendeesPayload } } as any);
-      return { res, attendeesPayload };
+
+      if (isPawaPay) {
+        const pawaRes = await initiatePawaPayDeposit({
+          data: {
+            amount: total,
+            phone: paymentDetails!.phone,
+            network: paymentDetails!.network,
+            type: "event_ticket",
+            referenceId: booking_ref
+          }
+        } as any);
+        return { res, attendeesPayload, isPawaPay: true, depositId: pawaRes.depositId };
+      }
+
+      return { res, attendeesPayload, isPawaPay: false };
     },
     onSuccess: (data: any) => {
+      if (data.isPawaPay) {
+        setPawapayDepositId(data.depositId);
+        setIsPollingPawaPay(true);
+        setIsPaymentModalOpen(false);
+        return;
+      }
+
       const { res, attendeesPayload } = data;
       const returned = res?.insert_event_attendees?.returning || [];
       const ticketsToIssue = attendees.map((a, idx) => {
@@ -352,6 +381,30 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       toast.error(e.message || "Checkout failed");
     },
   });
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPollingPawaPay && pawapayDepositId) {
+      interval = setInterval(async () => {
+        try {
+          const status = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
+          if (status?.status === "completed") {
+            setIsPollingPawaPay(false);
+            toast.success("Payment completed successfully!");
+            localStorage.removeItem(storageKey);
+            setIsSuccess(true);
+          } else if (status?.status === "failed") {
+            setIsPollingPawaPay(false);
+            setPawapayError("Payment failed or was cancelled.");
+            toast.error("Payment failed. Please try again.");
+          }
+        } catch (e) {
+          console.error("Polling error:", e);
+        }
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isPollingPawaPay, pawapayDepositId, storageKey]);
 
   const getMergedProjectDesign = (baseProject: any, stopIdx: number, tierId: string) => {
     if (!baseProject) return null;
@@ -535,6 +588,26 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           </div>
           <Skeleton className="h-14 w-full rounded-2xl" />
         </div>
+      </div>
+    );
+  }
+
+  if (isPollingPawaPay) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+        <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
+        <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
+        <p className="text-muted-foreground mb-8 max-w-sm">
+          We've sent a payment request to your mobile number. Please enter your PIN to confirm the payment.
+        </p>
+        <div className="flex gap-2 mb-8">
+          <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
+          <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
+          <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
+        </div>
+        <Button variant="outline" onClick={() => setIsPollingPawaPay(false)} className="rounded-2xl h-12 px-8">
+          Cancel Payment
+        </Button>
       </div>
     );
   }

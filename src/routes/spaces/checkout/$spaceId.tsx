@@ -12,6 +12,9 @@ import {
 import { createInvoiceRecord } from "@/api/invoices";
 import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
+import { PaymentModal } from "@/components/shared/PaymentModal";
+import { Smartphone } from "lucide-react";
+import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -86,6 +89,10 @@ function CheckoutPage() {
   const [sendMemberEmails, setSendMemberEmails] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("momo");
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
 
   const planName = search.plan || "Custom Plan";
   const planPrice = search.price || "Contact for price";
@@ -115,15 +122,8 @@ function CheckoutPage() {
     setTeamMembers(newMembers);
   };
 
-  const handlePayment = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handlePayment = async (paymentDetails?: { phone?: string; network?: string }) => {
     setErrorMsg("");
-
-    // Guard: only process payment when the user is explicitly on step 3
-    if (step !== 3) {
-      validateAndNext();
-      return;
-    }
 
     if (!formData.name || !formData.email || !formData.phone || !formData.startDate) {
       setErrorMsg("Please fill in all details including the start date.");
@@ -133,6 +133,8 @@ function CheckoutPage() {
     setIsProcessing(true);
 
     try {
+      const isPawaPay = finalPriceNum > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+
       // 1. Save Subscription to Database (with membership IDs generated server-side)
       const subscription = await createSpaceSubscription({
         data: {
@@ -144,13 +146,30 @@ function CheckoutPage() {
           customer_gender: bookingType === "individual" ? formData.gender : undefined,
           customer_address: bookingType === "group" ? formData.address : undefined,
           plan_name: planName,
-          price: finalPriceString,
+          price: finalPriceNum.toString(),
           billing_cycle: billingCycle,
           start_date: formData.startDate,
           booking_type: bookingType,
           team_members: bookingType === "group" ? teamMembers : [],
+          status: isPawaPay ? "pending" : "active"
         },
-      });
+      } as any);
+
+      if (isPawaPay) {
+        const pawaRes = await initiatePawaPayDeposit({
+          data: {
+            amount: finalPriceNum,
+            phone: paymentDetails!.phone,
+            network: paymentDetails!.network,
+            type: "space_subscription",
+            referenceId: subscription?.id
+          }
+        } as any);
+        setPawapayDepositId(pawaRes.depositId);
+        setIsPollingPawaPay(true);
+        setIsPaymentModalOpen(false);
+        return; // Don't send emails or redirect yet
+      }
 
       // Members now have membership_ids assigned by the server
       const savedMembers: any[] = subscription?.team_members || [];
@@ -175,7 +194,7 @@ function CheckoutPage() {
           spaceId,
           referenceId: subscription?.id,
         },
-      });
+      } as any);
 
       const invoiceNumber = invoice?.invoiceNumber || `AGT-${Date.now()}`;
       const pdfBase64 = invoice?.pdfBase64 || null;
@@ -205,7 +224,7 @@ function CheckoutPage() {
             members: savedMembers,
             pdfBase64, // attach invoice PDF
           },
-        });
+        } as any);
 
         // Optionally send individual welcome emails to each member sequentially
         if (sendMemberEmails) {
@@ -221,7 +240,7 @@ function CheckoutPage() {
                   startDate: formattedStart,
                   membershipId: m.membership_id || "—",
                 },
-              });
+              } as any);
             }
           }
         }
@@ -237,7 +256,7 @@ function CheckoutPage() {
             billingCycle,
             startDate: formData.startDate,
           },
-        });
+        } as any);
 
         await sendSubscriptionInvoiceEmail({
           data: {
@@ -252,7 +271,7 @@ function CheckoutPage() {
             startDate: formData.startDate,
             pdfBase64, // attach invoice PDF
           },
-        });
+        } as any);
       }
 
       // 3. Redirect to Success only after all emails are successfully sent
@@ -263,6 +282,28 @@ function CheckoutPage() {
       setIsProcessing(false);
     }
   };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPollingPawaPay && pawapayDepositId) {
+      interval = setInterval(async () => {
+        try {
+          const status = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
+          if (status?.status === "completed") {
+            setIsPollingPawaPay(false);
+            navigate({ to: `/spaces/success/${spaceId}`, search: { email: formData.email } });
+          } else if (status?.status === "failed") {
+            setIsPollingPawaPay(false);
+            setErrorMsg("Payment failed or was cancelled.");
+            setIsProcessing(false);
+          }
+        } catch (e) {
+          console.error("Polling error:", e);
+        }
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isPollingPawaPay, pawapayDepositId, spaceId, formData.email, navigate]);
 
   const validateAndNext = () => {
     if (step === 1) {
@@ -282,7 +323,7 @@ function CheckoutPage() {
         }
       }
       setErrorMsg("");
-      handleNext();
+      setIsPaymentModalOpen(true);
     }
   };
 
@@ -453,7 +494,7 @@ function CheckoutPage() {
               </p>
             </div>
 
-            <form id="checkout-form" onSubmit={handlePayment} className="space-y-8">
+            <form id="checkout-form" onSubmit={(e) => e.preventDefault()} className="space-y-8">
               {/* STEP 1: Booking Type */}
               {step === 1 && (
                 <div className="bg-card border border-border/40 rounded-2xl p-6 shadow-sm animate-in fade-in slide-in-from-right-8 duration-300">
@@ -804,53 +845,7 @@ function CheckoutPage() {
                 </div>
               )}
 
-              {/* STEP 3: Payment */}
-              {step === 3 && (
-                <div className="bg-card border border-border/40 rounded-2xl p-6 shadow-sm animate-in fade-in slide-in-from-right-8 duration-300">
-                  <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                    <span className="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm">
-                      3
-                    </span>
-                    Payment Option
-                  </h2>
-
-                  <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 flex items-center gap-4 mb-6">
-                    <div className="bg-orange-500 w-12 h-12 rounded-lg flex items-center justify-center shrink-0">
-                      <CreditCard className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-orange-600 dark:text-orange-400">
-                        Mobile Money
-                      </h3>
-                      <p className="text-sm text-muted-foreground">Pay securely with Momo.</p>
-                    </div>
-                    <CheckCircle2 className="w-5 h-5 text-orange-500 ml-auto" />
-                  </div>
-
-                  {errorMsg && (
-                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-lg text-sm">
-                      {errorMsg}
-                    </div>
-                  )}
-
-                  <Button
-                    type="submit"
-                    disabled={isProcessing}
-                    className="hidden lg:flex w-full h-14 text-lg font-bold rounded-xl shadow-[var(--shadow-glow)]"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing Payment...
-                      </>
-                    ) : (
-                      `Pay ${finalPriceString}`
-                    )}
-                  </Button>
-                  <p className="hidden lg:block text-center text-xs text-muted-foreground mt-4">
-                    By clicking "Pay", you agree to the Terms of Service and Privacy Policy.
-                  </p>
-                </div>
-              )}
+              {/* Step 3 replaced by PaymentModal */}
             </form>
           </div>
 
@@ -892,34 +887,46 @@ function CheckoutPage() {
             type="button"
             disabled={isProcessing}
             className="w-full h-12 text-md font-bold rounded-xl shadow-[var(--shadow-glow)]"
-            onClick={() => {
-              if (step < 3) {
-                validateAndNext();
-              } else {
-                const form = document.getElementById("checkout-form") as HTMLFormElement;
-                if (form) form.requestSubmit();
-              }
-            }}
+            onClick={validateAndNext}
           >
-            {step === 3 ? (
-              isProcessing ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...
-                </>
-              ) : (
-                `Pay ${finalPriceString}`
-              )
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...
+              </>
             ) : (
-              "Continue"
+              step === 2 ? `Proceed to Payment` : "Continue"
             )}
           </Button>
-          {step === 3 && (
-            <p className="text-center text-[10px] text-muted-foreground mt-3">
-              By clicking "Pay", you agree to the Terms of Service.
-            </p>
-          )}
         </div>
       </div>
+
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onOpenChange={setIsPaymentModalOpen}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        onProceed={handlePayment}
+        isProcessing={isProcessing}
+        isGenerating={false}
+      />
+
+      {isPollingPawaPay && (
+        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+          <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
+          <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
+          <p className="text-muted-foreground mb-8 max-w-sm">
+            We've sent a payment request to your mobile number. Please enter your PIN to confirm the payment.
+          </p>
+          <div className="flex gap-2 mb-8 justify-center">
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
+          </div>
+          <Button variant="outline" onClick={() => { setIsPollingPawaPay(false); setIsProcessing(false); }} className="rounded-2xl h-12 px-8">
+            Cancel Payment
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
