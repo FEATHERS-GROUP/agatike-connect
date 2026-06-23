@@ -24,6 +24,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { GlobalNotificationListener } from "@/components/providers/GlobalNotificationListener";
 import { GlobalUserNotificationListener } from "@/components/providers/GlobalUserNotificationListener";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Rss } from "lucide-react";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -181,14 +182,15 @@ function RootComponent() {
   }, []);
 
   // Hide bottom nav on detail/booking/community/ticket/f/b pages, dashboard, and auth pages
-  const hideNav =
+  const hideNav = Boolean(
     location.pathname.match(/^\/(events|venues|spaces|book|book-movie|community|ticket|f|b)\/.+/) ||
-    (location.pathname.match(/^\/.+\/message$/) && !!(location.search as any)?.chatId) ||
-    (location.pathname.startsWith("/buses/") && location.pathname !== "/buses/mobile") ||
-    location.pathname.startsWith("/dashboard") ||
-    location.pathname === "/signin" ||
-    location.pathname === "/signup" ||
-    location.pathname === "/onboarding";
+      (location.pathname.match(/^\/.+\/message$/) && !!(location.search as any)?.chatId) ||
+      (location.pathname.startsWith("/buses/") && location.pathname !== "/buses/mobile") ||
+      location.pathname.startsWith("/dashboard") ||
+      location.pathname === "/signin" ||
+      location.pathname === "/signup" ||
+      location.pathname === "/onboarding"
+  );
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.GOOGLE_AUTH_CLIENT_ID || ""}>
@@ -212,6 +214,8 @@ function RootComponent() {
                       <MobileNav />
                     </div>
                   )}
+
+                  <AuthDependentFeedBubble hideNav={hideNav} />
 
                   <InstallPrompt />
                   <SplashLoader />
@@ -243,4 +247,22 @@ function AuthRedirect() {
   }, [isLoading, isLoggedIn, location.pathname, navigate]);
 
   return null;
+}
+
+function AuthDependentFeedBubble({ hideNav }: { hideNav: boolean }) {
+  const { isLoggedIn } = useUserAuth();
+  const location = useRouterState({ select: (s) => s.location });
+
+  if (!isLoggedIn || hideNav || location.pathname === "/feed") return null;
+
+  return (
+    <Link
+      to="/feed"
+      className="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-transform hover:scale-105 active:scale-95"
+      style={{ background: "var(--gradient-primary)" }}
+      aria-label="Go to Feed"
+    >
+      <Rss className="h-6 w-6 text-white" />
+    </Link>
+  );
 }
