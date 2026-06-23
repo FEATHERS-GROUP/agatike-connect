@@ -162,7 +162,8 @@ function CheckoutPage() {
             phone: paymentDetails!.phone,
             network: paymentDetails!.network,
             type: "space_subscription",
-            referenceId: subscription?.id
+            referenceId: subscription?.id,
+            workspaceId: space?.workspace_id,
           }
         } as any);
         setPawapayDepositId(pawaRes.depositId);

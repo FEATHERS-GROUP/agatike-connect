@@ -330,7 +330,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             phone: paymentDetails!.phone,
             network: paymentDetails!.network,
             type: "event_ticket",
-            referenceId: booking_ref
+            referenceId: booking_ref,
+            workspaceId: event?.workspace_id,
           }
         } as any);
         return { res, attendeesPayload, isPawaPay: true, depositId: pawaRes.depositId };
