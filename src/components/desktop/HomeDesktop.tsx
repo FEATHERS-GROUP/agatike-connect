@@ -33,45 +33,45 @@ const categories: any[] = [
 const movies: any[] = [
   {
     id: "m1",
-    title: "Black Panther: Wakanda Forever",
-    genre: "Action / Sci-Fi",
-    duration: "2h 41m",
-    rating: "PG-13",
-    cover: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
-    cinema: "IMAX Nairobi",
+    title: "Deadpool & Wolverine",
+    genre: "Action / Comedy",
+    duration: "2h 7m",
+    rating: "R",
+    cover: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg",
+    cinema: "Century Cinemax",
     price: 12,
     currency: "USD",
   },
   {
     id: "m2",
-    title: "The Woman King",
-    genre: "Drama / History",
-    duration: "2h 15m",
-    rating: "PG-13",
-    cover: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600",
-    cinema: "Silverbird Lagos",
+    title: "Inside Out 2",
+    genre: "Animation / Family",
+    duration: "1h 36m",
+    rating: "PG",
+    cover: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg",
+    cinema: "Silverbird Cinemas",
     price: 10,
     currency: "USD",
   },
   {
     id: "m3",
-    title: "Lionheart",
-    genre: "Comedy / Drama",
-    duration: "1h 35m",
-    rating: "PG",
-    cover: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=600",
-    cinema: "Nu Metro Accra",
-    price: 9,
+    title: "Dune: Part Two",
+    genre: "Sci-Fi / Action",
+    duration: "2h 46m",
+    rating: "PG-13",
+    cover: "https://upload.wikimedia.org/wikipedia/en/8/8e/Dune_Part_Two_poster.jpg",
+    cinema: "Ster-Kinekor",
+    price: 15,
     currency: "USD",
   },
   {
     id: "m4",
-    title: "Atlantics",
-    genre: "Drama / Fantasy",
-    duration: "1h 46m",
-    rating: "NR",
-    cover: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600",
-    cinema: "IMAX Nairobi",
+    title: "Bad Boys: Ride or Die",
+    genre: "Action / Comedy",
+    duration: "1h 55m",
+    rating: "R",
+    cover: "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg",
+    cinema: "Canal Olympia",
     price: 10,
     currency: "USD",
   },
@@ -80,44 +80,47 @@ const movies: any[] = [
 const movieStories: any[] = [
   {
     id: "cs1",
-    name: "IMAX Nairobi",
-    avatar: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=150&h=150&fit=crop",
+    name: "Century Cinemax",
+    avatar: "https://ui-avatars.com/api/?name=Century+Cinemax&background=000&color=fff",
     items: [
-      { id: "cs1i1", image: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800" },
-      { id: "cs1i2", image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800" },
+      { id: "cs1i1", image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg" },
+      { id: "cs1i2", image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg" },
     ],
   },
   {
     id: "cs2",
-    name: "Silverbird Lagos",
-    avatar: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=150&h=150&fit=crop",
+    name: "Silverbird Cinemas",
+    avatar: "https://ui-avatars.com/api/?name=Silverbird+Cinemas&background=1D4ED8&color=fff",
     items: [
-      { id: "cs2i1", image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800" },
+      { id: "cs2i1", image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg" },
+      { id: "cs2i2", image: "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg" },
     ],
   },
   {
     id: "cs3",
-    name: "Ster-Kinekor CPT",
-    avatar: "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?w=150&h=150&fit=crop",
+    name: "Ster-Kinekor",
+    avatar: "https://ui-avatars.com/api/?name=Ster-Kinekor&background=E11D48&color=fff",
     items: [
-      { id: "cs3i1", image: "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?w=800" },
-      { id: "cs3i2", image: "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=800" },
+      { id: "cs3i1", image: "https://upload.wikimedia.org/wikipedia/en/8/8e/Dune_Part_Two_poster.jpg" },
+      { id: "cs3i2", image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg" },
     ],
   },
   {
     id: "cs4",
-    name: "Nu Metro Accra",
-    avatar: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=150&h=150&fit=crop",
+    name: "Canal Olympia",
+    avatar: "https://ui-avatars.com/api/?name=Canal+Olympia&background=047857&color=fff",
     items: [
-      { id: "cs4i1", image: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800" },
+      { id: "cs4i1", image: "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg" },
+      { id: "cs4i2", image: "https://upload.wikimedia.org/wikipedia/en/8/8e/Dune_Part_Two_poster.jpg" },
     ],
   },
   {
     id: "cs5",
-    name: "CineVis Kigali",
-    avatar: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=150&h=150&fit=crop",
+    name: "Nu Metro",
+    avatar: "https://ui-avatars.com/api/?name=Nu+Metro&background=7C3AED&color=fff",
     items: [
-      { id: "cs5i1", image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800" },
+      { id: "cs5i1", image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg" },
+      { id: "cs5i2", image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg" },
     ],
   },
 ];
@@ -201,9 +204,12 @@ export function HomeDesktop() {
         });
       }
     });
+    
     const result = Array.from(cinemasMap.values());
-    if (result.length > 0) return result;
-    return movieStories; // Fallback
+    
+    // Fill the rest with mock data to make it look populated
+    const mockToAdd = movieStories.filter(mock => !result.some(r => r.name === mock.name));
+    return [...result, ...mockToAdd].slice(0, 6);
   }, [schedules]);
 
   const dynamicMovies = useMemo(() => {
@@ -227,8 +233,10 @@ export function HomeDesktop() {
       }
     });
     const result = Array.from(moviesMap.values());
-    if (result.length > 0) return result.slice(0, 4); // Grid shows 4
-    return movies; // Fallback
+    
+    // Fill the rest with mock data
+    const mockToAdd = movies.filter(mock => !result.some(r => r.title === mock.title));
+    return [...result, ...mockToAdd].slice(0, 4); // Grid shows 4
   }, [schedules]);
 
   const allOrganizers = dbOrganizers && dbOrganizers.length > 0 ? dbOrganizers : organizers;

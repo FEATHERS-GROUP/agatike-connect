@@ -20,9 +20,10 @@ export function StoryViewer({
 
   const duration = 5000; // 5 seconds per story
   const currentOrg = stories[currentOrgIndex];
-  const currentItem = currentOrg.items[currentStoryIndex];
+  const currentItem = currentOrg?.items?.[currentStoryIndex];
 
   useEffect(() => {
+    if (!currentOrg || !currentItem) return;
     setProgress(0);
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -64,6 +65,8 @@ export function StoryViewer({
       setCurrentStoryIndex(stories[currentOrgIndex - 1].items.length - 1);
     }
   };
+
+  if (!currentOrg || !currentItem) return null;
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black">
