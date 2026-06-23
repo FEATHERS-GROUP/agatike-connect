@@ -10,6 +10,7 @@ import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { getOrganizers } from "@/api/organizers";
 import { getGlobalFeedPosts } from "@/api/experience";
 import { useQuery } from "@tanstack/react-query";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 
 // Stubbed mock data
 const events: any[] = [];
@@ -35,16 +36,22 @@ export const Route = createFileRoute("/feed")({
 
 function Feed() {
   const { isFollowing } = useFollowedOrganizers();
-  const { data: dbPosts = [], isLoading } = useQuery({
+  const { isLoggedIn } = useUserAuth();
+  
+  // Conditionally fetch posts only if logged in
+  const { data: dbPosts = [], isLoading: isPostsLoading } = useQuery({
     queryKey: ["global-feed-posts"],
     queryFn: () => getGlobalFeedPosts(),
+    enabled: isLoggedIn,
   });
+  
+  const isLoading = isLoggedIn ? isPostsLoading : true; // Show loading skeletons if not logged in
 
   // Filter feed posts to only show those from followed organizers
   const filteredPosts = dbPosts.filter((post) => isFollowing(post.organizerId));
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground relative pb-24 md:pb-0">
       <Navbar />
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[1fr_320px]">
         <main>
@@ -143,6 +150,43 @@ function Feed() {
           </div>
         </aside>
       </div>
+
+      {!isLoggedIn && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 pointer-events-none flex justify-center">
+          <div className="bg-card/95 backdrop-blur-xl border border-border/60 shadow-[0_-8px_30px_rgb(0,0,0,0.12)] rounded-3xl p-6 md:p-8 w-full max-w-lg pointer-events-auto animate-in slide-in-from-bottom-10 fade-in duration-500 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
+            <div className="mx-auto h-12 w-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
+              <Users className="h-6 w-6" />
+            </div>
+            <h3 className="text-xl font-black tracking-tight text-foreground mb-2">Join the Community</h3>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+              Log in to see live moments, reels, and exclusive updates from your favorite event organizers and friends.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link to="/signin" className="w-full">
+                <Button
+                  className="w-full h-12 rounded-2xl text-base font-bold shadow-[var(--shadow-glow)]"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  Log In
+                </Button>
+              </Link>
+              <p className="text-xs text-muted-foreground mt-2">
+                Don't have an account?{" "}
+                <Link to="/signup" className="text-primary hover:underline font-semibold">
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Blur overlay for the background when not logged in */}
+      {!isLoggedIn && (
+        <div className="fixed inset-0 top-[72px] bg-background/20 backdrop-blur-[2px] z-40 pointer-events-none" />
+      )}
+
       <Footer />
     </div>
   );

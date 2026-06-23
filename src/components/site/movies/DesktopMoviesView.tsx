@@ -84,38 +84,38 @@ export function DesktopMoviesView({
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary backdrop-blur-md">
                   <Film className="h-3.5 w-3.5" /> Now Playing
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-xs font-bold text-white backdrop-blur-md">
-                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" /> 4.8
+                <span className="inline-flex items-center gap-1 rounded-full bg-secondary/50 px-2 py-1 text-xs font-bold text-foreground backdrop-blur-md">
+                  <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" /> 4.8
                 </span>
               </div>
 
-              <h1 className="text-6xl font-black tracking-tight text-white mb-2 leading-tight drop-shadow-md">
+              <h1 className="text-6xl font-black tracking-tight text-foreground mb-2 leading-tight drop-shadow-sm">
                 {activeMovie.title}
               </h1>
 
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/80 font-medium mb-5">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground font-medium mb-5">
                 <span>{activeMovie.genre}</span>
-                <span className="w-1 h-1 rounded-full bg-white/40" />
+                <span className="w-1 h-1 rounded-full bg-border" />
                 <span>{activeMovie.duration}</span>
-                <span className="w-1 h-1 rounded-full bg-white/40" />
-                <span className="px-1.5 py-0.5 rounded border border-white/30 text-xs">
+                <span className="w-1 h-1 rounded-full bg-border" />
+                <span className="px-1.5 py-0.5 rounded border border-border text-xs">
                   {activeMovie.rating}
                 </span>
               </div>
 
-              <p className="text-white/70 text-base max-w-2xl leading-relaxed mb-8 drop-shadow-sm">
+              <p className="text-foreground/80 text-base max-w-2xl leading-relaxed mb-8 drop-shadow-sm">
                 {activeMovie.synopsis}
               </p>
 
               <div className="flex items-center gap-4 text-sm mb-8">
-                <div className="flex items-center gap-2 text-white/80">
+                <div className="flex items-center gap-2 text-foreground/80">
                   <MapPin className="h-4 w-4 text-primary" />
                   <span className="font-medium">{activeMovie.cinema}</span>
                 </div>
               </div>
 
               <div className="mb-6">
-                <h3 className="text-sm font-semibold mb-3 text-white/90">Select Date</h3>
+                <h3 className="text-sm font-semibold mb-3 text-foreground/90">Select Date</h3>
                 <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
                   {uniqueDates.map((d: string) => {
                     const isSelected = d === currentDate;
@@ -137,7 +137,7 @@ export function DesktopMoviesView({
                         className={`shrink-0 rounded-xl px-5 py-2 text-sm font-bold border transition-all ${
                           isSelected
                             ? "bg-primary border-primary text-primary-foreground shadow-[var(--shadow-glow)]"
-                            : "bg-white/5 border-white/10 hover:border-primary/50 text-white"
+                            : "bg-secondary border-border hover:border-primary/50 text-foreground"
                         }`}
                       >
                         {label}
@@ -164,7 +164,7 @@ export function DesktopMoviesView({
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-14 rounded-2xl text-base font-bold px-8 bg-white/5 backdrop-blur-md border-white/20 hover:bg-white/10 hover:text-white text-white"
+                  className="h-14 rounded-2xl text-base font-bold px-8 bg-secondary backdrop-blur-md border-border hover:bg-secondary/80 text-foreground"
                 >
                   <Play className="mr-2 h-5 w-5" /> Watch Trailer
                 </Button>
