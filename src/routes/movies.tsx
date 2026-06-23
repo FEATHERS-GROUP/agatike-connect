@@ -28,6 +28,7 @@ import {
 
 import { useQuery } from "@tanstack/react-query";
 import { getPublicMovieSchedules } from "@/api/cinemas";
+import { MOCK_MOVIES } from "@/lib/mock-movies";
 import { DesktopMoviesView } from "@/components/site/movies/DesktopMoviesView";
 import { MobileMoviesView } from "@/components/site/movies/MobileMoviesView";
 import { MoviesSkeleton } from "@/components/site/movies/MoviesSkeleton";
@@ -115,8 +116,11 @@ function Movies() {
       }
     });
 
+    const realMovies = Array.from(moviesMap.values());
+    const mockToAdd = MOCK_MOVIES.filter(mock => !realMovies.some(r => r.title === mock.title));
+
     return {
-      movies: Array.from(moviesMap.values()),
+      movies: [...realMovies, ...mockToAdd],
       cinemas: Array.from(cinemasMap.values()),
     };
   }, [schedules]);

@@ -9,9 +9,10 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getMovieSchedulesByMovieId } from "@/api/cinemas";
 import { createCinemaBooking } from "@/api/cinema_bookings";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { PaymentModal } from "@/components/shared/PaymentModal";
+import { MOCK_MOVIES_MAP } from "@/lib/mock-movies";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function MovieBookingMobile({ movieId }: { movieId: string }) {
   const navigate = useNavigate();
@@ -38,13 +39,36 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
   const actualMovieId = movieId.substring(0, 36);
   const actualCinemaId = movieId.substring(37);
 
+  const isMock = movieId.startsWith("m") && !movieId.includes("-");
+
   const { data: schedules = [], isLoading } = useQuery({
     queryKey: ["movie-schedules", actualMovieId, actualCinemaId],
     queryFn: () =>
       getMovieSchedulesByMovieId({
         data: { movieId: actualMovieId, cinemaId: actualCinemaId },
       } as any),
+    enabled: !isMock,
   });
+
+  if (isMock) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+          <Ticket className="h-8 w-8 text-primary opacity-50" />
+        </div>
+        <h2 className="text-2xl font-bold text-foreground">{MOCK_MOVIES_MAP[movieId]?.title || "Upcoming Movie"}</h2>
+        {MOCK_MOVIES_MAP[movieId]?.cover && (
+          <img src={MOCK_MOVIES_MAP[movieId].cover} alt="Movie Poster" className="w-32 h-48 object-cover rounded-xl mt-6 shadow-md" />
+        )}
+        <p className="mt-6 text-muted-foreground leading-relaxed">
+          Due to incredibly high demand, tickets for this showing are either completely <strong>sold out</strong> or <strong>not yet published</strong> by the cinema.
+        </p>
+        <Button size="lg" className="mt-8 w-full rounded-full h-14 font-semibold" onClick={() => router.history.back()}>
+          Go Back
+        </Button>
+      </div>
+    );
+  }
 
   const activeMovie = schedules.length > 0 ? schedules[0].movie : null;
   const cinema = schedules.length > 0 ? schedules[0].cinema : null;

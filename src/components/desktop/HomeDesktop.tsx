@@ -21,52 +21,7 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 // Stubbed mock data
 import { HeroSearch } from "@/components/desktop/HeroSearch";
 
-const movies: any[] = [
-  {
-    id: "m1",
-    title: "Deadpool & Wolverine",
-    genre: "Action / Comedy",
-    duration: "2h 7m",
-    rating: "R",
-    cover: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg",
-    cinema: "Century Cinemax",
-    price: 12,
-    currency: "USD",
-  },
-  {
-    id: "m2",
-    title: "Inside Out 2",
-    genre: "Animation / Family",
-    duration: "1h 36m",
-    rating: "PG",
-    cover: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg",
-    cinema: "Silverbird Cinemas",
-    price: 10,
-    currency: "USD",
-  },
-  {
-    id: "m3",
-    title: "Dune: Part Two",
-    genre: "Sci-Fi / Action",
-    duration: "2h 46m",
-    rating: "PG-13",
-    cover: "https://upload.wikimedia.org/wikipedia/en/8/8e/Dune_Part_Two_poster.jpg",
-    cinema: "Ster-Kinekor",
-    price: 15,
-    currency: "USD",
-  },
-  {
-    id: "m4",
-    title: "Bad Boys: Ride or Die",
-    genre: "Action / Comedy",
-    duration: "1h 55m",
-    rating: "R",
-    cover: "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg",
-    cinema: "Canal Olympia",
-    price: 10,
-    currency: "USD",
-  },
-];
+import { MOCK_MOVIES } from "@/lib/mock-movies";
 
 const movieStories: any[] = [
   {
@@ -92,7 +47,7 @@ const movieStories: any[] = [
     name: "Ster-Kinekor",
     avatar: "https://ui-avatars.com/api/?name=Ster-Kinekor&background=E11D48&color=fff",
     items: [
-      { id: "cs3i1", image: "https://upload.wikimedia.org/wikipedia/en/8/8e/Dune_Part_Two_poster.jpg" },
+      { id: "cs3i1", image: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&fit=crop" },
       { id: "cs3i2", image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg" },
     ],
   },
@@ -102,7 +57,7 @@ const movieStories: any[] = [
     avatar: "https://ui-avatars.com/api/?name=Canal+Olympia&background=047857&color=fff",
     items: [
       { id: "cs4i1", image: "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg" },
-      { id: "cs4i2", image: "https://upload.wikimedia.org/wikipedia/en/8/8e/Dune_Part_Two_poster.jpg" },
+      { id: "cs4i2", image: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&fit=crop" },
     ],
   },
   {
@@ -204,7 +159,7 @@ export function HomeDesktop() {
   }, [schedules]);
 
   const dynamicMovies = useMemo(() => {
-    if (!schedules || schedules.length === 0) return movies;
+    if (!schedules || schedules.length === 0) return MOCK_MOVIES.slice(0, 4);
     const moviesMap = new Map<string, any>();
     schedules.forEach((s: any) => {
       const m = s.movie;
@@ -213,7 +168,7 @@ export function HomeDesktop() {
       const movieKey = `${m.id}-${c.id}`;
       if (!moviesMap.has(movieKey)) {
         moviesMap.set(movieKey, {
-          id: m.id,
+          id: movieKey,
           title: m.title,
           genre: m.genre || "Drama",
           duration: m.duration ? `${m.duration}m` : "2h",
@@ -226,7 +181,7 @@ export function HomeDesktop() {
     const result = Array.from(moviesMap.values());
     
     // Fill the rest with mock data
-    const mockToAdd = movies.filter(mock => !result.some(r => r.title === mock.title));
+    const mockToAdd = MOCK_MOVIES.filter(mock => !result.some(r => r.title === mock.title));
     return [...result, ...mockToAdd].slice(0, 4); // Grid shows 4
   }, [schedules]);
 
@@ -340,7 +295,7 @@ export function HomeDesktop() {
         </div>
         <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
           {dynamicMovies.map((m: any) => (
-            <Link key={m.id} to="/movies" className="group block">
+            <Link key={m.id} to="/book-movie/$movieId" params={{ movieId: m.id }} className="group block">
               <div className="relative aspect-[2/3] overflow-hidden rounded-2xl">
                 <img
                   src={m.cover}

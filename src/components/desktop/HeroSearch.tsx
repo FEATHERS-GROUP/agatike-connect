@@ -1,18 +1,40 @@
 import { Search, MapPin, Music, Ticket, Trophy, Palette, Pizza, Mic, Film, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
+const CITIES = [
+  "Nairobi, Kenya",
+  "Lagos, Nigeria",
+  "Accra, Ghana",
+  "Kigali, Rwanda",
+  "Cape Town, South Africa",
+  "Johannesburg, South Africa",
+  "Dar es Salaam, Tanzania",
+  "Kampala, Uganda",
+  "Dakar, Senegal",
+  "Abidjan, Ivory Coast",
+  "Cairo, Egypt",
+  "Casablanca, Morocco",
+  "Dubai, UAE",
+  "London, UK",
+  "Paris, France",
+  "New York, USA",
+  "Sydney, Australia",
+  "Berlin, Germany",
+  "Doha, Qatar",
+  "Lisbon, Portugal"
+].sort();
+
 const CATEGORIES = [
+  { name: "Events", icon: Ticket },
+  { name: "Movies", icon: Film },
+  { name: "Experiences", icon: Globe },
   { name: "Music", icon: Music },
-  { name: "Theatre", icon: Ticket },
   { name: "Sports", icon: Trophy },
-  { name: "Art", icon: Palette },
-  { name: "Food", icon: Pizza },
   { name: "Comedy", icon: Mic },
-  { name: "Film", icon: Film },
-  { name: "Culture", icon: Globe },
 ];
 
 export function HeroSearch() {
@@ -23,12 +45,13 @@ export function HeroSearch() {
   const handleSearch = (e?: React.FormEvent, category?: string) => {
     e?.preventDefault();
     const q = category || query;
-    if (!q && !city) return;
+    const finalCity = city === "all" ? "" : city;
+    if (!q && !finalCity) return;
     
     // Navigate to explore page with search params
     navigate({
       to: "/explore",
-      search: { q, city } as any,
+      search: { q, city: finalCity } as any,
     });
   };
 
@@ -45,13 +68,18 @@ export function HeroSearch() {
           />
         </div>
         <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="City"
-            className="h-12 border-transparent bg-secondary/60 pl-9"
-          />
+          <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+          <Select value={city} onValueChange={setCity}>
+            <SelectTrigger className="h-12 border-transparent bg-secondary/60 pl-9 pr-4 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none border-0 ring-offset-transparent">
+              <SelectValue placeholder="Select City" />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              <SelectItem value="all">All Cities</SelectItem>
+              {CITIES.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <Button
           type="submit"

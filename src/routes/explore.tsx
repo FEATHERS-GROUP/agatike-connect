@@ -10,7 +10,7 @@ import { getPublicEvents } from "@/api/events";
 import { getPublicVenues } from "@/api/venues";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { ExploreSearchOverlay } from "@/components/mobile/ExploreSearchOverlay";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { isWeekendEvent } from "@/lib/utils";
 import { mockSubscriptionPlans, mockBusTickets } from "@/lib/mock-data-search";
 
@@ -23,9 +23,17 @@ export const Route = createFileRoute("/explore")({
 });
 
 function ExplorePage() {
+  const search: any = Route.useSearch({ strict: false });
   const { toggleFollow, isFollowing } = useFollowedOrganizers();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(!!search?.q);
+  const [searchQuery, setSearchQuery] = useState(search?.q || "");
+
+  useEffect(() => {
+    if (search?.q) {
+      setSearchQuery(search.q);
+      setIsSearchOpen(true);
+    }
+  }, [search?.q]);
 
   const { data: dbOrganizers = [], isLoading: isLoadingOrganizers } = useQuery({
     queryKey: ["organizers"],
