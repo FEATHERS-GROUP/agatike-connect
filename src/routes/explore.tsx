@@ -23,7 +23,7 @@ export const Route = createFileRoute("/explore")({
 });
 
 function ExplorePage() {
-  const search: any = Route.useSearch({ strict: false });
+  const search: any = Route.useSearch();
   const { toggleFollow, isFollowing } = useFollowedOrganizers();
   const [isSearchOpen, setIsSearchOpen] = useState(!!search?.q);
   const [searchQuery, setSearchQuery] = useState(search?.q || "");

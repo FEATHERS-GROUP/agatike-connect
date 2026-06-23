@@ -14,111 +14,54 @@ import { useEffect, useState, useMemo, Fragment } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getPublicEvents } from "@/api/events";
+import { getPublicMovieSchedules } from "@/api/cinemas";
+import { MOCK_MOVIES } from "@/lib/mock-movies";
 import { mapDbEventToEvent, isWeekendEvent } from "@/lib/utils";
 
-// Stubbed mock data
-const movies: any[] = [
+const movieStories: any[] = [
   {
-    id: "m1",
-    title: "Black Panther: Wakanda Forever",
-    genre: "Action / Sci-Fi",
-    duration: "2h 41m",
-    rating: "PG-13",
-    cover: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
-    cinema: "IMAX Nairobi",
-    city: "Nairobi",
-    showtimes: ["10:00 AM", "1:30 PM", "5:00 PM", "8:30 PM"],
-    synopsis:
-      "The people of Wakanda fight to protect their home from intervening world powers as they mourn the death of King T'Challa.",
-    price: 12,
-    currency: "USD",
-  },
-  {
-    id: "m2",
-    title: "The Woman King",
-    genre: "Drama / History",
-    duration: "2h 15m",
-    rating: "PG-13",
-    cover: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600",
-    cinema: "Silverbird Lagos",
-    city: "Lagos",
-    showtimes: ["11:00 AM", "2:00 PM", "6:00 PM"],
-    synopsis:
-      "A story of the Agojie, the all-female unit of warriors who protected the African Kingdom of Dahomey.",
-    price: 10,
-    currency: "USD",
-  },
-  {
-    id: "m3",
-    title: "Lionheart",
-    genre: "Comedy / Drama",
-    duration: "1h 35m",
-    rating: "PG",
-    cover: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=600",
-    cinema: "Nu Metro Accra",
-    city: "Accra",
-    showtimes: ["10:30 AM", "1:00 PM", "4:30 PM", "8:00 PM"],
-    synopsis:
-      "A young woman is forced to team up with her late father's business partner to save their family business.",
-    price: 9,
-    currency: "USD",
-  },
-  {
-    id: "m4",
-    title: "Atlantics",
-    genre: "Drama / Fantasy",
-    duration: "1h 46m",
-    rating: "NR",
-    cover: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600",
-    cinema: "IMAX Nairobi",
-    city: "Nairobi",
-    showtimes: ["2:30 PM", "6:00 PM", "9:00 PM"],
-    synopsis:
-      "In a Dakar suburb, young people disappear into the sea and come back to seek revenge on those who wronged them.",
-    price: 10,
-    currency: "USD",
-  },
-];
-const stories: any[] = [
-  {
-    id: "s1",
-    name: "AfroBeat Fest",
-    avatar: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=150&h=150&fit=crop",
+    id: "cs1",
+    name: "Century Cinemax",
+    avatar: "https://ui-avatars.com/api/?name=Century+Cinemax&background=000&color=fff",
     items: [
-      { id: "s1i1", image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800" },
-      { id: "s1i2", image: "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800" },
+      { id: "cs1i1", image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg" },
+      { id: "cs1i2", image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg" },
     ],
   },
   {
-    id: "s2",
-    name: "Lagos Nights",
-    avatar: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=150&h=150&fit=crop",
+    id: "cs2",
+    name: "Silverbird Cinemas",
+    avatar: "https://ui-avatars.com/api/?name=Silverbird+Cinemas&background=1D4ED8&color=fff",
     items: [
-      { id: "s2i1", image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800" },
+      { id: "cs2i1", image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg" },
+      { id: "cs2i2", image: "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg" },
     ],
   },
   {
-    id: "s3",
-    name: "Cape Jazz",
-    avatar: "https://images.unsplash.com/photo-1511735111819-9a3efd16269a?w=150&h=150&fit=crop",
+    id: "cs3",
+    name: "Ster-Kinekor",
+    avatar: "https://ui-avatars.com/api/?name=Ster-Kinekor&background=E11D48&color=fff",
     items: [
-      { id: "s3i1", image: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800" },
+      { id: "cs3i1", image: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&fit=crop" },
+      { id: "cs3i2", image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg" },
     ],
   },
   {
-    id: "s4",
-    name: "Nairobi FC",
-    avatar: "https://images.unsplash.com/photo-1459865264687-595d652de67e?w=150&h=150&fit=crop",
+    id: "cs4",
+    name: "Canal Olympia",
+    avatar: "https://ui-avatars.com/api/?name=Canal+Olympia&background=047857&color=fff",
     items: [
-      { id: "s4i1", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800" },
+      { id: "cs4i1", image: "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg" },
+      { id: "cs4i2", image: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&fit=crop" },
     ],
   },
   {
-    id: "s5",
-    name: "Accra Vibes",
-    avatar: "https://images.unsplash.com/photo-1545484152-c8e5b50c6fce?w=150&h=150&fit=crop",
+    id: "cs5",
+    name: "Nu Metro",
+    avatar: "https://ui-avatars.com/api/?name=Nu+Metro&background=7C3AED&color=fff",
     items: [
-      { id: "s5i1", image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800" },
+      { id: "cs5i1", image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg" },
+      { id: "cs5i2", image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg" },
     ],
   },
 ];
@@ -307,6 +250,56 @@ export function HomeMobile() {
     staleTime: 1000 * 60 * 2,
   });
 
+  const { data: schedules = [] } = useQuery({
+    queryKey: ["public-movie-schedules-mobile"],
+    queryFn: () => getPublicMovieSchedules(),
+  });
+
+  const dynamicMovieStories = useMemo(() => {
+    if (!schedules || schedules.length === 0) return movieStories;
+    const cinemasMap = new Map<string, any>();
+    schedules.forEach((s: any) => {
+      const c = s.cinema;
+      const m = s.movie;
+      if (!c || !m) return;
+      if (!cinemasMap.has(c.id)) {
+        cinemasMap.set(c.id, {
+          id: c.id,
+          name: c.name,
+          avatar: c.logo_url || c.cover_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random`,
+          items: [],
+          _movieIds: new Set(),
+        });
+      }
+      const cinemaEntry = cinemasMap.get(c.id);
+      if (!cinemaEntry._movieIds.has(m.id)) {
+        cinemaEntry._movieIds.add(m.id);
+        cinemaEntry.items.push({
+          id: `${c.id}-${m.id}`,
+          image: m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800",
+        });
+      }
+    });
+    
+    const dynamicStories = Array.from(cinemasMap.values()).filter(c => c.items.length > 0);
+    return dynamicStories.length > 0 ? [...dynamicStories, ...movieStories] : movieStories;
+  }, [schedules]);
+
+  const movies = useMemo(() => {
+    const moviesMap = new Map();
+    schedules.forEach((s: any) => {
+      if (s.movie) {
+        moviesMap.set(s.movie.id, {
+          ...s.movie,
+          cover: s.movie.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600"
+        });
+      }
+    });
+    const realMovies = Array.from(moviesMap.values());
+    const mockToAdd = MOCK_MOVIES.filter(mock => !realMovies.some(r => r.title === mock.title));
+    return [...realMovies, ...mockToAdd];
+  }, [schedules]);
+
   const mappedEvents = useMemo(() => {
     const publicEvents = dbEvents.filter(
       (e: any) => e.allowed_public === true && e.deleted !== true,
@@ -447,7 +440,7 @@ export function HomeMobile() {
 
       {/* Top Stories Row */}
       <div className="px-4 py-3 border-b border-border/40">
-        <Stories items={stories} />
+        <Stories />
       </div>
 
       {/* The carousels are now interleaved in the feed below */}
