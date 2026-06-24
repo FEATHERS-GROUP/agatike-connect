@@ -439,6 +439,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         stopOverride.palette ||
         baseProject.palette,
       font: combinationOverride.font || tierOverride.font || stopOverride.font || baseProject.font,
+      layout: combinationOverride.layout || tierOverride.layout || stopOverride.layout || baseProject.design_overrides?.layout || baseProject.layout,
+      back: combinationOverride.back || tierOverride.back || stopOverride.back || baseProject.design_overrides?.back || baseProject.back,
     };
   };
 
@@ -955,7 +957,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   qrValue={`${window.location.origin}/v/${ticket.otp}`}
                   previewMode="Front"
                   layout={
-                    mergedProject.design_overrides?.layout || {
+                    mergedProject.layout || {
                       titleSize: 30,
                       subtitleSize: 14,
                       metaSize: 11,
@@ -966,7 +968,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                     }
                   }
                   back={
-                    mergedProject.design_overrides?.back || {
+                    mergedProject.back || {
                       backText: "",
                       backImage: "",
                       backImageOpacity: 0.3,

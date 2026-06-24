@@ -147,6 +147,24 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     }
   }, [currentSchedule, selectedScheduleId]);
 
+  // Deep merge utility for ticket design overrides
+  const getMergedProjectDesign = (baseProject: any, tierId: string) => {
+    if (!baseProject) return null;
+    const overrides = baseProject.design_overrides?.overrides;
+    if (!overrides) return baseProject;
+
+    const tierOverride = overrides.tiers?.[tierId] || {};
+
+    return {
+      ...baseProject,
+      ...tierOverride,
+      palette: tierOverride.palette || baseProject.palette,
+      font: tierOverride.font || baseProject.font,
+      layout: tierOverride.layout || baseProject.design_overrides?.layout || baseProject.layout,
+      back: tierOverride.back || baseProject.design_overrides?.back || baseProject.back,
+    };
+  };
+
   const activeTiers = useMemo(() => {
     if (!currentSchedule) return [];
     if (currentSchedule.ticket_tiers && currentSchedule.ticket_tiers.length > 0) {
@@ -226,7 +244,10 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
       const res = await Promise.all(promises);
       const tiers = Object.entries(ticketQuantities)
         .filter(([_, qty]) => qty > 0)
-        .map(([tierId]) => tierId === "default" ? "Standard Entry" : activeTiers.find((t: any) => t.id === tierId)?.name || "Standard Entry");
+        .map(([tierId]) => ({
+          name: tierId === "default" ? "Standard Entry" : activeTiers.find((t: any) => t.id === tierId)?.name || "Standard Entry",
+          tierId: tierId === "default" ? "default" : (activeTiers.find((t: any) => t.id === tierId)?.tierId || tierId),
+        }));
 
       if (isPawaPay) {
         const pawaRes = await initiatePawaPayDeposit({
@@ -252,7 +273,8 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
       const ticketsToIssue = data.res.map((r: any, idx: number) => ({
         id: r.id,
         otp: r.qrcode_number,
-        tier: data.tiers[idx],
+        tierName: data.tiers[idx].name,
+        tierId: data.tiers[idx].tierId,
         attendee_name: attendeeInfo.firstName + " " + attendeeInfo.lastName,
       }));
       setIssuedTickets(ticketsToIssue);
@@ -364,7 +386,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
             console.log("jsPDF generated base64 successfully for", ticket.id);
 
             attachments.push({
-              filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+              filename: `Ticket_${ticket.tierName.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
               content: base64,
             });
           }
@@ -685,54 +707,57 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           className="absolute -z-50 pointer-events-none"
           style={{ top: "-9999px", left: "-9999px" }}
         >
-          {issuedTickets.map((t) => (
-            <div
-              key={t.id}
-              id={`ticket-render-${t.id}`}
-              className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
-            >
-              <TicketPreview
-                template={movieProject.template}
-                palette={movieProject.palette || { from: "#000", to: "#000", name: "Black" }}
-                font={movieProject.font || { css: "sans-serif", name: "Modern" }}
-                tier={t.tier}
-                title={activeMovie.title}
-                subtitle={cinema?.name}
-                date={selectedDate!}
-                time={currentSchedule?.start_time?.substring(0, 5)}
-                seat={t.attendee_name}
-                price={(activeTiers.find((tier: any) => tier.name === t.tier)?.price || 0).toString()}
-                currency={currency}
-                cover={movieProject.coverImage || activeMovie.cover_url}
-                logoText={movieProject.logoText || "Agatike"}
-                logoImage={movieProject.logoImage}
-                logoScale={Number(movieProject.logoScale || 24)}
-                logoOpacity={Number(movieProject.logoOpacity ?? 1)}
-                logoColorMode={movieProject.logoColorMode || "original"}
-                orderId={t.otp}
-                qrValue={`${window.location.origin}/c/${t.otp}`}
-                previewMode="Front"
-                layout={
-                  movieProject.design_overrides?.layout || {
-                    titleSize: 30,
-                    subtitleSize: 14,
-                    metaSize: 11,
-                    titleAlign: "left",
-                    titleOffsetY: 0,
-                    subtitleOffsetY: 0,
-                    metaOffsetY: 0,
+          {issuedTickets.map((t) => {
+            const finalDesign = getMergedProjectDesign(movieProject, t.tierId) || movieProject;
+            return (
+              <div
+                key={t.id}
+                id={`ticket-render-${t.id}`}
+                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+              >
+                <TicketPreview
+                  template={finalDesign.template}
+                  palette={finalDesign.palette || { from: "#000", to: "#000", name: "Black" }}
+                  font={finalDesign.font || { css: "sans-serif", name: "Modern" }}
+                  tier={t.tierName}
+                  title={activeMovie.title}
+                  subtitle={cinema?.name}
+                  date={selectedDate!}
+                  time={currentSchedule?.start_time?.substring(0, 5)}
+                  seat={t.attendee_name}
+                  price={(activeTiers.find((tier: any) => tier.name === t.tierName)?.price || 0).toString()}
+                  currency={currency}
+                  cover={finalDesign.coverImage || activeMovie.cover_url}
+                  logoText={finalDesign.logoText || "Agatike"}
+                  logoImage={finalDesign.logoImage}
+                  logoScale={Number(finalDesign.logoScale || 24)}
+                  logoOpacity={Number(finalDesign.logoOpacity ?? 1)}
+                  logoColorMode={finalDesign.logoColorMode || "original"}
+                  orderId={t.otp}
+                  qrValue={`${window.location.origin}/c/${t.otp}`}
+                  previewMode="Front"
+                  layout={
+                    finalDesign.layout || {
+                      titleSize: 30,
+                      subtitleSize: 14,
+                      metaSize: 11,
+                      titleAlign: "left",
+                      titleOffsetY: 0,
+                      subtitleOffsetY: 0,
+                      metaOffsetY: 0,
+                    }
                   }
-                }
-                back={
-                  movieProject.design_overrides?.back || {
-                    backText: "",
-                    backImage: "",
-                    backImageOpacity: 0.3,
+                  back={
+                    finalDesign.back || {
+                      backText: "",
+                      backImage: "",
+                      backImageOpacity: 0.3,
+                    }
                   }
-                }
-              />
-            </div>
-          ))}
+                />
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
