@@ -28,7 +28,8 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       statementDescription: `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`.substring(0, 22),
     };
 
-    const response = await fetch("https://api.sandbox.pawapay.cloud/v1/deposits", {
+    const baseUrl = process.env.PAWAPAY_API_URL || "https://api.sandbox.pawapay.cloud";
+    const response = await fetch(`${baseUrl}/v1/deposits`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -133,7 +134,8 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
     // Active Polling Fallback: If webhook hasn't hit or we are on localhost, check PawaPay API directly
     if (tx && tx.status === "pending" && process.env.PAWAPAY_API_KEY) {
       try {
-        const url = "https://api.sandbox.pawapay.cloud/v1/deposits/" + depositId;
+        const baseUrl = process.env.PAWAPAY_API_URL || "https://api.sandbox.pawapay.cloud";
+        const url = `${baseUrl}/v1/deposits/${depositId}`;
         const response = await fetch(url, {
           method: "GET",
           headers: {
