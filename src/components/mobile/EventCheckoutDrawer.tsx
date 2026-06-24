@@ -5,6 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 
 export function EventCheckoutDrawer({
   ev,
+  isPastEvent,
   isExperience,
   schedules,
   tourStops,
@@ -27,6 +28,7 @@ export function EventCheckoutDrawer({
   selectedSeatsObj,
 }: {
   ev: any;
+  isPastEvent?: boolean;
   isExperience: boolean;
   schedules: any[];
   tourStops: any[];
@@ -67,8 +69,10 @@ export function EventCheckoutDrawer({
         <div className="max-w-md mx-auto w-full">
           {/* Collapsible Header/Toggle */}
           <div
-            className="flex items-center justify-between gap-4 mb-3 cursor-pointer active:opacity-70 transition-opacity"
-            onClick={() => setIsTicketsExpanded(!isTicketsExpanded)}
+            className={`flex items-center justify-between gap-4 mb-3 transition-opacity ${isPastEvent ? "opacity-50" : "cursor-pointer active:opacity-70"}`}
+            onClick={() => {
+              if (!isPastEvent) setIsTicketsExpanded(!isTicketsExpanded);
+            }}
           >
             <div className="flex items-center gap-1.5">
               <span className="text-sm text-muted-foreground font-semibold">Tickets & Pricing</span>
@@ -402,12 +406,17 @@ export function EventCheckoutDrawer({
             <Button
               className="flex-1 h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] tracking-wide"
               style={{
-                background:
-                  total === 0 && totalTickets > 0 ? "var(--foreground)" : "var(--gradient-primary)",
-                opacity: totalTickets === 0 && hasSelectedStop ? 0.5 : 1,
-                pointerEvents: totalTickets === 0 && hasSelectedStop ? "none" : "auto",
+                background: isPastEvent
+                  ? "var(--muted)"
+                  : total === 0 && totalTickets > 0
+                    ? "var(--foreground)"
+                    : "var(--gradient-primary)",
+                opacity: isPastEvent || (totalTickets === 0 && hasSelectedStop) ? 0.5 : 1,
+                pointerEvents: isPastEvent || (totalTickets === 0 && hasSelectedStop) ? "none" : "auto",
+                color: isPastEvent ? "var(--muted-foreground)" : undefined,
               }}
               onClick={() => {
+                if (isPastEvent) return;
                 if (!hasSelectedStop) {
                   setIsTicketsExpanded(true);
                   return;
@@ -426,11 +435,13 @@ export function EventCheckoutDrawer({
               }}
             >
               <span className="w-full block text-center leading-[48px]">
-                {!hasSelectedStop
-                  ? "Select Date"
-                  : total === 0 && totalTickets > 0
-                    ? "Register for Free"
-                    : "Get Tickets"}
+                {isPastEvent
+                  ? "Event Ended"
+                  : !hasSelectedStop
+                    ? "Select Date"
+                    : total === 0 && totalTickets > 0
+                      ? "Register for Free"
+                      : "Get Tickets"}
               </span>
             </Button>
           </div>

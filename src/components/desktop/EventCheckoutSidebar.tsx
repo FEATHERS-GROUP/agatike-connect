@@ -5,6 +5,7 @@ import { formatCurrency } from "@/lib/currency";
 
 export function EventCheckoutSidebar({
   ev,
+  isPastEvent,
   isExperience,
   schedules,
   tourStops,
@@ -23,6 +24,7 @@ export function EventCheckoutSidebar({
   attendeesCount,
 }: {
   ev: any;
+  isPastEvent?: boolean;
   isExperience: boolean;
   schedules: any[];
   tourStops: any[];
@@ -198,22 +200,32 @@ export function EventCheckoutSidebar({
         </div>
 
         <Button
-          asChild
+          asChild={!isPastEvent}
+          disabled={isPastEvent || totalTickets === 0}
           className="mt-4 h-12 w-full rounded-2xl text-base shadow-[var(--shadow-glow)]"
           style={{
-            background:
-              total === 0 && totalTickets > 0 ? "var(--foreground)" : "var(--gradient-primary)",
-            opacity: totalTickets === 0 ? 0.5 : 1,
-            pointerEvents: totalTickets === 0 ? "none" : "auto",
+            background: isPastEvent
+              ? "var(--muted)"
+              : total === 0 && totalTickets > 0
+                ? "var(--foreground)"
+                : "var(--gradient-primary)",
+            opacity: isPastEvent || totalTickets === 0 ? 0.5 : 1,
+            pointerEvents: isPastEvent || totalTickets === 0 ? "none" : "auto",
+            color: isPastEvent ? "var(--muted-foreground)" : undefined,
           }}
           onClick={() => {
+            if (isPastEvent) return;
             localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
             localStorage.setItem(`event_checkout_seats_${ev.id}`, JSON.stringify(selectedSeatsObj));
           }}
         >
-          <Link to="/book/$eventId" params={{ eventId: ev.id }} className="w-full block">
-            {total === 0 && totalTickets > 0 ? "Register for Free" : "Get Tickets"}
-          </Link>
+          {isPastEvent ? (
+            "Event Ended"
+          ) : (
+            <Link to="/book/$eventId" params={{ eventId: ev.id }} className="w-full block">
+              {total === 0 && totalTickets > 0 ? "Register for Free" : "Get Tickets"}
+            </Link>
+          )}
         </Button>
 
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
