@@ -283,37 +283,69 @@ flowchart TD
   Sales[Ticket/Merch Sales] -->|Credits| Ledger[wallet_transactions]
   Ledger --> Balance[Total Balance]
   Balance -->|Request Payout| Withdraw[Pending Debit]
-  Withdraw --> Admin[Admin / MoMo]
+  Withdraw --> Admin[Admin / MoMo / PawaPay Payouts]
   Admin -->|Processed| Completed[Completed Debit]
 ```
 
 ---
 
-## 12. Currency & Payment Provider Logic (MTN MoMo)
+## 12. Currency & Payment Provider Logic (PawaPay Mobile Money)
 
 **Logic:**
 
 - **Wallet Scoped Currency:** When a Workspace Wallet is created, it is assigned a specific 3-letter ISO `currency` code (e.g., `RWF`, `USD`, `EUR`). This acts as the default currency for the entire workspace.
-- **Strict Currency Formatting:** The frontend strictly uses the `Intl.NumberFormat` API dynamically localized to the Wallet's assigned currency. String literals like "dollars" will crash the formatter, so the system enforces strict sanitization.
 - **Global Scaling:** By relying on `Intl.NumberFormat("en-US", { style: "currency", currency: wallet.currency })`, an American organizer will see **$50.00** while a Rwandan organizer seamlessly sees **RWF 50,000** without needing hardcoded symbols.
-- **Provider Metadata:** To accommodate telecom integrations like **MTN MoMo**, the `wallet_transactions` table strictly tracks:
+- **PawaPay Integration:** Agatike Connect uses PawaPay for seamless Mobile Money (MoMo) collections across Africa.
+- **Provider Metadata:** To accommodate telecom integrations, the `wallet_transactions` table strictly tracks:
   - `amount`: The gross amount.
   - `net_amount`: The amount after platform/gateway fees.
   - `fee`: The exact fee deducted.
-  - `provider_reference`: The external transaction ID from MTN MoMo.
-  - `provider_status`: The raw status returned by MTN MoMo (e.g., "SUCCESSFUL", "FAILED").
-  - `payout_method` & `payout_account`: How and where the money was sent (e.g., "momo" / "+250788123456").
+  - `provider_reference`: The external transaction ID (e.g., from PawaPay).
+  - `provider_status`: The raw status returned by PawaPay (e.g., "COMPLETED", "FAILED", "REJECTED").
+  - `payment_method` & `payment_account`: How and where the money was sent (e.g., "MTN_MOMO_RWA" / "250788123456").
+
+### PawaPay Checkout & Webhook Flow
+
+Because Mobile Money flows are asynchronous (the user must approve the USSD prompt on their phone), Agatike implements a robust polling + webhook mechanism.
 
 ```mermaid
-flowchart TD
-  Wallet[Workspace Wallet] --> Curr[Currency Code e.g., RWF]
-  Curr --> Formatter[Intl.NumberFormat]
-  Formatter --> UI[Dashboard Display]
-  MoMo[MTN MoMo API] -->|Webhook| Ledger[wallet_transactions]
-  Ledger --> Gross[gross amount]
-  Ledger --> Net[net_amount]
-  Ledger --> Fee[fee]
-  Ledger --> Ref[provider_reference]
+sequenceDiagram
+    participant User as Attendee (Browser)
+    participant UI as Agatike Checkout UI
+    participant Srv as Agatike Server API
+    participant PP as PawaPay API
+    participant DB as Hasura DB
+
+    User->>UI: Selects Ticket & Enters Phone Number
+    UI->>Srv: handlePawaPayDeposit(Amount, Phone)
+    Srv->>DB: Creates "pending" wallet_transaction
+    Srv->>PP: POST /v1/deposits (with Statement Desc)
+    PP-->>Srv: 202 Accepted (depositId)
+    Srv-->>UI: Returns depositId, begins polling
+
+    loop Every 3 seconds (Max 20 attempts)
+        UI->>Srv: Poll: getTransactionStatus(depositId)
+        Srv->>DB: Select status
+        DB-->>Srv: Return "pending"
+        Srv-->>UI: Displays "Check Your Phone" UI
+    end
+
+    %% Webhook Background Process
+    User->>User: Approves USSD Prompt on Phone
+    PP->>Srv: POST Webhook to /api/pawapay/deposits
+    Srv->>DB: Verifies Transaction Signature & Status
+    alt is COMPLETED
+        Srv->>DB: Updates status to "completed"
+        Srv->>DB: Generates Digital Ticket / RSVP
+    else is REJECTED / FAILED
+        Srv->>DB: Updates status to "failed"
+    end
+
+    %% Final Poll Success
+    UI->>Srv: Poll: getTransactionStatus(depositId)
+    DB-->>Srv: Return "completed"
+    Srv-->>UI: Breaks loop
+    UI->>User: Displays Success Screen & Ticket
 ```
 
 ---
@@ -1746,6 +1778,47 @@ export const deactivateUserAccount = createServerFn({ method: "POST" }).handler(
 ```
 
 The server function reads the user's identity **from the session cookie** (not from any client-supplied user ID), making it impossible for one user to deactivate another user's account.
+
+---
+
+## 23. Cinema Management Logic
+
+**Files:** `src/api/cinema_management.ts`, `src/api/cinemas.ts`, `src/api/cinema_bookings.ts`, `src/api/cinema_ticket_tiers.ts`
+
+The Cinema module allows an organizer to operate a full movie theatre ticketing system. Unlike standard events, Cinemas rely on **Movies**, **Rooms (Theatres)**, and **Schedules (Showtimes)**.
+
+### Architecture
+
+- **Cinemas:** A Workspace can own multiple `cinemas` (e.g., "Agatike Cineplex Kigali", "Agatike Cineplex Huye").
+- **Rooms (Theatres):** Each Cinema has multiple `cinema_rooms` (e.g., "Screen 1", "IMAX Screen"). These rooms define the physical `capacity` and seating layout via the Venue Designer's `sections_data`.
+- **Movies:** A catalog of `movies` (Title, Poster, Trailer URL, Runtime, Synopsis).
+- **Showtimes:** A `cinema_showtimes` table binds a `movie_id` to a `room_id` at a specific `start_time` and `end_time`.
+- **Ticket Tiers:** `cinema_ticket_tiers` map specific pricing (e.g., "Standard", "VIP", "Student") to a Showtime or Room.
+
+### Booking Flow
+
+1. User browses to `/cinemas/$cinemaId`.
+2. They select a Movie, then pick a Showtime (e.g., "7:00 PM - Screen 1").
+3. If the Room has `sections_data` mapped to Seat Selection, the Interactive SVG Seat Map opens.
+4. The user selects seats and proceeds to checkout.
+5. The payment flow (PawaPay) processes the transaction.
+6. A `cinema_bookings` record is created with the `tickets_data` (storing the exact seat rows/columns) and unique QR codes.
+
+---
+
+## 24. Workspace Subscriptions
+
+**Files:** `src/api/space_subscriptions.ts`
+
+To monetize the platform, Agatike Connect offers recurring SaaS subscriptions for Organizers. 
+
+### Logic
+
+- Organizers can use basic features for free. Advanced features (e.g., Custom Book Builder, Unlimited SMS, Custom Domains) require a paid subscription.
+- **Plans:** Defined in a static configuration or database table (e.g., "Pro", "Enterprise").
+- **Billing:** `space_subscriptions` tracks the `workspace_id`, the active `plan_id`, and the `expires_at` timestamp.
+- **Renewals:** Using PawaPay or card payments, organizers can renew their subscription. Upon successful payment, the `expires_at` date is incremented by 1 month or 1 year.
+- **Middleware Check:** The dashboard routes and specific feature components evaluate `useWorkspace().subscription_status`. If the workspace is downgraded, advanced features gracefully lock themselves and prompt the user to upgrade.
 
 ---
 
