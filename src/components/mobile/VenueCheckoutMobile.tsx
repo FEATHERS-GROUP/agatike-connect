@@ -232,11 +232,11 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     const intervalId = setInterval(async () => {
       try {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
-        if (res.status === "COMPLETED" || res.status === "SUCCESS") {
+        if (res?.status?.toLowerCase() === "completed" || res?.status?.toLowerCase() === "success") {
           setIsPollingPawaPay(false);
           localStorage.removeItem(storageKey);
           setIsSuccess(true);
-        } else if (res.status === "FAILED") {
+        } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
         }

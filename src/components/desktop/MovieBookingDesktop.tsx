@@ -211,7 +211,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             network: paymentDetails!.network,
             currency: paymentDetails?.currency || currency,
             type: "movie_ticket",
-            referenceId: booking_ref,
+            referenceId: res.map((r: any) => r.id).join(",").substring(0, 255), // Combine all booking IDs as referenceId
             workspaceId: cinema?.workspace_id,
             reason: activeMovie?.title || "Movie Ticket",
           },
@@ -252,10 +252,10 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
     const intervalId = setInterval(async () => {
       try {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
-        if (res.status === "COMPLETED" || res.status === "SUCCESS") {
+        if (res?.status?.toLowerCase() === "completed" || res?.status?.toLowerCase() === "success") {
           setIsPollingPawaPay(false);
           setIsSuccess(true);
-        } else if (res.status === "FAILED") {
+        } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
         }
@@ -371,9 +371,6 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                         );
                       })}
                     </div>
-                    <div className="flex justify-end pt-4 border-t border-border/60">
-                      <Button onClick={() => setStep(2)}>Continue to Tickets</Button>
-                    </div>
                   </div>
                 )}
 
@@ -416,12 +413,9 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                         );
                       })}
                     </div>
-                    <div className="flex justify-between pt-4 border-t border-border/60">
+                    <div className="flex justify-start pt-4 border-t border-border/60">
                       <Button variant="outline" onClick={() => setStep(1)}>
                         Back
-                      </Button>
-                      <Button disabled={totalTickets === 0} onClick={() => setStep(3)}>
-                        Continue to Details
                       </Button>
                     </div>
                   </div>

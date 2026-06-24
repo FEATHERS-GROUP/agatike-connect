@@ -208,7 +208,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
             network: paymentDetails!.network,
             currency: paymentDetails?.currency || currency,
             type: "movie_ticket",
-            referenceId: booking_ref,
+            referenceId: res.map((r: any) => r.id).join(",").substring(0, 255),
             workspaceId: cinema?.workspace_id,
             reason: activeMovie?.title || "Movie Ticket",
           },
@@ -249,10 +249,10 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     const intervalId = setInterval(async () => {
       try {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
-        if (res.status === "COMPLETED" || res.status === "SUCCESS") {
+        if (res?.status?.toLowerCase() === "completed" || res?.status?.toLowerCase() === "success") {
           setIsPollingPawaPay(false);
           setIsSuccess(true);
-        } else if (res.status === "FAILED") {
+        } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
         }

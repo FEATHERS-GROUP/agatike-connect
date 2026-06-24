@@ -241,6 +241,17 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
                   }
                 `;
                 await hasuraRequest(activateSubQuery, { id: tx.reference_id });
+              } else if (tx.type === "movie_ticket") {
+                const bookingIds = tx.reference_id.split(",");
+                const confirmQuery = `
+                  mutation ConfirmCinemaBookings($ids: [uuid!]!) {
+                    update_cinema_bookings(
+                      where: { id: { _in: $ids } },
+                      _set: { status: "Confirmed" }
+                    ) { affected_rows }
+                  }
+                `;
+                await hasuraRequest(confirmQuery, { ids: bookingIds });
               }
             }
 

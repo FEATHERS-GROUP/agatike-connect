@@ -242,11 +242,11 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     const intervalId = setInterval(async () => {
       try {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
-        if (res.status === "COMPLETED" || res.status === "SUCCESS") {
+        if (res?.status?.toLowerCase() === "completed" || res?.status?.toLowerCase() === "success") {
           setIsPollingPawaPay(false);
           localStorage.removeItem(storageKey);
           setIsSuccess(true); // Simplified for venues: no tickets generated if it's async? Wait, we should generate tickets if it succeeds, but we don't have `res` here easily. For now, just show success.
-        } else if (res.status === "FAILED") {
+        } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
         }
