@@ -30,6 +30,9 @@ interface PaymentModalProps {
   isGenerating: boolean;
   workspaceId: string;
   baseAmount: number;
+  quantity?: number;
+  subtotal?: number;
+  itemLabel?: string;
 }
 
 const ALL_NETWORKS = [
@@ -66,6 +69,9 @@ export function PaymentModal({
   isGenerating,
   workspaceId,
   baseAmount,
+  quantity,
+  subtotal,
+  itemLabel,
 }: PaymentModalProps) {
   const [phone, setPhone] = useState("");
   const [network, setNetwork] = useState("");
@@ -137,6 +143,7 @@ export function PaymentModal({
             </DialogHeader>
 
             <div className="flex flex-col gap-3">
+              {/* Temporarily hidden Apple Pay & Credit Card per request
               <button
                 onClick={() => setPaymentMethod("apple")}
                 className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all ${
@@ -180,6 +187,7 @@ export function PaymentModal({
                   {paymentMethod === "card" && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
                 </div>
               </button>
+              */}
 
               <div
                 className={`w-full flex flex-col gap-4 p-4 rounded-2xl border transition-all ${
@@ -260,7 +268,13 @@ export function PaymentModal({
             
             <div className="flex-1 space-y-6">
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                {quantity && subtotal && (
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <span>{quantity} x {itemLabel || "Item(s)"} @ {baseCurrency} {subtotal.toLocaleString()}</span>
+                    <span>{baseCurrency} {(quantity * subtotal).toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm pt-2 border-t border-border/40">
                   <span className="text-muted-foreground">Base Price</span>
                   <span className="font-semibold">{baseCurrency} {baseAmount.toLocaleString()}</span>
                 </div>

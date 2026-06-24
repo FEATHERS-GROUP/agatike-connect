@@ -9,6 +9,7 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getMovieSchedulesByMovieId } from "@/api/cinemas";
 import { createCinemaBooking } from "@/api/cinema_bookings";
+import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
 import { toast } from "sonner";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { MOCK_MOVIES_MAP } from "@/lib/mock-movies";
@@ -24,6 +25,8 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [step, setStep] = useState(1);
+  const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
+  const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(null);
@@ -157,9 +160,11 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     totalTickets > 0 && attendeeInfo.firstName && attendeeInfo.lastName && attendeeInfo.email;
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (paymentDetails?: { phone?: string; network?: string; currency?: string; convertedAmount?: number }) => {
       const promises = [];
       const fullName = `${attendeeInfo.firstName} ${attendeeInfo.lastName}`.trim();
+      const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
+      const isPawaPay = totalPrice > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
 
       for (const [tierId, qty] of Object.entries(ticketQuantities)) {
         if (qty <= 0) continue;
@@ -176,14 +181,40 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           total_price: activeTiers.find((t: any) => t.id === tierId)?.price * qty,
           currency: currency,
           payment_method: paymentMethod,
-          status: "Confirmed", // In reality, depends on payment validation
+          status: isPawaPay ? "Pending Payment" : "Confirmed",
         };
 
         promises.push(createCinemaBooking({ data: { object: payload } } as any));
       }
-      return Promise.all(promises);
+      
+      const res = await Promise.all(promises);
+
+      if (isPawaPay) {
+        const pawaRes = await initiatePawaPayDeposit({
+          data: {
+            amount: paymentDetails?.convertedAmount || totalPrice,
+            baseAmount: totalPrice,
+            baseCurrency: currency,
+            phone: paymentDetails!.phone,
+            network: paymentDetails!.network,
+            currency: paymentDetails?.currency || currency,
+            type: "movie_ticket",
+            referenceId: booking_ref,
+            workspaceId: cinema?.workspace_id,
+          }
+        } as any);
+        return { isPawaPay: true, depositId: pawaRes.depositId };
+      }
+
+      return { isPawaPay: false };
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      if (data.isPawaPay) {
+        setPawapayDepositId(data.depositId);
+        setIsPollingPawaPay(true);
+        setIsPaymentModalOpen(false);
+        return;
+      }
       setIsPaymentModalOpen(false);
       setIsSuccess(true);
     },
@@ -201,6 +232,27 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
       return () => clearTimeout(timer);
     }
   }, [isSuccess, navigate]);
+
+  useEffect(() => {
+    if (!isPollingPawaPay || !pawapayDepositId) return;
+
+    const intervalId = setInterval(async () => {
+      try {
+        const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
+        if (res.status === "COMPLETED" || res.status === "SUCCESS") {
+          setIsPollingPawaPay(false);
+          setIsSuccess(true);
+        } else if (res.status === "FAILED") {
+          setIsPollingPawaPay(false);
+          toast.error("Mobile Money payment failed or was cancelled.");
+        }
+      } catch (err) {
+        console.error("Polling error", err);
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [isPollingPawaPay, pawapayDepositId]);
 
   if (isLoading || !activeMovie) {
     return (
@@ -430,18 +482,19 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           }}
         >
           {step === 1 ? (
-            "Continue to Tickets"
+            "Continue"
           ) : step === 2 ? (
             totalTickets > 0 ? (
               "Continue to Details"
             ) : (
               "Select Tickets"
             )
-          ) : isCheckingOut ? (
+          ) : isCheckingOut || isPollingPawaPay ? (
             "Processing..."
           ) : (
             <>
-              <Lock className="mr-2 h-5 w-5" /> Pay Now
+              <Lock className="mr-2 h-4 w-4" /> Pay{" "}
+              {formatCurrency(totalPrice, currency)}
             </>
           )}
         </Button>
@@ -455,6 +508,11 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
         onProceed={doCheckout as any}
         isProcessing={isCheckingOut}
         isGenerating={false}
+        workspaceId={cinema?.workspace_id}
+        baseAmount={totalPrice}
+        quantity={totalTickets}
+        subtotal={totalTickets > 0 ? totalPrice / totalTickets : 0}
+        itemLabel="Ticket(s)"
       />
     </div>
   );
