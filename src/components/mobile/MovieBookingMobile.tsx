@@ -210,6 +210,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
             type: "movie_ticket",
             referenceId: booking_ref,
             workspaceId: cinema?.workspace_id,
+            reason: activeMovie?.title || "Movie Ticket",
           },
         } as any);
         return { isPawaPay: true, depositId: pawaRes.depositId };

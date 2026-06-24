@@ -176,6 +176,7 @@ function CheckoutPage() {
             type: "space_subscription",
             referenceId: subscription?.id,
             workspaceId: space?.workspace_id,
+            reason: space?.name || "Space Subscription",
           },
         } as any);
         setPawapayDepositId(pawaRes.depositId);

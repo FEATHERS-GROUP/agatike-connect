@@ -205,6 +205,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             type: "venue_booking",
             referenceId: booking_ref,
             workspaceId: venue.workspace_id,
+            reason: venue?.name || "Venue Booking",
           },
         } as any);
         return { res, isPawaPay: true, depositId: pawaRes.depositId };

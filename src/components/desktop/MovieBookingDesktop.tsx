@@ -12,7 +12,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { getMovieSchedulesByMovieId } from "@/api/cinemas";
 import { createCinemaBooking } from "@/api/cinema_bookings";
 import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
-import { updateCinemaBookingStatus } from "@/api/cinema_bookings"; // Need this if it exists, wait, let's just use createCinemaBooking.
 import { toast } from "sonner";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { MOCK_MOVIES_MAP } from "@/lib/mock-movies";
@@ -214,6 +213,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             type: "movie_ticket",
             referenceId: booking_ref,
             workspaceId: cinema?.workspace_id,
+            reason: activeMovie?.title || "Movie Ticket",
           },
         } as any);
         return { isPawaPay: true, depositId: pawaRes.depositId };
