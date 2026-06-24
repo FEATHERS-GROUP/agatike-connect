@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getWorkspaceWallet, getWalletTransactions } from "@/api/wallet";
+import { getWorkspaceWallet, getWalletTransactions, updateWalletSupportedNetworks } from "@/api/wallet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   History,
   Banknote,
+  Settings,
 } from "lucide-react";
 import {
   Dialog,
@@ -31,6 +32,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+import { TransactionLedger } from "@/components/dashboard/TransactionLedger";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/withdrawals")({
   component: WithdrawalsPage,
@@ -42,6 +45,9 @@ function WithdrawalsPage() {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [payoutMethod, setPayoutMethod] = useState("momo");
   const [payoutAccount, setPayoutAccount] = useState("");
+  const [isNetworksModalOpen, setIsNetworksModalOpen] = useState(false);
+  const [selectedNetworks, setSelectedNetworks] = useState<string[]>([]);
+  const queryClient = useQueryClient();
 
   const { data: wallet, isLoading: isWalletLoading } = useQuery({
     queryKey: ["wallet", activeWorkspace?.id],
@@ -76,6 +82,29 @@ function WithdrawalsPage() {
     setIsWithdrawModalOpen(false);
     setWithdrawAmount("");
     setPayoutAccount("");
+  };
+
+  const updateNetworksMutation = useMutation({
+    mutationFn: (networks: string[]) =>
+      updateWalletSupportedNetworks({ data: { id: wallet!.id, networks } } as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wallet", activeWorkspace?.id] });
+      toast.success("Supported networks updated!");
+    },
+    onError: () => toast.error("Failed to update networks"),
+  });
+
+  const toggleNetwork = (networkValue: string, checked: boolean) => {
+    if (checked) {
+      setSelectedNetworks((prev) => [...prev, networkValue]);
+    } else {
+      setSelectedNetworks((prev) => prev.filter((n) => n !== networkValue));
+    }
+  };
+
+  const handleSaveNetworks = () => {
+    updateNetworksMutation.mutate(selectedNetworks);
+    setIsNetworksModalOpen(false);
   };
 
   if (isWalletLoading) {
@@ -145,101 +174,36 @@ function WithdrawalsPage() {
         </div>
       </div>
 
-      {/* Transactions History */}
+      {/* Accepted Payment Methods Settings */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold flex items-center gap-2">
-            <History className="h-5 w-5 text-primary" /> Transaction Ledger
+            <Settings className="h-5 w-5 text-primary" /> Supported Payment Networks
           </h3>
+          <Button 
+            variant="outline" 
+            className="rounded-full"
+            onClick={() => {
+              setSelectedNetworks(Array.isArray(wallet?.supported_networks) ? wallet?.supported_networks : []);
+              setIsNetworksModalOpen(true);
+            }}
+          >
+            Configure Networks
+          </Button>
         </div>
-
-        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)]">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left whitespace-nowrap">
-              <thead className="bg-secondary/30 text-muted-foreground text-xs uppercase tracking-wider">
-                <tr>
-                  <th className="px-6 py-4 font-medium">Transaction</th>
-                  <th className="px-6 py-4 font-medium">Date</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {isTransactionsLoading ? (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="px-6 py-8 text-center text-muted-foreground animate-pulse"
-                    >
-                      Loading transactions...
-                    </td>
-                  </tr>
-                ) : transactions.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
-                      No transactions found.
-                    </td>
-                  </tr>
-                ) : (
-                  transactions.map((txn: any) => (
-                    <tr key={txn.id} className="hover:bg-secondary/20 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-                              txn.type === "credit"
-                                ? "bg-green-500/10 text-green-500"
-                                : "bg-red-500/10 text-red-500"
-                            }`}
-                          >
-                            {txn.type === "credit" ? (
-                              <ArrowDownLeft className="h-5 w-5" />
-                            ) : (
-                              <ArrowUpRight className="h-5 w-5" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-foreground">
-                              {txn.description || (txn.type === "credit" ? "Income" : "Withdrawal")}
-                            </p>
-                            <p className="text-xs text-muted-foreground capitalize">{txn.type}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        {new Date(txn.created_at).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                            txn.status === "completed"
-                              ? "bg-green-500/10 text-green-500"
-                              : txn.status === "pending"
-                                ? "bg-orange-500/10 text-orange-500"
-                                : "bg-red-500/10 text-red-500"
-                          }`}
-                        >
-                          {txn.status === "completed" && <CheckCircle2 className="h-3 w-3" />}
-                          {txn.status === "pending" && <Clock className="h-3 w-3" />}
-                          {txn.status}
-                        </span>
-                      </td>
-                      <td
-                        className={`px-6 py-4 text-right font-bold ${
-                          txn.type === "credit" ? "text-green-500" : "text-foreground"
-                        }`}
-                      >
-                        {txn.type === "credit" ? "+" : "-"}
-                        {formatCurrency(txn.amount, "RWF")}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
+          <p className="text-sm text-muted-foreground">
+            You currently have <strong>{(Array.isArray(wallet?.supported_networks) ? wallet?.supported_networks : []).length}</strong> Mobile Money networks enabled for checkout.
+          </p>
         </div>
       </div>
+
+      {/* Transactions History */}
+      <TransactionLedger 
+        transactions={transactions} 
+        isLoading={isTransactionsLoading} 
+        formatCurrency={formatCurrency} 
+      />
 
       {/* Withdrawal Modal */}
       <Dialog open={isWithdrawModalOpen} onOpenChange={setIsWithdrawModalOpen}>
@@ -312,6 +276,70 @@ function WithdrawalsPage() {
               onClick={handleWithdrawRequest}
             >
               Submit Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Networks Configuration Modal */}
+      <Dialog open={isNetworksModalOpen} onOpenChange={setIsNetworksModalOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] rounded-3xl flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Supported Payment Networks</DialogTitle>
+            <DialogDescription>
+              Select which Mobile Money networks you want to accept during checkout. Your wallet will automatically convert incoming payments to your native currency ({wallet?.currency}).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="overflow-y-auto flex-1 pr-2 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { label: "MTN Rwanda", value: "MTN_MOMO_RWA", curr: "RWF" },
+                { label: "Airtel Rwanda", value: "AIRTEL_OAPI_RWA", curr: "RWF" },
+                { label: "MTN Uganda", value: "MTN_MOMO_UGA", curr: "UGX" },
+                { label: "Airtel Uganda", value: "AIRTEL_OAPI_UGA", curr: "UGX" },
+                { label: "Safaricom M-Pesa Kenya", value: "SAFARICOM_M_PESA_KEN", curr: "KES" },
+                { label: "MTN Zambia", value: "MTN_MOMO_ZMB", curr: "ZMW" },
+                { label: "Airtel Zambia", value: "AIRTEL_OAPI_ZMB", curr: "ZMW" },
+                { label: "MTN Cameroon", value: "MTN_MOMO_CMR", curr: "XAF" },
+                { label: "MTN Cote d'Ivoire", value: "MTN_MOMO_CIV", curr: "XOF" },
+                { label: "Orange Cote d'Ivoire", value: "ORANGE_CIV", curr: "XOF" },
+                { label: "Airtel DRC", value: "AIRTEL_OAPI_COD", curr: "CDF/USD" },
+                { label: "Orange DRC", value: "ORANGE_COD", curr: "CDF/USD" },
+                { label: "Vodacom DRC", value: "VODACOM_MPESA_COD", curr: "CDF/USD" },
+              ].map((network) => {
+                const isChecked = selectedNetworks.includes(network.value);
+                return (
+                  <div key={network.value} className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${isChecked ? 'border-primary bg-primary/5' : 'border-border/40 bg-secondary/20'}`}>
+                    <div>
+                      <Label className="font-semibold">{network.label}</Label>
+                      <p className="text-xs text-muted-foreground">Charges in {network.curr}</p>
+                    </div>
+                    <Switch 
+                      checked={isChecked}
+                      onCheckedChange={(c) => toggleNetwork(network.value, c)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <DialogFooter className="pt-4 border-t border-border/60">
+            <Button
+              variant="ghost"
+              className="rounded-full"
+              onClick={() => setIsNetworksModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="rounded-full shadow-lg px-8"
+              style={{ background: "var(--gradient-primary)", color: "white" }}
+              onClick={handleSaveNetworks}
+              disabled={updateNetworksMutation.isPending}
+            >
+              {updateNetworksMutation.isPending ? "Saving..." : "Save Configuration"}
             </Button>
           </DialogFooter>
         </DialogContent>

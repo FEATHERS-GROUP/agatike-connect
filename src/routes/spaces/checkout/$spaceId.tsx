@@ -122,7 +122,7 @@ function CheckoutPage() {
     setTeamMembers(newMembers);
   };
 
-  const handlePayment = async (paymentDetails?: { phone?: string; network?: string }) => {
+  const handlePayment = async (paymentDetails?: { phone?: string; network?: string; currency?: string; convertedAmount?: number }) => {
     setErrorMsg("");
 
     if (!formData.name || !formData.email || !formData.phone || !formData.startDate) {
@@ -158,10 +158,12 @@ function CheckoutPage() {
       if (isPawaPay) {
         const pawaRes = await initiatePawaPayDeposit({
           data: {
-            amount: finalPriceNum,
+            amount: paymentDetails?.convertedAmount || finalPriceNum,
+            baseAmount: finalPriceNum,
+            baseCurrency: currency,
             phone: paymentDetails!.phone,
             network: paymentDetails!.network,
-            currency: currency,
+            currency: paymentDetails?.currency || currency,
             type: "space_subscription",
             referenceId: subscription?.id,
             workspaceId: space?.workspace_id,
@@ -910,6 +912,8 @@ function CheckoutPage() {
         onProceed={handlePayment}
         isProcessing={isProcessing}
         isGenerating={false}
+        workspaceId={space?.workspace_id || ""}
+        baseAmount={finalPriceNum}
       />
 
       {isPollingPawaPay && (

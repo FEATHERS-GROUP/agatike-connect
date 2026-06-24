@@ -12,6 +12,7 @@ const GET_WORKSPACE_WALLET = `
       updated_at
       walletNumber
       workspace_id
+      supported_networks
     }
   }
 `;
@@ -29,7 +30,26 @@ export const getWorkspaceWallet = createServerFn({ method: "POST" }).handler(asy
     amount: 0,
     currency: "RWF",
     walletNumber: "Not setup",
+    supported_networks: [],
   };
+});
+
+const UPDATE_WALLET_NETWORKS = `
+  mutation UpdateWalletNetworks($id: uuid!, $networks: jsonb!) {
+    update_wallets_by_pk(pk_columns: { id: $id }, _set: { supported_networks: $networks }) {
+      id
+      supported_networks
+    }
+  }
+`;
+
+export const updateWalletSupportedNetworks = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, networks } = ctx.data as unknown as { id: string; networks: string[] };
+  const data = await hasuraRequest<{ update_wallets_by_pk: any }>(UPDATE_WALLET_NETWORKS, {
+    id,
+    networks,
+  });
+  return data.update_wallets_by_pk;
 });
 
 const GET_WALLET_TRANSACTIONS = `

@@ -276,7 +276,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     });
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
-    mutationFn: async (paymentDetails?: { phone?: string; network?: string }) => {
+    mutationFn: async (paymentDetails?: { phone?: string; network?: string; currency?: string; convertedAmount?: number }) => {
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
       const isPawaPay = total > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
 
@@ -326,10 +326,12 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       if (isPawaPay) {
         const pawaRes = await initiatePawaPayDeposit({
           data: {
-            amount: total,
+            amount: paymentDetails?.convertedAmount || total,
+            baseAmount: total,
+            baseCurrency: currency,
             phone: paymentDetails!.phone,
             network: paymentDetails!.network,
-            currency: currency,
+            currency: paymentDetails?.currency || currency,
             type: "event_ticket",
             referenceId: booking_ref,
             workspaceId: event?.workspace_id,
@@ -880,6 +882,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         onProceed={doCheckout}
         isProcessing={isCheckingOut}
         isGenerating={isGenerating}
+        workspaceId={event?.workspace_id || ""}
+        baseAmount={total}
       />
 
       {/* Hidden container for PDF rendering */}

@@ -1,9 +1,37 @@
 import { createServerFn } from "@tanstack/react-start";
 
+export const getExchangeRate = createServerFn({ method: "POST" })
+  .inputValidator((d: { base: string; target: string }) => d)
+  .handler(async (ctx) => {
+    const { base, target } = ctx.data;
+    const safeBase = (base || "RWF").toUpperCase().replace("FRW", "RWF");
+    const safeTarget = (target || "RWF").toUpperCase().replace("FRW", "RWF");
+
+    if (safeBase === safeTarget) return { rate: 1, markupRate: 1 };
+
+    try {
+      const res = await fetch(`https://open.er-api.com/v6/latest/${safeBase}`);
+      if (!res.ok) throw new Error("Failed to fetch exchange rates");
+      const data = await res.json();
+      
+      const rate = data.rates[safeTarget];
+      if (!rate) throw new Error(`Currency ${safeTarget} not supported by exchange API`);
+      
+      // Add 2% markup to protect from FX fluctuations
+      const markupRate = rate * 1.02;
+
+      return { rate, markupRate };
+    } catch (err) {
+      console.error("Exchange Rate Error:", err);
+      // Fallback rough rates if API fails
+      return { rate: 1, markupRate: 1.02 };
+    }
+  });
+
 export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
-    const { amount, phone, network, type, referenceId, workspaceId, currency } = ctx.data as any;
+    const { amount, baseAmount, baseCurrency, phone, network, type, referenceId, workspaceId, currency } = ctx.data as any;
 
     if (!currency) {
       throw new Error("Currency is required for PawaPay deposit.");
@@ -97,8 +125,8 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     `;
 
     await hasuraRequest(insertQuery, {
-      amount: String(amount),
-      currency: currency,
+      amount: String(baseAmount || amount),
+      currency: baseCurrency || currency,
       provider_reference: depositId,
       reference_id: referenceId, // Could be eventId or subscriptionId
       type,
@@ -210,3 +238,62 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
 
     return tx;
   });
+
+export async function handlePawaPayWebhook(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  const path = url.pathname;
+
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    const body = await request.json();
+    console.log(`[PawaPay Webhook] Received callback for ${path}:`, body);
+
+    const providerReference = body.depositId || body.payoutId || body.refundId;
+    const providerStatus = body.status;
+
+    if (providerReference) {
+      const { hasuraRequest } = await import("./graphql.server");
+      const updateQuery = `
+        mutation UpdateWalletTransaction($provider_reference: String!, $provider_status: String!, $raw_callback_data: jsonb) {
+          update_wallet_transactions(
+            where: { provider_reference: { _eq: $provider_reference } }, 
+            _set: { 
+              provider_status: $provider_status, 
+              raw_callback_data: $raw_callback_data,
+              updated_at: "now()"
+            }
+          ) {
+            returning {
+              id
+              status
+            }
+          }
+        }
+      `;
+
+      await hasuraRequest(updateQuery, {
+        provider_reference: providerReference,
+        provider_status: providerStatus || "UNKNOWN",
+        raw_callback_data: body,
+      });
+      console.log(`[PawaPay Webhook] Updated transaction for reference: ${providerReference}`);
+    }
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error(`[PawaPay Webhook] Error processing ${path}:`, error);
+    return new Response(JSON.stringify({ error: "Invalid request" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
