@@ -1,9 +1,10 @@
 import React from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Ticket, Calendar, ChevronRight, Heart, LogOut, User, Bell, ScanLine } from "lucide-react";
+import { Ticket, Calendar, ChevronRight, Heart, LogOut, User, Bell, ScanLine, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TicketCard } from "./TicketCard";
 import { HistoryCard } from "./HistoryCard";
+import { SubscriptionCard } from "./SubscriptionCard";
 
 export function ProfileMobile({
   user,
@@ -16,8 +17,16 @@ export function ProfileMobile({
   setShowLogoutModal,
   tab,
   setTab,
+  subscriptions,
 }: any) {
   const navigate = useNavigate();
+
+  const getInitials = (name: string) => {
+    if (!name) return "GU";
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
 
   return (
     <div className="md:hidden min-h-screen bg-background pb-24 text-foreground">
@@ -65,7 +74,9 @@ export function ProfileMobile({
               />
             ) : (
               <div className="h-full w-full rounded-full bg-secondary border-2 border-background flex items-center justify-center">
-                <User className="h-8 w-8 text-muted-foreground opacity-50" />
+                <span className="text-2xl font-bold text-muted-foreground opacity-50">
+                  {getInitials(user?.username)}
+                </span>
               </div>
             )}
           </div>
@@ -142,7 +153,7 @@ export function ProfileMobile({
 
       {/* Tabs */}
       <div className="flex border-b border-border/40 mt-4 px-4 gap-1 overflow-x-auto hide-scrollbar">
-        {(["upcoming", "history", "following"] as any[]).map((t) => (
+        {(["upcoming", "history", "following", "subscriptions"] as any[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -162,6 +173,11 @@ export function ProfileMobile({
               {t === "following" && (
                 <>
                   <Heart className="h-4 w-4" /> Following
+                </>
+              )}
+              {t === "subscriptions" && (
+                <>
+                  <Repeat className="h-4 w-4" /> Subs
                 </>
               )}
             </span>
@@ -238,6 +254,22 @@ export function ProfileMobile({
             >
               Discover more organizers <ChevronRight className="h-4 w-4" />
             </Link>
+          </div>
+        )}
+
+        {tab === "subscriptions" && (
+          <div className="space-y-4">
+            {subscriptions && subscriptions.length > 0 ? (
+              <div className="grid grid-cols-1 gap-4">
+                {subscriptions.map((sub: any) => (
+                  <SubscriptionCard key={sub.id} sub={sub} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10 border border-dashed border-border/60 rounded-3xl bg-card">
+                <p className="text-muted-foreground text-sm">No active subscriptions.</p>
+              </div>
+            )}
           </div>
         )}
       </div>

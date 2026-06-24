@@ -38,11 +38,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { getUserAllTickets } from "@/api/user_tickets";
 import { getFollowedOrganizers, getOrganizersByIds } from "@/api/organizers";
+import { getUserSubscriptions } from "@/api/space_subscriptions";
 
 import { TicketCard } from "@/components/profile/TicketCard";
 import { HistoryCard } from "@/components/profile/HistoryCard";
-import { SubscriptionCard } from "@/components/profile/SubscriptionCard";
-import { mockSubscriptions, favoriteCategories } from "@/components/profile/mockData";
+import { favoriteCategories } from "@/components/profile/mockData";
 import { ProfileDesktop } from "@/components/profile/ProfileDesktop";
 import { ProfileMobile } from "@/components/profile/ProfileMobile";
 
@@ -81,6 +81,12 @@ function ProfilePage() {
     queryKey: ["user-followed-organizers-profiles", followedIds],
     queryFn: () => getOrganizersByIds({ data: { ids: followedIds } }),
     enabled: followedIds.length > 0,
+  });
+
+  const { data: subscriptions = [], isLoading: isLoadingSubscriptions } = useQuery({
+    queryKey: ["user-subscriptions", user?.id],
+    queryFn: () => getUserSubscriptions({ data: { user_id: user?.id, email: user?.email } }),
+    enabled: !!user,
   });
 
   const parseDateInsensitively = (dateInput: any) => {
@@ -134,7 +140,7 @@ function ProfilePage() {
     userInterests = [];
   }
 
-  if (isLoading || isLoadingTickets || isLoadingOrganizers) {
+  if (isLoading || isLoadingTickets || isLoadingOrganizers || isLoadingSubscriptions) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar hideOnMobile />
@@ -195,7 +201,7 @@ function ProfilePage() {
         userInterests={userInterests}
         favoriteCategories={favoriteCategories}
         setShowLogoutModal={setShowLogoutModal}
-        mockSubscriptions={mockSubscriptions}
+        subscriptions={subscriptions}
       />
       <ProfileMobile
         user={user}
@@ -206,6 +212,7 @@ function ProfilePage() {
         userInterests={userInterests}
         favoriteCategories={favoriteCategories}
         setShowLogoutModal={setShowLogoutModal}
+        subscriptions={subscriptions}
         tab={tab}
         setTab={setTab}
       />

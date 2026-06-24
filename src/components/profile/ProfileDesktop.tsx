@@ -17,9 +17,16 @@ export function ProfileDesktop({
   userInterests,
   favoriteCategories,
   setShowLogoutModal,
-  mockSubscriptions,
+  subscriptions,
 }: any) {
   const navigate = useNavigate();
+
+  const getInitials = (name: string) => {
+    if (!name) return "GU";
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
 
   return (
     <div className="hidden md:flex flex-col min-h-screen bg-background text-foreground">
@@ -41,7 +48,9 @@ export function ProfileDesktop({
                 />
               ) : (
                 <div className="h-full w-full rounded-[14px] bg-secondary flex items-center justify-center">
-                  <User className="h-10 w-10 text-muted-foreground opacity-50" />
+                  <span className="text-3xl font-bold text-muted-foreground opacity-50">
+                    {getInitials(user?.username)}
+                  </span>
                 </div>
               )}
             </div>
@@ -188,16 +197,18 @@ export function ProfileDesktop({
             )}
           </section>
 
-          <section>
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Repeat className="h-5 w-5 text-primary" /> Active Subscriptions
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {mockSubscriptions.map((sub: any) => (
-                <SubscriptionCard key={sub.id} sub={sub} />
-              ))}
-            </div>
-          </section>
+          {subscriptions && subscriptions.length > 0 && (
+            <section>
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <Repeat className="h-5 w-5 text-primary" /> Active Subscriptions
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {subscriptions.map((sub: any) => (
+                  <SubscriptionCard key={sub.id} sub={sub} />
+                ))}
+              </div>
+            </section>
+          )}
         </main>
       </div>
       <Footer />
