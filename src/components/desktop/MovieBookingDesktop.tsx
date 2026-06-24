@@ -107,7 +107,15 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
 
   const movieProject = ticketProjects?.find(
     (p: any) => p.assigned_entity_id === cinema?.id && p.status === "active",
-  );
+  ) || {
+    template: "movie-1",
+    palette: { from: "#1f2937", to: "#0f172a", name: "Slate" },
+    font: { css: "sans-serif", name: "Modern" },
+    logoText: "Agatike",
+    logoColorMode: "original",
+    layout: {},
+    back: {},
+  };
 
   // Compute unique dates
   const uniqueDates = useMemo(() => {
@@ -244,6 +252,14 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
       return { isPawaPay: false, res, tiers };
     },
     onSuccess: (data: any) => {
+      const ticketsToIssue = data.res.map((r: any, idx: number) => ({
+        id: r.id,
+        otp: r.qrcode_number,
+        tier: data.tiers[idx],
+        attendee_name: attendeeInfo.firstName + " " + attendeeInfo.lastName,
+      }));
+      setIssuedTickets(ticketsToIssue);
+
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
         setIsPollingPawaPay(true);
@@ -251,16 +267,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
         return;
       }
       
-      const ticketsToIssue = data.res.map((r: any, idx: number) => ({
-        id: r.id,
-        otp: r.qrcode_number,
-        tier: data.tiers[idx],
-        attendee_name: attendeeInfo.firstName + " " + attendeeInfo.lastName,
-      }));
-
       if (ticketsToIssue.length > 0 && movieProject) {
         setIsGenerating(true);
-        setIssuedTickets(ticketsToIssue);
       } else {
         setIsSuccess(true);
       }
@@ -289,13 +297,11 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
         if (res?.status?.toLowerCase() === "completed" || res?.status?.toLowerCase() === "success") {
           setIsPollingPawaPay(false);
-          const ticketsToIssue = issuedTickets.length > 0 ? issuedTickets : []; 
-          if (ticketsToIssue.length === 0 && movieProject) {
-             // Since polling succeeds but we don't have res easily here, we can't generate the PDF easily.
-             // Usually webhook handles ticket generation for mobile money. 
-             // We will just show success.
+          if (issuedTickets.length > 0 && movieProject) {
+             setIsGenerating(true);
+          } else {
+             setIsSuccess(true);
           }
-          setIsSuccess(true);
         } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
@@ -306,21 +312,23 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [isPollingPawaPay, pawapayDepositId]);
+  }, [isPollingPawaPay, pawapayDepositId, issuedTickets, movieProject]);
 
   useEffect(() => {
     if (isGenerating && issuedTickets.length > 0 && movieProject) {
+      console.log("🎬 Starting movie ticket PDF generation...", { issuedTickets, movieProject });
       const generatePDFs = async () => {
         try {
           const attachments = [];
 
           const coverUrl = movieProject.coverImage || activeMovie?.cover_url;
+          console.log("Cover URL:", coverUrl);
           if (coverUrl) {
             await new Promise<void>((resolve) => {
               const img = new Image();
               img.crossOrigin = "anonymous";
-              img.onload = () => resolve();
-              img.onerror = () => resolve();
+              img.onload = () => { console.log("Cover image loaded successfully"); resolve(); };
+              img.onerror = (e) => { console.error("Cover image failed to load", e); resolve(); };
               img.src = coverUrl;
             });
           }
@@ -328,11 +336,16 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
           await new Promise((r) => setTimeout(r, 600));
 
           for (const ticket of issuedTickets) {
+            console.log(`Processing ticket element: ticket-render-${ticket.id}`);
             const el = document.getElementById(`ticket-render-${ticket.id}`);
-            if (!el) continue;
+            if (!el) {
+               console.error(`Missing ticket DOM element for ticket-render-${ticket.id}`);
+               continue;
+            }
 
             await new Promise((r) => setTimeout(r, 100));
 
+            console.log("Converting to JPEG using htmlToImage...");
             const imgData = await htmlToImage.toJpeg(el, {
               pixelRatio: 1.5,
               quality: 0.8,
@@ -341,7 +354,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
               height: 260,
             });
 
-            if (!imgData || imgData === "data:,") throw new Error("Empty image");
+            if (!imgData || imgData === "data:,") throw new Error("Empty image data from htmlToImage");
+            console.log("JPEG generated. Creating jsPDF...");
 
             const pdf = new jsPDF({
               orientation: "landscape",
@@ -350,6 +364,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             });
             pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
             const base64 = pdf.output("datauristring").split(",")[1];
+            console.log("jsPDF generated base64 successfully for", ticket.id);
 
             attachments.push({
               filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
@@ -357,8 +372,9 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             });
           }
 
+          console.log(`Sending email with ${attachments.length} attachments to ${attendeeInfo.email}`);
           if (attachments.length > 0 && attendeeInfo.email) {
-            await sendTicketsEmail({
+            const emailRes = await sendTicketsEmail({
               data: {
                 to: attendeeInfo.email,
                 customerName: attendeeInfo.firstName + " " + attendeeInfo.lastName,
@@ -366,11 +382,13 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                 attachments,
               } as any,
             });
+            console.log("Email API response:", emailRes);
           }
+          console.log("Email flow completed successfully.");
           setIsGenerating(false);
           setIsSuccess(true);
         } catch (e: any) {
-          console.error("PDF gen error:", e);
+          console.error("PDF gen error (caught inside catch block):", e);
           setIsGenerating(false);
           setIsSuccess(true); // fall back to success
         }

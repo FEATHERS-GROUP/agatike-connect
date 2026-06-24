@@ -62,7 +62,15 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
       getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id! } } as any),
     enabled: !!venue?.workspace_id,
   });
-  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);
+  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id) || {
+    template: "entrance-1",
+    palette: { from: "#1f2937", to: "#0f172a", name: "Slate" },
+    font: { css: "sans-serif", name: "Modern" },
+    logoText: "Agatike",
+    logoColorMode: "original",
+    layout: {},
+    back: {},
+  };
 
   useEffect(() => {
     try {
@@ -206,6 +214,12 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
       return { res, isPawaPay: false };
     },
     onSuccess: (data: any) => {
+      const res = data.res;
+      const td = res?.tickets_data;
+      if (td?.issued) {
+        setIssuedTickets(td.issued);
+      }
+
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
         setIsPollingPawaPay(true);
@@ -213,11 +227,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         return;
       }
 
-      const res = data.res;
-      const td = res.tickets_data;
       if (td?.issued && td.issued.length > 0 && venueProject) {
         setIsGenerating(true);
-        setIssuedTickets(td.issued);
       } else {
         localStorage.removeItem(storageKey);
         setIsSuccess(true);
@@ -237,7 +248,11 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         if (res?.status?.toLowerCase() === "completed" || res?.status?.toLowerCase() === "success") {
           setIsPollingPawaPay(false);
           localStorage.removeItem(storageKey);
-          setIsSuccess(true);
+          if (issuedTickets.length > 0 && venueProject) {
+             setIsGenerating(true);
+          } else {
+             setIsSuccess(true);
+          }
         } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
@@ -248,7 +263,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [isPollingPawaPay, pawapayDepositId, storageKey]);
+  }, [isPollingPawaPay, pawapayDepositId, issuedTickets, venueProject, storageKey]);
 
   useEffect(() => {
     if (isGenerating && issuedTickets.length > 0 && venueProject) {
