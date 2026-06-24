@@ -1,27 +1,33 @@
 import dotenv from "dotenv";
+import fetch from "node-fetch";
+
 dotenv.config();
 
 const API_BASE = process.env.HASURA_ADMIN_API.replace("/v1/graphql", "");
 const SECRET = process.env.HASURA_ADMIN_SECRETE;
 
 async function run() {
-  console.log("1. Adding image column to workspace_users table...");
-  const alterRes = await fetch(`${API_BASE}/v2/query`, {
+  console.log("1. Adding supported_networks column to wallets table...");
+  const createRes = await fetch(`${API_BASE}/v2/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-hasura-admin-secret": SECRET },
     body: JSON.stringify({
       type: "run_sql",
       args: {
         source: "default",
-        sql: `ALTER TABLE public.workspace_users ADD COLUMN IF NOT EXISTS image text;`,
+        sql: `
+          ALTER TABLE public.wallets 
+          ADD COLUMN IF NOT EXISTS supported_networks jsonb DEFAULT '[]'::jsonb;
+        `,
       },
     }),
   });
-  const alterData = await alterRes.json();
-  if (alterData.error) {
-    console.error("Error altering table:", alterData.error);
+
+  const createData = await createRes.json();
+  if (createData.error) {
+    console.error("Error modifying table:", createData.error);
   } else {
-    console.log("Column added!", alterData);
+    console.log("Column added successfully:", createData);
   }
 
   console.log("2. Reloading metadata...");
@@ -32,7 +38,7 @@ async function run() {
       type: "reload_metadata",
     }),
   });
-  console.log("Reload metadata result:", await trackRes.json());
+  console.log("Metadata reloaded:", await trackRes.json());
 }
 
 run();

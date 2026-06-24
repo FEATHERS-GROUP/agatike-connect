@@ -175,7 +175,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" })
         plan_name,
         price: String(price),
         billing_cycle,
-        status: "active",
+        status: ctx.data.status || "active",
         start_date: baseDate.toISOString(),
         next_billing_date: nextBillingDate,
         booking_type: booking_type || "individual",
@@ -237,7 +237,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" })
         plan_name,
         price: String(price),
         billing_cycle,
-        status: "active",
+        status: ctx.data.status || "active",
         start_date: baseDate.toISOString(),
         next_billing_date: nextBillingDate,
         booking_type: booking_type || "individual",
@@ -250,7 +250,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" })
       result = data.insert_space_subscriptions_one;
     }
 
-    if (parseFloat(price || "0") > 0) {
+    if (parseFloat(price || "0") > 0 && (ctx.data.status === "active" || !ctx.data.status)) {
       try {
         const spaceRes = await hasuraRequest<{ spaces_by_pk: { workspace_id: string } }>(
           `query GetSpaceWorkspace($id: uuid!) { spaces_by_pk(id: $id) { workspace_id } }`,
