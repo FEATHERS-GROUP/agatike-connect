@@ -355,6 +355,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             type: "event_ticket",
             referenceId: booking_ref,
             workspaceId: event?.workspace_id,
+            reason: event?.title || "Event Ticket",
           },
         } as any);
         return { res, attendeesPayload, isPawaPay: true, depositId: pawaRes.depositId };

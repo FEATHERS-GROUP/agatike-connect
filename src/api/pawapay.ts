@@ -41,6 +41,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       referenceId,
       workspaceId,
       currency,
+      reason,
     } = ctx.data as any;
 
     if (!currency) {
@@ -67,13 +68,10 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         address: { value: phone },
       },
       customerTimestamp: new Date().toISOString(),
-      statementDescription: `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`.substring(
-        0,
-        22,
-      ),
+      statementDescription: (reason || `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`).substring(0, 22),
     };
 
-    const baseUrl = process.env.PAWAPAY_API_URL || "https://api.sandbox.pawapay.cloud";
+    const baseUrl = process.env.PAWAPAY_API_URL;
     const response = await fetch(`${baseUrl}/v1/deposits`, {
       method: "POST",
       headers: {
