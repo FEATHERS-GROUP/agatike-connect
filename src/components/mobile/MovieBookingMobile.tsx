@@ -14,6 +14,11 @@ import { toast } from "sonner";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { MOCK_MOVIES_MAP } from "@/lib/mock-movies";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getWorkspaceTicketProjects } from "@/api/events";
+import { sendTicketsEmail } from "@/api/email";
+import * as htmlToImage from "html-to-image";
+import jsPDF from "jspdf";
+import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 
 export function MovieBookingMobile({ movieId }: { movieId: string }) {
   const navigate = useNavigate();
@@ -27,6 +32,8 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
   const [step, setStep] = useState(1);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(null);
@@ -87,6 +94,17 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
   const activeMovie = schedules.length > 0 ? schedules[0].movie : null;
   const cinema = schedules.length > 0 ? schedules[0].cinema : null;
   const currency = schedules.length > 0 ? schedules[0].currency : "RWF";
+
+  const { data: ticketProjects } = useQuery({
+    queryKey: ["ticket-projects", cinema?.workspace_id],
+    queryFn: () =>
+      getWorkspaceTicketProjects({ data: { workspaceId: cinema?.workspace_id } } as any),
+    enabled: !!cinema?.workspace_id,
+  });
+
+  const movieProject = ticketProjects?.find(
+    (p: any) => p.assigned_entity_id === cinema?.id && p.status === "active",
+  );
 
   // Compute unique dates
   const uniqueDates = useMemo(() => {
@@ -198,6 +216,9 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
       }
 
       const res = await Promise.all(promises);
+      const tiers = Object.entries(ticketQuantities)
+        .filter(([_, qty]) => qty > 0)
+        .map(([tierId]) => tierId === "default" ? "Standard Entry" : activeTiers.find((t: any) => t.id === tierId)?.name || "Standard Entry");
 
       if (isPawaPay) {
         const pawaRes = await initiatePawaPayDeposit({
@@ -214,10 +235,10 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
             reason: activeMovie?.title || "Movie Ticket",
           },
         } as any);
-        return { isPawaPay: true, depositId: pawaRes.depositId };
+        return { isPawaPay: true, depositId: pawaRes.depositId, res, tiers };
       }
 
-      return { isPawaPay: false };
+      return { isPawaPay: false, res, tiers };
     },
     onSuccess: (data: any) => {
       if (data.isPawaPay) {
@@ -226,8 +247,21 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
         setIsPaymentModalOpen(false);
         return;
       }
+      
+      const ticketsToIssue = data.res.map((r: any, idx: number) => ({
+        id: r.id,
+        otp: r.qrcode_number,
+        tier: data.tiers[idx],
+        attendee_name: attendeeInfo.firstName + " " + attendeeInfo.lastName,
+      }));
+
+      if (ticketsToIssue.length > 0 && movieProject) {
+        setIsGenerating(true);
+        setIssuedTickets(ticketsToIssue);
+      } else {
+        setIsSuccess(true);
+      }
       setIsPaymentModalOpen(false);
-      setIsSuccess(true);
     },
     onError: (e: any) => {
       toast.error(e.message || "Checkout failed");
@@ -252,6 +286,10 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
         if (res?.status?.toLowerCase() === "completed" || res?.status?.toLowerCase() === "success") {
           setIsPollingPawaPay(false);
+          const ticketsToIssue = issuedTickets.length > 0 ? issuedTickets : []; 
+          if (ticketsToIssue.length === 0 && movieProject) {
+             // Polling succeeds without res
+          }
           setIsSuccess(true);
         } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
@@ -264,6 +302,77 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
 
     return () => clearInterval(intervalId);
   }, [isPollingPawaPay, pawapayDepositId]);
+
+  useEffect(() => {
+    if (isGenerating && issuedTickets.length > 0 && movieProject) {
+      const generatePDFs = async () => {
+        try {
+          const attachments = [];
+
+          const coverUrl = movieProject.coverImage || activeMovie?.cover_url;
+          if (coverUrl) {
+            await new Promise<void>((resolve) => {
+              const img = new Image();
+              img.crossOrigin = "anonymous";
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+              img.src = coverUrl;
+            });
+          }
+
+          await new Promise((r) => setTimeout(r, 600));
+
+          for (const ticket of issuedTickets) {
+            const el = document.getElementById(`ticket-render-${ticket.id}`);
+            if (!el) continue;
+
+            await new Promise((r) => setTimeout(r, 100));
+
+            const imgData = await htmlToImage.toJpeg(el, {
+              pixelRatio: 1.5,
+              quality: 0.8,
+              backgroundColor: "#ffffff",
+              width: 720,
+              height: 260,
+            });
+
+            if (!imgData || imgData === "data:,") throw new Error("Empty image");
+
+            const pdf = new jsPDF({
+              orientation: "landscape",
+              unit: "px",
+              format: [720, 260],
+            });
+            pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
+            const base64 = pdf.output("datauristring").split(",")[1];
+
+            attachments.push({
+              filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+              content: base64,
+            });
+          }
+
+          if (attachments.length > 0 && attendeeInfo.email) {
+            await sendTicketsEmail({
+              data: {
+                to: attendeeInfo.email,
+                customerName: attendeeInfo.firstName + " " + attendeeInfo.lastName,
+                venueName: cinema?.name || "Cinema",
+                attachments,
+              } as any,
+            });
+          }
+          setIsGenerating(false);
+          setIsSuccess(true);
+        } catch (e: any) {
+          console.error("PDF gen error:", e);
+          setIsGenerating(false);
+          setIsSuccess(true); // fall back to success
+        }
+      };
+      setTimeout(generatePDFs, 1000);
+    }
+  }, [isGenerating, issuedTickets, movieProject, attendeeInfo, activeMovie, cinema]);
 
   if (isLoading || !activeMovie) {
     return (
@@ -542,13 +651,70 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
         setPaymentMethod={setPaymentMethod}
         onProceed={doCheckout as any}
         isProcessing={isCheckingOut}
-        isGenerating={false}
+        isGenerating={isGenerating}
         workspaceId={cinema?.workspace_id}
         baseAmount={totalPrice}
         quantity={totalTickets}
         subtotal={totalTickets > 0 ? totalPrice / totalTickets : 0}
         itemLabel="Ticket(s)"
       />
+      
+      {/* Hidden Ticket Renderer */}
+      {isGenerating && issuedTickets.length > 0 && movieProject && (
+        <div
+          className="absolute -z-50 pointer-events-none"
+          style={{ top: "-9999px", left: "-9999px" }}
+        >
+          {issuedTickets.map((t) => (
+            <div
+              key={t.id}
+              id={`ticket-render-${t.id}`}
+              className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+            >
+              <TicketPreview
+                template={movieProject.template}
+                palette={movieProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                font={movieProject.font || { css: "sans-serif", name: "Modern" }}
+                tier={t.tier}
+                title={activeMovie.title}
+                subtitle={cinema?.name}
+                date={selectedDate!}
+                time={currentSchedule?.start_time?.substring(0, 5)}
+                seat={t.attendee_name}
+                price={(activeTiers.find((tier: any) => tier.name === t.tier)?.price || 0).toString()}
+                currency={currency}
+                cover={movieProject.coverImage || activeMovie.cover_url}
+                logoText={movieProject.logoText || "Agatike"}
+                logoImage={movieProject.logoImage}
+                logoScale={Number(movieProject.logoScale || 24)}
+                logoOpacity={Number(movieProject.logoOpacity ?? 1)}
+                logoColorMode={movieProject.logoColorMode || "original"}
+                orderId={t.otp}
+                qrValue={`${window.location.origin}/c/${t.otp}`}
+                previewMode="Front"
+                layout={
+                  movieProject.design_overrides?.layout || {
+                    titleSize: 30,
+                    subtitleSize: 14,
+                    metaSize: 11,
+                    titleAlign: "left",
+                    titleOffsetY: 0,
+                    subtitleOffsetY: 0,
+                    metaOffsetY: 0,
+                  }
+                }
+                back={
+                  movieProject.design_overrides?.back || {
+                    backText: "",
+                    backImage: "",
+                    backImageOpacity: 0.3,
+                  }
+                }
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

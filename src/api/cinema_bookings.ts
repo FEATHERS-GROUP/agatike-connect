@@ -212,6 +212,7 @@ export const createCinemaBooking = createServerFn({ method: "POST" })
       mutation CreateCinemaBooking($object: cinema_bookings_insert_input!, $schedule_id: uuid!, $qty: Int!, $ticket_tier_id: uuid) {
         insert_cinema_bookings_one(object: $object) {
           id
+          qrcode_number
         }
         update_cinema_schedules_by_pk(
           pk_columns: { id: $schedule_id },
@@ -228,7 +229,7 @@ export const createCinemaBooking = createServerFn({ method: "POST" })
       }
     `;
 
-    const res = await hasuraRequest<{ insert_cinema_bookings_one: { id: string } }>(
+    const res = await hasuraRequest<{ insert_cinema_bookings_one: { id: string; qrcode_number: string } }>(
       CREATE_AND_UPDATE,
       {
         object: objWithQr,
