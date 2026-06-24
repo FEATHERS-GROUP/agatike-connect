@@ -3,7 +3,11 @@ import { createServerFn } from "@tanstack/react-start";
 export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
-    const { amount, phone, network, type, referenceId, workspaceId } = ctx.data as any;
+    const { amount, phone, network, type, referenceId, workspaceId, currency } = ctx.data as any;
+
+    if (!currency) {
+      throw new Error("Currency is required for PawaPay deposit.");
+    }
 
     if (!workspaceId) {
       throw new Error("Workspace ID is required for PawaPay deposit.");
@@ -18,8 +22,8 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const payload = {
       depositId,
       amount: String(amount),
-      currency: "RWF", // Adjust if needed
-      correspondent: network === "MTN" ? "MTN_MOMO_RWA" : network === "AIRTEL" ? "AIRTEL_OAPI_RWA" : network === "MPESA" ? "MPESA_KEN" : network,
+      currency: currency,
+      correspondent: network, // exact PawaPay correspondent passed from frontend
       payer: {
         type: "MSISDN",
         address: { value: phone },
@@ -63,13 +67,13 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
 
     if (!walletId) {
       const createWalletMutation = `
-        mutation CreateWallet($workspace_id: uuid!) {
-          insert_wallets_one(object: { workspace_id: $workspace_id, amount: 0, currency: "RWF", walletNumber: "Not setup" }) {
+        mutation CreateWallet($workspace_id: uuid!, $currency: String!) {
+          insert_wallets_one(object: { workspace_id: $workspace_id, amount: 0, currency: $currency, walletNumber: "Not setup" }) {
             id
           }
         }
       `;
-      const createRes = await hasuraRequest<{ insert_wallets_one: { id: string } }>(createWalletMutation, { workspace_id: workspaceId });
+      const createRes = await hasuraRequest<{ insert_wallets_one: { id: string } }>(createWalletMutation, { workspace_id: workspaceId, currency: currency });
       walletId = createRes.insert_wallets_one?.id;
     }
 
@@ -94,7 +98,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
 
     await hasuraRequest(insertQuery, {
       amount: String(amount),
-      currency: "RWF",
+      currency: currency,
       provider_reference: depositId,
       reference_id: referenceId, // Could be eventId or subscriptionId
       type,

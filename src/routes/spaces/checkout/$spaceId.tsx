@@ -161,6 +161,7 @@ function CheckoutPage() {
             amount: finalPriceNum,
             phone: paymentDetails!.phone,
             network: paymentDetails!.network,
+            currency: currency,
             type: "space_subscription",
             referenceId: subscription?.id,
             workspaceId: space?.workspace_id,

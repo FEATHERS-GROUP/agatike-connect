@@ -143,12 +143,28 @@ export function PaymentModal({
                     <SelectTrigger className="bg-background border-border/60">
                       <SelectValue placeholder="Select Network" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MTN_MOMO_RWA">MTN Rwanda</SelectItem>
-                      <SelectItem value="AIRTEL_OAPI_RWA">Airtel Rwanda</SelectItem>
-                      <SelectItem value="MTN_MOMO_UGA">MTN Uganda</SelectItem>
-                      <SelectItem value="AIRTEL_OAPI_UGA">Airtel Uganda</SelectItem>
-                      <SelectItem value="VODACOM_MPESA_TZA">M-Pesa Tanzania</SelectItem>
+                    <SelectContent className="max-h-64">
+                      <SelectItem value="MTN_MOMO_RWA">MTN Rwanda (RWF)</SelectItem>
+                      <SelectItem value="AIRTEL_OAPI_RWA">Airtel Rwanda (RWF)</SelectItem>
+                      <SelectItem value="MTN_MOMO_UGA">MTN Uganda (UGX)</SelectItem>
+                      <SelectItem value="AIRTEL_OAPI_UGA">Airtel Uganda (UGX)</SelectItem>
+                      <SelectItem value="SAFARICOM_M_PESA_KEN">Safaricom M-Pesa Kenya (KES)</SelectItem>
+                      <SelectItem value="MTN_MOMO_ZMB">MTN Zambia (ZMW)</SelectItem>
+                      <SelectItem value="AIRTEL_OAPI_ZMB">Airtel Zambia (ZMW)</SelectItem>
+                      <SelectItem value="MTN_MOMO_CMR">MTN Cameroon (XAF)</SelectItem>
+                      <SelectItem value="MTN_MOMO_CIV">MTN Cote d'Ivoire (XOF)</SelectItem>
+                      <SelectItem value="ORANGE_CIV">Orange Cote d'Ivoire (XOF)</SelectItem>
+                      <SelectItem value="AIRTEL_OAPI_COD">Airtel DRC (CDF/USD)</SelectItem>
+                      <SelectItem value="ORANGE_COD">Orange DRC (CDF/USD)</SelectItem>
+                      <SelectItem value="VODACOM_MPESA_COD">Vodacom DRC (CDF/USD)</SelectItem>
+                      <SelectItem value="AIRTEL_OAPI_GAB">Airtel Gabon (XAF)</SelectItem>
+                      <SelectItem value="AIRTEL_OAPI_COG">Airtel Republic of the Congo (XAF)</SelectItem>
+                      <SelectItem value="MTN_MOMO_COG">MTN Republic of the Congo (XAF)</SelectItem>
+                      <SelectItem value="FREE_SEN">Free Senegal (XOF)</SelectItem>
+                      <SelectItem value="ORANGE_SEN">Orange Senegal (XOF)</SelectItem>
+                      <SelectItem value="ORANGE_SLE">Orange Sierra Leone (SLE)</SelectItem>
+                      <SelectItem value="MOOV_BEN">Moov Benin (XOF)</SelectItem>
+                      <SelectItem value="MTN_MOMO_BEN">MTN Benin (XOF)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

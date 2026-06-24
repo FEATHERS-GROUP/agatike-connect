@@ -329,6 +329,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             amount: total,
             phone: paymentDetails!.phone,
             network: paymentDetails!.network,
+            currency: currency,
             type: "event_ticket",
             referenceId: booking_ref,
             workspaceId: event?.workspace_id,
