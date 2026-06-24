@@ -1810,7 +1810,7 @@ The Cinema module allows an organizer to operate a full movie theatre ticketing 
 
 **Files:** `src/api/space_subscriptions.ts`
 
-To monetize the platform, Agatike Connect offers recurring SaaS subscriptions for Organizers. 
+To monetize the platform, Agatike Connect offers recurring SaaS subscriptions for Organizers.
 
 ### Logic
 

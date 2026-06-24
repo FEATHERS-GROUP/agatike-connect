@@ -43,14 +43,16 @@ const UPDATE_WALLET_NETWORKS = `
   }
 `;
 
-export const updateWalletSupportedNetworks = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { id, networks } = ctx.data as unknown as { id: string; networks: string[] };
-  const data = await hasuraRequest<{ update_wallets_by_pk: any }>(UPDATE_WALLET_NETWORKS, {
-    id,
-    networks,
-  });
-  return data.update_wallets_by_pk;
-});
+export const updateWalletSupportedNetworks = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { id, networks } = ctx.data as unknown as { id: string; networks: string[] };
+    const data = await hasuraRequest<{ update_wallets_by_pk: any }>(UPDATE_WALLET_NETWORKS, {
+      id,
+      networks,
+    });
+    return data.update_wallets_by_pk;
+  },
+);
 
 const GET_WALLET_TRANSACTIONS = `
   query GetWalletTransactions($wallet_id: uuid!) {

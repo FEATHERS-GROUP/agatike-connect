@@ -13,10 +13,10 @@ export const getExchangeRate = createServerFn({ method: "POST" })
       const res = await fetch(`https://open.er-api.com/v6/latest/${safeBase}`);
       if (!res.ok) throw new Error("Failed to fetch exchange rates");
       const data = await res.json();
-      
+
       const rate = data.rates[safeTarget];
       if (!rate) throw new Error(`Currency ${safeTarget} not supported by exchange API`);
-      
+
       // Add 2% markup to protect from FX fluctuations
       const markupRate = rate * 1.02;
 
@@ -31,7 +31,17 @@ export const getExchangeRate = createServerFn({ method: "POST" })
 export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
   .inputValidator((d: any) => d)
   .handler(async (ctx) => {
-    const { amount, baseAmount, baseCurrency, phone, network, type, referenceId, workspaceId, currency } = ctx.data as any;
+    const {
+      amount,
+      baseAmount,
+      baseCurrency,
+      phone,
+      network,
+      type,
+      referenceId,
+      workspaceId,
+      currency,
+    } = ctx.data as any;
 
     if (!currency) {
       throw new Error("Currency is required for PawaPay deposit.");
@@ -57,7 +67,10 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         address: { value: phone },
       },
       customerTimestamp: new Date().toISOString(),
-      statementDescription: `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`.substring(0, 22),
+      statementDescription: `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`.substring(
+        0,
+        22,
+      ),
     };
 
     const baseUrl = process.env.PAWAPAY_API_URL || "https://api.sandbox.pawapay.cloud";
@@ -76,7 +89,9 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     }
 
     if (data.status === "REJECTED") {
-      throw new Error(`PawaPay Rejected: ${data.rejectionReason?.rejectionMessage || "Invalid Payment Details"}`);
+      throw new Error(
+        `PawaPay Rejected: ${data.rejectionReason?.rejectionMessage || "Invalid Payment Details"}`,
+      );
     }
 
     // Save pending transaction
@@ -90,7 +105,9 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         }
       }
     `;
-    const walletRes = await hasuraRequest<{ wallets: { id: string }[] }>(getWalletQuery, { workspace_id: workspaceId });
+    const walletRes = await hasuraRequest<{ wallets: { id: string }[] }>(getWalletQuery, {
+      workspace_id: workspaceId,
+    });
     let walletId = walletRes.wallets?.[0]?.id;
 
     if (!walletId) {
@@ -101,7 +118,10 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
           }
         }
       `;
-      const createRes = await hasuraRequest<{ insert_wallets_one: { id: string } }>(createWalletMutation, { workspace_id: workspaceId, currency: currency });
+      const createRes = await hasuraRequest<{ insert_wallets_one: { id: string } }>(
+        createWalletMutation,
+        { workspace_id: workspaceId, currency: currency },
+      );
       walletId = createRes.insert_wallets_one?.id;
     }
 
@@ -182,7 +202,7 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
 
           if (providerStatus && (providerStatus === "COMPLETED" || providerStatus === "FAILED")) {
             const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
-            
+
             // Update local DB
             const updateQuery = `
               mutation UpdateWalletTransaction($provider_reference: String!, $provider_status: String!, $status: String!) {
@@ -201,7 +221,7 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
             await hasuraRequest(updateQuery, {
               provider_reference: depositId,
               provider_status: providerStatus,
-              status: newStatus
+              status: newStatus,
             });
 
             // Trigger completion logic

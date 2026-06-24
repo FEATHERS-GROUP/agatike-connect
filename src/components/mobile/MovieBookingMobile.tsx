@@ -160,11 +160,20 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     totalTickets > 0 && attendeeInfo.firstName && attendeeInfo.lastName && attendeeInfo.email;
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
-    mutationFn: async (paymentDetails?: { phone?: string; network?: string; currency?: string; convertedAmount?: number }) => {
+    mutationFn: async (paymentDetails?: {
+      phone?: string;
+      network?: string;
+      currency?: string;
+      convertedAmount?: number;
+    }) => {
       const promises = [];
       const fullName = `${attendeeInfo.firstName} ${attendeeInfo.lastName}`.trim();
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
-      const isPawaPay = totalPrice > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+      const isPawaPay =
+        totalPrice > 0 &&
+        paymentMethod === "momo" &&
+        paymentDetails?.phone &&
+        paymentDetails?.network;
 
       for (const [tierId, qty] of Object.entries(ticketQuantities)) {
         if (qty <= 0) continue;
@@ -186,7 +195,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
 
         promises.push(createCinemaBooking({ data: { object: payload } } as any));
       }
-      
+
       const res = await Promise.all(promises);
 
       if (isPawaPay) {
@@ -201,7 +210,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
             type: "movie_ticket",
             referenceId: booking_ref,
             workspaceId: cinema?.workspace_id,
-          }
+          },
         } as any);
         return { isPawaPay: true, depositId: pawaRes.depositId };
       }
@@ -493,8 +502,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
             "Processing..."
           ) : (
             <>
-              <Lock className="mr-2 h-4 w-4" /> Pay{" "}
-              {formatCurrency(totalPrice, currency)}
+              <Lock className="mr-2 h-4 w-4" /> Pay {formatCurrency(totalPrice, currency)}
             </>
           )}
         </Button>

@@ -287,9 +287,15 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     });
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
-    mutationFn: async (paymentDetails?: { phone?: string; network?: string; currency?: string; convertedAmount?: number }) => {
+    mutationFn: async (paymentDetails?: {
+      phone?: string;
+      network?: string;
+      currency?: string;
+      convertedAmount?: number;
+    }) => {
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
-      const isPawaPay = total > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+      const isPawaPay =
+        total > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
 
       // Map attendees to Hasura table payload
       const attendeesPayload = attendees.map((a, idx) => {
@@ -349,7 +355,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             type: "event_ticket",
             referenceId: booking_ref,
             workspaceId: event?.workspace_id,
-          }
+          },
         } as any);
         return { res, attendeesPayload, isPawaPay: true, depositId: pawaRes.depositId };
       }
@@ -406,7 +412,9 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     if (isPollingPawaPay && pawapayDepositId) {
       interval = setInterval(async () => {
         try {
-          const status = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
+          const status = await getPawaPayDepositStatus({
+            data: { depositId: pawapayDepositId },
+          } as any);
           if (status?.status === "completed") {
             setIsPollingPawaPay(false);
             toast.success("Payment completed successfully!");
@@ -562,14 +570,19 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
           <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
           <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
-            We've sent a payment request to your mobile number. Please enter your PIN to confirm the payment.
+            We've sent a payment request to your mobile number. Please enter your PIN to confirm the
+            payment.
           </p>
           <div className="flex gap-2 mb-8 justify-center">
             <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
             <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
             <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
           </div>
-          <Button variant="outline" onClick={() => setIsPollingPawaPay(false)} className="rounded-2xl h-12 px-8">
+          <Button
+            variant="outline"
+            onClick={() => setIsPollingPawaPay(false)}
+            className="rounded-2xl h-12 px-8"
+          >
             Cancel Payment
           </Button>
         </main>

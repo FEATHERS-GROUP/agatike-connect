@@ -149,10 +149,16 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     }, 0) || 0;
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
-    mutationFn: async (paymentDetails?: { phone?: string; network?: string; currency?: string; convertedAmount?: number }) => {
+    mutationFn: async (paymentDetails?: {
+      phone?: string;
+      network?: string;
+      currency?: string;
+      convertedAmount?: number;
+    }) => {
       const totalAttendees = 1 + attendees.length;
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
-      const isPawaPay = total > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+      const isPawaPay =
+        total > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
 
       const payload = {
         workspace_id: venue.workspace_id,
@@ -189,7 +195,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             type: "venue_booking",
             referenceId: booking_ref,
             workspaceId: venue.workspace_id,
-          }
+          },
         } as any);
         return { res, isPawaPay: true, depositId: pawaRes.depositId };
       }
@@ -203,7 +209,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         setIsPaymentModalOpen(false);
         return;
       }
-      
+
       const res = data.res;
       const td = res.tickets_data;
       if (td?.issued && td.issued.length > 0 && venueProject) {

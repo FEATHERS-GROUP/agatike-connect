@@ -44,7 +44,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
       const res = await hasuraRequest<{ update_wallet_transactions: any }>(updateQuery, {
         provider_reference: providerReference,
         provider_status: providerStatus || "UNKNOWN",
-        status: providerStatus === "COMPLETED" ? "completed" : providerStatus === "FAILED" ? "failed" : "pending",
+        status:
+          providerStatus === "COMPLETED"
+            ? "completed"
+            : providerStatus === "FAILED"
+              ? "failed"
+              : "pending",
         raw_callback_data: body,
       });
 

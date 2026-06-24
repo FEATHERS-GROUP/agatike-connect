@@ -122,7 +122,12 @@ function CheckoutPage() {
     setTeamMembers(newMembers);
   };
 
-  const handlePayment = async (paymentDetails?: { phone?: string; network?: string; currency?: string; convertedAmount?: number }) => {
+  const handlePayment = async (paymentDetails?: {
+    phone?: string;
+    network?: string;
+    currency?: string;
+    convertedAmount?: number;
+  }) => {
     setErrorMsg("");
 
     if (!formData.name || !formData.email || !formData.phone || !formData.startDate) {
@@ -133,7 +138,11 @@ function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      const isPawaPay = finalPriceNum > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+      const isPawaPay =
+        finalPriceNum > 0 &&
+        paymentMethod === "momo" &&
+        paymentDetails?.phone &&
+        paymentDetails?.network;
 
       // 1. Save Subscription to Database (with membership IDs generated server-side)
       const subscription = await createSpaceSubscription({
@@ -151,7 +160,7 @@ function CheckoutPage() {
           start_date: formData.startDate,
           booking_type: bookingType,
           team_members: bookingType === "group" ? teamMembers : [],
-          status: isPawaPay ? "pending" : "active"
+          status: isPawaPay ? "pending" : "active",
         },
       } as any);
 
@@ -167,7 +176,7 @@ function CheckoutPage() {
             type: "space_subscription",
             referenceId: subscription?.id,
             workspaceId: space?.workspace_id,
-          }
+          },
         } as any);
         setPawapayDepositId(pawaRes.depositId);
         setIsPollingPawaPay(true);
@@ -292,7 +301,9 @@ function CheckoutPage() {
     if (isPollingPawaPay && pawapayDepositId) {
       interval = setInterval(async () => {
         try {
-          const status = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
+          const status = await getPawaPayDepositStatus({
+            data: { depositId: pawapayDepositId },
+          } as any);
           if (status?.status === "completed") {
             setIsPollingPawaPay(false);
             navigate({ to: `/spaces/success/${spaceId}`, search: { email: formData.email } });
@@ -897,8 +908,10 @@ function CheckoutPage() {
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...
               </>
+            ) : step === 2 ? (
+              `Proceed to Payment`
             ) : (
-              step === 2 ? `Proceed to Payment` : "Continue"
+              "Continue"
             )}
           </Button>
         </div>
@@ -921,14 +934,22 @@ function CheckoutPage() {
           <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
           <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
           <p className="text-muted-foreground mb-8 max-w-sm">
-            We've sent a payment request to your mobile number. Please enter your PIN to confirm the payment.
+            We've sent a payment request to your mobile number. Please enter your PIN to confirm the
+            payment.
           </p>
           <div className="flex gap-2 mb-8 justify-center">
             <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
             <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
             <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
           </div>
-          <Button variant="outline" onClick={() => { setIsPollingPawaPay(false); setIsProcessing(false); }} className="rounded-2xl h-12 px-8">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setIsPollingPawaPay(false);
+              setIsProcessing(false);
+            }}
+            className="rounded-2xl h-12 px-8"
+          >
             Cancel Payment
           </Button>
         </div>

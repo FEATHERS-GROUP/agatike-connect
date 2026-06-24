@@ -1,5 +1,14 @@
 import { useState, useMemo } from "react";
-import { History, CheckCircle2, Clock, ArrowDownLeft, ArrowUpRight, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  History,
+  CheckCircle2,
+  Clock,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -9,7 +18,11 @@ interface TransactionLedgerProps {
   formatCurrency: (amount: number, currency?: string) => string;
 }
 
-export function TransactionLedger({ transactions, isLoading, formatCurrency }: TransactionLedgerProps) {
+export function TransactionLedger({
+  transactions,
+  isLoading,
+  formatCurrency,
+}: TransactionLedgerProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 20;
@@ -22,14 +35,14 @@ export function TransactionLedger({ transactions, isLoading, formatCurrency }: T
         txn.description?.toLowerCase().includes(lowerQuery) ||
         txn.type?.toLowerCase().includes(lowerQuery) ||
         txn.status?.toLowerCase().includes(lowerQuery) ||
-        txn.provider_reference?.toLowerCase().includes(lowerQuery)
+        txn.provider_reference?.toLowerCase().includes(lowerQuery),
     );
   }, [transactions, searchQuery]);
 
   const totalPages = Math.ceil(filteredTransactions.length / rowsPerPage) || 1;
   const currentTransactions = filteredTransactions.slice(
     (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
+    currentPage * rowsPerPage,
   );
 
   return (
@@ -86,12 +99,18 @@ export function TransactionLedger({ transactions, isLoading, formatCurrency }: T
                       <div className="flex items-center gap-3">
                         <div
                           className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-                            txn.type === "credit" || txn.type === "deposit" || txn.type === "event_ticket" || txn.type === "space_subscription"
+                            txn.type === "credit" ||
+                            txn.type === "deposit" ||
+                            txn.type === "event_ticket" ||
+                            txn.type === "space_subscription"
                               ? "bg-green-500/10 text-green-500"
                               : "bg-red-500/10 text-red-500"
                           }`}
                         >
-                          {txn.type === "credit" || txn.type === "deposit" || txn.type === "event_ticket" || txn.type === "space_subscription" ? (
+                          {txn.type === "credit" ||
+                          txn.type === "deposit" ||
+                          txn.type === "event_ticket" ||
+                          txn.type === "space_subscription" ? (
                             <ArrowDownLeft className="h-5 w-5" />
                           ) : (
                             <ArrowUpRight className="h-5 w-5" />
@@ -99,9 +118,14 @@ export function TransactionLedger({ transactions, isLoading, formatCurrency }: T
                         </div>
                         <div>
                           <p className="font-semibold text-foreground">
-                            {txn.description || (txn.type === "credit" || txn.type === "deposit" ? "Income" : "Withdrawal")}
+                            {txn.description ||
+                              (txn.type === "credit" || txn.type === "deposit"
+                                ? "Income"
+                                : "Withdrawal")}
                           </p>
-                          <p className="text-xs text-muted-foreground capitalize">{txn.type?.replace("_", " ")}</p>
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {txn.type?.replace("_", " ")}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -118,17 +142,31 @@ export function TransactionLedger({ transactions, isLoading, formatCurrency }: T
                               : "bg-red-500/10 text-red-500"
                         }`}
                       >
-                        {(txn.status === "completed" || txn.status === "SUCCESS") && <CheckCircle2 className="h-3 w-3" />}
-                        {(txn.status === "pending" || txn.status === "PENDING") && <Clock className="h-3 w-3" />}
+                        {(txn.status === "completed" || txn.status === "SUCCESS") && (
+                          <CheckCircle2 className="h-3 w-3" />
+                        )}
+                        {(txn.status === "pending" || txn.status === "PENDING") && (
+                          <Clock className="h-3 w-3" />
+                        )}
                         {txn.status}
                       </span>
                     </td>
                     <td
                       className={`px-6 py-4 text-right font-bold ${
-                        txn.type === "credit" || txn.type === "deposit" || txn.type === "event_ticket" || txn.type === "space_subscription" ? "text-green-500" : "text-foreground"
+                        txn.type === "credit" ||
+                        txn.type === "deposit" ||
+                        txn.type === "event_ticket" ||
+                        txn.type === "space_subscription"
+                          ? "text-green-500"
+                          : "text-foreground"
                       }`}
                     >
-                      {txn.type === "credit" || txn.type === "deposit" || txn.type === "event_ticket" || txn.type === "space_subscription" ? "+" : "-"}
+                      {txn.type === "credit" ||
+                      txn.type === "deposit" ||
+                      txn.type === "event_ticket" ||
+                      txn.type === "space_subscription"
+                        ? "+"
+                        : "-"}
                       {formatCurrency(txn.amount, txn.currency || "RWF")}
                     </td>
                   </tr>
@@ -137,7 +175,7 @@ export function TransactionLedger({ transactions, isLoading, formatCurrency }: T
             </tbody>
           </table>
         </div>
-        
+
         {!isLoading && filteredTransactions.length > rowsPerPage && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-border/60 bg-secondary/10">
             <div className="text-sm text-muted-foreground">

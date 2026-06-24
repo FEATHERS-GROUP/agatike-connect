@@ -1,9 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +20,12 @@ interface PaymentModalProps {
   onOpenChange: (open: boolean) => void;
   paymentMethod: string;
   setPaymentMethod: (method: string) => void;
-  onProceed: (details?: { phone?: string; network?: string; currency?: string; convertedAmount?: number }) => void;
+  onProceed: (details?: {
+    phone?: string;
+    network?: string;
+    currency?: string;
+    convertedAmount?: number;
+  }) => void;
   isProcessing: boolean;
   isGenerating: boolean;
   workspaceId: string;
@@ -40,7 +40,13 @@ const ALL_NETWORKS = [
   { label: "Airtel Rwanda", value: "AIRTEL_OAPI_RWA", curr: "RWF", code: "250", maxLen: 9 },
   { label: "MTN Uganda", value: "MTN_MOMO_UGA", curr: "UGX", code: "256", maxLen: 9 },
   { label: "Airtel Uganda", value: "AIRTEL_OAPI_UGA", curr: "UGX", code: "256", maxLen: 9 },
-  { label: "Safaricom M-Pesa Kenya", value: "SAFARICOM_M_PESA_KEN", curr: "KES", code: "254", maxLen: 9 },
+  {
+    label: "Safaricom M-Pesa Kenya",
+    value: "SAFARICOM_M_PESA_KEN",
+    curr: "KES",
+    code: "254",
+    maxLen: 9,
+  },
   { label: "MTN Zambia", value: "MTN_MOMO_ZMB", curr: "ZMW", code: "260", maxLen: 9 },
   { label: "Airtel Zambia", value: "AIRTEL_OAPI_ZMB", curr: "ZMW", code: "260", maxLen: 9 },
   { label: "MTN Cameroon", value: "MTN_MOMO_CMR", curr: "XAF", code: "237", maxLen: 9 },
@@ -50,8 +56,20 @@ const ALL_NETWORKS = [
   { label: "Orange DRC", value: "ORANGE_COD", curr: "CDF", code: "243", maxLen: 9 },
   { label: "Vodacom DRC", value: "VODACOM_MPESA_COD", curr: "CDF", code: "243", maxLen: 9 },
   { label: "Airtel Gabon", value: "AIRTEL_OAPI_GAB", curr: "XAF", code: "241", maxLen: 8 },
-  { label: "Airtel Republic of the Congo", value: "AIRTEL_OAPI_COG", curr: "XAF", code: "242", maxLen: 9 },
-  { label: "MTN Republic of the Congo", value: "MTN_MOMO_COG", curr: "XAF", code: "242", maxLen: 9 },
+  {
+    label: "Airtel Republic of the Congo",
+    value: "AIRTEL_OAPI_COG",
+    curr: "XAF",
+    code: "242",
+    maxLen: 9,
+  },
+  {
+    label: "MTN Republic of the Congo",
+    value: "MTN_MOMO_COG",
+    curr: "XAF",
+    code: "242",
+    maxLen: 9,
+  },
   { label: "Free Senegal", value: "FREE_SEN", curr: "XOF", code: "221", maxLen: 9 },
   { label: "Orange Senegal", value: "ORANGE_SEN", curr: "XOF", code: "221", maxLen: 9 },
   { label: "Orange Sierra Leone", value: "ORANGE_SLE", curr: "SLE", code: "232", maxLen: 8 },
@@ -75,7 +93,7 @@ export function PaymentModal({
 }: PaymentModalProps) {
   const [phone, setPhone] = useState("");
   const [network, setNetwork] = useState("");
-  
+
   // Fetch Wallet to get base currency and supported networks
   const { data: wallet, isLoading: isWalletLoading } = useQuery({
     queryKey: ["wallet", workspaceId],
@@ -85,13 +103,16 @@ export function PaymentModal({
 
   const baseCurrency = wallet?.currency || "RWF";
   const supportedNetworks = wallet?.supported_networks || [];
-  
+
   const availableNetworks = useMemo(() => {
     if (!supportedNetworks || supportedNetworks.length === 0) return ALL_NETWORKS;
-    return ALL_NETWORKS.filter(n => supportedNetworks.includes(n.value));
+    return ALL_NETWORKS.filter((n) => supportedNetworks.includes(n.value));
   }, [supportedNetworks]);
 
-  const selectedNetworkObj = useMemo(() => availableNetworks.find((n) => n.value === network), [network, availableNetworks]);
+  const selectedNetworkObj = useMemo(
+    () => availableNetworks.find((n) => n.value === network),
+    [network, availableNetworks],
+  );
   const targetCurrency = selectedNetworkObj?.curr || baseCurrency;
 
   // Fetch FX Rate
@@ -104,7 +125,7 @@ export function PaymentModal({
   // Calculate final amount
   const markupRate = fxData?.markupRate || 1;
   const convertedAmount = Math.ceil(baseAmount * markupRate);
-  
+
   // Set default network if none selected and available exists
   useEffect(() => {
     if (isOpen && !network && availableNetworks.length > 0) {
@@ -210,7 +231,9 @@ export function PaymentModal({
                   <div
                     className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "momo" ? "border-primary" : "border-muted-foreground/30"}`}
                   >
-                    {paymentMethod === "momo" && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
+                    {paymentMethod === "momo" && (
+                      <div className="h-2.5 w-2.5 rounded-full bg-primary" />
+                    )}
                   </div>
                 </button>
 
@@ -245,7 +268,11 @@ export function PaymentModal({
                         )}
                         <Input
                           type="tel"
-                          placeholder={selectedNetworkObj ? `e.g. ${"7".padEnd(selectedNetworkObj.maxLen, "0")}` : "e.g. 788123456"}
+                          placeholder={
+                            selectedNetworkObj
+                              ? `e.g. ${"7".padEnd(selectedNetworkObj.maxLen, "0")}`
+                              : "e.g. 788123456"
+                          }
                           value={phone}
                           onChange={(e) => {
                             const val = e.target.value.replace(/\D/g, "");
@@ -265,27 +292,34 @@ export function PaymentModal({
           {/* Right Column: Receipt / Summary */}
           <div className="md:w-80 bg-secondary/30 border-t md:border-t-0 md:border-l border-border/60 p-6 flex flex-col">
             <h3 className="font-bold text-lg mb-6">Order Summary</h3>
-            
+
             <div className="flex-1 space-y-6">
               <div className="space-y-2">
                 {quantity && subtotal && (
                   <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>{quantity} x {itemLabel || "Item(s)"} @ {baseCurrency} {subtotal.toLocaleString()}</span>
-                    <span>{baseCurrency} {(quantity * subtotal).toLocaleString()}</span>
+                    <span>
+                      {quantity} x {itemLabel || "Item(s)"} @ {baseCurrency}{" "}
+                      {subtotal.toLocaleString()}
+                    </span>
+                    <span>
+                      {baseCurrency} {(quantity * subtotal).toLocaleString()}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm pt-2 border-t border-border/40">
                   <span className="text-muted-foreground">Base Price</span>
-                  <span className="font-semibold">{baseCurrency} {baseAmount.toLocaleString()}</span>
+                  <span className="font-semibold">
+                    {baseCurrency} {baseAmount.toLocaleString()}
+                  </span>
                 </div>
-                
+
                 {paymentMethod === "momo" && baseCurrency !== targetCurrency && (
                   <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3 mt-4">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
                       <ArrowRightLeft className="w-3 h-3 text-primary" />
                       Currency Conversion
                     </div>
-                    
+
                     {isFxLoading ? (
                       <div className="flex items-center gap-2 text-sm text-primary">
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -295,7 +329,9 @@ export function PaymentModal({
                       <>
                         <div className="flex justify-between text-sm">
                           <span>Live Rate (+2%)</span>
-                          <span className="font-mono">1 {baseCurrency} = {markupRate.toFixed(4)} {targetCurrency}</span>
+                          <span className="font-mono">
+                            1 {baseCurrency} = {markupRate.toFixed(4)} {targetCurrency}
+                          </span>
                         </div>
                       </>
                     )}
@@ -312,7 +348,8 @@ export function PaymentModal({
                     <div className="h-8 w-24 animate-pulse bg-secondary rounded-lg" />
                   ) : (
                     <span className="text-2xl font-black text-primary">
-                      {paymentMethod === "momo" ? targetCurrency : baseCurrency} {convertedAmount.toLocaleString()}
+                      {paymentMethod === "momo" ? targetCurrency : baseCurrency}{" "}
+                      {convertedAmount.toLocaleString()}
                     </span>
                   )}
                 </div>
@@ -320,7 +357,11 @@ export function PaymentModal({
 
               <Button
                 onClick={handleProceed}
-                disabled={isProcessing || isGenerating || (paymentMethod === "momo" && (!isMomoComplete || isFxLoading))}
+                disabled={
+                  isProcessing ||
+                  isGenerating ||
+                  (paymentMethod === "momo" && (!isMomoComplete || isFxLoading))
+                }
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
                 style={{ background: "var(--gradient-primary)" }}
               >

@@ -340,7 +340,11 @@ function CinemaDetail() {
                     className="flex-1 h-14 rounded-2xl shadow-[var(--shadow-glow)] text-base font-bold"
                     style={{ background: "var(--gradient-primary)" }}
                   >
-                    <Link to="/book-movie/$movieId" params={{ movieId: selectedMovie.id }} search={{ date: new Date().toISOString().split('T')[0] }}>
+                    <Link
+                      to="/book-movie/$movieId"
+                      params={{ movieId: selectedMovie.id }}
+                      search={{ date: new Date().toISOString().split("T")[0] }}
+                    >
                       <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
                       {formatCurrency(selectedMovie.price || 3000, selectedMovie.currency)}
                     </Link>

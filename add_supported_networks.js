@@ -35,7 +35,7 @@ async function run() {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-hasura-admin-secret": SECRET },
     body: JSON.stringify({
-      type: "reload_metadata"
+      type: "reload_metadata",
     }),
   });
   console.log("Metadata reloaded:", await trackRes.json());

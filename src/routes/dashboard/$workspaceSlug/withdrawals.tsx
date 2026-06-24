@@ -2,7 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getWorkspaceWallet, getWalletTransactions, updateWalletSupportedNetworks } from "@/api/wallet";
+import {
+  getWorkspaceWallet,
+  getWalletTransactions,
+  updateWalletSupportedNetworks,
+} from "@/api/wallet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -180,11 +184,13 @@ function WithdrawalsPage() {
           <h3 className="text-xl font-bold flex items-center gap-2">
             <Settings className="h-5 w-5 text-primary" /> Supported Payment Networks
           </h3>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="rounded-full"
             onClick={() => {
-              setSelectedNetworks(Array.isArray(wallet?.supported_networks) ? wallet?.supported_networks : []);
+              setSelectedNetworks(
+                Array.isArray(wallet?.supported_networks) ? wallet?.supported_networks : [],
+              );
               setIsNetworksModalOpen(true);
             }}
           >
@@ -193,16 +199,20 @@ function WithdrawalsPage() {
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
           <p className="text-sm text-muted-foreground">
-            You currently have <strong>{(Array.isArray(wallet?.supported_networks) ? wallet?.supported_networks : []).length}</strong> Mobile Money networks enabled for checkout.
+            You currently have{" "}
+            <strong>
+              {(Array.isArray(wallet?.supported_networks) ? wallet?.supported_networks : []).length}
+            </strong>{" "}
+            Mobile Money networks enabled for checkout.
           </p>
         </div>
       </div>
 
       {/* Transactions History */}
-      <TransactionLedger 
-        transactions={transactions} 
-        isLoading={isTransactionsLoading} 
-        formatCurrency={formatCurrency} 
+      <TransactionLedger
+        transactions={transactions}
+        isLoading={isTransactionsLoading}
+        formatCurrency={formatCurrency}
       />
 
       {/* Withdrawal Modal */}
@@ -287,7 +297,9 @@ function WithdrawalsPage() {
           <DialogHeader>
             <DialogTitle className="text-2xl">Supported Payment Networks</DialogTitle>
             <DialogDescription>
-              Select which Mobile Money networks you want to accept during checkout. Your wallet will automatically convert incoming payments to your native currency ({wallet?.currency}).
+              Select which Mobile Money networks you want to accept during checkout. Your wallet
+              will automatically convert incoming payments to your native currency (
+              {wallet?.currency}).
             </DialogDescription>
           </DialogHeader>
 
@@ -310,12 +322,15 @@ function WithdrawalsPage() {
               ].map((network) => {
                 const isChecked = selectedNetworks.includes(network.value);
                 return (
-                  <div key={network.value} className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${isChecked ? 'border-primary bg-primary/5' : 'border-border/40 bg-secondary/20'}`}>
+                  <div
+                    key={network.value}
+                    className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${isChecked ? "border-primary bg-primary/5" : "border-border/40 bg-secondary/20"}`}
+                  >
                     <div>
                       <Label className="font-semibold">{network.label}</Label>
                       <p className="text-xs text-muted-foreground">Charges in {network.curr}</p>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={isChecked}
                       onCheckedChange={(c) => toggleNetwork(network.value, c)}
                     />
