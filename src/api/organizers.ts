@@ -318,34 +318,40 @@ export const getOrganizers = createServerFn({ method: "GET" }).handler(async () 
   return result.organizers;
 });
 
-export const getFollowedOrganizers = createServerFn({ method: "GET" }).handler(async () => {
-  const userId = await getUserIdFromCookie();
-  if (!userId) return [];
+export const getFollowedOrganizers = createServerFn({ method: "POST" }).handler(async () => {
+  try {
+    const userId = await getUserIdFromCookie();
+    if (!userId) return [];
 
-  const query = `
-    query GetFollowedOrganizers {
-      organizer_followers {
-        organizer_id
-        user_id
+    const query = `
+      query GetFollowedOrganizers {
+        organizer_followers {
+          organizer_id
+          user_id
+        }
       }
-    }
-  `;
+    `;
 
-  const result = await hasuraRequest<{
-    organizer_followers: { organizer_id: string; user_id: any }[];
-  }>(query, {});
+    const result = await hasuraRequest<{
+      organizer_followers: { organizer_id: string; user_id: any }[];
+    }>(query, {});
 
-  const userIdStr = String(userId).replace(/"/g, "");
+    const userIdStr = String(userId).replace(/"/g, "");
 
-  return result.organizer_followers
-    .filter((f) => {
-      // The database stores user_id as a jsonb array of follower user IDs
-      if (Array.isArray(f.user_id)) {
-        return f.user_id.some((id) => String(id).replace(/"/g, "") === userIdStr);
-      }
-      return String(f.user_id).replace(/"/g, "") === userIdStr;
-    })
-    .map((f) => f.organizer_id);
+    return result.organizer_followers
+      .filter((f) => {
+        // The database stores user_id as a jsonb array of follower user IDs
+        if (Array.isArray(f.user_id)) {
+          return f.user_id.some((id) => String(id).replace(/"/g, "") === userIdStr);
+        }
+        return String(f.user_id).replace(/"/g, "") === userIdStr;
+      })
+      .map((f) => f.organizer_id);
+  } catch (err: any) {
+    console.error("GET_FOLLOWED_ORGANIZERS_ERROR:", err);
+    import("fs").then(fs => fs.writeFileSync("error_log.txt", err.stack || err.message));
+    throw err;
+  }
 });
 
 export const followOrganizer = createServerFn({ method: "POST" }).handler(async (ctx) => {
