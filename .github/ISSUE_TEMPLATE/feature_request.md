@@ -1,20 +1,62 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: ''
-labels: ''
+title: Feature
+labels: documentation, enhancement
 assignees: ''
+type: Feature
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+Title
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+[Feature] Short descriptive name
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+Summary
+Describe the feature in 1–3 sentences.
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+Problem Statement
+What problem does this solve?
+
+Business Value
+
+Why is this important?
+What outcome do we expect?
+
+User Story
+
+As a <user type>,
+I want <capability>,
+So that <benefit>.
+
+Requirements
+
+Requirement 1
+Requirement 2
+Requirement 3
+
+Acceptance Criteria
+
+ [ ]Criteria 1
+ [ ]Criteria 2
+ [ ]Criteria 3
+
+Design / Mockups
+Attach screenshots, wireframes, or links if available.
+
+Dependencies
+List any systems, teams, or features this depends on.
+
+Priority
+
+[ ]Low
+[ ]Medium
+[ ]High
+[ ]Critical
+
+Definition of Done
+
+ [ ]Code completed
+ [ ]Tests written/passed
+ [ ]Documentation updated
+ [ ]Product owner approval
