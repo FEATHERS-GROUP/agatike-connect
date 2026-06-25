@@ -659,6 +659,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         isGenerating={isGenerating}
         workspaceId={event?.workspace_id || ""}
         baseAmount={total}
+        quantity={totalTickets}
+        itemLabel="Ticket(s)"
+        baseCurrency={currency}
+        userPhone={user?.phone || undefined}
       />
 
       {/* Hidden container for PDF rendering */}

@@ -34,6 +34,7 @@ interface PaymentModalProps {
   subtotal?: number;
   itemLabel?: string;
   baseCurrency?: string;
+  userPhone?: string;
 }
 
 const ALL_NETWORKS = [
@@ -92,6 +93,7 @@ export function PaymentModal({
   subtotal,
   itemLabel,
   baseCurrency: propsBaseCurrency,
+  userPhone,
 }: PaymentModalProps) {
   const [phone, setPhone] = useState("");
   const [network, setNetwork] = useState("");
@@ -262,7 +264,28 @@ export function PaymentModal({
                       )}
                     </div>
                     <div className="space-y-1.5 text-left">
-                      <Label className="text-xs text-muted-foreground">Phone Number</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs text-muted-foreground">Phone Number</Label>
+                        {userPhone && phone !== userPhone && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const cleanPhone = userPhone.replace(/\D/g, "");
+                              const max = selectedNetworkObj?.maxLen || 15;
+                              // If cleanPhone starts with country code, we might want to strip it,
+                              // but let's just use the last maxLen characters if it's too long,
+                              // or just let them edit it.
+                              const val = cleanPhone.length > max ? cleanPhone.slice(-max) : cleanPhone;
+                              setPhone(val);
+                            }}
+                            className="text-[10px] font-medium text-primary hover:underline bg-primary/10 px-2 py-0.5 rounded-full transition-colors"
+                          >
+                            Use my saved number
+                          </button>
+                        )}
+                      </div>
                       <div className="flex h-11 bg-background border border-border/60 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
                         {selectedNetworkObj && (
                           <div className="flex items-center px-3 bg-secondary/30 border-r border-border/60 text-sm text-muted-foreground font-medium">

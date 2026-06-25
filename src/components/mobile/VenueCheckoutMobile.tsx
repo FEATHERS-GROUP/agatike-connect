@@ -909,6 +909,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         quantity={totalTickets}
         itemLabel="Ticket(s)"
         baseCurrency={venue.currency}
+        userPhone={user?.phone || undefined}
       />
 
     </div>

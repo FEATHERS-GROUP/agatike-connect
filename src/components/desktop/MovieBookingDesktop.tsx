@@ -770,6 +770,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
         quantity={totalTickets}
         subtotal={totalTickets > 0 ? totalPrice / totalTickets : 0}
         itemLabel="Ticket(s)"
+        userPhone={user?.phone || undefined}
       />
       
       {/* Hidden Ticket Renderer */}

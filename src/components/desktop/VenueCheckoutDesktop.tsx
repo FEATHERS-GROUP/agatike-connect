@@ -968,6 +968,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
         quantity={totalTickets}
         itemLabel="Ticket(s)"
         baseCurrency={venue.currency}
+        userPhone={user?.phone || undefined}
       />
 
       <Footer />
