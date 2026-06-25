@@ -928,6 +928,10 @@ function CheckoutPage() {
         isGenerating={false}
         workspaceId={space?.workspace_id || ""}
         baseAmount={finalPriceNum}
+        quantity={bookingType === "group" ? teamMembers.length : 1}
+        itemLabel="Pass(es)"
+        baseCurrency={space?.currency || "RWF"}
+        userPhone={user?.phone || undefined}
       />
 
       {isPollingPawaPay && (
