@@ -33,6 +33,7 @@ interface PaymentModalProps {
   quantity?: number;
   subtotal?: number;
   itemLabel?: string;
+  baseCurrency?: string;
 }
 
 const ALL_NETWORKS = [
@@ -90,6 +91,7 @@ export function PaymentModal({
   quantity,
   subtotal,
   itemLabel,
+  baseCurrency: propsBaseCurrency,
 }: PaymentModalProps) {
   const [phone, setPhone] = useState("");
   const [network, setNetwork] = useState("");
@@ -101,7 +103,7 @@ export function PaymentModal({
     enabled: isOpen && !!workspaceId,
   });
 
-  const baseCurrency = wallet?.currency || "RWF";
+  const baseCurrency = propsBaseCurrency || wallet?.currency || "RWF";
   const supportedNetworks = wallet?.supported_networks || [];
 
   const availableNetworks = useMemo(() => {
@@ -113,7 +115,8 @@ export function PaymentModal({
     () => availableNetworks.find((n) => n.value === network),
     [network, availableNetworks],
   );
-  const targetCurrency = selectedNetworkObj?.curr || baseCurrency;
+  const targetCurrency =
+    paymentMethod === "momo" ? selectedNetworkObj?.curr || baseCurrency : baseCurrency;
 
   // Fetch FX Rate
   const { data: fxData, isLoading: isFxLoading } = useQuery({
@@ -328,7 +331,7 @@ export function PaymentModal({
                     ) : (
                       <>
                         <div className="flex justify-between text-sm">
-                          <span>Live Rate (+2%)</span>
+                          <span>Live Rate</span>
                           <span className="font-mono">
                             1 {baseCurrency} = {markupRate.toFixed(4)} {targetCurrency}
                           </span>
