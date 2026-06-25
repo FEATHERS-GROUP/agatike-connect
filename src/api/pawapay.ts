@@ -41,6 +41,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       referenceId,
       workspaceId,
       currency,
+      reason,
     } = ctx.data as any;
 
     if (!currency) {
@@ -67,13 +68,12 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         address: { value: phone },
       },
       customerTimestamp: new Date().toISOString(),
-      statementDescription: `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`.substring(
-        0,
-        22,
-      ),
+      statementDescription: (
+        reason || `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`
+      ).substring(0, 22),
     };
 
-    const baseUrl = process.env.PAWAPAY_API_URL || "https://api.sandbox.pawapay.cloud";
+    const baseUrl = process.env.PAWAPAY_API_URL;
     const response = await fetch(`${baseUrl}/v1/deposits`, {
       method: "POST",
       headers: {
@@ -243,6 +243,27 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
                   }
                 `;
                 await hasuraRequest(activateSubQuery, { id: tx.reference_id });
+              } else if (tx.type === "movie_ticket") {
+                const bookingIds = tx.reference_id.split(",");
+                const confirmQuery = `
+                  mutation ConfirmCinemaBookings($ids: [uuid!]!) {
+                    update_cinema_bookings(
+                      where: { id: { _in: $ids } },
+                      _set: { status: "Confirmed" }
+                    ) { affected_rows }
+                  }
+                `;
+                await hasuraRequest(confirmQuery, { ids: bookingIds });
+              } else if (tx.type === "venue_booking") {
+                const confirmQuery = `
+                  mutation ConfirmVenueBooking($id: uuid!) {
+                    update_venue_bookings_by_pk(
+                      pk_columns: { id: $id },
+                      _set: { payment_status: "Paid", status: "Confirmed" }
+                    ) { id }
+                  }
+                `;
+                await hasuraRequest(confirmQuery, { id: tx.reference_id });
               }
             }
 

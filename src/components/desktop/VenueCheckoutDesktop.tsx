@@ -8,6 +8,7 @@ import {
   Ticket,
   Minus,
   Plus,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,7 +63,15 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id! } } as any),
     enabled: !!venue?.workspace_id,
   });
-  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);
+  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id) || {
+    template: "entrance-1",
+    palette: { from: "#1f2937", to: "#0f172a", name: "Slate" },
+    font: { css: "sans-serif", name: "Modern" },
+    logoText: "Agatike",
+    logoColorMode: "original",
+    layout: {},
+    back: {},
+  };
 
   useEffect(() => {
     try {
@@ -205,6 +214,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             type: "venue_booking",
             referenceId: booking_ref,
             workspaceId: venue.workspace_id,
+            reason: venue?.name || "Venue Booking",
           },
         } as any);
         return { res, isPawaPay: true, depositId: pawaRes.depositId };
@@ -213,6 +223,12 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       return { res, isPawaPay: false };
     },
     onSuccess: (data: any) => {
+      const res = data.res;
+      const td = res?.tickets_data;
+      if (td?.issued) {
+        setIssuedTickets(td.issued);
+      }
+
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
         setIsPollingPawaPay(true);
@@ -220,11 +236,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
         return;
       }
 
-      const res = data.res;
-      const td = res.tickets_data;
       if (td?.issued && td.issued.length > 0 && venueProject) {
         setIsGenerating(true);
-        setIssuedTickets(td.issued);
       } else {
         localStorage.removeItem(storageKey);
         setIsSuccess(true);
@@ -241,11 +254,18 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     const intervalId = setInterval(async () => {
       try {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
-        if (res.status === "COMPLETED" || res.status === "SUCCESS") {
+        if (
+          res?.status?.toLowerCase() === "completed" ||
+          res?.status?.toLowerCase() === "success"
+        ) {
           setIsPollingPawaPay(false);
           localStorage.removeItem(storageKey);
-          setIsSuccess(true); // Simplified for venues: no tickets generated if it's async? Wait, we should generate tickets if it succeeds, but we don't have `res` here easily. For now, just show success.
-        } else if (res.status === "FAILED") {
+          if (issuedTickets.length > 0 && venueProject) {
+            setIsGenerating(true);
+          } else {
+            setIsSuccess(true);
+          }
+        } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
         }
@@ -255,7 +275,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [isPollingPawaPay, pawapayDepositId, storageKey]);
+  }, [isPollingPawaPay, pawapayDepositId, issuedTickets, venueProject, storageKey]);
 
   useEffect(() => {
     if (isGenerating && issuedTickets.length > 0 && venueProject) {
@@ -381,6 +401,34 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       return () => clearTimeout(timer);
     }
   }, [isSuccess, navigate]);
+
+  if (isPollingPawaPay) {
+    return (
+      <div className="min-h-screen bg-background text-foreground relative flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+          <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
+          <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
+          <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+            We've sent a payment request to your mobile number. Please enter your PIN to confirm the
+            payment.
+          </p>
+          <div className="flex gap-2 mb-8 justify-center">
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => setIsPollingPawaPay(false)}
+            className="rounded-2xl h-12 px-8"
+          >
+            Cancel Payment
+          </Button>
+        </main>
+      </div>
+    );
+  }
 
   if (isSuccess) {
     return (
@@ -909,6 +957,22 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           ))}
         </div>
       )}
+
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onOpenChange={setIsPaymentModalOpen}
+        baseAmount={total}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        onProceed={(details) => doCheckout(details)}
+        isProcessing={isCheckingOut || isPollingPawaPay}
+        isGenerating={isGenerating}
+        workspaceId={venue.workspace_id}
+        quantity={totalTickets}
+        itemLabel="Ticket(s)"
+        baseCurrency={venue.currency}
+        userPhone={user?.phone || undefined}
+      />
 
       <Footer />
     </div>

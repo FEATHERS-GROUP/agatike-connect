@@ -1,5 +1,15 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { ChevronLeft, Lock, MapPin, Calendar, CheckCircle2, Ticket, Clock } from "lucide-react";
+import {
+  ChevronLeft,
+  Lock,
+  MapPin,
+  Calendar,
+  CheckCircle2,
+  Ticket,
+  Clock,
+  Smartphone,
+  Loader2,
+} from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
@@ -12,11 +22,15 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { getMovieSchedulesByMovieId } from "@/api/cinemas";
 import { createCinemaBooking } from "@/api/cinema_bookings";
 import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
-import { updateCinemaBookingStatus } from "@/api/cinema_bookings"; // Need this if it exists, wait, let's just use createCinemaBooking.
 import { toast } from "sonner";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { MOCK_MOVIES_MAP } from "@/lib/mock-movies";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getWorkspaceTicketProjects } from "@/api/events";
+import { sendTicketsEmail } from "@/api/email";
+import * as htmlToImage from "html-to-image";
+import jsPDF from "jspdf";
+import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 
 export function MovieBookingDesktop({ movieId }: { movieId: string }) {
   const navigate = useNavigate();
@@ -29,6 +43,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
   const [step, setStep] = useState(1);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(null);
@@ -55,42 +71,28 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
     enabled: !isMock,
   });
 
-  if (isMock) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center pt-24 pb-12 px-4 text-center">
-        <div className="max-w-md w-full bg-card border border-border/60 rounded-3xl p-8 shadow-xl flex flex-col items-center">
-          <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-            <Ticket className="h-10 w-10 text-primary opacity-50" />
-          </div>
-          <h2 className="text-2xl font-bold text-foreground">
-            {MOCK_MOVIES_MAP[movieId]?.title || "Upcoming Movie"}
-          </h2>
-          {MOCK_MOVIES_MAP[movieId]?.cover && (
-            <img
-              src={MOCK_MOVIES_MAP[movieId].cover}
-              alt="Movie Poster"
-              className="w-32 h-48 object-cover rounded-xl mt-6 shadow-md"
-            />
-          )}
-          <p className="mt-6 text-muted-foreground leading-relaxed">
-            Due to incredibly high demand, tickets for this showing are either completely{" "}
-            <strong>sold out</strong> or <strong>not yet published</strong> by the cinema.
-          </p>
-          <Button
-            size="lg"
-            className="mt-8 w-full rounded-full h-14 font-semibold"
-            onClick={() => navigate({ to: "/" })}
-          >
-            Back to Home
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   const activeMovie = schedules.length > 0 ? schedules[0].movie : null;
   const cinema = schedules.length > 0 ? schedules[0].cinema : null;
   const currency = schedules.length > 0 ? schedules[0].currency : "RWF";
+
+  const { data: ticketProjects } = useQuery({
+    queryKey: ["ticket-projects", cinema?.workspace_id],
+    queryFn: () =>
+      getWorkspaceTicketProjects({ data: { workspaceId: cinema?.workspace_id } } as any),
+    enabled: !!cinema?.workspace_id,
+  });
+
+  const movieProject = ticketProjects?.find(
+    (p: any) => p.assigned_entity_id === cinema?.id && p.status === "active",
+  ) || {
+    template: "movie-1",
+    palette: { from: "#1f2937", to: "#0f172a", name: "Slate" },
+    font: { css: "sans-serif", name: "Modern" },
+    logoText: "Agatike",
+    logoColorMode: "original",
+    layout: {},
+    back: {},
+  };
 
   // Compute unique dates
   const uniqueDates = useMemo(() => {
@@ -124,6 +126,24 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
       setTicketQuantities({}); // Reset cart on schedule change
     }
   }, [currentSchedule, selectedScheduleId]);
+
+  // Deep merge utility for ticket design overrides
+  const getMergedProjectDesign = (baseProject: any, tierId: string) => {
+    if (!baseProject) return null;
+    const overrides = baseProject.design_overrides?.overrides;
+    if (!overrides) return baseProject;
+
+    const tierOverride = overrides.tiers?.[tierId] || {};
+
+    return {
+      ...baseProject,
+      ...tierOverride,
+      palette: tierOverride.palette || baseProject.palette,
+      font: tierOverride.font || baseProject.font,
+      layout: tierOverride.layout || baseProject.design_overrides?.layout || baseProject.layout,
+      back: tierOverride.back || baseProject.design_overrides?.back || baseProject.back,
+    };
+  };
 
   const activeTiers = useMemo(() => {
     if (!currentSchedule) return [];
@@ -185,6 +205,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
         const payload = {
           cinema_id: cinema.id,
           schedule_id: currentSchedule.id,
+          user_id: user?.id || null,
           ticket_tier_id:
             tierId === "default" ? null : activeTiers.find((t: any) => t.id === tierId)?.tierId,
           names: fullName,
@@ -201,6 +222,18 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
       }
 
       const res = await Promise.all(promises);
+      const tiers = Object.entries(ticketQuantities)
+        .filter(([_, qty]) => qty > 0)
+        .map(([tierId]) => ({
+          name:
+            tierId === "default"
+              ? "Standard Entry"
+              : activeTiers.find((t: any) => t.id === tierId)?.name || "Standard Entry",
+          tierId:
+            tierId === "default"
+              ? "default"
+              : activeTiers.find((t: any) => t.id === tierId)?.tierId || tierId,
+        }));
 
       if (isPawaPay) {
         const pawaRes = await initiatePawaPayDeposit({
@@ -212,24 +245,42 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             network: paymentDetails!.network,
             currency: paymentDetails?.currency || currency,
             type: "movie_ticket",
-            referenceId: booking_ref,
+            referenceId: res
+              .map((r: any) => r.id)
+              .join(",")
+              .substring(0, 255), // Combine all booking IDs as referenceId
             workspaceId: cinema?.workspace_id,
+            reason: activeMovie?.title || "Movie Ticket",
           },
         } as any);
-        return { isPawaPay: true, depositId: pawaRes.depositId };
+        return { isPawaPay: true, depositId: pawaRes.depositId, res, tiers };
       }
 
-      return { isPawaPay: false };
+      return { isPawaPay: false, res, tiers };
     },
     onSuccess: (data: any) => {
+      const ticketsToIssue = data.res.map((r: any, idx: number) => ({
+        id: r.id,
+        otp: r.qrcode_number,
+        tierName: data.tiers[idx].name,
+        tierId: data.tiers[idx].tierId,
+        attendee_name: attendeeInfo.firstName + " " + attendeeInfo.lastName,
+      }));
+      setIssuedTickets(ticketsToIssue);
+
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
         setIsPollingPawaPay(true);
         setIsPaymentModalOpen(false);
         return;
       }
+
+      if (ticketsToIssue.length > 0 && movieProject) {
+        setIsGenerating(true);
+      } else {
+        setIsSuccess(true);
+      }
       setIsPaymentModalOpen(false);
-      setIsSuccess(true);
     },
     onError: (e: any) => {
       toast.error(e.message || "Checkout failed");
@@ -252,10 +303,17 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
     const intervalId = setInterval(async () => {
       try {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
-        if (res.status === "COMPLETED" || res.status === "SUCCESS") {
+        if (
+          res?.status?.toLowerCase() === "completed" ||
+          res?.status?.toLowerCase() === "success"
+        ) {
           setIsPollingPawaPay(false);
-          setIsSuccess(true);
-        } else if (res.status === "FAILED") {
+          if (issuedTickets.length > 0 && movieProject) {
+            setIsGenerating(true);
+          } else {
+            setIsSuccess(true);
+          }
+        } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
         }
@@ -265,7 +323,112 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [isPollingPawaPay, pawapayDepositId]);
+  }, [isPollingPawaPay, pawapayDepositId, issuedTickets, movieProject]);
+
+  useEffect(() => {
+    if (isGenerating && issuedTickets.length > 0 && movieProject) {
+      const generatePDFs = async () => {
+        try {
+          const attachments = [];
+
+          const coverUrl = movieProject.coverImage || activeMovie?.cover_url;
+          if (coverUrl) {
+            await new Promise<void>((resolve) => {
+              const img = new Image();
+              img.crossOrigin = "anonymous";
+              img.onload = () => resolve();
+              img.onerror = (e) => resolve();
+              img.src = coverUrl;
+            });
+          }
+
+          await new Promise((r) => setTimeout(r, 600));
+
+          for (const ticket of issuedTickets) {
+            const el = document.getElementById(`ticket-render-${ticket.id}`);
+            if (!el) continue;
+
+            await new Promise((r) => setTimeout(r, 100));
+
+            const imgData = await htmlToImage.toJpeg(el, {
+              pixelRatio: 1.5,
+              quality: 0.8,
+              backgroundColor: "#ffffff",
+              width: 720,
+              height: 260,
+            });
+
+            if (!imgData || imgData === "data:,")
+              throw new Error("Empty image data from htmlToImage");
+
+            const pdf = new jsPDF({
+              orientation: "landscape",
+              unit: "px",
+              format: [720, 260],
+            });
+            pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
+            const base64 = pdf.output("datauristring").split(",")[1];
+
+            attachments.push({
+              filename: `Ticket_${ticket.tierName.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+              content: base64,
+            });
+          }
+
+          if (attachments.length > 0 && attendeeInfo.email) {
+            await sendTicketsEmail({
+              data: {
+                to: attendeeInfo.email,
+                customerName: attendeeInfo.firstName + " " + attendeeInfo.lastName,
+                venueName: cinema?.name || "Cinema",
+                attachments,
+              } as any,
+            });
+          }
+          setIsGenerating(false);
+          setIsSuccess(true);
+        } catch (e: any) {
+          console.error("PDF gen error (caught inside catch block):", e);
+          setIsGenerating(false);
+          setIsSuccess(true); // fall back to success
+        }
+      };
+      setTimeout(generatePDFs, 1000);
+    }
+  }, [isGenerating, issuedTickets, movieProject, attendeeInfo, activeMovie, cinema]);
+
+  if (isMock) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center pt-24 pb-12 px-4 text-center">
+        <div className="max-w-md w-full bg-card border border-border/60 rounded-3xl p-8 shadow-xl flex flex-col items-center">
+          <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+            <Ticket className="h-10 w-10 text-primary opacity-50" />
+          </div>
+          <h2 className="text-2xl font-bold text-foreground">
+            {MOCK_MOVIES_MAP[movieId]?.title || "Upcoming Movie"}
+          </h2>
+          {MOCK_MOVIES_MAP[movieId]?.cover && (
+            <img
+              src={MOCK_MOVIES_MAP[movieId].cover}
+              alt="Movie Poster"
+              className="w-32 h-48 object-cover rounded-xl mt-6 shadow-md"
+            />
+          )}
+          <p className="mt-6 text-muted-foreground leading-relaxed">
+            Due to incredibly high demand, tickets for this showing are either completely{" "}
+            <strong>sold out</strong> or <strong>not yet published</strong> by the cinema.
+          </p>
+          <Button
+            size="lg"
+            className="mt-8 w-full rounded-full h-14 font-semibold"
+            onClick={() => navigate({ to: "/" })}
+          >
+            Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading || !activeMovie) {
     return (
@@ -324,6 +487,35 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
     );
   }
 
+  if (isPollingPawaPay) {
+    return (
+      <div className="min-h-screen bg-background text-foreground relative flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+          <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
+          <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
+          <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+            We've sent a payment request to your mobile number. Please enter your PIN to confirm the
+            payment.
+          </p>
+          <div className="flex gap-2 mb-8 justify-center">
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => setIsPollingPawaPay(false)}
+            className="rounded-2xl h-12 px-8"
+          >
+            Cancel Payment
+          </Button>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground relative">
       <Navbar />
@@ -371,9 +563,6 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                         );
                       })}
                     </div>
-                    <div className="flex justify-end pt-4 border-t border-border/60">
-                      <Button onClick={() => setStep(2)}>Continue to Tickets</Button>
-                    </div>
                   </div>
                 )}
 
@@ -416,12 +605,9 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                         );
                       })}
                     </div>
-                    <div className="flex justify-between pt-4 border-t border-border/60">
+                    <div className="flex justify-start pt-4 border-t border-border/60">
                       <Button variant="outline" onClick={() => setStep(1)}>
                         Back
-                      </Button>
-                      <Button disabled={totalTickets === 0} onClick={() => setStep(3)}>
-                        Continue to Details
                       </Button>
                     </div>
                   </div>
@@ -543,7 +729,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                 disabled={
                   (step === 1 && !selectedScheduleId) ||
                   (step === 2 && totalTickets === 0) ||
-                  (step === 3 && (!isFormValid || isCheckingOut))
+                  (step === 3 && (!isFormValid || isCheckingOut)) ||
+                  isGenerating
                 }
                 className="w-full h-14 rounded-2xl text-base font-bold shadow-[var(--shadow-glow)]"
                 style={{ background: "var(--gradient-primary)" }}
@@ -562,7 +749,13 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                     "Select Tickets"
                   )
                 ) : isCheckingOut || isPollingPawaPay ? (
-                  "Processing..."
+                  <span className="flex items-center justify-center">
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...
+                  </span>
+                ) : isGenerating ? (
+                  <span className="flex items-center justify-center">
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Generating Tickets...
+                  </span>
                 ) : (
                   <>
                     <Lock className="mr-2 h-4 w-4" /> Pay {formatCurrency(totalPrice, currency)}
@@ -594,13 +787,76 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
         setPaymentMethod={setPaymentMethod}
         onProceed={doCheckout as any}
         isProcessing={isCheckingOut}
-        isGenerating={false}
+        isGenerating={isGenerating}
         workspaceId={cinema?.workspace_id}
         baseAmount={totalPrice}
         quantity={totalTickets}
         subtotal={totalTickets > 0 ? totalPrice / totalTickets : 0}
         itemLabel="Ticket(s)"
+        userPhone={user?.phone || undefined}
       />
+
+      {/* Hidden Ticket Renderer */}
+      {isGenerating && issuedTickets.length > 0 && movieProject && (
+        <div
+          className="absolute -z-50 pointer-events-none"
+          style={{ top: "-9999px", left: "-9999px" }}
+        >
+          {issuedTickets.map((t) => {
+            const finalDesign = getMergedProjectDesign(movieProject, t.tierId) || movieProject;
+            return (
+              <div
+                key={t.id}
+                id={`ticket-render-${t.id}`}
+                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+              >
+                <TicketPreview
+                  template={finalDesign.template}
+                  palette={finalDesign.palette || { from: "#000", to: "#000", name: "Black" }}
+                  font={finalDesign.font || { css: "sans-serif", name: "Modern" }}
+                  tier={t.tierName}
+                  title={activeMovie.title}
+                  subtitle={cinema?.name}
+                  date={selectedDate!}
+                  time={currentSchedule?.start_time?.substring(0, 5)}
+                  seat={t.attendee_name}
+                  price={(
+                    activeTiers.find((tier: any) => tier.name === t.tierName)?.price || 0
+                  ).toString()}
+                  currency={currency}
+                  cover={finalDesign.coverImage || activeMovie.cover_url}
+                  logoText={finalDesign.logoText || "Agatike"}
+                  logoImage={finalDesign.logoImage}
+                  logoScale={Number(finalDesign.logoScale || 24)}
+                  logoOpacity={Number(finalDesign.logoOpacity ?? 1)}
+                  logoColorMode={finalDesign.logoColorMode || "original"}
+                  orderId={t.otp}
+                  qrValue={`${window.location.origin}/c/${t.otp}`}
+                  previewMode="Front"
+                  layout={
+                    finalDesign.layout || {
+                      titleSize: 30,
+                      subtitleSize: 14,
+                      metaSize: 11,
+                      titleAlign: "left",
+                      titleOffsetY: 0,
+                      subtitleOffsetY: 0,
+                      metaOffsetY: 0,
+                    }
+                  }
+                  back={
+                    finalDesign.back || {
+                      backText: "",
+                      backImage: "",
+                      backImageOpacity: 0.3,
+                    }
+                  }
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

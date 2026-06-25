@@ -72,7 +72,7 @@ export function HiddenPDFGenerator({
               qrValue={`${typeof window !== "undefined" ? window.location.origin : ""}/v/${ticket.otp}`}
               previewMode="Front"
               layout={
-                mergedProject.design_overrides?.layout || {
+                mergedProject.layout || {
                   titleSize: 30,
                   subtitleSize: 14,
                   metaSize: 11,
@@ -83,7 +83,7 @@ export function HiddenPDFGenerator({
                 }
               }
               back={
-                mergedProject.design_overrides?.back || {
+                mergedProject.back || {
                   backText: "",
                   backImage: "",
                   backImageOpacity: 0.3,

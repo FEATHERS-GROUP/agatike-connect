@@ -140,8 +140,18 @@ function EventsBrowse() {
   }, [dbEvents]);
 
   const filtered = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     return allEvents.filter((e: any) => {
       const isMock = !!e.organizer || !!e.host || !!e.cinema;
+      const getVal = (key: string) => {
+        if (isMock) return e[key];
+        if (Array.isArray(e.tour_stops)) return e.tour_stops[0]?.[key];
+        if (e.tour_stops && typeof e.tour_stops === "object") return e.tour_stops[key];
+        return "";
+      };
+
       const city = isMock ? e.city : Array.isArray(e.tour_stops) ? e.tour_stops[0]?.city : "";
       const organizerName = isMock
         ? e.organizer || e.host || e.cinema
@@ -149,7 +159,21 @@ function EventsBrowse() {
       const matchesQ =
         !q || `${e.title} ${organizerName} ${city}`.toLowerCase().includes(q.toLowerCase());
       const matchesCat = !cat || e.category === cat;
-      return matchesQ && matchesCat;
+
+      const dateStr = getVal("date") || e.event_requency?.date;
+      let isPastLimit = false;
+      if (dateStr && dateStr !== "TBD") {
+        const eventDate = new Date(dateStr);
+        if (!isNaN(eventDate.getTime())) {
+          const oneMonthAgo = new Date(today);
+          oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+          if (eventDate < oneMonthAgo) {
+            isPastLimit = true;
+          }
+        }
+      }
+
+      return matchesQ && matchesCat && !isPastLimit;
     });
   }, [q, cat, allEvents]);
 

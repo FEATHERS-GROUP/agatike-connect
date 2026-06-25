@@ -270,6 +270,7 @@ export function EventDetailsMobile({
 
       <EventCheckoutDrawer
         ev={d.ev}
+        isPastEvent={d.isPastEvent}
         isExperience={d.isExperience}
         schedules={d.schedules}
         tourStops={d.tourStops}

@@ -176,6 +176,7 @@ function CheckoutPage() {
             type: "space_subscription",
             referenceId: subscription?.id,
             workspaceId: space?.workspace_id,
+            reason: space?.name || "Space Subscription",
           },
         } as any);
         setPawapayDepositId(pawaRes.depositId);
@@ -927,6 +928,10 @@ function CheckoutPage() {
         isGenerating={false}
         workspaceId={space?.workspace_id || ""}
         baseAmount={finalPriceNum}
+        quantity={bookingType === "group" ? teamMembers.length : 1}
+        itemLabel="Pass(es)"
+        baseCurrency={space?.currency || "RWF"}
+        userPhone={user?.phone || undefined}
       />
 
       {isPollingPawaPay && (

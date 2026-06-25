@@ -180,6 +180,18 @@ const getMergedProjectDesign = (baseProject: any, stopIdx: number, tierId: strin
       stopOverride.palette ||
       baseProject.palette,
     font: combinationOverride.font || tierOverride.font || stopOverride.font || baseProject.font,
+    layout:
+      combinationOverride.layout ||
+      tierOverride.layout ||
+      stopOverride.layout ||
+      baseProject.design_overrides?.layout ||
+      baseProject.layout,
+    back:
+      combinationOverride.back ||
+      tierOverride.back ||
+      stopOverride.back ||
+      baseProject.design_overrides?.back ||
+      baseProject.back,
   };
 };
 

@@ -212,6 +212,14 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     return rightStop && hasInventory && isNotExpired;
   });
 
+  const isPastEvent = useMemo(() => {
+    if (!date || date === "TBD") return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const eventDate = new Date(date);
+    return !isNaN(eventDate.getTime()) && eventDate < today;
+  }, [date]);
+
   const activeMerch = isMock
     ? merch
     : (ev.merchandises || []).map((m: any) => ({
@@ -321,6 +329,7 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
 
   return {
     ev,
+    isPastEvent,
     isMock,
     isExperience,
     category,
