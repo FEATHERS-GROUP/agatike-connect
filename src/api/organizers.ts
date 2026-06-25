@@ -349,7 +349,7 @@ export const getFollowedOrganizers = createServerFn({ method: "POST" }).handler(
       .map((f) => f.organizer_id);
   } catch (err: any) {
     console.error("GET_FOLLOWED_ORGANIZERS_ERROR:", err);
-    import("fs").then(fs => fs.writeFileSync("error_log.txt", err.stack || err.message));
+    import("fs").then((fs) => fs.writeFileSync("error_log.txt", err.stack || err.message));
     throw err;
   }
 });

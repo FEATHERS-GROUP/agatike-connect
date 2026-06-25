@@ -1,5 +1,15 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { ChevronLeft, Lock, MapPin, Calendar, CheckCircle2, Ticket, Clock, Smartphone, Loader2 } from "lucide-react";
+import {
+  ChevronLeft,
+  Lock,
+  MapPin,
+  Calendar,
+  CheckCircle2,
+  Ticket,
+  Clock,
+  Smartphone,
+  Loader2,
+} from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
@@ -215,8 +225,14 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
       const tiers = Object.entries(ticketQuantities)
         .filter(([_, qty]) => qty > 0)
         .map(([tierId]) => ({
-          name: tierId === "default" ? "Standard Entry" : activeTiers.find((t: any) => t.id === tierId)?.name || "Standard Entry",
-          tierId: tierId === "default" ? "default" : (activeTiers.find((t: any) => t.id === tierId)?.tierId || tierId),
+          name:
+            tierId === "default"
+              ? "Standard Entry"
+              : activeTiers.find((t: any) => t.id === tierId)?.name || "Standard Entry",
+          tierId:
+            tierId === "default"
+              ? "default"
+              : activeTiers.find((t: any) => t.id === tierId)?.tierId || tierId,
         }));
 
       if (isPawaPay) {
@@ -229,7 +245,10 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             network: paymentDetails!.network,
             currency: paymentDetails?.currency || currency,
             type: "movie_ticket",
-            referenceId: res.map((r: any) => r.id).join(",").substring(0, 255), // Combine all booking IDs as referenceId
+            referenceId: res
+              .map((r: any) => r.id)
+              .join(",")
+              .substring(0, 255), // Combine all booking IDs as referenceId
             workspaceId: cinema?.workspace_id,
             reason: activeMovie?.title || "Movie Ticket",
           },
@@ -255,7 +274,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
         setIsPaymentModalOpen(false);
         return;
       }
-      
+
       if (ticketsToIssue.length > 0 && movieProject) {
         setIsGenerating(true);
       } else {
@@ -284,12 +303,15 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
     const intervalId = setInterval(async () => {
       try {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
-        if (res?.status?.toLowerCase() === "completed" || res?.status?.toLowerCase() === "success") {
+        if (
+          res?.status?.toLowerCase() === "completed" ||
+          res?.status?.toLowerCase() === "success"
+        ) {
           setIsPollingPawaPay(false);
           if (issuedTickets.length > 0 && movieProject) {
-             setIsGenerating(true);
+            setIsGenerating(true);
           } else {
-             setIsSuccess(true);
+            setIsSuccess(true);
           }
         } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
@@ -336,7 +358,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
               height: 260,
             });
 
-            if (!imgData || imgData === "data:,") throw new Error("Empty image data from htmlToImage");
+            if (!imgData || imgData === "data:,")
+              throw new Error("Empty image data from htmlToImage");
 
             const pdf = new jsPDF({
               orientation: "landscape",
@@ -772,7 +795,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
         itemLabel="Ticket(s)"
         userPhone={user?.phone || undefined}
       />
-      
+
       {/* Hidden Ticket Renderer */}
       {isGenerating && issuedTickets.length > 0 && movieProject && (
         <div
@@ -797,7 +820,9 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                   date={selectedDate!}
                   time={currentSchedule?.start_time?.substring(0, 5)}
                   seat={t.attendee_name}
-                  price={(activeTiers.find((tier: any) => tier.name === t.tierName)?.price || 0).toString()}
+                  price={(
+                    activeTiers.find((tier: any) => tier.name === t.tierName)?.price || 0
+                  ).toString()}
                   currency={currency}
                   cover={finalDesign.coverImage || activeMovie.cover_url}
                   logoText={finalDesign.logoText || "Agatike"}

@@ -151,7 +151,7 @@ function EventsBrowse() {
         if (e.tour_stops && typeof e.tour_stops === "object") return e.tour_stops[key];
         return "";
       };
-      
+
       const city = isMock ? e.city : Array.isArray(e.tour_stops) ? e.tour_stops[0]?.city : "";
       const organizerName = isMock
         ? e.organizer || e.host || e.cinema

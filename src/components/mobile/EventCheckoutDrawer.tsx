@@ -412,7 +412,8 @@ export function EventCheckoutDrawer({
                     ? "var(--foreground)"
                     : "var(--gradient-primary)",
                 opacity: isPastEvent || (totalTickets === 0 && hasSelectedStop) ? 0.5 : 1,
-                pointerEvents: isPastEvent || (totalTickets === 0 && hasSelectedStop) ? "none" : "auto",
+                pointerEvents:
+                  isPastEvent || (totalTickets === 0 && hasSelectedStop) ? "none" : "auto",
                 color: isPastEvent ? "var(--muted-foreground)" : undefined,
               }}
               onClick={() => {

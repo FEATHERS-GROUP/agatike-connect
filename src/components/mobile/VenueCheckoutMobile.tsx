@@ -245,13 +245,16 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     const intervalId = setInterval(async () => {
       try {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
-        if (res?.status?.toLowerCase() === "completed" || res?.status?.toLowerCase() === "success") {
+        if (
+          res?.status?.toLowerCase() === "completed" ||
+          res?.status?.toLowerCase() === "success"
+        ) {
           setIsPollingPawaPay(false);
           localStorage.removeItem(storageKey);
           if (issuedTickets.length > 0 && venueProject) {
-             setIsGenerating(true);
+            setIsGenerating(true);
           } else {
-             setIsSuccess(true);
+            setIsSuccess(true);
           }
         } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
@@ -911,7 +914,6 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         baseCurrency={venue.currency}
         userPhone={user?.phone || undefined}
       />
-
     </div>
   );
 }

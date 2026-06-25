@@ -229,15 +229,14 @@ export const createCinemaBooking = createServerFn({ method: "POST" })
       }
     `;
 
-    const res = await hasuraRequest<{ insert_cinema_bookings_one: { id: string; qrcode_number: string } }>(
-      CREATE_AND_UPDATE,
-      {
-        object: objWithQr,
-        schedule_id: object.schedule_id,
-        qty: object.quantity || 1,
-        ticket_tier_id: object.ticket_tier_id || null,
-      },
-    );
+    const res = await hasuraRequest<{
+      insert_cinema_bookings_one: { id: string; qrcode_number: string };
+    }>(CREATE_AND_UPDATE, {
+      object: objWithQr,
+      schedule_id: object.schedule_id,
+      qty: object.quantity || 1,
+      ticket_tier_id: object.ticket_tier_id || null,
+    });
 
     if (object.status === "Confirmed" && parseFloat(object.total_price || "0") > 0) {
       try {

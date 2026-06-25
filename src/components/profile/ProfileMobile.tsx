@@ -1,6 +1,16 @@
 import React from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Ticket, Calendar, ChevronRight, Heart, LogOut, User, Bell, ScanLine, Repeat } from "lucide-react";
+import {
+  Ticket,
+  Calendar,
+  ChevronRight,
+  Heart,
+  LogOut,
+  User,
+  Bell,
+  ScanLine,
+  Repeat,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TicketCard } from "./TicketCard";
 import { HistoryCard } from "./HistoryCard";

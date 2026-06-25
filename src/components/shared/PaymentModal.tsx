@@ -277,7 +277,8 @@ export function PaymentModal({
                               // If cleanPhone starts with country code, we might want to strip it,
                               // but let's just use the last maxLen characters if it's too long,
                               // or just let them edit it.
-                              const val = cleanPhone.length > max ? cleanPhone.slice(-max) : cleanPhone;
+                              const val =
+                                cleanPhone.length > max ? cleanPhone.slice(-max) : cleanPhone;
                               setPhone(val);
                             }}
                             className="text-[10px] font-medium text-primary hover:underline bg-primary/10 px-2 py-0.5 rounded-full transition-colors"
