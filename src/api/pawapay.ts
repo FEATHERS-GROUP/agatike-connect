@@ -252,6 +252,16 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
                   }
                 `;
                 await hasuraRequest(confirmQuery, { ids: bookingIds });
+              } else if (tx.type === "venue_booking") {
+                const confirmQuery = `
+                  mutation ConfirmVenueBooking($id: uuid!) {
+                    update_venue_bookings_by_pk(
+                      pk_columns: { id: $id },
+                      _set: { payment_status: "Paid", status: "Confirmed" }
+                    ) { id }
+                  }
+                `;
+                await hasuraRequest(confirmQuery, { id: tx.reference_id });
               }
             }
 

@@ -43,7 +43,7 @@ export const createVenueBooking = createServerFn({ method: "POST" })
     let final_tickets_data = tickets_data;
     let issuedTickets: any[] = [];
 
-    if (payment_status === "Paid" && customer_email && tickets_data) {
+    if (customer_email && tickets_data) {
       let ticketsToGenerate: any[] = [];
 
       if (tickets_data.selected_tier) {

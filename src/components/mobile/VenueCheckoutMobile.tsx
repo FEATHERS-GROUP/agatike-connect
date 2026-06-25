@@ -895,6 +895,21 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
           ))}
         </div>
       )}
+
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onOpenChange={setIsPaymentModalOpen}
+        baseAmount={total}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        onProceed={(details) => doCheckout(details)}
+        isProcessing={isCheckingOut || isPollingPawaPay}
+        isGenerating={isGenerating}
+        workspaceId={venue.workspace_id}
+        quantity={totalTickets}
+        itemLabel="Ticket(s)"
+      />
+
     </div>
   );
 }

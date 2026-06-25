@@ -1,5 +1,5 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { ChevronLeft, Lock, MapPin, Calendar, CheckCircle2, Ticket, Clock, Smartphone } from "lucide-react";
+import { ChevronLeft, Lock, MapPin, Calendar, CheckCircle2, Ticket, Clock, Smartphone, Loader2 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
@@ -60,39 +60,6 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
       } as any),
     enabled: !isMock,
   });
-
-  if (isMock) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center pt-24 pb-12 px-4 text-center">
-        <div className="max-w-md w-full bg-card border border-border/60 rounded-3xl p-8 shadow-xl flex flex-col items-center">
-          <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-            <Ticket className="h-10 w-10 text-primary opacity-50" />
-          </div>
-          <h2 className="text-2xl font-bold text-foreground">
-            {MOCK_MOVIES_MAP[movieId]?.title || "Upcoming Movie"}
-          </h2>
-          {MOCK_MOVIES_MAP[movieId]?.cover && (
-            <img
-              src={MOCK_MOVIES_MAP[movieId].cover}
-              alt="Movie Poster"
-              className="w-32 h-48 object-cover rounded-xl mt-6 shadow-md"
-            />
-          )}
-          <p className="mt-6 text-muted-foreground leading-relaxed">
-            Due to incredibly high demand, tickets for this showing are either completely{" "}
-            <strong>sold out</strong> or <strong>not yet published</strong> by the cinema.
-          </p>
-          <Button
-            size="lg"
-            className="mt-8 w-full rounded-full h-14 font-semibold"
-            onClick={() => navigate({ to: "/" })}
-          >
-            Back to Home
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   const activeMovie = schedules.length > 0 ? schedules[0].movie : null;
   const cinema = schedules.length > 0 ? schedules[0].cinema : null;
@@ -338,19 +305,17 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
 
   useEffect(() => {
     if (isGenerating && issuedTickets.length > 0 && movieProject) {
-      console.log("🎬 Starting movie ticket PDF generation...", { issuedTickets, movieProject });
       const generatePDFs = async () => {
         try {
           const attachments = [];
 
           const coverUrl = movieProject.coverImage || activeMovie?.cover_url;
-          console.log("Cover URL:", coverUrl);
           if (coverUrl) {
             await new Promise<void>((resolve) => {
               const img = new Image();
               img.crossOrigin = "anonymous";
-              img.onload = () => { console.log("Cover image loaded successfully"); resolve(); };
-              img.onerror = (e) => { console.error("Cover image failed to load", e); resolve(); };
+              img.onload = () => resolve();
+              img.onerror = (e) => resolve();
               img.src = coverUrl;
             });
           }
@@ -358,16 +323,11 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
           await new Promise((r) => setTimeout(r, 600));
 
           for (const ticket of issuedTickets) {
-            console.log(`Processing ticket element: ticket-render-${ticket.id}`);
             const el = document.getElementById(`ticket-render-${ticket.id}`);
-            if (!el) {
-               console.error(`Missing ticket DOM element for ticket-render-${ticket.id}`);
-               continue;
-            }
+            if (!el) continue;
 
             await new Promise((r) => setTimeout(r, 100));
 
-            console.log("Converting to JPEG using htmlToImage...");
             const imgData = await htmlToImage.toJpeg(el, {
               pixelRatio: 1.5,
               quality: 0.8,
@@ -377,7 +337,6 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             });
 
             if (!imgData || imgData === "data:,") throw new Error("Empty image data from htmlToImage");
-            console.log("JPEG generated. Creating jsPDF...");
 
             const pdf = new jsPDF({
               orientation: "landscape",
@@ -386,7 +345,6 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             });
             pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
             const base64 = pdf.output("datauristring").split(",")[1];
-            console.log("jsPDF generated base64 successfully for", ticket.id);
 
             attachments.push({
               filename: `Ticket_${ticket.tierName.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
@@ -394,9 +352,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             });
           }
 
-          console.log(`Sending email with ${attachments.length} attachments to ${attendeeInfo.email}`);
           if (attachments.length > 0 && attendeeInfo.email) {
-            const emailRes = await sendTicketsEmail({
+            await sendTicketsEmail({
               data: {
                 to: attendeeInfo.email,
                 customerName: attendeeInfo.firstName + " " + attendeeInfo.lastName,
@@ -404,9 +361,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                 attachments,
               } as any,
             });
-            console.log("Email API response:", emailRes);
           }
-          console.log("Email flow completed successfully.");
           setIsGenerating(false);
           setIsSuccess(true);
         } catch (e: any) {
@@ -418,6 +373,39 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
       setTimeout(generatePDFs, 1000);
     }
   }, [isGenerating, issuedTickets, movieProject, attendeeInfo, activeMovie, cinema]);
+
+  if (isMock) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center pt-24 pb-12 px-4 text-center">
+        <div className="max-w-md w-full bg-card border border-border/60 rounded-3xl p-8 shadow-xl flex flex-col items-center">
+          <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+            <Ticket className="h-10 w-10 text-primary opacity-50" />
+          </div>
+          <h2 className="text-2xl font-bold text-foreground">
+            {MOCK_MOVIES_MAP[movieId]?.title || "Upcoming Movie"}
+          </h2>
+          {MOCK_MOVIES_MAP[movieId]?.cover && (
+            <img
+              src={MOCK_MOVIES_MAP[movieId].cover}
+              alt="Movie Poster"
+              className="w-32 h-48 object-cover rounded-xl mt-6 shadow-md"
+            />
+          )}
+          <p className="mt-6 text-muted-foreground leading-relaxed">
+            Due to incredibly high demand, tickets for this showing are either completely{" "}
+            <strong>sold out</strong> or <strong>not yet published</strong> by the cinema.
+          </p>
+          <Button
+            size="lg"
+            className="mt-8 w-full rounded-full h-14 font-semibold"
+            onClick={() => navigate({ to: "/" })}
+          >
+            Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading || !activeMovie) {
     return (
@@ -718,7 +706,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                 disabled={
                   (step === 1 && !selectedScheduleId) ||
                   (step === 2 && totalTickets === 0) ||
-                  (step === 3 && (!isFormValid || isCheckingOut))
+                  (step === 3 && (!isFormValid || isCheckingOut)) ||
+                  isGenerating
                 }
                 className="w-full h-14 rounded-2xl text-base font-bold shadow-[var(--shadow-glow)]"
                 style={{ background: "var(--gradient-primary)" }}
@@ -737,7 +726,13 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                     "Select Tickets"
                   )
                 ) : isCheckingOut || isPollingPawaPay ? (
-                  "Processing..."
+                  <span className="flex items-center justify-center">
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...
+                  </span>
+                ) : isGenerating ? (
+                  <span className="flex items-center justify-center">
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Generating Tickets...
+                  </span>
                 ) : (
                   <>
                     <Lock className="mr-2 h-4 w-4" /> Pay {formatCurrency(totalPrice, currency)}
