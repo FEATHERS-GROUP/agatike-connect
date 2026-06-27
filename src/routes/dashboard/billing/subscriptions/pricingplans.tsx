@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { getPricingPlans, getPromotionalRules, PricingPlan, PromotionalRule } from "@/api/billing";
+import { getPricingPlans, getPromotionalRules, PricingPlan, PromotionalRule, createEnterpriseLead, upgradeSubscription } from "@/api/billing";
 import { getOrganizerProfile } from "@/api/organizers";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles, Loader2 } from "lucide-react";
+import { Check, Sparkles, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -66,9 +66,27 @@ function PricingPlansPage() {
     loadData();
   }, []);
 
-  const handleUpgrade = (plan: PricingPlan) => {
+  const handleUpgrade = async (plan: PricingPlan) => {
     if (!activeWorkspace?.orgnizer_id) {
       toast.error("You must be logged in to upgrade.");
+      return;
+    }
+    
+    if (plan.price === 0) {
+      try {
+        toast.loading("Activating free plan...", { id: "activate-plan" });
+        await upgradeSubscription({
+          data: {
+            organizer_id: activeWorkspace.orgnizer_id,
+            plan_id: plan.id,
+            amount: 0
+          }
+        });
+        toast.success(`Successfully activated the ${plan.name} plan!`, { id: "activate-plan" });
+        navigate({ to: "/dashboard/billing/subscriptions" });
+      } catch (err: any) {
+        toast.error("Failed to activate plan", { id: "activate-plan" });
+      }
       return;
     }
     
@@ -175,13 +193,6 @@ function PricingPlansPage() {
                 <p className="text-sm text-muted-foreground mt-2 min-h-[40px]">
                   {plan.description}
                 </p>
-                {plan.name.toLowerCase().includes("basic") && (
-                  <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-lg text-xs text-primary font-medium">
-                    <span className="block font-bold mb-1">🎁 14-Day Free Trial</span>
-                    Get 14 days of full access to all premium modules (limit 1 creation per module). 
-                    After 14 days, premium features are locked until you upgrade.
-                  </div>
-                )}
               </div>
 
               <div className="mb-4 flex flex-col gap-1">
@@ -313,7 +324,18 @@ function SalesDrawer({
     
     setIsSubmittingSales(true);
     try {
-      await new Promise(r => setTimeout(r, 1000));
+      await createEnterpriseLead({
+        data: {
+          name: salesForm.name,
+          email: salesForm.email,
+          company: salesForm.company,
+          communication_method: salesForm.communication,
+          language: salesForm.language,
+          country: salesForm.country,
+          phone: salesForm.phone,
+          message: salesForm.message,
+        }
+      });
       toast.success("Thank you! Our sales team will contact you shortly.");
       onOpenChange(false);
       setSalesForm({ 
@@ -339,22 +361,24 @@ function SalesDrawer({
         <div className="py-6 space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="sales-name">Full Name *</Label>
+              <Label htmlFor="sales-name" className="flex items-center gap-2">Full Name * <Lock className="w-3 h-3 text-muted-foreground" /></Label>
               <Input 
                 id="sales-name" 
                 placeholder="John Doe" 
                 value={salesForm.name} 
-                onChange={(e) => setSalesForm(s => ({ ...s, name: e.target.value }))} 
+                disabled
+                className="bg-muted text-muted-foreground cursor-not-allowed"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sales-email">Work Email *</Label>
+              <Label htmlFor="sales-email" className="flex items-center gap-2">Work Email * <Lock className="w-3 h-3 text-muted-foreground" /></Label>
               <Input 
                 id="sales-email" 
                 type="email" 
                 placeholder="john@company.com" 
                 value={salesForm.email} 
-                onChange={(e) => setSalesForm(s => ({ ...s, email: e.target.value }))} 
+                disabled
+                className="bg-muted text-muted-foreground cursor-not-allowed"
               />
             </div>
           </div>

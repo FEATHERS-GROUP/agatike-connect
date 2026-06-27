@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getPricingPlans, getPromotionalRules, upgradeSubscription, PricingPlan } from "@/api/billing";
+import { getPawaPayNetworks, initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ArrowLeft, CreditCard, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
@@ -39,22 +41,46 @@ function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   
   const [paymentMethod, setPaymentMethod] = useState("pawapay");
+  const [paymentStep, setPaymentStep] = useState(1);
+  const [mobileNetwork, setMobileNetwork] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [cardNumber, setCardNumber] = useState("");
+  const [pawaPayNetworks, setPawaPayNetworks] = useState<{id: string, name: string, currency: string, country: string}[]>([]);
+  
+  const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   
   // Calculate pricing
   const [finalUSDPrice, setFinalUSDPrice] = useState(0);
-  const [localPrice, setLocalPrice] = useState(0);
   const userCurrency = activeWorkspace?.currency || "RWF";
+  const [selectedCurrency, setSelectedCurrency] = useState(userCurrency);
+
+  // Available currencies
+  const availableCurrencies = Array.from(new Set([userCurrency, "USD", "EUR"]));
+
+  const getConvertedAmount = (usdAmount: number) => {
+    return usdAmount * getExchangeRate("USD", selectedCurrency);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: selectedCurrency }).format(amount);
+  };
+
+  useEffect(() => {
+    setSelectedCurrency(activeWorkspace?.currency || "RWF");
+  }, [activeWorkspace?.currency]);
 
   useEffect(() => {
     async function fetchDetails() {
       try {
-        const [plans, rules] = await Promise.all([
+        const [plans, rules, networks] = await Promise.all([
           getPricingPlans(),
           getPromotionalRules(),
+          getPawaPayNetworks(),
         ]);
         
+        setPawaPayNetworks(networks);
+
         const selectedPlan = plans.find(p => p.id === planId);
         if (!selectedPlan) {
           toast.error("Plan not found");
@@ -83,7 +109,6 @@ function CheckoutPage() {
         }
         
         setFinalUSDPrice(calculatedPrice);
-        setLocalPrice(calculatedPrice * getExchangeRate("USD", userCurrency));
         
       } catch (e) {
         console.error(e);
@@ -96,11 +121,46 @@ function CheckoutPage() {
     fetchDetails();
   }, [planId, isAnnually, activeWorkspace]);
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPollingPawaPay && pawapayDepositId) {
+      interval = setInterval(async () => {
+        try {
+          const status = await getPawaPayDepositStatus({
+            data: { depositId: pawapayDepositId },
+          } as any);
+          if (status?.status === "completed") {
+            setIsPollingPawaPay(false);
+            
+            await upgradeSubscription({
+              data: {
+                organizer_id: activeWorkspace!.orgnizer_id,
+                plan_id: plan!.id,
+                amount: finalUSDPrice
+              }
+            });
+            
+            toast.success(`Successfully subscribed to ${plan!.name}!`);
+            navigate({ to: "/dashboard/billing/subscriptions" });
+            
+          } else if (status?.status === "failed") {
+            setIsPollingPawaPay(false);
+            toast.error("Payment failed or was cancelled.");
+            setIsProcessing(false);
+          }
+        } catch (e) {
+          console.error("Polling error:", e);
+        }
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isPollingPawaPay, pawapayDepositId, activeWorkspace, plan, finalUSDPrice, navigate]);
+
   const handlePayment = async () => {
     if (!activeWorkspace?.orgnizer_id || !plan) return;
     
-    if (paymentMethod === "pawapay" && !phoneNumber) {
-      toast.error("Please enter your mobile money number");
+    if (paymentMethod === "pawapay" && (!phoneNumber || !mobileNetwork)) {
+      toast.error("Please enter your mobile network and number");
       return;
     }
     if (paymentMethod === "card" && !cardNumber) {
@@ -110,8 +170,28 @@ function CheckoutPage() {
 
     setIsProcessing(true);
     try {
-      // Here you would normally call your payment gateway (e.g. PawaPay or Stripe API).
-      // We are simulating a successful payment response.
+      if (paymentMethod === "pawapay") {
+        const pawaRes = await initiatePawaPayDeposit({
+          data: {
+            amount: getConvertedAmount(finalUSDPrice),
+            baseAmount: finalUSDPrice,
+            baseCurrency: "USD",
+            phone: phoneNumber,
+            network: mobileNetwork,
+            currency: selectedCurrency,
+            type: "subscription",
+            referenceId: plan.id,
+            workspaceId: activeWorkspace.id,
+            reason: `Sub: ${plan.name}`,
+          }
+        } as any);
+        setPawapayDepositId(pawaRes.depositId);
+        setIsPollingPawaPay(true);
+        // Keep processing true while polling
+        return; 
+      }
+
+      // Mock for card payment
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Update our database
@@ -126,10 +206,9 @@ function CheckoutPage() {
       toast.success(`Successfully subscribed to ${plan.name}!`);
       navigate({ to: "/dashboard/billing/subscriptions" });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error("Payment failed. Please try again.");
-    } finally {
+      toast.error(error.message || "Payment failed. Please try again.");
       setIsProcessing(false);
     }
   };
@@ -165,17 +244,24 @@ function CheckoutPage() {
               <CardDescription>
                 Billed {isAnnually ? "Annually" : "Monthly"}
               </CardDescription>
+              {plan.name.toLowerCase().includes("basic") && (
+                <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-lg text-xs text-primary font-medium">
+                  <span className="block font-bold mb-1">🎁 14-Day Free Trial</span>
+                  Get 14 days of full access to all premium modules (limit 1 creation per module). 
+                  After 14 days, premium features are locked until you upgrade.
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Base Price ({isAnnually ? "Year" : "Month"})</span>
-                <span>${(isAnnually ? plan.price * 12 : plan.price).toFixed(2)}</span>
+                <span>{formatCurrency(getConvertedAmount(isAnnually ? plan.price * 12 : plan.price))}</span>
               </div>
               
               {isAnnually && plan.price > 0 && (
                 <div className="flex justify-between text-sm text-green-500">
                   <span>Annual Discount (20%)</span>
-                  <span>-${((plan.price * 12) * 0.2).toFixed(2)}</span>
+                  <span>-{formatCurrency(getConvertedAmount((plan.price * 12) * 0.2))}</span>
                 </div>
               )}
 
@@ -186,17 +272,11 @@ function CheckoutPage() {
                 </div>
               )}
               
-              <div className="border-t pt-4 mt-4 flex flex-col gap-1">
+              <div className="border-t pt-4 mt-4 flex flex-col gap-3">
                 <div className="flex justify-between font-bold text-lg">
-                  <span>Total (USD)</span>
-                  <span>${finalUSDPrice.toFixed(2)}</span>
+                  <span>Total</span>
+                  <span>{formatCurrency(getConvertedAmount(finalUSDPrice))}</span>
                 </div>
-                {userCurrency !== "USD" && (
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Local Currency Equivalent</span>
-                    <span>{new Intl.NumberFormat('en-US', { style: 'currency', currency: userCurrency }).format(localPrice)}</span>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -206,17 +286,73 @@ function CheckoutPage() {
         <div>
           <h2 className="text-2xl font-bold mb-6">Payment Method</h2>
           <Card>
-            <CardContent className="pt-6">
-              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
-                
-                <div className={`flex items-start space-x-3 border p-4 rounded-lg cursor-pointer transition-colors ${paymentMethod === 'pawapay' ? 'border-primary bg-primary/5' : 'border-border'}`}>
-                  <RadioGroupItem value="pawapay" id="pawapay" className="mt-1" />
-                  <div className="flex-1">
-                    <Label htmlFor="pawapay" className="font-semibold text-base flex items-center gap-2 cursor-pointer">
-                      <Smartphone className="h-4 w-4" /> Mobile Money (PawaPay)
-                    </Label>
-                    <p className="text-sm text-muted-foreground mt-1 mb-3">Pay securely using MTN MoMo, Airtel Money, or M-Pesa.</p>
-                    {paymentMethod === 'pawapay' && (
+            {paymentStep === 1 ? (
+              <>
+                <CardContent className="pt-6">
+                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
+                    
+                    <div className={`flex items-start space-x-3 border p-4 rounded-lg cursor-pointer transition-colors ${paymentMethod === 'pawapay' ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                      <RadioGroupItem value="pawapay" id="pawapay" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="pawapay" className="font-semibold text-base flex items-center gap-2 cursor-pointer">
+                          <Smartphone className="h-4 w-4" /> Mobile Money (PawaPay)
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1 mb-1">Pay securely using MTN, Airtel, M-Pesa, Orange, Tigo & more.</p>
+                      </div>
+                    </div>
+
+                    <div className={`flex items-start space-x-3 border p-4 rounded-lg cursor-pointer transition-colors ${paymentMethod === 'card' ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                      <RadioGroupItem value="card" id="card" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="card" className="font-semibold text-base flex items-center gap-2 cursor-pointer">
+                          <CreditCard className="h-4 w-4" /> Credit / Debit Card
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1 mb-1">Pay securely with Visa or Mastercard.</p>
+                      </div>
+                    </div>
+
+                  </RadioGroup>
+                </CardContent>
+                <CardFooter className="bg-muted/50 rounded-b-xl border-t p-6">
+                  <Button 
+                    onClick={() => setPaymentStep(2)} 
+                    className="w-full h-12 text-lg shadow-lg"
+                    style={{ background: "var(--gradient-primary)" }}
+                  >
+                    Continue to Details
+                  </Button>
+                </CardFooter>
+              </>
+            ) : (
+              <>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => setPaymentStep(1)} className="-ml-2 h-8 w-8">
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    {paymentMethod === 'pawapay' ? 'Mobile Money Details' : 'Card Details'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {paymentMethod === 'pawapay' ? (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Select Network</Label>
+                        <Select value={mobileNetwork} onValueChange={setMobileNetwork}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose your network" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {pawaPayNetworks
+                              .filter(net => net.currency === selectedCurrency)
+                              .map((net) => (
+                              <SelectItem key={net.id} value={net.id}>
+                                {net.name} ({net.country})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone" className="text-xs">Mobile Number</Label>
                         <Input 
@@ -226,60 +362,64 @@ function CheckoutPage() {
                           onChange={(e) => setPhoneNumber(e.target.value)}
                         />
                       </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className={`flex items-start space-x-3 border p-4 rounded-lg cursor-pointer transition-colors ${paymentMethod === 'card' ? 'border-primary bg-primary/5' : 'border-border'}`}>
-                  <RadioGroupItem value="card" id="card" className="mt-1" />
-                  <div className="flex-1">
-                    <Label htmlFor="card" className="font-semibold text-base flex items-center gap-2 cursor-pointer">
-                      <CreditCard className="h-4 w-4" /> Credit / Debit Card
-                    </Label>
-                    <p className="text-sm text-muted-foreground mt-1 mb-3">Pay securely with Visa or Mastercard.</p>
-                    {paymentMethod === 'card' && (
-                      <div className="space-y-3">
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="cc" className="text-xs">Card Number</Label>
+                        <Input 
+                          id="cc" 
+                          placeholder="0000 0000 0000 0000" 
+                          value={cardNumber}
+                          onChange={(e) => setCardNumber(e.target.value)}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="cc" className="text-xs">Card Number</Label>
-                          <Input 
-                            id="cc" 
-                            placeholder="0000 0000 0000 0000" 
-                            value={cardNumber}
-                            onChange={(e) => setCardNumber(e.target.value)}
-                          />
+                          <Label htmlFor="exp" className="text-xs">Expiry Date</Label>
+                          <Input id="exp" placeholder="MM/YY" />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="exp" className="text-xs">Expiry Date</Label>
-                            <Input id="exp" placeholder="MM/YY" />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="cvv" className="text-xs">CVV</Label>
-                            <Input id="cvv" placeholder="123" />
-                          </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="cvv" className="text-xs">CVV</Label>
+                          <Input id="cvv" placeholder="123" />
                         </div>
                       </div>
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="bg-muted/50 rounded-b-xl border-t p-6">
+                  <Button 
+                    onClick={handlePayment} 
+                    disabled={isProcessing || finalUSDPrice === 0 || (paymentMethod === 'pawapay' ? (!phoneNumber || !mobileNetwork) : !cardNumber)} 
+                    className="w-full h-12 text-lg shadow-lg"
+                    style={{ background: "var(--gradient-primary)" }}
+                  >
+                    {isProcessing ? (
+                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...</>
+                    ) : (
+                      `Pay ${formatCurrency(getConvertedAmount(finalUSDPrice))}`
                     )}
-                  </div>
-                </div>
-
-              </RadioGroup>
-            </CardContent>
-            <CardFooter className="bg-muted/50 rounded-b-xl border-t p-6">
-              <Button 
-                onClick={handlePayment} 
-                disabled={isProcessing || finalUSDPrice === 0} 
-                className="w-full h-12 text-lg shadow-lg"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                {isProcessing ? (
-                  <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...</>
-                ) : (
-                  `Pay ${new Intl.NumberFormat('en-US', { style: 'currency', currency: userCurrency }).format(localPrice)}`
-                )}
-              </Button>
-            </CardFooter>
+                  </Button>
+                </CardFooter>
+              </>
+            )}
           </Card>
+        </div>
+      </div>
+
+      <div className="mt-12 flex justify-end">
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">Display Currency:</span>
+          <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+            <SelectTrigger className="w-[100px]">
+              <SelectValue placeholder="Currency" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableCurrencies.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>

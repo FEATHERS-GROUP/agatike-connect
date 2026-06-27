@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
+import { getSession } from "./auth";
 
 export interface PricingPlan {
   id: string;
@@ -155,3 +156,57 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
 
     return { success: true };
   });
+
+export const createEnterpriseLead = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
+
+    const { name, email, company, communication_method, language, country, phone, message } =
+      ctx.data as unknown as {
+        name: string;
+        email: string;
+        company: string;
+        communication_method: string;
+        language: string;
+        country: string;
+        phone: string;
+        message: string;
+      };
+
+    const mutation = `
+      mutation InsertLead($organizer_id: uuid!, $name: String!, $email: String!, $company: String!, $communication_method: String, $language: String, $country: String, $phone: String, $message: String) {
+        insert_leads_one(object: {
+          organizer_id: $organizer_id,
+          name: $name,
+          email: $email,
+          company: $company,
+          communication_method: $communication_method,
+          language: $language,
+          country: $country,
+          phone: $phone,
+          message: $message,
+          status: "new"
+        }) {
+          id
+        }
+      }
+    `;
+
+    const result = await hasuraRequest<{ insert_leads_one: { id: string } }>(mutation, {
+      organizer_id: session.sub,
+      name,
+      email,
+      company,
+      communication_method,
+      language,
+      country,
+      phone,
+      message,
+    });
+
+    return { success: true, leadId: result.insert_leads_one?.id };
+  });
+
+
