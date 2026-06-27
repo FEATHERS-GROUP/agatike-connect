@@ -350,13 +350,13 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     logoPosition: "hero",
     title: "The Grand Bistro",
     pageDescription: "Experience culinary excellence. View our menu and reserve your table.",
-    headerImageUrl: "/page-templates/restaurant-menu.png",
+    headerImageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh4o3wRlpVCr4elamrBatBmciIu3ecygAcezjMJje3QllyryiSbXSPQsAs&s=10",
     components: [
       {
         id: "1",
         type: "split_block",
         imagePosition: "left",
-        imageUrl: "",
+        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh4o3wRlpVCr4elamrBatBmciIu3ecygAcezjMJje3QllyryiSbXSPQsAs&s=10",
         text: "## Welcome to The Grand Bistro\\nWe source the freshest local ingredients to bring you an unforgettable dining experience in the heart of the city.",
       },
       {

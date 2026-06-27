@@ -95,7 +95,7 @@ function PageBuilderGallery() {
                   >
                     <div className="h-32 bg-secondary flex items-center justify-center relative overflow-hidden">
                       <img 
-                        src={`/page-templates/${template.id}.png`} 
+                        src={template.headerImageUrl || `/page-templates/${template.id}.png`} 
                         alt={template.name}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
@@ -139,57 +139,93 @@ function PageBuilderGallery() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {allPages.map((page: any) => (
-                    <div key={page.id} className="border border-border/60 rounded-2xl p-5 bg-card hover:shadow-sm transition-shadow flex flex-col h-48 relative group">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2 max-w-[80%]">
-                          <Globe className="w-5 h-5 text-muted-foreground shrink-0" />
-                          <h3 className="font-semibold text-base truncate">{page.title || "Untitled Page"}</h3>
-                        </div>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${page.is_published ? "bg-green-500/10 text-green-600" : "bg-amber-500/10 text-amber-600"}`}>
+                    <div 
+                      key={page.id} 
+                      className="group border border-border/60 rounded-2xl overflow-hidden bg-card hover:shadow-md transition-all flex flex-col h-64"
+                    >
+                      <div 
+                        className="h-32 flex items-center justify-center relative overflow-hidden cursor-pointer bg-secondary"
+                        style={page.theme_color ? { backgroundColor: `${page.theme_color}22` } : {}}
+                        onClick={() => navigate({ 
+                          to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor`,
+                          search: { pageId: page.id }
+                        })}
+                      >
+                        {page.header_image_url ? (
+                          <img 
+                            src={page.header_image_url} 
+                            alt={page.title || "Untitled"}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <Globe 
+                            className="w-12 h-12 opacity-20" 
+                            style={{ color: page.theme_color || 'currentColor' }} 
+                          />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                        <div 
+                          className={`absolute bottom-3 right-3 px-2 py-1 rounded text-[10px] font-semibold tracking-wider backdrop-blur-sm pointer-events-none ${
+                            page.is_published ? "bg-green-500/20 text-green-500 border border-green-500/30" : "bg-amber-500/20 text-amber-500 border border-amber-500/30"
+                          }`}
+                        >
                           {page.is_published ? "Published" : "Draft"}
-                        </span>
+                        </div>
                       </div>
                       
-                      <p className="text-sm text-muted-foreground mb-auto flex items-center gap-1.5 truncate">
-                        <span className="opacity-50">/p/</span>{page.slug}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-border/60 mt-4">
-                        <Button 
-                          variant="secondary" 
-                          size="sm" 
-                          className="flex-1 mr-2"
+                      <div className="p-4 flex flex-col flex-1">
+                        <h3 
+                          className="font-semibold text-base mb-1 truncate cursor-pointer hover:text-primary"
                           onClick={() => navigate({ 
                             to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor`,
                             search: { pageId: page.id }
                           })}
                         >
-                          Edit Page
-                        </Button>
-                        {page.slug && page.is_published && (
-                          <>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-8 h-8 p-0 mr-2"
-                              title="Copy Link"
-                              onClick={() => handleCopyLink(page.slug)}
-                            >
-                              <Copy className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-8 h-8 p-0"
-                              title="View Live"
-                              asChild
-                            >
-                              <a href={`/p/${page.slug}`} target="_blank" rel="noreferrer">
-                                <ExternalLink className="w-3.5 h-3.5" />
-                              </a>
-                            </Button>
-                          </>
-                        )}
+                          {page.title || "Untitled Page"}
+                        </h3>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate mb-auto">
+                          <span className="opacity-50">/p/</span>{page.slug || "untitled"}
+                        </p>
+                        
+                        <div className="mt-auto pt-3 border-t border-border/60 flex items-center justify-between">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 px-2 text-xs hover:text-primary -ml-2"
+                            onClick={() => navigate({ 
+                              to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor`,
+                              search: { pageId: page.id }
+                            })}
+                          >
+                            Edit Page
+                          </Button>
+                          <div className="flex items-center gap-1">
+                            {page.slug && page.is_published && (
+                              <>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="w-8 h-8 text-muted-foreground hover:text-foreground"
+                                  title="Copy Link"
+                                  onClick={() => handleCopyLink(page.slug)}
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="w-8 h-8 text-muted-foreground hover:text-foreground"
+                                  title="View Live"
+                                  asChild
+                                >
+                                  <a href={`/p/${page.slug}`} target="_blank" rel="noreferrer">
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                  </a>
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}

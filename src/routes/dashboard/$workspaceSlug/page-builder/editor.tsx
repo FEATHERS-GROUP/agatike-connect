@@ -164,7 +164,7 @@ function PageBuilder() {
       if (!editorState.id && result?.id) {
         setEditorState((prev) => ({ ...prev, id: result.id }));
         setActivePageId(result.id);
-        navigate({ from: Route.fullPath, search: { pageId: result.id }, replace: true });
+        navigate({ from: Route.fullPath, search: { pageId: result.id, templateId: undefined }, replace: true });
       }
       queryClient.invalidateQueries({ queryKey: ["all-workspace-pages", workspace_id] });
       queryClient.invalidateQueries({ queryKey: ["workspace-page", activePageId] });
