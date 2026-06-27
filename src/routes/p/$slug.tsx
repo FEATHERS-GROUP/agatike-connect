@@ -5,6 +5,7 @@ import { getWorkspaceForms } from "@/api/rsvps";
 import { Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import QRCode from "react-qr-code";
 
 export const Route = createFileRoute("/p/$slug")({
   component: PublicCompanyPage,
@@ -414,6 +415,56 @@ function PublicCompanyPage() {
                         </div>
                       </div>
                     </Link>
+                  );
+                }
+
+                if (comp.type === "payment_button") {
+                  return (
+                    <div className="flex flex-col items-center justify-center w-full px-4 py-8">
+                      {comp.paymentLink ? (
+                        <a
+                          href={comp.paymentLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-full px-12 py-5 text-lg font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white text-center flex flex-col items-center gap-1 block"
+                          style={{ background: theme_color }}
+                        >
+                          <span>{comp.label || "Pay Now"}</span>
+                          {comp.amount && <span className="text-sm opacity-90">{comp.amount} RWF</span>}
+                        </a>
+                      ) : (
+                        <Button
+                          size="lg"
+                          className="rounded-full px-12 py-8 text-lg font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white text-center flex flex-col items-center gap-1 h-auto"
+                          style={{ background: theme_color }}
+                          onClick={() => {
+                            alert("Internal checkout modal will open here!");
+                          }}
+                        >
+                          <span>{comp.label || "Pay Now"}</span>
+                          {comp.amount && <span className="text-sm font-normal opacity-90">{comp.amount} RWF</span>}
+                        </Button>
+                      )}
+                      {comp.description && (
+                        <p className="mt-6 text-base text-muted-foreground text-center max-w-md">
+                          {comp.description}
+                        </p>
+                      )}
+                    </div>
+                  );
+                }
+
+                if (comp.type === "qr_code") {
+                  const size = comp.size || 192;
+                  return (
+                    <div className="flex flex-col items-center justify-center w-full py-12 gap-6">
+                      <div className="bg-white p-6 rounded-2xl shadow-lg border border-border/60 hover:shadow-xl transition-shadow">
+                        <QRCode value={comp.content || "https://agatike.com"} size={size} />
+                      </div>
+                      {comp.title && (
+                        <p className="text-lg font-medium text-center text-foreground">{comp.title}</p>
+                      )}
+                    </div>
                   );
                 }
 

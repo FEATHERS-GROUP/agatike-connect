@@ -340,4 +340,68 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       },
     ],
   },
+  {
+    id: "restaurant-menu",
+    name: "Restaurant Menu & Reservations",
+    category: "Hospitality",
+    description: "A beautiful template for restaurants to showcase their menu and take reservations or orders.",
+    themeColor: "#991b1b",
+    fontFamily: "Playfair Display",
+    logoPosition: "hero",
+    title: "The Grand Bistro",
+    pageDescription: "Experience culinary excellence. View our menu and reserve your table.",
+    headerImageUrl: "/page-templates/restaurant-menu.png",
+    components: [
+      {
+        id: "1",
+        type: "split_block",
+        imagePosition: "left",
+        imageUrl: "",
+        text: "## Welcome to The Grand Bistro\\nWe source the freshest local ingredients to bring you an unforgettable dining experience in the heart of the city.",
+      },
+      {
+        id: "2",
+        type: "text",
+        content: "## Signature Dishes",
+      },
+      {
+        id: "3",
+        type: "form_grid",
+        columns: "2",
+        cardBgColor: "#ffffff",
+        cardTextColor: "#000000",
+        cards: [
+          {
+            id: "m1",
+            formId: "",
+            customTitle: "Truffle Pasta",
+            buttonLabel: "Order Now",
+            bulletPoints: "Handmade fettuccine\\nFresh black truffles\\nParmesan cream sauce\\n$24",
+          },
+          {
+            id: "m2",
+            formId: "",
+            customTitle: "Wagyu Steak",
+            buttonLabel: "Order Now",
+            bulletPoints: "8oz Wagyu Ribeye\\nRoasted root vegetables\\nRed wine jus\\n$45",
+          }
+        ]
+      },
+      {
+        id: "4",
+        type: "payment_button",
+        label: "Buy a Gift Card",
+        amount: "5000",
+        description: "Purchase a 5000 RWF gift card for a friend.",
+        paymentLink: ""
+      },
+      {
+        id: "5",
+        type: "qr_code",
+        title: "Scan to view menu on your phone",
+        content: "https://agatike.com",
+        size: 128
+      }
+    ],
+  },
 ];
