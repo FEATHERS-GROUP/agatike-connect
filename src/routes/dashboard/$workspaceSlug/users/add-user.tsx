@@ -200,6 +200,9 @@ function AddUserPage() {
     Users: "users",
     Withdrawals: "withdrawals",
     Settings: "settings",
+    "Page Builder": "page_builder",
+    "Badge Designer": "badge_designer",
+    "Ticket Designer": "ticket_designer",
   };
 
   const availableModules = platformModules.filter((m) => {

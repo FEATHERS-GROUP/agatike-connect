@@ -92,7 +92,8 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-ticket-tier/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\/create-schedule/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/);
+    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/page-builder/);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -121,7 +122,7 @@ function DashboardLayout() {
         urlSlug !== "workspace-user" &&
         urlSlug !== activeWorkspace.slug
       ) {
-        const workspaceFromUrl = workspaces.find((w) => w.slug === urlSlug);
+        const workspaceFromUrl = workspaces.find((w: any) => w.slug === urlSlug);
         if (workspaceFromUrl) {
           // setActiveWorkspace(workspaceFromUrl);
         } else {
@@ -184,6 +185,9 @@ function DashboardLayout() {
             Users: "users",
             Withdrawals: "withdrawals",
             Settings: "settings",
+            "Page Builder": "page_builder",
+            "Badge Designer": "badge_designer",
+            "Ticket Designer": "ticket_designer",
           };
           return (
             legacyIdMap[p.label] === reqMod || legacyIdMap[p.label] === reqMod.replace("_", "-")

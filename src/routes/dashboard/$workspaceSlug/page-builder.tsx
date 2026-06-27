@@ -81,8 +81,10 @@ function makeBlankPage() {
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 function PageBuilder() {
+  console.log("[PageBuilder] Component is rendering");
   const { activeWorkspace } = useWorkspace();
   const workspace_id = activeWorkspace?.id;
+  console.log("[PageBuilder] workspace_id:", workspace_id);
   const queryClient = useQueryClient();
 
   // Which page is being edited (null = none selected yet)

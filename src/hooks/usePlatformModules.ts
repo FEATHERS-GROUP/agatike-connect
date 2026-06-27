@@ -38,13 +38,22 @@ const CANONICAL_ORDER: string[] = [
 
 export function usePlatformModules() {
   return useQuery({
-    queryKey: ["platformModules"],
+    queryKey: ["platformModules", "v2"],
     queryFn: async () => {
       const data = await getPlatformModules();
-      const mapped = data.map((mod) => ({
-        ...mod,
-        icon: (LucideIcons as any)[mod.icon] || LucideIcons.LayoutDashboard,
-      })) as WorkspaceModule[];
+      const mapped = data.map((mod) => {
+        let href = mod.href;
+        if (mod.label === "Page Builder" && !href) href = "page-builder";
+        if (mod.label === "Badge Designer" && !href) href = "badge-designer";
+        if (mod.label === "Venue Designer" && !href) href = "venue-designer";
+        if (!href && href !== "") href = mod.id; // fallback
+
+        return {
+          ...mod,
+          href,
+          icon: (LucideIcons as any)[mod.icon] || LucideIcons.LayoutDashboard,
+        };
+      }) as WorkspaceModule[];
 
       // Sort by the canonical order; unknown modules go to the end
       mapped.sort((a, b) => {
