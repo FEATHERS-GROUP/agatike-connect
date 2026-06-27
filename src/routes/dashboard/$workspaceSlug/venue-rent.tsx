@@ -146,16 +146,16 @@ function VenueListingsPage() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
             {venues.map((venue: any) => (
               <Link
                 key={venue.id}
                 to="/dashboard/$workspaceSlug/venues/$venueId/overview"
                 params={{ workspaceSlug, venueId: venue.id }}
-                className="group flex flex-col sm:flex-row rounded-3xl bg-card border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                className="group flex flex-col rounded-3xl bg-card border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
               >
                 {/* Image side */}
-                <div className="relative w-full sm:w-48 shrink-0 aspect-[4/3] sm:aspect-auto">
+                <div className="relative w-full aspect-[16/9] shrink-0">
                   <img
                     src={
                       venue.cover_url ||
