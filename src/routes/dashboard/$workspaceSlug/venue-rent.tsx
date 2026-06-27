@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery } from "@tanstack/react-query";
 import { getRentableVenues, updateRentableVenue } from "@/api/rentable_venues";
+import { getWorkspaceVenueBookings } from "@/api/venue_bookings";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatCurrency } from "@/lib/currency";
 import { toast } from "sonner";
@@ -57,9 +58,15 @@ function VenueListingsPage() {
     enabled: !!activeWorkspace?.id,
   });
 
+  const { data: bookings = [] } = useQuery({
+    queryKey: ["workspace_venue_bookings", activeWorkspace?.id],
+    queryFn: () => getWorkspaceVenueBookings({ data: { workspace_id: activeWorkspace?.id } }),
+    enabled: !!activeWorkspace?.id,
+  });
+
   const totalVenues = venues.length;
-  const activeRentals = 0; // TODO: fetch real metrics
-  const pendingRequests = 0; // TODO: fetch real metrics
+  const activeRentals = bookings.filter((b: any) => b.status === "Confirmed").length;
+  const pendingRequests = bookings.filter((b: any) => b.status === "Pending").length;
 
   return (
     <div className="space-y-8">
@@ -222,7 +229,9 @@ function VenueListingsPage() {
                         Requests
                       </p>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-muted-foreground">0</span>
+                        <span className="font-semibold text-muted-foreground">
+                          {bookings.filter((b: any) => b.venue_id === venue.id).length}
+                        </span>
                       </div>
                     </div>
                     <div className="text-right">

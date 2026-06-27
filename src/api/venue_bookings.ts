@@ -163,6 +163,28 @@ export const getVenueBookings = createServerFn({ method: "POST" })
     return res.venue_bookings;
   });
 
+const GET_WORKSPACE_VENUE_BOOKINGS = `
+  query GetWorkspaceVenueBookings($workspace_id: uuid!) {
+    venue_bookings(
+      where: { workspace_id: { _eq: $workspace_id } }
+      order_by: { start_time: asc }
+    ) {
+      id
+      status
+      venue_id
+    }
+  }
+`;
+
+export const getWorkspaceVenueBookings = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { workspace_id } = ctx.data;
+    if (!workspace_id) throw new Error("workspace_id is required");
+    const res = await hasuraRequest<{ venue_bookings: any[] }>(GET_WORKSPACE_VENUE_BOOKINGS, { workspace_id });
+    return res.venue_bookings;
+  });
+
 const VALIDATE_TICKET_OTP = `
   query ValidateTicketOtp($otp: String!) {
     venue_bookings(
