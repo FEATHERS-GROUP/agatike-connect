@@ -23,7 +23,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     logoPosition: "hero",
     title: "Weekly Sync",
     pageDescription: "Join us for our weekly team sync and updates.",
-    headerImageUrl: "",
+    headerImageUrl: "/page-templates/meeting-information.png",
     components: [
       {
         id: "1",
@@ -49,7 +49,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     logoPosition: "hero",
     title: "Annual Tech Conference 2026",
     pageDescription: "The premier event for technology professionals and innovators.",
-    headerImageUrl: "",
+    headerImageUrl: "/page-templates/conference-information.png",
     components: [
       {
         id: "1",
@@ -87,7 +87,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     logoPosition: "hero",
     title: "Register for the Event",
     pageDescription: "Secure your spot today before tickets run out.",
-    headerImageUrl: "",
+    headerImageUrl: "/page-templates/event-registration.png",
     components: [
       {
         id: "1",
@@ -124,7 +124,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     logoPosition: "navbar",
     title: "How can we help?",
     pageDescription: "Submit a support ticket and our team will get back to you shortly.",
-    headerImageUrl: "",
+    headerImageUrl: "/page-templates/support-ticket.png",
     components: [
       {
         id: "1",
@@ -149,7 +149,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     logoPosition: "hero",
     title: "We value your feedback",
     pageDescription: "Help us improve by sharing your thoughts and experience.",
-    headerImageUrl: "",
+    headerImageUrl: "/page-templates/feedback-form.png",
     components: [
       {
         id: "1",
@@ -174,7 +174,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     logoPosition: "hero",
     title: "Welcome to the Team!",
     pageDescription: "Your journey starts here. Please complete the following onboarding tasks.",
-    headerImageUrl: "",
+    headerImageUrl: "/page-templates/employee-onboarding.png",
     components: [
       {
         id: "1",
@@ -206,7 +206,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     logoPosition: "hero",
     title: "Complete Your Payment",
     pageDescription: "Secure payment processing for your outstanding balance or invoice.",
-    headerImageUrl: "",
+    headerImageUrl: "/page-templates/payment-collection.png",
     components: [
       {
         id: "1",
@@ -241,7 +241,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     logoPosition: "hero",
     title: "Support Our Cause",
     pageDescription: "Your contribution makes a difference in the lives of those we serve.",
-    headerImageUrl: "",
+    headerImageUrl: "/page-templates/donation-page.png",
     components: [
       {
         id: "1",
@@ -292,7 +292,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     logoPosition: "hero",
     title: "Enter the Competition",
     pageDescription: "Showcase your skills and compete for amazing prizes.",
-    headerImageUrl: "",
+    headerImageUrl: "/page-templates/competition-registration.png",
     components: [
       {
         id: "1",
@@ -323,7 +323,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     logoPosition: "navbar",
     title: "Get in Touch",
     pageDescription: "Have a question? Drop us a line and we'll reply as soon as possible.",
-    headerImageUrl: "",
+    headerImageUrl: "/page-templates/contact-form.png",
     components: [
       {
         id: "1",

@@ -93,12 +93,16 @@ function PageBuilderGallery() {
                       search: { templateId: template.id }
                     })}
                   >
-                    <div className="h-32 bg-secondary flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: `${template.themeColor}15` }}>
-                      {getCategoryIcon(template.category)}
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
+                    <div className="h-32 bg-secondary flex items-center justify-center relative overflow-hidden">
+                      <img 
+                        src={`/page-templates/${template.id}.png`} 
+                        alt={template.name}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
                       <div 
-                        className="absolute bottom-3 right-3 px-2 py-1 rounded text-[10px] font-semibold tracking-wider text-white"
-                        style={{ backgroundColor: template.themeColor }}
+                        className="absolute bottom-3 right-3 px-2 py-1 rounded text-[10px] font-semibold tracking-wider text-white backdrop-blur-sm"
+                        style={{ backgroundColor: `${template.themeColor}dd` }}
                       >
                         {template.category}
                       </div>

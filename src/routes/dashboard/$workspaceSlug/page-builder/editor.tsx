@@ -162,7 +162,7 @@ function PageBuilder() {
       if (!editorState.id && result?.id) {
         setEditorState((prev) => ({ ...prev, id: result.id }));
         setActivePageId(result.id);
-        navigate({ search: { pageId: result.id }, replace: true });
+        navigate({ from: Route.fullPath, search: { pageId: result.id }, replace: true });
       }
       queryClient.invalidateQueries({ queryKey: ["all-workspace-pages", workspace_id] });
       queryClient.invalidateQueries({ queryKey: ["workspace-page", activePageId] });
@@ -175,7 +175,7 @@ function PageBuilder() {
     onSuccess: () => {
       toast.success("Page deleted.");
       queryClient.invalidateQueries({ queryKey: ["all-workspace-pages", workspace_id] });
-      navigate({ to: `/dashboard/${activeWorkspace?.slug}/page-builder` });
+      navigate({ to: `/dashboard/${activeWorkspace?.slug}/page-builder/` });
     },
     onError: (err: any) => toast.error(err.message || "Failed to delete page."),
   });
@@ -291,7 +291,7 @@ function PageBuilder() {
           <div className="sticky top-0 z-20 bg-card/95 backdrop-blur border-b border-border/60 px-6 py-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 min-w-0">
               <Button variant="ghost" size="sm" asChild className="h-8 gap-1.5 -ml-2 text-muted-foreground hover:text-foreground">
-                <Link to={`/dashboard/${activeWorkspace?.slug}/page-builder`}>
+                <Link to={`/dashboard/${activeWorkspace?.slug}/page-builder/`}>
                   <ArrowLeft className="w-4 h-4" /> Back to Gallery
                 </Link>
               </Button>

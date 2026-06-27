@@ -17,18 +17,17 @@ function PublicCompanyPage() {
   const search = useSearch({ strict: false });
   const isPreview = (search as any).preview === "true" || (search as any).preview === true;
 
-  const [previewData, setPreviewData] = useState<any>(null);
-
-  useEffect(() => {
-    if (isPreview) {
+  const [previewData, setPreviewData] = useState<any>(() => {
+    if (isPreview && typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem("page_preview_data");
-        if (stored) setPreviewData(JSON.parse(stored));
+        if (stored) return JSON.parse(stored);
       } catch (e) {
         console.error("Failed to load preview data", e);
       }
     }
-  }, [isPreview]);
+    return null;
+  });
 
   const { data: dbPage, isLoading: isLoadingPage } = useQuery({
     queryKey: ["workspace-page-public", slug],
@@ -252,17 +251,15 @@ function PublicCompanyPage() {
                   return (
                     <div key={comp.id} className={`grid ${gridCols} gap-6 md:gap-8`}>
                       {comp.cards.map((card: any, idx: number) => {
-                        const linkedForm = activeForms.find((f: any) => f.id === card.formId);
+                        let linkedForm = activeForms.find((f: any) => f.id === card.formId);
 
                         if (!linkedForm && isPreview) {
-                          return (
-                            <div
-                              key={idx}
-                              className="p-8 border-2 border-dashed border-primary/30 rounded-3xl text-center bg-card text-muted-foreground flex flex-col justify-center items-center h-full min-h-[300px]"
-                            >
-                              [Preview] Form Card Placeholder
-                            </div>
-                          );
+                          linkedForm = {
+                            id: "preview-id",
+                            title: "Select a Form",
+                            description: "Please select a form in the editor to link it here.",
+                            cover_image_url: "",
+                          };
                         }
                         if (!linkedForm) return null;
 
@@ -350,18 +347,15 @@ function PublicCompanyPage() {
                 }
 
                 if (comp.type === "form_link" && comp.content) {
-                  const linkedForm = activeForms.find((f: any) => f.id === comp.content);
+                  let linkedForm = activeForms.find((f: any) => f.id === comp.content);
 
-                  // In preview mode, if we don't have the form loaded yet (e.g., brand new workspace), we can show a placeholder
                   if (!linkedForm && isPreview) {
-                    return (
-                      <div
-                        key={comp.id}
-                        className="p-8 border-2 border-dashed border-primary/30 rounded-3xl text-center bg-card text-muted-foreground"
-                      >
-                        [Preview] Linked Form Card Placeholder
-                      </div>
-                    );
+                    linkedForm = {
+                      id: "preview-id",
+                      title: "Select a Form",
+                      description: "Please select a form in the editor to link it here.",
+                      cover_image_url: "",
+                    };
                   }
 
                   if (!linkedForm) return null;
