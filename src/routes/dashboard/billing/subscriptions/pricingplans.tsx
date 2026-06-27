@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getPricingPlans, getPromotionalRules, PricingPlan, PromotionalRule } from "@/api/billing";
+import { getOrganizerProfile } from "@/api/organizers";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
 import { Check, Sparkles, Loader2 } from "lucide-react";
@@ -34,48 +35,27 @@ export const Route = createFileRoute("/dashboard/billing/subscriptions/pricingpl
 function PricingPlansPage() {
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [rules, setRules] = useState<PromotionalRule[]>([]);
+  const [organizerProfile, setOrganizerProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnnually, setIsAnnually] = useState(false);
   
   // Sales Drawer State
   const [isSalesDrawerOpen, setIsSalesDrawerOpen] = useState(false);
-  const [salesForm, setSalesForm] = useState({ 
-    name: "", 
-    email: "", 
-    company: "", 
-    message: "",
-    communication: "Email",
-    language: "English",
-    country: "",
-    phone: ""
-  });
-  const [isSubmittingSales, setIsSubmittingSales] = useState(false);
   
-  const { activeWorkspace } = useWorkspace();
+  const { activeWorkspace, workspaces } = useWorkspace();
   const navigate = useNavigate();
-
-  const handleCountryChange = (val: string) => {
-    const countryObj = COUNTRIES.find((c) => c.name === val);
-    const code = countryObj ? countryObj.dialCode : "";
-    
-    setSalesForm(s => {
-      let newPhone = s.phone;
-      if (!newPhone || (newPhone.startsWith("+") && newPhone.length <= 6 && code)) {
-        newPhone = code + " ";
-      }
-      return { ...s, country: val, phone: newPhone };
-    });
-  };
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [fetchedPlans, fetchedRules] = await Promise.all([
+        const [fetchedPlans, fetchedRules, fetchedOrganizer] = await Promise.all([
           getPricingPlans(),
           getPromotionalRules(),
+          getOrganizerProfile().catch(() => null),
         ]);
         setPlans(fetchedPlans);
         setRules(fetchedRules);
+        setOrganizerProfile(fetchedOrganizer);
       } catch (error) {
         console.error("Failed to load plans:", error);
         toast.error("Failed to load pricing plans.");
@@ -98,29 +78,6 @@ function PricingPlansPage() {
       params: { planId: plan.id },
       search: { cycle: isAnnually ? "annually" : "monthly" },
     });
-  };
-
-  const handleSalesSubmit = async () => {
-    if (!salesForm.name || !salesForm.email || !salesForm.company) {
-      toast.error("Please fill in all required fields (Name, Email, Company).");
-      return;
-    }
-    
-    setIsSubmittingSales(true);
-    try {
-      // Simulating an API call to send a sales email
-      await new Promise(r => setTimeout(r, 1000));
-      toast.success("Thank you! Our sales team will contact you shortly.");
-      setIsSalesDrawerOpen(false);
-      setSalesForm({ 
-        name: "", email: "", company: "", message: "", 
-        communication: "Email", language: "English", country: "", phone: "" 
-      });
-    } catch (error) {
-      toast.error("Failed to submit. Please try again.");
-    } finally {
-      setIsSubmittingSales(false);
-    }
   };
 
   if (isLoading) {
@@ -287,122 +244,220 @@ function PricingPlansPage() {
         })}
       </div>
 
-      <Sheet open={isSalesDrawerOpen} onOpenChange={setIsSalesDrawerOpen}>
-        <SheetContent className="sm:max-w-lg w-[90vw] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Contact Enterprise Sales</SheetTitle>
-            <SheetDescription>
-              Fill out the form below and our dedicated sales team will reach out to tailor a custom plan for your large-scale operations.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="py-6 space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="sales-name">Full Name *</Label>
-                <Input 
-                  id="sales-name" 
-                  placeholder="John Doe" 
-                  value={salesForm.name} 
-                  onChange={(e) => setSalesForm(s => ({ ...s, name: e.target.value }))} 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="sales-email">Work Email *</Label>
-                <Input 
-                  id="sales-email" 
-                  type="email" 
-                  placeholder="john@company.com" 
-                  value={salesForm.email} 
-                  onChange={(e) => setSalesForm(s => ({ ...s, email: e.target.value }))} 
-                />
-              </div>
+      <SalesDrawer 
+        isOpen={isSalesDrawerOpen} 
+        onOpenChange={setIsSalesDrawerOpen} 
+        organizerProfile={organizerProfile}
+        workspaces={workspaces}
+        activeWorkspace={activeWorkspace}
+      />
+    </div>
+  );
+}
+
+function SalesDrawer({ 
+  isOpen, 
+  onOpenChange,
+  organizerProfile,
+  workspaces,
+  activeWorkspace
+}: { 
+  isOpen: boolean; 
+  onOpenChange: (open: boolean) => void;
+  organizerProfile: any;
+  workspaces: any[];
+  activeWorkspace: any;
+}) {
+  const [salesForm, setSalesForm] = useState({ 
+    name: "", 
+    email: "", 
+    company: "", 
+    message: "",
+    communication: "Email",
+    language: "English",
+    country: "",
+    phone: ""
+  });
+  const [isSubmittingSales, setIsSubmittingSales] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSalesForm(s => ({
+        ...s,
+        name: organizerProfile?.name || s.name,
+        email: organizerProfile?.email || s.email,
+        phone: organizerProfile?.phone || s.phone,
+        company: workspaces?.length === 1 ? workspaces[0].name : activeWorkspace?.name || s.company,
+      }));
+    }
+  }, [isOpen, organizerProfile, workspaces, activeWorkspace]);
+
+  const handleCountryChange = (val: string) => {
+    const countryObj = COUNTRIES.find((c) => c.name === val);
+    const code = countryObj ? countryObj.dialCode : "";
+    
+    setSalesForm(s => {
+      let newPhone = s.phone;
+      if (!newPhone || (newPhone.startsWith("+") && newPhone.length <= 6 && code)) {
+        newPhone = code + " ";
+      }
+      return { ...s, country: val, phone: newPhone };
+    });
+  };
+
+  const handleSalesSubmit = async () => {
+    if (!salesForm.name || !salesForm.email || !salesForm.company) {
+      toast.error("Please fill in all required fields (Name, Email, Company).");
+      return;
+    }
+    
+    setIsSubmittingSales(true);
+    try {
+      await new Promise(r => setTimeout(r, 1000));
+      toast.success("Thank you! Our sales team will contact you shortly.");
+      onOpenChange(false);
+      setSalesForm({ 
+        name: "", email: "", company: "", message: "", 
+        communication: "Email", language: "English", country: "", phone: "" 
+      });
+    } catch (error) {
+      toast.error("Failed to submit. Please try again.");
+    } finally {
+      setIsSubmittingSales(false);
+    }
+  };
+
+  return (
+    <Sheet open={isOpen} onOpenChange={onOpenChange}>
+      <SheetContent className="sm:max-w-lg w-[90vw] overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>Contact Enterprise Sales</SheetTitle>
+          <SheetDescription>
+            Fill out the form below and our dedicated sales team will reach out to tailor a custom plan for your large-scale operations.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="py-6 space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="sales-name">Full Name *</Label>
+              <Input 
+                id="sales-name" 
+                placeholder="John Doe" 
+                value={salesForm.name} 
+                onChange={(e) => setSalesForm(s => ({ ...s, name: e.target.value }))} 
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sales-company">Company Name *</Label>
+              <Label htmlFor="sales-email">Work Email *</Label>
+              <Input 
+                id="sales-email" 
+                type="email" 
+                placeholder="john@company.com" 
+                value={salesForm.email} 
+                onChange={(e) => setSalesForm(s => ({ ...s, email: e.target.value }))} 
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="sales-company">Company Name *</Label>
+            {workspaces && workspaces.length > 0 ? (
+              <Select value={salesForm.company} onValueChange={(v) => setSalesForm(s => ({ ...s, company: v }))}>
+                <SelectTrigger id="sales-company">
+                  <SelectValue placeholder="Select a company" />
+                </SelectTrigger>
+                <SelectContent>
+                  {workspaces.map((ws: any) => (
+                    <SelectItem key={ws.id} value={ws.name}>
+                      {ws.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
               <Input 
                 id="sales-company" 
                 placeholder="Acme Corp" 
                 value={salesForm.company} 
                 onChange={(e) => setSalesForm(s => ({ ...s, company: e.target.value }))} 
               />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="sales-communication">Preferred Contact Method</Label>
-                <Select value={salesForm.communication} onValueChange={(v) => setSalesForm(s => ({ ...s, communication: v }))}>
-                  <SelectTrigger id="sales-communication">
-                    <SelectValue placeholder="Select method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Email">Email</SelectItem>
-                    <SelectItem value="Phone">Phone</SelectItem>
-                    <SelectItem value="WhatsApp">WhatsApp</SelectItem>
-                    <SelectItem value="Zoom">Zoom / Video Call</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="sales-language">Preferred Language</Label>
-                <Select value={salesForm.language} onValueChange={(v) => setSalesForm(s => ({ ...s, language: v }))}>
-                  <SelectTrigger id="sales-language">
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="English">English</SelectItem>
-                    <SelectItem value="French">French</SelectItem>
-                    <SelectItem value="Kinyarwanda">Kinyarwanda</SelectItem>
-                    <SelectItem value="Swahili">Swahili</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sales-country">Country</Label>
-              <Select value={salesForm.country} onValueChange={handleCountryChange}>
-                <SelectTrigger id="sales-country">
-                  <SelectValue placeholder="Select a country" />
+              <Label htmlFor="sales-communication">Preferred Contact Method</Label>
+              <Select value={salesForm.communication} onValueChange={(v) => setSalesForm(s => ({ ...s, communication: v }))}>
+                <SelectTrigger id="sales-communication">
+                  <SelectValue placeholder="Select method" />
                 </SelectTrigger>
                 <SelectContent>
-                  {COUNTRIES.map((country) => (
-                    <SelectItem key={country.code} value={country.name}>
-                      {country.name}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="Email">Email</SelectItem>
+                  <SelectItem value="Phone">Phone</SelectItem>
+                  <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                  <SelectItem value="Zoom">Zoom / Video Call</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            {(salesForm.communication === "Phone" || salesForm.communication === "WhatsApp") && (
-              <div className="space-y-2">
-                <Label htmlFor="sales-phone">Phone Number *</Label>
-                <Input 
-                  id="sales-phone" 
-                  placeholder="+250 788 000 000" 
-                  value={salesForm.phone} 
-                  onChange={(e) => setSalesForm(s => ({ ...s, phone: e.target.value }))} 
-                />
-              </div>
-            )}
             <div className="space-y-2">
-              <Label htmlFor="sales-message">How can we help? (Optional)</Label>
-              <Textarea 
-                id="sales-message" 
-                placeholder="Tell us a bit about your event volume and specific needs..." 
-                rows={5}
-                value={salesForm.message} 
-                onChange={(e) => setSalesForm(s => ({ ...s, message: e.target.value }))} 
-              />
+              <Label htmlFor="sales-language">Preferred Language</Label>
+              <Select value={salesForm.language} onValueChange={(v) => setSalesForm(s => ({ ...s, language: v }))}>
+                <SelectTrigger id="sales-language">
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="English">English</SelectItem>
+                  <SelectItem value="French">French</SelectItem>
+                  <SelectItem value="Kinyarwanda">Kinyarwanda</SelectItem>
+                  <SelectItem value="Swahili">Swahili</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          <SheetFooter className="mt-6 flex-row justify-end space-x-2">
-            <SheetClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </SheetClose>
-            <Button onClick={handleSalesSubmit} disabled={isSubmittingSales} style={{ background: "var(--gradient-primary)" }}>
-              {isSubmittingSales ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : "Submit Request"}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
-    </div>
+          <div className="space-y-2">
+            <Label htmlFor="sales-country">Country</Label>
+            <Select value={salesForm.country} onValueChange={handleCountryChange}>
+              <SelectTrigger id="sales-country">
+                <SelectValue placeholder="Select a country" />
+              </SelectTrigger>
+              <SelectContent>
+                {COUNTRIES.map((country) => (
+                  <SelectItem key={country.code} value={country.name}>
+                    {country.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {(salesForm.communication === "Phone" || salesForm.communication === "WhatsApp") && (
+            <div className="space-y-2">
+              <Label htmlFor="sales-phone">Phone Number *</Label>
+              <Input 
+                id="sales-phone" 
+                placeholder="+250 788 000 000" 
+                value={salesForm.phone} 
+                onChange={(e) => setSalesForm(s => ({ ...s, phone: e.target.value }))} 
+              />
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="sales-message">How can we help? (Optional)</Label>
+            <Textarea 
+              id="sales-message" 
+              placeholder="Tell us a bit about your event volume and specific needs..." 
+              rows={5}
+              value={salesForm.message} 
+              onChange={(e) => setSalesForm(s => ({ ...s, message: e.target.value }))} 
+            />
+          </div>
+        </div>
+        <SheetFooter className="mt-6 flex-row justify-end space-x-2">
+          <SheetClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </SheetClose>
+          <Button onClick={handleSalesSubmit} disabled={isSubmittingSales} style={{ background: "var(--gradient-primary)" }}>
+            {isSubmittingSales ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : "Submit Request"}
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
