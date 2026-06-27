@@ -10,108 +10,56 @@ import {
   BarChart3,
   Calendar,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useQuery } from "@tanstack/react-query";
+import { getWorkspaceCinemaAnalytics } from "@/api/cinema_analytics";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/analytics")({
   component: CinemaAnalyticsPage,
 });
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const CINEMA_STATS = [
-  {
-    id: "c1",
-    name: "Century Cinema",
-    city: "Kigali",
-    revenue: 48_600_000,
-    tickets: 4860,
-    attendance_rate: 78,
-    movies_showing: 5,
-    currency: "RWF",
-    trend: +12,
-  },
-  {
-    id: "c2",
-    name: "Canal Olympia",
-    city: "Kigali",
-    revenue: 22_400_000,
-    tickets: 2240,
-    attendance_rate: 61,
-    movies_showing: 3,
-    currency: "RWF",
-    trend: +4,
-  },
-];
-
-const MONTHLY_DATA = [
-  { month: "Jan", revenue: 8_200_000, tickets: 820 },
-  { month: "Feb", revenue: 9_100_000, tickets: 910 },
-  { month: "Mar", revenue: 11_500_000, tickets: 1150 },
-  { month: "Apr", revenue: 10_800_000, tickets: 1080 },
-  { month: "May", revenue: 13_200_000, tickets: 1320 },
-  { month: "Jun", revenue: 18_300_000, tickets: 1830 },
-];
-
-const TOP_MOVIES = [
-  {
-    title: "Oppenheimer",
-    cinema: "Century Cinema",
-    tickets: 1820,
-    revenue: 18_200_000,
-    currency: "RWF",
-  },
-  { title: "Barbie", cinema: "Canal Olympia", tickets: 1240, revenue: 12_400_000, currency: "RWF" },
-  {
-    title: "Top Gun: Maverick",
-    cinema: "Century Cinema",
-    tickets: 980,
-    revenue: 9_800_000,
-    currency: "RWF",
-  },
-  {
-    title: "The Batman",
-    cinema: "Century Cinema",
-    tickets: 860,
-    revenue: 8_600_000,
-    currency: "RWF",
-  },
-  {
-    title: "Black Panther",
-    cinema: "Canal Olympia",
-    tickets: 720,
-    revenue: 7_200_000,
-    currency: "RWF",
-  },
-];
-
-const TOTAL_REVENUE = CINEMA_STATS.reduce((a, c) => a + c.revenue, 0);
-const TOTAL_TICKETS = CINEMA_STATS.reduce((a, c) => a + c.tickets, 0);
-const AVG_ATTENDANCE = Math.round(
-  CINEMA_STATS.reduce((a, c) => a + c.attendance_rate, 0) / CINEMA_STATS.length,
-);
-
-const BAR_MAX = Math.max(...MONTHLY_DATA.map((d) => d.revenue));
-
-const RANGES = ["Last 7 days", "Last 30 days", "Last 6 months", "This year"];
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
 function CinemaAnalyticsPage() {
-  const [timeRange, setTimeRange] = useState("This Month");
+  const [range, setRange] = useState("This Month");
   const { activeWorkspace } = useWorkspace();
   const workspaceCurrency = activeWorkspace?.currency || activeWorkspace?.wallet?.currency || "RWF";
   const [showRangeMenu, setShowRangeMenu] = useState(false);
 
-  const TOTAL_REVENUE = CINEMA_STATS.reduce((acc, c) => acc + c.revenue, 0);
-  const TOTAL_TICKETS = CINEMA_STATS.reduce((a, c) => a + c.tickets, 0);
+  const { data, isLoading } = useQuery({
+    queryKey: ["cinema-analytics", activeWorkspace?.id],
+    queryFn: () => getWorkspaceCinemaAnalytics({ data: { workspace_id: activeWorkspace!.id } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[400px] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const CINEMA_STATS = data?.cinemaStats || [];
+  const MONTHLY_DATA = data?.monthlyData || [];
+  const TOP_MOVIES = data?.topMovies || [];
+
+  const TOTAL_REVENUE = CINEMA_STATS.reduce((acc: number, c: any) => acc + c.revenue, 0);
+  const TOTAL_TICKETS = CINEMA_STATS.reduce((a: number, c: any) => a + c.tickets, 0);
+  const AVG_ATTENDANCE = CINEMA_STATS.length > 0 
+    ? Math.round(CINEMA_STATS.reduce((a: number, c: any) => a + c.attendance_rate, 0) / CINEMA_STATS.length) 
+    : 0;
+
+  const BAR_MAX = Math.max(...MONTHLY_DATA.map((d: any) => d.revenue), 1);
+
+  const RANGES = ["Last 7 days", "Last 30 days", "Last 6 months", "This year"];
 
   const summaryCards = [
     {
       label: "Total Revenue",
-      value: `${workspaceCurrency} ` + (TOTAL_REVENUE / 1_000_000).toFixed(1) + "M",
+      value: formatCurrency(TOTAL_REVENUE, workspaceCurrency, true),
       sub: "Across all cinemas",
       icon: DollarSign,
       trend: "+9%",
@@ -144,7 +92,7 @@ function CinemaAnalyticsPage() {
     },
     {
       label: "Active Movies",
-      value: CINEMA_STATS.reduce((a, c) => a + c.movies_showing, 0).toString(),
+      value: CINEMA_STATS.reduce((a: number, c: any) => a + c.movies_showing, 0).toString(),
       sub: "Currently showing",
       icon: Film,
       trend: "-1",
@@ -240,7 +188,7 @@ function CinemaAnalyticsPage() {
             </span>
           </div>
           <div className="flex items-end gap-3 h-44">
-            {MONTHLY_DATA.map((d) => {
+            {MONTHLY_DATA.map((d: any) => {
               const pct = (d.revenue / BAR_MAX) * 100;
               return (
                 <div key={d.month} className="flex-1 flex flex-col items-center gap-2 group">
@@ -253,7 +201,7 @@ function CinemaAnalyticsPage() {
                       style={{ height: `${pct}%` }}
                     >
                       <div className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-foreground text-background text-[10px] font-bold px-2 py-0.5 rounded-md whitespace-nowrap">
-                        {(d.revenue / 1_000_000).toFixed(1)}M
+                        {formatCurrency(d.revenue, workspaceCurrency, true)}
                       </div>
                     </div>
                   </div>
@@ -269,8 +217,8 @@ function CinemaAnalyticsPage() {
           <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
             <h3 className="font-semibold text-lg mb-5">Per Cinema Breakdown</h3>
             <div className="space-y-5">
-              {CINEMA_STATS.map((cinema) => {
-                const revPct = (cinema.revenue / TOTAL_REVENUE) * 100;
+              {CINEMA_STATS.map((cinema: any) => {
+                const revPct = TOTAL_REVENUE > 0 ? (cinema.revenue / TOTAL_REVENUE) * 100 : 0;
                 return (
                   <div key={cinema.id}>
                     <div className="flex items-center justify-between mb-1.5">
@@ -280,7 +228,7 @@ function CinemaAnalyticsPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold">
-                          {workspaceCurrency} {(cinema.revenue / 1_000_000).toFixed(1)}M
+                          {formatCurrency(cinema.revenue, workspaceCurrency, true)}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {cinema.tickets.toLocaleString()} tickets
@@ -314,7 +262,7 @@ function CinemaAnalyticsPage() {
           <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
             <h3 className="font-semibold text-lg mb-5">Top Movies by Revenue</h3>
             <div className="space-y-3">
-              {TOP_MOVIES.map((movie, i) => (
+              {TOP_MOVIES.map((movie: any, i: number) => (
                 <div
                   key={movie.title}
                   className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-secondary/40 transition-colors"
@@ -328,7 +276,7 @@ function CinemaAnalyticsPage() {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-sm font-bold">
-                      {formatCurrency(movie.revenue, movie.currency)}
+                      {formatCurrency(movie.revenue, workspaceCurrency)}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {movie.tickets.toLocaleString()} tickets
@@ -344,7 +292,7 @@ function CinemaAnalyticsPage() {
         <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
           <h3 className="font-semibold text-lg mb-5">Attendance Rates</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {CINEMA_STATS.map((cinema) => (
+            {CINEMA_STATS.map((cinema: any) => (
               <div
                 key={cinema.id}
                 className="flex items-center gap-4 p-4 bg-secondary/30 rounded-2xl border border-border/40"
