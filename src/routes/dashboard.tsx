@@ -74,6 +74,8 @@ function DashboardLayout() {
     location.pathname === "/dashboard/workspaces" ||
     location.pathname === "/dashboard/create-organizer" ||
     location.pathname === "/dashboard/settings" ||
+    location.pathname === "/dashboard/billing/subscriptions/pricingplans" ||
+    location.pathname.startsWith("/dashboard/billing/subscriptions/checkout") ||
     isDesigningVenue ||
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/) ||
@@ -105,7 +107,8 @@ function DashboardLayout() {
       location.pathname === "/dashboard/create-organizer" ||
       location.pathname === "/dashboard/settings" ||
       location.pathname === "/dashboard/workspaces" ||
-      location.pathname === "/dashboard/workspace-user/activate"
+      location.pathname === "/dashboard/workspace-user/activate" ||
+      location.pathname.startsWith("/dashboard/billing")
     )
       return;
 

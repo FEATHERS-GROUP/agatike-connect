@@ -43,6 +43,44 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
     if (me.modules && !me.modules.includes("ALL")) {
       allowedModules = me.modules;
     }
+
+    // --- 14-Day Free Trial Logic ---
+    try {
+      const subQuery = `
+        query GetActiveSub {
+          subscriptions(
+            where: { organizer_id: { _eq: "${me.organizer_id}" }, status: { _eq: "active" } }
+            order_by: { created_at: desc }
+            limit: 1
+          ) {
+            created_at
+            plan {
+              name
+            }
+          }
+        }
+      `;
+      const subRes = await hasuraRequest<{ subscriptions: any[] }>(subQuery);
+      const activeSub = subRes.subscriptions?.[0];
+      
+      if (activeSub && activeSub.plan?.name?.toLowerCase().includes("basic")) {
+        const subDate = new Date(activeSub.created_at);
+        const now = new Date();
+        const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
+        
+        if (diffDays <= 14) {
+          // 14-Day Free Trial is Active: Unlock all modules!
+          allowedModules = null; 
+          currentUser.isTrialActive = true;
+          currentUser.trialDaysLeft = Math.ceil(14 - diffDays);
+        } else {
+          currentUser.isTrialExpired = true;
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to check subscription for 14-day trial status:", err);
+    }
+    // -------------------------------
   } else {
     currentUser = {
       role: "organizer",
