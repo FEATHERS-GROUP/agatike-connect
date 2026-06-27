@@ -21,11 +21,26 @@ export function EmbeddedForm({ formId }: { formId: string }) {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const { data: form, isLoading } = useQuery({
+  const isPreview = formId === "preview-id";
+
+  const { data: fetchedForm, isLoading } = useQuery({
     queryKey: ["public-form", formId],
     queryFn: () => getFormDetails({ data: { id: formId } } as any),
-    enabled: !!formId,
+    enabled: !!formId && !isPreview,
   });
+
+  const form = isPreview
+    ? {
+        title: "Example Embedded Form",
+        description: "This is how your embedded form will look on the page.",
+        is_active: true,
+        form_fields: [
+          { id: "1", label: "Full Name", field_type: "text", is_required: true },
+          { id: "2", label: "Email Address", field_type: "email", is_required: true },
+          { id: "3", label: "Your Message", field_type: "textarea", is_required: false },
+        ],
+      }
+    : fetchedForm;
 
   const mutation = useMutation({
     mutationFn: async (values: Record<string, any>) => {

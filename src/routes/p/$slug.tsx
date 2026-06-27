@@ -130,7 +130,7 @@ function PublicCompanyPage() {
 
               {/* Menu Links */}
               <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
-                {menuLinks.map((link) => (
+                {menuLinks.map((link: any) => (
                   <button
                     key={link.id}
                     onClick={() => scrollToSection(link.id)}
