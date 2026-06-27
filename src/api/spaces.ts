@@ -10,7 +10,7 @@ const CREATE_SPACE = `
 `;
 
 export const createSpace = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const {
       workspace_id,
@@ -65,7 +65,7 @@ const GET_SPACES = `
 `;
 
 export const getSpaces = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { workspace_id } = ctx.data;
     if (!workspace_id) throw new Error("workspace_id is required");
@@ -120,7 +120,7 @@ const GET_SPACE_BY_ID = `
 `;
 
 export const getSpaceById = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id } = ctx.data;
     if (!id) throw new Error("id is required");
@@ -139,7 +139,7 @@ const UPDATE_SPACE = `
 `;
 
 export const updateSpace = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id, ...updates } = ctx.data;
     if (!id) throw new Error("id is required");

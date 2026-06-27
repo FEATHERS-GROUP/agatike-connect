@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 export const sendAttendeeEmail = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const {
       to,
@@ -147,7 +147,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
   });
 
 export const sendTicketsEmail = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const {
       to,
@@ -212,7 +212,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
   });
 
 export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { to, otp } = ctx.data as any;
 
@@ -271,7 +271,7 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
   });
 
 export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { to, customerName, spaceName, planName, price, billingCycle, startDate } =
       ctx.data as any;
@@ -341,7 +341,7 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
   });
 
 export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const {
       to,
@@ -448,7 +448,7 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
 
 // Sends the company email with invoice PDF + member roster PDF attached
 export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const {
       to,
@@ -583,7 +583,7 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
 
 // Sends a personal welcome email to each individual team member
 export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { to, memberName, companyName, spaceName, planName, startDate, membershipId } =
       ctx.data as any;
@@ -651,7 +651,7 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
   });
 
 export const sendVisitorPassEmail = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { to, visitorName, spaceName, visitDate, hostedBy, visitorId, pdfBase64 } =
       ctx.data as any;
@@ -789,7 +789,7 @@ export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
 };
 
 export const sendWorkspaceUserInviteEmail = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     return await executeSendWorkspaceUserInviteEmail(ctx.data);
   });

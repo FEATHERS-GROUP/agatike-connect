@@ -35,7 +35,7 @@ const GET_EVENT_ATTENDEES = `
 `;
 
 export const getEventAttendees = createServerFn({ method: "POST" })
-  .inputValidator((d: { event_id: string }) => d)
+  .validator((d: { event_id: string }) => d)
   .handler(async (ctx) => {
     const { event_id } = ctx.data;
     const data = await hasuraRequest<{ event_attendees: any[] }>(GET_EVENT_ATTENDEES, { event_id });
@@ -69,7 +69,7 @@ const GET_ATTENDEE_BY_QR_CODE = `
 `;
 
 export const getAttendeeByQrCode = createServerFn({ method: "POST" })
-  .inputValidator((d: { qrcode_number: string }) => d)
+  .validator((d: { qrcode_number: string }) => d)
   .handler(async (ctx) => {
     const { qrcode_number } = ctx.data;
     const data = await hasuraRequest<{ event_attendees: any[] }>(GET_ATTENDEE_BY_QR_CODE, {
@@ -90,7 +90,7 @@ const ADD_EVENT_ATTENDEES = `
 `;
 
 export const addEventAttendees = createServerFn({ method: "POST" })
-  .inputValidator((d: { objects: any[] }) => d)
+  .validator((d: { objects: any[] }) => d)
   .handler(async (ctx) => {
     const { objects } = ctx.data;
 
@@ -206,7 +206,7 @@ export const addEventAttendees = createServerFn({ method: "POST" })
   });
 
 export const checkUserAttendance = createServerFn({ method: "POST" })
-  .inputValidator((d: { event_id: string }) => d)
+  .validator((d: { event_id: string }) => d)
   .handler(async (ctx) => {
     const { event_id } = ctx.data;
 

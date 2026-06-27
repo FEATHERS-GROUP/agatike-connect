@@ -74,7 +74,7 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
 });
 
 export const getEventAttendeesCount = createServerFn({ method: "POST" })
-  .inputValidator((d: { eventId?: string; scheduleId?: string }) => d)
+  .validator((d: { eventId?: string; scheduleId?: string }) => d)
   .handler(async (ctx) => {
     const data = ctx.data;
     if (!data.eventId && !data.scheduleId) return 0;
@@ -236,7 +236,7 @@ const GET_WORKSPACE_EVENTS = `
 `;
 
 export const getWorkspaceEvents = createServerFn({ method: "POST" })
-  .inputValidator((d: { workspace_id: string }) => d)
+  .validator((d: { workspace_id: string }) => d)
   .handler(async (ctx) => {
     const { workspace_id } = ctx.data;
     const data = await hasuraRequest<{ events: any[] }>(GET_WORKSPACE_EVENTS, { workspace_id });

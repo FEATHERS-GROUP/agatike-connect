@@ -132,7 +132,7 @@ const GET_CINEMA_CHART_DATA = `
 `;
 
 export const getCinemaBookings = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { cinema_id, limit = 50, offset = 0 } = ctx.data;
     if (!cinema_id) throw new Error("cinema_id is required");
@@ -145,7 +145,7 @@ export const getCinemaBookings = createServerFn({ method: "POST" })
   });
 
 export const getCinemaStats = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { cinema_id } = ctx.data;
     if (!cinema_id) throw new Error("cinema_id is required");
@@ -169,7 +169,7 @@ export const getCinemaStats = createServerFn({ method: "POST" })
   });
 
 export const getCinemaChartData = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { cinema_id } = ctx.data;
     if (!cinema_id) throw new Error("cinema_id is required");
@@ -182,7 +182,7 @@ export const getCinemaChartData = createServerFn({ method: "POST" })
   });
 
 export const getCinemaBookingById = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id } = ctx.data;
     if (!id) throw new Error("id is required");
@@ -193,7 +193,7 @@ export const getCinemaBookingById = createServerFn({ method: "POST" })
   });
 
 export const createCinemaBooking = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { object } = ctx.data;
 

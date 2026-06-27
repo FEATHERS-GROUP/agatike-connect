@@ -65,7 +65,7 @@ export const uploadFile = createServerFn({ method: "POST" }).handler(async (ctx)
  * bypassing RLS policies by using the service key.
  */
 export const uploadFormData = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const formData = ctx.data as unknown as FormData;
     const file = formData.get("file") as File;
@@ -113,7 +113,7 @@ export const uploadFormData = createServerFn({ method: "POST" })
  * Accepts an array of full public URLs and deletes each one.
  */
 export const deleteFiles = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { urls } = ctx.data as unknown as { urls: string[] };
 

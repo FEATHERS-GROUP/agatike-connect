@@ -84,7 +84,7 @@ async function generateVisitorPassPdf(data: VisitorPassData, qrBase64: string): 
 }
 
 export const processVisitorPass = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { to, visitorName, visitorId, spaceName, visitDate, hostedBy } = ctx.data as any;
     const { Buffer } = await import("buffer");

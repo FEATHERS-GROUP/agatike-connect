@@ -16,7 +16,7 @@ export interface CommunityChannel {
 import { deleteChannelMessages } from "@/lib/firebase";
 
 export const getCommunityChannels = createServerFn({ method: "POST" })
-  .inputValidator((d: { organizerId: string }) => d)
+  .validator((d: { organizerId: string }) => d)
   .handler(async (ctx) => {
     const data = ctx.data;
     if (!data.organizerId) return [];
@@ -125,7 +125,7 @@ export const getCommunityChannels = createServerFn({ method: "POST" })
   });
 
 export const getCommunityChannelsForOrganizers = createServerFn({ method: "POST" })
-  .inputValidator((d: { organizerIds: string[] }) => d)
+  .validator((d: { organizerIds: string[] }) => d)
   .handler(async (ctx) => {
     const data = ctx.data;
     if (!data.organizerIds || data.organizerIds.length === 0) return [];
@@ -153,7 +153,7 @@ export const getCommunityChannelsForOrganizers = createServerFn({ method: "POST"
   });
 
 export const createCommunityChannel = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     (d: {
       organizerId: string;
       name: string;
@@ -210,7 +210,7 @@ export const createCommunityChannel = createServerFn({ method: "POST" })
   });
 
 export const updateCommunityChannel = createServerFn({ method: "POST" })
-  .inputValidator((d: { channelId: string; name?: string; coverUrl?: string }) => d)
+  .validator((d: { channelId: string; name?: string; coverUrl?: string }) => d)
   .handler(async (ctx) => {
     const data = ctx.data;
 

@@ -476,7 +476,7 @@ export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(asyn
 });
 
 export const getOrganizerFollowerIds = createServerFn({ method: "POST" })
-  .inputValidator((d: { organizerId: string }) => d)
+  .validator((d: { organizerId: string }) => d)
   .handler(async (ctx) => {
     const { organizerId } = ctx.data;
     const fetchQuery = `
@@ -495,7 +495,7 @@ export const getOrganizerFollowerIds = createServerFn({ method: "POST" })
   });
 
 export const getOrganizersByIds = createServerFn({ method: "POST" })
-  .inputValidator((d: { ids: string[] }) => d)
+  .validator((d: { ids: string[] }) => d)
   .handler(async (ctx) => {
     const { ids } = ctx.data;
     if (!ids || ids.length === 0) return [];

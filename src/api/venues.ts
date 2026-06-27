@@ -141,7 +141,7 @@ const GET_WORKSPACE_VENUE_PROJECTS = `
 `;
 
 export const getWorkspaceVenueProjects = createServerFn({ method: "POST" })
-  .inputValidator((d: { workspace_id: string }) => d)
+  .validator((d: { workspace_id: string }) => d)
   .handler(async (ctx) => {
     const { workspace_id } = ctx.data;
     const res = await hasuraRequest<{ venue_projects: any[] }>(GET_WORKSPACE_VENUE_PROJECTS, {
@@ -169,7 +169,7 @@ const GET_EVENT_VENUE_PROJECTS = `
 `;
 
 export const getEventVenueProjects = createServerFn({ method: "POST" })
-  .inputValidator((d: { event_id: string }) => d)
+  .validator((d: { event_id: string }) => d)
   .handler(async (ctx) => {
     const { event_id } = ctx.data;
     const res = await hasuraRequest<{ venue_projects: any[] }>(GET_EVENT_VENUE_PROJECTS, {

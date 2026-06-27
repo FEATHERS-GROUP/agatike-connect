@@ -17,7 +17,7 @@ const CREATE_VENUE_BOOKING = `
 `;
 
 export const createVenueBooking = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const {
       workspace_id,
@@ -155,7 +155,7 @@ const GET_VENUE_BOOKINGS = `
 `;
 
 export const getVenueBookings = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { venue_id } = ctx.data;
     if (!venue_id) throw new Error("venue_id is required");
@@ -185,7 +185,7 @@ const VALIDATE_TICKET_OTP = `
 `;
 
 export const getVenueBookingByOtp = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { otp } = ctx.data;
     if (!otp) throw new Error("otp is required");
@@ -269,7 +269,7 @@ const UPDATE_VENUE_BOOKING_TICKETS = `
 `;
 
 export const updateTicketStatus = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { booking_id, ticket_id, new_status } = ctx.data;
     if (!booking_id || !ticket_id || !new_status) throw new Error("Missing parameters");

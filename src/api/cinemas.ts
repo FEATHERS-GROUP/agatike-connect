@@ -159,7 +159,7 @@ const DELETE_CINEMA = `
 // ─── Server Functions ─────────────────────────────────────────────────────────
 
 export const getCinemas = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { workspace_id } = ctx.data;
     if (!workspace_id) throw new Error("workspace_id is required");
@@ -168,7 +168,7 @@ export const getCinemas = createServerFn({ method: "POST" })
   });
 
 export const getCinemaById = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id } = ctx.data;
     if (!id) throw new Error("id is required");
@@ -177,7 +177,7 @@ export const getCinemaById = createServerFn({ method: "POST" })
   });
 
 export const createCinema = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ insert_cinemas_one: { id: string; name: string } }>(
       CREATE_CINEMA,
@@ -187,7 +187,7 @@ export const createCinema = createServerFn({ method: "POST" })
   });
 
 export const updateCinema = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id, ...updates } = ctx.data;
     if (!id) throw new Error("id is required");
@@ -199,7 +199,7 @@ export const updateCinema = createServerFn({ method: "POST" })
   });
 
 export const deleteCinema = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id } = ctx.data;
     if (!id) throw new Error("id is required");
@@ -277,7 +277,7 @@ const GET_MOVIE_SCHEDULES_BY_MOVIE_ID = `
 `;
 
 export const getMovieSchedulesByMovieId = createServerFn({ method: "POST" })
-  .inputValidator((d: { movieId: string; cinemaId: string }) => d)
+  .validator((d: { movieId: string; cinemaId: string }) => d)
   .handler(async (ctx) => {
     const { movieId, cinemaId } = ctx.data;
     const date = new Date().toISOString().split("T")[0];

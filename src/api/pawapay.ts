@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 export const getExchangeRate = createServerFn({ method: "POST" })
-  .inputValidator((d: { base: string; target: string }) => d)
+  .validator((d: { base: string; target: string }) => d)
   .handler(async (ctx) => {
     const { base, target } = ctx.data;
     const safeBase = (base || "RWF").toUpperCase().replace("FRW", "RWF");
@@ -29,7 +29,7 @@ export const getExchangeRate = createServerFn({ method: "POST" })
   });
 
 export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const {
       amount,
@@ -159,7 +159,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
   });
 
 export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
-  .inputValidator((d: { depositId: string }) => d)
+  .validator((d: { depositId: string }) => d)
   .handler(async (ctx) => {
     const { depositId } = ctx.data;
     if (!depositId) return null;

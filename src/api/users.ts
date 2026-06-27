@@ -9,7 +9,7 @@ export interface UserLookupResponse {
 }
 
 export const getUserByHandle = createServerFn({ method: "GET" })
-  .inputValidator((d: { handle: string }) => d)
+  .validator((d: { handle: string }) => d)
   .handler(async (ctx) => {
     const data = ctx.data;
     if (!data.handle) return null;
@@ -36,7 +36,7 @@ export const getUserByHandle = createServerFn({ method: "GET" })
   });
 
 export const getUsersByIds = createServerFn({ method: "POST" })
-  .inputValidator((d: { ids: string[] }) => d)
+  .validator((d: { ids: string[] }) => d)
   .handler(async (ctx) => {
     const data = ctx.data;
     if (!data.ids || data.ids.length === 0) return [];
@@ -60,7 +60,7 @@ export const getUsersByIds = createServerFn({ method: "POST" })
   });
 
 export const getOrganizerFollowersProfiles = createServerFn({ method: "POST" })
-  .inputValidator((d: { organizerId: string }) => d)
+  .validator((d: { organizerId: string }) => d)
   .handler(async (ctx) => {
     const data = ctx.data;
     if (!data.organizerId) return [];
@@ -107,7 +107,7 @@ export const getOrganizerFollowersProfiles = createServerFn({ method: "POST" })
   });
 
 export const saveFCMToken = createServerFn({ method: "POST" })
-  .inputValidator((d: { userId: string; token: string }) => d)
+  .validator((d: { userId: string; token: string }) => d)
   .handler(async (ctx) => {
     const { userId, token } = ctx.data as any;
     if (!userId || !token) return { success: false };

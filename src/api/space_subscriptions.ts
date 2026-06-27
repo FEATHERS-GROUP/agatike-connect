@@ -16,7 +16,7 @@ function generateMembershipId(): string {
 }
 
 export const createSpaceSubscription = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const {
       space_id,
@@ -273,7 +273,7 @@ export const createSpaceSubscription = createServerFn({ method: "POST" })
   });
 
 export const getUserSubscriptions = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { user_id, email } = ctx.data as any;
     if (!user_id) return [];
@@ -394,7 +394,7 @@ export const getUserSubscriptions = createServerFn({ method: "POST" })
 
 /** Search for a group subscription by team member email OR personal membership_id */
 export const findGroupSubscriptionByEmailOrId = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { email, membership_id } = ctx.data as any;
     if (!email && !membership_id) return null;
@@ -525,7 +525,7 @@ const GET_WORKSPACE_SUBSCRIPTIONS = `
 `;
 
 export const getWorkspaceSubscriptionsByWorkspaceId = createServerFn({ method: "POST" })
-  .inputValidator((d: { workspace_id: string }) => d)
+  .validator((d: { workspace_id: string }) => d)
   .handler(async (ctx) => {
     const { workspace_id } = ctx.data;
     if (!workspace_id) return [];
@@ -575,7 +575,7 @@ const GET_SPACE_SUBSCRIPTIONS = `
 `;
 
 export const getSpaceSubscriptionsBySpaceId = createServerFn({ method: "POST" })
-  .inputValidator((d: { space_id: string }) => d)
+  .validator((d: { space_id: string }) => d)
   .handler(async (ctx) => {
     const { space_id } = ctx.data;
     if (!space_id) return [];
@@ -591,7 +591,7 @@ export const getSpaceSubscriptionsBySpaceId = createServerFn({ method: "POST" })
   });
 
 export const addLinkedGroupSubscription = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { email, membership_id } = ctx.data as any;
     if (!email && !membership_id) throw new Error("Need email or membership_id");
@@ -615,7 +615,7 @@ export const addLinkedGroupSubscription = createServerFn({ method: "POST" })
   });
 
 export const removeLinkedGroupSubscription = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { email, membership_id } = ctx.data as any;
     const cookieStr = getCookie("agatike_linked_credentials");
@@ -635,7 +635,7 @@ export const removeLinkedGroupSubscription = createServerFn({ method: "POST" })
 // ── Renew a subscription ─────────────────────────────────────────────────────
 // Creates a "pending" renewal invoice and advances the next_billing_date.
 export const renewSpaceSubscription = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { subscription_id } = ctx.data as { subscription_id: string };
     if (!subscription_id) throw new Error("subscription_id required");
@@ -770,7 +770,7 @@ export const renewSpaceSubscription = createServerFn({ method: "POST" })
 
 // ── Cancel a subscription ────────────────────────────────────────────────────
 export const cancelSpaceSubscription = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { subscription_id } = ctx.data as { subscription_id: string };
     if (!subscription_id) throw new Error("subscription_id required");

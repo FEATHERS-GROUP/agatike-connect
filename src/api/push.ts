@@ -3,7 +3,7 @@ import type { MulticastMessage } from "firebase-admin/messaging";
 import { hasuraRequest } from "./graphql.server";
 
 export const sendPushNotification = createServerFn({ method: "POST" })
-  .inputValidator((d: { userIds: string[]; title: string; body: string; data?: any }) => d)
+  .validator((d: { userIds: string[]; title: string; body: string; data?: any }) => d)
   .handler(async (ctx) => {
     const { initializeApp, applicationDefault, getApps } = await import("firebase-admin/app");
     const { getMessaging } = await import("firebase-admin/messaging");
