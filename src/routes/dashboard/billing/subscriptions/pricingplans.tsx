@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { COUNTRIES } from "@/lib/countries";
 import {
   Sheet,
   SheetContent,
@@ -53,30 +54,14 @@ function PricingPlansPage() {
   const { activeWorkspace } = useWorkspace();
   const navigate = useNavigate();
 
-  const getCountryCode = (country: string) => {
-    const map: Record<string, string> = {
-      rwanda: "+250",
-      kenya: "+254",
-      uganda: "+256",
-      tanzania: "+255",
-      burundi: "+257",
-      nigeria: "+234",
-      ghana: "+233",
-      "south africa": "+27",
-      usa: "+1",
-      "united states": "+1",
-      uk: "+44",
-      "united kingdom": "+44"
-    };
-    return map[country.toLowerCase().trim()] || "";
-  };
-
   const handleCountryChange = (val: string) => {
-    const code = getCountryCode(val);
+    const countryObj = COUNTRIES.find((c) => c.name === val);
+    const code = countryObj ? countryObj.dialCode : "";
+    
     setSalesForm(s => {
       let newPhone = s.phone;
-      if (!newPhone || (newPhone.startsWith("+") && newPhone.length <= 4 && code)) {
-        newPhone = code;
+      if (!newPhone || (newPhone.startsWith("+") && newPhone.length <= 6 && code)) {
+        newPhone = code + " ";
       }
       return { ...s, country: val, phone: newPhone };
     });
@@ -373,12 +358,18 @@ function PricingPlansPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="sales-country">Country</Label>
-              <Input 
-                id="sales-country" 
-                placeholder="e.g. Rwanda" 
-                value={salesForm.country} 
-                onChange={(e) => handleCountryChange(e.target.value)} 
-              />
+              <Select value={salesForm.country} onValueChange={handleCountryChange}>
+                <SelectTrigger id="sales-country">
+                  <SelectValue placeholder="Select a country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRIES.map((country) => (
+                    <SelectItem key={country.code} value={country.name}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             {(salesForm.communication === "Phone" || salesForm.communication === "WhatsApp") && (
               <div className="space-y-2">
