@@ -64,6 +64,38 @@ export const getWorkspaceCinemaAnalytics = createServerFn({ method: "POST" })
       const revenue = cBookings.reduce((sum: number, b: any) => sum + parseFloat(b.total_price || "0"), 0);
       const tickets = cBookings.reduce((sum: number, b: any) => sum + (b.quantity || 0), 0);
 
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      const lastMonthDate = new Date(currentYear, currentMonth - 1, 1);
+      const lastMonth = lastMonthDate.getMonth();
+      const lastMonthYear = lastMonthDate.getFullYear();
+
+      let currentMonthRev = 0;
+      let lastMonthRev = 0;
+
+      cBookings.forEach((b: any) => {
+        if (!b.created_at) return;
+        const bDate = new Date(b.created_at);
+        const bMonth = bDate.getMonth();
+        const bYear = bDate.getFullYear();
+        const val = parseFloat(b.total_price || "0");
+        
+        if (bMonth === currentMonth && bYear === currentYear) {
+          currentMonthRev += val;
+        } else if (bMonth === lastMonth && bYear === lastMonthYear) {
+          lastMonthRev += val;
+        }
+      });
+
+      let trend = 0;
+      if (lastMonthRev > 0) {
+        trend = Math.round(((currentMonthRev - lastMonthRev) / lastMonthRev) * 100);
+      } else if (currentMonthRev > 0) {
+        trend = 100;
+      }
+
       return {
         id: c.id,
         name: c.name,
@@ -72,7 +104,7 @@ export const getWorkspaceCinemaAnalytics = createServerFn({ method: "POST" })
         tickets,
         attendance_rate,
         movies_showing: c.movies_aggregate?.aggregate?.count || 0,
-        trend: 0, // Placeholder for MoM trend
+        trend,
       };
     });
 
