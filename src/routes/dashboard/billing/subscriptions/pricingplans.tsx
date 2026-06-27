@@ -7,6 +7,24 @@ import { Check, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+  SheetClose,
+} from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/dashboard/billing/subscriptions/pricingplans")({
   component: PricingPlansPage,
@@ -18,8 +36,51 @@ function PricingPlansPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAnnually, setIsAnnually] = useState(false);
   
+  // Sales Drawer State
+  const [isSalesDrawerOpen, setIsSalesDrawerOpen] = useState(false);
+  const [salesForm, setSalesForm] = useState({ 
+    name: "", 
+    email: "", 
+    company: "", 
+    message: "",
+    communication: "Email",
+    language: "English",
+    country: "",
+    phone: ""
+  });
+  const [isSubmittingSales, setIsSubmittingSales] = useState(false);
+  
   const { activeWorkspace } = useWorkspace();
   const navigate = useNavigate();
+
+  const getCountryCode = (country: string) => {
+    const map: Record<string, string> = {
+      rwanda: "+250",
+      kenya: "+254",
+      uganda: "+256",
+      tanzania: "+255",
+      burundi: "+257",
+      nigeria: "+234",
+      ghana: "+233",
+      "south africa": "+27",
+      usa: "+1",
+      "united states": "+1",
+      uk: "+44",
+      "united kingdom": "+44"
+    };
+    return map[country.toLowerCase().trim()] || "";
+  };
+
+  const handleCountryChange = (val: string) => {
+    const code = getCountryCode(val);
+    setSalesForm(s => {
+      let newPhone = s.phone;
+      if (!newPhone || (newPhone.startsWith("+") && newPhone.length <= 4 && code)) {
+        newPhone = code;
+      }
+      return { ...s, country: val, phone: newPhone };
+    });
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -52,6 +113,29 @@ function PricingPlansPage() {
       params: { planId: plan.id },
       search: { cycle: isAnnually ? "annually" : "monthly" },
     });
+  };
+
+  const handleSalesSubmit = async () => {
+    if (!salesForm.name || !salesForm.email || !salesForm.company) {
+      toast.error("Please fill in all required fields (Name, Email, Company).");
+      return;
+    }
+    
+    setIsSubmittingSales(true);
+    try {
+      // Simulating an API call to send a sales email
+      await new Promise(r => setTimeout(r, 1000));
+      toast.success("Thank you! Our sales team will contact you shortly.");
+      setIsSalesDrawerOpen(false);
+      setSalesForm({ 
+        name: "", email: "", company: "", message: "", 
+        communication: "Email", language: "English", country: "", phone: "" 
+      });
+    } catch (error) {
+      toast.error("Failed to submit. Please try again.");
+    } finally {
+      setIsSubmittingSales(false);
+    }
   };
 
   if (isLoading) {
@@ -111,8 +195,11 @@ function PricingPlansPage() {
           let displayPrice = basePrice;
           let promoText = null;
 
+          // Check if it's the enterprise plan
+          const isEnterprise = plan.name.toLowerCase().includes("enterprise");
+
           // Apply promotional rules (like 50% off for the first 3 months)
-          if (basePrice > 0 && launchPromo && launchPromo.applies_to_cycles.includes(isAnnually ? "annually" : "monthly")) {
+          if (!isEnterprise && basePrice > 0 && launchPromo && launchPromo.applies_to_cycles.includes(isAnnually ? "annually" : "monthly")) {
             // If it's a monthly plan, they pay 50% for 3 months.
             // If it's an annual plan, maybe they get a straight discount on the first year, or the equivalent of 3 months at 50%.
             if (isAnnually) {
@@ -158,22 +245,22 @@ function PricingPlansPage() {
               <div className="mb-4 flex flex-col gap-1">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-bold">
-                    {displayPrice === 0 ? "Free" : `$${displayPrice.toFixed(2)}`}
+                    {isEnterprise ? "Custom" : displayPrice === 0 ? "Free" : `$${displayPrice.toFixed(2)}`}
                   </span>
-                  {plan.price > 0 && (
+                  {!isEnterprise && plan.price > 0 && (
                     <span className="text-sm font-medium text-muted-foreground">
                       /{isAnnually ? "yr" : "mo"}
                     </span>
                   )}
                 </div>
                 
-                {plan.price > 0 && (displayPrice !== basePrice || isAnnually) && (
+                {!isEnterprise && plan.price > 0 && (displayPrice !== basePrice || isAnnually) && (
                   <div className="text-xs text-muted-foreground line-through">
                     ${isAnnually ? (plan.price * 12).toFixed(2) : plan.price.toFixed(2)}/{isAnnually ? "yr" : "mo"}
                   </div>
                 )}
                 
-                {promoText && (
+                {!isEnterprise && promoText && (
                   <div className="text-xs font-semibold text-green-500 bg-green-500/10 px-2 py-1 rounded-md inline-block w-fit mt-1">
                     {promoText}
                   </div>
@@ -181,14 +268,20 @@ function PricingPlansPage() {
               </div>
 
               <Button
-                onClick={() => handleUpgrade(plan)}
+                onClick={() => {
+                  if (isEnterprise) {
+                    setIsSalesDrawerOpen(true);
+                  } else {
+                    handleUpgrade(plan);
+                  }
+                }}
                 variant={plan.is_popular ? "default" : "outline"}
                 className={`w-full rounded-full mb-8 h-11 ${
                   plan.is_popular ? "shadow-md hover:scale-105 transition-transform" : ""
                 }`}
                 style={plan.is_popular ? { background: "var(--gradient-primary)" } : {}}
               >
-                {plan.price === 0 ? "Get Started" : "Upgrade Now"}
+                {isEnterprise ? "Contact Sales" : plan.price === 0 ? "Get Started" : "Upgrade Now"}
               </Button>
 
               <div className="space-y-4 flex-1">
@@ -208,6 +301,117 @@ function PricingPlansPage() {
           );
         })}
       </div>
+
+      <Sheet open={isSalesDrawerOpen} onOpenChange={setIsSalesDrawerOpen}>
+        <SheetContent className="sm:max-w-lg w-[90vw] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Contact Enterprise Sales</SheetTitle>
+            <SheetDescription>
+              Fill out the form below and our dedicated sales team will reach out to tailor a custom plan for your large-scale operations.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="py-6 space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="sales-name">Full Name *</Label>
+                <Input 
+                  id="sales-name" 
+                  placeholder="John Doe" 
+                  value={salesForm.name} 
+                  onChange={(e) => setSalesForm(s => ({ ...s, name: e.target.value }))} 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sales-email">Work Email *</Label>
+                <Input 
+                  id="sales-email" 
+                  type="email" 
+                  placeholder="john@company.com" 
+                  value={salesForm.email} 
+                  onChange={(e) => setSalesForm(s => ({ ...s, email: e.target.value }))} 
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sales-company">Company Name *</Label>
+              <Input 
+                id="sales-company" 
+                placeholder="Acme Corp" 
+                value={salesForm.company} 
+                onChange={(e) => setSalesForm(s => ({ ...s, company: e.target.value }))} 
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="sales-communication">Preferred Contact Method</Label>
+                <Select value={salesForm.communication} onValueChange={(v) => setSalesForm(s => ({ ...s, communication: v }))}>
+                  <SelectTrigger id="sales-communication">
+                    <SelectValue placeholder="Select method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Email">Email</SelectItem>
+                    <SelectItem value="Phone">Phone</SelectItem>
+                    <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                    <SelectItem value="Zoom">Zoom / Video Call</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sales-language">Preferred Language</Label>
+                <Select value={salesForm.language} onValueChange={(v) => setSalesForm(s => ({ ...s, language: v }))}>
+                  <SelectTrigger id="sales-language">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="English">English</SelectItem>
+                    <SelectItem value="French">French</SelectItem>
+                    <SelectItem value="Kinyarwanda">Kinyarwanda</SelectItem>
+                    <SelectItem value="Swahili">Swahili</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sales-country">Country</Label>
+              <Input 
+                id="sales-country" 
+                placeholder="e.g. Rwanda" 
+                value={salesForm.country} 
+                onChange={(e) => handleCountryChange(e.target.value)} 
+              />
+            </div>
+            {(salesForm.communication === "Phone" || salesForm.communication === "WhatsApp") && (
+              <div className="space-y-2">
+                <Label htmlFor="sales-phone">Phone Number *</Label>
+                <Input 
+                  id="sales-phone" 
+                  placeholder="+250 788 000 000" 
+                  value={salesForm.phone} 
+                  onChange={(e) => setSalesForm(s => ({ ...s, phone: e.target.value }))} 
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="sales-message">How can we help? (Optional)</Label>
+              <Textarea 
+                id="sales-message" 
+                placeholder="Tell us a bit about your event volume and specific needs..." 
+                rows={5}
+                value={salesForm.message} 
+                onChange={(e) => setSalesForm(s => ({ ...s, message: e.target.value }))} 
+              />
+            </div>
+          </div>
+          <SheetFooter className="mt-6 flex-row justify-end space-x-2">
+            <SheetClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </SheetClose>
+            <Button onClick={handleSalesSubmit} disabled={isSubmittingSales} style={{ background: "var(--gradient-primary)" }}>
+              {isSubmittingSales ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : "Submit Request"}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
