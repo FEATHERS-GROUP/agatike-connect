@@ -1,4 +1,5 @@
 import QRCode from "react-qr-code";
+import { EmbeddedForm } from "./EmbeddedForm";
 
 export function PreviewComponent({
   comp,
@@ -161,6 +162,15 @@ export function PreviewComponent({
         cover_image_url: "",
       };
     }
+
+    if (comp.design === "embedded") {
+      return (
+        <div className="w-full pointer-events-none">
+          <EmbeddedForm formId={linkedForm.id} />
+        </div>
+      );
+    }
+
     if (comp.design === "button") {
       return (
         <div className="flex justify-center w-full px-4 py-4 pointer-events-none">

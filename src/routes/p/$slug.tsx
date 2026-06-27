@@ -6,6 +6,7 @@ import { Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
+import { EmbeddedForm } from "@/components/page-builder/EmbeddedForm";
 
 export const Route = createFileRoute("/p/$slug")({
   component: PublicCompanyPage,
@@ -311,7 +312,7 @@ function PublicCompanyPage() {
                               className="w-full rounded-full mt-auto group-hover:shadow-md transition-all"
                               style={{ background: theme_color }}
                             >
-                              <Link to={`/f/${linkedForm.id}`}>
+                              <Link to={`/f/${linkedForm.id}` as any}>
                                 {card.buttonLabel || "Register"}{" "}
                                 <ArrowRight className="w-4 h-4 ml-2" />
                               </Link>
@@ -361,6 +362,14 @@ function PublicCompanyPage() {
 
                   if (!linkedForm) return null;
 
+                  if (comp.design === "embedded") {
+                    return (
+                      <div key={comp.id} className="w-full">
+                        <EmbeddedForm formId={linkedForm.id} />
+                      </div>
+                    );
+                  }
+
                   if (comp.design === "button") {
                     return (
                       <div key={comp.id} className="flex justify-center w-full px-4">
@@ -370,7 +379,7 @@ function PublicCompanyPage() {
                           className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center"
                           style={{ background: theme_color }}
                         >
-                          <Link to={`/f/${linkedForm.id}`}>
+                          <Link to={`/f/${linkedForm.id}` as any}>
                             {linkedForm.title}{" "}
                             <ArrowRight className="w-5 h-5 ml-2 md:ml-3 shrink-0" />
                           </Link>
@@ -380,7 +389,7 @@ function PublicCompanyPage() {
                   }
 
                   return (
-                    <Link key={comp.id} to={`/f/${linkedForm.id}`} className="block group">
+                    <Link key={comp.id} to={`/f/${linkedForm.id}` as any} className="block group">
                       <div className="bg-card border border-border/60 rounded-3xl p-6 md:p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col md:flex-row items-center gap-6">
                         {linkedForm.cover_image_url ? (
                           <div className="w-full md:w-48 h-32 rounded-2xl overflow-hidden shrink-0">

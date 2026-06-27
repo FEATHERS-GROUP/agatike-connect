@@ -376,6 +376,7 @@ export function ComponentBlock({
                     <SelectContent>
                       <SelectItem value="card">Large Card</SelectItem>
                       <SelectItem value="button">Simple Button</SelectItem>
+                      <SelectItem value="embedded">Embedded Form</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
