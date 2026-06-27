@@ -4,9 +4,11 @@ import { getAllWorkspacePages } from "@/api/workspace-pages";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { PAGE_TEMPLATES } from "@/lib/page-templates";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, LayoutTemplate, FileText, Globe, Copy, ExternalLink, Calendar, HelpCircle, Briefcase, HandCoins, Users } from "lucide-react";
+import { Loader2, Plus, LayoutTemplate, FileText, Globe, Copy, ExternalLink, Calendar, HelpCircle, Briefcase, HandCoins, Users, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder/")({
   component: PageBuilderGallery,
@@ -22,6 +24,18 @@ function PageBuilderGallery() {
     queryFn: () => getAllWorkspacePages({ data: { workspace_id } } as any),
     enabled: !!workspace_id,
   });
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredTemplates = PAGE_TEMPLATES.filter(t => 
+    t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    t.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredPages = allPages.filter((p: any) => 
+    (p.title || "Untitled Page").toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (p.slug || "").toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleCopyLink = (slug: string) => {
     const url = `${window.location.origin}/p/${slug}`;
@@ -49,25 +63,26 @@ function PageBuilderGallery() {
 
   return (
     <div className="flex flex-col h-full bg-secondary/10">
-      <div className="border-b border-border/60 bg-card p-6">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Page Builder</h1>
-            <p className="text-muted-foreground mt-1">Create and manage your custom landing pages</p>
-          </div>
-          <Button onClick={() => navigate({ to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor` })}>
-            <Plus className="w-4 h-4 mr-2" /> Blank Page
-          </Button>
-        </div>
-      </div>
+
 
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-6xl mx-auto">
           <Tabs defaultValue="templates" className="w-full">
-            <TabsList className="mb-6">
-              <TabsTrigger value="templates">Template Gallery</TabsTrigger>
-              <TabsTrigger value="pages">Your Pages ({allPages.length})</TabsTrigger>
-            </TabsList>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <TabsList>
+                <TabsTrigger value="templates">Template Gallery</TabsTrigger>
+                <TabsTrigger value="pages">Your Pages ({allPages.length})</TabsTrigger>
+              </TabsList>
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Search pages & templates..." 
+                  className="pl-9 bg-card h-9"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
 
             <TabsContent value="templates" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -84,7 +99,7 @@ function PageBuilderGallery() {
                 </div>
 
                 {/* Templates */}
-                {PAGE_TEMPLATES.map(template => (
+                {filteredTemplates.map(template => (
                   <div 
                     key={template.id} 
                     className="group border border-border/60 rounded-2xl overflow-hidden bg-card hover:shadow-md transition-all cursor-pointer flex flex-col h-64"
@@ -125,20 +140,28 @@ function PageBuilderGallery() {
                 <div className="py-20 flex justify-center">
                   <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                 </div>
-              ) : allPages.length === 0 ? (
+              ) : filteredPages.length === 0 ? (
                 <div className="text-center py-20 bg-card rounded-2xl border border-border/60">
                   <FileText className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No pages yet</h3>
-                  <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
-                    You haven't created any custom pages. Choose a template or start from scratch to build your first page.
-                  </p>
-                  <Button onClick={() => navigate({ to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor` })}>
-                    <Plus className="w-4 h-4 mr-2" /> Create Page
-                  </Button>
+                  {searchQuery ? (
+                    <>
+                      <h3 className="text-lg font-semibold mb-2">No results found</h3>
+                      <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
+                        No pages match your search "{searchQuery}".
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-lg font-semibold mb-2">No pages yet</h3>
+                      <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
+                        You haven't created any custom pages. Choose a template or start from scratch to build your first page.
+                      </p>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {allPages.map((page: any) => (
+                  {filteredPages.map((page: any) => (
                     <div 
                       key={page.id} 
                       className="group border border-border/60 rounded-2xl overflow-hidden bg-card hover:shadow-md transition-all flex flex-col h-64"
