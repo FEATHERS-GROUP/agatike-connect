@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
 import {
   Plus,
   MapPin,
@@ -14,7 +14,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery } from "@tanstack/react-query";
-import { getRentableVenues } from "@/api/rentable_venues";
+import { getRentableVenues, updateRentableVenue } from "@/api/rentable_venues";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { formatCurrency } from "@/lib/currency";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venue-rent")({
   head: () => ({
@@ -28,7 +37,19 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/venue-rent")({
 
 function VenueListingsPage() {
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/venue-rent" });
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
+
+  const updateStatus = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      updateRentableVenue({ data: { id, status } }),
+    onSuccess: () => {
+      toast.success("Venue status updated");
+      queryClient.invalidateQueries({ queryKey: ["rentable_venues"] });
+    },
+    onError: () => toast.error("Failed to update status"),
+  });
 
   const { data: venues = [], isLoading } = useQuery({
     queryKey: ["rentable_venues", activeWorkspace?.id],
@@ -57,7 +78,7 @@ function VenueListingsPage() {
               style={{ background: "var(--gradient-primary)" }}
               asChild
             >
-              <Link to={`/dashboard/${workspaceSlug}/venues/create-venue`}>
+              <Link to="/dashboard/$workspaceSlug/venues/create-venue" params={{ workspaceSlug }}>
                 <Plus className="h-4 w-4" /> List New Venue
               </Link>
             </Button>
@@ -119,7 +140,7 @@ function VenueListingsPage() {
               style={{ background: "var(--gradient-primary)" }}
               className="shadow-[var(--shadow-glow)]"
             >
-              <Link to={`/dashboard/${workspaceSlug}/venues/create-venue`}>
+              <Link to="/dashboard/$workspaceSlug/venues/create-venue" params={{ workspaceSlug }}>
                 List Your First Venue
               </Link>
             </Button>
@@ -129,7 +150,8 @@ function VenueListingsPage() {
             {venues.map((venue: any) => (
               <Link
                 key={venue.id}
-                to={`/dashboard/${workspaceSlug}/venues/${venue.id}/overview`}
+                to="/dashboard/$workspaceSlug/venues/$venueId/overview"
+                params={{ workspaceSlug, venueId: venue.id }}
                 className="group flex flex-col sm:flex-row rounded-3xl bg-card border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
               >
                 {/* Image side */}
@@ -152,9 +174,33 @@ function VenueListingsPage() {
                   <div>
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <h3 className="font-semibold text-lg leading-tight">{venue.name}</h3>
-                      <button className="text-muted-foreground hover:text-foreground">
-                        <MoreHorizontal className="h-5 w-5" />
-                      </button>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="text-muted-foreground hover:text-foreground">
+                              <MoreHorizontal className="h-5 w-5" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateStatus.mutate({ id: venue.id, status: "Maintenance" });
+                              }}
+                            >
+                              Disable (Maintenance)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateStatus.mutate({ id: venue.id, status: "Active" });
+                              }}
+                            >
+                              Set Active
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mb-4">
@@ -187,10 +233,10 @@ function VenueListingsPage() {
                         className="font-semibold text-foreground truncate max-w-[120px]"
                         title={venue.pricing_tiers?.[0]?.name}
                       >
-                        {venue.currency}
-                        {venue.pricing_tiers?.[0]?.amount
-                          ? Number(venue.pricing_tiers[0].amount).toLocaleString()
-                          : "0"}
+                        {formatCurrency(
+                          venue.pricing_tiers?.[0]?.amount || 0,
+                          activeWorkspace?.currency || venue.currency || "RWF"
+                        )}
                       </p>
                     </div>
                   </div>
@@ -204,6 +250,10 @@ function VenueListingsPage() {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        navigate({
+                          to: "/dashboard/$workspaceSlug/venues/$venueId/settings",
+                          params: { workspaceSlug, venueId: venue.id },
+                        });
                       }}
                     >
                       Edit
@@ -215,6 +265,10 @@ function VenueListingsPage() {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        navigate({
+                          to: "/dashboard/$workspaceSlug/venues/$venueId/bookings",
+                          params: { workspaceSlug, venueId: venue.id },
+                        });
                       }}
                     >
                       <CalendarDays className="h-4 w-4" /> Calendar
