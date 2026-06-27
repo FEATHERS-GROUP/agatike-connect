@@ -11,16 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  ArrowLeft,
-  Globe,
-  Check,
-  Copy,
-  ExternalLink,
-  Eye,
-  Trash2,
-  Loader2,
-} from "lucide-react";
+import { ArrowLeft, Globe, Check, Copy, ExternalLink, Eye, Trash2, Loader2 } from "lucide-react";
 
 export function EditorTopbar({
   activeWorkspace,
@@ -48,9 +39,7 @@ export function EditorTopbar({
         <div className="flex items-center gap-2 min-w-0">
           <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="text-sm text-muted-foreground">/p/</span>
-          <span className="text-sm font-semibold truncate">
-            {editorState.slug || "untitled"}
-          </span>
+          <span className="text-sm font-semibold truncate">{editorState.slug || "untitled"}</span>
           {editorState.id && (
             <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-500/10 text-green-600 border border-green-500/20">
               <Check className="w-2.5 h-2.5" /> Saved

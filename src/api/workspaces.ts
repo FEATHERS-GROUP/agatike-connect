@@ -62,15 +62,15 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
       `;
       const subRes = await hasuraRequest<{ subscriptions: any[] }>(subQuery);
       const activeSub = subRes.subscriptions?.[0];
-      
+
       if (activeSub && activeSub.plan?.name?.toLowerCase().includes("basic")) {
         const subDate = new Date(activeSub.created_at);
         const now = new Date();
         const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
-        
+
         if (diffDays <= 14) {
           // 14-Day Free Trial is Active: Unlock all modules!
-          allowedModules = null; 
+          allowedModules = null;
           currentUser.isTrialActive = true;
           currentUser.trialDaysLeft = Math.ceil(14 - diffDays);
         } else {

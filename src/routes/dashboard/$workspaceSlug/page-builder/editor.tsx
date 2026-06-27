@@ -164,7 +164,11 @@ function PageBuilder() {
       if (!editorState.id && result?.id) {
         setEditorState((prev) => ({ ...prev, id: result.id }));
         setActivePageId(result.id);
-        navigate({ from: Route.fullPath, search: { pageId: result.id, templateId: undefined }, replace: true });
+        navigate({
+          from: Route.fullPath,
+          search: { pageId: result.id, templateId: undefined },
+          replace: true,
+        });
       }
       queryClient.invalidateQueries({ queryKey: ["all-workspace-pages", workspace_id] });
       queryClient.invalidateQueries({ queryKey: ["workspace-page", activePageId] });
@@ -205,8 +209,6 @@ function PageBuilder() {
       is_published: true,
     });
   };
-
-
 
   const handleCopyLink = (slug: string) => {
     const url = `${window.location.origin}/p/${slug}`;
@@ -288,37 +290,37 @@ function PageBuilder() {
 
   return (
     <div className="flex h-full overflow-hidden">
-        <div className="flex-1 overflow-y-auto flex flex-col bg-secondary/20">
-          {/* Top Bar */}
-          <EditorTopbar
-            activeWorkspace={activeWorkspace}
-            editorState={editorState}
-            workspace_id={workspace_id}
-            handleCopyLink={handleCopyLink}
-            deleteMutation={deleteMutation}
-            handlePublish={handlePublish}
-            saveMutation={saveMutation}
-          />
+      <div className="flex-1 overflow-y-auto flex flex-col bg-secondary/20">
+        {/* Top Bar */}
+        <EditorTopbar
+          activeWorkspace={activeWorkspace}
+          editorState={editorState}
+          workspace_id={workspace_id}
+          handleCopyLink={handleCopyLink}
+          deleteMutation={deleteMutation}
+          handlePublish={handlePublish}
+          saveMutation={saveMutation}
+        />
 
-          {/* Builder Content */}
-          {isLoadingPage && !!activePageId ? (
-            <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <EditorCanvas
-              addComponent={addComponent}
-              editorState={editorState}
-              set={set}
-              handleImageUpload={handleImageUpload}
-              forms={forms}
-              workspace_id={workspace_id}
-              updateComponent={updateComponent}
-              removeComponent={removeComponent}
-              moveComponent={moveComponent}
-            />
-          )}
-        </div>
+        {/* Builder Content */}
+        {isLoadingPage && !!activePageId ? (
+          <div className="flex-1 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <EditorCanvas
+            addComponent={addComponent}
+            editorState={editorState}
+            set={set}
+            handleImageUpload={handleImageUpload}
+            forms={forms}
+            workspace_id={workspace_id}
+            updateComponent={updateComponent}
+            removeComponent={removeComponent}
+            moveComponent={moveComponent}
+          />
+        )}
+      </div>
     </div>
   );
 }

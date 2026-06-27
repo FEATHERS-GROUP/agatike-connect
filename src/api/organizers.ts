@@ -164,7 +164,7 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
       );
     }
   }
-  
+
   // Automatically subscribe the new organizer to the "Basic" plan for the 14-day trial
   if (newOrgId) {
     try {
@@ -177,7 +177,7 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
       `;
       const planRes = await hasuraRequest<{ pricing_plans: { id: string }[] }>(planQuery);
       const basicPlanId = planRes.pricing_plans?.[0]?.id;
-      
+
       if (basicPlanId) {
         const subMutation = `
           mutation AutoSubscribeBasic($organizer_id: text!, $plan_id: uuid!) {

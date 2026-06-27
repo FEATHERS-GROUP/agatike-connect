@@ -362,13 +362,20 @@ function EventsTable({
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
-                            togglePublic.mutate({ id: event.id, allowed_public: !event.allowed_public });
+                            togglePublic.mutate({
+                              id: event.id,
+                              allowed_public: !event.allowed_public,
+                            });
                           }}
                         >
                           {event.allowed_public ? (
-                            <><Lock className="mr-2 h-4 w-4" /> Make Private</>
+                            <>
+                              <Lock className="mr-2 h-4 w-4" /> Make Private
+                            </>
                           ) : (
-                            <><Globe className="mr-2 h-4 w-4" /> Make Public</>
+                            <>
+                              <Globe className="mr-2 h-4 w-4" /> Make Public
+                            </>
                           )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />

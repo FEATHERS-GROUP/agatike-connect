@@ -244,7 +244,7 @@ function VenueListingsPage() {
                       >
                         {formatCurrency(
                           venue.pricing_tiers?.[0]?.amount || 0,
-                          activeWorkspace?.currency || venue.currency || "RWF"
+                          activeWorkspace?.currency || venue.currency || "RWF",
                         )}
                       </p>
                     </div>

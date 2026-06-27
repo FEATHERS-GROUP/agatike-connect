@@ -46,13 +46,13 @@ async function execute() {
         args: {
           source: "default",
           table: "leads",
-          configuration: {}
-        }
+          configuration: {},
+        },
       }),
     });
     const trackData = await trackRes.json();
     console.log("Track Table Result:", trackData);
-    
+
     // Reload metadata
     await fetch(`${API_BASE}/v1/metadata`, {
       method: "POST",

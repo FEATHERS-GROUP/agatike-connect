@@ -42,7 +42,7 @@ const eventCategories: string[] = [
   "Fashion & Beauty",
   "Charity & Causes",
   "Community",
-  "Other"
+  "Other",
 ];
 
 const fileToBase64 = (file: File): Promise<string> => {

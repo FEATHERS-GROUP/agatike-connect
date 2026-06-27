@@ -439,7 +439,9 @@ function PublicCompanyPage() {
                           style={{ background: theme_color }}
                         >
                           <span>{comp.label || "Pay Now"}</span>
-                          {comp.amount && <span className="text-sm opacity-90">{comp.amount} RWF</span>}
+                          {comp.amount && (
+                            <span className="text-sm opacity-90">{comp.amount} RWF</span>
+                          )}
                         </a>
                       ) : (
                         <Button
@@ -451,7 +453,11 @@ function PublicCompanyPage() {
                           }}
                         >
                           <span>{comp.label || "Pay Now"}</span>
-                          {comp.amount && <span className="text-sm font-normal opacity-90">{comp.amount} RWF</span>}
+                          {comp.amount && (
+                            <span className="text-sm font-normal opacity-90">
+                              {comp.amount} RWF
+                            </span>
+                          )}
                         </Button>
                       )}
                       {comp.description && (
@@ -471,7 +477,9 @@ function PublicCompanyPage() {
                         <QRCode value={comp.content || "https://agatike.com"} size={size} />
                       </div>
                       {comp.title && (
-                        <p className="text-lg font-medium text-center text-foreground">{comp.title}</p>
+                        <p className="text-lg font-medium text-center text-foreground">
+                          {comp.title}
+                        </p>
                       )}
                     </div>
                   );

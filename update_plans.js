@@ -32,9 +32,7 @@ const proModules = JSON.stringify([
   "2023e384-e356-41d8-be1b-ce3344c0bbe7", // Spaces
 ]);
 
-const enterpriseModules = JSON.stringify([
-  "ALL"
-]);
+const enterpriseModules = JSON.stringify(["ALL"]);
 
 const updateSQL = `
   UPDATE pricing_plans SET modules_included = '${basicModules}'::jsonb WHERE name = 'Basic';
@@ -55,7 +53,7 @@ async function run() {
       },
     }),
   });
-  
+
   const json = await res.json();
   if (json.error) {
     console.error("Error updating plans:", json.error);

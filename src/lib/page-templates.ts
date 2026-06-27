@@ -54,7 +54,8 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       {
         id: "1",
         type: "text",
-        content: "## Welcome to ATC 2026\\nJoin thousands of industry leaders for three days of learning, networking, and inspiration.",
+        content:
+          "## Welcome to ATC 2026\\nJoin thousands of industry leaders for three days of learning, networking, and inspiration.",
       },
       {
         id: "2",
@@ -108,7 +109,8 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
             formId: "",
             customTitle: "VIP Pass",
             buttonLabel: "Get VIP Ticket",
-            bulletPoints: "• Everything in General\\n• Exclusive VIP lounge\\n• Meet & Greet with speakers",
+            bulletPoints:
+              "• Everything in General\\n• Exclusive VIP lounge\\n• Meet & Greet with speakers",
           },
         ],
       },
@@ -129,7 +131,8 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       {
         id: "1",
         type: "text",
-        content: "Please provide as much detail as possible so we can assist you better. Include error messages, steps to reproduce, and your account information.",
+        content:
+          "Please provide as much detail as possible so we can assist you better. Include error messages, steps to reproduce, and your account information.",
       },
       {
         id: "2",
@@ -154,7 +157,8 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       {
         id: "1",
         type: "text",
-        content: "Your feedback is crucial in helping us enhance our products and services. The survey will only take 2 minutes to complete.",
+        content:
+          "Your feedback is crucial in helping us enhance our products and services. The survey will only take 2 minutes to complete.",
       },
       {
         id: "2",
@@ -179,7 +183,8 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       {
         id: "1",
         type: "text",
-        content: "## Getting Started\\nWelcome! We are excited to have you on board. Please follow the steps below to complete your onboarding process.",
+        content:
+          "## Getting Started\\nWelcome! We are excited to have you on board. Please follow the steps below to complete your onboarding process.",
       },
       {
         id: "2",
@@ -211,7 +216,8 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       {
         id: "1",
         type: "text",
-        content: "All transactions are secure and encrypted. Please select your payment option below.",
+        content:
+          "All transactions are secure and encrypted. Please select your payment option below.",
       },
       {
         id: "2",
@@ -297,7 +303,8 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       {
         id: "1",
         type: "text",
-        content: "## Rules & Guidelines\\n1. Teams must consist of 2-4 members.\\n2. All submissions must be original work.\\n3. Deadline for entry is Friday at 11:59 PM.",
+        content:
+          "## Rules & Guidelines\\n1. Teams must consist of 2-4 members.\\n2. All submissions must be original work.\\n3. Deadline for entry is Friday at 11:59 PM.",
       },
       {
         id: "2",
@@ -344,19 +351,22 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     id: "restaurant-menu",
     name: "Restaurant Menu & Reservations",
     category: "Hospitality",
-    description: "A beautiful template for restaurants to showcase their menu and take reservations or orders.",
+    description:
+      "A beautiful template for restaurants to showcase their menu and take reservations or orders.",
     themeColor: "#991b1b",
     fontFamily: "Playfair Display",
     logoPosition: "hero",
     title: "The Grand Bistro",
     pageDescription: "Experience culinary excellence. View our menu and reserve your table.",
-    headerImageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh4o3wRlpVCr4elamrBatBmciIu3ecygAcezjMJje3QllyryiSbXSPQsAs&s=10",
+    headerImageUrl:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh4o3wRlpVCr4elamrBatBmciIu3ecygAcezjMJje3QllyryiSbXSPQsAs&s=10",
     components: [
       {
         id: "1",
         type: "split_block",
         imagePosition: "left",
-        imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh4o3wRlpVCr4elamrBatBmciIu3ecygAcezjMJje3QllyryiSbXSPQsAs&s=10",
+        imageUrl:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh4o3wRlpVCr4elamrBatBmciIu3ecygAcezjMJje3QllyryiSbXSPQsAs&s=10",
         text: "## Welcome to The Grand Bistro\\nWe source the freshest local ingredients to bring you an unforgettable dining experience in the heart of the city.",
       },
       {
@@ -384,8 +394,8 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
             customTitle: "Wagyu Steak",
             buttonLabel: "Order Now",
             bulletPoints: "8oz Wagyu Ribeye\\nRoasted root vegetables\\nRed wine jus\\n$45",
-          }
-        ]
+          },
+        ],
       },
       {
         id: "4",
@@ -393,15 +403,15 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
         label: "Buy a Gift Card",
         amount: "5000",
         description: "Purchase a 5000 RWF gift card for a friend.",
-        paymentLink: ""
+        paymentLink: "",
       },
       {
         id: "5",
         type: "qr_code",
         title: "Scan to view menu on your phone",
         content: "https://agatike.com",
-        size: 128
-      }
+        size: 128,
+      },
     ],
   },
 ];

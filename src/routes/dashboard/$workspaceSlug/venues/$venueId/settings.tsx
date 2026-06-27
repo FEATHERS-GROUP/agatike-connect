@@ -180,70 +180,70 @@ function VenueSettingsPage() {
                 </select>
               </div>
 
-                <div className="space-y-3 sm:col-span-2 bg-secondary/20 p-4 rounded-2xl border border-border/50">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-base font-medium">Pricing Options</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPricingTiers([...pricingTiers, { name: "", amount: 0 }])}
-                      className="h-8 rounded-full gap-1.5"
-                    >
-                      <Plus className="w-3.5 h-3.5" /> Add Option
-                    </Button>
-                  </div>
+              <div className="space-y-3 sm:col-span-2 bg-secondary/20 p-4 rounded-2xl border border-border/50">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">Pricing Options</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPricingTiers([...pricingTiers, { name: "", amount: 0 }])}
+                    className="h-8 rounded-full gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Option
+                  </Button>
+                </div>
 
-                  {pricingTiers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4 bg-background/50 rounded-xl border border-dashed border-border">
-                      No pricing options added. Click 'Add Option' to create one.
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {pricingTiers.map((tier, idx) => (
-                        <div key={idx} className="flex items-start gap-3">
-                          <div className="flex-1 space-y-1.5">
-                            <Input
-                              placeholder="Option Name (e.g. Per Day, Regular)"
-                              value={tier.name}
-                              onChange={(e) => {
-                                const newTiers = [...pricingTiers];
-                                newTiers[idx].name = e.target.value;
-                                setPricingTiers(newTiers);
-                              }}
-                              className="h-10 rounded-xl bg-background"
-                            />
-                          </div>
-                          <div className="flex-1 space-y-1.5">
-                            <Input
-                              type="number"
-                              placeholder="Price"
-                              value={tier.amount || ""}
-                              onChange={(e) => {
-                                const newTiers = [...pricingTiers];
-                                newTiers[idx].amount = Number(e.target.value);
-                                setPricingTiers(newTiers);
-                              }}
-                              className="h-10 rounded-xl bg-background"
-                            />
-                          </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              const newTiers = pricingTiers.filter((_, i) => i !== idx);
+                {pricingTiers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4 bg-background/50 rounded-xl border border-dashed border-border">
+                    No pricing options added. Click 'Add Option' to create one.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {pricingTiers.map((tier, idx) => (
+                      <div key={idx} className="flex items-start gap-3">
+                        <div className="flex-1 space-y-1.5">
+                          <Input
+                            placeholder="Option Name (e.g. Per Day, Regular)"
+                            value={tier.name}
+                            onChange={(e) => {
+                              const newTiers = [...pricingTiers];
+                              newTiers[idx].name = e.target.value;
                               setPricingTiers(newTiers);
                             }}
-                            className="h-10 w-10 shrink-0 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-xl"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
+                            className="h-10 rounded-xl bg-background"
+                          />
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                        <div className="flex-1 space-y-1.5">
+                          <Input
+                            type="number"
+                            placeholder="Price"
+                            value={tier.amount || ""}
+                            onChange={(e) => {
+                              const newTiers = [...pricingTiers];
+                              newTiers[idx].amount = Number(e.target.value);
+                              setPricingTiers(newTiers);
+                            }}
+                            className="h-10 rounded-xl bg-background"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            const newTiers = pricingTiers.filter((_, i) => i !== idx);
+                            setPricingTiers(newTiers);
+                          }}
+                          className="h-10 w-10 shrink-0 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-xl"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

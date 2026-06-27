@@ -113,7 +113,10 @@ function CinemaTicketTiers() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="font-bold text-lg bg-background px-3 py-1.5 rounded-lg border border-border/40 text-primary">
-                      {formatCurrency(tier.price, activeWorkspace?.currency || tier.currency || "RWF")}
+                      {formatCurrency(
+                        tier.price,
+                        activeWorkspace?.currency || tier.currency || "RWF",
+                      )}
                     </span>
                     <Button
                       variant="destructive"

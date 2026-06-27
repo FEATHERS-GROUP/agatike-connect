@@ -338,7 +338,10 @@ function CinemaTicketTiersPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4 text-right font-bold">
-                      {formatCurrency(tier.price, activeWorkspace?.currency || tier.currency || "RWF")}
+                      {formatCurrency(
+                        tier.price,
+                        activeWorkspace?.currency || tier.currency || "RWF",
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">

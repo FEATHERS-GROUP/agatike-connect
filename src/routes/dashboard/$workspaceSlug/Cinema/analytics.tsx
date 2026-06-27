@@ -30,7 +30,8 @@ function CinemaAnalyticsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["cinema-analytics", activeWorkspace?.id],
-    queryFn: () => getWorkspaceCinemaAnalytics({ data: { workspace_id: activeWorkspace!.id } } as any),
+    queryFn: () =>
+      getWorkspaceCinemaAnalytics({ data: { workspace_id: activeWorkspace!.id } } as any),
     enabled: !!activeWorkspace?.id,
   });
 
@@ -48,9 +49,13 @@ function CinemaAnalyticsPage() {
 
   const TOTAL_REVENUE = CINEMA_STATS.reduce((acc: number, c: any) => acc + c.revenue, 0);
   const TOTAL_TICKETS = CINEMA_STATS.reduce((a: number, c: any) => a + c.tickets, 0);
-  const AVG_ATTENDANCE = CINEMA_STATS.length > 0 
-    ? Math.round(CINEMA_STATS.reduce((a: number, c: any) => a + c.attendance_rate, 0) / CINEMA_STATS.length) 
-    : 0;
+  const AVG_ATTENDANCE =
+    CINEMA_STATS.length > 0
+      ? Math.round(
+          CINEMA_STATS.reduce((a: number, c: any) => a + c.attendance_rate, 0) /
+            CINEMA_STATS.length,
+        )
+      : 0;
 
   const BAR_MAX = Math.max(...MONTHLY_DATA.map((d: any) => d.revenue), 1);
 

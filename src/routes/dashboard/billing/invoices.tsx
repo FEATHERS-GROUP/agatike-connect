@@ -83,18 +83,16 @@ function InvoicesPage() {
                 )}
                 <div>
                   <p className="font-medium text-foreground">{inv.id}</p>
-                  <p className="text-xs text-muted-foreground hidden sm:block">Agatike Pro Organizer Plan</p>
+                  <p className="text-xs text-muted-foreground hidden sm:block">
+                    Agatike Pro Organizer Plan
+                  </p>
                 </div>
               </div>
-              
-              <div className="col-span-3 text-muted-foreground">
-                {inv.date}
-              </div>
-              
-              <div className="col-span-3 md:col-span-2 font-medium">
-                {inv.amount}
-              </div>
-              
+
+              <div className="col-span-3 text-muted-foreground">{inv.date}</div>
+
+              <div className="col-span-3 md:col-span-2 font-medium">{inv.amount}</div>
+
               <div className="col-span-2 flex justify-end">
                 <Button
                   variant="ghost"

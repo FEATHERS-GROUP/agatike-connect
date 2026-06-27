@@ -204,7 +204,9 @@ export function EmbeddedForm({ formId }: { formId: string }) {
                       {formData[field.id] ? (
                         <>
                           <FileIcon className="w-6 h-6 mb-2 text-primary" />
-                          <p className="mb-1 text-sm text-foreground font-semibold">File Uploaded</p>
+                          <p className="mb-1 text-sm text-foreground font-semibold">
+                            File Uploaded
+                          </p>
                           <a
                             href={formData[field.id]}
                             target="_blank"

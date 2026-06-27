@@ -44,7 +44,7 @@ export const getWorkspaceCinemaAnalytics = createServerFn({ method: "POST" })
     if (!workspace_id) throw new Error("workspace_id is required");
 
     const res = await hasuraRequest<any>(GET_WORKSPACE_CINEMA_ANALYTICS, { workspace_id });
-    
+
     const cinemas = res.cinemas || [];
     const bookings = res.cinema_bookings || [];
 
@@ -57,11 +57,15 @@ export const getWorkspaceCinemaAnalytics = createServerFn({ method: "POST" })
         totalCapacity += sch.screen?.capacity || 0;
         totalBooked += sch.booked_seats || 0;
       });
-      const attendance_rate = totalCapacity > 0 ? Math.round((totalBooked / totalCapacity) * 100) : 0;
+      const attendance_rate =
+        totalCapacity > 0 ? Math.round((totalBooked / totalCapacity) * 100) : 0;
 
       // Filter bookings for this cinema
       const cBookings = bookings.filter((b: any) => b.cinema_id === c.id);
-      const revenue = cBookings.reduce((sum: number, b: any) => sum + parseFloat(b.total_price || "0"), 0);
+      const revenue = cBookings.reduce(
+        (sum: number, b: any) => sum + parseFloat(b.total_price || "0"),
+        0,
+      );
       const tickets = cBookings.reduce((sum: number, b: any) => sum + (b.quantity || 0), 0);
 
       const now = new Date();
@@ -81,7 +85,7 @@ export const getWorkspaceCinemaAnalytics = createServerFn({ method: "POST" })
         const bMonth = bDate.getMonth();
         const bYear = bDate.getFullYear();
         const val = parseFloat(b.total_price || "0");
-        
+
         if (bMonth === currentMonth && bYear === currentYear) {
           currentMonthRev += val;
         } else if (bMonth === lastMonth && bYear === lastMonthYear) {
@@ -109,9 +113,22 @@ export const getWorkspaceCinemaAnalytics = createServerFn({ method: "POST" })
     });
 
     // Process Monthly Data
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const monthlyMap = new Map<string, { month: string, revenue: number, tickets: number }>();
-    
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const monthlyMap = new Map<string, { month: string; revenue: number; tickets: number }>();
+
     // Initialize last 6 months to ensure chart looks good
     const d = new Date();
     for (let i = 5; i >= 0; i--) {
@@ -126,7 +143,7 @@ export const getWorkspaceCinemaAnalytics = createServerFn({ method: "POST" })
       if (!b.created_at) return;
       const bDate = new Date(b.created_at);
       const key = `${bDate.getFullYear()}-${bDate.getMonth()}`;
-      // If booking is from older than 6 months, we might still include it if we want all time, 
+      // If booking is from older than 6 months, we might still include it if we want all time,
       // but let's just group it. We'll map it to month Name.
       if (!monthlyMap.has(key)) {
         monthlyMap.set(key, { month: monthNames[bDate.getMonth()], revenue: 0, tickets: 0 });
@@ -145,20 +162,23 @@ export const getWorkspaceCinemaAnalytics = createServerFn({ method: "POST" })
         return yA !== yB ? yA - yB : mA - mB;
       })
       .slice(-6) // Keep last 6 months for the chart
-      .map(entry => entry[1]);
+      .map((entry) => entry[1]);
 
     // Process Top Movies
-    const movieStats = new Map<string, { title: string, cinema: string, tickets: number, revenue: number }>();
-    
+    const movieStats = new Map<
+      string,
+      { title: string; cinema: string; tickets: number; revenue: number }
+    >();
+
     bookings.forEach((b: any) => {
       const movieTitle = b.schedule?.movie?.title || "Unknown Movie";
       const cinemaName = cinemas.find((c: any) => c.id === b.cinema_id)?.name || "Unknown Cinema";
       const key = `${movieTitle}-${cinemaName}`;
-      
+
       if (!movieStats.has(key)) {
         movieStats.set(key, { title: movieTitle, cinema: cinemaName, tickets: 0, revenue: 0 });
       }
-      
+
       const stat = movieStats.get(key)!;
       stat.tickets += b.quantity || 0;
       stat.revenue += parseFloat(b.total_price || "0");
@@ -171,6 +191,6 @@ export const getWorkspaceCinemaAnalytics = createServerFn({ method: "POST" })
     return {
       cinemaStats,
       monthlyData,
-      topMovies
+      topMovies,
     };
   });

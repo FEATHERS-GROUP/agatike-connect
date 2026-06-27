@@ -113,16 +113,16 @@ function EditUserPage() {
       setImage(existingUser.image || "");
 
       const w = existingUser.workspaces;
-      let wsArr = Array.isArray(w) ? w : (typeof w === 'string' ? [w] : (w ? Object.keys(w) : []));
+      let wsArr = Array.isArray(w) ? w : typeof w === "string" ? [w] : w ? Object.keys(w) : [];
       setIsAllWorkspaces(wsArr.includes("ALL") || wsArr.length === 0);
       setSelectedWorkspaces(wsArr.includes("ALL") ? [] : wsArr);
 
       const m = existingUser.modules;
-      let modArr = Array.isArray(m) ? m : (typeof m === 'string' ? [m] : (m ? Object.keys(m) : []));
+      let modArr = Array.isArray(m) ? m : typeof m === "string" ? [m] : m ? Object.keys(m) : [];
       setSelectedModules(modArr);
 
       const p = existingUser.pages;
-      let pageArr = Array.isArray(p) ? p : (typeof p === 'string' ? [p] : (p ? Object.keys(p) : []));
+      let pageArr = Array.isArray(p) ? p : typeof p === "string" ? [p] : p ? Object.keys(p) : [];
       setIsAllRoutes(pageArr.includes("ALL") || pageArr.length === 0);
       setSelectedRoutes(pageArr.includes("ALL") ? [] : pageArr);
 
@@ -351,7 +351,11 @@ function EditUserPage() {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center space-y-4">
         <h2 className="text-xl font-bold">User not found</h2>
-        <Button onClick={() => navigate({ to: "/dashboard/$workspaceSlug/users", params: { workspaceSlug } })}>
+        <Button
+          onClick={() =>
+            navigate({ to: "/dashboard/$workspaceSlug/users", params: { workspaceSlug } })
+          }
+        >
           Back to Users
         </Button>
       </div>
@@ -756,7 +760,9 @@ function EditUserPage() {
           <Button
             variant="ghost"
             className="gap-2 rounded-xl"
-            onClick={() => navigate({ to: "/dashboard/$workspaceSlug/users", params: { workspaceSlug } })}
+            onClick={() =>
+              navigate({ to: "/dashboard/$workspaceSlug/users", params: { workspaceSlug } })
+            }
           >
             Cancel
           </Button>

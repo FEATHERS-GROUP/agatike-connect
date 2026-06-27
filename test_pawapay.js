@@ -6,7 +6,7 @@ async function test() {
   const key = process.env.PAWAPAY_API_KEY;
   console.log("Testing PAWAPAY active-conf");
   const res = await fetch(`${baseUrl}/v1/active-conf`, {
-    headers: { Authorization: `Bearer ${key}` }
+    headers: { Authorization: `Bearer ${key}` },
   });
   if (!res.ok) {
     console.error("Error:", res.status, await res.text());

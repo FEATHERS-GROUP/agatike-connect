@@ -28,49 +28,48 @@ export const getExchangeRate = createServerFn({ method: "POST" })
     }
   });
 
-export const getPawaPayNetworks = createServerFn({ method: "GET" })
-  .handler(async () => {
-    if (!process.env.PAWAPAY_API_KEY) {
-      console.log("[PawaPay] PAWAPAY_API_KEY is missing from env");
+export const getPawaPayNetworks = createServerFn({ method: "GET" }).handler(async () => {
+  if (!process.env.PAWAPAY_API_KEY) {
+    console.log("[PawaPay] PAWAPAY_API_KEY is missing from env");
+    return [];
+  }
+
+  try {
+    const baseUrl = process.env.PAWAPAY_API_URL;
+    if (!baseUrl) return [];
+    const response = await fetch(`${baseUrl}/v1/active-conf`, {
+      headers: { Authorization: `Bearer ${process.env.PAWAPAY_API_KEY}` },
+    });
+    if (!response.ok) {
+      console.error(`[PawaPay] active-conf failed: ${response.status} ${response.statusText}`);
       return [];
     }
-    
-    try {
-      const baseUrl = process.env.PAWAPAY_API_URL;
-      if (!baseUrl) return [];
-      const response = await fetch(`${baseUrl}/v1/active-conf`, {
-        headers: { Authorization: `Bearer ${process.env.PAWAPAY_API_KEY}` }
-      });
-      if (!response.ok) {
-        console.error(`[PawaPay] active-conf failed: ${response.status} ${response.statusText}`);
-        return [];
-      }
-      
-      const data = await response.json();
-      const networks: { id: string, name: string, currency: string, country: string }[] = [];
-      
-      for (const item of data.countries || []) {
-        for (const corr of item.correspondents) {
-          const hasDeposit = corr.operationTypes?.some((op: any) => op.operationType === "DEPOSIT");
-          if (hasDeposit) {
-            networks.push({
-              id: corr.correspondent,
-              name: corr.correspondent.replace(/_/g, " "), // Basic pretty print
-              currency: corr.currency,
-              country: item.country
-            });
-          }
+
+    const data = await response.json();
+    const networks: { id: string; name: string; currency: string; country: string }[] = [];
+
+    for (const item of data.countries || []) {
+      for (const corr of item.correspondents) {
+        const hasDeposit = corr.operationTypes?.some((op: any) => op.operationType === "DEPOSIT");
+        if (hasDeposit) {
+          networks.push({
+            id: corr.correspondent,
+            name: corr.correspondent.replace(/_/g, " "), // Basic pretty print
+            currency: corr.currency,
+            country: item.country,
+          });
         }
       }
-      
-      // Deduplicate by network ID to prevent React duplicate key errors
-      const uniqueNetworks = Array.from(new Map(networks.map(n => [n.id, n])).values());
-      return uniqueNetworks;
-    } catch (e) {
-      console.error("Failed to fetch pawapay networks", e);
-      return [];
     }
-  });
+
+    // Deduplicate by network ID to prevent React duplicate key errors
+    const uniqueNetworks = Array.from(new Map(networks.map((n) => [n.id, n])).values());
+    return uniqueNetworks;
+  } catch (e) {
+    console.error("Failed to fetch pawapay networks", e);
+    return [];
+  }
+});
 
 export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
   .validator((d: any) => d)

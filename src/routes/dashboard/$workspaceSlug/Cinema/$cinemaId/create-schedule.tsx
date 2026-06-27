@@ -567,7 +567,10 @@ function CreateSchedulePage() {
                             <div className="flex justify-between items-start mb-1">
                               <h4 className="font-bold text-lg leading-none">{tier.name}</h4>
                               <span className="font-bold bg-background border border-border/40 px-2 py-1 rounded-md text-sm">
-                                {formatCurrency(tier.price, activeWorkspace?.currency || tier.currency || "RWF")}
+                                {formatCurrency(
+                                  tier.price,
+                                  activeWorkspace?.currency || tier.currency || "RWF",
+                                )}
                               </span>
                             </div>
                             <p className="text-sm text-muted-foreground capitalize mb-3">

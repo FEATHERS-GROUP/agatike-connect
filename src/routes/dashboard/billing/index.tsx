@@ -71,7 +71,11 @@ function BillingOverview() {
               </div>
             ))}
           </div>
-          <Button variant="ghost" size="sm" className="w-fit text-primary -ml-3 mt-4 hover:bg-primary/10 rounded-lg group">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-fit text-primary -ml-3 mt-4 hover:bg-primary/10 rounded-lg group"
+          >
             <Plus className="h-4 w-4 mr-1" /> Add Payment Method
           </Button>
         </div>

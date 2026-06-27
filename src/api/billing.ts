@@ -40,11 +40,10 @@ const GET_PLANS = `
   }
 `;
 
-export const getPricingPlans = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const res = await hasuraRequest<{ pricing_plans: PricingPlan[] }>(GET_PLANS);
-    return res.pricing_plans;
-  });
+export const getPricingPlans = createServerFn({ method: "GET" }).handler(async () => {
+  const res = await hasuraRequest<{ pricing_plans: PricingPlan[] }>(GET_PLANS);
+  return res.pricing_plans;
+});
 
 const GET_ACTIVE_SUB = `
   query GetActiveSub($organizer_id: String!) {
@@ -63,7 +62,9 @@ export const getActiveSubscription = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
     const { organizer_id } = ctx.data;
-    const res = await hasuraRequest<{ subscriptions: Subscription[] }>(GET_ACTIVE_SUB, { organizer_id });
+    const res = await hasuraRequest<{ subscriptions: Subscription[] }>(GET_ACTIVE_SUB, {
+      organizer_id,
+    });
     return res.subscriptions[0] || null;
   });
 
@@ -113,11 +114,10 @@ const GET_PROMO_RULES = `
   }
 `;
 
-export const getPromotionalRules = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const res = await hasuraRequest<{ promotional_rules: PromotionalRule[] }>(GET_PROMO_RULES);
-    return res.promotional_rules;
-  });
+export const getPromotionalRules = createServerFn({ method: "GET" }).handler(async () => {
+  const res = await hasuraRequest<{ promotional_rules: PromotionalRule[] }>(GET_PROMO_RULES);
+  return res.promotional_rules;
+});
 
 export const upgradeSubscription = createServerFn({ method: "POST" })
   .validator((d: any) => d)
@@ -125,7 +125,9 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
     const { organizer_id, plan_id, amount } = ctx.data;
 
     // 1. Cancel existing
-    const activeSubRes = await hasuraRequest<{ subscriptions: { id: string }[] }>(GET_ACTIVE_SUB, { organizer_id });
+    const activeSubRes = await hasuraRequest<{ subscriptions: { id: string }[] }>(GET_ACTIVE_SUB, {
+      organizer_id,
+    });
     if (activeSubRes.subscriptions.length > 0) {
       await hasuraRequest(CANCEL_SUB, { id: activeSubRes.subscriptions[0].id });
     }
@@ -134,15 +136,18 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
     nextMonth.setMonth(nextMonth.getMonth() + 1);
 
     // 2. Create new sub
-    const newSubRes = await hasuraRequest<{ insert_subscriptions_one: { id: string } }>(CREATE_SUB, {
-      object: {
-        organizer_id,
-        plan_id,
-        amount,
-        status: "active",
-        next_billing_date: nextMonth.toISOString(),
-      }
-    });
+    const newSubRes = await hasuraRequest<{ insert_subscriptions_one: { id: string } }>(
+      CREATE_SUB,
+      {
+        object: {
+          organizer_id,
+          plan_id,
+          amount,
+          status: "active",
+          next_billing_date: nextMonth.toISOString(),
+        },
+      },
+    );
 
     // 3. Invoice
     await hasuraRequest(CREATE_INVOICE, {
@@ -150,8 +155,8 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
         organizer_id,
         subscription_id: newSubRes.insert_subscriptions_one.id,
         amount,
-        status: "paid"
-      }
+        status: "paid",
+      },
     });
 
     return { success: true };
@@ -208,5 +213,3 @@ export const createEnterpriseLead = createServerFn({ method: "POST" })
 
     return { success: true, leadId: result.insert_leads_one?.id };
   });
-
-

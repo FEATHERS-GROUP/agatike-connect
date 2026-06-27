@@ -181,7 +181,10 @@ function VenueBookingsPage() {
                       </p>
                     </td>
                     <td className="px-6 py-4 font-medium">
-                      {formatCurrency(b.amount || 0, activeWorkspace?.currency || venue.currency || "RWF")}
+                      {formatCurrency(
+                        b.amount || 0,
+                        activeWorkspace?.currency || venue.currency || "RWF",
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
@@ -434,7 +437,10 @@ function VenueBookingsPage() {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Total Paid</p>
                       <p className="font-semibold">
-                        {formatCurrency(selectedViewTicket.amount || 0, activeWorkspace?.currency || venue.currency || "RWF")}
+                        {formatCurrency(
+                          selectedViewTicket.amount || 0,
+                          activeWorkspace?.currency || venue.currency || "RWF",
+                        )}
                       </p>
                     </div>
                   </div>

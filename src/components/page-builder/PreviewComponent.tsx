@@ -187,17 +187,11 @@ export function PreviewComponent({
       <div className="bg-card border border-border/60 rounded-2xl p-5 flex flex-col md:flex-row items-center gap-5 pointer-events-none">
         {linkedForm.cover_image_url ? (
           <div className="w-full md:w-40 h-24 rounded-xl overflow-hidden shrink-0">
-            <img
-              src={linkedForm.cover_image_url}
-              alt=""
-              className="w-full h-full object-cover"
-            />
+            <img src={linkedForm.cover_image_url} alt="" className="w-full h-full object-cover" />
           </div>
         ) : (
           <div className="w-full md:w-40 h-24 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="text-3xl font-bold text-primary/30">
-              {linkedForm.title.charAt(0)}
-            </span>
+            <span className="text-3xl font-bold text-primary/30">{linkedForm.title.charAt(0)}</span>
           </div>
         )}
         <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
@@ -244,9 +238,7 @@ export function PreviewComponent({
         <div className="bg-white p-4 rounded-xl shadow-sm border border-border/60">
           <QRCode value={comp.content || "https://agatike.com"} size={size} />
         </div>
-        {comp.title && (
-          <p className="text-sm font-medium text-center">{comp.title}</p>
-        )}
+        {comp.title && <p className="text-sm font-medium text-center">{comp.title}</p>}
       </div>
     );
   }

@@ -148,11 +148,7 @@ export function PageSettingsPanel({
           <Label className="text-xs">Logo Image</Label>
           {editorState.logoUrl ? (
             <div className="relative w-16 h-16 rounded-xl border border-border/60 overflow-hidden group">
-              <img
-                src={editorState.logoUrl}
-                alt="Logo"
-                className="w-full h-full object-cover"
-              />
+              <img src={editorState.logoUrl} alt="Logo" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Trash2
                   className="w-4 h-4 text-white cursor-pointer"

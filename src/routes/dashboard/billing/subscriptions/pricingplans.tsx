@@ -1,6 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { getPricingPlans, getPromotionalRules, PricingPlan, PromotionalRule, createEnterpriseLead, upgradeSubscription } from "@/api/billing";
+import {
+  getPricingPlans,
+  getPromotionalRules,
+  PricingPlan,
+  PromotionalRule,
+  createEnterpriseLead,
+  upgradeSubscription,
+} from "@/api/billing";
 import { getOrganizerProfile } from "@/api/organizers";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
@@ -38,10 +45,10 @@ function PricingPlansPage() {
   const [organizerProfile, setOrganizerProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnnually, setIsAnnually] = useState(false);
-  
+
   // Sales Drawer State
   const [isSalesDrawerOpen, setIsSalesDrawerOpen] = useState(false);
-  
+
   const { activeWorkspace, workspaces } = useWorkspace();
   const navigate = useNavigate();
 
@@ -71,7 +78,7 @@ function PricingPlansPage() {
       toast.error("You must be logged in to upgrade.");
       return;
     }
-    
+
     if (plan.price === 0) {
       try {
         toast.loading("Activating free plan...", { id: "activate-plan" });
@@ -79,8 +86,8 @@ function PricingPlansPage() {
           data: {
             organizer_id: activeWorkspace.orgnizer_id,
             plan_id: plan.id,
-            amount: 0
-          }
+            amount: 0,
+          },
         });
         toast.success(`Successfully activated the ${plan.name} plan!`, { id: "activate-plan" });
         navigate({ to: "/dashboard/billing/subscriptions" });
@@ -89,7 +96,7 @@ function PricingPlansPage() {
       }
       return;
     }
-    
+
     // Redirect to the checkout page instead of upgrading immediately
     navigate({
       to: "/dashboard/billing/subscriptions/checkout/$planId",
@@ -120,12 +127,16 @@ function PricingPlansPage() {
       <div className="text-center space-y-4 -mt-8">
         <h1 className="text-4xl font-bold tracking-tight">Choose the right plan for you</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Whether you're organizing a small meetup or managing multiple massive arenas, we have a plan that fits your needs.
+          Whether you're organizing a small meetup or managing multiple massive arenas, we have a
+          plan that fits your needs.
         </p>
-        
+
         {/* Toggle between Monthly and Annually */}
         <div className="flex items-center justify-center gap-3 pt-6">
-          <Label htmlFor="billing-toggle" className={`text-sm ${!isAnnually ? "font-bold text-foreground" : "text-muted-foreground"}`}>
+          <Label
+            htmlFor="billing-toggle"
+            className={`text-sm ${!isAnnually ? "font-bold text-foreground" : "text-muted-foreground"}`}
+          >
             Monthly
           </Label>
           <Switch
@@ -134,7 +145,10 @@ function PricingPlansPage() {
             onCheckedChange={setIsAnnually}
             className="data-[state=checked]:bg-primary"
           />
-          <Label htmlFor="billing-toggle" className={`text-sm flex items-center gap-2 ${isAnnually ? "font-bold text-foreground" : "text-muted-foreground"}`}>
+          <Label
+            htmlFor="billing-toggle"
+            className={`text-sm flex items-center gap-2 ${isAnnually ? "font-bold text-foreground" : "text-muted-foreground"}`}
+          >
             Annually
             <span className="rounded-full bg-primary/20 text-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
               Save 20%
@@ -149,9 +163,9 @@ function PricingPlansPage() {
           let basePrice = plan.price;
           if (isAnnually && basePrice > 0) {
             // Apply a 20% discount for annual billing by default
-            basePrice = basePrice * 0.8 * 12; 
+            basePrice = basePrice * 0.8 * 12;
           }
-          
+
           let displayPrice = basePrice;
           let promoText = null;
 
@@ -159,13 +173,18 @@ function PricingPlansPage() {
           const isEnterprise = plan.name.toLowerCase().includes("enterprise");
 
           // Apply promotional rules (like 50% off for the first 3 months)
-          if (!isEnterprise && basePrice > 0 && launchPromo && launchPromo.applies_to_cycles.includes(isAnnually ? "annually" : "monthly")) {
+          if (
+            !isEnterprise &&
+            basePrice > 0 &&
+            launchPromo &&
+            launchPromo.applies_to_cycles.includes(isAnnually ? "annually" : "monthly")
+          ) {
             // If it's a monthly plan, they pay 50% for 3 months.
             // If it's an annual plan, maybe they get a straight discount on the first year, or the equivalent of 3 months at 50%.
             if (isAnnually) {
               // 3 months at 50%, 9 months at 100%
               const monthlyEquivalent = basePrice / 12;
-              displayPrice = (monthlyEquivalent * 0.5 * 3) + (monthlyEquivalent * 9);
+              displayPrice = monthlyEquivalent * 0.5 * 3 + monthlyEquivalent * 9;
               promoText = `Includes ${launchPromo.name}: ${launchPromo.description}`;
             } else {
               displayPrice = basePrice * (1 - launchPromo.discount_percentage / 100);
@@ -198,7 +217,11 @@ function PricingPlansPage() {
               <div className="mb-4 flex flex-col gap-1">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-bold">
-                    {isEnterprise ? "Custom" : displayPrice === 0 ? "Free" : `$${displayPrice.toFixed(2)}`}
+                    {isEnterprise
+                      ? "Custom"
+                      : displayPrice === 0
+                        ? "Free"
+                        : `$${displayPrice.toFixed(2)}`}
                   </span>
                   {!isEnterprise && plan.price > 0 && (
                     <span className="text-sm font-medium text-muted-foreground">
@@ -206,13 +229,14 @@ function PricingPlansPage() {
                     </span>
                   )}
                 </div>
-                
+
                 {!isEnterprise && plan.price > 0 && (displayPrice !== basePrice || isAnnually) && (
                   <div className="text-xs text-muted-foreground line-through">
-                    ${isAnnually ? (plan.price * 12).toFixed(2) : plan.price.toFixed(2)}/{isAnnually ? "yr" : "mo"}
+                    ${isAnnually ? (plan.price * 12).toFixed(2) : plan.price.toFixed(2)}/
+                    {isAnnually ? "yr" : "mo"}
                   </div>
                 )}
-                
+
                 {!isEnterprise && promoText && (
                   <div className="text-xs font-semibold text-green-500 bg-green-500/10 px-2 py-1 rounded-md inline-block w-fit mt-1">
                     {promoText}
@@ -255,9 +279,9 @@ function PricingPlansPage() {
         })}
       </div>
 
-      <SalesDrawer 
-        isOpen={isSalesDrawerOpen} 
-        onOpenChange={setIsSalesDrawerOpen} 
+      <SalesDrawer
+        isOpen={isSalesDrawerOpen}
+        onOpenChange={setIsSalesDrawerOpen}
         organizerProfile={organizerProfile}
         workspaces={workspaces}
         activeWorkspace={activeWorkspace}
@@ -266,34 +290,34 @@ function PricingPlansPage() {
   );
 }
 
-function SalesDrawer({ 
-  isOpen, 
+function SalesDrawer({
+  isOpen,
   onOpenChange,
   organizerProfile,
   workspaces,
-  activeWorkspace
-}: { 
-  isOpen: boolean; 
+  activeWorkspace,
+}: {
+  isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   organizerProfile: any;
   workspaces: any[];
   activeWorkspace: any;
 }) {
-  const [salesForm, setSalesForm] = useState({ 
-    name: "", 
-    email: "", 
-    company: "", 
+  const [salesForm, setSalesForm] = useState({
+    name: "",
+    email: "",
+    company: "",
     message: "",
     communication: "Email",
     language: "English",
     country: "",
-    phone: ""
+    phone: "",
   });
   const [isSubmittingSales, setIsSubmittingSales] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setSalesForm(s => ({
+      setSalesForm((s) => ({
         ...s,
         name: organizerProfile?.name || s.name,
         email: organizerProfile?.email || s.email,
@@ -306,8 +330,8 @@ function SalesDrawer({
   const handleCountryChange = (val: string) => {
     const countryObj = COUNTRIES.find((c) => c.name === val);
     const code = countryObj ? countryObj.dialCode : "";
-    
-    setSalesForm(s => {
+
+    setSalesForm((s) => {
       let newPhone = s.phone;
       if (!newPhone || (newPhone.startsWith("+") && newPhone.length <= 6 && code)) {
         newPhone = code + " ";
@@ -321,7 +345,7 @@ function SalesDrawer({
       toast.error("Please fill in all required fields (Name, Email, Company).");
       return;
     }
-    
+
     setIsSubmittingSales(true);
     try {
       await createEnterpriseLead({
@@ -334,13 +358,19 @@ function SalesDrawer({
           country: salesForm.country,
           phone: salesForm.phone,
           message: salesForm.message,
-        }
+        },
       });
       toast.success("Thank you! Our sales team will contact you shortly.");
       onOpenChange(false);
-      setSalesForm({ 
-        name: "", email: "", company: "", message: "", 
-        communication: "Email", language: "English", country: "", phone: "" 
+      setSalesForm({
+        name: "",
+        email: "",
+        company: "",
+        message: "",
+        communication: "Email",
+        language: "English",
+        country: "",
+        phone: "",
       });
     } catch (error) {
       toast.error("Failed to submit. Please try again.");
@@ -355,28 +385,33 @@ function SalesDrawer({
         <SheetHeader>
           <SheetTitle>Contact Enterprise Sales</SheetTitle>
           <SheetDescription>
-            Fill out the form below and our dedicated sales team will reach out to tailor a custom plan for your large-scale operations.
+            Fill out the form below and our dedicated sales team will reach out to tailor a custom
+            plan for your large-scale operations.
           </SheetDescription>
         </SheetHeader>
         <div className="py-6 space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="sales-name" className="flex items-center gap-2">Full Name * <Lock className="w-3 h-3 text-muted-foreground" /></Label>
-              <Input 
-                id="sales-name" 
-                placeholder="John Doe" 
-                value={salesForm.name} 
+              <Label htmlFor="sales-name" className="flex items-center gap-2">
+                Full Name * <Lock className="w-3 h-3 text-muted-foreground" />
+              </Label>
+              <Input
+                id="sales-name"
+                placeholder="John Doe"
+                value={salesForm.name}
                 disabled
                 className="bg-muted text-muted-foreground cursor-not-allowed"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sales-email" className="flex items-center gap-2">Work Email * <Lock className="w-3 h-3 text-muted-foreground" /></Label>
-              <Input 
-                id="sales-email" 
-                type="email" 
-                placeholder="john@company.com" 
-                value={salesForm.email} 
+              <Label htmlFor="sales-email" className="flex items-center gap-2">
+                Work Email * <Lock className="w-3 h-3 text-muted-foreground" />
+              </Label>
+              <Input
+                id="sales-email"
+                type="email"
+                placeholder="john@company.com"
+                value={salesForm.email}
                 disabled
                 className="bg-muted text-muted-foreground cursor-not-allowed"
               />
@@ -385,7 +420,10 @@ function SalesDrawer({
           <div className="space-y-2">
             <Label htmlFor="sales-company">Company Name *</Label>
             {workspaces && workspaces.length > 0 ? (
-              <Select value={salesForm.company} onValueChange={(v) => setSalesForm(s => ({ ...s, company: v }))}>
+              <Select
+                value={salesForm.company}
+                onValueChange={(v) => setSalesForm((s) => ({ ...s, company: v }))}
+              >
                 <SelectTrigger id="sales-company">
                   <SelectValue placeholder="Select a company" />
                 </SelectTrigger>
@@ -398,18 +436,21 @@ function SalesDrawer({
                 </SelectContent>
               </Select>
             ) : (
-              <Input 
-                id="sales-company" 
-                placeholder="Acme Corp" 
-                value={salesForm.company} 
-                onChange={(e) => setSalesForm(s => ({ ...s, company: e.target.value }))} 
+              <Input
+                id="sales-company"
+                placeholder="Acme Corp"
+                value={salesForm.company}
+                onChange={(e) => setSalesForm((s) => ({ ...s, company: e.target.value }))}
               />
             )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="sales-communication">Preferred Contact Method</Label>
-              <Select value={salesForm.communication} onValueChange={(v) => setSalesForm(s => ({ ...s, communication: v }))}>
+              <Select
+                value={salesForm.communication}
+                onValueChange={(v) => setSalesForm((s) => ({ ...s, communication: v }))}
+              >
                 <SelectTrigger id="sales-communication">
                   <SelectValue placeholder="Select method" />
                 </SelectTrigger>
@@ -423,7 +464,10 @@ function SalesDrawer({
             </div>
             <div className="space-y-2">
               <Label htmlFor="sales-language">Preferred Language</Label>
-              <Select value={salesForm.language} onValueChange={(v) => setSalesForm(s => ({ ...s, language: v }))}>
+              <Select
+                value={salesForm.language}
+                onValueChange={(v) => setSalesForm((s) => ({ ...s, language: v }))}
+              >
                 <SelectTrigger id="sales-language">
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
@@ -454,22 +498,22 @@ function SalesDrawer({
           {(salesForm.communication === "Phone" || salesForm.communication === "WhatsApp") && (
             <div className="space-y-2">
               <Label htmlFor="sales-phone">Phone Number *</Label>
-              <Input 
-                id="sales-phone" 
-                placeholder="+250 788 000 000" 
-                value={salesForm.phone} 
-                onChange={(e) => setSalesForm(s => ({ ...s, phone: e.target.value }))} 
+              <Input
+                id="sales-phone"
+                placeholder="+250 788 000 000"
+                value={salesForm.phone}
+                onChange={(e) => setSalesForm((s) => ({ ...s, phone: e.target.value }))}
               />
             </div>
           )}
           <div className="space-y-2">
             <Label htmlFor="sales-message">How can we help? (Optional)</Label>
-            <Textarea 
-              id="sales-message" 
-              placeholder="Tell us a bit about your event volume and specific needs..." 
+            <Textarea
+              id="sales-message"
+              placeholder="Tell us a bit about your event volume and specific needs..."
               rows={5}
-              value={salesForm.message} 
-              onChange={(e) => setSalesForm(s => ({ ...s, message: e.target.value }))} 
+              value={salesForm.message}
+              onChange={(e) => setSalesForm((s) => ({ ...s, message: e.target.value }))}
             />
           </div>
         </div>
@@ -477,8 +521,18 @@ function SalesDrawer({
           <SheetClose asChild>
             <Button variant="outline">Cancel</Button>
           </SheetClose>
-          <Button onClick={handleSalesSubmit} disabled={isSubmittingSales} style={{ background: "var(--gradient-primary)" }}>
-            {isSubmittingSales ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : "Submit Request"}
+          <Button
+            onClick={handleSalesSubmit}
+            disabled={isSubmittingSales}
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            {isSubmittingSales ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
+              </>
+            ) : (
+              "Submit Request"
+            )}
           </Button>
         </SheetFooter>
       </SheetContent>

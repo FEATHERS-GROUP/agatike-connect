@@ -181,7 +181,9 @@ export const getWorkspaceVenueBookings = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { workspace_id } = ctx.data;
     if (!workspace_id) throw new Error("workspace_id is required");
-    const res = await hasuraRequest<{ venue_bookings: any[] }>(GET_WORKSPACE_VENUE_BOOKINGS, { workspace_id });
+    const res = await hasuraRequest<{ venue_bookings: any[] }>(GET_WORKSPACE_VENUE_BOOKINGS, {
+      workspace_id,
+    });
     return res.venue_bookings;
   });
 

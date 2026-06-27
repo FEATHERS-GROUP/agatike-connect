@@ -72,7 +72,7 @@ async function run() {
       },
     }),
   });
-  
+
   const json = await res.json();
   if (json.error) {
     console.error("Error creating tables:", json.error);
