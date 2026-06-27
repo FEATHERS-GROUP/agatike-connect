@@ -81,7 +81,8 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-ticket-tier/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\/create-schedule/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/);
+    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/page-builder\/editor/);
 
   const isDesigner =
     isDesigningVenue ||

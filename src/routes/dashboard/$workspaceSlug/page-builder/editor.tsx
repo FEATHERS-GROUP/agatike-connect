@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -37,6 +37,7 @@ import {
   Check,
   X,
   Copy,
+  ArrowLeft,
 } from "lucide-react";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
 import {
@@ -58,8 +59,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { formatDistanceToNow } from "date-fns";
+import { PAGE_TEMPLATES } from "@/lib/page-templates";
 
-export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder/editor")({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      pageId: search.pageId as string | undefined,
+      templateId: search.templateId as string | undefined,
+    };
+  },
   component: PageBuilder,
 });
 
@@ -81,23 +89,16 @@ function makeBlankPage() {
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 function PageBuilder() {
-  console.log("[PageBuilder] Component is rendering");
+  const { pageId, templateId } = Route.useSearch();
+  const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const workspace_id = activeWorkspace?.id;
-  console.log("[PageBuilder] workspace_id:", workspace_id);
   const queryClient = useQueryClient();
 
-  // Which page is being edited (null = none selected yet)
-  const [activePageId, setActivePageId] = useState<string | null>(null);
+  // Which page is being edited
+  const [activePageId, setActivePageId] = useState<string | null>(pageId || null);
   const [editorState, setEditorState] = useState(makeBlankPage());
-  const [isNewPage, setIsNewPage] = useState(false);
-
-  // ── Fetch: list of all pages ───────────────────────────────────────────────
-  const { data: allPages = [], isLoading: isLoadingList } = useQuery({
-    queryKey: ["all-workspace-pages", workspace_id],
-    queryFn: () => getAllWorkspacePages({ data: { workspace_id } } as any),
-    enabled: !!workspace_id,
-  });
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // ── Fetch: individual page when activePageId changes ──────────────────────
   const { data: pageData, isLoading: isLoadingPage } = useQuery({
@@ -113,9 +114,9 @@ function PageBuilder() {
     enabled: !!workspace_id,
   });
 
-  // ── Hydrate editor when page loads ────────────────────────────────────────
+  // ── Hydrate editor when page loads or template is selected ────────────────
   useEffect(() => {
-    if (pageData) {
+    if (activePageId && pageData && !isInitialized) {
       const settingsBlock = pageData.components?.find((c: any) => c.type === "page_settings");
       setEditorState({
         id: pageData.id,
@@ -129,8 +130,28 @@ function PageBuilder() {
         fontFamily: settingsBlock?.fontFamily || "Inter",
         components: pageData.components?.filter((c: any) => c.type !== "page_settings") || [],
       });
+      setIsInitialized(true);
+    } else if (!activePageId && templateId && !isInitialized) {
+      const template = PAGE_TEMPLATES.find((t) => t.id === templateId);
+      if (template) {
+        setEditorState({
+          id: null,
+          slug: "",
+          title: template.title,
+          description: template.pageDescription,
+          themeColor: template.themeColor,
+          headerImageUrl: template.headerImageUrl,
+          logoUrl: "",
+          logoPosition: template.logoPosition,
+          fontFamily: template.fontFamily,
+          components: JSON.parse(JSON.stringify(template.components)), // Deep copy
+        });
+      }
+      setIsInitialized(true);
+    } else if (!activePageId && !templateId && !isInitialized) {
+      setIsInitialized(true);
     }
-  }, [pageData]);
+  }, [pageData, activePageId, templateId, isInitialized]);
 
   // ── Mutations ─────────────────────────────────────────────────────────────
   const saveMutation = useMutation({
@@ -141,6 +162,7 @@ function PageBuilder() {
       if (!editorState.id && result?.id) {
         setEditorState((prev) => ({ ...prev, id: result.id }));
         setActivePageId(result.id);
+        navigate({ search: { pageId: result.id }, replace: true });
       }
       queryClient.invalidateQueries({ queryKey: ["all-workspace-pages", workspace_id] });
       queryClient.invalidateQueries({ queryKey: ["workspace-page", activePageId] });
@@ -152,10 +174,8 @@ function PageBuilder() {
     mutationFn: (id: string) => deleteWorkspacePage({ data: { id } } as any),
     onSuccess: () => {
       toast.success("Page deleted.");
-      setActivePageId(null);
-      setEditorState(makeBlankPage());
-      setIsNewPage(false);
       queryClient.invalidateQueries({ queryKey: ["all-workspace-pages", workspace_id] });
+      navigate({ to: `/dashboard/${activeWorkspace?.slug}/page-builder` });
     },
     onError: (err: any) => toast.error(err.message || "Failed to delete page."),
   });
@@ -184,16 +204,7 @@ function PageBuilder() {
     });
   };
 
-  const handleNewPage = () => {
-    setActivePageId(null);
-    setEditorState(makeBlankPage());
-    setIsNewPage(true);
-  };
 
-  const handleSelectPage = (pageId: string) => {
-    setIsNewPage(false);
-    setActivePageId(pageId);
-  };
 
   const handleCopyLink = (slug: string) => {
     const url = `${window.location.origin}/p/${slug}`;
@@ -273,138 +284,30 @@ function PageBuilder() {
   const set = (field: string) => (value: any) =>
     setEditorState((prev) => ({ ...prev, [field]: value }));
 
-  const showEditor = !!activePageId || isNewPage;
-
   return (
     <div className="flex h-full overflow-hidden">
-      {/* ═══════════════════════════════════════════════════════════════════
-          LEFT SIDEBAR — Pages List
-      ═══════════════════════════════════════════════════════════════════ */}
-      <div className="w-64 shrink-0 border-r border-border/60 bg-card flex flex-col h-full overflow-hidden">
-        <div className="p-4 border-b border-border/60 flex items-center justify-between">
-          <div>
-            <h2 className="font-semibold text-sm">Pages</h2>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              {allPages.length} page{allPages.length !== 1 ? "s" : ""}
-            </p>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 w-8 p-0"
-            onClick={handleNewPage}
-            title="Create new page"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
-          {isLoadingList ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-            </div>
-          ) : allPages.length === 0 && !isNewPage ? (
-            <div className="text-center py-10 px-3">
-              <FileText className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-              <p className="text-xs text-muted-foreground">
-                No pages yet. Click + to create your first page.
-              </p>
-            </div>
-          ) : (
-            <>
-              {isNewPage && (
-                <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-primary/10 border border-primary/30 text-sm font-medium text-primary">
-                  <FileText className="h-4 w-4 shrink-0" />
-                  <span className="truncate flex-1">New Page (unsaved)</span>
-                </div>
-              )}
-              {allPages.map((page: any) => (
-                <div
-                  key={page.id}
-                  className={`w-full text-left flex items-start gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors group relative
-                    ${
-                      activePageId === page.id && !isNewPage
-                        ? "bg-primary/10 border border-primary/30 text-primary"
-                        : "hover:bg-secondary/60 text-foreground border border-transparent"
-                    }`}
-                >
-                  <button
-                    className="flex items-start gap-2 flex-1 min-w-0 text-left"
-                    onClick={() => handleSelectPage(page.id)}
-                  >
-                    <Globe className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{page.title || "Untitled Page"}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">/p/{page.slug}</p>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span
-                          className={`inline-block w-1.5 h-1.5 rounded-full ${page.is_published ? "bg-green-500" : "bg-amber-500"}`}
-                        />
-                        <span className="text-[10px] text-muted-foreground">
-                          {page.is_published ? "Published" : "Draft"}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                  {page.slug && page.is_published && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopyLink(page.slug);
-                      }}
-                      title="Copy page link"
-                      className="shrink-0 mt-0.5 p-1 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Copy className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </>
-          )}
-        </div>
-
-        {allPages.length === 0 && !isNewPage && (
-          <div className="p-4 border-t border-border/60">
-            <Button onClick={handleNewPage} className="w-full" size="sm">
-              <Plus className="h-4 w-4 mr-2" /> Create First Page
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          MAIN AREA
-      ═══════════════════════════════════════════════════════════════════ */}
-      {!showEditor ? (
-        <div className="flex-1 flex flex-col items-center justify-center bg-secondary/20 p-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-            <FileText className="h-8 w-8 text-primary" />
-          </div>
-          <h2 className="text-xl font-semibold mb-2">Select a page to edit</h2>
-          <p className="text-muted-foreground text-sm max-w-xs mb-6">
-            Choose a page from the sidebar, or create a new one to get started building.
-          </p>
-          <Button onClick={handleNewPage}>
-            <Plus className="h-4 w-4 mr-2" /> Create New Page
-          </Button>
-        </div>
-      ) : (
         <div className="flex-1 overflow-y-auto flex flex-col bg-secondary/20">
           {/* Top Bar */}
           <div className="sticky top-0 z-20 bg-card/95 backdrop-blur border-b border-border/60 px-6 py-3 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 min-w-0">
-              <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="text-sm text-muted-foreground">/p/</span>
-              <span className="text-sm font-semibold truncate">
-                {editorState.slug || "untitled"}
-              </span>
-              {editorState.id && (
-                <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-500/10 text-green-600 border border-green-500/20">
-                  <Check className="w-2.5 h-2.5" /> Saved
+            <div className="flex items-center gap-4 min-w-0">
+              <Button variant="ghost" size="sm" asChild className="h-8 gap-1.5 -ml-2 text-muted-foreground hover:text-foreground">
+                <Link to={`/dashboard/${activeWorkspace?.slug}/page-builder`}>
+                  <ArrowLeft className="w-4 h-4" /> Back to Gallery
+                </Link>
+              </Button>
+              <div className="h-4 w-px bg-border/60 mx-1" />
+              <div className="flex items-center gap-2 min-w-0">
+                <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-sm text-muted-foreground">/p/</span>
+                <span className="text-sm font-semibold truncate">
+                  {editorState.slug || "untitled"}
                 </span>
-              )}
+                {editorState.id && (
+                  <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-500/10 text-green-600 border border-green-500/20">
+                    <Check className="w-2.5 h-2.5" /> Saved
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {editorState.slug && editorState.id && (
@@ -755,7 +658,6 @@ function PageBuilder() {
             </div>
           )}
         </div>
-      )}
     </div>
   );
 }
