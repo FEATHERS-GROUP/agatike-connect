@@ -60,7 +60,9 @@ function PricingPlansPage() {
           getPromotionalRules(),
           getOrganizerProfile().catch(() => null),
         ]);
-        setPlans(fetchedPlans);
+        
+        // Hide the Basic plan (price 0) as it is given by default
+        setPlans(fetchedPlans.filter(p => p.price > 0));
         setRules(fetchedRules);
         setOrganizerProfile(fetchedOrganizer);
       } catch (error) {

@@ -88,6 +88,26 @@ function SubscriptionsPage() {
 
   const isFree = subscription.amount === 0;
 
+  // Calculate days left for free trial
+  let daysLeft = 0;
+  let isTrialExpired = false;
+
+  if (isFree && subscription.next_billing_date) {
+    const nextBillingDateObj = new Date(subscription.next_billing_date);
+    const now = new Date();
+    const diffTime = nextBillingDateObj.getTime() - now.getTime();
+    daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (daysLeft > 14) {
+      daysLeft = 14;
+    }
+    
+    if (daysLeft <= 0) {
+      isTrialExpired = true;
+      daysLeft = 0;
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 py-8 px-4">
       <div>
@@ -96,6 +116,19 @@ function SubscriptionsPage() {
           Manage your active plans and explore available upgrades.
         </p>
       </div>
+
+      {isFree && (
+        <div className={`p-5 rounded-2xl border ${isTrialExpired ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-primary/10 border-primary/20 text-primary'}`}>
+          <h3 className="font-bold flex items-center gap-2 mb-1.5">
+            {isTrialExpired ? '⚠️ Trial Expired' : '🎁 14-Day Free Trial'}
+          </h3>
+          <p className="text-sm opacity-90 font-medium">
+            {isTrialExpired 
+              ? "Your 14-day free access to premium modules has expired. Please upgrade to a premium plan to continue using advanced features."
+              : `You have ${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining in your free trial of premium modules.`}
+          </p>
+        </div>
+      )}
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">

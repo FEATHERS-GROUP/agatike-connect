@@ -113,7 +113,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       customerTimestamp: new Date().toISOString(),
       statementDescription: (
         reason || `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`
-      ).substring(0, 22),
+      ).replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 22),
     };
 
     const baseUrl = process.env.PAWAPAY_API_URL;

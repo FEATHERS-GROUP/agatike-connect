@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   getPricingPlans,
   getPromotionalRules,
   upgradeSubscription,
   PricingPlan,
 } from "@/api/billing";
-import { getPawaPayNetworks, initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
+import { getPawaPayNetworks, initiatePawaPayDeposit, getPawaPayDepositStatus, getExchangeRate } from "@/api/pawapay";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,17 +35,7 @@ export const Route = createFileRoute("/dashboard/billing/subscriptions/checkout/
   component: CheckoutPage,
 });
 
-// A simple mock currency converter for demonstration purposes.
-// In a real app, you would use an external API like ExchangeRate-API or OpenExchangeRates.
-const getExchangeRate = (from: string, to: string) => {
-  const rates: Record<string, number> = {
-    USD_RWF: 1250,
-    USD_EUR: 0.92,
-    USD_KES: 130,
-    USD_UGX: 3800,
-  };
-  return rates[`${from}_${to}`] || 1;
-};
+// Removed mock getExchangeRate
 
 function CheckoutPage() {
   const { planId } = Route.useParams();
@@ -78,8 +69,17 @@ function CheckoutPage() {
   // Available currencies
   const availableCurrencies = Array.from(new Set([userCurrency, "USD", "EUR"]));
 
+  // Fetch live FX Rate
+  const { data: fxData, isLoading: isFxLoading } = useQuery({
+    queryKey: ["fx", "USD", selectedCurrency],
+    queryFn: () => getExchangeRate({ data: { base: "USD", target: selectedCurrency } } as any),
+    enabled: !!selectedCurrency && selectedCurrency !== "USD",
+  });
+
   const getConvertedAmount = (usdAmount: number) => {
-    return usdAmount * getExchangeRate("USD", selectedCurrency);
+    if (selectedCurrency === "USD") return usdAmount;
+    const markupRate = fxData?.markupRate || 1;
+    return usdAmount * markupRate;
   };
 
   const formatCurrency = (amount: number) => {
@@ -197,7 +197,7 @@ function CheckoutPage() {
       if (paymentMethod === "pawapay") {
         const pawaRes = await initiatePawaPayDeposit({
           data: {
-            amount: getConvertedAmount(finalUSDPrice),
+            amount: Math.round(getConvertedAmount(finalUSDPrice)),
             baseAmount: finalUSDPrice,
             baseCurrency: "USD",
             phone: phoneNumber,
@@ -441,20 +441,30 @@ function CheckoutPage() {
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="bg-muted/50 rounded-b-xl border-t p-6">
+                <CardFooter className="bg-muted/50 rounded-b-xl border-t p-6 flex-col items-stretch gap-4">
+                  {isPollingPawaPay && (
+                    <div className="p-4 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl text-sm font-medium flex items-start gap-3 w-full">
+                      <Smartphone className="h-5 w-5 animate-bounce mt-0.5 shrink-0" />
+                      <p className="text-left">
+                        <span className="block font-bold text-base mb-1">Check your phone!</span>
+                        A payment prompt has been sent to your mobile. Please enter your PIN to confirm the subscription.
+                      </p>
+                    </div>
+                  )}
                   <Button
                     onClick={handlePayment}
                     disabled={
                       isProcessing ||
+                      isFxLoading ||
                       finalUSDPrice === 0 ||
                       (paymentMethod === "pawapay" ? !phoneNumber || !mobileNetwork : !cardNumber)
                     }
                     className="w-full h-12 text-lg shadow-lg"
                     style={{ background: "var(--gradient-primary)" }}
                   >
-                    {isProcessing ? (
+                    {isProcessing || isPollingPawaPay ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {isPollingPawaPay ? "Waiting for payment..." : "Processing..."}
                       </>
                     ) : (
                       `Pay ${formatCurrency(getConvertedAmount(finalUSDPrice))}`

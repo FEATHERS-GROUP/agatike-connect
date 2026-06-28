@@ -46,7 +46,7 @@ export const getPricingPlans = createServerFn({ method: "GET" }).handler(async (
 });
 
 const GET_ACTIVE_SUB = `
-  query GetActiveSub($organizer_id: String!) {
+  query GetActiveSub($organizer_id: uuid!) {
     subscriptions(where: { organizer_id: { _eq: $organizer_id }, status: { _eq: "active" } }, limit: 1) {
       id
       plan_id
@@ -68,6 +68,25 @@ export const getActiveSubscription = createServerFn({ method: "POST" })
     return res.subscriptions[0] || null;
   });
 
+const GET_INVOICES = `
+  query GetInvoices($organizer_id: String!) {
+    organizer_invoices(where: { organizer_id: { _eq: $organizer_id } }, order_by: { created_at: desc }) {
+      id
+      amount
+      status
+      created_at
+    }
+  }
+`;
+
+export const getInvoices = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { organizer_id } = ctx.data;
+    const res = await hasuraRequest<{ organizer_invoices: any[] }>(GET_INVOICES, { organizer_id });
+    return res.organizer_invoices;
+  });
+
 const CANCEL_SUB = `
   mutation CancelSub($id: uuid!) {
     update_subscriptions_by_pk(pk_columns: { id: $id }, _set: { status: "canceled" }) {
@@ -78,7 +97,13 @@ const CANCEL_SUB = `
 
 const CREATE_SUB = `
   mutation CreateSub($object: subscriptions_insert_input!) {
-    insert_subscriptions_one(object: $object) {
+    insert_subscriptions_one(
+      object: $object,
+      on_conflict: {
+        constraint: subscriptions_organizer_id_key,
+        update_columns: [plan_id, amount, status, next_billing_date, updated_at]
+      }
+    ) {
       id
     }
   }
@@ -132,8 +157,30 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
       await hasuraRequest(CANCEL_SUB, { id: activeSubRes.subscriptions[0].id });
     }
 
-    const nextMonth = new Date();
-    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    let nextBillingDate = new Date();
+
+    if (amount === 0) {
+      // Find the first free sub to track the true 14-day window.
+      const GET_FIRST_FREE_SUB = `
+        query GetFirstFreeSub($organizer_id: uuid!) {
+          subscriptions(where: { organizer_id: { _eq: $organizer_id }, amount: { _eq: 0 } }, order_by: { start_date: asc }, limit: 1) {
+            start_date
+          }
+        }
+      `;
+      const freeSubRes = await hasuraRequest<{ subscriptions: { start_date: string }[] }>(GET_FIRST_FREE_SUB, { organizer_id });
+      if (freeSubRes.subscriptions.length > 0) {
+        // Tie expiration to the first ever free sub so they can't get it again
+        const firstStartDate = new Date(freeSubRes.subscriptions[0].start_date);
+        firstStartDate.setDate(firstStartDate.getDate() + 14);
+        nextBillingDate = firstStartDate;
+      } else {
+        // Very first time
+        nextBillingDate.setDate(nextBillingDate.getDate() + 14);
+      }
+    } else {
+      nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+    }
 
     // 2. Create new sub
     const newSubRes = await hasuraRequest<{ insert_subscriptions_one: { id: string } }>(
@@ -144,7 +191,7 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
           plan_id,
           amount,
           status: "active",
-          next_billing_date: nextMonth.toISOString(),
+          next_billing_date: nextBillingDate.toISOString(),
         },
       },
     );
