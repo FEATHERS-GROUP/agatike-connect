@@ -250,15 +250,28 @@ function RequestWithdrawalPage() {
             <span className="text-muted-foreground font-medium">Your Plan:</span>
             <span className="font-bold">{subscription?.pricing_plan?.name || "Basic"}</span>
           </div>
+
+          <div className="w-full h-px bg-border/60 my-1" />
+          
           <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground">Processing Fee:</span>
+            <span className="text-muted-foreground">Requested Amount (Subtotal):</span>
+            <span className="font-medium text-foreground">
+              {formatCurrency(amountToWithdraw, wallet?.currency)}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">
+              Processing Fee ({platformPercentage + netPercentage}% {netFixed > 0 ? `+ ${netFixed}` : ""}):
+            </span>
             <span className="font-medium text-destructive">
               - {formatCurrency(totalFee, wallet?.currency)}
             </span>
           </div>
+
           <div className="w-full h-px bg-border/60 my-2" />
           <div className="flex justify-between items-center">
-            <span className="font-bold text-foreground">You Will Receive:</span>
+            <span className="font-bold text-foreground">You Will Receive (Net):</span>
             <span className="font-bold text-green-600 text-2xl">
               {formatCurrency(netPayout > 0 ? netPayout : 0, wallet?.currency)}
             </span>
