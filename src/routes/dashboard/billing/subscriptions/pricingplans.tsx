@@ -49,12 +49,19 @@ function PricingPlansPage() {
   const [providerFees, setProviderFees] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnnually, setIsAnnually] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<string>("Rwanda");
 
   // Sales Drawer State
   const [isSalesDrawerOpen, setIsSalesDrawerOpen] = useState(false);
 
   const { activeWorkspace, workspaces } = useWorkspace();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (activeWorkspace?.country) {
+      setSelectedCountry(activeWorkspace.country);
+    }
+  }, [activeWorkspace]);
 
   useEffect(() => {
     async function loadData() {
@@ -126,9 +133,36 @@ function PricingPlansPage() {
   // Find the launch promo if it exists
   const launchPromo = rules.find((r) => r.name === "Launch Promo");
 
+  const PAWAPAY_COUNTRY_MAP: Record<string, string> = {
+    "Rwanda": "RWA",
+    "Kenya": "KEN",
+    "Uganda": "UGA",
+    "Tanzania": "TZA",
+    "Ghana": "GHA",
+    "Nigeria": "NGA",
+    "Zambia": "ZMB",
+    "Malawi": "MWI",
+    "Lesotho": "LSO",
+    "Cameroon": "CMR",
+    "DR Congo": "COD",
+    "Burkina Faso": "BFA",
+    "Sierra Leone": "SLE",
+    "Gabon": "GAB",
+    "Benin": "BEN",
+    "Ethiopia": "ETH",
+    "Senegal": "SEN",
+    "Ivory Coast": "CIV",
+    "Congo-Brazzaville": "COG"
+  };
+
   // Calculate country fees
-  const countryCode = activeWorkspace?.country || "RWA"; // User's workspace country
-  const countryFees = providerFees.filter((f) => f.country_code === countryCode || f.country_code === "RWA");
+  const workspaceCountry = selectedCountry; // Uses the state bound to the dropdown
+  const countryCode = PAWAPAY_COUNTRY_MAP[workspaceCountry] || "RWA"; // Map to Alpha-3
+  
+  let countryFees = providerFees.filter((f) => f.country_code === countryCode);
+  if (countryFees.length === 0 && providerFees.length > 0) {
+    countryFees = providerFees.filter((f) => f.country_code === "RWA");
+  }
 
   const maxCollectionPct =
     countryFees.length > 0
@@ -156,29 +190,49 @@ function PricingPlansPage() {
           plan that fits your needs.
         </p>
 
-        {/* Toggle between Monthly and Annually */}
-        <div className="flex items-center justify-center gap-3 pt-6">
-          <Label
-            htmlFor="billing-toggle"
-            className={`text-sm ${!isAnnually ? "font-bold text-foreground" : "text-muted-foreground"}`}
-          >
-            Monthly
-          </Label>
-          <Switch
-            id="billing-toggle"
-            checked={isAnnually}
-            onCheckedChange={setIsAnnually}
-            className="data-[state=checked]:bg-primary"
-          />
-          <Label
-            htmlFor="billing-toggle"
-            className={`text-sm flex items-center gap-2 ${isAnnually ? "font-bold text-foreground" : "text-muted-foreground"}`}
-          >
-            Annually
-            <span className="rounded-full bg-primary/20 text-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-              Save 20%
-            </span>
-          </Label>
+        {/* Toggle between Monthly and Annually & Location Selector */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
+          <div className="flex items-center gap-3">
+            <Label
+              htmlFor="billing-toggle"
+              className={`text-sm ${!isAnnually ? "font-bold text-foreground" : "text-muted-foreground"}`}
+            >
+              Monthly
+            </Label>
+            <Switch
+              id="billing-toggle"
+              checked={isAnnually}
+              onCheckedChange={setIsAnnually}
+              className="data-[state=checked]:bg-primary"
+            />
+            <Label
+              htmlFor="billing-toggle"
+              className={`text-sm flex items-center gap-2 ${isAnnually ? "font-bold text-foreground" : "text-muted-foreground"}`}
+            >
+              Annually
+              <span className="rounded-full bg-primary/20 text-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                Save 20%
+              </span>
+            </Label>
+          </div>
+
+          <div className="w-px h-8 bg-border hidden sm:block" />
+
+          <div className="flex items-center gap-3">
+            <Label className="text-sm text-muted-foreground">Location:</Label>
+            <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+              <SelectTrigger className="w-[180px] h-9">
+                <SelectValue placeholder="Select a country" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(PAWAPAY_COUNTRY_MAP).map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 

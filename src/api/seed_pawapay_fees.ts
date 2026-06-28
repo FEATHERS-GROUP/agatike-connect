@@ -22,7 +22,7 @@ const rates = [
   { network: "MTN_MOMO_CIV", colPct: 1.8, disbPct: 1.3 },
   { network: "ORANGE_CIV", colPct: 2.5, disbPct: 2.0 },
   { network: "WAVE_CIV", colPct: 2.0, disbPct: 2.0 },
-  { network: "SAFARICOM_M_PESA_KEN", colPct: 0, disbPct: 0, tiered: true },
+  { network: "M-PESA", colPct: 2.0, disbPct: 2.0, tiered: true },
   { network: "VODACOM_MPESA_LSO", colPct: 2.0, disbPct: 2.0 },
   { network: "AIRTEL_OAPI_MWI", colPct: 3.33, disbPct: 2.7625 },
   { network: "TNM_MWI", colPct: 3.33, disbPct: 2.75 },
@@ -38,11 +38,11 @@ const rates = [
   { network: "AIRTEL_OAPI_TZA", colPct: 2.18, disbPct: 1.0, disbFixed: 200 },
   { network: "HALOTEL_TZA", colPct: 2.0, disbPct: 1.0, disbFixed: 300 },
   { network: "VODACOM_MPESA_TZA", colPct: 1.0, disbPct: 0, tiered: true },
-  { network: "MTN_MOMO_UGA", colPct: 3.0, disbPct: 0, tiered: true },
-  { network: "AIRTEL_OAPI_UGA", colPct: 2.5, disbPct: 0, tiered: true },
-  { network: "AIRTEL_OAPI_ZMB", colPct: 0, disbPct: 1.0, tiered: true },
-  { network: "MTN_MOMO_ZMB", colPct: 0, disbPct: 2.0, tiered: true },
-  { network: "ZAMTEL_ZMB", colPct: 0, disbPct: 2.0, tiered: true },
+  { network: "MTN_MOMO_UGA", colPct: 3.0, disbPct: 3.0, tiered: true },
+  { network: "AIRTEL_OAPI_UGA", colPct: 2.5, disbPct: 3.0, tiered: true },
+  { network: "AIRTEL_OAPI_ZMB", colPct: 3.0, disbPct: 3.0, tiered: true },
+  { network: "MTN_MOMO_ZMB", colPct: 3.0, disbPct: 3.0, tiered: true },
+  { network: "ZAMTEL_ZMB", colPct: 3.0, disbPct: 3.0, tiered: true },
 ];
 
 async function updateAll() {
