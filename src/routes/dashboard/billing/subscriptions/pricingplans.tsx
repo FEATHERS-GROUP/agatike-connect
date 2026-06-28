@@ -49,7 +49,7 @@ function PricingPlansPage() {
   const [providerFees, setProviderFees] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnnually, setIsAnnually] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState<string>("Rwanda");
+  const [detectedCountry, setDetectedCountry] = useState<string>("Rwanda");
 
   // Sales Drawer State
   const [isSalesDrawerOpen, setIsSalesDrawerOpen] = useState(false);
@@ -58,10 +58,23 @@ function PricingPlansPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (activeWorkspace?.country) {
-      setSelectedCountry(activeWorkspace.country);
+    async function fetchLocation() {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        const data = await res.json();
+        if (data.country_name) {
+          setDetectedCountry(data.country_name);
+        } else if (activeWorkspace?.country) {
+          setDetectedCountry(activeWorkspace.country);
+        }
+      } catch (e) {
+        if (activeWorkspace?.country) {
+          setDetectedCountry(activeWorkspace.country);
+        }
+      }
     }
-  }, [activeWorkspace]);
+    fetchLocation();
+  }, [activeWorkspace?.country]);
 
   useEffect(() => {
     async function loadData() {
@@ -156,7 +169,7 @@ function PricingPlansPage() {
   };
 
   // Calculate country fees
-  const workspaceCountry = selectedCountry; // Uses the state bound to the dropdown
+  const workspaceCountry = detectedCountry;
   const countryCode = PAWAPAY_COUNTRY_MAP[workspaceCountry] || "RWA"; // Map to Alpha-3
   
   let countryFees = providerFees.filter((f) => f.country_code === countryCode);
@@ -218,23 +231,6 @@ function PricingPlansPage() {
             </Label>
           </div>
 
-          <div className="w-px h-8 bg-border hidden sm:block" />
-
-          <div className="flex items-center gap-3">
-            <Label className="text-sm text-muted-foreground">Location:</Label>
-            <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-              <SelectTrigger className="w-[180px] h-9">
-                <SelectValue placeholder="Select a country" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.keys(PAWAPAY_COUNTRY_MAP).map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
       </div>
 

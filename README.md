@@ -348,6 +348,55 @@ sequenceDiagram
     UI->>User: Displays Success Screen & Ticket
 ```
 
+### 12.1 Tiered Network Fees & Dynamic Pricing
+
+Because telecom network fees fluctuate heavily based on the size of the transaction, Agatike Connect employs a highly precise **Simulation Engine** (`src/api/simulation.ts`) that runs a pre-flight check on every checkout.
+
+**Logic:**
+- **Tiered Rules:** The system stores the exact MMO fee brackets (e.g. `< 101 KSH = 0 + 1%`, `< 501 = 5 + 1%`) inside the `pricing_plans.tiered_rules` JSONB column. 
+- **The Simulation:** Before the user clicks "Pay", the UI pings the simulation engine with the base amount and the selected network's country. The engine iterates through the `tiered_rules` to calculate the exact network fee for that specific ticket price.
+- **Shortfall Protection:** If a ticket is incredibly cheap (e.g. 20 RWF) where the network fee exceeds the ticket price, the system no longer blocks the transaction. Instead, it allows the customer to pay their base amount, and automatically calculates the `shortfall`. The shortfall is then absorbed from the organizer's platform wallet, ensuring a seamless checkout experience for the customer while the organizer foots the bill for micro-transactions.
+
+```mermaid
+flowchart TD
+    UI[Checkout UI] -->|User Selects Network| Sim[Simulation Engine]
+    Sim --> DB[(pricing_plans.tiered_rules)]
+    DB --> Calc{Calculate Fee Based on Brackets}
+    Calc -->|Ticket price > Fee| Normal[Normal Flow]
+    Calc -->|Fee > Ticket price| Shortfall[Shortfall Mode]
+    
+    Normal --> ChargeCust[Charge Customer Base Price + Markup]
+    Shortfall --> ChargeCust
+    
+    Normal --> OrgFee[Normal Platform Fee Withheld]
+    Shortfall --> OrgDeduct[Shortfall Deducted from Organizer Wallet]
+    
+    OrgFee --> Webhook[PawaPay Webhook Completes]
+    OrgDeduct --> Webhook
+```
+
+### 12.2 Wallet Network Configuration
+
+Organizers have full control over which telecom networks their attendees can use to pay.
+
+**Logic:**
+- **Configuration:** In the organizer's Wallet Settings, they can check or uncheck specific networks (e.g., MTN MoMo, Airtel Money, M-Pesa). This array of enabled networks is saved in `wallets.supported_networks`.
+- **Checkout Enforcement:** The `PaymentModal` reads the organizer's `supported_networks`. If the organizer only checked "MTN MoMo", only MTN will appear in the checkout dropdown.
+- **Unconfigured Wallets:** If an organizer creates an event but forgets to configure their wallet (i.e., `supported_networks` is empty), the `PaymentModal` will immediately display a red alert message: *"The organizer has not configured any payment networks yet."* and completely disable the "Proceed to Pay" button, preventing attendees from experiencing failed bookings.
+
+```mermaid
+flowchart TD
+    Org[Organizer] -->|Selects Networks| DB[(wallets.supported_networks)]
+    UI[Customer Opens Checkout] --> Read[Fetch Wallet Config]
+    Read --> Check{Is Array Empty?}
+    
+    Check -->|Yes| Blocked[Disable 'Pay' Button\nShow Red Alert Message]
+    Check -->|No| Filter[Filter Networks Dropdown]
+    
+    Filter --> Proceed[Customer Chooses Configured Network]
+    Proceed --> CheckoutFlow[Proceed to Payment]
+```
+
 ---
 
 ## Routing Architecture Reminder
