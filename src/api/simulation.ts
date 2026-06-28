@@ -60,38 +60,83 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       const customerServicePct = planFees.customer_service_fee_percentage || 2.0;
       const organizerContributionPct = planFees.organizer_platform_contribution || 0;
       
-      // Calculate Customer Service Fee
-      const serviceFee = (basePrice * customerServicePct) / 100;
-      const totalCustomerCharge = basePrice + serviceFee;
-      
-      // PawaPay Collection Cost
+      // --- CORE SYSTEM EQUATION & COST HIERARCHY ---
+      // 1. Customer Fee Engine
+      const customerFee = (basePrice * customerServicePct) / 100;
+      const totalCustomerCharge = basePrice + customerFee;
+
+      // 2. Organizer Pricing Engine
+      const organizerFee = (basePrice * organizerContributionPct) / 100;
+
+      // 3. Platform Margin Buffer
+      const platformBufferPct = planFees.platform_margin_buffer || 0; // Explicitly defined, not ad-hoc
+      const platformBuffer = (basePrice * platformBufferPct) / 100;
+
+      const totalRevenue = customerFee + organizerFee;
+
+      // Payment Cost Engine
       let expectedCollectionCost = 0;
       let expectedDisbursementCost = 0;
-      
+      let pawaPayCollectionPct = 0;
+      let pawaPayDisbursementPct = 0;
+
       if (providerFees) {
+        pawaPayCollectionPct = providerFees.collection_percentage || 0;
+        pawaPayDisbursementPct = providerFees.disbursement_percentage || 0;
+        
         expectedCollectionCost = 
-          (totalCustomerCharge * (providerFees.collection_percentage / 100)) + 
+          (totalCustomerCharge * (pawaPayCollectionPct / 100)) + 
           (providerFees.collection_fixed_fee || 0);
           
         expectedDisbursementCost = 
-          (basePrice * (providerFees.disbursement_percentage / 100)) + 
+          (basePrice * (pawaPayDisbursementPct / 100)) + 
           (providerFees.disbursement_fixed_fee || 0);
       }
 
-      // Agatike Profit strictly defined as:
-      // (Customer Service Fee + Organizer Platform Contribution) - Actual pawaPay Collection Cost - Actual pawaPay Disbursement Cost
-      const expectedMargin = 
-        (serviceFee + (basePrice * (organizerContributionPct / 100))) 
-        - expectedCollectionCost; 
-        // We only deduct collection cost upfront for the immediate transaction margin, 
-        // but we can log expected disbursement for the future.
+      const totalCost = expectedCollectionCost + expectedDisbursementCost;
+      const netMargin = totalRevenue - totalCost;
 
+      // --- OPTIMIZATION LAYER (ADAPTIVE ROUTING) ---
       let decision = "approved";
+      let structuredError = null;
+      let failureClassification = "OK";
       
-      if (expectedMargin < 0) {
-        decision = "blocked";
-      } else if (expectedMargin < (totalCustomerCharge * 0.005)) { // Less than 0.5% margin
-        decision = "flagged";
+      let finalOrganizerFee = organizerFee;
+      let finalNetMargin = netMargin;
+
+      if (netMargin < 0) {
+        // Instead of blocking the customer, the organizer dynamically absorbs the shortfall!
+        const shortfall = Math.abs(netMargin);
+        finalOrganizerFee += shortfall;
+        finalNetMargin = 0; // Margin is balanced because organizer absorbed the cost
+        
+        failureClassification = "ABSORBED_BY_ORGANIZER";
+        
+        // We only block if the organizer payout literally becomes negative
+        // (i.e. the ticket price isn't even enough to cover the PawaPay fees)
+        const organizerPayout = basePrice - finalOrganizerFee;
+        
+        if (organizerPayout < 0) {
+          decision = "blocked";
+          failureClassification = "NOT_FIXABLE";
+          structuredError = {
+            title: "❌ Transaction Blocked",
+            description: "The ticket price is too low to cover the network processing fees.",
+            details: {
+              customerServiceFee: "N/A",
+              organizerContribution: "N/A",
+              totalCost: "N/A",
+              shortfall: "N/A",
+              message: "Network fees exceed ticket value."
+            },
+            recommendation: [
+              "Please try another payment network."
+            ]
+          };
+        }
+      } else if (netMargin < platformBuffer) {
+        // C. MARGIN WARNING
+        failureClassification = "MARGIN_WARNING";
       }
 
       // Store ledger transaction (fee_simulations)
@@ -100,7 +145,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         input_snapshot: {
           basePrice,
           totalCustomerCharge,
-          serviceFee,
+          serviceFee: customerFee,
           organizerId,
           network,
           countryCode,
@@ -110,15 +155,18 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         },
         expected_collection_cost: expectedCollectionCost,
         expected_disbursement_cost: expectedDisbursementCost,
-        expected_margin: expectedMargin,
+        expected_margin: finalNetMargin,
         decision
       });
 
       return {
         decision,
-        serviceFee,
+        failureClassification,
+        serviceFee: customerFee,
+        organizerFee: finalOrganizerFee,
         totalCustomerCharge,
-        expectedMargin,
+        expectedMargin: finalNetMargin,
+        structuredError,
         transactionId
       };
       
@@ -130,8 +178,11 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         serviceFee: 0,
         totalCustomerCharge: basePrice,
         expectedMargin: 0,
-        transactionId,
-        error: "Simulation engine encountered an error."
+        structuredError: {
+          title: "❌ Simulation Error",
+          description: "Simulation engine encountered an error.",
+        },
+        transactionId
       };
     }
   });

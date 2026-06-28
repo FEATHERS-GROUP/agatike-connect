@@ -414,7 +414,33 @@ export function PaymentModal({
                         <span>Total Amount</span>
                         <span>{simulation.totalCustomerCharge.toFixed(2)} {baseCurrency}</span>
                       </div>
-                      {isBlocked && (
+                      {isBlocked && simulation.structuredError ? (
+                        <div className="mt-4 p-3 bg-red-50 text-red-900 text-xs rounded border border-red-200 space-y-2">
+                          <div className="font-bold text-red-700">{simulation.structuredError.title}</div>
+                          <p>{simulation.structuredError.description}</p>
+                          
+                          {simulation.structuredError.details && (
+                            <div className="bg-white/50 p-2 rounded border border-red-100 font-mono text-[10px]">
+                              <div>Customer Fee: {simulation.structuredError.details.customerServiceFee}</div>
+                              <div>Organizer Contribution: {simulation.structuredError.details.organizerContribution}</div>
+                              <div>Total Network Cost: {simulation.structuredError.details.totalCost}</div>
+                              <div className="mt-1 text-red-600 font-semibold">{simulation.structuredError.details.message}</div>
+                              <div className="mt-1">Shortfall: {simulation.structuredError.details.shortfall}</div>
+                            </div>
+                          )}
+                          
+                          {simulation.structuredError.recommendation && (
+                            <div className="mt-2 pt-2 border-t border-red-200">
+                              <div className="font-bold text-red-700 mb-1">System Recommendation</div>
+                              <ul className="list-disc pl-4 space-y-1">
+                                {simulation.structuredError.recommendation.map((rec: string, i: number) => (
+                                  <li key={i}>{rec}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ) : isBlocked && (
                         <div className="mt-2 p-2 bg-red-50 text-red-600 text-xs rounded border border-red-200">
                           This transaction cannot be processed at this time due to high external network fees. Please try another payment method.
                         </div>
