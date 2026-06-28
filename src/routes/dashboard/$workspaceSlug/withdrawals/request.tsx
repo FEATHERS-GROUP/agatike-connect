@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getWorkspaceWallet, requestWithdrawal, sendWithdrawalOtp } from "@/api/wallet";
+import { getWorkspaceWallet, requestWithdrawal, sendWithdrawalOtp, getExchangeRate } from "@/api/wallet";
 import { getActiveSubscription } from "@/api/billing";
 import { getAllPaymentProviderFees } from "@/api/pawapay";
 import { Button } from "@/components/ui/button";
@@ -79,6 +79,28 @@ function RequestWithdrawalPage() {
     LSO: "Lesotho",
   };
 
+  const COUNTRY_CURRENCY_MAP: Record<string, string> = {
+    RWA: "RWF",
+    UGA: "UGX",
+    KEN: "KES",
+    ZMB: "ZMW",
+    CMR: "XAF",
+    CIV: "XOF",
+    COD: "CDF",
+    COG: "XAF",
+    ETH: "ETB",
+    GAB: "XAF",
+    GHA: "GHS",
+    MWI: "MWK",
+    NGA: "NGN",
+    SEN: "XOF",
+    SLE: "SLL",
+    TZA: "TZS",
+    BEN: "XOF",
+    BFA: "XOF",
+    LSO: "LSL",
+  };
+
   const NETWORKS: any[] = Array.from(
     new Map(
       providerFees
@@ -145,6 +167,22 @@ function RequestWithdrawalPage() {
   const totalFee = agatikeFee + networkFee;
   const netPayout = amountToWithdraw - totalFee;
 
+  const targetCurrency = COUNTRY_CURRENCY_MAP[countryCode] || wallet?.currency || "RWF";
+
+  const { data: exchangeRate } = useQuery({
+    queryKey: ["exchange-rate", wallet?.currency, targetCurrency],
+    queryFn: () =>
+      getExchangeRate({
+        data: { base_currency: wallet?.currency || "RWF", target_currency: targetCurrency },
+      } as any),
+    enabled: !!wallet?.currency && !!targetCurrency && wallet.currency !== targetCurrency,
+  });
+
+  const rate = exchangeRate || 1;
+  const convertedAmount = amountToWithdraw * rate;
+  const convertedFee = totalFee * rate;
+  const convertedNetPayout = netPayout * rate;
+
   const withdrawMutation = useMutation({
     mutationFn: () =>
       requestWithdrawal({
@@ -158,6 +196,10 @@ function RequestWithdrawalPage() {
           currency: wallet!.currency,
           network_id: actualNetworkId,
           country_code: countryCode,
+          target_currency: targetCurrency,
+          exchange_rate: rate,
+          converted_amount: convertedAmount,
+          converted_net_payout: convertedNetPayout,
           otpToken,
           otp,
           password,
@@ -337,6 +379,11 @@ function RequestWithdrawalPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {rate !== 1 && (
+                      <p className="text-xs text-muted-foreground font-medium flex items-center justify-end px-1">
+                        Exchange Rate: 1 {wallet?.currency} ≈ {rate.toFixed(4)} {targetCurrency}
+                      </p>
+                    )}
                   </div>
                 </>
               )}
@@ -416,9 +463,16 @@ function RequestWithdrawalPage() {
 
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Requested Amount (Subtotal):</span>
-                  <span className="font-medium text-foreground">
-                    {formatCurrency(amountToWithdraw, wallet?.currency)}
-                  </span>
+                  <div className="flex flex-col items-end">
+                    <span className="font-medium text-foreground">
+                      {formatCurrency(amountToWithdraw, wallet?.currency)}
+                    </span>
+                    {rate !== 1 && (
+                      <span className="text-xs text-muted-foreground mt-0.5">
+                        ≈ {formatCurrency(convertedAmount, targetCurrency)}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex justify-between items-center text-sm">
@@ -434,18 +488,32 @@ function RequestWithdrawalPage() {
                       .join(" + ")}
                     ):
                   </span>
-                  <span className="font-medium text-destructive">
-                    - {formatCurrency(totalFee, wallet?.currency)}
-                  </span>
+                  <div className="flex flex-col items-end">
+                    <span className="font-medium text-destructive">
+                      - {formatCurrency(totalFee, wallet?.currency)}
+                    </span>
+                    {rate !== 1 && (
+                      <span className="text-xs text-destructive/80 mt-0.5">
+                        ≈ - {formatCurrency(convertedFee, targetCurrency)}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="w-full h-px bg-border/60 my-1" />
 
                 <div className="flex justify-between items-center text-lg font-bold">
                   <span>You Will Receive (Net):</span>
-                  <span className="text-primary">
-                    {formatCurrency(netPayout, wallet?.currency)}
-                  </span>
+                  <div className="flex flex-col items-end">
+                    <span className="text-primary">
+                      {formatCurrency(netPayout, wallet?.currency)}
+                    </span>
+                    {rate !== 1 && (
+                      <span className="text-sm text-primary/80 mt-0.5">
+                        ≈ {formatCurrency(convertedNetPayout, targetCurrency)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

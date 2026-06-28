@@ -232,6 +232,26 @@ export const sendWithdrawalOtp = createServerFn({ method: "POST" }).handler(asyn
   return { success: true, token };
 });
 
+export const getExchangeRate = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { base_currency, target_currency } = ctx.data as unknown as {
+    base_currency: string;
+    target_currency: string;
+  };
+  if (base_currency === target_currency) return 1;
+
+  try {
+    const res = await fetch(`https://open.er-api.com/v6/latest/${base_currency}`);
+    const data = await res.json();
+    if (data.result === "success") {
+      return data.rates[target_currency] || null;
+    }
+    return null;
+  } catch (error) {
+    console.error("Failed to fetch exchange rate", error);
+    return null;
+  }
+});
+
 export const requestWithdrawal = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const {
     wallet_id,
@@ -246,6 +266,10 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     otpToken,
     otp,
     password,
+    target_currency,
+    exchange_rate,
+    converted_amount,
+    converted_net_payout,
   } = ctx.data as any;
 
   if (!otpToken || !otp || !password) {
@@ -399,10 +423,21 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     currency,
     payout_method,
     payout_account,
-    description: `Withdrawal to ${payout_method} (${payout_account}) | Base: ${amount} | Fee: ${totalFee.toFixed(2)}`,
+    description: `Withdrawal to ${payout_method} (${payout_account}) | Base: ${amount} ${currency} | Fee: ${totalFee.toFixed(2)} ${currency}`,
     status: "pending",
     type: "withdrawal",
-    raw_callback_data: { network_id, country_code, payout_method, amount, netAmount, totalFee },
+    raw_callback_data: {
+      network_id,
+      country_code,
+      payout_method,
+      amount,
+      netAmount,
+      totalFee,
+      target_currency,
+      exchange_rate,
+      converted_amount,
+      converted_net_payout,
+    },
     updated_at: new Date().toISOString(),
   });
 
