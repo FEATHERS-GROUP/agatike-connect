@@ -164,6 +164,8 @@ function PricingPlansPage() {
     countryFees = providerFees.filter((f) => f.country_code === "RWA");
   }
 
+  const isTieredCountry = countryFees.some((f) => f.is_tiered);
+
   const maxCollectionPct =
     countryFees.length > 0
       ? Math.max(...countryFees.map((f) => f.collection_percentage || 0))
@@ -368,13 +370,21 @@ function PricingPlansPage() {
                     <li className="flex items-start gap-2 text-sm text-muted-foreground">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                       <span>
-                        <strong className="text-foreground font-semibold">Collection:</strong> {Math.max(0, maxCollectionPct - (plan.customer_service_fee_percentage || 2)).toFixed(1)}% per ticket
+                        <strong className="text-foreground font-semibold">Collection:</strong> {
+                          isTieredCountry 
+                            ? "Varies (Tiered based on ticket price)" 
+                            : `${Math.max(0, maxCollectionPct - (plan.customer_service_fee_percentage || 2)).toFixed(1)}% per ticket`
+                        }
                       </span>
                     </li>
                     <li className="flex items-start gap-2 text-sm text-muted-foreground">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                       <span>
-                        <strong className="text-foreground font-semibold">Withdrawal:</strong> {(avgDisbursementPct + (plan.organizer_platform_contribution || 0)).toFixed(1)}%
+                        <strong className="text-foreground font-semibold">Withdrawal:</strong> {
+                          isTieredCountry
+                            ? `Varies (Tiered) + ${plan.organizer_platform_contribution || 0}% platform fee`
+                            : `${(avgDisbursementPct + (plan.organizer_platform_contribution || 0)).toFixed(1)}%`
+                        }
                       </span>
                     </li>
                   </ul>

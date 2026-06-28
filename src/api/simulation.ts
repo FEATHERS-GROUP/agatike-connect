@@ -46,6 +46,8 @@ export const simulateTransaction = createServerFn({ method: "POST" })
             collection_fixed_fee
             disbursement_percentage
             disbursement_fixed_fee
+            is_tiered
+            tiered_rules
           }
         }
       `, { workspaceId, network, countryCode: countryCode || "RWA" });
@@ -76,20 +78,40 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       // Payment Cost Engine
       let expectedCollectionCost = 0;
       let expectedDisbursementCost = 0;
-      let pawaPayCollectionPct = 0;
-      let pawaPayDisbursementPct = 0;
 
       if (providerFees) {
-        pawaPayCollectionPct = providerFees.collection_percentage || 0;
-        pawaPayDisbursementPct = providerFees.disbursement_percentage || 0;
+        let pawaPayCollectionPct = providerFees.collection_percentage || 0;
+        let colFixed = providerFees.collection_fixed_fee || 0;
+        let pawaPayDisbursementPct = providerFees.disbursement_percentage || 0;
+        let disbFixed = providerFees.disbursement_fixed_fee || 0;
+
+        if (providerFees.is_tiered && providerFees.tiered_rules) {
+          const rules = typeof providerFees.tiered_rules === 'string' 
+            ? JSON.parse(providerFees.tiered_rules) 
+            : providerFees.tiered_rules;
+
+          if (rules.collection && Array.isArray(rules.collection)) {
+             const matchedRule = rules.collection.find((r: any) => totalCustomerCharge <= r.max) || rules.collection[rules.collection.length - 1];
+             if (matchedRule) {
+               pawaPayCollectionPct = matchedRule.pct || 0;
+               colFixed = matchedRule.fixed || 0;
+             }
+          }
+
+          if (rules.disbursement && Array.isArray(rules.disbursement)) {
+             const matchedRule = rules.disbursement.find((r: any) => basePrice <= r.max) || rules.disbursement[rules.disbursement.length - 1];
+             if (matchedRule) {
+               pawaPayDisbursementPct = matchedRule.pct || 0;
+               disbFixed = matchedRule.fixed || 0;
+             }
+          }
+        }
 
         expectedCollectionCost =
-          (totalCustomerCharge * (pawaPayCollectionPct / 100)) +
-          (providerFees.collection_fixed_fee || 0);
+          (totalCustomerCharge * (pawaPayCollectionPct / 100)) + colFixed;
 
         expectedDisbursementCost =
-          (basePrice * (pawaPayDisbursementPct / 100)) +
-          (providerFees.disbursement_fixed_fee || 0);
+          (basePrice * (pawaPayDisbursementPct / 100)) + disbFixed;
       }
 
       // AT CHECKOUT: We only care about Collection Cost. 

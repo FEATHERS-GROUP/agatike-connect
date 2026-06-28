@@ -115,6 +115,7 @@ const GET_ALL_PROVIDER_FEES = `
       collection_fixed_fee
       disbursement_percentage
       disbursement_fixed_fee
+      is_tiered
     }
   }
 `;
