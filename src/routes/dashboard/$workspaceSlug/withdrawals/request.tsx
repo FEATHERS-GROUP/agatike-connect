@@ -25,6 +25,8 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/withdrawals/requ
 function RequestWithdrawalPage() {
   const { activeWorkspace } = useWorkspace();
   const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [selectedCountry, setSelectedCountry] = useState("RWA");
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [payoutMethod, setPayoutMethod] = useState("momo");
   const [selectedNetworkId, setSelectedNetworkId] = useState("");
@@ -49,6 +51,28 @@ function RequestWithdrawalPage() {
     queryFn: () => getAllPaymentProviderFees(),
   });
 
+  const COUNTRY_NAMES: Record<string, string> = {
+    RWA: "Rwanda",
+    UGA: "Uganda",
+    KEN: "Kenya",
+    ZMB: "Zambia",
+    CMR: "Cameroon",
+    CIV: "Cote d'Ivoire",
+    COD: "DR Congo",
+    COG: "Republic of Congo",
+    ETH: "Ethiopia",
+    GAB: "Gabon",
+    GHA: "Ghana",
+    MWI: "Malawi",
+    NGA: "Nigeria",
+    SEN: "Senegal",
+    SLE: "Sierra Leone",
+    TZA: "Tanzania",
+    BEN: "Benin",
+    BFA: "Burkina Faso",
+    LSO: "Lesotho",
+  };
+
   const NETWORKS = Array.from(
     new Map(
       providerFees
@@ -56,7 +80,7 @@ function RequestWithdrawalPage() {
         .map((f: any) => [
           `${f.network}-${f.country_code}`,
           {
-            label: `${f.network.replace(/_/g, " ").replace("MOMO", "MoMo").replace("OAPI", "")} (${f.country_code})`.replace(/\s+/g, " "),
+            label: `${f.network.replace(/_/g, " ").replace("MOMO", "MoMo").replace("OAPI", "")} (${COUNTRY_NAMES[f.country_code] || f.country_code})`.replace(/\s+/g, " "),
             value: `${f.network}-${f.country_code}`,
             actualNetwork: f.network,
             code: f.country_code,
@@ -64,6 +88,9 @@ function RequestWithdrawalPage() {
         ])
     ).values()
   ).sort((a: any, b: any) => a.label.localeCompare(b.label));
+
+  const COUNTRIES = Array.from(new Set(providerFees.map((f: any) => f.country_code))).filter(Boolean).sort() as string[];
+  const FILTERED_NETWORKS = NETWORKS.filter((n) => n.code === selectedCountry);
 
   // Calculate live fees
   const amountToWithdraw = Number(withdrawAmount) || 0;
@@ -213,105 +240,193 @@ function RequestWithdrawalPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold">Amount ({wallet?.currency})</Label>
-            <Input
-              type="number"
-              placeholder="0.00"
-              className="h-14 text-lg rounded-xl"
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-            />
-          </div>
+          {/* STEP 1: Country & Network */}
+          {step === 1 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Payout Method</Label>
+                <Select value={payoutMethod} onValueChange={setPayoutMethod}>
+                  <SelectTrigger className="h-14 rounded-xl">
+                    <SelectValue placeholder="Select method" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="momo">Mobile Money (MTN/Airtel)</SelectItem>
+                    <SelectItem value="bank">Bank Transfer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold">Payout Method</Label>
-            <Select value={payoutMethod} onValueChange={setPayoutMethod}>
-              <SelectTrigger className="h-14 rounded-xl">
-                <SelectValue placeholder="Select method" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="momo">Mobile Money (MTN/Airtel)</SelectItem>
-                <SelectItem value="bank">Bank Transfer</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              {payoutMethod === "momo" && (
+                <>
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold">Country</Label>
+                    <Select
+                      value={selectedCountry}
+                      onValueChange={(val) => {
+                        setSelectedCountry(val);
+                        setSelectedNetworkId("");
+                      }}
+                    >
+                      <SelectTrigger className="h-14 rounded-xl">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl max-h-60">
+                        {COUNTRIES.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {COUNTRY_NAMES[c] || c}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-          {payoutMethod === "momo" && (
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold">Network</Label>
-              <Select value={selectedNetworkId} onValueChange={setSelectedNetworkId}>
-                <SelectTrigger className="h-14 rounded-xl">
-                  <SelectValue placeholder="Select network" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  {NETWORKS.map((n) => (
-                    <SelectItem key={n.value} value={n.value}>
-                      {n.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold">Network</Label>
+                    <Select value={selectedNetworkId} onValueChange={setSelectedNetworkId}>
+                      <SelectTrigger className="h-14 rounded-xl">
+                        <SelectValue placeholder="Select network" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {FILTERED_NETWORKS.map((n) => (
+                          <SelectItem key={n.value} value={n.value}>
+                            {n.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+
+              <Button
+                size="lg"
+                className="w-full h-14 rounded-xl text-lg mt-6"
+                disabled={payoutMethod === "momo" && !selectedNetworkId}
+                onClick={() => setStep(2)}
+              >
+                Next Step
+              </Button>
             </div>
           )}
 
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold">
-              {payoutMethod === "momo" ? "Phone Number" : "Account Number"}
-            </Label>
-            <Input
-              placeholder={payoutMethod === "momo" ? "+250 78X XXX XXX" : "0000 0000 0000"}
-              className="h-14 rounded-xl"
-              value={payoutAccount}
-              onChange={(e) => setPayoutAccount(e.target.value)}
-            />
-          </div>
+          {/* STEP 2: Amount */}
+          {step === 2 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Amount ({wallet?.currency})</Label>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  className="h-14 text-lg rounded-xl"
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-1/3 h-14 rounded-xl text-lg"
+                  onClick={() => setStep(1)}
+                >
+                  Back
+                </Button>
+                <Button
+                  size="lg"
+                  className="w-2/3 h-14 rounded-xl text-lg"
+                  disabled={
+                    !withdrawAmount ||
+                    Number(withdrawAmount) <= 0 ||
+                    Number(withdrawAmount) > (wallet?.amount || 0)
+                  }
+                  onClick={() => setStep(3)}
+                >
+                  Next Step
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: Payout Account & Summary */}
+          {step === 3 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">
+                  {payoutMethod === "momo" ? "Phone Number" : "Account Number"}
+                </Label>
+                <Input
+                  placeholder={payoutMethod === "momo" ? "+250 78X XXX XXX" : "0000 0000 0000"}
+                  className="h-14 rounded-xl"
+                  value={payoutAccount}
+                  onChange={(e) => setPayoutAccount(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-primary/5 p-5 rounded-2xl border border-primary/20 flex flex-col gap-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground font-medium">Your Plan:</span>
+                  <span className="font-bold">{subscription?.pricing_plan?.name || "Basic"}</span>
+                </div>
+
+                <div className="w-full h-px bg-border/60 my-1" />
+
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Requested Amount (Subtotal):</span>
+                  <span className="font-medium text-foreground">
+                    {formatCurrency(amountToWithdraw, wallet?.currency)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">
+                    Processing Fee (
+                    {[
+                      platformPercentage + netPercentage > 0
+                        ? `${platformPercentage + netPercentage}%`
+                        : null,
+                      netFixed > 0 ? formatCurrency(netFixed, wallet?.currency) : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" + ")}
+                    ):
+                  </span>
+                  <span className="font-medium text-destructive">
+                    - {formatCurrency(totalFee, wallet?.currency)}
+                  </span>
+                </div>
+
+                <div className="w-full h-px bg-border/60 my-1" />
+
+                <div className="flex justify-between items-center text-lg font-bold">
+                  <span>You Will Receive (Net):</span>
+                  <span className="text-primary">
+                    {formatCurrency(netPayout, wallet?.currency)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-1/3 h-14 rounded-xl text-lg"
+                  onClick={() => setStep(2)}
+                >
+                  Back
+                </Button>
+                <Button
+                  size="lg"
+                  className="w-2/3 h-14 rounded-xl text-lg"
+                  disabled={withdrawMutation.isPending || !payoutAccount || netPayout <= 0}
+                  onClick={handleWithdrawRequest}
+                >
+                  {withdrawMutation.isPending ? "Processing..." : "Confirm Request"}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
-
-        <div className="bg-primary/5 p-5 rounded-2xl border border-primary/20 flex flex-col gap-3">
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground font-medium">Your Plan:</span>
-            <span className="font-bold">{subscription?.pricing_plan?.name || "Basic"}</span>
-          </div>
-
-          <div className="w-full h-px bg-border/60 my-1" />
-          
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground">Requested Amount (Subtotal):</span>
-            <span className="font-medium text-foreground">
-              {formatCurrency(amountToWithdraw, wallet?.currency)}
-            </span>
-          </div>
-
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground">
-              Processing Fee ({[
-                  (platformPercentage + netPercentage) > 0 ? `${platformPercentage + netPercentage}%` : null,
-                  netFixed > 0 ? formatCurrency(netFixed, wallet?.currency) : null
-                ].filter(Boolean).join(" + ")}):
-            </span>
-            <span className="font-medium text-destructive">
-              - {formatCurrency(totalFee, wallet?.currency)}
-            </span>
-          </div>
-
-          <div className="w-full h-px bg-border/60 my-2" />
-          <div className="flex justify-between items-center">
-            <span className="font-bold text-foreground">You Will Receive (Net):</span>
-            <span className="font-bold text-green-600 text-2xl">
-              {formatCurrency(netPayout > 0 ? netPayout : 0, wallet?.currency)}
-            </span>
-          </div>
-        </div>
-
-        <Button
-          className="w-full h-14 rounded-xl shadow-lg text-lg font-bold"
-          style={{ background: "var(--gradient-primary)", color: "white" }}
-          onClick={handleWithdrawRequest}
-          disabled={withdrawMutation.isPending}
-        >
-          {withdrawMutation.isPending ? "Processing..." : "Submit Request"}
-        </Button>
       </div>
     </div>
   );
