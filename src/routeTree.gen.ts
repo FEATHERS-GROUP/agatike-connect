@@ -63,7 +63,6 @@ import { Route as SpacesCheckoutSpaceIdRouteImport } from './routes/spaces/check
 import { Route as PublicBadgeBadgeIdRouteImport } from './routes/public/badge/$badgeId'
 import { Route as FEventIdReviewRouteImport } from './routes/f/$eventId/review'
 import { Route as DashboardBillingInvoicesRouteImport } from './routes/dashboard/billing/invoices'
-import { Route as DashboardWorkspaceSlugWithdrawalsRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals'
 import { Route as DashboardWorkspaceSlugVipAccessRouteImport } from './routes/dashboard.$workspaceSlug.vip-access'
 import { Route as DashboardWorkspaceSlugVenueRentRouteImport } from './routes/dashboard/$workspaceSlug/venue-rent'
 import { Route as DashboardWorkspaceSlugSettingsRouteImport } from './routes/dashboard/$workspaceSlug/settings'
@@ -72,6 +71,7 @@ import { Route as DashboardWorkspaceSlugProductsChar38addOnsRouteImport } from '
 import { Route as DashboardWorkspaceSlugMembershipsRouteImport } from './routes/dashboard/$workspaceSlug/memberships'
 import { Route as DashboardWorkspaceSlugCommunityRouteImport } from './routes/dashboard/$workspaceSlug/community'
 import { Route as DashboardBillingSubscriptionsIndexRouteImport } from './routes/dashboard/billing/subscriptions/index'
+import { Route as DashboardWorkspaceSlugWithdrawalsIndexRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals/index'
 import { Route as DashboardWorkspaceSlugVenueDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/venue-designer/index'
 import { Route as DashboardWorkspaceSlugUsersIndexRouteImport } from './routes/dashboard/$workspaceSlug/users/index'
 import { Route as DashboardWorkspaceSlugTicketDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/ticket-designer/index'
@@ -84,6 +84,7 @@ import { Route as DashboardWorkspaceSlugBadgeDesignerIndexRouteImport } from './
 import { Route as DashboardWorkspaceSlugCinemaIndexRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/index'
 import { Route as DashboardWorkspaceUserEmailActivateRouteImport } from './routes/dashboard/workspace-user/$email.activate'
 import { Route as DashboardBillingSubscriptionsPricingplansRouteImport } from './routes/dashboard/billing/subscriptions/pricingplans'
+import { Route as DashboardWorkspaceSlugWithdrawalsRequestRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals/request'
 import { Route as DashboardWorkspaceSlugVenuesCreateVenueRouteImport } from './routes/dashboard/$workspaceSlug/venues/create-venue'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId'
 import { Route as DashboardWorkspaceSlugVenueDesignerProjectIdRouteImport } from './routes/dashboard/$workspaceSlug/venue-designer/$projectId'
@@ -420,12 +421,6 @@ const DashboardBillingInvoicesRoute =
     path: '/billing/invoices',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardWorkspaceSlugWithdrawalsRoute =
-  DashboardWorkspaceSlugWithdrawalsRouteImport.update({
-    id: '/$workspaceSlug/withdrawals',
-    path: '/$workspaceSlug/withdrawals',
-    getParentRoute: () => DashboardRoute,
-  } as any)
 const DashboardWorkspaceSlugVipAccessRoute =
   DashboardWorkspaceSlugVipAccessRouteImport.update({
     id: '/$workspaceSlug/vip-access',
@@ -472,6 +467,12 @@ const DashboardBillingSubscriptionsIndexRoute =
   DashboardBillingSubscriptionsIndexRouteImport.update({
     id: '/billing/subscriptions/',
     path: '/billing/subscriptions/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugWithdrawalsIndexRoute =
+  DashboardWorkspaceSlugWithdrawalsIndexRouteImport.update({
+    id: '/$workspaceSlug/withdrawals/',
+    path: '/$workspaceSlug/withdrawals/',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardWorkspaceSlugVenueDesignerIndexRoute =
@@ -544,6 +545,12 @@ const DashboardBillingSubscriptionsPricingplansRoute =
   DashboardBillingSubscriptionsPricingplansRouteImport.update({
     id: '/billing/subscriptions/pricingplans',
     path: '/billing/subscriptions/pricingplans',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugWithdrawalsRequestRoute =
+  DashboardWorkspaceSlugWithdrawalsRequestRouteImport.update({
+    id: '/$workspaceSlug/withdrawals/request',
+    path: '/$workspaceSlug/withdrawals/request',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardWorkspaceSlugVenuesCreateVenueRoute =
@@ -975,7 +982,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/settings': typeof DashboardWorkspaceSlugSettingsRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/vip-access': typeof DashboardWorkspaceSlugVipAccessRoute
-  '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
   '/dashboard/billing/invoices': typeof DashboardBillingInvoicesRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
@@ -1004,6 +1010,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/venue-designer/$projectId': typeof DashboardWorkspaceSlugVenueDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   '/dashboard/$workspaceSlug/venues/create-venue': typeof DashboardWorkspaceSlugVenuesCreateVenueRoute
+  '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
@@ -1016,6 +1023,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/ticket-designer/': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/users/': typeof DashboardWorkspaceSlugUsersIndexRoute
   '/dashboard/$workspaceSlug/venue-designer/': typeof DashboardWorkspaceSlugVenueDesignerIndexRoute
+  '/dashboard/$workspaceSlug/withdrawals/': typeof DashboardWorkspaceSlugWithdrawalsIndexRoute
   '/dashboard/billing/subscriptions/': typeof DashboardBillingSubscriptionsIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive': typeof DashboardWorkspaceSlugCinemaCinemaIdArchiveRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/bookings': typeof DashboardWorkspaceSlugCinemaCinemaIdBookingsRoute
@@ -1114,7 +1122,6 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/settings': typeof DashboardWorkspaceSlugSettingsRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/vip-access': typeof DashboardWorkspaceSlugVipAccessRoute
-  '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
   '/dashboard/billing/invoices': typeof DashboardBillingInvoicesRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
@@ -1141,6 +1148,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/venue-designer/$projectId': typeof DashboardWorkspaceSlugVenueDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   '/dashboard/$workspaceSlug/venues/create-venue': typeof DashboardWorkspaceSlugVenuesCreateVenueRoute
+  '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
   '/dashboard/$workspaceSlug/Cinema': typeof DashboardWorkspaceSlugCinemaIndexRoute
@@ -1153,6 +1161,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/ticket-designer': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/users': typeof DashboardWorkspaceSlugUsersIndexRoute
   '/dashboard/$workspaceSlug/venue-designer': typeof DashboardWorkspaceSlugVenueDesignerIndexRoute
+  '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsIndexRoute
   '/dashboard/billing/subscriptions': typeof DashboardBillingSubscriptionsIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive': typeof DashboardWorkspaceSlugCinemaCinemaIdArchiveRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/bookings': typeof DashboardWorkspaceSlugCinemaCinemaIdBookingsRoute
@@ -1252,7 +1261,6 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/settings': typeof DashboardWorkspaceSlugSettingsRoute
   '/dashboard/$workspaceSlug/venue-rent': typeof DashboardWorkspaceSlugVenueRentRoute
   '/dashboard/$workspaceSlug/vip-access': typeof DashboardWorkspaceSlugVipAccessRoute
-  '/dashboard/$workspaceSlug/withdrawals': typeof DashboardWorkspaceSlugWithdrawalsRoute
   '/dashboard/billing/invoices': typeof DashboardBillingInvoicesRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
@@ -1281,6 +1289,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/venue-designer/$projectId': typeof DashboardWorkspaceSlugVenueDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   '/dashboard/$workspaceSlug/venues/create-venue': typeof DashboardWorkspaceSlugVenuesCreateVenueRoute
+  '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
@@ -1293,6 +1302,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/ticket-designer/': typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   '/dashboard/$workspaceSlug/users/': typeof DashboardWorkspaceSlugUsersIndexRoute
   '/dashboard/$workspaceSlug/venue-designer/': typeof DashboardWorkspaceSlugVenueDesignerIndexRoute
+  '/dashboard/$workspaceSlug/withdrawals/': typeof DashboardWorkspaceSlugWithdrawalsIndexRoute
   '/dashboard/billing/subscriptions/': typeof DashboardBillingSubscriptionsIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive': typeof DashboardWorkspaceSlugCinemaCinemaIdArchiveRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/bookings': typeof DashboardWorkspaceSlugCinemaCinemaIdBookingsRoute
@@ -1393,7 +1403,6 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/settings'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/vip-access'
-    | '/dashboard/$workspaceSlug/withdrawals'
     | '/dashboard/billing/invoices'
     | '/f/$eventId/review'
     | '/public/badge/$badgeId'
@@ -1422,6 +1431,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer/$projectId'
     | '/dashboard/$workspaceSlug/venues/$venueId'
     | '/dashboard/$workspaceSlug/venues/create-venue'
+    | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
     | '/dashboard/$workspaceSlug/Cinema/'
@@ -1434,6 +1444,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/ticket-designer/'
     | '/dashboard/$workspaceSlug/users/'
     | '/dashboard/$workspaceSlug/venue-designer/'
+    | '/dashboard/$workspaceSlug/withdrawals/'
     | '/dashboard/billing/subscriptions/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/bookings'
@@ -1532,7 +1543,6 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/settings'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/vip-access'
-    | '/dashboard/$workspaceSlug/withdrawals'
     | '/dashboard/billing/invoices'
     | '/f/$eventId/review'
     | '/public/badge/$badgeId'
@@ -1559,6 +1569,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer/$projectId'
     | '/dashboard/$workspaceSlug/venues/$venueId'
     | '/dashboard/$workspaceSlug/venues/create-venue'
+    | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
     | '/dashboard/$workspaceSlug/Cinema'
@@ -1571,6 +1582,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/ticket-designer'
     | '/dashboard/$workspaceSlug/users'
     | '/dashboard/$workspaceSlug/venue-designer'
+    | '/dashboard/$workspaceSlug/withdrawals'
     | '/dashboard/billing/subscriptions'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/bookings'
@@ -1669,7 +1681,6 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/settings'
     | '/dashboard/$workspaceSlug/venue-rent'
     | '/dashboard/$workspaceSlug/vip-access'
-    | '/dashboard/$workspaceSlug/withdrawals'
     | '/dashboard/billing/invoices'
     | '/f/$eventId/review'
     | '/public/badge/$badgeId'
@@ -1698,6 +1709,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer/$projectId'
     | '/dashboard/$workspaceSlug/venues/$venueId'
     | '/dashboard/$workspaceSlug/venues/create-venue'
+    | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
     | '/dashboard/$workspaceSlug/Cinema/'
@@ -1710,6 +1722,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/ticket-designer/'
     | '/dashboard/$workspaceSlug/users/'
     | '/dashboard/$workspaceSlug/venue-designer/'
+    | '/dashboard/$workspaceSlug/withdrawals/'
     | '/dashboard/billing/subscriptions/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/archive'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/bookings'
@@ -2184,13 +2197,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillingInvoicesRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/$workspaceSlug/withdrawals': {
-      id: '/dashboard/$workspaceSlug/withdrawals'
-      path: '/$workspaceSlug/withdrawals'
-      fullPath: '/dashboard/$workspaceSlug/withdrawals'
-      preLoaderRoute: typeof DashboardWorkspaceSlugWithdrawalsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/dashboard/$workspaceSlug/vip-access': {
       id: '/dashboard/$workspaceSlug/vip-access'
       path: '/$workspaceSlug/vip-access'
@@ -2245,6 +2251,13 @@ declare module '@tanstack/react-router' {
       path: '/billing/subscriptions'
       fullPath: '/dashboard/billing/subscriptions/'
       preLoaderRoute: typeof DashboardBillingSubscriptionsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/withdrawals/': {
+      id: '/dashboard/$workspaceSlug/withdrawals/'
+      path: '/$workspaceSlug/withdrawals'
+      fullPath: '/dashboard/$workspaceSlug/withdrawals/'
+      preLoaderRoute: typeof DashboardWorkspaceSlugWithdrawalsIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/$workspaceSlug/venue-designer/': {
@@ -2329,6 +2342,13 @@ declare module '@tanstack/react-router' {
       path: '/billing/subscriptions/pricingplans'
       fullPath: '/dashboard/billing/subscriptions/pricingplans'
       preLoaderRoute: typeof DashboardBillingSubscriptionsPricingplansRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/withdrawals/request': {
+      id: '/dashboard/$workspaceSlug/withdrawals/request'
+      path: '/$workspaceSlug/withdrawals/request'
+      fullPath: '/dashboard/$workspaceSlug/withdrawals/request'
+      preLoaderRoute: typeof DashboardWorkspaceSlugWithdrawalsRequestRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/$workspaceSlug/venues/create-venue': {
@@ -2883,7 +2903,6 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugSettingsRoute: typeof DashboardWorkspaceSlugSettingsRoute
   DashboardWorkspaceSlugVenueRentRoute: typeof DashboardWorkspaceSlugVenueRentRoute
   DashboardWorkspaceSlugVipAccessRoute: typeof DashboardWorkspaceSlugVipAccessRoute
-  DashboardWorkspaceSlugWithdrawalsRoute: typeof DashboardWorkspaceSlugWithdrawalsRoute
   DashboardBillingInvoicesRoute: typeof DashboardBillingInvoicesRoute
   DashboardWorkspaceSlugIndexRoute: typeof DashboardWorkspaceSlugIndexRoute
   DashboardBillingIndexRoute: typeof DashboardBillingIndexRoute
@@ -2907,6 +2926,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugVenueDesignerProjectIdRoute: typeof DashboardWorkspaceSlugVenueDesignerProjectIdRoute
   DashboardWorkspaceSlugVenuesVenueIdRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   DashboardWorkspaceSlugVenuesCreateVenueRoute: typeof DashboardWorkspaceSlugVenuesCreateVenueRoute
+  DashboardWorkspaceSlugWithdrawalsRequestRoute: typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   DashboardBillingSubscriptionsPricingplansRoute: typeof DashboardBillingSubscriptionsPricingplansRoute
   DashboardWorkspaceUserEmailActivateRoute: typeof DashboardWorkspaceUserEmailActivateRoute
   DashboardWorkspaceSlugCinemaIndexRoute: typeof DashboardWorkspaceSlugCinemaIndexRoute
@@ -2919,6 +2939,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugTicketDesignerIndexRoute: typeof DashboardWorkspaceSlugTicketDesignerIndexRoute
   DashboardWorkspaceSlugUsersIndexRoute: typeof DashboardWorkspaceSlugUsersIndexRoute
   DashboardWorkspaceSlugVenueDesignerIndexRoute: typeof DashboardWorkspaceSlugVenueDesignerIndexRoute
+  DashboardWorkspaceSlugWithdrawalsIndexRoute: typeof DashboardWorkspaceSlugWithdrawalsIndexRoute
   DashboardBillingSubscriptionsIndexRoute: typeof DashboardBillingSubscriptionsIndexRoute
   DashboardWorkspaceSlugEventsEventIdAttendeesRoute: typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   DashboardWorkspaceSlugEventsEventIdEditRoute: typeof DashboardWorkspaceSlugEventsEventIdEditRoute
@@ -2957,8 +2978,6 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardWorkspaceSlugSettingsRoute: DashboardWorkspaceSlugSettingsRoute,
   DashboardWorkspaceSlugVenueRentRoute: DashboardWorkspaceSlugVenueRentRoute,
   DashboardWorkspaceSlugVipAccessRoute: DashboardWorkspaceSlugVipAccessRoute,
-  DashboardWorkspaceSlugWithdrawalsRoute:
-    DashboardWorkspaceSlugWithdrawalsRoute,
   DashboardBillingInvoicesRoute: DashboardBillingInvoicesRoute,
   DashboardWorkspaceSlugIndexRoute: DashboardWorkspaceSlugIndexRoute,
   DashboardBillingIndexRoute: DashboardBillingIndexRoute,
@@ -3002,6 +3021,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren,
   DashboardWorkspaceSlugVenuesCreateVenueRoute:
     DashboardWorkspaceSlugVenuesCreateVenueRoute,
+  DashboardWorkspaceSlugWithdrawalsRequestRoute:
+    DashboardWorkspaceSlugWithdrawalsRequestRoute,
   DashboardBillingSubscriptionsPricingplansRoute:
     DashboardBillingSubscriptionsPricingplansRoute,
   DashboardWorkspaceUserEmailActivateRoute:
@@ -3024,6 +3045,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardWorkspaceSlugUsersIndexRoute: DashboardWorkspaceSlugUsersIndexRoute,
   DashboardWorkspaceSlugVenueDesignerIndexRoute:
     DashboardWorkspaceSlugVenueDesignerIndexRoute,
+  DashboardWorkspaceSlugWithdrawalsIndexRoute:
+    DashboardWorkspaceSlugWithdrawalsIndexRoute,
   DashboardBillingSubscriptionsIndexRoute:
     DashboardBillingSubscriptionsIndexRoute,
   DashboardWorkspaceSlugEventsEventIdAttendeesRoute:

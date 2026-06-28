@@ -114,3 +114,146 @@ export const addMoneyToWorkspaceWallet = createServerFn({ method: "POST" }).hand
 
   return data.update_wallets?.returning?.[0] || null;
 });
+
+const REQUEST_WITHDRAWAL_MUTATION = `
+  mutation RequestWithdrawal(
+    $wallet_id: uuid!
+    $workspace_id: uuid!
+    $amount: numeric!
+    $net_amount: numeric!
+    $currency: String!
+    $payout_method: String!
+    $payout_account: String!
+    $description: String!
+    $status: String!
+    $type: String!
+    $updated_at: timestamptz!
+  ) {
+    update_wallets(
+      where: { id: { _eq: $wallet_id }, amount: { _gte: $amount } }
+      _inc: { amount: -$amount }
+      _set: { updated_at: $updated_at }
+    ) {
+      affected_rows
+      returning {
+        id
+        amount
+      }
+    }
+    insert_wallet_transactions_one(object: {
+      wallet_id: $wallet_id
+      workspace_id: $workspace_id
+      amount: $amount
+      net_amount: $net_amount
+      currency: $currency
+      payout_method: $payout_method
+      payout_account: $payout_account
+      description: $description
+      status: $status
+      type: $type
+    }) {
+      id
+    }
+  }
+`;
+
+export const requestWithdrawal = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const {
+    wallet_id,
+    workspace_id,
+    organizer_id,
+    amount,
+    payout_method,
+    payout_account,
+    currency,
+    network_id,
+    country_code,
+  } = ctx.data as any;
+
+  // 1. Get Wallet Balance
+  const walletQuery = `query GetWallet { wallets_by_pk(id: "${wallet_id}") { amount } }`;
+  const walletRes = await hasuraRequest<{ wallets_by_pk: { amount: number } }>(walletQuery);
+  if (!walletRes.wallets_by_pk || walletRes.wallets_by_pk.amount < amount) {
+    throw new Error("Insufficient wallet balance.");
+  }
+
+  // 2. Get Platform Fee from Subscription
+  const subQuery = `
+    query GetActiveSub {
+      subscriptions(
+        where: { organizer_id: { _eq: "${organizer_id}" }, status: { _eq: "active" } }
+        order_by: { created_at: desc }
+        limit: 1
+      ) {
+        pricing_plan {
+          organizer_platform_contribution
+        }
+      }
+    }
+  `;
+  const subRes = await hasuraRequest<{ subscriptions: any[] }>(subQuery);
+  const platformPercentage =
+    subRes.subscriptions?.[0]?.pricing_plan?.organizer_platform_contribution || 3.0; // fallback 3%
+
+  // 3. Get Network Disbursement Fee
+  let netPercentage = 0;
+  let netFixed = 0;
+  if (payout_method === "momo" && network_id) {
+    const feeQuery = `
+      query GetProviderFees {
+        payment_provider_fees(where: {
+          _and: [
+            { network: { _eq: "${network_id}" } },
+            { country_code: { _eq: "${country_code || "RWA"}" } }
+          ]
+        }, limit: 1) {
+          disbursement_percentage
+          disbursement_fixed_fee
+        }
+      }
+    `;
+    const feeRes = await hasuraRequest<{ payment_provider_fees: any[] }>(feeQuery);
+    const fees = feeRes.payment_provider_fees?.[0];
+    if (fees) {
+      netPercentage = fees.disbursement_percentage || 0;
+      netFixed = fees.disbursement_fixed_fee || 0;
+    }
+  }
+
+  // 4. Calculate Total Fee and Net Payout
+  const agatikeFee = amount * (platformPercentage / 100);
+  const networkFee = amount * (netPercentage / 100) + netFixed;
+  const totalFee = agatikeFee + networkFee;
+  const netAmount = amount - totalFee;
+
+  if (netAmount <= 0) {
+    throw new Error("Withdrawal amount is too low to cover the processing fees.");
+  }
+
+  // 5. Execute Transaction
+  const data = await hasuraRequest<any>(REQUEST_WITHDRAWAL_MUTATION, {
+    wallet_id,
+    workspace_id,
+    amount,
+    net_amount: netAmount,
+    currency,
+    payout_method,
+    payout_account,
+    description: `Withdrawal to ${payout_method} (${payout_account}) | Base: ${amount} | Fee: ${totalFee.toFixed(2)}`,
+    status: "pending",
+    type: "withdrawal",
+    updated_at: new Date().toISOString(),
+  });
+
+  if (data.update_wallets.affected_rows === 0) {
+    throw new Error("Failed to deduct from wallet. Please try again.");
+  }
+
+  return {
+    success: true,
+    transactionId: data.insert_wallet_transactions_one.id,
+    netAmount,
+    agatikeFee,
+    networkFee,
+  };
+});

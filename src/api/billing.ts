@@ -26,6 +26,7 @@ export interface Subscription {
   start_date: any;
   next_billing_date: any;
   amount: number;
+  pricing_plan?: PricingPlan;
 }
 
 const GET_PLANS = `
@@ -62,6 +63,13 @@ const GET_ACTIVE_SUB = `
       start_date
       next_billing_date
       amount
+      pricing_plan {
+        id
+        name
+        customer_service_fee_percentage
+        organizer_platform_contribution
+        platform_margin_buffer
+      }
     }
   }
 `;
