@@ -9,6 +9,7 @@ import {
   upgradeSubscription,
   getActiveSubscription,
 } from "@/api/billing";
+import { getAllPaymentProviderFees } from "@/api/pawapay";
 import { getOrganizerProfile } from "@/api/organizers";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ function PricingPlansPage() {
   const [rules, setRules] = useState<PromotionalRule[]>([]);
   const [organizerProfile, setOrganizerProfile] = useState<any>(null);
   const [activeSub, setActiveSub] = useState<any>(null);
+  const [providerFees, setProviderFees] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnnually, setIsAnnually] = useState(false);
 
@@ -57,11 +59,12 @@ function PricingPlansPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [fetchedPlans, fetchedRules, fetchedOrganizer, fetchedActiveSub] = await Promise.all([
+        const [fetchedPlans, fetchedRules, fetchedOrganizer, fetchedActiveSub, fetchedProviderFees] = await Promise.all([
           getPricingPlans(),
           getPromotionalRules(),
           getOrganizerProfile().catch(() => null),
           activeWorkspace?.orgnizer_id ? getActiveSubscription({ data: { organizer_id: activeWorkspace.orgnizer_id } } as any) : null,
+          getAllPaymentProviderFees(),
         ]);
         
         // Hide the Basic plan (price 0) as it is given by default
@@ -69,6 +72,7 @@ function PricingPlansPage() {
         setRules(fetchedRules);
         setOrganizerProfile(fetchedOrganizer);
         setActiveSub(fetchedActiveSub);
+        setProviderFees(fetchedProviderFees);
       } catch (error) {
         console.error("Failed to load plans:", error);
         toast.error("Failed to load pricing plans.");
@@ -121,6 +125,21 @@ function PricingPlansPage() {
 
   // Find the launch promo if it exists
   const launchPromo = rules.find((r) => r.name === "Launch Promo");
+
+  // Calculate country fees
+  const countryCode = activeWorkspace?.country || "RWA"; // User's workspace country
+  const countryFees = providerFees.filter((f) => f.country_code === countryCode || f.country_code === "RWA");
+
+  const maxCollectionPct =
+    countryFees.length > 0
+      ? Math.max(...countryFees.map((f) => f.collection_percentage || 0))
+      : 3.0; // fallback
+
+  const avgDisbursementPct =
+    countryFees.length > 0
+      ? countryFees.reduce((sum, f) => sum + (f.disbursement_percentage || 0), 0) /
+        countryFees.length
+      : 2.0; // fallback
 
   return (
     <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500 py-8 px-4">
@@ -278,7 +297,7 @@ function PricingPlansPage() {
                 <h4 className="text-sm font-medium uppercase tracking-wider text-foreground">
                   What's included:
                 </h4>
-                <ul className="space-y-3">
+                <ul className="space-y-3 mb-6">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
                       <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
@@ -286,6 +305,26 @@ function PricingPlansPage() {
                     </li>
                   ))}
                 </ul>
+
+                <div className="pt-4 border-t border-border/60 mt-auto space-y-3">
+                  <h4 className="text-sm font-medium uppercase tracking-wider text-foreground">
+                    Transaction Fees
+                  </h4>
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                      <span>
+                        <strong className="text-foreground font-semibold">Collection:</strong> {Math.max(0, maxCollectionPct - (plan.customer_service_fee_percentage || 2)).toFixed(1)}% per ticket
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                      <span>
+                        <strong className="text-foreground font-semibold">Withdrawal:</strong> {(avgDisbursementPct + (plan.organizer_platform_contribution || 0)).toFixed(1)}%
+                      </span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           );

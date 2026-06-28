@@ -101,7 +101,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     enabled: !!eventId,
   });
 
-  // Load cart and init attendees
+  // Load cart, selected seats, and session-persisted form inputs
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey);
@@ -113,6 +113,16 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       if (savedSeats) {
         setSelectedSeats(JSON.parse(savedSeats));
       }
+
+      // Restore form inputs if user accidentally refreshed the page
+      const savedAttendees = sessionStorage.getItem(`event_checkout_attendees_${eventId}`);
+      if (savedAttendees) {
+        setAttendees(JSON.parse(savedAttendees));
+      }
+      const savedAssignMode = sessionStorage.getItem(`event_checkout_assignMode_${eventId}`);
+      if (savedAssignMode) {
+        setAssignMode(savedAssignMode as "me" | "others");
+      }
     } catch {}
     setIsHydrated(true);
   }, [storageKey, eventId]);
@@ -121,7 +131,9 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   useEffect(() => {
     if (!isHydrated || Object.keys(cart).length === 0) return;
 
-    if (attendees.length > 0) return; // Prevent re-initialization which causes lag and resets inputs
+    // If we loaded attendees from session storage and the quantity matches the cart, don't wipe them out!
+    const totalTicketsInCart = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+    if (attendees.length === totalTicketsInCart && totalTicketsInCart > 0) return;
 
     const availableSeats = [...selectedSeats];
     const initialAttendees: any[] = [];
@@ -169,6 +181,14 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
     setAttendees(initialAttendees);
   }, [isHydrated, cart, user, selectedSeats]);
+
+  // Persist attendees and assignMode to sessionStorage whenever they change
+  useEffect(() => {
+    if (attendees.length > 0) {
+      sessionStorage.setItem(`event_checkout_attendees_${eventId}`, JSON.stringify(attendees));
+    }
+    sessionStorage.setItem(`event_checkout_assignMode_${eventId}`, assignMode);
+  }, [attendees, assignMode, eventId]);
 
   const updateAttendee = (index: number, field: string, value: string) => {
     const newAttendees = [...attendees];

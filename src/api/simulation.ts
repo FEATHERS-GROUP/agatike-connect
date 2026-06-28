@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import { getWorkspaceActivePlanFees } from "./billing";
-import { getPaymentProviderFees } from "./pawapay";
 
 const LOG_SIMULATION = `
   mutation LogSimulation(
@@ -50,16 +49,16 @@ export const simulateTransaction = createServerFn({ method: "POST" })
           }
         }
       `, { workspaceId, network, countryCode: countryCode || "RWA" });
-      
+
       const organizerId = combinedRes.workspaces_by_pk?.orgnizer_id;
       const providerFees = combinedRes.payment_provider_fees?.[0];
 
       // Fetch pricing plan (subscription rules)
       const planFees = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
-      
+
       const customerServicePct = planFees.customer_service_fee_percentage || 2.0;
       const organizerContributionPct = planFees.organizer_platform_contribution || 0;
-      
+
       // --- CORE SYSTEM EQUATION & COST HIERARCHY ---
       // 1. Customer Fee Engine
       const customerFee = (basePrice * customerServicePct) / 100;
@@ -83,13 +82,13 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       if (providerFees) {
         pawaPayCollectionPct = providerFees.collection_percentage || 0;
         pawaPayDisbursementPct = providerFees.disbursement_percentage || 0;
-        
-        expectedCollectionCost = 
-          (totalCustomerCharge * (pawaPayCollectionPct / 100)) + 
+
+        expectedCollectionCost =
+          (totalCustomerCharge * (pawaPayCollectionPct / 100)) +
           (providerFees.collection_fixed_fee || 0);
-          
-        expectedDisbursementCost = 
-          (basePrice * (pawaPayDisbursementPct / 100)) + 
+
+        expectedDisbursementCost =
+          (basePrice * (pawaPayDisbursementPct / 100)) +
           (providerFees.disbursement_fixed_fee || 0);
       }
 
@@ -102,7 +101,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       let decision = "approved";
       let structuredError = null;
       let failureClassification = "OK";
-      
+
       let finalOrganizerFee = organizerFee;
       let finalNetMargin = netMargin;
 
@@ -111,13 +110,13 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         const shortfall = Math.abs(netMargin);
         finalOrganizerFee += shortfall;
         finalNetMargin = 0; // Margin is balanced because organizer absorbed the cost
-        
+
         failureClassification = "ABSORBED_BY_ORGANIZER";
-        
+
         // We only block if the organizer payout literally becomes negative
         // (i.e. the ticket price isn't even enough to cover the PawaPay fees)
         const organizerPayout = basePrice - finalOrganizerFee;
-        
+
         if (organizerPayout < 0) {
           decision = "blocked";
           failureClassification = "NOT_FIXABLE";
@@ -171,7 +170,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         structuredError,
         transactionId
       };
-      
+
     } catch (e) {
       console.error("Simulation Engine Failed:", e);
       // Fail-safe block if engine crashes

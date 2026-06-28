@@ -105,6 +105,31 @@ export const getPaymentProviderFees = createServerFn({ method: "POST" })
     }
   });
 
+const GET_ALL_PROVIDER_FEES = `
+  query GetAllProviderFees {
+    payment_provider_fees {
+      id
+      network
+      country_code
+      collection_percentage
+      collection_fixed_fee
+      disbursement_percentage
+      disbursement_fixed_fee
+    }
+  }
+`;
+
+export const getAllPaymentProviderFees = createServerFn({ method: "GET" })
+  .handler(async () => {
+    try {
+      const res = await hasuraRequest<any>(GET_ALL_PROVIDER_FEES);
+      return res.payment_provider_fees || [];
+    } catch (e) {
+      console.error("Failed to fetch all provider fees:", e);
+      return [];
+    }
+  });
+
 export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
