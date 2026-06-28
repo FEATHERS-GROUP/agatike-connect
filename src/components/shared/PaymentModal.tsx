@@ -110,7 +110,7 @@ export function PaymentModal({
   const supportedNetworks = wallet?.supported_networks || [];
 
   const availableNetworks = useMemo(() => {
-    if (!supportedNetworks || supportedNetworks.length === 0) return ALL_NETWORKS;
+    if (!supportedNetworks || supportedNetworks.length === 0) return [];
     return ALL_NETWORKS.filter((n) => supportedNetworks.includes(n.value));
   }, [supportedNetworks]);
 
@@ -278,6 +278,10 @@ export function PaymentModal({
                       <Label className="text-xs text-muted-foreground">Network Provider</Label>
                       {isWalletLoading ? (
                         <div className="h-10 w-full animate-pulse bg-secondary rounded-lg" />
+                      ) : availableNetworks.length === 0 ? (
+                        <div className="p-3 bg-red-50 text-red-600 border border-red-200 rounded-md text-xs font-medium">
+                          The organizer has not configured any payment networks yet. Please contact them so they can enable payments.
+                        </div>
                       ) : (
                         <Select value={network} onValueChange={setNetwork}>
                           <SelectTrigger className="bg-background border-border/60 h-11">
@@ -293,7 +297,8 @@ export function PaymentModal({
                         </Select>
                       )}
                     </div>
-                    <div className="space-y-1.5 text-left">
+                    {availableNetworks.length > 0 && (
+                      <div className="space-y-1.5 text-left">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs text-muted-foreground">Phone Number</Label>
                         {userPhone && phone !== userPhone && (
@@ -340,6 +345,7 @@ export function PaymentModal({
                         />
                       </div>
                     </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -468,7 +474,7 @@ export function PaymentModal({
                   isFxLoading ||
                   isSimulating ||
                   isBlocked ||
-                  (paymentMethod === "momo" && (!isMomoComplete || isFxLoading))
+                  (paymentMethod === "momo" && (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
                 }
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
                 style={{ background: "var(--gradient-primary)" }}
