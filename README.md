@@ -1927,22 +1927,41 @@ To ensure full transparency to the Organizer on the **Pricing Plans** page:
 **Rule:** Agatike's subscription plans **do not subsidize PawaPay Disbursement Fees**.
 When an organizer withdraws funds, the withdrawal fee is a combination of two elements:
 
-1. **PawaPay Disbursement Average:** The average disbursement percentage across all networks in the organizer's country.
+1. **PawaPay Disbursement Average:** The system automatically calculates network processing fees based on live network configurations.
+   - **Tiered Rules Engine:** If a network has complex tiered processing costs (e.g. `{"disbursement": [{"max": 10000, "pct": 2, "fixed": 100}]}`), the backend safely recursively parses the potentially double-stringified JSONB and mathematically isolates the exact tier the withdrawal amount falls into.
+   - **Flat Rate Fallback:** If the network has no tier rules, the engine falls back to standard percentage and fixed fees dynamically.
 2. **Agatike Withdrawal Fee:** The organizer's `organizer_platform_contribution` percentage based on their active subscription plan.
 
-On the Pricing Plans page, these are summed together and presented cleanly to the organizer (e.g., `Average Disbursement Cost + Organizer Platform Contribution = Final Withdrawal Fee`).
+#### 24.3.1 Live Currency Exchange
+
+The withdrawal engine supports flawless cross-border conversion:
+- If an organizer with an `RWF` base wallet requests a payout to a `UGX` Mobile Money network, the backend instantly fetches a real-time exchange rate via `open.er-api.com`.
+- **UI Simplification:** The dashboard smoothly hides the `RWF` amounts and only presents the exact, final `UGX` (Target Currency) amounts to the user.
+- **Ledger Security:** The target currency, exchange rate, and converted values are permanently saved inside the `raw_callback_data` JSON for strict auditing in `wallet_transactions`.
+
+#### 24.3.2 Organizer Security: OTP & Password Verification
+
+Because withdrawals execute real financial payouts, they require explicit multi-factor verification:
+- When a user confirms the final amounts, the `sendWithdrawalOtp` server function generates an **8-character alphanumeric** One-Time Password and emails it securely (via Resend API) to the organizer.
+- The OTP is hashed using `bcrypt` and signed into a 10-minute JWT `otpToken` to prevent tampering.
+- The user must enter the OTP and their **Organizer Account Password** in the final UI step.
+- The strict `requestWithdrawal` backend mutation intercepts the payload, verifies the JWT, unhashes and compares the OTP, and verifies the Organizer's password. Only if all three flags pass does the system deduct the wallet balance and trigger the payload to PawaPay.
 
 ```mermaid
 flowchart TD
     Dashboard[Organizer Dashboard] -->|Clicks Withdraw| Req[Enter Amount to Withdraw]
-    Req --> CheckBal{Amount <= Wallet Balance?}
-    CheckBal -->|No| Reject[Reject Request]
-    CheckBal -->|Yes| NetCalc[Fetch PawaPay Disbursement Rates]
-
-    NetCalc --> Math[Disbursement Cost = Amount * Pct + Fixed Fee]
-    Math --> Final[Final Payout = Amount - Disbursement Cost]
-
-    Final --> Ledger[Create Pending wallet_transactions Debit]
+    Req --> NetCalc[Calculate Tiered Fees & Platform Percentages]
+    NetCalc --> Exch[Fetch Live Target Currency Exchange Rate]
+    Exch --> UI[Display Converted Summary]
+    UI -->|Clicks Confirm| OTPAPI[Generate & Email 8-Char OTP]
+    OTPAPI --> SecUI[Organizer Enters OTP & Password]
+    
+    SecUI --> Server[Submit Secure Payload]
+    Server --> JWTCheck{Verify OTP JWT & Match}
+    JWTCheck -->|Fails| Reject[Block Withdrawal]
+    JWTCheck -->|Passes| PassCheck{Verify Password Hash}
+    PassCheck -->|Fails| Reject
+    PassCheck -->|Passes| Ledger[Create Pending wallet_transactions Debit]
     Ledger --> API[Trigger PawaPay Disbursement API]
 
     API -->|Success Webhook| Update[Update transaction to 'completed']

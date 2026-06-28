@@ -342,7 +342,7 @@ function RequestWithdrawalPage() {
           {step === 1 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">Payout Method</Label>
+                <Label className="text-sm font-semibold">Payout Method *</Label>
                 <Select value={payoutMethod} onValueChange={setPayoutMethod}>
                   <SelectTrigger className="h-14 rounded-xl">
                     <SelectValue placeholder="Select method" />
@@ -357,7 +357,7 @@ function RequestWithdrawalPage() {
               {payoutMethod === "momo" && (
                 <>
                   <div className="space-y-3">
-                    <Label className="text-sm font-semibold">Country</Label>
+                    <Label className="text-sm font-semibold">Country *</Label>
                     <Select
                       value={selectedCountry}
                       onValueChange={(val) => {
@@ -379,7 +379,7 @@ function RequestWithdrawalPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <Label className="text-sm font-semibold">Network</Label>
+                    <Label className="text-sm font-semibold">Network *</Label>
                     <Select value={selectedNetworkId} onValueChange={setSelectedNetworkId}>
                       <SelectTrigger className="h-14 rounded-xl">
                         <SelectValue placeholder="Select network" />
@@ -411,7 +411,7 @@ function RequestWithdrawalPage() {
           {step === 2 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">Amount ({wallet?.currency})</Label>
+                <Label className="text-sm font-semibold">Amount ({wallet?.currency}) *</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
@@ -451,7 +451,7 @@ function RequestWithdrawalPage() {
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
               <div className="space-y-3">
                 <Label className="text-sm font-semibold">
-                  {payoutMethod === "momo" ? "Phone Number" : "Account Number"}
+                  {payoutMethod === "momo" ? "Phone Number" : "Account Number"} *
                 </Label>
                 <Input
                   placeholder={payoutMethod === "momo" ? "+250 78X XXX XXX" : "0000 0000 0000"}
