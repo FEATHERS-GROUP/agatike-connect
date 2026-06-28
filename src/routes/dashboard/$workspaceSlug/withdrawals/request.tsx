@@ -73,7 +73,7 @@ function RequestWithdrawalPage() {
     LSO: "Lesotho",
   };
 
-  const NETWORKS = Array.from(
+  const NETWORKS: any[] = Array.from(
     new Map(
       providerFees
         .filter((f: any) => f.network !== "CARD" && f.network !== "PAYPAL")
@@ -102,12 +102,12 @@ function RequestWithdrawalPage() {
   let countryCode = "RWA";
   let actualNetworkId = selectedNetworkId;
   if (payoutMethod === "momo" && selectedNetworkId) {
-    const netConfig = NETWORKS.find((n) => n.value === selectedNetworkId);
+    const netConfig = NETWORKS.find((n: any) => n.value === selectedNetworkId);
     countryCode = netConfig?.code || "RWA";
     actualNetworkId = netConfig?.actualNetwork || selectedNetworkId;
 
     const feeConfig = providerFees.find(
-      (f) => f.network === actualNetworkId && f.country_code === countryCode,
+      (f: any) => f.network === actualNetworkId && f.country_code === countryCode,
     );
     if (feeConfig) {
       if (feeConfig.is_tiered && feeConfig.tiered_rules) {
@@ -158,7 +158,10 @@ function RequestWithdrawalPage() {
       queryClient.invalidateQueries({ queryKey: ["wallet", activeWorkspace?.id] });
       queryClient.invalidateQueries({ queryKey: ["wallet-transactions", wallet?.id] });
       toast.success("Withdrawal request submitted successfully!");
-      navigate({ to: `/dashboard/${activeWorkspace?.slug}/withdrawals` });
+      navigate({
+        to: "/dashboard/$workspaceSlug/withdrawals",
+        params: { workspaceSlug: activeWorkspace?.slug || "" },
+      });
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to submit withdrawal request.");
@@ -221,7 +224,10 @@ function RequestWithdrawalPage() {
     <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
       <header className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild className="rounded-full">
-          <Link to={`/dashboard/${activeWorkspace?.slug}/withdrawals`}>
+          <Link
+            to="/dashboard/$workspaceSlug/withdrawals"
+            params={{ workspaceSlug: activeWorkspace?.slug || "" }}
+          >
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
@@ -287,7 +293,7 @@ function RequestWithdrawalPage() {
                         <SelectValue placeholder="Select network" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
-                        {FILTERED_NETWORKS.map((n) => (
+                        {FILTERED_NETWORKS.map((n: any) => (
                           <SelectItem key={n.value} value={n.value}>
                             {n.label}
                           </SelectItem>
