@@ -14,6 +14,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspaceWallet } from "@/api/wallet";
 import { getExchangeRate } from "@/api/pawapay";
+import { simulateTransaction } from "@/api/simulation";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -120,16 +121,38 @@ export function PaymentModal({
   const targetCurrency =
     paymentMethod === "momo" ? selectedNetworkObj?.curr || baseCurrency : baseCurrency;
 
-  // Fetch FX Rate
   const { data: fxData, isLoading: isFxLoading } = useQuery({
     queryKey: ["fx", baseCurrency, targetCurrency],
     queryFn: () => getExchangeRate({ data: { base: baseCurrency, target: targetCurrency } } as any),
     enabled: !!baseCurrency && !!targetCurrency && baseCurrency !== targetCurrency,
+    retry: false,
+    staleTime: 60000,
+  });
+
+  const countryCode = selectedNetworkObj ? selectedNetworkObj.value.split("_").pop() || "RWA" : "RWA";
+
+  // Simulation Engine (Pre-flight check)
+  const { data: simulation, isLoading: isSimulating } = useQuery({
+    queryKey: ["simulate", baseAmount, workspaceId, network, countryCode],
+    queryFn: () =>
+      simulateTransaction({
+        data: {
+          basePrice: baseAmount,
+          workspaceId,
+          network: network || "UNKNOWN",
+          countryCode,
+          transactionId: crypto.randomUUID(),
+        },
+      } as any),
+    enabled: isOpen && !!workspaceId && !!baseAmount && paymentMethod === "momo" && !!network,
+    retry: false,
+    staleTime: 60000,
   });
 
   // Calculate final amount
   const markupRate = fxData?.markupRate || 1;
-  const convertedAmount = Math.ceil(baseAmount * markupRate);
+  const simulatedAmount = simulation?.totalCustomerCharge || baseAmount;
+  const convertedAmount = Math.ceil(simulatedAmount * markupRate);
 
   // Set default network if none selected and available exists
   useEffect(() => {
@@ -148,6 +171,7 @@ export function PaymentModal({
   };
 
   const isMomoComplete = phone.length >= (selectedNetworkObj?.maxLen || 8) && network !== "";
+  const isBlocked = simulation?.decision === "blocked";
 
   return (
     <Dialog
@@ -371,12 +395,34 @@ export function PaymentModal({
               <div className="flex justify-between items-end mb-6">
                 <span className="font-bold">Total to Pay</span>
                 <div className="text-right">
-                  {isFxLoading && paymentMethod === "momo" && baseCurrency !== targetCurrency ? (
-                    <div className="h-8 w-24 animate-pulse bg-secondary rounded-lg" />
+                  {isSimulating ? (
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Calculating exact fees...</span>
+                    </div>
+                  ) : simulation && paymentMethod === "momo" ? (
+                    <div className="space-y-1 w-full text-sm">
+                      <div className="flex justify-between text-gray-600">
+                        <span>Base Ticket</span>
+                        <span>{baseAmount} {baseCurrency}</span>
+                      </div>
+                      <div className="flex justify-between text-gray-600">
+                        <span>Service Fee</span>
+                        <span>{simulation.serviceFee.toFixed(2)} {baseCurrency}</span>
+                      </div>
+                      <div className="flex justify-between font-medium text-gray-900 border-t pt-1">
+                        <span>Total Amount</span>
+                        <span>{simulation.totalCustomerCharge.toFixed(2)} {baseCurrency}</span>
+                      </div>
+                      {isBlocked && (
+                        <div className="mt-2 p-2 bg-red-50 text-red-600 text-xs rounded border border-red-200">
+                          This transaction cannot be processed at this time due to high external network fees. Please try another payment method.
+                        </div>
+                      )}
+                    </div>
                   ) : (
-                    <span className="text-2xl font-black text-primary">
-                      {paymentMethod === "momo" ? targetCurrency : baseCurrency}{" "}
-                      {convertedAmount.toLocaleString()}
+                    <span className="font-semibold text-lg text-gray-900 dark:text-white">
+                      Total: {convertedAmount.toLocaleString()} {targetCurrency}
                     </span>
                   )}
                 </div>
@@ -387,6 +433,9 @@ export function PaymentModal({
                 disabled={
                   isProcessing ||
                   isGenerating ||
+                  isFxLoading ||
+                  isSimulating ||
+                  isBlocked ||
                   (paymentMethod === "momo" && (!isMomoComplete || isFxLoading))
                 }
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"

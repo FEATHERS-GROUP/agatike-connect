@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { hasuraRequest } from "./graphql.server";
 
 export const getExchangeRate = createServerFn({ method: "POST" })
   .validator((d: { base: string; target: string }) => d)
@@ -70,6 +71,39 @@ export const getPawaPayNetworks = createServerFn({ method: "GET" }).handler(asyn
     return [];
   }
 });
+
+const GET_PAYMENT_PROVIDER_FEES = `
+  query GetProviderFees($network: String!, $countryCode: String) {
+    payment_provider_fees(where: {
+      _and: [
+        { network: { _eq: $network } },
+        { country_code: { _eq: $countryCode } }
+      ]
+    }, limit: 1) {
+      id
+      collection_percentage
+      collection_fixed_fee
+      disbursement_percentage
+      disbursement_fixed_fee
+      is_tiered
+    }
+  }
+`;
+
+export const getPaymentProviderFees = createServerFn({ method: "POST" })
+  .validator((d: { network: string; countryCode?: string }) => d)
+  .handler(async (ctx) => {
+    try {
+      const res = await hasuraRequest<any>(GET_PAYMENT_PROVIDER_FEES, {
+        network: ctx.data.network,
+        countryCode: ctx.data.countryCode || "RWA"
+      });
+      return res.payment_provider_fees?.[0] || null;
+    } catch (e) {
+      console.error("Failed to fetch payment provider fees:", e);
+      return null;
+    }
+  });
 
 export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
   .validator((d: any) => d)

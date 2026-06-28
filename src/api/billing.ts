@@ -12,6 +12,9 @@ export interface PricingPlan {
   features: string[];
   modules_included: string[];
   is_popular: boolean;
+  yearly_price?: number;
+  customer_service_fee_percentage?: number;
+  organizer_platform_contribution?: number;
 }
 
 export interface Subscription {
@@ -36,6 +39,9 @@ const GET_PLANS = `
       features
       modules_included
       is_popular
+      yearly_price
+      customer_service_fee_percentage
+      organizer_platform_contribution
     }
   }
 `;
@@ -59,13 +65,37 @@ const GET_ACTIVE_SUB = `
 `;
 
 export const getActiveSubscription = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
+  .validator((d: { organizer_id: string }) => d)
   .handler(async (ctx) => {
-    const { organizer_id } = ctx.data;
     const res = await hasuraRequest<{ subscriptions: Subscription[] }>(GET_ACTIVE_SUB, {
-      organizer_id,
+      organizer_id: ctx.data.organizer_id,
     });
     return res.subscriptions[0] || null;
+  });
+
+const GET_ACTIVE_PLAN_FEES = `
+  query GetActivePlanFees($organizer_id: uuid!) {
+    subscriptions(where: { organizer_id: { _eq: $organizer_id }, status: { _eq: "active" } }, limit: 1) {
+      pricing_plan {
+        customer_service_fee_percentage
+        organizer_platform_contribution
+      }
+    }
+  }
+`;
+
+export const getWorkspaceActivePlanFees = createServerFn({ method: "POST" })
+  .validator((d: { organizer_id: string }) => d)
+  .handler(async (ctx) => {
+    if (!ctx.data.organizer_id) return { customer_service_fee_percentage: 2.0, organizer_platform_contribution: 0 };
+    const res = await hasuraRequest<any>(GET_ACTIVE_PLAN_FEES, {
+      organizer_id: ctx.data.organizer_id,
+    });
+    const plan = res.subscriptions?.[0]?.pricing_plan;
+    return {
+      customer_service_fee_percentage: plan?.customer_service_fee_percentage ?? 2.0,
+      organizer_platform_contribution: plan?.organizer_platform_contribution ?? 0,
+    };
   });
 
 const GET_INVOICES = `
