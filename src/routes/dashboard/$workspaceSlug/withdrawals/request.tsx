@@ -169,7 +169,7 @@ function RequestWithdrawalPage() {
 
   const targetCurrency = COUNTRY_CURRENCY_MAP[countryCode] || wallet?.currency || "RWF";
 
-  const { data: exchangeRate } = useQuery({
+  const { data: exchangeRate, isLoading: isExchangeLoading } = useQuery({
     queryKey: ["exchange-rate", wallet?.currency, targetCurrency],
     queryFn: () =>
       getExchangeRate({
@@ -182,6 +182,8 @@ function RequestWithdrawalPage() {
   const convertedAmount = amountToWithdraw * rate;
   const convertedFee = totalFee * rate;
   const convertedNetPayout = netPayout * rate;
+  
+  const showExchange = isExchangeLoading || rate !== 1;
 
   const withdrawMutation = useMutation({
     mutationFn: () =>
@@ -379,11 +381,6 @@ function RequestWithdrawalPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    {rate !== 1 && (
-                      <p className="text-xs text-muted-foreground font-medium flex items-center justify-end px-1">
-                        Exchange Rate: 1 {wallet?.currency} ≈ {rate.toFixed(4)} {targetCurrency}
-                      </p>
-                    )}
                   </div>
                 </>
               )}
@@ -465,13 +462,12 @@ function RequestWithdrawalPage() {
                   <span className="text-muted-foreground">Requested Amount (Subtotal):</span>
                   <div className="flex flex-col items-end">
                     <span className="font-medium text-foreground">
-                      {formatCurrency(amountToWithdraw, wallet?.currency)}
+                      {showExchange
+                        ? isExchangeLoading
+                          ? "..."
+                          : formatCurrency(convertedAmount, targetCurrency)
+                        : formatCurrency(amountToWithdraw, wallet?.currency)}
                     </span>
-                    {rate !== 1 && (
-                      <span className="text-xs text-muted-foreground mt-0.5">
-                        ≈ {formatCurrency(convertedAmount, targetCurrency)}
-                      </span>
-                    )}
                   </div>
                 </div>
 
@@ -482,7 +478,11 @@ function RequestWithdrawalPage() {
                       platformPercentage + netPercentage > 0
                         ? `${platformPercentage + netPercentage}%`
                         : null,
-                      netFixed > 0 ? formatCurrency(netFixed, wallet?.currency) : null,
+                      netFixed > 0
+                        ? showExchange && !isExchangeLoading
+                          ? formatCurrency(netFixed * rate, targetCurrency)
+                          : formatCurrency(netFixed, wallet?.currency)
+                        : null,
                     ]
                       .filter(Boolean)
                       .join(" + ")}
@@ -490,13 +490,12 @@ function RequestWithdrawalPage() {
                   </span>
                   <div className="flex flex-col items-end">
                     <span className="font-medium text-destructive">
-                      - {formatCurrency(totalFee, wallet?.currency)}
+                      - {showExchange
+                          ? isExchangeLoading
+                            ? "..."
+                            : formatCurrency(convertedFee, targetCurrency)
+                          : formatCurrency(totalFee, wallet?.currency)}
                     </span>
-                    {rate !== 1 && (
-                      <span className="text-xs text-destructive/80 mt-0.5">
-                        ≈ - {formatCurrency(convertedFee, targetCurrency)}
-                      </span>
-                    )}
                   </div>
                 </div>
 
@@ -506,13 +505,12 @@ function RequestWithdrawalPage() {
                   <span>You Will Receive (Net):</span>
                   <div className="flex flex-col items-end">
                     <span className="text-primary">
-                      {formatCurrency(netPayout, wallet?.currency)}
+                      {showExchange
+                        ? isExchangeLoading
+                          ? "..."
+                          : formatCurrency(convertedNetPayout, targetCurrency)
+                        : formatCurrency(netPayout, wallet?.currency)}
                     </span>
-                    {rate !== 1 && (
-                      <span className="text-sm text-primary/80 mt-0.5">
-                        ≈ {formatCurrency(convertedNetPayout, targetCurrency)}
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
