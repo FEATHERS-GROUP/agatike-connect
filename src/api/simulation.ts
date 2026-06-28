@@ -93,7 +93,9 @@ export const simulateTransaction = createServerFn({ method: "POST" })
           (providerFees.disbursement_fixed_fee || 0);
       }
 
-      const totalCost = expectedCollectionCost + expectedDisbursementCost;
+      // AT CHECKOUT: We only care about Collection Cost. 
+      // Disbursement costs are charged directly to the organizer at withdrawal time.
+      const totalCost = expectedCollectionCost;
       const netMargin = totalRevenue - totalCost;
 
       // --- OPTIMIZATION LAYER (ADAPTIVE ROUTING) ---

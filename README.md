@@ -1806,19 +1806,87 @@ The Cinema module allows an organizer to operate a full movie theatre ticketing 
 
 ---
 
-## 24. Workspace Subscriptions
+## 24. Subscription-Based Dynamic Payment Margin Engine
 
-**Files:** `src/api/space_subscriptions.ts`
+**Files:** `src/api/simulation.ts`, `src/api/billing.ts`
 
-To monetize the platform, Agatike Connect offers recurring SaaS subscriptions for Organizers.
+Agatike Connect is not just a ticketing platform; it operates a **dynamic, subscription-driven financial routing system**. 
+To ensure that Agatike never processes a transaction at a loss, the system dynamically calculates payment provider costs (PawaPay) and shifts margins in real-time based on the Organizer's active Subscription Plan.
 
-### Logic
+### 24.1 Plan Choosing & Upgrade Logic (For Organizers)
 
-- Organizers can use basic features for free. Advanced features (e.g., Custom Book Builder, Unlimited SMS, Custom Domains) require a paid subscription.
-- **Plans:** Defined in a static configuration or database table (e.g., "Pro", "Enterprise").
-- **Billing:** `space_subscriptions` tracks the `workspace_id`, the active `plan_id`, and the `expires_at` timestamp.
-- **Renewals:** Using PawaPay or card payments, organizers can renew their subscription. Upon successful payment, the `expires_at` date is incremented by 1 month or 1 year.
-- **Middleware Check:** The dashboard routes and specific feature components evaluate `useWorkspace().subscription_status`. If the workspace is downgraded, advanced features gracefully lock themselves and prompt the user to upgrade.
+Organizers subscribe to different tiers (e.g., Free, Pro, Business) to unlock features and lower their platform contribution fees.
+The `pricing_plans` table defines the `organizer_platform_contribution` for each tier (e.g., Free = 4.5%, Enterprise = 1.0%).
+
+```mermaid
+flowchart TD
+    Org[Organizer] -->|Clicks Upgrade| Plans[View Pricing Plans]
+    Plans --> Fetch[Query pricing_plans table]
+    Fetch --> Select{Organizer Selects Plan}
+    Select -->|Free Plan| Free[organizer_platform_contribution = 4.5%]
+    Select -->|Pro Plan| Pro[organizer_platform_contribution = 3.5%]
+    Select -->|Business Plan| Bus[organizer_platform_contribution = 2.8%]
+    
+    Free & Pro & Bus --> Checkout[MoMo / Card Payment for Subscription]
+    Checkout -->|Success Webhook| DB[Update workspaces_subscriptions]
+    DB --> Active[Plan Becomes Active]
+    Active --> Sim[Simulation Engine dynamically uses new lower contribution %]
+```
+
+### 24.2 Logic to Charge Customers (The Checkout Simulation)
+
+When a customer buys a ticket, the system uses a strict **Cost Coverage Hierarchy**. 
+
+1. **Customer Fee:** Fixed at ~2% of the Base Price.
+2. **PawaPay Collection Cost:** The exact cost to process the Mobile Money payment (e.g. 3.1%).
+3. **Organizer Fee:** Based on their subscription plan.
+
+**Rule:** The Customer is **never blocked** due to high network fees unless the ticket price is literally too low to cover the raw payment processing cost. If the Agatike Revenue Pool (Customer Fee + Organizer Fee) is less than the PawaPay Collection Cost, the **Organizer dynamically absorbs the difference** so the transaction proceeds seamlessly for the customer.
+
+```mermaid
+flowchart TD
+    Cust[Customer] -->|Selects 10,000 RWF Ticket| Checkout
+    Checkout --> FetchRates[Fetch PawaPay Collection Rates]
+    FetchRates --> Sim[Simulation Engine Calculates Margin]
+    
+    Sim --> Rev[Agatike Revenue = Customer Fee + Organizer Subscription Fee]
+    Sim --> Cost[Total Cost = PawaPay Collection Cost]
+    
+    Cost & Rev --> Check{Is Revenue < Cost?}
+    
+    Check -->|No - Profitable| Proceed[Approve Checkout]
+    Check -->|Yes - Shortfall| Absorb[Organizer Absorbs Shortfall]
+    
+    Absorb --> CalcPayout[Organizer Payout = Ticket Price - Absorbed Shortfall]
+    CalcPayout --> CheckNeg{Is Payout < 0?}
+    CheckNeg -->|Yes| Block[Block Customer: Ticket price too low]
+    CheckNeg -->|No| Proceed
+    
+    Proceed --> PawaPay[Send Charge to PawaPay]
+    PawaPay --> Wallet[Credit Organizer Wallet with Net Payout]
+```
+
+### 24.3 Withdrawals and Wallet Logic
+
+**Rule:** Agatike's subscription plans **do not subsidize PawaPay Disbursement Fees**. 
+When an organizer withdraws funds, the exact PawaPay disbursement fee for that specific network (e.g., 1% + 60 RWF) is calculated and deducted directly from the requested withdrawal amount.
+
+```mermaid
+flowchart TD
+    Dashboard[Organizer Dashboard] -->|Clicks Withdraw| Req[Enter Amount to Withdraw]
+    Req --> CheckBal{Amount <= Wallet Balance?}
+    CheckBal -->|No| Reject[Reject Request]
+    CheckBal -->|Yes| NetCalc[Fetch PawaPay Disbursement Rates]
+    
+    NetCalc --> Math[Disbursement Cost = Amount * Pct + Fixed Fee]
+    Math --> Final[Final Payout = Amount - Disbursement Cost]
+    
+    Final --> Ledger[Create Pending wallet_transactions Debit]
+    Ledger --> API[Trigger PawaPay Disbursement API]
+    
+    API -->|Success Webhook| Update[Update transaction to 'completed']
+    Update --> Bank[Money hits Organizer's Mobile Money Account]
+```
 
 ---
 
