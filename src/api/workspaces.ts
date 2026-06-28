@@ -44,43 +44,7 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
       allowedModules = me.modules;
     }
 
-    // --- 14-Day Free Trial Logic ---
-    try {
-      const subQuery = `
-        query GetActiveSub {
-          subscriptions(
-            where: { organizer_id: { _eq: "${me.organizer_id}" }, status: { _eq: "active" } }
-            order_by: { created_at: desc }
-            limit: 1
-          ) {
-            created_at
-            plan {
-              name
-            }
-          }
-        }
-      `;
-      const subRes = await hasuraRequest<{ subscriptions: any[] }>(subQuery);
-      const activeSub = subRes.subscriptions?.[0];
 
-      if (activeSub && activeSub.plan?.name?.toLowerCase().includes("basic")) {
-        const subDate = new Date(activeSub.created_at);
-        const now = new Date();
-        const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
-
-        if (diffDays <= 14) {
-          // 14-Day Free Trial is Active: Unlock all modules!
-          allowedModules = null;
-          currentUser.isTrialActive = true;
-          currentUser.trialDaysLeft = Math.ceil(14 - diffDays);
-        } else {
-          currentUser.isTrialExpired = true;
-        }
-      }
-    } catch (err) {
-      console.warn("Failed to check subscription for 14-day trial status:", err);
-    }
-    // -------------------------------
   } else {
     currentUser = {
       role: "organizer",
@@ -88,6 +52,65 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
       modules: ["ALL"],
     };
   }
+
+  // --- Subscription & Trial Logic (Runs for both Organizer & Workspace User) ---
+  try {
+    const subQuery = `
+      query GetActiveSub {
+        subscriptions(
+          where: { organizer_id: { _eq: "${orgnizer_id}" }, status: { _eq: "active" } }
+          order_by: { created_at: desc }
+          limit: 1
+        ) {
+          created_at
+          amount
+          next_billing_date
+          pricing_plan {
+            name
+          }
+        }
+      }
+    `;
+    const subRes = await hasuraRequest<{ subscriptions: any[] }>(subQuery);
+    const activeSub = subRes.subscriptions?.[0];
+
+    if (activeSub) {
+      currentUser.planName = activeSub.pricing_plan?.name;
+      currentUser.isBasic = activeSub.amount === 0;
+      currentUser.nextBillingDate = activeSub.next_billing_date;
+
+      if (currentUser.isBasic) {
+        const subDate = new Date(activeSub.created_at);
+        const now = new Date();
+        const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
+
+        if (diffDays <= 14) {
+          if (session.type === "workspace_user") {
+            allowedModules = null; // Unlock for workspace user
+          }
+          currentUser.isTrialActive = true;
+          currentUser.trialDaysLeft = Math.max(1, Math.ceil(14 - diffDays));
+        } else {
+          currentUser.isTrialExpired = true;
+        }
+      } else if (activeSub.next_billing_date) {
+        const billingDate = new Date(activeSub.next_billing_date);
+        const now = new Date();
+        const diffDays = (billingDate.getTime() - now.getTime()) / (1000 * 3600 * 24);
+        if (diffDays <= 3 && diffDays >= 0) {
+           currentUser.isExpiringSoon = true;
+           currentUser.daysUntilExpiration = Math.max(0, Math.ceil(diffDays));
+        } else if (diffDays < 0) {
+           currentUser.isExpired = true;
+        }
+      }
+    } else {
+      currentUser.isBasic = true;
+    }
+  } catch (err) {
+    console.warn("Failed to check subscription:", err);
+  }
+  // -------------------------------
 
   const query = `
       query GetWorkspaces($orgnizer_id: uuid!) {
