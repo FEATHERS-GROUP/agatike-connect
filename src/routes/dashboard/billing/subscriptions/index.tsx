@@ -142,10 +142,10 @@ function SubscriptionsPage() {
             <Sparkles className="w-40 h-40 text-primary" />
           </div>
 
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <h3 className="text-3xl font-bold">{plan.name}</h3>
+          <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 lg:gap-8">
+            <div className="space-y-4 w-full lg:w-auto">
+              <div className="flex flex-wrap items-center gap-3">
+                <h3 className="text-2xl sm:text-3xl font-bold break-words">{plan.name}</h3>
                 <Badge
                   variant="secondary"
                   className="bg-primary/15 text-primary hover:bg-primary/25 border-transparent px-3 py-1 font-bold tracking-wider"
@@ -174,10 +174,10 @@ function SubscriptionsPage() {
               )}
             </div>
 
-            <div className="flex flex-col gap-3 min-w-[160px] w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto min-w-[160px] mt-4 lg:mt-0">
               <Button
                 asChild
-                className="w-full rounded-full shadow-md transition-transform hover:scale-105 h-12 text-md font-medium"
+                className="w-full sm:flex-1 lg:w-full rounded-full shadow-md transition-transform hover:scale-105 h-12 text-md font-medium"
                 style={{ background: "var(--gradient-primary)" }}
               >
                 <Link to="/dashboard/billing/subscriptions/pricingplans">
@@ -188,7 +188,7 @@ function SubscriptionsPage() {
                 <Button
                   variant="outline"
                   onClick={() => toast.info("Please contact support to cancel your subscription.")}
-                  className="w-full rounded-full border-border/60 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 h-12 text-md"
+                  className="w-full sm:flex-1 lg:w-full rounded-full border-border/60 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 h-12 text-md"
                 >
                   Cancel Plan
                 </Button>
@@ -200,7 +200,7 @@ function SubscriptionsPage() {
             <h4 className="text-sm font-bold mb-6 uppercase tracking-wider text-muted-foreground">
               What's Included
             </h4>
-            <div className="grid sm:grid-cols-2 gap-y-4 gap-x-8">
+            <div className="grid lg:grid-cols-2 gap-y-4 gap-x-8">
               {plan.features.map((feature: string, i: number) => (
                 <div
                   key={i}
