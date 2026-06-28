@@ -7,6 +7,7 @@ import {
   PromotionalRule,
   createEnterpriseLead,
   upgradeSubscription,
+  getActiveSubscription,
 } from "@/api/billing";
 import { getOrganizerProfile } from "@/api/organizers";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -43,6 +44,7 @@ function PricingPlansPage() {
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [rules, setRules] = useState<PromotionalRule[]>([]);
   const [organizerProfile, setOrganizerProfile] = useState<any>(null);
+  const [activeSub, setActiveSub] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnnually, setIsAnnually] = useState(false);
 
@@ -55,16 +57,18 @@ function PricingPlansPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [fetchedPlans, fetchedRules, fetchedOrganizer] = await Promise.all([
+        const [fetchedPlans, fetchedRules, fetchedOrganizer, fetchedActiveSub] = await Promise.all([
           getPricingPlans(),
           getPromotionalRules(),
           getOrganizerProfile().catch(() => null),
+          activeWorkspace?.orgnizer_id ? getActiveSubscription({ data: { organizer_id: activeWorkspace.orgnizer_id } } as any) : null,
         ]);
         
         // Hide the Basic plan (price 0) as it is given by default
         setPlans(fetchedPlans.filter(p => p.price > 0));
         setRules(fetchedRules);
         setOrganizerProfile(fetchedOrganizer);
+        setActiveSub(fetchedActiveSub);
       } catch (error) {
         console.error("Failed to load plans:", error);
         toast.error("Failed to load pricing plans.");
@@ -73,7 +77,7 @@ function PricingPlansPage() {
       }
     }
     loadData();
-  }, []);
+  }, [activeWorkspace?.orgnizer_id]);
 
   const handleUpgrade = async (plan: PricingPlan) => {
     if (!activeWorkspace?.orgnizer_id) {
@@ -246,22 +250,29 @@ function PricingPlansPage() {
                 )}
               </div>
 
-              <Button
-                onClick={() => {
-                  if (isEnterprise) {
-                    setIsSalesDrawerOpen(true);
-                  } else {
-                    handleUpgrade(plan);
-                  }
-                }}
-                variant={plan.is_popular ? "default" : "outline"}
-                className={`w-full rounded-full mb-8 h-11 ${
-                  plan.is_popular ? "shadow-md hover:scale-105 transition-transform" : ""
-                }`}
-                style={plan.is_popular ? { background: "var(--gradient-primary)" } : {}}
-              >
-                {isEnterprise ? "Contact Sales" : plan.price === 0 ? "Get Started" : "Upgrade Now"}
-              </Button>
+              {(() => {
+                const isActivePlan = activeSub?.plan_id === plan.id;
+                return (
+                  <Button
+                    onClick={() => {
+                      if (isActivePlan) return;
+                      if (isEnterprise) {
+                        setIsSalesDrawerOpen(true);
+                      } else {
+                        handleUpgrade(plan);
+                      }
+                    }}
+                    disabled={isActivePlan}
+                    variant={isActivePlan ? "secondary" : plan.is_popular ? "default" : "outline"}
+                    className={`w-full rounded-full mb-8 h-11 ${
+                      plan.is_popular && !isActivePlan ? "shadow-md hover:scale-105 transition-transform" : ""
+                    } ${isActivePlan ? "opacity-75 cursor-not-allowed font-bold" : ""}`}
+                    style={plan.is_popular && !isActivePlan ? { background: "var(--gradient-primary)" } : {}}
+                  >
+                    {isActivePlan ? "Current Plan" : isEnterprise ? "Contact Sales" : plan.price === 0 ? "Get Started" : "Upgrade Now"}
+                  </Button>
+                );
+              })()}
 
               <div className="space-y-4 flex-1">
                 <h4 className="text-sm font-medium uppercase tracking-wider text-foreground">
