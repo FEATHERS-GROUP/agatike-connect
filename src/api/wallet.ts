@@ -462,3 +462,29 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     networkFee,
   };
 });
+
+export const getPendingWithdrawals = createServerFn({ method: "GET" }).handler(async () => {
+  const query = `
+    query GetPendingWithdrawals {
+      wallet_transactions(
+        where: { type: { _eq: "withdrawal" }, status: { _eq: "pending" } }
+        order_by: { created_at: desc }
+      ) {
+        id
+        created_at
+        amount
+        net_amount
+        currency
+        status
+        payout_method
+        payout_account
+        raw_callback_data
+        workspace {
+          name
+        }
+      }
+    }
+  `;
+  const res = await hasuraRequest<{ wallet_transactions: any[] }>(query);
+  return res.wallet_transactions || [];
+});
