@@ -112,15 +112,19 @@ function EditUserPage() {
       setRole(existingUser.role || "user");
       setImage(existingUser.image || "");
 
-      setIsAllWorkspaces(existingUser.workspaces?.includes("ALL") ?? true);
-      setSelectedWorkspaces(
-        existingUser.workspaces?.includes("ALL") ? [] : existingUser.workspaces || [],
-      );
+      const w = existingUser.workspaces;
+      let wsArr = Array.isArray(w) ? w : typeof w === "string" ? [w] : w ? Object.keys(w) : [];
+      setIsAllWorkspaces(wsArr.includes("ALL") || wsArr.length === 0);
+      setSelectedWorkspaces(wsArr.includes("ALL") ? [] : wsArr);
 
-      setSelectedModules(existingUser.modules || []);
+      const m = existingUser.modules;
+      let modArr = Array.isArray(m) ? m : typeof m === "string" ? [m] : m ? Object.keys(m) : [];
+      setSelectedModules(modArr);
 
-      setIsAllRoutes(existingUser.pages?.includes("ALL") ?? true);
-      setSelectedRoutes(existingUser.pages?.includes("ALL") ? [] : existingUser.pages || []);
+      const p = existingUser.pages;
+      let pageArr = Array.isArray(p) ? p : typeof p === "string" ? [p] : p ? Object.keys(p) : [];
+      setIsAllRoutes(pageArr.includes("ALL") || pageArr.length === 0);
+      setSelectedRoutes(pageArr.includes("ALL") ? [] : pageArr);
 
       setIsTemporary(existingUser.is_temporary || false);
       if (existingUser.expires_at) {
@@ -216,6 +220,9 @@ function EditUserPage() {
     Users: "users",
     Withdrawals: "withdrawals",
     Settings: "settings",
+    "Page Builder": "page_builder",
+    "Badge Designer": "badge_designer",
+    "Ticket Designer": "ticket_designer",
   };
 
   const availableModules = platformModules.filter((m) => {
@@ -255,7 +262,7 @@ function EditUserPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workspace_users"] });
       toast.success("User updated successfully!");
-      navigate({ to: `/dashboard/${workspaceSlug}/users` });
+      navigate({ to: "/dashboard/$workspaceSlug/users", params: { workspaceSlug } });
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to update user");
@@ -344,7 +351,11 @@ function EditUserPage() {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center space-y-4">
         <h2 className="text-xl font-bold">User not found</h2>
-        <Button onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/users` })}>
+        <Button
+          onClick={() =>
+            navigate({ to: "/dashboard/$workspaceSlug/users", params: { workspaceSlug } })
+          }
+        >
           Back to Users
         </Button>
       </div>
@@ -354,7 +365,7 @@ function EditUserPage() {
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto pb-32">
       <div className="mb-8">
-        <Link to={`/dashboard/${workspaceSlug}/users`}>
+        <Link to="/dashboard/$workspaceSlug/users" params={{ workspaceSlug }}>
           <Button
             variant="ghost"
             className="rounded-full gap-2 -ml-3 text-muted-foreground hover:text-foreground"
@@ -749,7 +760,9 @@ function EditUserPage() {
           <Button
             variant="ghost"
             className="gap-2 rounded-xl"
-            onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/users` })}
+            onClick={() =>
+              navigate({ to: "/dashboard/$workspaceSlug/users", params: { workspaceSlug } })
+            }
           >
             Cancel
           </Button>

@@ -14,6 +14,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspaceWallet } from "@/api/wallet";
 import { getExchangeRate } from "@/api/pawapay";
+import { simulateTransaction } from "@/api/simulation";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -109,7 +110,7 @@ export function PaymentModal({
   const supportedNetworks = wallet?.supported_networks || [];
 
   const availableNetworks = useMemo(() => {
-    if (!supportedNetworks || supportedNetworks.length === 0) return ALL_NETWORKS;
+    if (!supportedNetworks || supportedNetworks.length === 0) return [];
     return ALL_NETWORKS.filter((n) => supportedNetworks.includes(n.value));
   }, [supportedNetworks]);
 
@@ -120,16 +121,40 @@ export function PaymentModal({
   const targetCurrency =
     paymentMethod === "momo" ? selectedNetworkObj?.curr || baseCurrency : baseCurrency;
 
-  // Fetch FX Rate
   const { data: fxData, isLoading: isFxLoading } = useQuery({
     queryKey: ["fx", baseCurrency, targetCurrency],
     queryFn: () => getExchangeRate({ data: { base: baseCurrency, target: targetCurrency } } as any),
     enabled: !!baseCurrency && !!targetCurrency && baseCurrency !== targetCurrency,
+    retry: false,
+    staleTime: 60000,
+  });
+
+  const countryCode = selectedNetworkObj
+    ? selectedNetworkObj.value.split("_").pop() || "RWA"
+    : "RWA";
+
+  // Simulation Engine (Pre-flight check)
+  const { data: simulation, isLoading: isSimulating } = useQuery({
+    queryKey: ["simulate", baseAmount, workspaceId, network, countryCode],
+    queryFn: () =>
+      simulateTransaction({
+        data: {
+          basePrice: baseAmount,
+          workspaceId,
+          network: network || "UNKNOWN",
+          countryCode,
+          transactionId: crypto.randomUUID(),
+        },
+      } as any),
+    enabled: isOpen && !!workspaceId && !!baseAmount && paymentMethod === "momo" && !!network,
+    retry: false,
+    staleTime: 60000,
   });
 
   // Calculate final amount
   const markupRate = fxData?.markupRate || 1;
-  const convertedAmount = Math.ceil(baseAmount * markupRate);
+  const simulatedAmount = simulation?.totalCustomerCharge || baseAmount;
+  const convertedAmount = Math.ceil(simulatedAmount * markupRate);
 
   // Set default network if none selected and available exists
   useEffect(() => {
@@ -141,13 +166,20 @@ export function PaymentModal({
   const handleProceed = () => {
     if (paymentMethod === "momo") {
       const fullPhone = selectedNetworkObj ? `${selectedNetworkObj.code}${phone}` : phone;
-      onProceed({ phone: fullPhone, network, currency: targetCurrency, convertedAmount });
+      onProceed({
+        phone: fullPhone,
+        network,
+        currency: targetCurrency,
+        convertedAmount,
+        shortfall: simulation?.shortfall || 0,
+      });
     } else {
       onProceed();
     }
   };
 
   const isMomoComplete = phone.length >= (selectedNetworkObj?.maxLen || 8) && network !== "";
+  const isBlocked = simulation?.decision === "blocked";
 
   return (
     <Dialog
@@ -248,6 +280,11 @@ export function PaymentModal({
                       <Label className="text-xs text-muted-foreground">Network Provider</Label>
                       {isWalletLoading ? (
                         <div className="h-10 w-full animate-pulse bg-secondary rounded-lg" />
+                      ) : availableNetworks.length === 0 ? (
+                        <div className="p-3 bg-red-50 text-red-600 border border-red-200 rounded-md text-xs font-medium">
+                          The organizer has not configured any payment networks yet. Please contact
+                          them so they can enable payments.
+                        </div>
                       ) : (
                         <Select value={network} onValueChange={setNetwork}>
                           <SelectTrigger className="bg-background border-border/60 h-11">
@@ -263,53 +300,55 @@ export function PaymentModal({
                         </Select>
                       )}
                     </div>
-                    <div className="space-y-1.5 text-left">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs text-muted-foreground">Phone Number</Label>
-                        {userPhone && phone !== userPhone && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const cleanPhone = userPhone.replace(/\D/g, "");
+                    {availableNetworks.length > 0 && (
+                      <div className="space-y-1.5 text-left">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs text-muted-foreground">Phone Number</Label>
+                          {userPhone && phone !== userPhone && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const cleanPhone = userPhone.replace(/\D/g, "");
+                                const max = selectedNetworkObj?.maxLen || 15;
+                                // If cleanPhone starts with country code, we might want to strip it,
+                                // but let's just use the last maxLen characters if it's too long,
+                                // or just let them edit it.
+                                const val =
+                                  cleanPhone.length > max ? cleanPhone.slice(-max) : cleanPhone;
+                                setPhone(val);
+                              }}
+                              className="text-[10px] font-medium text-primary hover:underline bg-primary/10 px-2 py-0.5 rounded-full transition-colors"
+                            >
+                              Use my saved number
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex h-11 bg-background border border-border/60 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
+                          {selectedNetworkObj && (
+                            <div className="flex items-center px-3 bg-secondary/30 border-r border-border/60 text-sm text-muted-foreground font-medium">
+                              +{selectedNetworkObj.code}
+                            </div>
+                          )}
+                          <Input
+                            type="tel"
+                            placeholder={
+                              selectedNetworkObj
+                                ? `e.g. ${"7".padEnd(selectedNetworkObj.maxLen, "0")}`
+                                : "e.g. 788123456"
+                            }
+                            value={phone}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/\D/g, "");
                               const max = selectedNetworkObj?.maxLen || 15;
-                              // If cleanPhone starts with country code, we might want to strip it,
-                              // but let's just use the last maxLen characters if it's too long,
-                              // or just let them edit it.
-                              const val =
-                                cleanPhone.length > max ? cleanPhone.slice(-max) : cleanPhone;
-                              setPhone(val);
+                              if (val.length <= max) setPhone(val);
                             }}
-                            className="text-[10px] font-medium text-primary hover:underline bg-primary/10 px-2 py-0.5 rounded-full transition-colors"
-                          >
-                            Use my saved number
-                          </button>
-                        )}
+                            className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent rounded-none"
+                          />
+                        </div>
                       </div>
-                      <div className="flex h-11 bg-background border border-border/60 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
-                        {selectedNetworkObj && (
-                          <div className="flex items-center px-3 bg-secondary/30 border-r border-border/60 text-sm text-muted-foreground font-medium">
-                            +{selectedNetworkObj.code}
-                          </div>
-                        )}
-                        <Input
-                          type="tel"
-                          placeholder={
-                            selectedNetworkObj
-                              ? `e.g. ${"7".padEnd(selectedNetworkObj.maxLen, "0")}`
-                              : "e.g. 788123456"
-                          }
-                          value={phone}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/\D/g, "");
-                            const max = selectedNetworkObj?.maxLen || 15;
-                            if (val.length <= max) setPhone(val);
-                          }}
-                          className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent rounded-none"
-                        />
-                      </div>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -371,12 +410,87 @@ export function PaymentModal({
               <div className="flex justify-between items-end mb-6">
                 <span className="font-bold">Total to Pay</span>
                 <div className="text-right">
-                  {isFxLoading && paymentMethod === "momo" && baseCurrency !== targetCurrency ? (
-                    <div className="h-8 w-24 animate-pulse bg-secondary rounded-lg" />
+                  {isSimulating ? (
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Calculating exact fees...</span>
+                    </div>
+                  ) : simulation && paymentMethod === "momo" ? (
+                    <div className="space-y-1 w-full text-sm">
+                      <div className="flex justify-between text-gray-600">
+                        <span>Base Ticket</span>
+                        <span>
+                          {baseAmount} {baseCurrency}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-gray-600">
+                        <span>Service Fee</span>
+                        <span>
+                          {simulation.serviceFee.toFixed(2)} {baseCurrency}
+                        </span>
+                      </div>
+                      <div className="flex justify-between font-medium text-gray-900 border-t pt-1">
+                        <span>Total Amount</span>
+                        <span>
+                          {simulation.totalCustomerCharge.toFixed(2)} {baseCurrency}
+                        </span>
+                      </div>
+                      {isBlocked && simulation.structuredError ? (
+                        <div className="mt-4 p-3 bg-red-50 text-red-900 text-xs rounded border border-red-200 space-y-2">
+                          <div className="font-bold text-red-700">
+                            {simulation.structuredError.title}
+                          </div>
+                          <p>{simulation.structuredError.description}</p>
+
+                          {simulation.structuredError.details && (
+                            <div className="bg-white/50 p-2 rounded border border-red-100 font-mono text-[10px]">
+                              <div>
+                                Customer Fee:{" "}
+                                {simulation.structuredError.details.customerServiceFee}
+                              </div>
+                              <div>
+                                Organizer Contribution:{" "}
+                                {simulation.structuredError.details.organizerContribution}
+                              </div>
+                              <div>
+                                Total Network Cost: {simulation.structuredError.details.totalCost}
+                              </div>
+                              <div className="mt-1 text-red-600 font-semibold">
+                                {simulation.structuredError.details.message}
+                              </div>
+                              <div className="mt-1">
+                                Shortfall: {simulation.structuredError.details.shortfall}
+                              </div>
+                            </div>
+                          )}
+
+                          {simulation.structuredError.recommendation && (
+                            <div className="mt-2 pt-2 border-t border-red-200">
+                              <div className="font-bold text-red-700 mb-1">
+                                System Recommendation
+                              </div>
+                              <ul className="list-disc pl-4 space-y-1">
+                                {simulation.structuredError.recommendation.map(
+                                  (rec: string, i: number) => (
+                                    <li key={i}>{rec}</li>
+                                  ),
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        isBlocked && (
+                          <div className="mt-2 p-2 bg-red-50 text-red-600 text-xs rounded border border-red-200">
+                            This transaction cannot be processed at this time due to high external
+                            network fees. Please try another payment method.
+                          </div>
+                        )
+                      )}
+                    </div>
                   ) : (
-                    <span className="text-2xl font-black text-primary">
-                      {paymentMethod === "momo" ? targetCurrency : baseCurrency}{" "}
-                      {convertedAmount.toLocaleString()}
+                    <span className="font-semibold text-lg text-gray-900 dark:text-white">
+                      Total: {convertedAmount.toLocaleString()} {targetCurrency}
                     </span>
                   )}
                 </div>
@@ -387,7 +501,11 @@ export function PaymentModal({
                 disabled={
                   isProcessing ||
                   isGenerating ||
-                  (paymentMethod === "momo" && (!isMomoComplete || isFxLoading))
+                  isFxLoading ||
+                  isSimulating ||
+                  isBlocked ||
+                  (paymentMethod === "momo" &&
+                    (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
                 }
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
                 style={{ background: "var(--gradient-primary)" }}

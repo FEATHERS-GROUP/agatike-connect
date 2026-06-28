@@ -176,7 +176,7 @@ function CinemaTicketTiersPage() {
 
   const openCreate = () => {
     setEditingTier(null);
-    setForm(EMPTY_FORM);
+    setForm({ ...EMPTY_FORM, currency: activeWorkspace?.currency || "RWF" });
     setSheetOpen(true);
   };
 
@@ -187,7 +187,7 @@ function CinemaTicketTiersPage() {
       description: tier.description || "",
       type: tier.type,
       price: tier.price,
-      currency: tier.currency || "RWF",
+      currency: tier.currency || activeWorkspace?.currency || "RWF",
       includes_glasses: tier.includes_glasses,
       is_kids: tier.is_kids,
       is_vip: tier.is_vip,
@@ -338,7 +338,10 @@ function CinemaTicketTiersPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4 text-right font-bold">
-                      {formatCurrency(tier.price, tier.currency)}
+                      {formatCurrency(
+                        tier.price,
+                        activeWorkspace?.currency || tier.currency || "RWF",
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">

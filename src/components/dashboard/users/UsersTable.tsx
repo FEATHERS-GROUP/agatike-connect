@@ -75,7 +75,7 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
   };
 
   const getWorkspaceNames = (wsIds: any) => {
-    if (!wsIds) return "None";
+    if (!Array.isArray(wsIds) || wsIds.length === 0) return "None";
     if (wsIds.includes("ALL")) return "All Workspaces";
     const names = wsIds.map((id: string) => workspaces.find((w) => w.id === id)?.name || id);
     return names.join(", ");
@@ -84,7 +84,7 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
   const { data: platformModules = [] } = usePlatformModules();
 
   const getModuleNames = (modIds: string[]) => {
-    if (!modIds || modIds.length === 0) return "None";
+    if (!Array.isArray(modIds) || modIds.length === 0) return "None";
     if (modIds.includes("ALL")) return "All Modules";
     const names = modIds.map((id) => {
       const found = platformModules.find((m) => m.id === id);
@@ -224,19 +224,13 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
                 <TableCell>{getWorkspaceNames(user.workspaces)}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {user.modules && user.modules.length > 0
-                      ? user.modules.map((mId: string) => {
-                          const mod = platformModules.find((p) => p.id === mId);
-                          return (
-                            <span
-                              key={mId}
-                              className="px-2 py-0.5 rounded-full bg-secondary text-xs font-medium"
-                            >
-                              {mod ? mod.label : mId}
-                            </span>
-                          );
-                        })
-                      : "None"}
+                    {Array.isArray(user.modules) && user.modules.length > 0 ? (
+                      <span className="px-2 py-0.5 rounded-full bg-secondary text-xs font-medium">
+                        {user.modules.includes("ALL") ? "All" : user.modules.length}
+                      </span>
+                    ) : (
+                      "None"
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -330,7 +324,7 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
                       <Puzzle className="h-3 w-3" /> Module Access
                     </h4>
                     <div className="flex flex-wrap gap-1.5">
-                      {u.modules && u.modules.length > 0 ? (
+                      {Array.isArray(u.modules) && u.modules.length > 0 ? (
                         u.modules.map((mId: string) => {
                           const mod = platformModules.find((p) => p.id === mId);
                           return (
@@ -353,7 +347,7 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
                       <FileText className="h-3 w-3" /> Route Access
                     </h4>
                     <div className="flex flex-wrap gap-1.5">
-                      {u.pages && u.pages.length > 0 ? (
+                      {Array.isArray(u.pages) && u.pages.length > 0 ? (
                         u.pages.map((p: string) => (
                           <span
                             key={p}

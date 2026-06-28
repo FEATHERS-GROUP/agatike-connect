@@ -17,7 +17,7 @@ const CREATE_VENUE_BOOKING = `
 `;
 
 export const createVenueBooking = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const {
       workspace_id,
@@ -119,14 +119,20 @@ export const createVenueBooking = createServerFn({ method: "POST" })
       },
     });
 
-    if (payment_status === "Paid" && parseFloat(amount || "0") > 0 && workspace_id) {
-      try {
-        const { addMoneyToWorkspaceWallet } = await import("./wallet");
-        await addMoneyToWorkspaceWallet({
-          data: { workspace_id, amount: parseFloat(amount) },
-        } as any);
-      } catch (e) {
-        console.error("Failed to update wallet for venue booking:", e);
+    if (payment_status === "Paid" && parseFloat(amount || "0") > 0) {
+      // Only auto-fund the wallet if it's NOT a mobile money (PawaPay) transaction.
+      // PawaPay transactions will securely fund the wallet via the webhook once completed.
+      const isMomo = payment_method === "momo";
+
+      if (workspace_id && !isMomo) {
+        try {
+          const { addMoneyToWorkspaceWallet } = await import("./wallet");
+          await addMoneyToWorkspaceWallet({
+            data: { workspace_id, amount: parseFloat(amount) },
+          } as any);
+        } catch (e) {
+          console.error("Failed to update wallet for venue booking:", e);
+        }
       }
     }
 
@@ -155,11 +161,35 @@ const GET_VENUE_BOOKINGS = `
 `;
 
 export const getVenueBookings = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { venue_id } = ctx.data;
     if (!venue_id) throw new Error("venue_id is required");
     const res = await hasuraRequest<{ venue_bookings: any[] }>(GET_VENUE_BOOKINGS, { venue_id });
+    return res.venue_bookings;
+  });
+
+const GET_WORKSPACE_VENUE_BOOKINGS = `
+  query GetWorkspaceVenueBookings($workspace_id: uuid!) {
+    venue_bookings(
+      where: { workspace_id: { _eq: $workspace_id } }
+      order_by: { start_time: asc }
+    ) {
+      id
+      status
+      venue_id
+    }
+  }
+`;
+
+export const getWorkspaceVenueBookings = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { workspace_id } = ctx.data;
+    if (!workspace_id) throw new Error("workspace_id is required");
+    const res = await hasuraRequest<{ venue_bookings: any[] }>(GET_WORKSPACE_VENUE_BOOKINGS, {
+      workspace_id,
+    });
     return res.venue_bookings;
   });
 
@@ -185,7 +215,7 @@ const VALIDATE_TICKET_OTP = `
 `;
 
 export const getVenueBookingByOtp = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { otp } = ctx.data;
     if (!otp) throw new Error("otp is required");
@@ -269,7 +299,7 @@ const UPDATE_VENUE_BOOKING_TICKETS = `
 `;
 
 export const updateTicketStatus = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { booking_id, ticket_id, new_status } = ctx.data;
     if (!booking_id || !ticket_id || !new_status) throw new Error("Missing parameters");

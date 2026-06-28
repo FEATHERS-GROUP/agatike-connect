@@ -28,8 +28,22 @@ import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { uploadFile } from "@/api/storage";
 
-// Stubbed mock data
-const eventCategories: any[] = [];
+// Standard event categories
+const eventCategories: string[] = [
+  "Music & Concerts",
+  "Tech & Innovation",
+  "Business & Networking",
+  "Arts & Culture",
+  "Food & Drink",
+  "Sports & Wellness",
+  "Parties & Nightlife",
+  "Workshops & Education",
+  "Film & Media",
+  "Fashion & Beauty",
+  "Charity & Causes",
+  "Community",
+  "Other",
+];
 
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {

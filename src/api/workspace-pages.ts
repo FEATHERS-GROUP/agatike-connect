@@ -65,6 +65,8 @@ export const getAllWorkspacePages = createServerFn({ method: "POST" }).handler(a
         slug
         title
         is_published
+        header_image_url
+        theme_color
         updated_at
       }
     }

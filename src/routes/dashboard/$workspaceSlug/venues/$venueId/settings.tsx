@@ -1,4 +1,5 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useState, useRef, useEffect } from "react";
 import { Save, Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/
 
 function VenueSettingsPage() {
   const { venueId } = useParams({ strict: false }) as any;
+  const { activeWorkspace } = useWorkspace();
   const { data: venue, isLoading } = useQuery({
     queryKey: ["venue", venueId],
     queryFn: () => getRentableVenueById({ data: { id: venueId } }),
@@ -64,10 +66,6 @@ function VenueSettingsPage() {
       capacity: parseNum(formData.get("capacity")),
       rental_type: rentalType,
       pricing_tiers: pricingTiers,
-      pricePerHour: parseNum(formData.get("price_per_hour")),
-      pricePerDay: parseNum(formData.get("price_per_day")),
-      pricePerWeek: parseNum(formData.get("price_per_week")),
-      priceAnnually: parseNum(formData.get("price_annually")),
       amenities:
         formData
           .get("amenities")
@@ -182,145 +180,70 @@ function VenueSettingsPage() {
                 </select>
               </div>
 
-              {(rentalType === "Entrance Fee" || rentalType === "Multiple") && (
-                <div className="space-y-3 sm:col-span-2 bg-secondary/20 p-4 rounded-2xl border border-border/50">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-base font-medium">Entrance Fee Tiers</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPricingTiers([...pricingTiers, { name: "", amount: 0 }])}
-                      className="h-8 rounded-full gap-1.5"
-                    >
-                      <Plus className="w-3.5 h-3.5" /> Add Tier
-                    </Button>
-                  </div>
+              <div className="space-y-3 sm:col-span-2 bg-secondary/20 p-4 rounded-2xl border border-border/50">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">Pricing Options</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPricingTiers([...pricingTiers, { name: "", amount: 0 }])}
+                    className="h-8 rounded-full gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Option
+                  </Button>
+                </div>
 
-                  {pricingTiers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4 bg-background/50 rounded-xl border border-dashed border-border">
-                      No pricing tiers added. Click 'Add Tier' to create one.
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {pricingTiers.map((tier, idx) => (
-                        <div key={idx} className="flex items-start gap-3">
-                          <div className="flex-1 space-y-1.5">
-                            <Input
-                              placeholder="Tier Name (e.g. Regular, VIP)"
-                              value={tier.name}
-                              onChange={(e) => {
-                                const newTiers = [...pricingTiers];
-                                newTiers[idx].name = e.target.value;
-                                setPricingTiers(newTiers);
-                              }}
-                              className="h-10 rounded-xl bg-background"
-                            />
-                          </div>
-                          <div className="flex-1 space-y-1.5 relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                              {venue.currency}
-                            </span>
-                            <Input
-                              type="number"
-                              placeholder="Price"
-                              value={tier.amount || ""}
-                              onChange={(e) => {
-                                const newTiers = [...pricingTiers];
-                                newTiers[idx].amount = Number(e.target.value);
-                                setPricingTiers(newTiers);
-                              }}
-                              className="pl-9 h-10 rounded-xl bg-background"
-                            />
-                          </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              const newTiers = pricingTiers.filter((_, i) => i !== idx);
+                {pricingTiers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4 bg-background/50 rounded-xl border border-dashed border-border">
+                    No pricing options added. Click 'Add Option' to create one.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {pricingTiers.map((tier, idx) => (
+                      <div key={idx} className="flex items-start gap-3">
+                        <div className="flex-1 space-y-1.5">
+                          <Input
+                            placeholder="Option Name (e.g. Per Day, Regular)"
+                            value={tier.name}
+                            onChange={(e) => {
+                              const newTiers = [...pricingTiers];
+                              newTiers[idx].name = e.target.value;
                               setPricingTiers(newTiers);
                             }}
-                            className="h-10 w-10 shrink-0 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-xl"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
+                            className="h-10 rounded-xl bg-background"
+                          />
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {(rentalType === "Per Hour" ||
-                rentalType === "Both" ||
-                rentalType === "Multiple") && (
-                <div className="space-y-1.5">
-                  <Label>Price per Hour</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      {venue.currency}
-                    </span>
-                    <Input
-                      name="price_per_hour"
-                      type="number"
-                      defaultValue={venue.pricePerHour || 0}
-                      className="pl-8 h-10 rounded-xl bg-secondary/50"
-                    />
+                        <div className="flex-1 space-y-1.5">
+                          <Input
+                            type="number"
+                            placeholder="Price"
+                            value={tier.amount || ""}
+                            onChange={(e) => {
+                              const newTiers = [...pricingTiers];
+                              newTiers[idx].amount = Number(e.target.value);
+                              setPricingTiers(newTiers);
+                            }}
+                            className="h-10 rounded-xl bg-background"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            const newTiers = pricingTiers.filter((_, i) => i !== idx);
+                            setPricingTiers(newTiers);
+                          }}
+                          className="h-10 w-10 shrink-0 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-xl"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              )}
-
-              {(rentalType === "Per Day" || rentalType === "Both" || rentalType === "Multiple") && (
-                <div className="space-y-1.5">
-                  <Label>Price per Day</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      {venue.currency}
-                    </span>
-                    <Input
-                      name="price_per_day"
-                      type="number"
-                      defaultValue={venue.pricePerDay || 0}
-                      className="pl-8 h-10 rounded-xl bg-secondary/50"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {(rentalType === "Per Week" || rentalType === "Multiple") && (
-                <div className="space-y-1.5">
-                  <Label>Price per Week</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      {venue.currency}
-                    </span>
-                    <Input
-                      name="price_per_week"
-                      type="number"
-                      defaultValue={venue.pricePerWeek || 0}
-                      className="pl-8 h-10 rounded-xl bg-secondary/50"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {(rentalType === "Annually" || rentalType === "Multiple") && (
-                <div className="space-y-1.5">
-                  <Label>Price Annually</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      {venue.currency}
-                    </span>
-                    <Input
-                      name="price_annually"
-                      type="number"
-                      defaultValue={venue.priceAnnually || 0}
-                      className="pl-8 h-10 rounded-xl bg-secondary/50"
-                    />
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 

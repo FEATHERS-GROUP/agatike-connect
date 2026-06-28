@@ -12,6 +12,7 @@ export function DesktopSidebar() {
   const location = useRouterState({ select: (s) => s.location });
   const { activeWorkspace, currentUser } = useWorkspace();
   const [isStudioOpen, setIsStudioOpen] = useState(false);
+  const [isBillingGroupOpen, setIsBillingGroupOpen] = useState(false);
 
   const { data: platformModules = [] } = usePlatformModules();
 
@@ -43,6 +44,9 @@ export function DesktopSidebar() {
       Users: "users",
       Withdrawals: "withdrawals",
       Settings: "settings",
+      "Page Builder": "page_builder",
+      "Badge Designer": "badge_designer",
+      "Ticket Designer": "ticket_designer",
     };
 
     const legacyId = legacyIdMap[m.label];
@@ -131,21 +135,119 @@ export function DesktopSidebar() {
             )}
           </div>
         )}
+
+        <div className="mt-2 space-y-0.5">
+          <button
+            onClick={() => setIsBillingGroupOpen(!isBillingGroupOpen)}
+            className="flex w-full items-center justify-between gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
+            <div className="flex items-center gap-2.5">
+              <LucideIcons.CreditCard className="h-4 w-4 shrink-0" />
+              <span className="truncate font-medium">Billing & Plans</span>
+            </div>
+            {isBillingGroupOpen ? (
+              <LucideIcons.ChevronDown className="h-4 w-4 shrink-0" />
+            ) : (
+              <LucideIcons.ChevronRight className="h-4 w-4 shrink-0" />
+            )}
+          </button>
+          {isBillingGroupOpen && (
+            <div className="ml-2 mt-1 space-y-0.5 border-l-2 border-border/40 pl-2">
+              <Link
+                to="/dashboard/billing"
+                className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                  location.pathname === "/dashboard/billing"
+                    ? "bg-accent text-accent-foreground font-medium"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <LucideIcons.LayoutDashboard className="h-4 w-4 shrink-0" />
+                <span className="truncate flex-1">Overview</span>
+              </Link>
+              <Link
+                to="/dashboard/billing/subscriptions"
+                className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                  location.pathname.startsWith("/dashboard/billing/subscriptions")
+                    ? "bg-accent text-accent-foreground font-medium"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <LucideIcons.Zap className="h-4 w-4 shrink-0" />
+                <span className="truncate flex-1">Subscriptions</span>
+              </Link>
+              <Link
+                to="/dashboard/billing/invoices"
+                className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                  location.pathname.startsWith("/dashboard/billing/invoices")
+                    ? "bg-accent text-accent-foreground font-medium"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                <LucideIcons.Receipt className="h-4 w-4 shrink-0" />
+                <span className="truncate flex-1">Invoices</span>
+              </Link>
+            </div>
+          )}
+        </div>
       </nav>
 
-      <div className="mt-4 rounded-xl border border-border/60 bg-accent/20 p-3.5 shrink-0">
-        <p className="text-sm font-semibold">Upgrade to Pro</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Branded pages, marketing & advanced analytics.
-        </p>
-        <Button
-          asChild
-          className="mt-3 w-full rounded-full text-xs h-8"
-          style={{ background: "var(--gradient-primary)" }}
-        >
-          <Link to="/dashboard/pricing">Upgrade</Link>
-        </Button>
-      </div>
+      {currentUser &&
+        (currentUser.isBasic || currentUser.isExpiringSoon || currentUser.isExpired) && (
+          <div className="mt-4 relative rounded-xl border border-border/60 bg-accent/20 p-3.5 shrink-0">
+            {currentUser.isBasic ? (
+              <>
+                {currentUser.isTrialActive && (
+                  <div className="absolute -top-3 -right-2 animate-bounce bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+                    {currentUser.trialDaysLeft} days left!
+                  </div>
+                )}
+                {currentUser.isTrialExpired && (
+                  <div className="absolute -top-3 -right-2 animate-bounce bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+                    Trial Expired
+                  </div>
+                )}
+                <p className="text-sm font-semibold">Upgrade to Pro</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Branded pages, marketing & advanced analytics.
+                </p>
+                <Button
+                  asChild
+                  className="mt-3 w-full rounded-full text-xs h-8"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  <Link to="/dashboard/billing/subscriptions/pricingplans">Upgrade</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                {currentUser.isExpiringSoon && !currentUser.isExpired && (
+                  <div className="absolute -top-3 -right-2 animate-bounce bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+                    {currentUser.daysUntilExpiration === 0
+                      ? "Expires Today!"
+                      : `${currentUser.daysUntilExpiration} days left`}
+                  </div>
+                )}
+                {currentUser.isExpired && (
+                  <div className="absolute -top-3 -right-2 animate-bounce bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+                    Expired
+                  </div>
+                )}
+                <p className="text-sm font-semibold">Renew Subscription</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Your {currentUser.planName || "Pro"} plan is expiring. Renew to keep your
+                  features.
+                </p>
+                <Button
+                  asChild
+                  className="mt-3 w-full rounded-full text-xs h-8"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  <Link to="/dashboard/billing/subscriptions/pricingplans">Renew Now</Link>
+                </Button>
+              </>
+            )}
+          </div>
+        )}
     </aside>
   );
 }

@@ -348,6 +348,57 @@ sequenceDiagram
     UI->>User: Displays Success Screen & Ticket
 ```
 
+### 12.1 Tiered Network Fees & Dynamic Pricing
+
+Because telecom network fees fluctuate heavily based on the size of the transaction, Agatike Connect employs a highly precise **Simulation Engine** (`src/api/simulation.ts`) that runs a pre-flight check on every checkout.
+
+**Logic:**
+
+- **Tiered Rules:** The system stores the exact MMO fee brackets (e.g. `< 101 KSH = 0 + 1%`, `< 501 = 5 + 1%`) inside the `pricing_plans.tiered_rules` JSONB column.
+- **The Simulation:** Before the user clicks "Pay", the UI pings the simulation engine with the base amount and the selected network's country. The engine iterates through the `tiered_rules` to calculate the exact network fee for that specific ticket price.
+- **Shortfall Protection:** If a ticket is incredibly cheap (e.g. 20 RWF) where the network fee exceeds the ticket price, the system no longer blocks the transaction. Instead, it allows the customer to pay their base amount, and automatically calculates the `shortfall`. The shortfall is then absorbed from the organizer's platform wallet, ensuring a seamless checkout experience for the customer while the organizer foots the bill for micro-transactions.
+
+```mermaid
+flowchart TD
+    UI[Checkout UI] -->|User Selects Network| Sim[Simulation Engine]
+    Sim --> DB[(pricing_plans.tiered_rules)]
+    DB --> Calc{Calculate Fee Based on Brackets}
+    Calc -->|Ticket price > Fee| Normal[Normal Flow]
+    Calc -->|Fee > Ticket price| Shortfall[Shortfall Mode]
+
+    Normal --> ChargeCust[Charge Customer Base Price + Markup]
+    Shortfall --> ChargeCust
+
+    Normal --> OrgFee[Normal Platform Fee Withheld]
+    Shortfall --> OrgDeduct[Shortfall Deducted from Organizer Wallet]
+
+    OrgFee --> Webhook[PawaPay Webhook Completes]
+    OrgDeduct --> Webhook
+```
+
+### 12.2 Wallet Network Configuration
+
+Organizers have full control over which telecom networks their attendees can use to pay.
+
+**Logic:**
+
+- **Configuration:** In the organizer's Wallet Settings, they can check or uncheck specific networks (e.g., MTN MoMo, Airtel Money, M-Pesa). This array of enabled networks is saved in `wallets.supported_networks`.
+- **Checkout Enforcement:** The `PaymentModal` reads the organizer's `supported_networks`. If the organizer only checked "MTN MoMo", only MTN will appear in the checkout dropdown.
+- **Unconfigured Wallets:** If an organizer creates an event but forgets to configure their wallet (i.e., `supported_networks` is empty), the `PaymentModal` will immediately display a red alert message: _"The organizer has not configured any payment networks yet."_ and completely disable the "Proceed to Pay" button, preventing attendees from experiencing failed bookings.
+
+```mermaid
+flowchart TD
+    Org[Organizer] -->|Selects Networks| DB[(wallets.supported_networks)]
+    UI[Customer Opens Checkout] --> Read[Fetch Wallet Config]
+    Read --> Check{Is Array Empty?}
+
+    Check -->|Yes| Blocked[Disable 'Pay' Button\nShow Red Alert Message]
+    Check -->|No| Filter[Filter Networks Dropdown]
+
+    Filter --> Proceed[Customer Chooses Configured Network]
+    Proceed --> CheckoutFlow[Proceed to Payment]
+```
+
 ---
 
 ## Routing Architecture Reminder
@@ -1806,19 +1857,116 @@ The Cinema module allows an organizer to operate a full movie theatre ticketing 
 
 ---
 
-## 24. Workspace Subscriptions
+## 24. Subscription-Based Dynamic Payment Margin Engine
 
-**Files:** `src/api/space_subscriptions.ts`
+**Files:** `src/api/simulation.ts`, `src/api/billing.ts`
 
-To monetize the platform, Agatike Connect offers recurring SaaS subscriptions for Organizers.
+Agatike Connect is not just a ticketing platform; it operates a **dynamic, subscription-driven financial routing system**.
+To ensure that Agatike never processes a transaction at a loss, the system dynamically calculates payment provider costs (PawaPay) and shifts margins in real-time based on the Organizer's active Subscription Plan.
 
-### Logic
+### 24.1 Plan Choosing & Upgrade Logic (For Organizers)
 
-- Organizers can use basic features for free. Advanced features (e.g., Custom Book Builder, Unlimited SMS, Custom Domains) require a paid subscription.
-- **Plans:** Defined in a static configuration or database table (e.g., "Pro", "Enterprise").
-- **Billing:** `space_subscriptions` tracks the `workspace_id`, the active `plan_id`, and the `expires_at` timestamp.
-- **Renewals:** Using PawaPay or card payments, organizers can renew their subscription. Upon successful payment, the `expires_at` date is incremented by 1 month or 1 year.
-- **Middleware Check:** The dashboard routes and specific feature components evaluate `useWorkspace().subscription_status`. If the workspace is downgraded, advanced features gracefully lock themselves and prompt the user to upgrade.
+Organizers subscribe to different tiers (e.g., Free, Pro, Business) to unlock features and lower their platform contribution fees.
+The `pricing_plans` table defines the `organizer_platform_contribution` for each tier (e.g., Free = 4.5%, Enterprise = 1.0%).
+
+```mermaid
+flowchart TD
+    Org[Organizer] -->|Clicks Upgrade| Plans[View Pricing Plans]
+    Plans --> Fetch[Query pricing_plans table]
+    Fetch --> Select{Organizer Selects Plan}
+    Select -->|Free Plan| Free[organizer_platform_contribution = 4.5%]
+    Select -->|Pro Plan| Pro[organizer_platform_contribution = 3.5%]
+    Select -->|Business Plan| Bus[organizer_platform_contribution = 2.8%]
+
+    Free & Pro & Bus --> Checkout[MoMo / Card Payment for Subscription]
+    Checkout -->|Success Webhook| DB[Update workspaces_subscriptions]
+    DB --> Active[Plan Becomes Active]
+    Active --> Sim[Simulation Engine dynamically uses new lower contribution %]
+```
+
+### 24.2 Logic to Charge Customers (The Checkout Simulation)
+
+When a customer buys a ticket, the system uses a strict **Cost Coverage Hierarchy**.
+
+1. **Customer Fee:** Fixed at ~2% of the Base Price.
+2. **PawaPay Collection Cost:** The exact cost to process the Mobile Money payment (e.g. 3.1%).
+3. **Organizer Fee:** Based on their subscription plan.
+
+**Rule:** The Customer is **never blocked** due to high network fees unless the ticket price is literally too low to cover the raw payment processing cost. If the Agatike Revenue Pool (Customer Fee + Organizer Fee) is less than the PawaPay Collection Cost, the **Organizer dynamically absorbs the difference** so the transaction proceeds seamlessly for the customer.
+
+```mermaid
+flowchart TD
+    Cust[Customer] -->|Selects 10,000 RWF Ticket| Checkout
+    Checkout --> FetchRates[Fetch PawaPay Collection Rates]
+    FetchRates --> Sim[Simulation Engine Calculates Margin]
+
+    Sim --> Rev[Agatike Revenue = Customer Fee + Organizer Subscription Fee]
+    Sim --> Cost[Total Cost = PawaPay Collection Cost]
+
+### 24.2.1 Fee Presentation on Pricing Plans
+
+To ensure full transparency to the Organizer on the **Pricing Plans** page:
+- **Collection Fee Display:** We display the *maximum* possible network fee for their country, minus the 2% paid by the customer. E.g. If the highest network fee in Rwanda is Airtel at 3.1%, the Organizer's displayed fee is `3.1% - 2.0% = 1.1% per ticket`. This guarantees they are aware of the maximum possible fallback cost.
+
+    Cost & Rev --> Check{Is Revenue < Cost?}
+
+    Check -->|No - Profitable| Proceed[Approve Checkout]
+    Check -->|Yes - Shortfall| Absorb[Organizer Absorbs Shortfall]
+
+    Absorb --> CalcPayout[Organizer Payout = Ticket Price - Absorbed Shortfall]
+    CalcPayout --> CheckNeg{Is Payout < 0?}
+    CheckNeg -->|Yes| Block[Block Customer: Ticket price too low]
+    CheckNeg -->|No| Proceed
+
+    Proceed --> PawaPay[Send Charge to PawaPay]
+    PawaPay --> Wallet[Credit Organizer Wallet with Net Payout]
+```
+
+### 24.3 Withdrawals and Wallet Logic
+
+**Rule:** Agatike's subscription plans **do not subsidize PawaPay Disbursement Fees**.
+When an organizer withdraws funds, the withdrawal fee is a combination of two elements:
+
+1. **PawaPay Disbursement Average:** The system automatically calculates network processing fees based on live network configurations.
+   - **Tiered Rules Engine:** If a network has complex tiered processing costs (e.g. `{"disbursement": [{"max": 10000, "pct": 2, "fixed": 100}]}`), the backend safely recursively parses the potentially double-stringified JSONB and mathematically isolates the exact tier the withdrawal amount falls into.
+   - **Flat Rate Fallback:** If the network has no tier rules, the engine falls back to standard percentage and fixed fees dynamically.
+2. **Agatike Withdrawal Fee:** The organizer's `organizer_platform_contribution` percentage based on their active subscription plan.
+
+#### 24.3.1 Live Currency Exchange
+
+The withdrawal engine supports flawless cross-border conversion:
+- If an organizer with an `RWF` base wallet requests a payout to a `UGX` Mobile Money network, the backend instantly fetches a real-time exchange rate via `open.er-api.com`.
+- **UI Simplification:** The dashboard smoothly hides the `RWF` amounts and only presents the exact, final `UGX` (Target Currency) amounts to the user.
+- **Ledger Security:** The target currency, exchange rate, and converted values are permanently saved inside the `raw_callback_data` JSON for strict auditing in `wallet_transactions`.
+
+#### 24.3.2 Organizer Security: OTP & Password Verification
+
+Because withdrawals execute real financial payouts, they require explicit multi-factor verification:
+- When a user confirms the final amounts, the `sendWithdrawalOtp` server function generates an **8-character alphanumeric** One-Time Password and emails it securely (via Resend API) to the organizer.
+- The OTP is hashed using `bcrypt` and signed into a 10-minute JWT `otpToken` to prevent tampering.
+- The user must enter the OTP and their **Organizer Account Password** in the final UI step.
+- The strict `requestWithdrawal` backend mutation intercepts the payload, verifies the JWT, unhashes and compares the OTP, and verifies the Organizer's password. Only if all three flags pass does the system deduct the wallet balance and trigger the payload to PawaPay.
+
+```mermaid
+flowchart TD
+    Dashboard[Organizer Dashboard] -->|Clicks Withdraw| Req[Enter Amount to Withdraw]
+    Req --> NetCalc[Calculate Tiered Fees & Platform Percentages]
+    NetCalc --> Exch[Fetch Live Target Currency Exchange Rate]
+    Exch --> UI[Display Converted Summary]
+    UI -->|Clicks Confirm| OTPAPI[Generate & Email 8-Char OTP]
+    OTPAPI --> SecUI[Organizer Enters OTP & Password]
+    
+    SecUI --> Server[Submit Secure Payload]
+    Server --> JWTCheck{Verify OTP JWT & Match}
+    JWTCheck -->|Fails| Reject[Block Withdrawal]
+    JWTCheck -->|Passes| PassCheck{Verify Password Hash}
+    PassCheck -->|Fails| Reject
+    PassCheck -->|Passes| Ledger[Create Pending wallet_transactions Debit]
+    Ledger --> API[Trigger PawaPay Disbursement API]
+
+    API -->|Success Webhook| Update[Update transaction to 'completed']
+    Update --> Bank[Money hits Organizer's Mobile Money Account]
+```
 
 ---
 

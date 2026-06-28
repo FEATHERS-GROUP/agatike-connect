@@ -35,7 +35,7 @@ const GET_EVENT_ATTENDEES = `
 `;
 
 export const getEventAttendees = createServerFn({ method: "POST" })
-  .inputValidator((d: { event_id: string }) => d)
+  .validator((d: { event_id: string }) => d)
   .handler(async (ctx) => {
     const { event_id } = ctx.data;
     const data = await hasuraRequest<{ event_attendees: any[] }>(GET_EVENT_ATTENDEES, { event_id });
@@ -69,7 +69,7 @@ const GET_ATTENDEE_BY_QR_CODE = `
 `;
 
 export const getAttendeeByQrCode = createServerFn({ method: "POST" })
-  .inputValidator((d: { qrcode_number: string }) => d)
+  .validator((d: { qrcode_number: string }) => d)
   .handler(async (ctx) => {
     const { qrcode_number } = ctx.data;
     const data = await hasuraRequest<{ event_attendees: any[] }>(GET_ATTENDEE_BY_QR_CODE, {
@@ -90,7 +90,7 @@ const ADD_EVENT_ATTENDEES = `
 `;
 
 export const addEventAttendees = createServerFn({ method: "POST" })
-  .inputValidator((d: { objects: any[] }) => d)
+  .validator((d: { objects: any[] }) => d)
   .handler(async (ctx) => {
     const { objects } = ctx.data;
 
@@ -189,7 +189,12 @@ export const addEventAttendees = createServerFn({ method: "POST" })
             { id: eventId },
           );
           const workspace_id = wsData?.events_by_pk?.workspace_id;
-          if (workspace_id) {
+
+          // Only auto-fund the wallet if it's NOT a mobile money (PawaPay) transaction.
+          // PawaPay transactions will securely fund the wallet via the webhook once completed.
+          const isMomo = objects.some((obj: any) => obj.payment_method === "momo");
+
+          if (workspace_id && !isMomo) {
             const { addMoneyToWorkspaceWallet } = await import("./wallet");
             await addMoneyToWorkspaceWallet({ data: { workspace_id, amount: totalCost } } as any);
           }
@@ -206,7 +211,7 @@ export const addEventAttendees = createServerFn({ method: "POST" })
   });
 
 export const checkUserAttendance = createServerFn({ method: "POST" })
-  .inputValidator((d: { event_id: string }) => d)
+  .validator((d: { event_id: string }) => d)
   .handler(async (ctx) => {
     const { event_id } = ctx.data;
 

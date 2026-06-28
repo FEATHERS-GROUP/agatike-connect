@@ -10,7 +10,7 @@ const CREATE_RENTABLE_VENUE = `
 `;
 
 export const createRentableVenue = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const {
       workspace_id,
@@ -91,7 +91,7 @@ const GET_RENTABLE_VENUES = `
 `;
 
 export const getRentableVenues = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { workspace_id } = ctx.data;
     if (!workspace_id) throw new Error("workspace_id is required");
@@ -162,7 +162,7 @@ const GET_RENTABLE_VENUE_BY_ID = `
 `;
 
 export const getRentableVenueById = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id } = ctx.data;
     if (!id) throw new Error("id is required");
@@ -181,7 +181,7 @@ const UPDATE_RENTABLE_VENUE = `
 `;
 
 export const updateRentableVenue = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id, ...updates } = ctx.data;
     if (!id) throw new Error("id is required");

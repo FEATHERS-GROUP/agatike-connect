@@ -165,6 +165,39 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
     }
   }
 
+  // Automatically subscribe the new organizer to the "Basic" plan for the 14-day trial
+  if (newOrgId) {
+    try {
+      const planQuery = `
+        query GetBasicPlan {
+          pricing_plans(where: { name: { _ilike: "Basic%" } }, limit: 1) {
+            id
+          }
+        }
+      `;
+      const planRes = await hasuraRequest<{ pricing_plans: { id: string }[] }>(planQuery);
+      const basicPlanId = planRes.pricing_plans?.[0]?.id;
+
+      if (basicPlanId) {
+        const subMutation = `
+          mutation AutoSubscribeBasic($organizer_id: text!, $plan_id: uuid!) {
+            insert_subscriptions_one(object: {
+              organizer_id: $organizer_id,
+              plan_id: $plan_id,
+              status: "active",
+              amount: 0
+            }) {
+              id
+            }
+          }
+        `;
+        await hasuraRequest(subMutation, { organizer_id: newOrgId, plan_id: basicPlanId });
+      }
+    } catch (err) {
+      console.warn("Failed to auto-subscribe organizer to Basic plan:", err);
+    }
+  }
+
   return { affected_rows: result.insert_organizers?.returning?.length || 0 };
 });
 
@@ -476,7 +509,7 @@ export const unfollowOrganizer = createServerFn({ method: "POST" }).handler(asyn
 });
 
 export const getOrganizerFollowerIds = createServerFn({ method: "POST" })
-  .inputValidator((d: { organizerId: string }) => d)
+  .validator((d: { organizerId: string }) => d)
   .handler(async (ctx) => {
     const { organizerId } = ctx.data;
     const fetchQuery = `
@@ -495,7 +528,7 @@ export const getOrganizerFollowerIds = createServerFn({ method: "POST" })
   });
 
 export const getOrganizersByIds = createServerFn({ method: "POST" })
-  .inputValidator((d: { ids: string[] }) => d)
+  .validator((d: { ids: string[] }) => d)
   .handler(async (ctx) => {
     const { ids } = ctx.data;
     if (!ids || ids.length === 0) return [];

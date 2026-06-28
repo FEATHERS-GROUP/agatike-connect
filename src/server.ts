@@ -37,7 +37,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   });
 }
 
-import { handlePawaPayWebhook } from "./api/pawapay";
+import { handlePawaPayWebhook } from "./api/pawapay.server";
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {

@@ -127,6 +127,7 @@ function CheckoutPage() {
     network?: string;
     currency?: string;
     convertedAmount?: number;
+    shortfall?: number;
   }) => {
     setErrorMsg("");
 
@@ -177,6 +178,7 @@ function CheckoutPage() {
             referenceId: subscription?.id,
             workspaceId: space?.workspace_id,
             reason: space?.name || "Space Subscription",
+            shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
         setPawapayDepositId(pawaRes.depositId);

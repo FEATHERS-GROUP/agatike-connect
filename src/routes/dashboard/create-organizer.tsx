@@ -33,6 +33,7 @@ import {
   ArrowLeft,
   Check,
 } from "lucide-react";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export const Route = createFileRoute("/dashboard/create-organizer")({
   component: CreateOrganizerPage,
@@ -99,6 +100,13 @@ function CreateOrganizerPage() {
   const [step, setStep] = useState(1);
   const totalSteps = 5;
   const [isGeneratingHandle, setIsGeneratingHandle] = useState(false);
+  const { currentUser, isLoaded } = useWorkspace();
+
+  useEffect(() => {
+    if (isLoaded && currentUser) {
+      navigate({ to: "/dashboard", replace: true });
+    }
+  }, [isLoaded, currentUser, navigate]);
   const [otpStep, setOtpStep] = useState(false);
   const [otpInput, setOtpInput] = useState("");
   const [otpToken, setOtpToken] = useState("");

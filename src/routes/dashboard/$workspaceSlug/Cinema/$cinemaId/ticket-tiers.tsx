@@ -5,6 +5,8 @@ import { getCinemaById } from "@/api/cinemas";
 import { unlinkTierFromCinema } from "@/api/cinema_ticket_tiers";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/currency";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers")({
   component: CinemaTicketTiers,
@@ -13,6 +15,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId
 function CinemaTicketTiers() {
   const { cinemaId } = Route.useParams();
   const queryClient = useQueryClient();
+  const { activeWorkspace } = useWorkspace();
 
   const { data: cinema, isLoading } = useQuery({
     queryKey: ["cinema", cinemaId],
@@ -110,7 +113,10 @@ function CinemaTicketTiers() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="font-bold text-lg bg-background px-3 py-1.5 rounded-lg border border-border/40 text-primary">
-                      {tier.currency} {tier.price.toLocaleString()}
+                      {formatCurrency(
+                        tier.price,
+                        activeWorkspace?.currency || tier.currency || "RWF",
+                      )}
                     </span>
                     <Button
                       variant="destructive"

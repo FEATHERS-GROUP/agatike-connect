@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { Mail, Lock, Eye, EyeOff, Apple, ArrowLeft, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,14 @@ export const Route = createFileRoute("/signin")({
 function SignIn() {
   const navigate = useNavigate();
   const router = useRouter();
-  const { refresh } = useUserAuth();
+  const { refresh, isLoggedIn, isLoading: authLoading } = useUserAuth();
   const [showPw, setShowPw] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && isLoggedIn) {
+      navigate({ to: "/", replace: true });
+    }
+  }, [authLoading, isLoggedIn, navigate]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);

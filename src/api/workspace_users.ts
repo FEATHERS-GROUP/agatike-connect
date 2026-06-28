@@ -416,7 +416,7 @@ export const resendWorkspaceUserInvite = createServerFn({ method: "POST" }).hand
 });
 
 export const checkWorkspaceUserStatus = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { email } = ctx.data as any;
 

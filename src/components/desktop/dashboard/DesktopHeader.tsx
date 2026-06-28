@@ -19,17 +19,27 @@ export function DesktopHeader() {
         <Button asChild variant="outline" className="rounded-full">
           <Link to="/dashboard/workspaces">Workspaces</Link>
         </Button>
-        <Link
-          to="/dashboard/$workspaceSlug/events/create-event"
-          params={{ workspaceSlug: activeWorkspace?.slug || "" }}
-        >
+        {activeWorkspace?.slug ? (
+          <Link
+            to="/dashboard/$workspaceSlug/events/create-event"
+            params={{ workspaceSlug: activeWorkspace.slug }}
+          >
+            <Button
+              className="rounded-full shadow-[var(--shadow-glow)]"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Plus className="mr-1 h-4 w-4" /> New event
+            </Button>
+          </Link>
+        ) : (
           <Button
-            className="rounded-full shadow-[var(--shadow-glow)]"
+            className="rounded-full shadow-[var(--shadow-glow)] opacity-50 cursor-not-allowed"
             style={{ background: "var(--gradient-primary)" }}
+            disabled
           >
             <Plus className="mr-1 h-4 w-4" /> New event
           </Button>
-        </Link>
+        )}
       </div>
     </header>
   );

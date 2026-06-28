@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import { Mail, Lock, Loader2 } from "lucide-react";
 import { loginOrganizer, googleAuthOrganizer } from "@/api/auth";
 import { loginWorkspaceUser } from "@/api/workspace_users";
 import { useGoogleLogin } from "@react-oauth/google";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export const Route = createFileRoute("/dashboard/login")({
   component: DashboardLoginPage,
@@ -29,6 +30,13 @@ function DashboardLoginPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const { currentUser, isLoaded } = useWorkspace();
+
+  useEffect(() => {
+    if (isLoaded && currentUser) {
+      navigate({ to: "/dashboard", replace: true });
+    }
+  }, [isLoaded, currentUser, navigate]);
 
   const {
     register,

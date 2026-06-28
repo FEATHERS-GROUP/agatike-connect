@@ -44,7 +44,7 @@ const REMOVE_CONTRIBUTOR = `
 `;
 
 export const inviteContributor = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const session = await getSession();
     if (!session || !session.sub) throw new Error("unauthenticated");
@@ -197,7 +197,7 @@ export const inviteContributor = createServerFn({ method: "POST" })
   });
 
 export const getContributors = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { resource_type, resource_id } = ctx.data;
     const res = await hasuraRequest<{ project_contributors: any[] }>(GET_CONTRIBUTORS, {
@@ -208,7 +208,7 @@ export const getContributors = createServerFn({ method: "POST" })
   });
 
 export const removeContributor = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id } = ctx.data;
     const res = await hasuraRequest<{ delete_project_contributors_by_pk: { id: string } }>(
@@ -219,7 +219,7 @@ export const removeContributor = createServerFn({ method: "POST" })
   });
 
 export const getContributorAccessLevel = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     try {
       const session = await getSession();

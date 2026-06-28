@@ -36,6 +36,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               status
               reference_id
               type
+              net_amount
+              workspace_id
             }
           }
         }
@@ -93,6 +95,17 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             }
           `;
           await hasuraRequest(confirmQuery, { id: tx.reference_id });
+        }
+
+        // Safely fund the workspace wallet using the exactly computed net_amount (which securely deducts shortfalls!)
+        if (tx.workspace_id && tx.net_amount) {
+          const { addMoneyToWorkspaceWallet } = await import("./wallet");
+          await addMoneyToWorkspaceWallet({
+            data: {
+              workspace_id: tx.workspace_id,
+              amount: parseFloat(tx.net_amount),
+            },
+          } as any);
         }
       }
     }

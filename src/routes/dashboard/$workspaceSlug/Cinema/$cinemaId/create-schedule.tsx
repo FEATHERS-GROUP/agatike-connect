@@ -30,6 +30,7 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/currency";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule")({
   component: CreateSchedulePage,
@@ -566,7 +567,10 @@ function CreateSchedulePage() {
                             <div className="flex justify-between items-start mb-1">
                               <h4 className="font-bold text-lg leading-none">{tier.name}</h4>
                               <span className="font-bold bg-background border border-border/40 px-2 py-1 rounded-md text-sm">
-                                {tier.currency} {tier.price}
+                                {formatCurrency(
+                                  tier.price,
+                                  activeWorkspace?.currency || tier.currency || "RWF",
+                                )}
                               </span>
                             </div>
                             <p className="text-sm text-muted-foreground capitalize mb-3">
@@ -580,7 +584,7 @@ function CreateSchedulePage() {
                                 <Label className="text-xs">Custom Price Override (Optional)</Label>
                                 <div className="relative">
                                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                                    {tier.currency}
+                                    {activeWorkspace?.currency || tier.currency || "RWF"}
                                   </span>
                                   <Input
                                     type="number"

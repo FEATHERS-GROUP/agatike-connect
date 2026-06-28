@@ -92,7 +92,7 @@ const UNLINK_TIER_FROM_CINEMA = `
 // ─── Server Functions ────────────────────────────────────────────────────────
 
 export const getCinemaTicketTiers = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { workspace_id } = ctx.data;
     if (!workspace_id) throw new Error("workspace_id is required");
@@ -103,7 +103,7 @@ export const getCinemaTicketTiers = createServerFn({ method: "POST" })
   });
 
 export const getCinemaTicketTierById = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id } = ctx.data;
     if (!id) throw new Error("id is required");
@@ -114,7 +114,7 @@ export const getCinemaTicketTierById = createServerFn({ method: "POST" })
   });
 
 export const createCinemaTicketTier = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ insert_cinema_ticket_tiers_one: { id: string } }>(
       CREATE_TICKET_TIER,
@@ -124,7 +124,7 @@ export const createCinemaTicketTier = createServerFn({ method: "POST" })
   });
 
 export const updateCinemaTicketTier = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id, ...updates } = ctx.data;
     if (!id) throw new Error("id is required");
@@ -136,7 +136,7 @@ export const updateCinemaTicketTier = createServerFn({ method: "POST" })
   });
 
 export const deleteCinemaTicketTier = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id } = ctx.data;
     if (!id) throw new Error("id is required");
@@ -148,7 +148,7 @@ export const deleteCinemaTicketTier = createServerFn({ method: "POST" })
   });
 
 export const unlinkTierFromCinema = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { cinema_id, ticket_tier_id } = ctx.data;
     const res = await hasuraRequest<{

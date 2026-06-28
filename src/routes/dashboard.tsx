@@ -74,6 +74,8 @@ function DashboardLayout() {
     location.pathname === "/dashboard/workspaces" ||
     location.pathname === "/dashboard/create-organizer" ||
     location.pathname === "/dashboard/settings" ||
+    location.pathname === "/dashboard/billing/subscriptions/pricingplans" ||
+    location.pathname.startsWith("/dashboard/billing/subscriptions/checkout") ||
     isDesigningVenue ||
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/) ||
@@ -81,7 +83,8 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-ticket-tier/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\/create-schedule/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/);
+    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/page-builder\/editor/);
 
   const isDesigner =
     isDesigningVenue ||
@@ -92,7 +95,8 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-ticket-tier/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\/create-schedule/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/);
+    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/page-builder/);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -103,7 +107,8 @@ function DashboardLayout() {
       location.pathname === "/dashboard/create-organizer" ||
       location.pathname === "/dashboard/settings" ||
       location.pathname === "/dashboard/workspaces" ||
-      location.pathname === "/dashboard/workspace-user/activate"
+      location.pathname === "/dashboard/workspace-user/activate" ||
+      location.pathname.startsWith("/dashboard/billing")
     )
       return;
 
@@ -121,7 +126,7 @@ function DashboardLayout() {
         urlSlug !== "workspace-user" &&
         urlSlug !== activeWorkspace.slug
       ) {
-        const workspaceFromUrl = workspaces.find((w) => w.slug === urlSlug);
+        const workspaceFromUrl = workspaces.find((w: any) => w.slug === urlSlug);
         if (workspaceFromUrl) {
           // setActiveWorkspace(workspaceFromUrl);
         } else {
@@ -184,6 +189,9 @@ function DashboardLayout() {
             Users: "users",
             Withdrawals: "withdrawals",
             Settings: "settings",
+            "Page Builder": "page_builder",
+            "Badge Designer": "badge_designer",
+            "Ticket Designer": "ticket_designer",
           };
           return (
             legacyIdMap[p.label] === reqMod || legacyIdMap[p.label] === reqMod.replace("_", "-")

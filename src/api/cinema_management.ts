@@ -212,7 +212,7 @@ const DELETE_SCHEDULE = `
 
 // Screens
 export const getScreens = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ cinema_screens: any[] }>(GET_SCREENS, {
       cinema_id: ctx.data.cinema_id,
@@ -221,7 +221,7 @@ export const getScreens = createServerFn({ method: "POST" })
   });
 
 export const createScreen = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ insert_cinema_screens_one: { id: string } }>(CREATE_SCREEN, {
       object: ctx.data,
@@ -230,7 +230,7 @@ export const createScreen = createServerFn({ method: "POST" })
   });
 
 export const updateScreen = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id, ...updates } = ctx.data;
     const res = await hasuraRequest<{ update_cinema_screens_by_pk: { id: string } }>(
@@ -241,7 +241,7 @@ export const updateScreen = createServerFn({ method: "POST" })
   });
 
 export const deleteScreen = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ delete_cinema_screens_by_pk: { id: string } }>(
       DELETE_SCREEN,
@@ -252,7 +252,7 @@ export const deleteScreen = createServerFn({ method: "POST" })
 
 // Movies
 export const getMovies = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ cinema_movies: any[] }>(GET_MOVIES, {
       workspace_id: ctx.data.workspace_id,
@@ -261,7 +261,7 @@ export const getMovies = createServerFn({ method: "POST" })
   });
 
 export const createMovie = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ insert_cinema_movies_one: { id: string } }>(CREATE_MOVIE, {
       object: ctx.data,
@@ -270,7 +270,7 @@ export const createMovie = createServerFn({ method: "POST" })
   });
 
 export const updateMovie = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { id, ...updates } = ctx.data;
     const res = await hasuraRequest<{ update_cinema_movies_by_pk: { id: string } }>(UPDATE_MOVIE, {
@@ -281,7 +281,7 @@ export const updateMovie = createServerFn({ method: "POST" })
   });
 
 export const deleteMovie = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ delete_cinema_movies_by_pk: { id: string } }>(DELETE_MOVIE, {
       id: ctx.data.id,
@@ -291,7 +291,7 @@ export const deleteMovie = createServerFn({ method: "POST" })
 
 // Linking Movies
 export const getCinemaMovies = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ cinema_movie_cinemas: any[] }>(GET_CINEMA_MOVIES, {
       cinema_id: ctx.data.cinema_id,
@@ -300,7 +300,7 @@ export const getCinemaMovies = createServerFn({ method: "POST" })
   });
 
 export const linkMovieToCinema = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { cinema_id, movie_id, status } = ctx.data;
     const res = await hasuraRequest(LINK_MOVIE_TO_CINEMA, { cinema_id, movie_id, status });
@@ -308,7 +308,7 @@ export const linkMovieToCinema = createServerFn({ method: "POST" })
   });
 
 export const unlinkMovieFromCinema = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const { cinema_id, movie_id } = ctx.data;
     const res = await hasuraRequest(UNLINK_MOVIE_FROM_CINEMA, { cinema_id, movie_id });
@@ -317,7 +317,7 @@ export const unlinkMovieFromCinema = createServerFn({ method: "POST" })
 
 // Schedules
 export const getSchedules = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ cinema_schedules: any[] }>(GET_SCHEDULES, {
       cinema_id: ctx.data.cinema_id,
@@ -326,7 +326,7 @@ export const getSchedules = createServerFn({ method: "POST" })
   });
 
 export const createSchedule = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ insert_cinema_schedules_one: { id: string } }>(
       CREATE_SCHEDULE,
@@ -336,7 +336,7 @@ export const createSchedule = createServerFn({ method: "POST" })
   });
 
 export const deleteSchedule = createServerFn({ method: "POST" })
-  .inputValidator((d: any) => d)
+  .validator((d: any) => d)
   .handler(async (ctx) => {
     const res = await hasuraRequest<{ delete_cinema_schedules_by_pk: { id: string } }>(
       DELETE_SCHEDULE,

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -8,7 +8,6 @@ import {
   updateWalletSupportedNetworks,
 } from "@/api/wallet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Wallet,
@@ -39,16 +38,12 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { TransactionLedger } from "@/components/dashboard/TransactionLedger";
 
-export const Route = createFileRoute("/dashboard/$workspaceSlug/withdrawals")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/withdrawals/")({
   component: WithdrawalsPage,
 });
 
 function WithdrawalsPage() {
   const { activeWorkspace } = useWorkspace();
-  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [payoutMethod, setPayoutMethod] = useState("momo");
-  const [payoutAccount, setPayoutAccount] = useState("");
   const [isNetworksModalOpen, setIsNetworksModalOpen] = useState(false);
   const [selectedNetworks, setSelectedNetworks] = useState<string[]>([]);
   const queryClient = useQueryClient();
@@ -64,29 +59,6 @@ function WithdrawalsPage() {
     queryFn: () => getWalletTransactions({ data: { wallet_id: wallet!.id } } as any),
     enabled: !!wallet?.id,
   });
-
-  const handleWithdrawRequest = () => {
-    if (!withdrawAmount || isNaN(Number(withdrawAmount)) || Number(withdrawAmount) <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
-
-    if (Number(withdrawAmount) > (wallet?.amount || 0)) {
-      toast.error("Insufficient balance");
-      return;
-    }
-
-    if (!payoutAccount) {
-      toast.error("Please enter your payout account details");
-      return;
-    }
-
-    // Mock API call
-    toast.success("Withdrawal request submitted successfully!");
-    setIsWithdrawModalOpen(false);
-    setWithdrawAmount("");
-    setPayoutAccount("");
-  };
 
   const updateNetworksMutation = useMutation({
     mutationFn: (networks: string[]) =>
@@ -163,11 +135,13 @@ function WithdrawalsPage() {
 
           <div className="flex flex-wrap gap-4 items-center">
             <Button
+              asChild
               size="lg"
               className="rounded-full bg-white text-primary hover:bg-white/90 font-bold px-8 shadow-lg"
-              onClick={() => setIsWithdrawModalOpen(true)}
             >
-              <Banknote className="mr-2 h-5 w-5" /> Request Withdrawal
+              <Link to={`/dashboard/${activeWorkspace?.slug}/withdrawals/request`}>
+                <Banknote className="mr-2 h-5 w-5" /> Request Withdrawal
+              </Link>
             </Button>
 
             <div className="flex items-center gap-2 text-white/80 text-sm ml-4">
@@ -214,82 +188,6 @@ function WithdrawalsPage() {
         isLoading={isTransactionsLoading}
         formatCurrency={formatCurrency}
       />
-
-      {/* Withdrawal Modal */}
-      <Dialog open={isWithdrawModalOpen} onOpenChange={setIsWithdrawModalOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Request Withdrawal</DialogTitle>
-            <DialogDescription>
-              Transfer funds from your Agatike wallet to your local account.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-6 py-4">
-            <div className="bg-secondary/50 p-4 rounded-2xl flex justify-between items-center">
-              <span className="text-sm text-muted-foreground font-medium">
-                Available to withdraw:
-              </span>
-              <span className="font-bold text-primary">
-                {formatCurrency(wallet?.amount || 0, wallet?.currency)}
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold">Amount ({wallet?.currency})</Label>
-              <Input
-                type="number"
-                placeholder="0.00"
-                className="h-14 text-lg rounded-xl"
-                value={withdrawAmount}
-                onChange={(e) => setWithdrawAmount(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold">Payout Method</Label>
-              <Select value={payoutMethod} onValueChange={setPayoutMethod}>
-                <SelectTrigger className="h-14 rounded-xl">
-                  <SelectValue placeholder="Select method" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="momo">Mobile Money (MTN/Airtel)</SelectItem>
-                  <SelectItem value="bank">Bank Transfer</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold">
-                {payoutMethod === "momo" ? "Phone Number" : "Account Number"}
-              </Label>
-              <Input
-                placeholder={payoutMethod === "momo" ? "+250 78X XXX XXX" : "0000 0000 0000"}
-                className="h-14 rounded-xl"
-                value={payoutAccount}
-                onChange={(e) => setPayoutAccount(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="ghost"
-              className="rounded-full"
-              onClick={() => setIsWithdrawModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="rounded-full shadow-lg px-8"
-              style={{ background: "var(--gradient-primary)", color: "white" }}
-              onClick={handleWithdrawRequest}
-            >
-              Submit Request
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Networks Configuration Modal */}
       <Dialog open={isNetworksModalOpen} onOpenChange={setIsNetworksModalOpen}>
