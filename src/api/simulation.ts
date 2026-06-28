@@ -25,13 +25,22 @@ const LOG_SIMULATION = `
 `;
 
 export const simulateTransaction = createServerFn({ method: "POST" })
-  .validator((d: { basePrice: number; workspaceId: string; network: string; countryCode: string; transactionId: string }) => d)
+  .validator(
+    (d: {
+      basePrice: number;
+      workspaceId: string;
+      network: string;
+      countryCode: string;
+      transactionId: string;
+    }) => d,
+  )
   .handler(async (ctx) => {
     const { basePrice, workspaceId, network, countryCode, transactionId } = ctx.data;
 
     try {
       // Combine workspace and payment provider fees into a single query
-      const combinedRes = await hasuraRequest<any>(`
+      const combinedRes = await hasuraRequest<any>(
+        `
         query GetSimulationContext($workspaceId: uuid!, $network: String!, $countryCode: String) {
           workspaces_by_pk(id: $workspaceId) {
             orgnizer_id
@@ -50,13 +59,17 @@ export const simulateTransaction = createServerFn({ method: "POST" })
             tiered_rules
           }
         }
-      `, { workspaceId, network, countryCode: countryCode || "RWA" });
+      `,
+        { workspaceId, network, countryCode: countryCode || "RWA" },
+      );
 
       const organizerId = combinedRes.workspaces_by_pk?.orgnizer_id;
       const providerFees = combinedRes.payment_provider_fees?.[0];
 
       // Fetch pricing plan (subscription rules)
-      const planFees = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
+      const planFees = await getWorkspaceActivePlanFees({
+        data: { organizer_id: organizerId },
+      } as any);
 
       const customerServicePct = planFees.customer_service_fee_percentage || 2.0;
       const organizerContributionPct = planFees.organizer_platform_contribution || 0;
@@ -86,35 +99,38 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         let disbFixed = providerFees.disbursement_fixed_fee || 0;
 
         if (providerFees.is_tiered && providerFees.tiered_rules) {
-          const rules = typeof providerFees.tiered_rules === 'string' 
-            ? JSON.parse(providerFees.tiered_rules) 
-            : providerFees.tiered_rules;
+          const rules =
+            typeof providerFees.tiered_rules === "string"
+              ? JSON.parse(providerFees.tiered_rules)
+              : providerFees.tiered_rules;
 
           if (rules.collection && Array.isArray(rules.collection)) {
-             const matchedRule = rules.collection.find((r: any) => totalCustomerCharge <= r.max) || rules.collection[rules.collection.length - 1];
-             if (matchedRule) {
-               pawaPayCollectionPct = matchedRule.pct || 0;
-               colFixed = matchedRule.fixed || 0;
-             }
+            const matchedRule =
+              rules.collection.find((r: any) => totalCustomerCharge <= r.max) ||
+              rules.collection[rules.collection.length - 1];
+            if (matchedRule) {
+              pawaPayCollectionPct = matchedRule.pct || 0;
+              colFixed = matchedRule.fixed || 0;
+            }
           }
 
           if (rules.disbursement && Array.isArray(rules.disbursement)) {
-             const matchedRule = rules.disbursement.find((r: any) => basePrice <= r.max) || rules.disbursement[rules.disbursement.length - 1];
-             if (matchedRule) {
-               pawaPayDisbursementPct = matchedRule.pct || 0;
-               disbFixed = matchedRule.fixed || 0;
-             }
+            const matchedRule =
+              rules.disbursement.find((r: any) => basePrice <= r.max) ||
+              rules.disbursement[rules.disbursement.length - 1];
+            if (matchedRule) {
+              pawaPayDisbursementPct = matchedRule.pct || 0;
+              disbFixed = matchedRule.fixed || 0;
+            }
           }
         }
 
-        expectedCollectionCost =
-          (totalCustomerCharge * (pawaPayCollectionPct / 100)) + colFixed;
+        expectedCollectionCost = totalCustomerCharge * (pawaPayCollectionPct / 100) + colFixed;
 
-        expectedDisbursementCost =
-          (basePrice * (pawaPayDisbursementPct / 100)) + disbFixed;
+        expectedDisbursementCost = basePrice * (pawaPayDisbursementPct / 100) + disbFixed;
       }
 
-      // AT CHECKOUT: We only care about Collection Cost. 
+      // AT CHECKOUT: We only care about Collection Cost.
       // Disbursement costs are charged directly to the organizer at withdrawal time.
       const totalCost = expectedCollectionCost;
       const netMargin = totalRevenue - totalCost;
@@ -156,12 +172,12 @@ export const simulateTransaction = createServerFn({ method: "POST" })
           countryCode,
           customerServicePct,
           organizerContributionPct,
-          providerFees
+          providerFees,
         },
         expected_collection_cost: expectedCollectionCost,
         expected_disbursement_cost: expectedDisbursementCost,
         expected_margin: finalNetMargin,
-        decision
+        decision,
       });
 
       return {
@@ -173,9 +189,8 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         expectedMargin: finalNetMargin,
         shortfall,
         structuredError,
-        transactionId
+        transactionId,
       };
-
     } catch (e) {
       console.error("Simulation Engine Failed:", e);
       // Fail-safe block if engine crashes
@@ -189,7 +204,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
           title: "❌ Simulation Error",
           description: "Simulation engine encountered an error.",
         },
-        transactionId
+        transactionId,
       };
     }
   });

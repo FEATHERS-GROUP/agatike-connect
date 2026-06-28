@@ -22,7 +22,9 @@ function InvoicesPage() {
         return;
       }
       try {
-        const invs = await getInvoices({ data: { organizer_id: activeWorkspace.orgnizer_id } } as any);
+        const invs = await getInvoices({
+          data: { organizer_id: activeWorkspace.orgnizer_id },
+        } as any);
         setInvoices(invs);
       } catch (err) {
         console.error("Failed to load invoices", err);
@@ -70,8 +72,14 @@ function InvoicesPage() {
         <div className="divide-y divide-border/40">
           {invoices.length > 0 ? (
             invoices.map((inv) => {
-              const displayDate = inv.created_at ? new Date(inv.created_at).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' }) : "N/A";
-              
+              const displayDate = inv.created_at
+                ? new Date(inv.created_at).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "N/A";
+
               return (
                 <div
                   key={inv.id}

@@ -90,7 +90,12 @@ const GET_ACTIVE_PLAN_FEES = `
 export const getWorkspaceActivePlanFees = createServerFn({ method: "POST" })
   .validator((d: { organizer_id: string }) => d)
   .handler(async (ctx) => {
-    if (!ctx.data.organizer_id) return { customer_service_fee_percentage: 2.0, organizer_platform_contribution: 0, platform_margin_buffer: 0 };
+    if (!ctx.data.organizer_id)
+      return {
+        customer_service_fee_percentage: 2.0,
+        organizer_platform_contribution: 0,
+        platform_margin_buffer: 0,
+      };
     const res = await hasuraRequest<any>(GET_ACTIVE_PLAN_FEES, {
       organizer_id: ctx.data.organizer_id,
     });
@@ -202,7 +207,10 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
           }
         }
       `;
-      const freeSubRes = await hasuraRequest<{ subscriptions: { start_date: string }[] }>(GET_FIRST_FREE_SUB, { organizer_id });
+      const freeSubRes = await hasuraRequest<{ subscriptions: { start_date: string }[] }>(
+        GET_FIRST_FREE_SUB,
+        { organizer_id },
+      );
       if (freeSubRes.subscriptions.length > 0) {
         // Tie expiration to the first ever free sub so they can't get it again
         const firstStartDate = new Date(freeSubRes.subscriptions[0].start_date);

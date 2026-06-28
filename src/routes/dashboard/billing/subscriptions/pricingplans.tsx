@@ -79,16 +79,24 @@ function PricingPlansPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [fetchedPlans, fetchedRules, fetchedOrganizer, fetchedActiveSub, fetchedProviderFees] = await Promise.all([
+        const [
+          fetchedPlans,
+          fetchedRules,
+          fetchedOrganizer,
+          fetchedActiveSub,
+          fetchedProviderFees,
+        ] = await Promise.all([
           getPricingPlans(),
           getPromotionalRules(),
           getOrganizerProfile().catch(() => null),
-          activeWorkspace?.orgnizer_id ? getActiveSubscription({ data: { organizer_id: activeWorkspace.orgnizer_id } } as any) : null,
+          activeWorkspace?.orgnizer_id
+            ? getActiveSubscription({ data: { organizer_id: activeWorkspace.orgnizer_id } } as any)
+            : null,
           getAllPaymentProviderFees(),
         ]);
-        
+
         // Hide the Basic plan (price 0) as it is given by default
-        setPlans(fetchedPlans.filter(p => p.price > 0));
+        setPlans(fetchedPlans.filter((p) => p.price > 0));
         setRules(fetchedRules);
         setOrganizerProfile(fetchedOrganizer);
         setActiveSub(fetchedActiveSub);
@@ -147,31 +155,31 @@ function PricingPlansPage() {
   const launchPromo = rules.find((r) => r.name === "Launch Promo");
 
   const PAWAPAY_COUNTRY_MAP: Record<string, string> = {
-    "Rwanda": "RWA",
-    "Kenya": "KEN",
-    "Uganda": "UGA",
-    "Tanzania": "TZA",
-    "Ghana": "GHA",
-    "Nigeria": "NGA",
-    "Zambia": "ZMB",
-    "Malawi": "MWI",
-    "Lesotho": "LSO",
-    "Cameroon": "CMR",
+    Rwanda: "RWA",
+    Kenya: "KEN",
+    Uganda: "UGA",
+    Tanzania: "TZA",
+    Ghana: "GHA",
+    Nigeria: "NGA",
+    Zambia: "ZMB",
+    Malawi: "MWI",
+    Lesotho: "LSO",
+    Cameroon: "CMR",
     "DR Congo": "COD",
     "Burkina Faso": "BFA",
     "Sierra Leone": "SLE",
-    "Gabon": "GAB",
-    "Benin": "BEN",
-    "Ethiopia": "ETH",
-    "Senegal": "SEN",
+    Gabon: "GAB",
+    Benin: "BEN",
+    Ethiopia: "ETH",
+    Senegal: "SEN",
     "Ivory Coast": "CIV",
-    "Congo-Brazzaville": "COG"
+    "Congo-Brazzaville": "COG",
   };
 
   // Calculate country fees
   const workspaceCountry = detectedCountry;
   const countryCode = PAWAPAY_COUNTRY_MAP[workspaceCountry] || "RWA"; // Map to Alpha-3
-  
+
   let countryFees = providerFees.filter((f) => f.country_code === countryCode);
   if (countryFees.length === 0 && providerFees.length > 0) {
     countryFees = providerFees.filter((f) => f.country_code === "RWA");
@@ -230,7 +238,6 @@ function PricingPlansPage() {
               </span>
             </Label>
           </div>
-
         </div>
       </div>
 
@@ -336,11 +343,23 @@ function PricingPlansPage() {
                     disabled={isActivePlan}
                     variant={isActivePlan ? "secondary" : plan.is_popular ? "default" : "outline"}
                     className={`w-full rounded-full mb-8 h-11 ${
-                      plan.is_popular && !isActivePlan ? "shadow-md hover:scale-105 transition-transform" : ""
+                      plan.is_popular && !isActivePlan
+                        ? "shadow-md hover:scale-105 transition-transform"
+                        : ""
                     } ${isActivePlan ? "opacity-75 cursor-not-allowed font-bold" : ""}`}
-                    style={plan.is_popular && !isActivePlan ? { background: "var(--gradient-primary)" } : {}}
+                    style={
+                      plan.is_popular && !isActivePlan
+                        ? { background: "var(--gradient-primary)" }
+                        : {}
+                    }
                   >
-                    {isActivePlan ? "Current Plan" : isEnterprise ? "Contact Sales" : plan.price === 0 ? "Get Started" : "Upgrade Now"}
+                    {isActivePlan
+                      ? "Current Plan"
+                      : isEnterprise
+                        ? "Contact Sales"
+                        : plan.price === 0
+                          ? "Get Started"
+                          : "Upgrade Now"}
                   </Button>
                 );
               })()}
@@ -366,21 +385,19 @@ function PricingPlansPage() {
                     <li className="flex items-start gap-2 text-sm text-muted-foreground">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                       <span>
-                        <strong className="text-foreground font-semibold">Collection:</strong> {
-                          isTieredCountry 
-                            ? "Varies (Tiered based on ticket price)" 
-                            : `${Math.max(0, maxCollectionPct - (plan.customer_service_fee_percentage || 2)).toFixed(1)}% per ticket`
-                        }
+                        <strong className="text-foreground font-semibold">Collection:</strong>{" "}
+                        {isTieredCountry
+                          ? "Varies (Tiered based on ticket price)"
+                          : `${Math.max(0, maxCollectionPct - (plan.customer_service_fee_percentage || 2)).toFixed(1)}% per ticket`}
                       </span>
                     </li>
                     <li className="flex items-start gap-2 text-sm text-muted-foreground">
                       <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                       <span>
-                        <strong className="text-foreground font-semibold">Withdrawal:</strong> {
-                          isTieredCountry
-                            ? `Varies (Tiered) + ${plan.organizer_platform_contribution || 0}% platform fee`
-                            : `${(avgDisbursementPct + (plan.organizer_platform_contribution || 0)).toFixed(1)}%`
-                        }
+                        <strong className="text-foreground font-semibold">Withdrawal:</strong>{" "}
+                        {isTieredCountry
+                          ? `Varies (Tiered) + ${plan.organizer_platform_contribution || 0}% platform fee`
+                          : `${(avgDisbursementPct + (plan.organizer_platform_contribution || 0)).toFixed(1)}%`}
                       </span>
                     </li>
                   </ul>

@@ -189,11 +189,11 @@ export const addEventAttendees = createServerFn({ method: "POST" })
             { id: eventId },
           );
           const workspace_id = wsData?.events_by_pk?.workspace_id;
-          
+
           // Only auto-fund the wallet if it's NOT a mobile money (PawaPay) transaction.
           // PawaPay transactions will securely fund the wallet via the webhook once completed.
           const isMomo = objects.some((obj: any) => obj.payment_method === "momo");
-          
+
           if (workspace_id && !isMomo) {
             const { addMoneyToWorkspaceWallet } = await import("./wallet");
             await addMoneyToWorkspaceWallet({ data: { workspace_id, amount: totalCost } } as any);

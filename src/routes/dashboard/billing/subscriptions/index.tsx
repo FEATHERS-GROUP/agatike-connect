@@ -97,11 +97,11 @@ function SubscriptionsPage() {
     const now = new Date();
     const diffTime = nextBillingDateObj.getTime() - now.getTime();
     daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (daysLeft > 14) {
       daysLeft = 14;
     }
-    
+
     if (daysLeft <= 0) {
       isTrialExpired = true;
       daysLeft = 0;
@@ -118,14 +118,16 @@ function SubscriptionsPage() {
       </div>
 
       {isFree && (
-        <div className={`p-5 rounded-2xl border ${isTrialExpired ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-primary/10 border-primary/20 text-primary'}`}>
+        <div
+          className={`p-5 rounded-2xl border ${isTrialExpired ? "bg-destructive/10 border-destructive/20 text-destructive" : "bg-primary/10 border-primary/20 text-primary"}`}
+        >
           <h3 className="font-bold flex items-center gap-2 mb-1.5">
-            {isTrialExpired ? '⚠️ Trial Expired' : '🎁 14-Day Free Trial'}
+            {isTrialExpired ? "⚠️ Trial Expired" : "🎁 14-Day Free Trial"}
           </h3>
           <p className="text-sm opacity-90 font-medium">
-            {isTrialExpired 
+            {isTrialExpired
               ? "Your 14-day free access to premium modules has expired. Please upgrade to a premium plan to continue using advanced features."
-              : `You have ${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining in your free trial of premium modules.`}
+              : `You have ${daysLeft} day${daysLeft !== 1 ? "s" : ""} remaining in your free trial of premium modules.`}
           </p>
         </div>
       )}

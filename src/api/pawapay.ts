@@ -96,7 +96,7 @@ export const getPaymentProviderFees = createServerFn({ method: "POST" })
     try {
       const res = await hasuraRequest<any>(GET_PAYMENT_PROVIDER_FEES, {
         network: ctx.data.network,
-        countryCode: ctx.data.countryCode || "RWA"
+        countryCode: ctx.data.countryCode || "RWA",
       });
       return res.payment_provider_fees?.[0] || null;
     } catch (e) {
@@ -120,16 +120,15 @@ const GET_ALL_PROVIDER_FEES = `
   }
 `;
 
-export const getAllPaymentProviderFees = createServerFn({ method: "GET" })
-  .handler(async () => {
-    try {
-      const res = await hasuraRequest<any>(GET_ALL_PROVIDER_FEES);
-      return res.payment_provider_fees || [];
-    } catch (e) {
-      console.error("Failed to fetch all provider fees:", e);
-      return [];
-    }
-  });
+export const getAllPaymentProviderFees = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const res = await hasuraRequest<any>(GET_ALL_PROVIDER_FEES);
+    return res.payment_provider_fees || [];
+  } catch (e) {
+    console.error("Failed to fetch all provider fees:", e);
+    return [];
+  }
+});
 
 export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
   .validator((d: any) => d)
@@ -172,9 +171,9 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         address: { value: phone },
       },
       customerTimestamp: new Date().toISOString(),
-      statementDescription: (
-        reason || `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`
-      ).replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 22),
+      statementDescription: (reason || `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`)
+        .replace(/[^a-zA-Z0-9 ]/g, "")
+        .substring(0, 22),
     };
 
     const baseUrl = process.env.PAWAPAY_API_URL;

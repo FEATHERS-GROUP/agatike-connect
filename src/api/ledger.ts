@@ -5,7 +5,13 @@ export type WalletState = "PENDING" | "PROCESSING" | "AVAILABLE" | "HELD" | "WIT
 export interface LedgerEntry {
   transaction_group_id: string;
   entry_type: "debit" | "credit";
-  account_type: "CUSTOMER_ACCOUNT" | "ORGANIZER_WALLET" | "AGATIKE_REVENUE" | "PAYMENT_PROVIDER" | "RESERVE_ACCOUNT" | "FEES_POOL";
+  account_type:
+    | "CUSTOMER_ACCOUNT"
+    | "ORGANIZER_WALLET"
+    | "AGATIKE_REVENUE"
+    | "PAYMENT_PROVIDER"
+    | "RESERVE_ACCOUNT"
+    | "FEES_POOL";
   reference_id: string;
   amount: number;
   currency: string;
@@ -38,7 +44,9 @@ export const recordDoubleEntryLedger = async (entries: LedgerEntry[]) => {
 
   // Tolerance of 1 to handle potential tiny floating point rounding issues
   if (Math.abs(debits - credits) > 1) {
-    throw new Error(`CRITICAL: Ledger imbalance detected. Debits: ${debits}, Credits: ${credits}. Group ID: ${entries[0]?.transaction_group_id}`);
+    throw new Error(
+      `CRITICAL: Ledger imbalance detected. Debits: ${debits}, Credits: ${credits}. Group ID: ${entries[0]?.transaction_group_id}`,
+    );
   }
 
   try {
@@ -100,7 +108,7 @@ export const generateCheckoutLedgerEntries = (params: {
       wallet_state: "PROCESSING",
       description: "Customer funds received into temporary pool",
     },
-    
+
     // 2. PawaPay Expense
     {
       transaction_group_id: transactionGroupId,

@@ -7,7 +7,12 @@ import {
   upgradeSubscription,
   PricingPlan,
 } from "@/api/billing";
-import { getPawaPayNetworks, initiatePawaPayDeposit, getPawaPayDepositStatus, getExchangeRate } from "@/api/pawapay";
+import {
+  getPawaPayNetworks,
+  initiatePawaPayDeposit,
+  getPawaPayDepositStatus,
+  getExchangeRate,
+} from "@/api/pawapay";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -447,8 +452,9 @@ function CheckoutPage() {
                     <div className="p-4 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl text-sm font-medium flex items-start gap-3 w-full">
                       <Smartphone className="h-5 w-5 animate-bounce mt-0.5 shrink-0" />
                       <p className="text-left">
-                        <span className="block font-bold text-base mb-1">Check your phone!</span>
-                        A payment prompt has been sent to your mobile. Please enter your PIN to confirm the subscription.
+                        <span className="block font-bold text-base mb-1">Check your phone!</span>A
+                        payment prompt has been sent to your mobile. Please enter your PIN to
+                        confirm the subscription.
                       </p>
                     </div>
                   )}
@@ -465,7 +471,8 @@ function CheckoutPage() {
                   >
                     {isProcessing || isPollingPawaPay ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {isPollingPawaPay ? "Waiting for payment..." : "Processing..."}
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />{" "}
+                        {isPollingPawaPay ? "Waiting for payment..." : "Processing..."}
                       </>
                     ) : (
                       `Pay ${formatCurrency(getConvertedAmount(finalUSDPrice))}`

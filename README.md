@@ -353,7 +353,8 @@ sequenceDiagram
 Because telecom network fees fluctuate heavily based on the size of the transaction, Agatike Connect employs a highly precise **Simulation Engine** (`src/api/simulation.ts`) that runs a pre-flight check on every checkout.
 
 **Logic:**
-- **Tiered Rules:** The system stores the exact MMO fee brackets (e.g. `< 101 KSH = 0 + 1%`, `< 501 = 5 + 1%`) inside the `pricing_plans.tiered_rules` JSONB column. 
+
+- **Tiered Rules:** The system stores the exact MMO fee brackets (e.g. `< 101 KSH = 0 + 1%`, `< 501 = 5 + 1%`) inside the `pricing_plans.tiered_rules` JSONB column.
 - **The Simulation:** Before the user clicks "Pay", the UI pings the simulation engine with the base amount and the selected network's country. The engine iterates through the `tiered_rules` to calculate the exact network fee for that specific ticket price.
 - **Shortfall Protection:** If a ticket is incredibly cheap (e.g. 20 RWF) where the network fee exceeds the ticket price, the system no longer blocks the transaction. Instead, it allows the customer to pay their base amount, and automatically calculates the `shortfall`. The shortfall is then absorbed from the organizer's platform wallet, ensuring a seamless checkout experience for the customer while the organizer foots the bill for micro-transactions.
 
@@ -364,13 +365,13 @@ flowchart TD
     DB --> Calc{Calculate Fee Based on Brackets}
     Calc -->|Ticket price > Fee| Normal[Normal Flow]
     Calc -->|Fee > Ticket price| Shortfall[Shortfall Mode]
-    
+
     Normal --> ChargeCust[Charge Customer Base Price + Markup]
     Shortfall --> ChargeCust
-    
+
     Normal --> OrgFee[Normal Platform Fee Withheld]
     Shortfall --> OrgDeduct[Shortfall Deducted from Organizer Wallet]
-    
+
     OrgFee --> Webhook[PawaPay Webhook Completes]
     OrgDeduct --> Webhook
 ```
@@ -380,19 +381,20 @@ flowchart TD
 Organizers have full control over which telecom networks their attendees can use to pay.
 
 **Logic:**
+
 - **Configuration:** In the organizer's Wallet Settings, they can check or uncheck specific networks (e.g., MTN MoMo, Airtel Money, M-Pesa). This array of enabled networks is saved in `wallets.supported_networks`.
 - **Checkout Enforcement:** The `PaymentModal` reads the organizer's `supported_networks`. If the organizer only checked "MTN MoMo", only MTN will appear in the checkout dropdown.
-- **Unconfigured Wallets:** If an organizer creates an event but forgets to configure their wallet (i.e., `supported_networks` is empty), the `PaymentModal` will immediately display a red alert message: *"The organizer has not configured any payment networks yet."* and completely disable the "Proceed to Pay" button, preventing attendees from experiencing failed bookings.
+- **Unconfigured Wallets:** If an organizer creates an event but forgets to configure their wallet (i.e., `supported_networks` is empty), the `PaymentModal` will immediately display a red alert message: _"The organizer has not configured any payment networks yet."_ and completely disable the "Proceed to Pay" button, preventing attendees from experiencing failed bookings.
 
 ```mermaid
 flowchart TD
     Org[Organizer] -->|Selects Networks| DB[(wallets.supported_networks)]
     UI[Customer Opens Checkout] --> Read[Fetch Wallet Config]
     Read --> Check{Is Array Empty?}
-    
+
     Check -->|Yes| Blocked[Disable 'Pay' Button\nShow Red Alert Message]
     Check -->|No| Filter[Filter Networks Dropdown]
-    
+
     Filter --> Proceed[Customer Chooses Configured Network]
     Proceed --> CheckoutFlow[Proceed to Payment]
 ```
@@ -1859,7 +1861,7 @@ The Cinema module allows an organizer to operate a full movie theatre ticketing 
 
 **Files:** `src/api/simulation.ts`, `src/api/billing.ts`
 
-Agatike Connect is not just a ticketing platform; it operates a **dynamic, subscription-driven financial routing system**. 
+Agatike Connect is not just a ticketing platform; it operates a **dynamic, subscription-driven financial routing system**.
 To ensure that Agatike never processes a transaction at a loss, the system dynamically calculates payment provider costs (PawaPay) and shifts margins in real-time based on the Organizer's active Subscription Plan.
 
 ### 24.1 Plan Choosing & Upgrade Logic (For Organizers)
@@ -1875,7 +1877,7 @@ flowchart TD
     Select -->|Free Plan| Free[organizer_platform_contribution = 4.5%]
     Select -->|Pro Plan| Pro[organizer_platform_contribution = 3.5%]
     Select -->|Business Plan| Bus[organizer_platform_contribution = 2.8%]
-    
+
     Free & Pro & Bus --> Checkout[MoMo / Card Payment for Subscription]
     Checkout -->|Success Webhook| DB[Update workspaces_subscriptions]
     DB --> Active[Plan Becomes Active]
@@ -1884,7 +1886,7 @@ flowchart TD
 
 ### 24.2 Logic to Charge Customers (The Checkout Simulation)
 
-When a customer buys a ticket, the system uses a strict **Cost Coverage Hierarchy**. 
+When a customer buys a ticket, the system uses a strict **Cost Coverage Hierarchy**.
 
 1. **Customer Fee:** Fixed at ~2% of the Base Price.
 2. **PawaPay Collection Cost:** The exact cost to process the Mobile Money payment (e.g. 3.1%).
@@ -1897,7 +1899,7 @@ flowchart TD
     Cust[Customer] -->|Selects 10,000 RWF Ticket| Checkout
     Checkout --> FetchRates[Fetch PawaPay Collection Rates]
     FetchRates --> Sim[Simulation Engine Calculates Margin]
-    
+
     Sim --> Rev[Agatike Revenue = Customer Fee + Organizer Subscription Fee]
     Sim --> Cost[Total Cost = PawaPay Collection Cost]
 
@@ -1905,25 +1907,26 @@ flowchart TD
 
 To ensure full transparency to the Organizer on the **Pricing Plans** page:
 - **Collection Fee Display:** We display the *maximum* possible network fee for their country, minus the 2% paid by the customer. E.g. If the highest network fee in Rwanda is Airtel at 3.1%, the Organizer's displayed fee is `3.1% - 2.0% = 1.1% per ticket`. This guarantees they are aware of the maximum possible fallback cost.
-    
+
     Cost & Rev --> Check{Is Revenue < Cost?}
-    
+
     Check -->|No - Profitable| Proceed[Approve Checkout]
     Check -->|Yes - Shortfall| Absorb[Organizer Absorbs Shortfall]
-    
+
     Absorb --> CalcPayout[Organizer Payout = Ticket Price - Absorbed Shortfall]
     CalcPayout --> CheckNeg{Is Payout < 0?}
     CheckNeg -->|Yes| Block[Block Customer: Ticket price too low]
     CheckNeg -->|No| Proceed
-    
+
     Proceed --> PawaPay[Send Charge to PawaPay]
     PawaPay --> Wallet[Credit Organizer Wallet with Net Payout]
 ```
 
 ### 24.3 Withdrawals and Wallet Logic
 
-**Rule:** Agatike's subscription plans **do not subsidize PawaPay Disbursement Fees**. 
+**Rule:** Agatike's subscription plans **do not subsidize PawaPay Disbursement Fees**.
 When an organizer withdraws funds, the withdrawal fee is a combination of two elements:
+
 1. **PawaPay Disbursement Average:** The average disbursement percentage across all networks in the organizer's country.
 2. **Agatike Withdrawal Fee:** The organizer's `organizer_platform_contribution` percentage based on their active subscription plan.
 
@@ -1935,13 +1938,13 @@ flowchart TD
     Req --> CheckBal{Amount <= Wallet Balance?}
     CheckBal -->|No| Reject[Reject Request]
     CheckBal -->|Yes| NetCalc[Fetch PawaPay Disbursement Rates]
-    
+
     NetCalc --> Math[Disbursement Cost = Amount * Pct + Fixed Fee]
     Math --> Final[Final Payout = Amount - Disbursement Cost]
-    
+
     Final --> Ledger[Create Pending wallet_transactions Debit]
     Ledger --> API[Trigger PawaPay Disbursement API]
-    
+
     API -->|Success Webhook| Update[Update transaction to 'completed']
     Update --> Bank[Money hits Organizer's Mobile Money Account]
 ```
