@@ -1,5 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
+import bcrypt from "bcryptjs";
+import { SignJWT, jwtVerify } from "jose";
+
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
 
 const GET_WORKSPACE_WALLET = `
   query GetWorkspaceWallet($workspace_id: uuid!) {
@@ -160,6 +164,74 @@ const REQUEST_WITHDRAWAL_MUTATION = `
   }
 `;
 
+export const sendWithdrawalOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { organizer_id } = ctx.data as unknown as { organizer_id: string };
+
+  const query = `
+    query GetOrganizer($id: uuid!) {
+      organizers_by_pk(id: $id) {
+        email
+      }
+    }
+  `;
+  const result = await hasuraRequest<{ organizers_by_pk: { email: string } }>(query, { id: organizer_id });
+  const email = result.organizers_by_pk?.email;
+
+  if (!email) {
+    throw new Error("Organizer not found");
+  }
+
+  // Generate 8-character alphanumeric OTP
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let otp = "";
+  for (let i = 0; i < 8; i++) {
+    otp += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  const hashedOtp = await bcrypt.hash(otp, 10);
+
+  const token = await new SignJWT({ email, otp: hashedOtp, type: "withdrawal_otp" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("10m")
+    .sign(SECRET);
+
+  const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Withdrawal Security Code</h2>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6; text-align: center;">
+        <p>A withdrawal request has been initiated for your Agatike Connect account. Please use the following One-Time Password (OTP) to authorize this payout:</p>
+        <div style="font-size: 32px; font-weight: 800; letter-spacing: 4px; color: #F2571D; padding: 24px; background: #fff5f2; border-radius: 12px; display: inline-block; margin: 24px 0;">
+          ${otp}
+        </div>
+        <p style="font-size: 14px; color: #666;">This code is valid for 10 minutes. If you did not request this, please change your password immediately.</p>
+      </div>
+    </div>
+  `;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [email],
+      subject: `Withdrawal OTP: ${otp}`,
+      html: html,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to send OTP via email");
+  }
+
+  return { success: true, token };
+});
+
 export const requestWithdrawal = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const {
     wallet_id,
@@ -171,9 +243,37 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     currency,
     network_id,
     country_code,
+    otpToken,
+    otp,
+    password,
   } = ctx.data as any;
 
-  // 1. Get Wallet Balance
+  if (!otpToken || !otp || !password) {
+    throw new Error("Missing security verification details.");
+  }
+
+  // 1. Verify OTP JWT
+  try {
+    const { payload } = await jwtVerify(otpToken, SECRET);
+    if (payload.type !== "withdrawal_otp") throw new Error("Invalid token type");
+
+    const otpHash = payload.otp as string;
+    const isOtpValid = await bcrypt.compare(otp, otpHash);
+    if (!isOtpValid) throw new Error("Invalid or expired OTP");
+  } catch (err: any) {
+    throw new Error("Invalid or expired OTP");
+  }
+
+  // 2. Verify Password
+  const orgQuery = `query GetOrg { organizers_by_pk(id: "${organizer_id}") { password } }`;
+  const orgRes = await hasuraRequest<{ organizers_by_pk: { password: string } }>(orgQuery);
+  const orgData = orgRes.organizers_by_pk;
+  if (!orgData) throw new Error("Organizer not found");
+
+  const isPasswordValid = await bcrypt.compare(password, orgData.password);
+  if (!isPasswordValid) throw new Error("Incorrect password");
+
+  // 3. Get Wallet Balance
   const walletQuery = `query GetWallet { wallets_by_pk(id: "${wallet_id}") { amount } }`;
   const walletRes = await hasuraRequest<{ wallets_by_pk: { amount: number } }>(walletQuery);
   if (!walletRes.wallets_by_pk || walletRes.wallets_by_pk.amount < amount) {

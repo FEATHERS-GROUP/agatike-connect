@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getWorkspaceWallet, requestWithdrawal } from "@/api/wallet";
+import { getWorkspaceWallet, requestWithdrawal, sendWithdrawalOtp } from "@/api/wallet";
 import { getActiveSubscription } from "@/api/billing";
 import { getAllPaymentProviderFees } from "@/api/pawapay";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,12 @@ function RequestWithdrawalPage() {
   const [payoutMethod, setPayoutMethod] = useState("momo");
   const [selectedNetworkId, setSelectedNetworkId] = useState("");
   const [payoutAccount, setPayoutAccount] = useState("");
+  
+  // Security State
+  const [otpToken, setOtpToken] = useState("");
+  const [otp, setOtp] = useState("");
+  const [password, setPassword] = useState("");
+
   const queryClient = useQueryClient();
 
   const { data: wallet, isLoading: isWalletLoading } = useQuery({
@@ -152,6 +158,9 @@ function RequestWithdrawalPage() {
           currency: wallet!.currency,
           network_id: actualNetworkId,
           country_code: countryCode,
+          otpToken,
+          otp,
+          password,
         },
       } as any),
     onSuccess: () => {
@@ -168,7 +177,22 @@ function RequestWithdrawalPage() {
     },
   });
 
-  const handleWithdrawRequest = () => {
+  const sendOtpMutation = useMutation({
+    mutationFn: () =>
+      sendWithdrawalOtp({
+        data: { organizer_id: activeWorkspace!.orgnizer_id },
+      } as any),
+    onSuccess: (res: any) => {
+      setOtpToken(res.token);
+      setStep(4);
+      toast.success("Security code sent to your email!");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to send OTP.");
+    },
+  });
+
+  const handleInitiateWithdrawal = () => {
     if (!withdrawAmount || isNaN(amountToWithdraw) || amountToWithdraw <= 0) {
       toast.error("Please enter a valid amount");
       return;
@@ -191,6 +215,19 @@ function RequestWithdrawalPage() {
 
     if (netPayout <= 0) {
       toast.error("Withdrawal amount is too low to cover the processing fees.");
+      return;
+    }
+
+    sendOtpMutation.mutate();
+  };
+
+  const handleConfirmWithdrawal = () => {
+    if (!otp || otp.length !== 8) {
+      toast.error("Please enter the valid 8-character OTP");
+      return;
+    }
+    if (!password) {
+      toast.error("Please enter your password");
       return;
     }
 
@@ -424,10 +461,63 @@ function RequestWithdrawalPage() {
                 <Button
                   size="lg"
                   className="w-2/3 h-14 rounded-xl text-lg"
-                  disabled={withdrawMutation.isPending || !payoutAccount || netPayout <= 0}
-                  onClick={handleWithdrawRequest}
+                  disabled={sendOtpMutation.isPending || !payoutAccount || netPayout <= 0}
+                  onClick={handleInitiateWithdrawal}
                 >
-                  {withdrawMutation.isPending ? "Processing..." : "Confirm Request"}
+                  {sendOtpMutation.isPending ? "Sending OTP..." : "Confirm Request"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: Security Verification */}
+          {step === 4 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+              <div className="bg-primary/10 p-5 rounded-2xl border border-primary/20 text-center space-y-2">
+                <h3 className="font-bold text-lg">Security Verification</h3>
+                <p className="text-sm text-muted-foreground">
+                  We've sent an 8-character One-Time Password (OTP) to your email address. Please enter it below along with your account password to authorize this payout.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">8-Character Security Code</Label>
+                <Input
+                  placeholder="e.g. A1B2C3D4"
+                  className="h-14 rounded-xl font-mono text-center text-lg tracking-widest uppercase"
+                  maxLength={8}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.toUpperCase())}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Account Password</Label>
+                <Input
+                  type="password"
+                  placeholder="Enter your password"
+                  className="h-14 rounded-xl"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-4 mt-6">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-1/3 h-14 rounded-xl text-lg"
+                  onClick={() => setStep(3)}
+                >
+                  Back
+                </Button>
+                <Button
+                  size="lg"
+                  className="w-2/3 h-14 rounded-xl text-lg"
+                  disabled={withdrawMutation.isPending || otp.length !== 8 || !password}
+                  onClick={handleConfirmWithdrawal}
+                >
+                  {withdrawMutation.isPending ? "Authorizing..." : "Submit Withdrawal"}
                 </Button>
               </div>
             </div>
