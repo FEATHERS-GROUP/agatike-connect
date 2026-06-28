@@ -191,59 +191,63 @@ export function DesktopSidebar() {
         </div>
       </nav>
 
-      {currentUser && (currentUser.isBasic || currentUser.isExpiringSoon || currentUser.isExpired) && (
-        <div className="mt-4 relative rounded-xl border border-border/60 bg-accent/20 p-3.5 shrink-0">
-          {currentUser.isBasic ? (
-            <>
-              {currentUser.isTrialActive && (
-                <div className="absolute -top-3 -right-2 animate-bounce bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
-                  {currentUser.trialDaysLeft} days left!
-                </div>
-              )}
-              {currentUser.isTrialExpired && (
-                <div className="absolute -top-3 -right-2 animate-bounce bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
-                  Trial Expired
-                </div>
-              )}
-              <p className="text-sm font-semibold">Upgrade to Pro</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Branded pages, marketing & advanced analytics.
-              </p>
-              <Button
-                asChild
-                className="mt-3 w-full rounded-full text-xs h-8"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                <Link to="/dashboard/billing/subscriptions/pricingplans">Upgrade</Link>
-              </Button>
-            </>
-          ) : (
-            <>
-              {currentUser.isExpiringSoon && !currentUser.isExpired && (
-                <div className="absolute -top-3 -right-2 animate-bounce bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
-                  {currentUser.daysUntilExpiration === 0 ? "Expires Today!" : `${currentUser.daysUntilExpiration} days left`}
-                </div>
-              )}
-              {currentUser.isExpired && (
-                <div className="absolute -top-3 -right-2 animate-bounce bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
-                  Expired
-                </div>
-              )}
-              <p className="text-sm font-semibold">Renew Subscription</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Your {currentUser.planName || "Pro"} plan is expiring. Renew to keep your features.
-              </p>
-              <Button
-                asChild
-                className="mt-3 w-full rounded-full text-xs h-8"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                <Link to="/dashboard/billing/subscriptions/pricingplans">Renew Now</Link>
-              </Button>
-            </>
-          )}
-        </div>
-      )}
+      {currentUser &&
+        (currentUser.isBasic || currentUser.isExpiringSoon || currentUser.isExpired) && (
+          <div className="mt-4 relative rounded-xl border border-border/60 bg-accent/20 p-3.5 shrink-0">
+            {currentUser.isBasic ? (
+              <>
+                {currentUser.isTrialActive && (
+                  <div className="absolute -top-3 -right-2 animate-bounce bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+                    {currentUser.trialDaysLeft} days left!
+                  </div>
+                )}
+                {currentUser.isTrialExpired && (
+                  <div className="absolute -top-3 -right-2 animate-bounce bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+                    Trial Expired
+                  </div>
+                )}
+                <p className="text-sm font-semibold">Upgrade to Pro</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Branded pages, marketing & advanced analytics.
+                </p>
+                <Button
+                  asChild
+                  className="mt-3 w-full rounded-full text-xs h-8"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  <Link to="/dashboard/billing/subscriptions/pricingplans">Upgrade</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                {currentUser.isExpiringSoon && !currentUser.isExpired && (
+                  <div className="absolute -top-3 -right-2 animate-bounce bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+                    {currentUser.daysUntilExpiration === 0
+                      ? "Expires Today!"
+                      : `${currentUser.daysUntilExpiration} days left`}
+                  </div>
+                )}
+                {currentUser.isExpired && (
+                  <div className="absolute -top-3 -right-2 animate-bounce bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+                    Expired
+                  </div>
+                )}
+                <p className="text-sm font-semibold">Renew Subscription</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Your {currentUser.planName || "Pro"} plan is expiring. Renew to keep your
+                  features.
+                </p>
+                <Button
+                  asChild
+                  className="mt-3 w-full rounded-full text-xs h-8"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  <Link to="/dashboard/billing/subscriptions/pricingplans">Renew Now</Link>
+                </Button>
+              </>
+            )}
+          </div>
+        )}
     </aside>
   );
 }

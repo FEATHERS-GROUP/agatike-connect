@@ -2,7 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getWorkspaceWallet, requestWithdrawal, sendWithdrawalOtp, getExchangeRate } from "@/api/wallet";
+import {
+  getWorkspaceWallet,
+  requestWithdrawal,
+  sendWithdrawalOtp,
+  getExchangeRate,
+} from "@/api/wallet";
 import { getActiveSubscription } from "@/api/billing";
 import { getAllPaymentProviderFees } from "@/api/pawapay";
 import { Button } from "@/components/ui/button";
@@ -31,7 +36,7 @@ function RequestWithdrawalPage() {
   const [payoutMethod, setPayoutMethod] = useState("momo");
   const [selectedNetworkId, setSelectedNetworkId] = useState("");
   const [payoutAccount, setPayoutAccount] = useState("");
-  
+
   // Security State
   const [otpToken, setOtpToken] = useState("");
   const [otp, setOtp] = useState("");
@@ -108,16 +113,22 @@ function RequestWithdrawalPage() {
         .map((f: any) => [
           `${f.network}-${f.country_code}`,
           {
-            label: `${f.network.replace(/_/g, " ").replace("MOMO", "MoMo").replace("OAPI", "")} (${COUNTRY_NAMES[f.country_code] || f.country_code})`.replace(/\s+/g, " "),
+            label:
+              `${f.network.replace(/_/g, " ").replace("MOMO", "MoMo").replace("OAPI", "")} (${COUNTRY_NAMES[f.country_code] || f.country_code})`.replace(
+                /\s+/g,
+                " ",
+              ),
             value: `${f.network}-${f.country_code}`,
             actualNetwork: f.network,
             code: f.country_code,
           },
-        ])
-    ).values()
+        ]),
+    ).values(),
   ).sort((a: any, b: any) => a.label.localeCompare(b.label));
 
-  const COUNTRIES = Array.from(new Set(providerFees.map((f: any) => f.country_code))).filter(Boolean).sort() as string[];
+  const COUNTRIES = Array.from(new Set(providerFees.map((f: any) => f.country_code)))
+    .filter(Boolean)
+    .sort() as string[];
   const FILTERED_NETWORKS = NETWORKS.filter((n) => n.code === selectedCountry);
 
   // Calculate live fees
@@ -182,7 +193,7 @@ function RequestWithdrawalPage() {
   const convertedAmount = amountToWithdraw * rate;
   const convertedFee = totalFee * rate;
   const convertedNetPayout = netPayout * rate;
-  
+
   const showExchange = isExchangeLoading || rate !== 1;
 
   const withdrawMutation = useMutation({
@@ -490,11 +501,12 @@ function RequestWithdrawalPage() {
                   </span>
                   <div className="flex flex-col items-end">
                     <span className="font-medium text-destructive">
-                      - {showExchange
-                          ? isExchangeLoading
-                            ? "..."
-                            : formatCurrency(convertedFee, targetCurrency)
-                          : formatCurrency(totalFee, wallet?.currency)}
+                      -{" "}
+                      {showExchange
+                        ? isExchangeLoading
+                          ? "..."
+                          : formatCurrency(convertedFee, targetCurrency)
+                        : formatCurrency(totalFee, wallet?.currency)}
                     </span>
                   </div>
                 </div>
@@ -542,7 +554,8 @@ function RequestWithdrawalPage() {
               <div className="bg-primary/10 p-5 rounded-2xl border border-primary/20 text-center space-y-2">
                 <h3 className="font-bold text-lg">Security Verification</h3>
                 <p className="text-sm text-muted-foreground">
-                  We've sent an 8-character One-Time Password (OTP) to your email address. Please enter it below along with your account password to authorize this payout.
+                  We've sent an 8-character One-Time Password (OTP) to your email address. Please
+                  enter it below along with your account password to authorize this payout.
                 </p>
               </div>
 

@@ -174,7 +174,9 @@ export const sendWithdrawalOtp = createServerFn({ method: "POST" }).handler(asyn
       }
     }
   `;
-  const result = await hasuraRequest<{ organizers_by_pk: { email: string } }>(query, { id: organizer_id });
+  const result = await hasuraRequest<{ organizers_by_pk: { email: string } }>(query, {
+    id: organizer_id,
+  });
   const email = result.organizers_by_pk?.email;
 
   if (!email) {
@@ -323,8 +325,11 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
   const platformPercentage =
     subRes.subscriptions?.[0]?.pricing_plan?.organizer_platform_contribution || 3.0; // fallback 3%
 
-  const maxWeeklyLimitStr = subRes.subscriptions?.[0]?.pricing_plan?.max_withdrawals_per_week || "1";
-  const maxWeeklyLimit = isNaN(parseInt(maxWeeklyLimitStr, 10)) ? 1 : parseInt(maxWeeklyLimitStr, 10);
+  const maxWeeklyLimitStr =
+    subRes.subscriptions?.[0]?.pricing_plan?.max_withdrawals_per_week || "1";
+  const maxWeeklyLimit = isNaN(parseInt(maxWeeklyLimitStr, 10))
+    ? 1
+    : parseInt(maxWeeklyLimitStr, 10);
 
   // 2.5 Check Withdrawal Limits
   const sevenDaysAgo = new Date();
@@ -346,14 +351,18 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       }
     }
   `;
-  const txRes = await hasuraRequest<{ wallet_transactions_aggregate: { aggregate: { count: number } } }>(txQuery, {
+  const txRes = await hasuraRequest<{
+    wallet_transactions_aggregate: { aggregate: { count: number } };
+  }>(txQuery, {
     workspace_id,
     seven_days_ago: sevenDaysAgo.toISOString(),
   });
-  
+
   const weeklyCount = txRes.wallet_transactions_aggregate?.aggregate?.count || 0;
   if (weeklyCount >= maxWeeklyLimit) {
-    throw new Error(`You have reached your limit of ${maxWeeklyLimit} withdrawal(s) per week for your current plan.`);
+    throw new Error(
+      `You have reached your limit of ${maxWeeklyLimit} withdrawal(s) per week for your current plan.`,
+    );
   }
 
   // 3. Get Network Disbursement Fee

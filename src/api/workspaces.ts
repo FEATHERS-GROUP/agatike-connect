@@ -43,8 +43,6 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
     if (me.modules && !me.modules.includes("ALL")) {
       allowedModules = me.modules;
     }
-
-
   } else {
     currentUser = {
       role: "organizer",
@@ -98,10 +96,10 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
         const now = new Date();
         const diffDays = (billingDate.getTime() - now.getTime()) / (1000 * 3600 * 24);
         if (diffDays <= 3 && diffDays >= 0) {
-           currentUser.isExpiringSoon = true;
-           currentUser.daysUntilExpiration = Math.max(0, Math.ceil(diffDays));
+          currentUser.isExpiringSoon = true;
+          currentUser.daysUntilExpiration = Math.max(0, Math.ceil(diffDays));
         } else if (diffDays < 0) {
-           currentUser.isExpired = true;
+          currentUser.isExpired = true;
         }
       }
     } else {

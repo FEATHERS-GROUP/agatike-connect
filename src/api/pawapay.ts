@@ -403,7 +403,9 @@ export const triggerPawaPayPayout = createServerFn({ method: "POST" })
         }
       }
     `;
-    const res = await hasuraRequest<{ wallet_transactions_by_pk: any }>(query, { id: transactionId });
+    const res = await hasuraRequest<{ wallet_transactions_by_pk: any }>(query, {
+      id: transactionId,
+    });
     const tx = res.wallet_transactions_by_pk;
 
     if (!tx) throw new Error("Transaction not found");
@@ -420,19 +422,19 @@ export const triggerPawaPayPayout = createServerFn({ method: "POST" })
       correspondent: network,
       recipient: {
         type: "MSISDN",
-        address: { value: tx.payout_account }
+        address: { value: tx.payout_account },
       },
       customerTimestamp: new Date().toISOString(),
-      statementDescription: "Agatike Withdrawal"
+      statementDescription: "Agatike Withdrawal",
     };
 
     const payoutRes = await fetch(`${baseUrl}/v1/payouts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.PAWAPAY_API_KEY}`
+        Authorization: `Bearer ${process.env.PAWAPAY_API_KEY}`,
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
 
     const data = await payoutRes.json();
@@ -451,6 +453,3 @@ export const triggerPawaPayPayout = createServerFn({ method: "POST" })
 
     return { success: true, data };
   });
-
-
-
