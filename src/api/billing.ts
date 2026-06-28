@@ -15,6 +15,7 @@ export interface PricingPlan {
   yearly_price?: number;
   customer_service_fee_percentage?: number;
   organizer_platform_contribution?: number;
+  platform_margin_buffer?: number;
 }
 
 export interface Subscription {
@@ -42,6 +43,7 @@ const GET_PLANS = `
       yearly_price
       customer_service_fee_percentage
       organizer_platform_contribution
+      platform_margin_buffer
     }
   }
 `;
@@ -79,6 +81,7 @@ const GET_ACTIVE_PLAN_FEES = `
       pricing_plan {
         customer_service_fee_percentage
         organizer_platform_contribution
+        platform_margin_buffer
       }
     }
   }
@@ -87,7 +90,7 @@ const GET_ACTIVE_PLAN_FEES = `
 export const getWorkspaceActivePlanFees = createServerFn({ method: "POST" })
   .validator((d: { organizer_id: string }) => d)
   .handler(async (ctx) => {
-    if (!ctx.data.organizer_id) return { customer_service_fee_percentage: 2.0, organizer_platform_contribution: 0 };
+    if (!ctx.data.organizer_id) return { customer_service_fee_percentage: 2.0, organizer_platform_contribution: 0, platform_margin_buffer: 0 };
     const res = await hasuraRequest<any>(GET_ACTIVE_PLAN_FEES, {
       organizer_id: ctx.data.organizer_id,
     });
@@ -95,6 +98,7 @@ export const getWorkspaceActivePlanFees = createServerFn({ method: "POST" })
     return {
       customer_service_fee_percentage: plan?.customer_service_fee_percentage ?? 2.0,
       organizer_platform_contribution: plan?.organizer_platform_contribution ?? 0,
+      platform_margin_buffer: plan?.platform_margin_buffer ?? 0,
     };
   });
 
