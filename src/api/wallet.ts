@@ -120,6 +120,7 @@ const REQUEST_WITHDRAWAL_MUTATION = `
     $wallet_id: uuid!
     $workspace_id: uuid!
     $amount: numeric!
+    $deduct_amount: numeric!
     $net_amount: numeric!
     $currency: String!
     $payout_method: String!
@@ -127,11 +128,12 @@ const REQUEST_WITHDRAWAL_MUTATION = `
     $description: String!
     $status: String!
     $type: String!
+    $raw_callback_data: jsonb
     $updated_at: timestamptz!
   ) {
     update_wallets(
       where: { id: { _eq: $wallet_id }, amount: { _gte: $amount } }
-      _inc: { amount: -$amount }
+      _inc: { amount: $deduct_amount }
       _set: { updated_at: $updated_at }
     ) {
       affected_rows
@@ -151,6 +153,7 @@ const REQUEST_WITHDRAWAL_MUTATION = `
       description: $description
       status: $status
       type: $type
+      raw_callback_data: $raw_callback_data
     }) {
       id
     }
@@ -187,6 +190,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       ) {
         pricing_plan {
           organizer_platform_contribution
+          max_withdrawals_per_week
         }
       }
     }
@@ -194,6 +198,39 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
   const subRes = await hasuraRequest<{ subscriptions: any[] }>(subQuery);
   const platformPercentage =
     subRes.subscriptions?.[0]?.pricing_plan?.organizer_platform_contribution || 3.0; // fallback 3%
+
+  const maxWeeklyLimitStr = subRes.subscriptions?.[0]?.pricing_plan?.max_withdrawals_per_week || "1";
+  const maxWeeklyLimit = isNaN(parseInt(maxWeeklyLimitStr, 10)) ? 1 : parseInt(maxWeeklyLimitStr, 10);
+
+  // 2.5 Check Withdrawal Limits
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const txQuery = `
+    query GetWeeklyWithdrawals($workspace_id: uuid!, $seven_days_ago: timestamptz!) {
+      wallet_transactions_aggregate(
+        where: {
+          workspace_id: { _eq: $workspace_id },
+          type: { _eq: "withdrawal" },
+          status: { _in: ["pending", "completed"] },
+          created_at: { _gte: $seven_days_ago }
+        }
+      ) {
+        aggregate {
+          count
+        }
+      }
+    }
+  `;
+  const txRes = await hasuraRequest<{ wallet_transactions_aggregate: { aggregate: { count: number } } }>(txQuery, {
+    workspace_id,
+    seven_days_ago: sevenDaysAgo.toISOString(),
+  });
+  
+  const weeklyCount = txRes.wallet_transactions_aggregate?.aggregate?.count || 0;
+  if (weeklyCount >= maxWeeklyLimit) {
+    throw new Error(`You have reached your limit of ${maxWeeklyLimit} withdrawal(s) per week for your current plan.`);
+  }
 
   // 3. Get Network Disbursement Fee
   let netPercentage = 0;
@@ -209,14 +246,36 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
         }, limit: 1) {
           disbursement_percentage
           disbursement_fixed_fee
+          is_tiered
+          tiered_rules
         }
       }
     `;
     const feeRes = await hasuraRequest<{ payment_provider_fees: any[] }>(feeQuery);
     const fees = feeRes.payment_provider_fees?.[0];
     if (fees) {
-      netPercentage = fees.disbursement_percentage || 0;
-      netFixed = fees.disbursement_fixed_fee || 0;
+      if (fees.is_tiered && fees.tiered_rules) {
+        let rules = fees.tiered_rules;
+        try {
+          if (typeof rules === "string") rules = JSON.parse(rules);
+          if (typeof rules === "string") rules = JSON.parse(rules);
+        } catch (e) {
+          console.error("Failed to parse tiered rules backend", e);
+        }
+
+        if (rules && rules.disbursement && Array.isArray(rules.disbursement)) {
+          const matchedRule =
+            rules.disbursement.find((r: any) => amount <= r.max) ||
+            rules.disbursement[rules.disbursement.length - 1];
+          if (matchedRule) {
+            netPercentage = matchedRule.pct || 0;
+            netFixed = matchedRule.fixed || 0;
+          }
+        }
+      } else {
+        netPercentage = fees.disbursement_percentage || 0;
+        netFixed = fees.disbursement_fixed_fee || 0;
+      }
     }
   }
 
@@ -235,6 +294,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     wallet_id,
     workspace_id,
     amount,
+    deduct_amount: -amount,
     net_amount: netAmount,
     currency,
     payout_method,
@@ -242,6 +302,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     description: `Withdrawal to ${payout_method} (${payout_account}) | Base: ${amount} | Fee: ${totalFee.toFixed(2)}`,
     status: "pending",
     type: "withdrawal",
+    raw_callback_data: { network_id, country_code, payout_method, amount, netAmount, totalFee },
     updated_at: new Date().toISOString(),
   });
 

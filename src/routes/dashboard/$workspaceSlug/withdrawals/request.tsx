@@ -49,39 +49,62 @@ function RequestWithdrawalPage() {
     queryFn: () => getAllPaymentProviderFees(),
   });
 
-  const NETWORKS = [
-    { label: "MTN Rwanda", value: "MTN_MOMO_RWA", curr: "RWF", code: "RWA" },
-    { label: "Airtel Rwanda", value: "AIRTEL_OAPI_RWA", curr: "RWF", code: "RWA" },
-    { label: "MTN Uganda", value: "MTN_MOMO_UGA", curr: "UGX", code: "UGA" },
-    { label: "Airtel Uganda", value: "AIRTEL_OAPI_UGA", curr: "UGX", code: "UGA" },
-    { label: "Safaricom M-Pesa Kenya", value: "SAFARICOM_M_PESA_KEN", curr: "KES", code: "KEN" },
-    { label: "MTN Zambia", value: "MTN_MOMO_ZMB", curr: "ZMW", code: "ZMB" },
-    { label: "Airtel Zambia", value: "AIRTEL_OAPI_ZMB", curr: "ZMW", code: "ZMB" },
-    { label: "MTN Cameroon", value: "MTN_MOMO_CMR", curr: "XAF", code: "CMR" },
-    { label: "MTN Cote d'Ivoire", value: "MTN_MOMO_CIV", curr: "XOF", code: "CIV" },
-    { label: "Orange Cote d'Ivoire", value: "ORANGE_CIV", curr: "XOF", code: "CIV" },
-    { label: "Airtel DRC", value: "AIRTEL_OAPI_COD", curr: "CDF/USD", code: "COD" },
-    { label: "Orange DRC", value: "ORANGE_COD", curr: "CDF/USD", code: "COD" },
-    { label: "Vodacom DRC", value: "VODACOM_MPESA_COD", curr: "CDF/USD", code: "COD" },
-  ];
+  const NETWORKS = Array.from(
+    new Map(
+      providerFees
+        .filter((f: any) => f.network !== "CARD" && f.network !== "PAYPAL")
+        .map((f: any) => [
+          `${f.network}-${f.country_code}`,
+          {
+            label: `${f.network.replace(/_/g, " ").replace("MOMO", "MoMo").replace("OAPI", "")} (${f.country_code})`.replace(/\s+/g, " "),
+            value: `${f.network}-${f.country_code}`,
+            actualNetwork: f.network,
+            code: f.country_code,
+          },
+        ])
+    ).values()
+  ).sort((a: any, b: any) => a.label.localeCompare(b.label));
 
   // Calculate live fees
   const amountToWithdraw = Number(withdrawAmount) || 0;
-  const platformPercentage = subscription?.pricing_plan?.organizer_platform_contribution;
+  const platformPercentage = subscription?.pricing_plan?.organizer_platform_contribution || 0;
   const agatikeFee = amountToWithdraw * (platformPercentage / 100);
 
   let netPercentage = 0;
   let netFixed = 0;
   let countryCode = "RWA";
+  let actualNetworkId = selectedNetworkId;
   if (payoutMethod === "momo" && selectedNetworkId) {
     const netConfig = NETWORKS.find((n) => n.value === selectedNetworkId);
     countryCode = netConfig?.code || "RWA";
+    actualNetworkId = netConfig?.actualNetwork || selectedNetworkId;
+
     const feeConfig = providerFees.find(
-      (f) => f.network === selectedNetworkId && f.country_code === countryCode,
+      (f) => f.network === actualNetworkId && f.country_code === countryCode,
     );
     if (feeConfig) {
-      netPercentage = feeConfig.disbursement_percentage || 0;
-      netFixed = feeConfig.disbursement_fixed_fee || 0;
+      if (feeConfig.is_tiered && feeConfig.tiered_rules) {
+        let rules = feeConfig.tiered_rules;
+        try {
+          if (typeof rules === "string") rules = JSON.parse(rules);
+          if (typeof rules === "string") rules = JSON.parse(rules); // handle double-stringified JSON
+        } catch (e) {
+          console.error("Failed to parse tiered rules", e);
+        }
+
+        if (rules && rules.disbursement && Array.isArray(rules.disbursement)) {
+          const matchedRule =
+            rules.disbursement.find((r: any) => amountToWithdraw <= r.max) ||
+            rules.disbursement[rules.disbursement.length - 1];
+          if (matchedRule) {
+            netPercentage = matchedRule.pct || 0;
+            netFixed = matchedRule.fixed || 0;
+          }
+        }
+      } else {
+        netPercentage = feeConfig.disbursement_percentage || 0;
+        netFixed = feeConfig.disbursement_fixed_fee || 0;
+      }
     }
   }
 
@@ -100,7 +123,7 @@ function RequestWithdrawalPage() {
           payout_method: payoutMethod,
           payout_account: payoutAccount,
           currency: wallet!.currency,
-          network_id: selectedNetworkId,
+          network_id: actualNetworkId,
           country_code: countryCode,
         },
       } as any),
@@ -262,7 +285,10 @@ function RequestWithdrawalPage() {
 
           <div className="flex justify-between items-center text-sm">
             <span className="text-muted-foreground">
-              Processing Fee ({platformPercentage + netPercentage}% {netFixed > 0 ? `+ ${netFixed}` : ""}):
+              Processing Fee ({[
+                  (platformPercentage + netPercentage) > 0 ? `${platformPercentage + netPercentage}%` : null,
+                  netFixed > 0 ? formatCurrency(netFixed, wallet?.currency) : null
+                ].filter(Boolean).join(" + ")}):
             </span>
             <span className="font-medium text-destructive">
               - {formatCurrency(totalFee, wallet?.currency)}

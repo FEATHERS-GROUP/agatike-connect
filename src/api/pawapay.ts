@@ -385,4 +385,72 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
     return tx;
   });
 
+export const triggerPawaPayPayout = createServerFn({ method: "POST" })
+  .validator((d: { transactionId: string }) => d)
+  .handler(async (ctx) => {
+    const { transactionId } = ctx.data;
+    if (!process.env.PAWAPAY_API_KEY) throw new Error("PAWAPAY_API_KEY is missing");
+
+    const query = `
+      query GetTx($id: uuid!) {
+        wallet_transactions_by_pk(id: $id) {
+          id
+          status
+          net_amount
+          currency
+          payout_account
+          raw_callback_data
+        }
+      }
+    `;
+    const res = await hasuraRequest<{ wallet_transactions_by_pk: any }>(query, { id: transactionId });
+    const tx = res.wallet_transactions_by_pk;
+
+    if (!tx) throw new Error("Transaction not found");
+    if (tx.status !== "pending") throw new Error(`Transaction is already ${tx.status}`);
+
+    const network = tx.raw_callback_data?.network_id;
+    if (!network) throw new Error("Missing network_id in transaction data");
+
+    const baseUrl = process.env.PAWAPAY_API_URL;
+    const body = {
+      payoutId: tx.id,
+      amount: String(tx.net_amount),
+      currency: tx.currency,
+      correspondent: network,
+      recipient: {
+        type: "MSISDN",
+        address: { value: tx.payout_account }
+      },
+      customerTimestamp: new Date().toISOString(),
+      statementDescription: "Agatike Withdrawal"
+    };
+
+    const payoutRes = await fetch(`${baseUrl}/v1/payouts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.PAWAPAY_API_KEY}`
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await payoutRes.json();
+    if (!payoutRes.ok) {
+      throw new Error(data.errorMessage || data.message || "PawaPay API error");
+    }
+
+    const updateQuery = `
+      mutation UpdateTx($id: uuid!, $provider_status: String!) {
+        update_wallet_transactions_by_pk(pk_columns: { id: $id }, _set: { provider_status: $provider_status, provider_reference: $id }) {
+          id
+        }
+      }
+    `;
+    await hasuraRequest(updateQuery, { id: tx.id, provider_status: data.status || "ACCEPTED" });
+
+    return { success: true, data };
+  });
+
+
 

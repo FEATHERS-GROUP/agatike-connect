@@ -16,6 +16,7 @@ export interface PricingPlan {
   customer_service_fee_percentage?: number;
   organizer_platform_contribution?: number;
   platform_margin_buffer?: number;
+  max_withdrawals_per_week?: string;
 }
 
 export interface Subscription {
@@ -45,6 +46,7 @@ const GET_PLANS = `
       customer_service_fee_percentage
       organizer_platform_contribution
       platform_margin_buffer
+      max_withdrawals_per_week
     }
   }
 `;
@@ -69,6 +71,7 @@ const GET_ACTIVE_SUB = `
         customer_service_fee_percentage
         organizer_platform_contribution
         platform_margin_buffer
+        max_withdrawals_per_week
       }
     }
   }
@@ -90,6 +93,7 @@ const GET_ACTIVE_PLAN_FEES = `
         customer_service_fee_percentage
         organizer_platform_contribution
         platform_margin_buffer
+        max_withdrawals_per_week
       }
     }
   }

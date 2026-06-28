@@ -57,6 +57,7 @@ import { Route as AQrStringRouteImport } from './routes/a/$qrString'
 import { Route as UserIdMessageRouteImport } from './routes/$userId/message'
 import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard/billing/index'
 import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard/$workspaceSlug/index'
+import { Route as AdminWithdrawalsIndexRouteImport } from './routes/admin/withdrawals/index'
 import { Route as VenuesCheckoutVenueIdRouteImport } from './routes/venues/checkout/$venueId'
 import { Route as SpacesSuccessSpaceIdRouteImport } from './routes/spaces/success/$spaceId'
 import { Route as SpacesCheckoutSpaceIdRouteImport } from './routes/spaces/checkout/$spaceId'
@@ -390,6 +391,11 @@ const DashboardWorkspaceSlugIndexRoute =
     path: '/$workspaceSlug/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const AdminWithdrawalsIndexRoute = AdminWithdrawalsIndexRouteImport.update({
+  id: '/admin/withdrawals/',
+  path: '/admin/withdrawals/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VenuesCheckoutVenueIdRoute = VenuesCheckoutVenueIdRouteImport.update({
   id: '/venues/checkout/$venueId',
   path: '/venues/checkout/$venueId',
@@ -988,6 +994,7 @@ export interface FileRoutesByFullPath {
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
+  '/admin/withdrawals/': typeof AdminWithdrawalsIndexRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId': typeof DashboardWorkspaceSlugCinemaCinemaIdRouteWithChildren
@@ -1128,6 +1135,7 @@ export interface FileRoutesByTo {
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
+  '/admin/withdrawals': typeof AdminWithdrawalsIndexRoute
   '/dashboard/$workspaceSlug': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/billing': typeof DashboardBillingIndexRoute
   '/dashboard/$workspaceSlug/Cinema/analytics': typeof DashboardWorkspaceSlugCinemaAnalyticsRoute
@@ -1267,6 +1275,7 @@ export interface FileRoutesById {
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
+  '/admin/withdrawals/': typeof AdminWithdrawalsIndexRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
   '/dashboard/billing/': typeof DashboardBillingIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId': typeof DashboardWorkspaceSlugCinemaCinemaIdRouteWithChildren
@@ -1409,6 +1418,7 @@ export interface FileRouteTypes {
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
     | '/venues/checkout/$venueId'
+    | '/admin/withdrawals/'
     | '/dashboard/$workspaceSlug/'
     | '/dashboard/billing/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId'
@@ -1549,6 +1559,7 @@ export interface FileRouteTypes {
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
     | '/venues/checkout/$venueId'
+    | '/admin/withdrawals'
     | '/dashboard/$workspaceSlug'
     | '/dashboard/billing'
     | '/dashboard/$workspaceSlug/Cinema/analytics'
@@ -1687,6 +1698,7 @@ export interface FileRouteTypes {
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
     | '/venues/checkout/$venueId'
+    | '/admin/withdrawals/'
     | '/dashboard/$workspaceSlug/'
     | '/dashboard/billing/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId'
@@ -1815,6 +1827,7 @@ export interface RootRouteChildren {
   SpacesCheckoutSpaceIdRoute: typeof SpacesCheckoutSpaceIdRoute
   SpacesSuccessSpaceIdRoute: typeof SpacesSuccessSpaceIdRoute
   VenuesCheckoutVenueIdRoute: typeof VenuesCheckoutVenueIdRoute
+  AdminWithdrawalsIndexRoute: typeof AdminWithdrawalsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2154,6 +2167,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/$workspaceSlug/'
       preLoaderRoute: typeof DashboardWorkspaceSlugIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/admin/withdrawals/': {
+      id: '/admin/withdrawals/'
+      path: '/admin/withdrawals'
+      fullPath: '/admin/withdrawals/'
+      preLoaderRoute: typeof AdminWithdrawalsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/venues/checkout/$venueId': {
       id: '/venues/checkout/$venueId'
@@ -3142,6 +3162,7 @@ const rootRouteChildren: RootRouteChildren = {
   SpacesCheckoutSpaceIdRoute: SpacesCheckoutSpaceIdRoute,
   SpacesSuccessSpaceIdRoute: SpacesSuccessSpaceIdRoute,
   VenuesCheckoutVenueIdRoute: VenuesCheckoutVenueIdRoute,
+  AdminWithdrawalsIndexRoute: AdminWithdrawalsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
