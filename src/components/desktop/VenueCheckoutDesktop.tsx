@@ -173,6 +173,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       network?: string;
       currency?: string;
       convertedAmount?: number;
+      shortfall?: number;
     }) => {
       const totalAttendees = 1 + attendees.length;
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
@@ -215,6 +216,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             referenceId: booking_ref,
             workspaceId: venue.workspace_id,
             reason: venue?.name || "Venue Booking",
+            shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
         return { res, isPawaPay: true, depositId: pawaRes.depositId };

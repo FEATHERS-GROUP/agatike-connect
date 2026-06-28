@@ -207,6 +207,7 @@ function CheckoutPage() {
             referenceId: plan.id,
             workspaceId: activeWorkspace.id,
             reason: `Sub: ${plan.name}`,
+            shortfall: 0,
           },
         } as any);
         setPawapayDepositId(pawaRes.depositId);

@@ -164,7 +164,13 @@ export function PaymentModal({
   const handleProceed = () => {
     if (paymentMethod === "momo") {
       const fullPhone = selectedNetworkObj ? `${selectedNetworkObj.code}${phone}` : phone;
-      onProceed({ phone: fullPhone, network, currency: targetCurrency, convertedAmount });
+      onProceed({ 
+        phone: fullPhone, 
+        network, 
+        currency: targetCurrency, 
+        convertedAmount,
+        shortfall: simulation?.shortfall || 0
+      });
     } else {
       onProceed();
     }

@@ -301,6 +301,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       network?: string;
       currency?: string;
       convertedAmount?: number;
+      shortfall?: number;
     }) => {
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
       const isPawaPay =
@@ -362,6 +363,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             referenceId: booking_ref,
             workspaceId: event?.workspace_id,
             reason: event?.title || "Event Ticket",
+            shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
         return { res, attendeesPayload, isPawaPay: true, depositId: pawaRes.depositId };

@@ -127,36 +127,18 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       let finalOrganizerFee = organizerFee;
       let finalNetMargin = netMargin;
 
+      let shortfall = 0;
+
       if (netMargin < 0) {
         // Instead of blocking the customer, the organizer dynamically absorbs the shortfall!
-        const shortfall = Math.abs(netMargin);
+        shortfall = Math.abs(netMargin);
         finalOrganizerFee += shortfall;
         finalNetMargin = 0; // Margin is balanced because organizer absorbed the cost
 
         failureClassification = "ABSORBED_BY_ORGANIZER";
 
-        // We only block if the organizer payout literally becomes negative
-        // (i.e. the ticket price isn't even enough to cover the PawaPay fees)
-        const organizerPayout = basePrice - finalOrganizerFee;
-
-        if (organizerPayout < 0) {
-          decision = "blocked";
-          failureClassification = "NOT_FIXABLE";
-          structuredError = {
-            title: "❌ Transaction Blocked",
-            description: "The ticket price is too low to cover the network processing fees.",
-            details: {
-              customerServiceFee: "N/A",
-              organizerContribution: "N/A",
-              totalCost: "N/A",
-              shortfall: "N/A",
-              message: "Network fees exceed ticket value."
-            },
-            recommendation: [
-              "Please try another payment network."
-            ]
-          };
-        }
+        // We explicitly DO NOT BLOCK even if the organizer payout becomes negative
+        // The organizer will simply owe money (negative wallet balance) for extremely cheap tickets
       } else if (netMargin < platformBuffer) {
         // C. MARGIN WARNING
         failureClassification = "MARGIN_WARNING";
@@ -189,6 +171,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         organizerFee: finalOrganizerFee,
         totalCustomerCharge,
         expectedMargin: finalNetMargin,
+        shortfall,
         structuredError,
         transactionId
       };
@@ -201,6 +184,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         serviceFee: 0,
         totalCustomerCharge: basePrice,
         expectedMargin: 0,
+        shortfall: 0,
         structuredError: {
           title: "❌ Simulation Error",
           description: "Simulation engine encountered an error.",

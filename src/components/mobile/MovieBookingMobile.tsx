@@ -189,6 +189,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
       network?: string;
       currency?: string;
       convertedAmount?: number;
+      shortfall?: number;
     }) => {
       const promises = [];
       const fullName = `${attendeeInfo.firstName} ${attendeeInfo.lastName}`.trim();
@@ -251,6 +252,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
               .substring(0, 255),
             workspaceId: cinema?.workspace_id,
             reason: activeMovie?.title || "Movie Ticket",
+            shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
         return { isPawaPay: true, depositId: pawaRes.depositId, res, tiers };

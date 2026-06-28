@@ -145,6 +145,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       workspaceId,
       currency,
       reason,
+      shortfall = 0,
     } = ctx.data as any;
 
     if (!currency) {
@@ -229,10 +230,10 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     }
 
     const insertQuery = `
-      mutation CreatePendingWalletTransaction($amount: String!, $currency: String!, $provider_reference: String!, $reference_id: String!, $type: String!, $provider_status: String!, $status: String!, $wallet_id: uuid!) {
+      mutation CreatePendingWalletTransaction($amount: String!, $net_amount: String!, $currency: String!, $provider_reference: String!, $reference_id: String!, $type: String!, $provider_status: String!, $status: String!, $wallet_id: uuid!) {
         insert_wallet_transactions_one(object: {
           amount: $amount,
-          net_amount: $amount,
+          net_amount: $net_amount,
           currency: $currency,
           provider_reference: $provider_reference,
           reference_id: $reference_id,
@@ -249,6 +250,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
 
     await hasuraRequest(insertQuery, {
       amount: String(baseAmount || amount),
+      net_amount: String((baseAmount || amount) - shortfall),
       currency: baseCurrency || currency,
       provider_reference: depositId,
       reference_id: referenceId, // Could be eventId or subscriptionId

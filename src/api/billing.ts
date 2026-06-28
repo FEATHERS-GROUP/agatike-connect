@@ -16,7 +16,6 @@ export interface PricingPlan {
   customer_service_fee_percentage?: number;
   organizer_platform_contribution?: number;
   platform_margin_buffer?: number;
-  withdrawal_fee_percentage?: number;
 }
 
 export interface Subscription {
@@ -45,7 +44,6 @@ const GET_PLANS = `
       customer_service_fee_percentage
       organizer_platform_contribution
       platform_margin_buffer
-      withdrawal_fee_percentage
     }
   }
 `;

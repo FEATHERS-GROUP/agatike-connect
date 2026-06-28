@@ -119,14 +119,20 @@ export const createVenueBooking = createServerFn({ method: "POST" })
       },
     });
 
-    if (payment_status === "Paid" && parseFloat(amount || "0") > 0 && workspace_id) {
-      try {
-        const { addMoneyToWorkspaceWallet } = await import("./wallet");
-        await addMoneyToWorkspaceWallet({
-          data: { workspace_id, amount: parseFloat(amount) },
-        } as any);
-      } catch (e) {
-        console.error("Failed to update wallet for venue booking:", e);
+    if (payment_status === "Paid" && parseFloat(amount || "0") > 0) {
+      // Only auto-fund the wallet if it's NOT a mobile money (PawaPay) transaction.
+      // PawaPay transactions will securely fund the wallet via the webhook once completed.
+      const isMomo = payment_method === "momo";
+
+      if (workspace_id && !isMomo) {
+        try {
+          const { addMoneyToWorkspaceWallet } = await import("./wallet");
+          await addMoneyToWorkspaceWallet({
+            data: { workspace_id, amount: parseFloat(amount) },
+          } as any);
+        } catch (e) {
+          console.error("Failed to update wallet for venue booking:", e);
+        }
       }
     }
 
