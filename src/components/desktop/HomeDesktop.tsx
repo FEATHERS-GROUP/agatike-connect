@@ -502,12 +502,14 @@ export function HomeDesktop() {
                   Open organizer dashboard <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                className="rounded-full border-white/40 bg-transparent text-primary-foreground hover:bg-white/10"
-              >
-                See pricing
-              </Button>
+              <Link to="/pricing">
+                <Button
+                  variant="outline"
+                  className="rounded-full border-white/40 bg-transparent text-primary-foreground hover:bg-white/10"
+                >
+                  See pricing
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

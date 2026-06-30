@@ -53,6 +53,13 @@ export function Navbar({ hideOnMobile }: { hideOnMobile?: boolean } = {}) {
           >
             Spaces
           </Link>
+          <Link
+            to="/pricing"
+            className="hover:text-foreground transition-colors"
+            activeProps={{ className: "text-foreground font-medium" }}
+          >
+            Pricing
+          </Link>
         </nav>
 
         <div className="ml-auto hidden flex-1 max-w-sm md:block">

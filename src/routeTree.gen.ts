@@ -20,6 +20,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as OrganizersRouteImport } from './routes/organizers'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MoviesRouteImport } from './routes/movies'
@@ -202,6 +203,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrganizersRoute = OrganizersRouteImport.update({
@@ -946,6 +952,7 @@ export interface FileRoutesByFullPath {
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/refunds': typeof RefundsRoute
@@ -1087,6 +1094,7 @@ export interface FileRoutesByTo {
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/refunds': typeof RefundsRoute
@@ -1227,6 +1235,7 @@ export interface FileRoutesById {
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
   '/organizers': typeof OrganizersRoute
+  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/refunds': typeof RefundsRoute
@@ -1370,6 +1379,7 @@ export interface FileRouteTypes {
     | '/movies'
     | '/onboarding'
     | '/organizers'
+    | '/pricing'
     | '/privacy'
     | '/profile'
     | '/refunds'
@@ -1511,6 +1521,7 @@ export interface FileRouteTypes {
     | '/movies'
     | '/onboarding'
     | '/organizers'
+    | '/pricing'
     | '/privacy'
     | '/profile'
     | '/refunds'
@@ -1650,6 +1661,7 @@ export interface FileRouteTypes {
     | '/movies'
     | '/onboarding'
     | '/organizers'
+    | '/pricing'
     | '/privacy'
     | '/profile'
     | '/refunds'
@@ -1792,6 +1804,7 @@ export interface RootRouteChildren {
   MoviesRoute: typeof MoviesRoute
   OnboardingRoute: typeof OnboardingRoute
   OrganizersRoute: typeof OrganizersRoute
+  PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
   RefundsRoute: typeof RefundsRoute
@@ -1907,6 +1920,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/organizers': {
@@ -3127,6 +3147,7 @@ const rootRouteChildren: RootRouteChildren = {
   MoviesRoute: MoviesRoute,
   OnboardingRoute: OnboardingRoute,
   OrganizersRoute: OrganizersRoute,
+  PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
   RefundsRoute: RefundsRoute,
