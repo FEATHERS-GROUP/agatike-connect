@@ -1,6 +1,45 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 
+export interface FormField {
+  id: string;
+  label: string;
+  field_type: "text" | "textarea" | "email" | "select" | "checkbox" | "radio" | "file" | "date";
+  is_required: boolean;
+  options: string[] | string;
+  order: number;
+}
+
+export interface RsvpAnswer {
+  id: string;
+  field_id: string;
+  answer_value: string;
+}
+
+export interface Rsvp {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  status: string;
+  created_at: string;
+  rsvp_answers?: RsvpAnswer[];
+}
+
+export interface CustomForm {
+  id: string;
+  workspace_id: string;
+  title: string;
+  description?: string;
+  cover_image_url?: string;
+  is_active: boolean;
+  created_at: string;
+  event_id?: string | null;
+  form_fields?: FormField[];
+  rsvps?: { id: string; status: string }[] | Rsvp[];
+}
+
+
 const GET_WORKSPACE_FORMS = `
   query GetWorkspaceForms($workspace_id: uuid!) {
     custom_forms(where: { workspace_id: { _eq: $workspace_id } }, order_by: { created_at: desc }) {
