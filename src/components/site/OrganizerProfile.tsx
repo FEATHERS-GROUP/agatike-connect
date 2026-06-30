@@ -18,8 +18,7 @@ export function OrganizerProfile({
 }: OrganizerProfileProps) {
   const followerCount = org.followers ?? 0;
   const avatar = org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`;
-  const twitterUrl =
-    org.twitterUrl || org.socials?.twitter || `https://twitter.com/${org.handle}`;
+  const twitterUrl = org.twitterUrl || org.socials?.twitter || `https://twitter.com/${org.handle}`;
   const instagramUrl =
     org.instagramUrl || org.socials?.instagram || `https://instagram.com/${org.handle}`;
 

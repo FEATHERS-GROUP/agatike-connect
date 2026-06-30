@@ -308,8 +308,12 @@ export function HomeDesktop() {
       <Section title="Trending events" subtitle="What everyone's talking about right now">
         {trending.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-4 border border-border/40 bg-card rounded-3xl text-center shadow-[var(--shadow-card)]">
-            <span className="text-base font-semibold text-foreground">No trending events found in your country</span>
-            <p className="text-sm text-muted-foreground mt-1 max-w-sm">Please check back later or explore other sections.</p>
+            <span className="text-base font-semibold text-foreground">
+              No trending events found in your country
+            </span>
+            <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+              Please check back later or explore other sections.
+            </p>
           </div>
         ) : (
           <Grid>
@@ -324,8 +328,12 @@ export function HomeDesktop() {
       <Section title="Upcoming this weekend" subtitle="Lock your plans in for the next 48 hours">
         {weekend.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-4 border border-border/40 bg-card rounded-3xl text-center shadow-[var(--shadow-card)]">
-            <span className="text-base font-semibold text-foreground">No upcoming events found for this weekend in your country</span>
-            <p className="text-sm text-muted-foreground mt-1 max-w-sm">Check back soon for new weekend schedules.</p>
+            <span className="text-base font-semibold text-foreground">
+              No upcoming events found for this weekend in your country
+            </span>
+            <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+              Check back soon for new weekend schedules.
+            </p>
           </div>
         ) : (
           <Grid cols={4}>

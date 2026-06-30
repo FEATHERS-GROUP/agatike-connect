@@ -65,14 +65,11 @@ function OrganizersPage() {
 
   const filteredList = list.filter((org: any) => {
     const search = searchTerm.toLowerCase();
-    return (
-      org.name?.toLowerCase().includes(search) ||
-      org.handle?.toLowerCase().includes(search)
-    );
+    return org.name?.toLowerCase().includes(search) || org.handle?.toLowerCase().includes(search);
   });
 
   const ITEMS_PER_PAGE = 30;
-  
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
@@ -81,7 +78,7 @@ function OrganizersPage() {
 
   const paginatedList = filteredList.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
   const handleOrgClick = (org: any) => {
@@ -91,8 +88,6 @@ function OrganizersPage() {
   const closeProfile = () => {
     setSelectedOrg(null);
   };
-
-
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none flex flex-col">

@@ -75,7 +75,9 @@ export function VenuesMobile() {
           filteredVenues.map((venue) => {
             const isMaintenance = venue.status === "Maintenance";
             const CardContent = (
-              <div className={`rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm ${isMaintenance ? "opacity-75" : ""}`}>
+              <div
+                className={`rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm ${isMaintenance ? "opacity-75" : ""}`}
+              >
                 <div className="aspect-[16/9] relative">
                   <img
                     src={venue.cover_url}

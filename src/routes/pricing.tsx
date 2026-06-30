@@ -72,7 +72,7 @@ function PublicPricingPage() {
         // Keep all plans including Basic/Free (price = 0)
         setPlans(fetchedPlans);
         setRules(fetchedRules);
-        
+
         if (session) {
           setOrganizerProfile({
             id: session.sub,
@@ -167,7 +167,8 @@ function PublicPricingPage() {
             Simple, transparent pricing
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Choose the perfect plan to grow your community, sell tickets, and manage unforgettable experiences.
+            Choose the perfect plan to grow your community, sell tickets, and manage unforgettable
+            experiences.
           </p>
 
           {/* Toggle between Monthly and Annually */}
@@ -247,16 +248,10 @@ function PublicPricingPage() {
                 <div className="mb-6 flex flex-col gap-1">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-extrabold tracking-tight">
-                      {isEnterprise
-                        ? "Custom"
-                        : isBasic
-                          ? "Free"
-                          : `$${displayPrice.toFixed(2)}`}
+                      {isEnterprise ? "Custom" : isBasic ? "Free" : `$${displayPrice.toFixed(2)}`}
                     </span>
                     {!isEnterprise && !isBasic && (
-                      <span className="text-sm font-medium text-muted-foreground">
-                        /mo
-                      </span>
+                      <span className="text-sm font-medium text-muted-foreground">/mo</span>
                     )}
                   </div>
 
@@ -285,11 +280,7 @@ function PublicPricingPage() {
                   className={`w-full rounded-full mb-8 h-11 text-sm font-semibold transition-transform hover:scale-[1.02] ${
                     plan.is_popular ? "shadow-md bg-gradient-to-r from-primary to-primary/95" : ""
                   }`}
-                  style={
-                    plan.is_popular
-                      ? { background: "var(--gradient-primary)" }
-                      : {}
-                  }
+                  style={plan.is_popular ? { background: "var(--gradient-primary)" } : {}}
                 >
                   {isEnterprise
                     ? "Contact Sales"
@@ -417,7 +408,8 @@ function SalesDrawer({
         <SheetHeader>
           <SheetTitle>Contact Enterprise Sales</SheetTitle>
           <SheetDescription>
-            Fill out the form below and our dedicated sales team will reach out to tailor a custom plan for your large-scale operations.
+            Fill out the form below and our dedicated sales team will reach out to tailor a custom
+            plan for your large-scale operations.
           </SheetDescription>
         </SheetHeader>
         <div className="py-6 space-y-6">

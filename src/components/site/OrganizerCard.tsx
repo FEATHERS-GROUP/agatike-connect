@@ -35,9 +35,7 @@ export function OrganizerCard({
           {org.name}
         </h3>
         <p className="text-xs text-muted-foreground mt-0.5 md:mt-1">
-          {followerCount >= 1000
-            ? (followerCount / 1000).toFixed(1) + "k"
-            : followerCount}{" "}
+          {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + "k" : followerCount}{" "}
           {followerCount === 1 ? "follower" : "followers"}
         </p>
 

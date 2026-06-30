@@ -1935,6 +1935,7 @@ When an organizer withdraws funds, the withdrawal fee is a combination of two el
 #### 24.3.1 Live Currency Exchange
 
 The withdrawal engine supports flawless cross-border conversion:
+
 - If an organizer with an `RWF` base wallet requests a payout to a `UGX` Mobile Money network, the backend instantly fetches a real-time exchange rate via `open.er-api.com`.
 - **UI Simplification:** The dashboard smoothly hides the `RWF` amounts and only presents the exact, final `UGX` (Target Currency) amounts to the user.
 - **Ledger Security:** The target currency, exchange rate, and converted values are permanently saved inside the `raw_callback_data` JSON for strict auditing in `wallet_transactions`.
@@ -1942,6 +1943,7 @@ The withdrawal engine supports flawless cross-border conversion:
 #### 24.3.2 Organizer Security: OTP & Password Verification
 
 Because withdrawals execute real financial payouts, they require explicit multi-factor verification:
+
 - When a user confirms the final amounts, the `sendWithdrawalOtp` server function generates an **8-character alphanumeric** One-Time Password and emails it securely (via Resend API) to the organizer.
 - The OTP is hashed using `bcrypt` and signed into a 10-minute JWT `otpToken` to prevent tampering.
 - The user must enter the OTP and their **Organizer Account Password** in the final UI step.
@@ -1955,7 +1957,7 @@ flowchart TD
     Exch --> UI[Display Converted Summary]
     UI -->|Clicks Confirm| OTPAPI[Generate & Email 8-Char OTP]
     OTPAPI --> SecUI[Organizer Enters OTP & Password]
-    
+
     SecUI --> Server[Submit Secure Payload]
     Server --> JWTCheck{Verify OTP JWT & Match}
     JWTCheck -->|Fails| Reject[Block Withdrawal]

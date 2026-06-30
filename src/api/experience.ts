@@ -846,7 +846,10 @@ export const getCommunityMoments = createServerFn({ method: "GET" }).handler(asy
   const stories = (res.event_stories || []).map((s) => ({
     id: s.id,
     image: s.media_url,
-    handle: s.workspaces?.organizer?.handle || s.workspaces?.name?.toLowerCase().replace(/\s+/g, "") || "organizer",
+    handle:
+      s.workspaces?.organizer?.handle ||
+      s.workspaces?.name?.toLowerCase().replace(/\s+/g, "") ||
+      "organizer",
     caption: s.caption || s.workspaces?.name || "Moment",
     created_at: s.created_at,
   }));
@@ -856,14 +859,17 @@ export const getCommunityMoments = createServerFn({ method: "GET" }).handler(asy
     .map((h) => ({
       id: h.id,
       image: h.media_url,
-      handle: h.workspace?.organizer?.handle || h.workspace?.name?.toLowerCase().replace(/\s+/g, "") || "organizer",
+      handle:
+        h.workspace?.organizer?.handle ||
+        h.workspace?.name?.toLowerCase().replace(/\s+/g, "") ||
+        "organizer",
       caption: h.title || h.content || h.workspace?.name || "Highlight",
       created_at: h.created_at,
     }));
 
   // Combine and sort by created_at desc
   const combined = [...stories, ...highlights].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
 
   return combined;
