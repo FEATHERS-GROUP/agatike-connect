@@ -106,6 +106,7 @@ function PopularOrganizers({
   toggleFollow,
   ratingsMap,
 }: any) {
+  const { isLoggedIn } = useUserAuth();
   return (
     <div className="pt-5 pb-3 border-b border-border/40">
       <div className="flex items-center justify-between px-4 mb-3">
@@ -153,19 +154,21 @@ function PopularOrganizers({
                     <span>{ratingsMap[org.id].avg.toFixed(1)}</span>
                   </div>
                 )}
-                <Button
-                  size="sm"
-                  variant="default"
-                  className="mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider shadow-[var(--shadow-glow)]"
-                  style={{ background: "var(--gradient-primary)" }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleFollow(org.id);
-                  }}
-                >
-                  Follow
-                </Button>
+                {isLoggedIn && (
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider shadow-[var(--shadow-glow)]"
+                    style={{ background: "var(--gradient-primary)" }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleFollow(org.id);
+                    }}
+                  >
+                    Follow
+                  </Button>
+                )}
               </Link>
             );
           })
