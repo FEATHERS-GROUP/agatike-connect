@@ -87,6 +87,9 @@ const GET_PUBLIC_SPACES = `
       locations
       plans
       status
+      workspace {
+        currency
+      }
     }
   }
 `;

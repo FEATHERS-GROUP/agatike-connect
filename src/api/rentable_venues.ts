@@ -120,6 +120,9 @@ const GET_PUBLIC_RENTABLE_VENUES = `
       amenities
       created_at
       description
+      workspace {
+        currency
+      }
     }
   }
 `;
