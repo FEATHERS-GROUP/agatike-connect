@@ -6,7 +6,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { usePlatformModules } from "@/hooks/usePlatformModules";
+import { usePlatformModules, getModulesForWorkspaceType } from "@/hooks/usePlatformModules";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateDatabaseWorkspace } from "@/api/workspaces";
 import { toast } from "sonner";
@@ -21,7 +21,8 @@ interface WorkspaceModulesModalProps {
 }
 
 export function WorkspaceModulesModal({ workspace, isOpen, onClose }: WorkspaceModulesModalProps) {
-  const { data: platformModules, isLoading: isLoadingModules } = usePlatformModules();
+  const { data: allModules = [], isLoading: isLoadingModules } = usePlatformModules();
+  const platformModules = getModulesForWorkspaceType(allModules, workspace?.type || "EVENT");
   const queryClient = useQueryClient();
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
 

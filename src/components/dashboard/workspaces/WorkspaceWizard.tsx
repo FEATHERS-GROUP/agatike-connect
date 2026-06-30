@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { useWorkspace, WorkspaceType } from "@/contexts/WorkspaceContext";
-import { usePlatformModules } from "@/hooks/usePlatformModules";
+import { usePlatformModules, getModulesForWorkspaceType } from "@/hooks/usePlatformModules";
 import { useNavigate } from "@tanstack/react-router";
 import { types, COUNTRIES, CATEGORIES } from "./constants";
 import { GLOBAL_CURRENCIES } from "@/lib/currency";
@@ -16,7 +16,7 @@ interface WorkspaceWizardProps {
 
 export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
   const { workspaces, createWorkspace } = useWorkspace();
-  const { data: platformModules = [], isLoading: isLoadingModules } = usePlatformModules();
+  const { data: allModules = [], isLoading: isLoadingModules } = usePlatformModules();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
@@ -32,6 +32,9 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
 
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("bottts");
+
+  // Filter platform modules based on selected workspace type
+  const platformModules = getModulesForWorkspaceType(allModules, type);
   const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
 
   const generateAvatarsForCategory = (category: string) => {
@@ -63,7 +66,7 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
       const mandatoryIds = platformModules.filter((m) => m.mandatory).map((m) => m.id);
       setModules(mandatoryIds);
     }
-  }, [platformModules]);
+  }, [allModules, type]);
 
   const toggleModule = (id: string) => {
     if (modules.includes(id)) {
@@ -146,7 +149,11 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
                   {types.map((t) => (
                     <button
                       key={t.id}
-                      onClick={() => setType(t.id)}
+                      onClick={() => {
+                        setType(t.id);
+                        // Reset module selection when type changes so only compatible modules are pre-selected
+                        setModules([]);
+                      }}
                       className={`flex flex-col items-start gap-4 rounded-3xl border-2 p-6 text-left transition ${
                         type === t.id
                           ? "border-primary bg-primary/5 shadow-md"
