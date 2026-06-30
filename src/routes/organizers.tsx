@@ -95,7 +95,7 @@ function OrganizersPage() {
 
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none">
+    <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none flex flex-col">
       <div className="hidden md:block">
         <Navbar />
       </div>
@@ -113,7 +113,7 @@ function OrganizersPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 md:px-6 py-6 md:py-10">
+      <div className="flex-1 mx-auto max-w-7xl w-full px-4 md:px-6 py-6 md:py-10">
         <header className="hidden md:flex flex-wrap items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">Popular Organizers</h1>
