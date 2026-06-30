@@ -85,18 +85,24 @@ export const createCustomForm = createServerFn({ method: "POST" }).handler(async
 });
 
 const UPDATE_CUSTOM_FORM = `
-  mutation UpdateCustomForm($id: uuid!, $title: String, $description: String, $cover_image_url: String, $is_active: Boolean) {
-    update_custom_forms_by_pk(pk_columns: {id: $id}, _set: {title: $title, description: $description, cover_image_url: $cover_image_url, is_active: $is_active}) {
+  mutation UpdateCustomForm($id: uuid!, $changes: custom_forms_set_input!) {
+    update_custom_forms_by_pk(pk_columns: {id: $id}, _set: $changes) {
       id
     }
   }
 `;
 
 export const updateCustomForm = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const variables = ctx.data as any;
+  const { id, ...changes } = ctx.data as any;
+  const cleanedChanges: Record<string, any> = {};
+  for (const [key, value] of Object.entries(changes)) {
+    if (value !== undefined) {
+      cleanedChanges[key] = value;
+    }
+  }
   const data = await hasuraRequest<{ update_custom_forms_by_pk: any }>(
     UPDATE_CUSTOM_FORM,
-    variables,
+    { id, changes: cleanedChanges },
   );
   return data.update_custom_forms_by_pk;
 });
@@ -129,3 +135,30 @@ export const updateRsvpStatus = createServerFn({ method: "POST" }).handler(async
   const data = await hasuraRequest<{ update_rsvps_by_pk: any }>(UPDATE_RSVP_STATUS, { id, status });
   return data.update_rsvps_by_pk;
 });
+
+const DELETE_CUSTOM_FORM = `
+  mutation DeleteCustomForm($id: uuid!) {
+    delete_rsvp_answers(where: { rsvp: { form_id: { _eq: $id } } }) {
+      affected_rows
+    }
+    delete_rsvps(where: { form_id: { _eq: $id } }) {
+      affected_rows
+    }
+    delete_form_fields(where: { form_id: { _eq: $id } }) {
+      affected_rows
+    }
+    delete_custom_forms_by_pk(id: $id) {
+      id
+    }
+  }
+`;
+
+export const deleteCustomForm = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as unknown as { id: string };
+  const data = await hasuraRequest<{ delete_custom_forms_by_pk: any }>(
+    DELETE_CUSTOM_FORM,
+    { id }
+  );
+  return data.delete_custom_forms_by_pk;
+});
+
