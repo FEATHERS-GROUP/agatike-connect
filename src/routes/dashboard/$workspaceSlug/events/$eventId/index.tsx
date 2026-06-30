@@ -19,8 +19,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { useQuery } from "@tanstack/react-query";
-import { getEventById } from "@/api/events";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getEventById, updateEvent } from "@/api/events";
 import { getEventAttendees } from "@/api/attendees";
 import { getEventFeedback } from "@/api/feedback";
 import { getEventStories, getEventPosts } from "@/api/experience";
@@ -139,6 +139,7 @@ function DashboardEventDetails() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   // ── Queries ────────────────────────────────────────────────────────────────
+  const queryClient = useQueryClient();
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
     queryFn: () => getEventById({ data: { id: eventId } } as any),
@@ -167,6 +168,14 @@ function DashboardEventDetails() {
     queryKey: ["event-posts", eventId],
     queryFn: () => getEventPosts({ data: { event_id: eventId } } as any),
     enabled: !!eventId,
+  });
+
+  const toggleSuspend = useMutation({
+    mutationFn: (data: { id: string; suspended: boolean }) => updateEvent({ data } as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-events", activeWorkspace?.id] });
+    },
   });
 
   const currency = activeWorkspace?.currency;
@@ -1139,8 +1148,23 @@ function DashboardEventDetails() {
               Suspending this event will immediately halt all ticket sales and hide it from the
               public.
             </p>
-            <Button variant="destructive" className="w-full rounded-full">
-              Suspend Event
+            <Button
+              variant="destructive"
+              className="w-full rounded-full"
+              onClick={() => {
+                toggleSuspend.mutate({ id: event.id, suspended: !event.suspended });
+              }}
+              disabled={toggleSuspend.isPending}
+            >
+              {toggleSuspend.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {event.suspended ? "Unsuspending..." : "Suspending..."}
+                </>
+              ) : event.suspended ? (
+                "Unsuspend Event"
+              ) : (
+                "Suspend Event"
+              )}
             </Button>
           </div>
         </div>

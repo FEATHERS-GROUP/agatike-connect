@@ -42,6 +42,8 @@ export function EventCheckoutSidebar({
   selectedSeatsObj: any[];
   attendeesCount: number;
 }) {
+  const isSuspended = ev?.suspended;
+
   return (
     <aside className="lg:sticky lg:top-24 h-fit">
       <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
@@ -152,7 +154,11 @@ export function EventCheckoutSidebar({
                     <p className="font-semibold">{formatCurrency(t.price, currencyCode)}</p>
                   </div>
 
-                  {isMapped ? (
+                  {isSuspended ? (
+                    <div className="bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
+                      Suspended
+                    </div>
+                  ) : isMapped ? (
                     itemQty > 0 && (
                       <div className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
                         {itemQty} Selected
@@ -200,26 +206,28 @@ export function EventCheckoutSidebar({
         </div>
 
         <Button
-          asChild={!isPastEvent}
-          disabled={isPastEvent || totalTickets === 0}
+          asChild={!isPastEvent && !isSuspended}
+          disabled={isPastEvent || isSuspended || totalTickets === 0}
           className="mt-4 h-12 w-full rounded-2xl text-base shadow-[var(--shadow-glow)]"
           style={{
-            background: isPastEvent
+            background: isPastEvent || isSuspended
               ? "var(--muted)"
               : total === 0 && totalTickets > 0
                 ? "var(--foreground)"
                 : "var(--gradient-primary)",
-            opacity: isPastEvent || totalTickets === 0 ? 0.5 : 1,
-            pointerEvents: isPastEvent || totalTickets === 0 ? "none" : "auto",
-            color: isPastEvent ? "var(--muted-foreground)" : undefined,
+            opacity: isPastEvent || isSuspended || totalTickets === 0 ? 0.5 : 1,
+            pointerEvents: isPastEvent || isSuspended || totalTickets === 0 ? "none" : "auto",
+            color: isPastEvent || isSuspended ? "var(--muted-foreground)" : undefined,
           }}
           onClick={() => {
-            if (isPastEvent) return;
+            if (isPastEvent || isSuspended) return;
             localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
             localStorage.setItem(`event_checkout_seats_${ev.id}`, JSON.stringify(selectedSeatsObj));
           }}
         >
-          {isPastEvent ? (
+          {isSuspended ? (
+            "Event Suspended"
+          ) : isPastEvent ? (
             "Event Ended"
           ) : (
             <Link to="/book/$eventId" params={{ eventId: ev.id }} className="w-full block">

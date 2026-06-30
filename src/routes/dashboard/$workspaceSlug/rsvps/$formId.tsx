@@ -140,21 +140,37 @@ function FormRsvpsPage() {
     const headers = ["First Name", "Last Name", "Email Address", "Status", "Date Registered"];
     dynamicFields.forEach((f: any) => headers.push(f.label));
 
-    const csvRows = [headers.join(",")];
+    // Escape header column names to prevent syntax issues if header contains commas or quotes
+    const csvRows = [
+      headers.map(h => `"${String(h).replace(/"/g, '""')}"`).join(",")
+    ];
 
     filteredRsvps.forEach((rsvp: any) => {
       const row = [
-        `"${rsvp.first_name || ""}"`,
-        `"${rsvp.last_name || ""}"`,
-        `"${rsvp.email || ""}"`,
-        `"${rsvp.status || "Registered"}"`,
+        `"${(rsvp.first_name || "").replace(/"/g, '""')}"`,
+        `"${(rsvp.last_name || "").replace(/"/g, '""')}"`,
+        `"${(rsvp.email || "").replace(/"/g, '""')}"`,
+        `"${(rsvp.status || "Registered").replace(/"/g, '""')}"`,
         `"${new Date(rsvp.created_at).toLocaleString()}"`,
       ];
 
       dynamicFields.forEach((f: any) => {
         const answerObj = rsvp.rsvp_answers?.find((a: any) => a.field_id === f.id);
         let val = answerObj?.answer_value || "";
-        val = val.replace(/"/g, '""');
+        
+        // If it's a JSON array (e.g. multi-checkbox answers), parse and format nicely
+        if (typeof val === "string" && val.startsWith("[") && val.endsWith("]")) {
+          try {
+            const parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) {
+              val = parsed.join(", ");
+            }
+          } catch (e) {
+            // Keep original string if not valid JSON
+          }
+        }
+        
+        val = String(val).replace(/"/g, '""');
         row.push(`"${val}"`);
       });
 
@@ -162,7 +178,8 @@ function FormRsvpsPage() {
     });
 
     const csvString = csvRows.join("\n");
-    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    // Prepend UTF-8 BOM (\ufeff) to make Excel parse special characters correctly
+    const blob = new Blob(["\ufeff" + csvString], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

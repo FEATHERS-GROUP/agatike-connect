@@ -51,6 +51,7 @@ export function EventCheckoutDrawer({
   selectedSeatsObj: any[];
 }) {
   const navigate = useNavigate();
+  const isSuspended = ev?.suspended;
 
   return (
     <>
@@ -282,7 +283,11 @@ export function EventCheckoutDrawer({
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
                       <span className="text-xs font-medium text-muted-foreground">Quantity</span>
-                      {isMapped ? (
+                      {isSuspended ? (
+                        <div className="bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
+                          Suspended
+                        </div>
+                      ) : isMapped ? (
                         itemQty > 0 && (
                           <div className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
                             {itemQty} Selected
@@ -356,7 +361,11 @@ export function EventCheckoutDrawer({
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
                       <span className="text-xs font-medium text-muted-foreground">Quantity</span>
-                      {isMapped ? (
+                      {isSuspended ? (
+                        <div className="bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
+                          Suspended
+                        </div>
+                      ) : isMapped ? (
                         itemQty > 0 && (
                           <div className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
                             {itemQty} Selected
@@ -406,18 +415,18 @@ export function EventCheckoutDrawer({
             <Button
               className="flex-1 h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] tracking-wide"
               style={{
-                background: isPastEvent
+                background: isPastEvent || isSuspended
                   ? "var(--muted)"
                   : total === 0 && totalTickets > 0
                     ? "var(--foreground)"
                     : "var(--gradient-primary)",
-                opacity: isPastEvent || (totalTickets === 0 && hasSelectedStop) ? 0.5 : 1,
+                opacity: isPastEvent || isSuspended || (totalTickets === 0 && hasSelectedStop) ? 0.5 : 1,
                 pointerEvents:
-                  isPastEvent || (totalTickets === 0 && hasSelectedStop) ? "none" : "auto",
-                color: isPastEvent ? "var(--muted-foreground)" : undefined,
+                  isPastEvent || isSuspended || (totalTickets === 0 && hasSelectedStop) ? "none" : "auto",
+                color: isPastEvent || isSuspended ? "var(--muted-foreground)" : undefined,
               }}
               onClick={() => {
-                if (isPastEvent) return;
+                if (isPastEvent || isSuspended) return;
                 if (!hasSelectedStop) {
                   setIsTicketsExpanded(true);
                   return;
@@ -436,7 +445,9 @@ export function EventCheckoutDrawer({
               }}
             >
               <span className="w-full block text-center leading-[48px]">
-                {isPastEvent
+                {isSuspended
+                  ? "Event Suspended"
+                  : isPastEvent
                   ? "Event Ended"
                   : !hasSelectedStop
                     ? "Select Date"

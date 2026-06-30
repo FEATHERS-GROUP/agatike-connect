@@ -34,8 +34,8 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/events/")({
   component: DashboardEvents,
 });
 
-function getEventStatus(createdAt: string): "Live" | "Past" {
-  // Events default to "Live" — extend later with explicit status column
+function getEventStatus(event: any): "Live" | "Past" | "Suspended" {
+  if (event.suspended) return "Suspended";
   return "Live";
 }
 
@@ -57,6 +57,13 @@ function DashboardEvents() {
 
   const togglePublic = useMutation({
     mutationFn: (data: { id: string; allowed_public: boolean }) => updateEvent({ data } as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workspace-events", activeWorkspace?.id] });
+    },
+  });
+
+  const toggleSuspend = useMutation({
+    mutationFn: (data: { id: string; suspended: boolean }) => updateEvent({ data } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workspace-events", activeWorkspace?.id] });
     },
@@ -91,7 +98,7 @@ function DashboardEvents() {
           city: firstStop
             ? `${firstStop.venue ? firstStop.venue + ", " : ""}${firstStop.city || ""}`
             : "TBD",
-          status: getEventStatus(e.created_at),
+          status: getEventStatus(e),
           salesPct,
           revenue,
         };
@@ -121,6 +128,7 @@ function DashboardEvents() {
         activeWorkspace={activeWorkspace}
         navigate={navigate}
         togglePublic={togglePublic}
+        toggleSuspend={toggleSuspend}
       />
     </div>
   );
@@ -201,12 +209,14 @@ function EventsTable({
   activeWorkspace,
   navigate,
   togglePublic,
+  toggleSuspend,
 }: {
   filteredEvents: any[];
   isLoading: boolean;
   activeWorkspace: any;
   navigate: any;
   togglePublic: any;
+  toggleSuspend: any;
 }) {
   return (
     <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)]">
@@ -315,11 +325,13 @@ function EventsTable({
                   <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        event.status === "Live"
-                          ? "bg-green-500/10 text-green-500"
-                          : event.status === "Drafts"
-                            ? "bg-yellow-500/10 text-yellow-500"
-                            : "bg-secondary text-muted-foreground"
+                        event.status === "Suspended"
+                          ? "bg-red-500/10 text-red-500"
+                          : event.status === "Live"
+                            ? "bg-green-500/10 text-green-500"
+                            : event.status === "Drafts"
+                              ? "bg-yellow-500/10 text-yellow-500"
+                              : "bg-secondary text-muted-foreground"
                       }`}
                     >
                       {event.status}
@@ -379,8 +391,17 @@ function EventsTable({
                           )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
-                          <Ban className="mr-2 h-4 w-4" /> Suspend Event
+                        <DropdownMenuItem
+                          className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSuspend.mutate({
+                              id: event.id,
+                              suspended: !event.suspended,
+                            });
+                          }}
+                        >
+                          <Ban className="mr-2 h-4 w-4" /> {event.suspended ? "Unsuspend Event" : "Suspend Event"}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
