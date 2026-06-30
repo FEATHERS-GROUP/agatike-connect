@@ -54,8 +54,10 @@ export function EventCheckoutSidebar({
           </p>
         </div>
 
-        {isExperience
-          ? schedules.length > 0 && (
+        {!isSuspended && (
+          <>
+            {isExperience
+              ? schedules.length > 0 && (
               <div className="mt-5">
                 <p className="text-sm font-medium mb-2 text-muted-foreground">Select Schedule</p>
                 <div className="grid grid-cols-1 gap-2">
@@ -204,6 +206,8 @@ export function EventCheckoutSidebar({
           <span className="text-muted-foreground">Total ({totalTickets} items)</span>
           <span className="text-lg font-semibold">{formatCurrency(total, currencyCode)}</span>
         </div>
+          </>
+        )}
 
         <Button
           asChild={!isPastEvent && !isSuspended}

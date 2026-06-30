@@ -89,7 +89,7 @@ export function EventCheckoutDrawer({
           </div>
 
           {/* Schedule/Tour Stops selection */}
-          {isTicketsExpanded && (isExperience ? schedules.length > 1 : tourStops.length > 1) && (
+          {!isSuspended && isTicketsExpanded && (isExperience ? schedules.length > 1 : tourStops.length > 1) && (
             <div className="mb-4 border-t border-border/40 pt-4 animate-in slide-in-from-bottom-2 fade-in duration-200">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                 {isExperience ? "Select Schedule" : "Select Tour Stop"}
@@ -246,7 +246,7 @@ export function EventCheckoutDrawer({
           )}
 
           {/* Tickets List */}
-          {isTicketsExpanded && hasSelectedStop && (
+          {!isSuspended && isTicketsExpanded && hasSelectedStop && (
             <div className="max-h-[35vh] overflow-y-auto space-y-2.5 pr-1 border-t border-border/40 pt-3 mb-4 scrollbar-hide animate-in slide-in-from-bottom-2 fade-in duration-200">
               {activeTicketTiers.map((t: any) => {
                 const cartKey = `${selectedStopIdx}_${t.id}`;
@@ -325,7 +325,7 @@ export function EventCheckoutDrawer({
           )}
 
           {/* If minimized, show exactly one ticket option */}
-          {!isTicketsExpanded && hasSelectedStop && activeTicketTiers.length > 0 && (
+          {!isSuspended && !isTicketsExpanded && hasSelectedStop && activeTicketTiers.length > 0 && (
             <div className="mb-4 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
               {activeTicketTiers.slice(0, 1).map((t: any) => {
                 const cartKey = `${selectedStopIdx}_${t.id}`;
@@ -404,14 +404,16 @@ export function EventCheckoutDrawer({
 
           {/* Action Row */}
           <div className="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-border/30">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                Total ({totalTickets} items)
-              </span>
-              <span className="text-lg font-bold text-foreground">
-                {formatCurrency(total, currencyCode)}
-              </span>
-            </div>
+            {!isSuspended && (
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                  Total ({totalTickets} items)
+                </span>
+                <span className="text-lg font-bold text-foreground">
+                  {formatCurrency(total, currencyCode)}
+                </span>
+              </div>
+            )}
             <Button
               className="flex-1 h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] tracking-wide"
               style={{
