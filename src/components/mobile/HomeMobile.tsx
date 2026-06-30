@@ -176,7 +176,6 @@ function PopularOrganizers({
 }
 
 function UpcomingEvents({ events }: any) {
-  if (!events || events.length === 0) return null;
   return (
     <div className="pt-5 pb-3">
       <div className="flex items-center justify-between px-4 mb-3">
@@ -185,36 +184,42 @@ function UpcomingEvents({ events }: any) {
           See all
         </Link>
       </div>
-      <div className="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2">
-        {events.map((event: any) => (
-          <Link
-            key={event.id}
-            to="/events/$eventId"
-            params={{ eventId: event.id }}
-            className="w-60 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
-          >
-            <div className="aspect-[4/3] relative">
-              <img src={event.cover} alt={event.title} className="w-full h-full object-cover" />
-              <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm">
-                {event.currency || "$"}
-                {event.price}
+      {!events || events.length === 0 ? (
+        <div className="mx-4 p-6 border border-border/40 bg-card rounded-2xl text-center shadow-sm">
+          <p className="text-xs font-semibold text-foreground">No events found in your country</p>
+        </div>
+      ) : (
+        <div className="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2">
+          {events.map((event: any) => (
+            <Link
+              key={event.id}
+              to="/events/$eventId"
+              params={{ eventId: event.id }}
+              className="w-60 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
+            >
+              <div className="aspect-[4/3] relative">
+                <img src={event.cover} alt={event.title} className="w-full h-full object-cover" />
+                <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm">
+                  {event.currency || "$"}
+                  {event.price}
+                </div>
               </div>
-            </div>
-            <div className="p-3">
-              <p className="font-semibold text-sm leading-tight line-clamp-2">{event.title}</p>
-              <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="truncate">{event.date}</span>
-                <span>•</span>
-                <span className="truncate">{event.city}</span>
+              <div className="p-3">
+                <p className="font-semibold text-sm leading-tight line-clamp-2">{event.title}</p>
+                <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="truncate">{event.date}</span>
+                  <span>•</span>
+                  <span className="truncate">{event.city}</span>
+                </div>
+                <div className="mt-1 text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                  <Users className="h-3 w-3" /> People going ·{" "}
+                  {(event.attendees || 0).toLocaleString()}
+                </div>
               </div>
-              <div className="mt-1 text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                <Users className="h-3 w-3" /> People going ·{" "}
-                {(event.attendees || 0).toLocaleString()}
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

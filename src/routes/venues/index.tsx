@@ -29,6 +29,7 @@ export const Route = createFileRoute("/venues/")({
       cover_url: s.cover_url,
       currency: s.currency,
       source: "space",
+      status: s.status,
       pricing_tiers:
         s.plans?.map((p: any) => ({
           name: p.name,
