@@ -3,7 +3,7 @@ import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
 
 const GET_NOTES = `
-  query GetWorkspaceNotes($workspace_id: String!) {
+  query GetWorkspaceNotes($workspace_id: uuid!) {
     workspace_notes(
       where: { workspace_id: { _eq: $workspace_id } }
       order_by: [{ pinned: desc }, { updated_at: desc }]
