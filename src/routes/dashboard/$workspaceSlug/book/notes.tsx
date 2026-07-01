@@ -11,7 +11,7 @@ import {
   Tag,
   Maximize2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getWorkspaceNotes,
@@ -315,6 +315,18 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
   const [content, setContent] = useState(note.content || "");
   const [tags, setTags] = useState<TagType[]>(note.tags || []);
   const [dirty, setDirty] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (!note || !dirty) return;
+    setIsSaving(true);
+    const timeout = setTimeout(() => {
+      onSave({ title, content, tags });
+      setDirty(false);
+      setIsSaving(false);
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [title, content, tags, dirty, note, onSave]);
 
   return (
     <div className="flex flex-col h-full w-full px-10 py-10 overflow-y-auto">
@@ -329,18 +341,17 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
               <Pin className="h-3 w-3" /> Pinned
             </span>
           )}
+          {isSaving ? (
+            <span className="flex items-center gap-1 text-muted-foreground/60 ml-2">
+              <Loader2 className="h-3 w-3 animate-spin" /> Saving...
+            </span>
+          ) : dirty ? (
+            <span className="text-muted-foreground/60 ml-2 italic">Saving soon...</span>
+          ) : (
+            <span className="text-muted-foreground/60 ml-2">Saved</span>
+          )}
         </div>
         <div className="flex items-center gap-1">
-          {dirty && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 text-xs text-primary hover:bg-primary/10 mr-2"
-              onClick={() => { onSave({ title, content, tags }); setDirty(false); }}
-            >
-              Save Changes
-            </Button>
-          )}
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onPin}>
             {note.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
           </Button>

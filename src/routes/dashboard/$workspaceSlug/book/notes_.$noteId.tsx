@@ -97,10 +97,14 @@ function NoteFullPage() {
     );
   }
 
-  const handleSave = () => {
-    updateMutation.mutate({ id: note.id, title, content, tags });
-    setDirty(false);
-  };
+  useEffect(() => {
+    if (!note || !dirty) return;
+    const timeout = setTimeout(() => {
+      updateMutation.mutate({ id: note.id, title, content, tags });
+      setDirty(false);
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [title, content, tags, dirty, note, updateMutation]);
 
   const handlePin = () => {
     updateMutation.mutate({ id: note.id, pinned: !note.pinned });
@@ -125,7 +129,7 @@ function NoteFullPage() {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground flex items-center">
             {note.pinned && (
               <span className="flex items-center gap-1 text-primary bg-primary/10 px-2 py-0.5 rounded-sm inline-flex mr-3">
                 <Pin className="h-3 w-3" /> Pinned
@@ -137,22 +141,17 @@ function NoteFullPage() {
                 day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
               })}
             </span>
+            {updateMutation.isPending ? (
+              <span className="flex items-center gap-1 text-muted-foreground/60 ml-4">
+                <Loader2 className="h-3 w-3 animate-spin" /> Saving...
+              </span>
+            ) : dirty ? (
+              <span className="text-muted-foreground/60 ml-4 italic">Saving soon...</span>
+            ) : null}
           </div>
         </div>
 
         <div className="flex items-center gap-1">
-          {dirty && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-9 gap-2 text-primary hover:text-primary mr-2"
-              onClick={handleSave}
-              disabled={updateMutation.isPending}
-            >
-              {updateMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-              Save Changes
-            </Button>
-          )}
           <Button variant="ghost" size="icon" className="h-9 w-9" onClick={handlePin}>
             {note.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
           </Button>
