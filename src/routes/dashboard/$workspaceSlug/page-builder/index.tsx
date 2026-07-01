@@ -49,8 +49,9 @@ function PageBuilderGallery() {
 
   const filteredPages = allPages.filter(
     (p: any) =>
-      (p.title || "Untitled Page").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.slug || "").toLowerCase().includes(searchQuery.toLowerCase()),
+      !p.parent_id &&
+      ((p.title || "Untitled Page").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.slug || "").toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const handleCopyLink = (slug: string) => {

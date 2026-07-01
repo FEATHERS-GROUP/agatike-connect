@@ -68,6 +68,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder/edi
     return {
       pageId: search.pageId as string | undefined,
       templateId: search.templateId as string | undefined,
+      parentId: search.parentId as string | undefined,
     };
   },
   component: PageBuilder,
@@ -85,13 +86,14 @@ function makeBlankPage() {
     logoUrl: "",
     logoPosition: "hero" as "hero" | "navbar",
     fontFamily: "Inter",
+    parent_id: null as string | null,
     components: [] as any[],
   };
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 function PageBuilder() {
-  const { pageId, templateId } = Route.useSearch();
+  const { pageId, templateId, parentId } = Route.useSearch();
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const workspace_id = activeWorkspace?.id;
@@ -102,11 +104,27 @@ function PageBuilder() {
   const [editorState, setEditorState] = useState(makeBlankPage());
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // ── Sync URL params to local state ────────────────────────────────────────
+  useEffect(() => {
+    setActivePageId(pageId || null);
+    setIsInitialized(false);
+    if (!pageId && !templateId) {
+      setEditorState({ ...makeBlankPage(), parent_id: parentId || null });
+    }
+  }, [pageId, templateId, parentId]);
+
   // ── Fetch: individual page when activePageId changes ──────────────────────
   const { data: pageData, isLoading: isLoadingPage } = useQuery({
     queryKey: ["workspace-page", activePageId],
     queryFn: () => getWorkspacePage({ data: { id: activePageId } } as any),
     enabled: !!activePageId,
+  });
+
+  // ── Fetch: all pages for the dropdown switcher ────────────────────────────
+  const { data: allPages = [] } = useQuery({
+    queryKey: ["all-workspace-pages", workspace_id],
+    queryFn: () => getAllWorkspacePages({ data: { workspace_id } } as any),
+    enabled: !!workspace_id,
   });
 
   // ── Forms for linking ─────────────────────────────────────────────────────
@@ -130,6 +148,7 @@ function PageBuilder() {
         logoUrl: pageData.logo_url || "",
         logoPosition: settingsBlock?.logoPosition || "hero",
         fontFamily: settingsBlock?.fontFamily || "Inter",
+        parent_id: pageData.parent_id || null,
         components: pageData.components?.filter((c: any) => c.type !== "page_settings") || [],
       });
       setIsInitialized(true);
@@ -146,6 +165,7 @@ function PageBuilder() {
           logoUrl: "",
           logoPosition: template.logoPosition,
           fontFamily: template.fontFamily,
+          parent_id: parentId || null,
           components: JSON.parse(JSON.stringify(template.components)), // Deep copy
         });
       }
@@ -198,6 +218,7 @@ function PageBuilder() {
       theme_color: editorState.themeColor,
       header_image_url: editorState.headerImageUrl,
       logo_url: editorState.logoUrl,
+      parent_id: editorState.parent_id,
       components: [
         {
           type: "page_settings",
@@ -296,6 +317,7 @@ function PageBuilder() {
           activeWorkspace={activeWorkspace}
           editorState={editorState}
           workspace_id={workspace_id}
+          allPages={allPages}
           handleCopyLink={handleCopyLink}
           deleteMutation={deleteMutation}
           handlePublish={handlePublish}

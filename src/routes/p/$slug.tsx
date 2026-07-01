@@ -94,7 +94,27 @@ function PublicCompanyPage() {
     }
   };
 
-  const hasNavbar = logoPosition === "navbar" || menuLinks.length > 0;
+  // Generate site links for multi-page hierarchy
+  const siteLinks: { name: string; url: string; isActive: boolean }[] = [];
+  let siteTitle = title;
+  
+  if (page?.parent) {
+    siteTitle = page.parent.title || "Home";
+    siteLinks.push({ name: "Home", url: `/p/${page.parent.slug}`, isActive: false });
+    if (page.parent.children) {
+      page.parent.children.forEach((child: any) => {
+        siteLinks.push({ name: child.title || "Untitled", url: `/p/${child.slug}`, isActive: child.slug === slug });
+      });
+    }
+  } else if (page?.children && page.children.length > 0) {
+    siteTitle = page.title || "Home";
+    siteLinks.push({ name: "Home", url: `/p/${page.slug}`, isActive: true });
+    page.children.forEach((child: any) => {
+      siteLinks.push({ name: child.title || "Untitled", url: `/p/${child.slug}`, isActive: false });
+    });
+  }
+
+  const hasNavbar = logoPosition === "navbar" || menuLinks.length > 0 || siteLinks.length > 0;
 
   // Generate Google Fonts URL based on selected font
   const googleFontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, "+")}:wght@400;500;600;700;800&display=swap`;
@@ -119,11 +139,13 @@ function PublicCompanyPage() {
               {/* Logo */}
               <div className="flex-shrink-0 flex items-center">
                 {logoPosition === "navbar" && logo_url ? (
-                  <img src={logo_url} alt="Logo" className="h-10 w-auto object-contain rounded" />
-                ) : logoPosition === "navbar" && title ? (
-                  <span className="font-bold text-xl tracking-tight truncate max-w-[200px]">
-                    {title}
-                  </span>
+                  <a href={siteLinks.length > 0 ? siteLinks[0].url : "#"}>
+                    <img src={logo_url} alt="Logo" className="h-10 w-auto object-contain rounded" />
+                  </a>
+                ) : logoPosition === "navbar" && siteTitle ? (
+                  <a href={siteLinks.length > 0 ? siteLinks[0].url : "#"} className="font-bold text-xl tracking-tight truncate max-w-[200px] text-foreground hover:text-primary transition-colors">
+                    {siteTitle}
+                  </a>
                 ) : (
                   <div />
                 )}
@@ -131,6 +153,22 @@ function PublicCompanyPage() {
 
               {/* Menu Links */}
               <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+                {siteLinks.map((link: any) => (
+                  <a
+                    key={link.url}
+                    href={link.url}
+                    className={`text-sm font-medium transition-colors whitespace-nowrap ${
+                      link.isActive ? "text-primary" : "text-muted-foreground hover:text-primary"
+                    }`}
+                  >
+                    {link.name}
+                  </a>
+                ))}
+                
+                {menuLinks.length > 0 && siteLinks.length > 0 && (
+                  <div className="w-px h-4 bg-border/60 mx-2" />
+                )}
+
                 {menuLinks.map((link: any) => (
                   <button
                     key={link.id}

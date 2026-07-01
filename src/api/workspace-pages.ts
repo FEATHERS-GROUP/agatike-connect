@@ -13,6 +13,7 @@ export const getPublicWorkspacePageById = createServerFn({ method: "GET" }).hand
         slug
         title
         is_published
+        parent_id
       }
     }
   `;
@@ -40,6 +41,19 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
         components
         created_at
         updated_at
+        parent_id
+        parent {
+          slug
+          title
+          children {
+            slug
+            title
+          }
+        }
+        children {
+          slug
+          title
+        }
       }
     }
   `;
@@ -70,6 +84,7 @@ export const getAllWorkspacePages = createServerFn({ method: "POST" }).handler(a
         theme_color
         components
         updated_at
+        parent_id
       }
     }
   `;
@@ -97,6 +112,7 @@ export const getWorkspacePage = createServerFn({ method: "POST" }).handler(async
         theme_color
         components
         is_published
+        parent_id
       }
     }
   `;
@@ -124,7 +140,8 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
         $logo_url: String = "",
         $theme_color: String = "",
         $components: jsonb = "[]",
-        $is_published: Boolean = true
+        $is_published: Boolean = true,
+        $parent_id: uuid
       ) {
         update_workspace_pages_by_pk(
           pk_columns: { id: $id },
@@ -137,6 +154,7 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
             theme_color: $theme_color,
             components: $components,
             is_published: $is_published,
+            parent_id: $parent_id,
             updated_at: "now()"
           }
         ) {
@@ -155,7 +173,8 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
       logo_url: input.logo_url || "",
       theme_color: input.theme_color || "",
       components: input.components || [],
-      is_published: input.is_published ?? true
+      is_published: input.is_published ?? true,
+      parent_id: input.parent_id || null
     };
     const data = await hasuraRequest<{ update_workspace_pages_by_pk: any }>(mutation, updateInput);
     return data.update_workspace_pages_by_pk;
@@ -171,7 +190,8 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
         $logo_url: String = "",
         $theme_color: String = "",
         $components: jsonb = "[]",
-        $is_published: Boolean = true
+        $is_published: Boolean = true,
+        $parent_id: uuid
       ) {
         insert_workspace_pages_one(
           object: {
@@ -183,7 +203,8 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
             logo_url: $logo_url,
             theme_color: $theme_color,
             components: $components,
-            is_published: $is_published
+            is_published: $is_published,
+            parent_id: $parent_id
           }
         ) {
           id
@@ -201,7 +222,8 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
       logo_url: input.logo_url || "",
       theme_color: input.theme_color || "",
       components: input.components || [],
-      is_published: input.is_published ?? true
+      is_published: input.is_published ?? true,
+      parent_id: input.parent_id || null
     };
     const data = await hasuraRequest<{ insert_workspace_pages_one: any }>(mutation, insertInput);
     return data.insert_workspace_pages_one;
