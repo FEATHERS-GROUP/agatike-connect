@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { EmbeddedForm } from "@/components/page-builder/EmbeddedForm";
+import { BudgetRequestForm } from "@/components/page-builder/BudgetRequestForm";
 
 export const Route = createFileRoute("/p/$slug")({
   component: PublicCompanyPage,
@@ -481,6 +482,14 @@ function PublicCompanyPage() {
                           {comp.title}
                         </p>
                       )}
+                    </div>
+                  );
+                }
+
+                if (comp.type === "budget_request") {
+                  return (
+                    <div key={comp.id} className="w-full">
+                      <BudgetRequestForm workspace_id={workspace_id} themeColor={theme_color} comp={comp} />
                     </div>
                   );
                 }

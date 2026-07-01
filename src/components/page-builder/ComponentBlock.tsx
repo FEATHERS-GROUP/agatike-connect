@@ -252,6 +252,30 @@ export function ComponentBlock({
             </div>
           )}
 
+          {/* BUDGET & DAMAGE REQUEST */}
+          {comp.type === "budget_request" && (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <Label className="text-xs">Form Title</Label>
+                <Input
+                  value={comp.title || ""}
+                  onChange={(e) => updateComponent(idx, "title", e.target.value)}
+                  placeholder="e.g. Budget & Damage Request"
+                  className="bg-background"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Description</Label>
+                <textarea
+                  value={comp.description || ""}
+                  onChange={(e) => updateComponent(idx, "description", e.target.value)}
+                  placeholder="e.g. Submit a request to the finance team."
+                  className="w-full bg-background border border-border/60 rounded-md p-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary resize-y min-h-[60px]"
+                />
+              </div>
+            </div>
+          )}
+
           {/* PAYMENT BUTTON */}
           {comp.type === "payment_button" && (
             <div className="space-y-4">

@@ -243,6 +243,37 @@ export function PreviewComponent({
     );
   }
 
+  if (comp.type === "budget_request") {
+    return (
+      <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm max-w-lg mx-auto pointer-events-none my-8">
+        <h3 className="text-xl font-bold mb-2">{comp.title || "Budget & Damage Request"}</h3>
+        <p className="text-sm text-muted-foreground mb-6">
+          {comp.description || "Submit a request to the finance team for approval."}
+        </p>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <div className="h-4 w-24 bg-secondary rounded" />
+            <div className="h-10 w-full bg-secondary/50 rounded-lg" />
+          </div>
+          <div className="space-y-1.5">
+            <div className="h-4 w-32 bg-secondary rounded" />
+            <div className="h-10 w-full bg-secondary/50 rounded-lg" />
+          </div>
+          <div className="space-y-1.5">
+            <div className="h-4 w-16 bg-secondary rounded" />
+            <div className="h-20 w-full bg-secondary/50 rounded-lg" />
+          </div>
+          <div
+            className="w-full rounded-full py-3.5 mt-6 text-center text-white text-sm font-bold shadow-md"
+            style={{ background: themeColor }}
+          >
+            Submit Request
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-8 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-xl">
       <p className="text-sm">Click "Edit Settings" to configure this block.</p>

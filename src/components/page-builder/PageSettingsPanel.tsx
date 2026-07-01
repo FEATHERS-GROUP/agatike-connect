@@ -19,6 +19,7 @@ import {
   Trash2,
   CreditCard,
   QrCode,
+  AlertTriangle,
 } from "lucide-react";
 
 export function PageSettingsPanel({
@@ -47,6 +48,7 @@ export function PageSettingsPanel({
             { type: "button", icon: Link2, label: "Action Button" },
             { type: "payment_button", icon: CreditCard, label: "Payment Button" },
             { type: "qr_code", icon: QrCode, label: "QR Code" },
+            { type: "budget_request", icon: AlertTriangle, label: "Budget & Damage Request", highlight: true },
             { type: "form_link", icon: LayoutTemplate, label: "Basic Form Link" },
             {
               type: "form_grid",
