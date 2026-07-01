@@ -119,8 +119,10 @@ function DashboardExperiences() {
         // Total schedules = 1 primary (if event has a date) + additional DB schedule rows
         const schedulesCount = (primaryExists ? 1 : 0) + dbSchedules.length;
 
-        const displayDate =
-          numDays > 1 && dateStr ? `${dateStr} to ${endDateStr}` : dateStr || "Not scheduled";
+        const isUpcoming = ts.is_upcoming === true;
+        const displayDate = isUpcoming
+          ? (ts.timer_date ? `Drops on ${new Date(ts.timer_date).toLocaleDateString("en-US")}` : "Coming Soon")
+          : (numDays > 1 && dateStr ? `${dateStr} to ${endDateStr}` : dateStr || "Not scheduled");
         const city = ts.city || ts.venueName || "Location not set";
 
         return {
@@ -140,6 +142,7 @@ function DashboardExperiences() {
           totalCapacity,
           available,
           schedulesCount,
+          isUpcoming,
         };
       });
   }, [rawEvents, activeWorkspace]);
@@ -258,9 +261,15 @@ function DashboardExperiences() {
                   </span>
                 </div>
                 <div className="absolute top-3 right-3">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-primary/90 backdrop-blur text-primary-foreground shadow-sm">
-                    {exp.price === 0 ? "Free" : formatCurrency(exp.price, exp.currency)}
-                  </span>
+                  {exp.isUpcoming ? (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/90 backdrop-blur text-white shadow-sm">
+                      Upcoming
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-primary/90 backdrop-blur text-primary-foreground shadow-sm">
+                      {exp.price === 0 ? "Free" : formatCurrency(exp.price, exp.currency)}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -284,10 +293,12 @@ function DashboardExperiences() {
                       <Clock className="h-3.5 w-3.5" />
                       <span>{exp.duration}</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Users className="h-3.5 w-3.5" />
-                      <span>{exp.available} spots left</span>
-                    </div>
+                    {!exp.isUpcoming && (
+                      <div className="flex items-center gap-1.5">
+                        <Users className="h-3.5 w-3.5" />
+                        <span>{exp.available} spots left</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

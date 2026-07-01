@@ -48,7 +48,12 @@ function EventCard({ event }: { event: any }) {
     return "";
   };
 
-  const date = getVal("date") || event.event_requency?.date || "TBD";
+  const isUpcoming = getVal("is_upcoming") === true;
+  const timerDate = getVal("timer_date");
+  const dateStr = getVal("date") || event.event_requency?.date || "TBD";
+  const date = isUpcoming 
+    ? (timerDate ? `Drops ${new Date(timerDate).toLocaleDateString("en-US")}` : "Coming Soon") 
+    : dateStr;
   const time = isMock ? event.time || event.duration : getVal("time");
   const venue = getVal("venue") || getVal("venueName") || "";
   const city = getVal("city") || "";
@@ -87,9 +92,14 @@ function EventCard({ event }: { event: any }) {
             {event.category}
           </span>
         </div>
-        {tourStopsCount > 1 && (
+        {tourStopsCount > 1 && !isUpcoming && (
           <div className="absolute top-3 right-3 rounded-full bg-primary/90 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
             {tourStopsCount} stops
+          </div>
+        )}
+        {isUpcoming && (
+          <div className="absolute top-3 right-3 rounded-full bg-blue-500/90 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur shadow-sm">
+            Upcoming
           </div>
         )}
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
@@ -105,14 +115,16 @@ function EventCard({ event }: { event: any }) {
                 {venue ? `${venue}, ` : ""}
                 {city}
               </span>
-              <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" /> People going ·{" "}
-                {(
-                  event.event_attendees_aggregate?.aggregate?.count ??
-                  event.attendees ??
-                  0
-                ).toLocaleString()}
-              </span>
+              {!isUpcoming && (
+                <span className="flex items-center gap-1">
+                  <Users className="h-3 w-3" /> People going ·{" "}
+                  {(
+                    event.event_attendees_aggregate?.aggregate?.count ??
+                    event.attendees ??
+                    0
+                  ).toLocaleString()}
+                </span>
+              )}
             </div>
           )}
         </div>

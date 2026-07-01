@@ -105,6 +105,9 @@ export function CreateExperienceDesktop({
     venueLng: initialData?.venueLng || null,
     allowed_public: initialData?.allowed_public ?? true,
     published: false,
+    isUpcoming: false,
+    waitlistUrl: "",
+    timerDate: "",
   };
 
   const [data, setData] = useState(defaultData);
@@ -228,6 +231,9 @@ export function CreateExperienceDesktop({
           routeDistance: data.routeDistance,
           itinerary: data.itinerary,
           included: data.tickets.flatMap((t: any) => t.includes || []).filter(Boolean),
+          is_upcoming: data.isUpcoming,
+          waitlist_url: data.waitlistUrl,
+          timer_date: data.timerDate,
         },
         event_requency: {
           date: data.date,
@@ -350,6 +356,77 @@ export function CreateExperienceDesktop({
         {/* STEP 1: Details */}
         {steps[step] === "Details" && (
           <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="rounded-2xl border border-border/60 bg-secondary/20 p-5 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <Label className="text-base font-semibold">Teaser / Upcoming Experience</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Announce without requiring actual dates or tickets yet.
+                  </p>
+                </div>
+                <div className="flex bg-secondary p-1 rounded-xl shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => updateField("isUpcoming", false)}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${!data.isUpcoming ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Standard
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateField("isUpcoming", true)}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${data.isUpcoming ? "bg-background shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Upcoming
+                  </button>
+                </div>
+              </div>
+
+              {data.isUpcoming && (
+                <div className="grid gap-4 md:grid-cols-2 pt-4 border-t border-border/60 animate-in fade-in slide-in-from-top-2">
+                  <div>
+                    <Label>Waitlist / RSVP Form (Optional)</Label>
+                    <div className="flex flex-col sm:flex-row gap-2 mt-1">
+                      <select
+                        value={data.waitlistUrl.startsWith("/f/") ? data.waitlistUrl : (data.waitlistUrl ? "external" : "")}
+                        onChange={(e) => {
+                          if (e.target.value === "external") {
+                            updateField("waitlistUrl", "https://");
+                          } else {
+                            updateField("waitlistUrl", e.target.value);
+                          }
+                        }}
+                        className="flex h-12 w-full sm:w-auto rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary md:text-sm"
+                      >
+                        <option value="">No form (Coming Soon)</option>
+                        {forms?.map((f: any) => (
+                          <option key={f.id} value={`/f/${f.id}`}>{f.title}</option>
+                        ))}
+                        <option value="external">External Link</option>
+                      </select>
+                      {(!data.waitlistUrl.startsWith("/f/") && data.waitlistUrl !== "") && (
+                        <Input
+                          placeholder="https://..."
+                          value={data.waitlistUrl}
+                          onChange={(e) => updateField("waitlistUrl", e.target.value)}
+                          className="h-12 flex-1"
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Countdown Timer Date (Optional)</Label>
+                    <Input
+                      type="datetime-local"
+                      value={data.timerDate}
+                      onChange={(e) => updateField("timerDate", e.target.value)}
+                      className="mt-1 h-12 rounded-xl"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div>
               <Label>Experience title</Label>
               <Input
@@ -388,7 +465,7 @@ export function CreateExperienceDesktop({
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <Label>Start Date</Label>
+                <Label>Start Date {data.isUpcoming && <span className="text-muted-foreground font-normal">(Optional)</span>}</Label>
                 <Input
                   type="date"
                   value={data.date || ""}
@@ -398,10 +475,12 @@ export function CreateExperienceDesktop({
               </div>
               <div>
                 <Label>
-                  End Date{" "}
-                  <span className="text-xs text-muted-foreground font-normal">
-                    (auto-calculated)
-                  </span>
+                  End Date {data.isUpcoming && <span className="text-muted-foreground font-normal">(Optional)</span>}
+                  {!data.isUpcoming && (
+                    <span className="text-xs text-muted-foreground font-normal ml-1">
+                      (auto-calculated)
+                    </span>
+                  )}
                 </Label>
                 <Input
                   type="date"

@@ -267,6 +267,9 @@ export function CreateEventDesktop() {
     isRecurring: false,
     recurrenceType: "weekly",
     recurrenceCount: 4,
+    isUpcoming: false,
+    waitlistUrl: "",
+    timerDate: "",
   };
 
   const defaultTickets: Ticket[] = [
@@ -387,8 +390,15 @@ export function CreateEventDesktop() {
         cover: coverUrl,
         vipPerks: data.vipPerks,
         workspace_id: activeWorkspace?.id,
-        tour_stops: data.locations,
-        event_requency: data.isRecurring
+        tour_stops: data.locations.map((loc, idx) => ({
+          ...loc,
+          ...(idx === 0 && data.isUpcoming ? {
+            is_upcoming: true,
+            waitlist_url: data.waitlistUrl,
+            timer_date: data.timerDate,
+          } : {})
+        })),
+        event_requency: (data.isRecurring && !data.isUpcoming)
           ? { type: data.recurrenceType, count: data.recurrenceCount }
           : {},
         event_tickets: {
@@ -514,58 +524,131 @@ export function CreateEventDesktop() {
             <div className="rounded-2xl border border-border/60 bg-secondary/20 p-5 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <Label className="text-base font-semibold">Event Frequency</Label>
+                  <Label className="text-base font-semibold">Teaser / Upcoming Event</Label>
                   <p className="text-sm text-muted-foreground">
-                    Will this event happen more than once?
+                    Announce this event without actual dates or tickets yet.
                   </p>
                 </div>
                 <div className="flex bg-secondary p-1 rounded-xl shrink-0">
                   <button
                     type="button"
-                    onClick={() => updateField("isRecurring", false)}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${!data.isRecurring ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                    onClick={() => updateField("isUpcoming", false)}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${!data.isUpcoming ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                   >
-                    One-time
+                    Standard
                   </button>
                   <button
                     type="button"
-                    onClick={() => updateField("isRecurring", true)}
-                    className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${data.isRecurring ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                    onClick={() => updateField("isUpcoming", true)}
+                    className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${data.isUpcoming ? "bg-background shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"}`}
                   >
-                    Recurring
+                    Upcoming
                   </button>
                 </div>
               </div>
 
-              {data.isRecurring && (
+              {data.isUpcoming && (
                 <div className="grid gap-4 md:grid-cols-2 pt-4 border-t border-border/60 animate-in fade-in slide-in-from-top-2">
                   <div>
-                    <Label>Repeats</Label>
-                    <select
-                      value={data.recurrenceType}
-                      onChange={(e) => updateField("recurrenceType", e.target.value)}
-                      className="mt-1 flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 hover:border-border/80 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                    >
-                      <option value="daily">Daily</option>
-                      <option value="weekly">Weekly</option>
-                      <option value="monthly">Monthly</option>
-                      <option value="yearly">Yearly</option>
-                    </select>
+                    <Label>Waitlist / RSVP Form (Optional)</Label>
+                    <div className="flex flex-col sm:flex-row gap-2 mt-1">
+                      <select
+                        value={data.waitlistUrl.startsWith("/f/") ? data.waitlistUrl : (data.waitlistUrl ? "external" : "")}
+                        onChange={(e) => {
+                          if (e.target.value === "external") {
+                            updateField("waitlistUrl", "https://");
+                          } else {
+                            updateField("waitlistUrl", e.target.value);
+                          }
+                        }}
+                        className="flex h-12 w-full sm:w-auto rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary md:text-sm"
+                      >
+                        <option value="">No form (Coming Soon)</option>
+                        {forms?.map((f: any) => (
+                          <option key={f.id} value={`/f/${f.id}`}>{f.title}</option>
+                        ))}
+                        <option value="external">External Link</option>
+                      </select>
+                      {(!data.waitlistUrl.startsWith("/f/") && data.waitlistUrl !== "") && (
+                        <Input
+                          placeholder="https://..."
+                          value={data.waitlistUrl}
+                          onChange={(e) => updateField("waitlistUrl", e.target.value)}
+                          className="h-12 flex-1"
+                        />
+                      )}
+                    </div>
                   </div>
                   <div>
-                    <Label>How many times?</Label>
+                    <Label>Countdown Timer Date (Optional)</Label>
                     <Input
-                      type="number"
-                      min="2"
-                      max="365"
-                      value={data.recurrenceCount}
-                      onChange={(e) => updateField("recurrenceCount", Number(e.target.value))}
-                      className="mt-1"
+                      type="datetime-local"
+                      value={data.timerDate}
+                      onChange={(e) => updateField("timerDate", e.target.value)}
+                      className="mt-1 h-12 rounded-xl"
                     />
                   </div>
                 </div>
               )}
             </div>
+
+            {!data.isUpcoming && (
+              <div className="rounded-2xl border border-border/60 bg-secondary/20 p-5 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <Label className="text-base font-semibold">Event Frequency</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Will this event happen more than once?
+                    </p>
+                  </div>
+                  <div className="flex bg-secondary p-1 rounded-xl shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => updateField("isRecurring", false)}
+                      className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${!data.isRecurring ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      One-time
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateField("isRecurring", true)}
+                      className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${data.isRecurring ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Recurring
+                    </button>
+                  </div>
+                </div>
+
+                {data.isRecurring && (
+                  <div className="grid gap-4 md:grid-cols-2 pt-4 border-t border-border/60 animate-in fade-in slide-in-from-top-2">
+                    <div>
+                      <Label>Repeats</Label>
+                      <select
+                        value={data.recurrenceType}
+                        onChange={(e) => updateField("recurrenceType", e.target.value)}
+                        className="mt-1 flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/10 hover:border-border/80 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                      >
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label>How many times?</Label>
+                      <Input
+                        type="number"
+                        min="2"
+                        max="365"
+                        value={data.recurrenceCount}
+                        onChange={(e) => updateField("recurrenceCount", Number(e.target.value))}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             <div>
               <Label>Description</Label>
               <Textarea
@@ -655,7 +738,7 @@ export function CreateEventDesktop() {
                   <div className="space-y-5">
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
-                        <Label>Date</Label>
+                        <Label>Date {data.isUpcoming && <span className="text-muted-foreground font-normal">(Optional)</span>}</Label>
                         <Input
                           type="date"
                           value={loc.date}
@@ -668,7 +751,7 @@ export function CreateEventDesktop() {
                         />
                       </div>
                       <div>
-                        <Label>Time</Label>
+                        <Label>Time {data.isUpcoming && <span className="text-muted-foreground font-normal">(Optional)</span>}</Label>
                         <Input
                           type="time"
                           value={loc.time}

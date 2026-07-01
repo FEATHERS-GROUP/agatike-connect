@@ -71,7 +71,14 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   );
 
   const currentStop = tourStops[selectedStopIdx] || tourStops[0];
-  const date = isMock ? ev.date : currentStop.date || "TBD";
+  const isUpcoming = currentStop?.is_upcoming === true;
+  const timerDate = currentStop?.timer_date;
+  const waitlistUrl = currentStop?.waitlist_url;
+
+  const dateStr = isMock ? ev.date : currentStop.date || "TBD";
+  const date = isUpcoming 
+    ? (timerDate ? `Drops ${new Date(timerDate).toLocaleDateString("en-US")}` : "Coming Soon") 
+    : dateStr;
   const time = isMock ? ev.time || ev.duration : currentStop.time || "";
   const venue = isMock ? ev.venue || ev.cinema : currentStop.venue || "";
   const city = isMock ? ev.city : currentStop.venue || currentStop.city || "";
@@ -385,5 +392,8 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     attendeesList,
     reviews,
     avgRating,
+    isUpcoming,
+    timerDate,
+    waitlistUrl,
   };
 }
