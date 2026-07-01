@@ -84,8 +84,29 @@ function NoteFullPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="max-w-4xl mx-auto py-8 px-4 h-[calc(100vh-6rem)] flex flex-col animate-pulse">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="h-9 w-9 bg-secondary/40 rounded-full" />
+            <div className="h-4 w-32 bg-secondary/40 rounded" />
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="h-9 w-9 bg-secondary/40 rounded-md" />
+            <div className="h-9 w-9 bg-secondary/40 rounded-md" />
+          </div>
+        </div>
+        <div className="h-14 w-3/4 bg-secondary/40 rounded-lg mb-6" />
+        <div className="flex gap-2 mb-8">
+          <div className="h-8 w-20 bg-secondary/40 rounded-full" />
+          <div className="h-8 w-24 bg-secondary/40 rounded-full" />
+          <div className="h-8 w-16 bg-secondary/40 rounded-full" />
+        </div>
+        <div className="flex-1 space-y-4">
+          <div className="h-4 w-full bg-secondary/40 rounded" />
+          <div className="h-4 w-11/12 bg-secondary/40 rounded" />
+          <div className="h-4 w-4/5 bg-secondary/40 rounded" />
+          <div className="h-4 w-full bg-secondary/40 rounded" />
+        </div>
       </div>
     );
   }
