@@ -25,7 +25,16 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { TagSelector, tagColor } from "./components/TagSelector";
+import { TagSelector, type Tag as TagType, TAG_COLORS } from "./components/TagSelector";
+import { lazy, Suspense, useEffect } from "react";
+const ReactQuill = lazy(() => import("react-quill-new"));
+import "react-quill-new/dist/quill.snow.css";
+
+function ClientOnly({ children, fallback }: { children: any; fallback?: any }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  return mounted ? children : fallback || null;
+}
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/notes")({
   component: NotesPage,
@@ -42,7 +51,7 @@ function NotesPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
-  const [draftTags, setDraftTags] = useState<string[]>([]);
+  const [draftTags, setDraftTags] = useState<TagType[]>([]);
 
   const { data: notes = [], isLoading } = useQuery({
     queryKey: ["workspace-notes", wsId],
@@ -101,17 +110,18 @@ function NotesPage() {
     navigate({ to: `./${id}` as any });
   };
 
-  const availableTags = Array.from(
-    new Set([
-      "Important",
-      "Meeting",
-      "To-Do",
-      "Idea",
-      "Project",
-      "Draft",
-      ...notes.flatMap((n: any) => n.tags || []),
-    ])
-  ) as string[];
+  const DEFAULT_TAGS: TagType[] = [
+    { label: "Important", color: TAG_COLORS[4] },
+    { label: "Meeting", color: TAG_COLORS[0] },
+    { label: "To-Do", color: TAG_COLORS[3] },
+    { label: "Idea", color: TAG_COLORS[2] },
+    { label: "Project", color: TAG_COLORS[1] },
+    { label: "Draft", color: TAG_COLORS[6] },
+  ];
+
+  const dbTags = notes.flatMap((n: any) => n.tags || []) as TagType[];
+  const allTagObjects = [...DEFAULT_TAGS, ...dbTags].filter((t) => typeof t === "object" && t.label);
+  const availableTags = Array.from(new Map(allTagObjects.map(item => [item.label, item])).values());
 
   return (
     <div className="pb-16 max-w-6xl mx-auto space-y-6">
@@ -238,12 +248,19 @@ function NotesPage() {
                 />
               </div>
 
-              <textarea
-                placeholder="Start writing..."
-                value={draftContent}
-                onChange={(e) => setDraftContent(e.target.value)}
-                className="flex-1 resize-none bg-transparent text-base leading-relaxed outline-none placeholder:text-muted-foreground/30 min-h-[300px]"
-              />
+              <div className="flex-1 min-h-[300px] -mx-4">
+                <ClientOnly fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+                  <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+                    <ReactQuill
+                      theme="snow"
+                      value={draftContent}
+                      onChange={setDraftContent}
+                      placeholder="Start writing..."
+                      className="h-full border-0 [&_.ql-container]:border-0 [&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b [&_.ql-toolbar]:border-border/40 [&_.ql-editor]:text-base [&_.ql-editor]:leading-relaxed"
+                    />
+                  </Suspense>
+                </ClientOnly>
+              </div>
               
               <div className="pt-6 mt-auto">
                 <Button
@@ -284,7 +301,7 @@ function NoteCard({ note, onClick, onPin }: any) {
       </div>
       
       <p className="text-sm text-muted-foreground line-clamp-3 flex-1">
-        {note.content || "Empty note..."}
+        {note.content ? note.content.replace(/<[^>]+>/g, '') : "Empty note..."}
       </p>
 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
@@ -295,9 +312,9 @@ function NoteCard({ note, onClick, onPin }: any) {
         </span>
         {note.tags?.length > 0 && (
           <div className="flex gap-1 overflow-hidden">
-            {note.tags.slice(0, 2).map((tag: string) => (
-              <span key={tag} className={cn("text-[10px] px-1.5 py-0.5 rounded-md font-medium whitespace-nowrap", tagColor(tag))}>
-                {tag}
+            {note.tags.slice(0, 2).map((tag: TagType) => (
+              <span key={tag.label} className={cn("text-[10px] px-1.5 py-0.5 rounded-md font-medium whitespace-nowrap", tag.color)}>
+                {tag.label}
               </span>
             ))}
             {note.tags.length > 2 && <span className="text-[10px] text-muted-foreground px-1">+{note.tags.length - 2}</span>}
@@ -311,7 +328,7 @@ function NoteCard({ note, onClick, onPin }: any) {
 function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: any) {
   const [title, setTitle] = useState(note.title || "");
   const [content, setContent] = useState(note.content || "");
-  const [tags, setTags] = useState<string[]>(note.tags || []);
+  const [tags, setTags] = useState<TagType[]>(note.tags || []);
   const [dirty, setDirty] = useState(false);
 
   return (
@@ -363,12 +380,19 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
         />
       </div>
       
-      <textarea
-        className="flex-1 bg-transparent resize-none text-base leading-relaxed outline-none placeholder:text-muted-foreground/30 font-sans min-h-[300px]"
-        placeholder="Start writing..."
-        value={content}
-        onChange={(e) => { setContent(e.target.value); setDirty(true); }}
-      />
+      <div className="flex-1 -mx-4 mt-4">
+        <ClientOnly fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+          <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+            <ReactQuill
+              theme="snow"
+              value={content}
+              onChange={(val) => { setContent(val); setDirty(true); }}
+              placeholder="Start writing..."
+              className="h-full border-0 [&_.ql-container]:border-0 [&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b [&_.ql-toolbar]:border-border/40 [&_.ql-editor]:text-base [&_.ql-editor]:leading-relaxed"
+            />
+          </Suspense>
+        </ClientOnly>
+      </div>
     </div>
   );
 }

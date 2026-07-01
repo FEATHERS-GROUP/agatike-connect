@@ -6,9 +6,18 @@ import { getWorkspaceNoteById, updateWorkspaceNote, deleteWorkspaceNote } from "
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { TagSelector } from "./components/TagSelector";
+import { TagSelector, type Tag as TagType, TAG_COLORS } from "./components/TagSelector";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceNotes } from "@/api/notes";
+import { lazy, Suspense } from "react";
+const ReactQuill = lazy(() => import("react-quill-new"));
+import "react-quill-new/dist/quill.snow.css";
+
+function ClientOnly({ children, fallback }: { children: any; fallback?: any }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  return mounted ? children : fallback || null;
+}
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/notes_/$noteId")({
   component: NoteFullPage,
@@ -33,17 +42,18 @@ function NoteFullPage() {
     enabled: !!wsId,
   });
 
-  const availableTags = Array.from(
-    new Set([
-      "Important",
-      "Meeting",
-      "To-Do",
-      "Idea",
-      "Project",
-      "Draft",
-      ...allNotes.flatMap((n: any) => n.tags || []),
-    ])
-  ) as string[];
+  const DEFAULT_TAGS: TagType[] = [
+    { label: "Important", color: TAG_COLORS[4] },
+    { label: "Meeting", color: TAG_COLORS[0] },
+    { label: "To-Do", color: TAG_COLORS[3] },
+    { label: "Idea", color: TAG_COLORS[2] },
+    { label: "Project", color: TAG_COLORS[1] },
+    { label: "Draft", color: TAG_COLORS[6] },
+  ];
+
+  const dbTags = allNotes.flatMap((n: any) => n.tags || []) as TagType[];
+  const allTagObjects = [...DEFAULT_TAGS, ...dbTags].filter((t) => typeof t === "object" && t.label);
+  const availableTags = Array.from(new Map(allTagObjects.map(item => [item.label, item])).values());
 
   const updateMutation = useMutation({
     mutationFn: (vars: { id: string; [k: string]: any }) =>
@@ -64,7 +74,7 @@ function NoteFullPage() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<TagType[]>([]);
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
@@ -175,12 +185,19 @@ function NoteFullPage() {
         />
       </div>
       
-      <textarea
-        className="flex-1 bg-transparent resize-none text-base leading-relaxed outline-none placeholder:text-muted-foreground/30 font-sans"
-        placeholder="Start writing..."
-        value={content}
-        onChange={(e) => { setContent(e.target.value); setDirty(true); }}
-      />
+      <div className="flex-1 -mx-4 mt-4">
+        <ClientOnly fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+          <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+            <ReactQuill
+              theme="snow"
+              value={content}
+              onChange={(val) => { setContent(val); setDirty(true); }}
+              placeholder="Start writing..."
+              className="h-full border-0 [&_.ql-container]:border-0 [&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b [&_.ql-toolbar]:border-border/40 [&_.ql-editor]:text-base [&_.ql-editor]:leading-relaxed"
+            />
+          </Suspense>
+        </ClientOnly>
+      </div>
     </div>
   );
 }
