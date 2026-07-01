@@ -5,7 +5,7 @@ import { getSession } from "./auth";
 // ── Queries ─────────────────────────────────────────────────────────────────
 
 const GET_TASKS = `
-  query GetWorkspaceTasks($workspace_id: uuid!) {
+  query GetWorkspaceTasks($workspace_id: String!) {
     workspace_tasks(
       where: { workspace_id: { _eq: $workspace_id } }
       order_by: { created_at: desc }

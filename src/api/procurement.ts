@@ -6,7 +6,7 @@ import { getSession } from "./auth";
 // Separate from the space subscription invoices in invoices.ts
 
 const GET_PROCUREMENT_INVOICES = `
-  query GetProcurementInvoices($workspace_id: uuid!) {
+  query GetProcurementInvoices($workspace_id: String!) {
     workspace_invoices(
       where: { workspace_id: { _eq: $workspace_id } }
       order_by: { created_at: desc }

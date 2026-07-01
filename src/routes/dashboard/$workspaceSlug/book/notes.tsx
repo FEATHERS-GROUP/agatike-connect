@@ -25,16 +25,9 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { TagSelector, type Tag as TagType, TAG_COLORS } from "./components/TagSelector";
-import { lazy, Suspense, useEffect } from "react";
-const ReactQuill = lazy(() => import("react-quill-new"));
-import "react-quill-new/dist/quill.snow.css";
-
-function ClientOnly({ children, fallback }: { children: any; fallback?: any }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
-  return mounted ? children : fallback || null;
-}
+import { TagSelector, type Tag as TagType, TAG_COLORS } from "./components/-TagSelector";
+import { lazy, Suspense } from "react";
+const BlockNoteEditor = lazy(() => import("./components/-BlockNoteEditor"));
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/notes")({
   component: NotesPage,
@@ -248,18 +241,10 @@ function NotesPage() {
                 />
               </div>
 
-              <div className="flex-1 min-h-[300px] -mx-4">
-                <ClientOnly fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
-                  <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
-                    <ReactQuill
-                      theme="snow"
-                      value={draftContent}
-                      onChange={setDraftContent}
-                      placeholder="Start writing..."
-                      className="h-full border-0 [&_.ql-container]:border-0 [&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b [&_.ql-toolbar]:border-border/40 [&_.ql-editor]:text-base [&_.ql-editor]:leading-relaxed"
-                    />
-                  </Suspense>
-                </ClientOnly>
+              <div className="flex-1 min-h-[300px] -mx-8 relative z-10">
+                <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+                  <BlockNoteEditor value={draftContent} onChange={setDraftContent} />
+                </Suspense>
               </div>
               
               <div className="pt-6 mt-auto">
@@ -380,18 +365,13 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
         />
       </div>
       
-      <div className="flex-1 -mx-4 mt-4">
-        <ClientOnly fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
-          <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
-            <ReactQuill
-              theme="snow"
-              value={content}
-              onChange={(val) => { setContent(val); setDirty(true); }}
-              placeholder="Start writing..."
-              className="h-full border-0 [&_.ql-container]:border-0 [&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b [&_.ql-toolbar]:border-border/40 [&_.ql-editor]:text-base [&_.ql-editor]:leading-relaxed"
-            />
-          </Suspense>
-        </ClientOnly>
+      <div className="flex-1 -mx-10 mt-4 relative z-10">
+        <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+          <BlockNoteEditor
+            value={content}
+            onChange={(val) => { setContent(val); setDirty(true); }}
+          />
+        </Suspense>
       </div>
     </div>
   );

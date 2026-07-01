@@ -6,18 +6,11 @@ import { getWorkspaceNoteById, updateWorkspaceNote, deleteWorkspaceNote } from "
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { TagSelector, type Tag as TagType, TAG_COLORS } from "./components/TagSelector";
+import { TagSelector, type Tag as TagType, TAG_COLORS } from "./components/-TagSelector";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceNotes } from "@/api/notes";
 import { lazy, Suspense } from "react";
-const ReactQuill = lazy(() => import("react-quill-new"));
-import "react-quill-new/dist/quill.snow.css";
-
-function ClientOnly({ children, fallback }: { children: any; fallback?: any }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
-  return mounted ? children : fallback || null;
-}
+const BlockNoteEditor = lazy(() => import("./components/-BlockNoteEditor"));
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/notes_/$noteId")({
   component: NoteFullPage,
@@ -185,18 +178,13 @@ function NoteFullPage() {
         />
       </div>
       
-      <div className="flex-1 -mx-4 mt-4">
-        <ClientOnly fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
-          <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
-            <ReactQuill
-              theme="snow"
-              value={content}
-              onChange={(val) => { setContent(val); setDirty(true); }}
-              placeholder="Start writing..."
-              className="h-full border-0 [&_.ql-container]:border-0 [&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b [&_.ql-toolbar]:border-border/40 [&_.ql-editor]:text-base [&_.ql-editor]:leading-relaxed"
-            />
-          </Suspense>
-        </ClientOnly>
+      <div className="flex-1 -mx-10 mt-4 relative z-10">
+        <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+          <BlockNoteEditor
+            value={content}
+            onChange={(val) => { setContent(val); setDirty(true); }}
+          />
+        </Suspense>
       </div>
     </div>
   );
