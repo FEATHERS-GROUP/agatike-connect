@@ -109,7 +109,7 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const input = ctx.data as any;
+  const input = (ctx.data as any).data || ctx.data;
   const { id, workspace_id } = input;
 
   if (id) {
@@ -146,7 +146,17 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
         }
       }
     `;
-    const { workspace_id: _, ...updateInput } = input;
+    const updateInput = {
+      id: input.id,
+      slug: input.slug,
+      title: input.title || "",
+      description: input.description || "",
+      header_image_url: input.header_image_url || "",
+      logo_url: input.logo_url || "",
+      theme_color: input.theme_color || "",
+      components: input.components || [],
+      is_published: input.is_published ?? true
+    };
     const data = await hasuraRequest<{ update_workspace_pages_by_pk: any }>(mutation, updateInput);
     return data.update_workspace_pages_by_pk;
   } else {
@@ -182,7 +192,17 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
         }
       }
     `;
-    const { id: _id, ...insertInput } = input;
+    const insertInput = {
+      workspace_id: input.workspace_id,
+      slug: input.slug,
+      title: input.title || "",
+      description: input.description || "",
+      header_image_url: input.header_image_url || "",
+      logo_url: input.logo_url || "",
+      theme_color: input.theme_color || "",
+      components: input.components || [],
+      is_published: input.is_published ?? true
+    };
     const data = await hasuraRequest<{ insert_workspace_pages_one: any }>(mutation, insertInput);
     return data.insert_workspace_pages_one;
   }
