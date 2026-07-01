@@ -44,6 +44,7 @@ const GET_WORKSPACE_FORMS = `
     custom_forms(where: { workspace_id: { _eq: $workspace_id } }, order_by: { created_at: desc }) {
       id
       title
+      folder_id
       description
       cover_image_url
       is_active
@@ -190,6 +191,19 @@ const DELETE_CUSTOM_FORM = `
     }
   }
 `;
+
+
+export const updateCustomFormFolder = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, folder_id } = ctx.data as any;
+  const q = `
+    mutation UpdateCustomFormFolder($id: uuid!, $folder_id: uuid) {
+      update_custom_forms_by_pk(pk_columns: {id: $id}, _set: {folder_id: $folder_id}) {
+        id
+      }
+    }
+  `;
+  return hasuraRequest(q, { id, folder_id });
+});
 
 export const deleteCustomForm = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { id } = ctx.data as unknown as { id: string };

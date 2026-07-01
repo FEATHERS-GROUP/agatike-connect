@@ -7,6 +7,7 @@ const GET_AGATIKE_BOOKS = `
     agatike_books(where: { event_id: { _eq: $event_id } }, order_by: { created_at: desc }) {
       id
       name
+      folder_id
       icon
       schema_fields
       created_at
@@ -149,6 +150,7 @@ const GET_AGATIKE_BOOKS_BY_WORKSPACE = `
     ) {
       id
       name
+      folder_id
       icon
       schema_fields
       created_at
@@ -183,3 +185,14 @@ export const getPublicAgatikeBooksByWorkspace = createServerFn({ method: "POST" 
     return data.agatike_books || [];
   },
 );
+
+export const updateAgatikeBookFolder = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, folder_id } = ctx.data as any;
+  const res = await hasuraRequest<{ update_agatike_books_by_pk: { id: string } }>(
+    `mutation UpdateBookFolder($id: uuid!, $folder_id: uuid) {
+      update_agatike_books_by_pk(pk_columns: {id: $id}, _set: {folder_id: $folder_id}) { id }
+    }`,
+    { id, folder_id },
+  );
+  return res.update_agatike_books_by_pk;
+});

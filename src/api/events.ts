@@ -624,6 +624,7 @@ const GET_TICKET_PROJECT_BY_ID = `
       eventId
       venueId
       cinemaId
+      folder_id
       template
       coverImage
       design_overrides
@@ -662,6 +663,31 @@ const UPDATE_TICKET_PROJECT = `
   }
 `;
 
+
+export const updateTicketProjectFolder = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, folder_id } = ctx.data as any;
+  const q = `
+    mutation UpdateTicketProjectFolder($id: uuid!, $folder_id: uuid) {
+      update_ticket_projects_by_pk(pk_columns: {id: $id}, _set: {folder_id: $folder_id}) {
+        id
+      }
+    }
+  `;
+  return hasuraRequest(q, { id, folder_id });
+});
+
+export const deleteTicketProject = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as any;
+  const q = `
+    mutation DeleteTicketProject($id: uuid!) {
+      update_ticket_projects_by_pk(pk_columns: {id: $id}, _set: {deleted: true}) {
+        id
+      }
+    }
+  `;
+  return hasuraRequest(q, { id });
+});
+
 export const updateTicketProject = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const variables = ctx.data as any;
   return hasuraRequest(UPDATE_TICKET_PROJECT, variables);
@@ -671,6 +697,7 @@ const GET_WORKSPACE_TICKET_PROJECTS = `
   query GetWorkspaceTicketProjects($workspaceId: uuid!) {
     ticket_projects(where: {workspaceId: {_eq: $workspaceId}, deleted: {_eq: false}}, order_by: {updated_on: desc}) {
       id
+      folder_id
       name
       eventId
       venueId
@@ -799,6 +826,7 @@ export const getWorkspaceTicketProjects = createServerFn({ method: "POST" }).han
             order_by: { updated_on: desc }
           ) {
             id
+            folder_id
             name
             eventId
             venueId

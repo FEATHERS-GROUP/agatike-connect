@@ -54,6 +54,72 @@ function CinemaOverview() {
     enabled: !!cinemaId,
   });
 
+  // Chart Logic
+  const chartData = useMemo(() => {
+    const dataMap = new Map();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let labels: string[] = [];
+    if (chartFilter === "This Week") {
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        // Using local string formats to avoid UTC shift bugs
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        const label = d.toLocaleDateString(undefined, { weekday: "short" });
+        labels.push(key);
+        dataMap.set(key, { label, value: 0 });
+      }
+    } else if (chartFilter === "This Month") {
+      for (let i = 3; i >= 0; i--) {
+        const key = `Week ${4 - i}`;
+        labels.push(key);
+        dataMap.set(key, { label: key, value: 0 });
+      }
+    } else if (chartFilter === "This Year") {
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        const label = d.toLocaleDateString(undefined, { month: "short" });
+        if (!labels.includes(key)) labels.push(key);
+        dataMap.set(key, { label, value: 0 });
+      }
+    }
+
+    allBookings.forEach((b: any) => {
+      const d = new Date(b.created_at);
+      let key = "";
+      if (chartFilter === "This Week") {
+        key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      } else if (chartFilter === "This Month") {
+        const diffTime = Math.abs(today.getTime() - d.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays <= 28) {
+          const weekOffset = 3 - Math.floor((diffDays - 1) / 7);
+          key = `Week ${weekOffset + 1}`;
+        }
+      } else if (chartFilter === "This Year") {
+        if (
+          d.getFullYear() === today.getFullYear() ||
+          (d.getFullYear() === today.getFullYear() - 1 && d.getMonth() > today.getMonth())
+        ) {
+          key = `${d.getFullYear()}-${d.getMonth()}`;
+        }
+      }
+
+      if (key && dataMap.has(key)) {
+        const existing = dataMap.get(key);
+        existing.value += b.total_price || 0;
+        dataMap.set(key, existing);
+      }
+    });
+
+    return Array.from(dataMap.values());
+  }, [allBookings, chartFilter]);
+
+  const maxChartValue = Math.max(...chartData.map((d) => d.value), 1);
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -145,71 +211,7 @@ function CinemaOverview() {
     },
   ];
 
-  // Chart Logic
-  const chartData = useMemo(() => {
-    const dataMap = new Map();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
-    let labels: string[] = [];
-    if (chartFilter === "This Week") {
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        // Using local string formats to avoid UTC shift bugs
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-        const label = d.toLocaleDateString(undefined, { weekday: "short" });
-        labels.push(key);
-        dataMap.set(key, { label, value: 0 });
-      }
-    } else if (chartFilter === "This Month") {
-      for (let i = 3; i >= 0; i--) {
-        const key = `Week ${4 - i}`;
-        labels.push(key);
-        dataMap.set(key, { label: key, value: 0 });
-      }
-    } else if (chartFilter === "This Year") {
-      for (let i = 11; i >= 0; i--) {
-        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-        const key = `${d.getFullYear()}-${d.getMonth()}`;
-        const label = d.toLocaleDateString(undefined, { month: "short" });
-        if (!labels.includes(key)) labels.push(key);
-        dataMap.set(key, { label, value: 0 });
-      }
-    }
-
-    allBookings.forEach((b: any) => {
-      const d = new Date(b.created_at);
-      let key = "";
-      if (chartFilter === "This Week") {
-        key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-      } else if (chartFilter === "This Month") {
-        const diffTime = Math.abs(today.getTime() - d.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        if (diffDays <= 28) {
-          const weekOffset = 3 - Math.floor((diffDays - 1) / 7);
-          key = `Week ${weekOffset + 1}`;
-        }
-      } else if (chartFilter === "This Year") {
-        if (
-          d.getFullYear() === today.getFullYear() ||
-          (d.getFullYear() === today.getFullYear() - 1 && d.getMonth() > today.getMonth())
-        ) {
-          key = `${d.getFullYear()}-${d.getMonth()}`;
-        }
-      }
-
-      if (key && dataMap.has(key)) {
-        const existing = dataMap.get(key);
-        existing.value += b.total_price || 0;
-        dataMap.set(key, existing);
-      }
-    });
-
-    return Array.from(dataMap.values());
-  }, [allBookings, chartFilter]);
-
-  const maxChartValue = Math.max(...chartData.map((d) => d.value), 1);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">

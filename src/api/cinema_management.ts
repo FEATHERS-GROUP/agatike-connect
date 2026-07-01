@@ -344,3 +344,16 @@ export const deleteSchedule = createServerFn({ method: "POST" })
     );
     return res.delete_cinema_schedules_by_pk;
   });
+
+export const updateMovieFolder = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { id, folder_id } = ctx.data as any;
+    const res = await hasuraRequest<{ update_cinema_movies_by_pk: { id: string } }>(
+      `mutation UpdateMovieFolder($id: uuid!, $folder_id: uuid) {
+        update_cinema_movies_by_pk(pk_columns: {id: $id}, _set: {folder_id: $folder_id}) { id }
+      }`,
+      { id, folder_id },
+    );
+    return res.update_cinema_movies_by_pk;
+  });

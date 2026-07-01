@@ -1,6 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllWorkspacePages } from "@/api/workspace-pages";
+import { updateWorkspacePageFolder } from "@/api/workspace-pages";
+import { FolderManager } from "@/components/ui/FolderManager";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { PAGE_TEMPLATES } from "@/lib/page-templates";
 import { Button } from "@/components/ui/button";
@@ -38,6 +41,25 @@ function PageBuilderGallery() {
     queryFn: () => getAllWorkspacePages({ data: { workspace_id } } as any),
     enabled: !!workspace_id,
   });
+
+  const queryClient = useQueryClient();
+
+  const moveMutation = useMutation({
+    mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) => {
+      return await updateWorkspacePageFolder({ data: { id, folder_id: folderId } } as any);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["all-workspace-pages", workspace_id] }),
+  });
+
+  const handleBulkMove = async (itemIds: string[], folderId: string | null) => {
+    const promises = itemIds.map(id => moveMutation.mutateAsync({ id, folderId }));
+    await Promise.all(promises);
+  };
+
+  const handleBulkDelete = async (itemIds: string[]) => {
+    // Page deletion is handled from the editor
+    console.log("Bulk delete not supported for pages. Please delete from the editor.");
+  };
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -166,11 +188,21 @@ function PageBuilderGallery() {
             </TabsContent>
 
             <TabsContent value="pages">
+              <FolderManager
+                moduleType="page_builder"
+                items={filteredPages}
+                getItemId={(item) => item.id}
+                getFolderId={(item) => item.folder_id}
+                onMoveItems={handleBulkMove}
+                onDeleteItems={handleBulkDelete}
+              >
+                {({ filteredItems, handleSelect, selectedIds, ItemMenu }) => (
+              <>
               {isLoadingList ? (
                 <div className="py-20 flex justify-center">
                   <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                 </div>
-              ) : filteredPages.length === 0 ? (
+              ) : filteredItems.length === 0 ? (
                 <div className="text-center py-20 bg-card rounded-2xl border border-border/60">
                   <FileText className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
                   {searchQuery ? (
@@ -192,11 +224,21 @@ function PageBuilderGallery() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredPages.map((page: any) => (
+                  {filteredItems.map((page: any) => {
+                    const isSelected = selectedIds.has(page.id);
+                    return (
                     <div
                       key={page.id}
-                      className="group border border-border/60 rounded-2xl overflow-hidden bg-card hover:shadow-md transition-all flex flex-col h-64"
+                      className="group relative border rounded-2xl overflow-hidden bg-card hover:shadow-md transition-all flex flex-col h-64"
+                      style={{ borderColor: isSelected ? "hsl(var(--primary))" : "hsl(var(--border) / 0.6)" }}
                     >
+                      <div className="absolute top-2 left-2 z-20" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(c) => handleSelect(page.id, c as boolean)}
+                          className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
+                        />
+                      </div>
                       <div
                         className="h-32 flex items-center justify-center relative overflow-hidden cursor-pointer bg-secondary"
                         style={page.theme_color ? { backgroundColor: `${page.theme_color}22` } : {}}
@@ -291,9 +333,13 @@ function PageBuilderGallery() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
+              </>
+                )}
+              </FolderManager>
             </TabsContent>
           </Tabs>
         </div>

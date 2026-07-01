@@ -11,6 +11,7 @@ export const getPublicWorkspacePageById = createServerFn({ method: "GET" }).hand
       workspace_pages_by_pk(id: $id) {
         id
         slug
+        folder_id
         title
         is_published
         parent_id
@@ -77,6 +78,7 @@ export const getAllWorkspacePages = createServerFn({ method: "POST" }).handler(a
       ) {
         id
         workspace_id
+        folder_id
         slug
         title
         is_published
@@ -228,6 +230,19 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
     const data = await hasuraRequest<{ insert_workspace_pages_one: any }>(mutation, insertInput);
     return data.insert_workspace_pages_one;
   }
+});
+
+
+export const updateWorkspacePageFolder = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, folder_id } = ctx.data as any;
+  const q = `
+    mutation UpdateWorkspacePageFolder($id: uuid!, $folder_id: uuid) {
+      update_workspace_pages_by_pk(pk_columns: {id: $id}, _set: {folder_id: $folder_id}) {
+        id
+      }
+    }
+  `;
+  return hasuraRequest(q, { id, folder_id });
 });
 
 export const deleteWorkspacePage = createServerFn({ method: "POST" }).handler(async (ctx) => {

@@ -25,6 +25,7 @@ import {
   updateAgatikeBookName,
 } from "@/api/book";
 import { getAllWorkspacePages } from "@/api/workspace-pages";
+import { FolderManager } from "@/components/ui/FolderManager";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -449,13 +450,28 @@ function FinancePage() {
                     </div>
                   )
                 ) : (
-                  <div className="space-y-4">
-                    {filteredRequestEntries.map((req: any) => {
-                      const data = req.record_data || {};
-                      const isPending = data.Status === "Pending";
-                      return (
-                        <div key={req.id} className="p-4 border border-border/60 rounded-xl hover:bg-secondary/20 transition-colors">
-                          <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
+                  <FolderManager
+                    items={filteredRequestEntries.map((r: any) => ({ ...r, folder_id: r.record_data?.folder_id }))}
+                    workspaceId={wsId!}
+                    moduleType="finance_requests"
+                    updateFn={async (id, folderId) => {
+                      const req = requestEntries.find((r: any) => r.id === id);
+                      if (!req) return;
+                      await updateAgatikeBookRecord({ 
+                        data: { id, record_data: { ...req.record_data, folder_id: folderId } } as any
+                      });
+                      queryClient.invalidateQueries({ queryKey: ["workspace-books", wsId] });
+                    }}
+                  >
+                    {({ filteredItems, ItemMenu }) => (
+                      <div className="space-y-4">
+                        {filteredItems.map((req: any) => {
+                          const data = req.record_data || {};
+                          const isPending = data.Status === "Pending";
+                          return (
+                            <ItemMenu key={req.id} item={req}>
+                              <div key={req.id} className="p-4 border border-border/60 rounded-xl hover:bg-secondary/20 transition-colors">
+                                <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
                             <div 
                               className="flex-1 cursor-pointer" 
                               onClick={() => setSelectedRequest(req)}
@@ -548,14 +564,17 @@ function FinancePage() {
                             )}
                           </div>
                         </div>
-                      );
-                    })}
-                    {filteredRequestEntries.length === 0 && searchQuery && (
-                      <div className="py-8 text-center text-muted-foreground text-sm">
-                        No requests matched your search.
+                      </ItemMenu>
+                    );
+                  })}
+                        {filteredItems.length === 0 && searchQuery && (
+                          <div className="py-8 text-center text-muted-foreground text-sm">
+                            No requests matched your search.
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
+                  </FolderManager>
                 )}
               </div>
             </div>

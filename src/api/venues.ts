@@ -61,6 +61,19 @@ export const createVenueProject = createServerFn({ method: "POST" }).handler(asy
   return res.insert_venue_projects_one;
 });
 
+
+export const updateVenueProjectFolder = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, folder_id } = ctx.data as any;
+  const q = `
+    mutation UpdateVenueProjectFolder($id: uuid!, $folder_id: uuid) {
+      update_venue_projects_by_pk(pk_columns: {id: $id}, _set: {folder_id: $folder_id}) {
+        id
+      }
+    }
+  `;
+  return hasuraRequest(q, { id, folder_id });
+});
+
 export const saveVenueProject = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const {
     venue_project_id,
@@ -127,6 +140,7 @@ const GET_WORKSPACE_VENUE_PROJECTS = `
     venue_projects(where: { workspace_id: { _eq: $workspace_id } }) {
       id
       workspace_id
+      folder_id
       name
       event_id
       tour_stop_idx
@@ -155,6 +169,7 @@ const GET_EVENT_VENUE_PROJECTS = `
     venue_projects(where: { event_id: { _eq: $event_id } }) {
       id
       workspace_id
+      folder_id
       name
       event_id
       tour_stop_idx
@@ -183,6 +198,7 @@ const GET_PUBLIC_VENUES = `
     rentable_venues(order_by: { created_at: desc }) {
       id
       name
+      folder_id
       type
       city
       cover_url
