@@ -11,6 +11,8 @@ import {
   Activity,
   Calendar,
   ArrowLeft,
+  LayoutTemplate,
+  Copy,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -62,8 +64,14 @@ function FinancePage() {
 
   const activeRequestPages = useMemo(() => {
     return pages.filter((p: any) => {
-      if (!p.components || !Array.isArray(p.components)) return false;
-      return p.components.some((c: any) => c.type === "budget_request");
+      if (!p.components) return false;
+      try {
+        const comps = typeof p.components === "string" ? JSON.parse(p.components) : p.components;
+        if (!Array.isArray(comps)) return false;
+        return comps.some((c: any) => c.type === "budget_request" || c.type === "damage_report");
+      } catch (e) {
+        return false;
+      }
     });
   }, [pages]);
 
@@ -279,6 +287,9 @@ function FinancePage() {
               <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-red-500" />
             )}
           </TabsTrigger>
+          <TabsTrigger value="settings" className="h-full rounded-xl px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            Settings
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6 mt-0 border-none outline-none">
@@ -339,7 +350,7 @@ function FinancePage() {
 
         <TabsContent value="requests" className="mt-0 border-none outline-none">
           <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm min-h-[400px]">
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col gap-6">
               {/* Main Requests List */}
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-6">
@@ -365,10 +376,20 @@ function FinancePage() {
                     </Button>
                   </div>
                 ) : requestEntries.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full py-12 text-center text-muted-foreground">
-                    <Activity className="w-8 h-8 mb-4 opacity-20" />
-                    <p>No requests submitted yet.</p>
-                  </div>
+                  activeRequestPages.length === 0 ? (
+                    <div className="bg-secondary/20 rounded-2xl p-8 text-center border border-dashed border-border/50">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                        <LayoutTemplate className="w-8 h-8 text-primary" />
+                      </div>
+                      <h4 className="text-lg font-bold mb-2">Requests system initialized. Add a Request Block in the Page Builder!</h4>
+                      <p className="text-muted-foreground text-sm">You haven't added the Damage Report or Budget Request blocks to any of your public pages yet.</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full py-12 text-center text-muted-foreground">
+                      <Activity className="w-8 h-8 mb-4 opacity-20" />
+                      <p>No requests submitted yet.</p>
+                    </div>
+                  )
                 ) : (
                   <div className="space-y-4">
                     {requestEntries.map((req: any) => {
@@ -464,49 +485,83 @@ function FinancePage() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </TabsContent>
 
-              {/* Sidebar Active Pages */}
-              <div className="w-full md:w-72 border-l border-border/60 pl-6 space-y-4">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Active Public Portals</h3>
+        <TabsContent value="settings" className="mt-0 border-none outline-none">
+          <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm min-h-[400px]">
+            <h3 className="text-xl font-bold mb-6">Finance System Settings</h3>
+            
+            <div className="max-w-xl">
+              <div className="space-y-4">
+                <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Active Public Portals</h4>
                 {activeRequestPages.length === 0 ? (
                   <p className="text-xs text-muted-foreground">No public pages have the Request block enabled yet.</p>
                 ) : (
                   <div className="space-y-3">
                     {activeRequestPages.map((page: any) => (
-                      <div key={page.id} className="p-3 border border-border/60 rounded-xl hover:border-primary/50 transition-colors bg-secondary/10 group relative">
-                        <p className="font-semibold text-sm">{page.title || page.slug}</p>
-                        <a 
-                          href={`/p/${page.slug}`} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 mt-1"
+                      <div key={page.id} className="p-3 border border-border/60 rounded-xl hover:border-primary/50 transition-colors bg-secondary/10 group relative flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          {page.header_image_url ? (
+                            <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-border/50">
+                              <img src={page.header_image_url} alt={page.title || "Portal"} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-secondary/80 flex items-center justify-center shrink-0 border border-border/50">
+                              <LayoutTemplate className="w-5 h-5 text-muted-foreground opacity-50" />
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-semibold text-sm">{page.title || page.slug}</p>
+                            <a 
+                              href={`/p/${page.slug}`} 
+                              target="_blank" 
+                              rel="noreferrer"
+                              className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 mt-0.5"
+                            >
+                              View Portal <ArrowUpRight className="w-3 h-3" />
+                            </a>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/p/${page.slug}`);
+                            toast.success("Link copied to clipboard!");
+                          }}
+                          title="Copy Link"
                         >
-                          View Form <ArrowUpRight className="w-3 h-3" />
-                        </a>
+                          <Copy className="h-4 w-4" />
+                        </Button>
                       </div>
                     ))}
                   </div>
                 )}
                 
-                <div className="pt-4 border-t border-border/60 space-y-3">
-                  <p className="text-xs text-muted-foreground mb-3">
+                <div className="pt-4 border-t border-border/60 space-y-4">
+                  <p className="text-sm text-muted-foreground">
                     Want to collect requests externally? Add the Request block to any Page Builder portal.
                   </p>
-                  <Button asChild variant="outline" size="sm" className="w-full">
-                    <Link to={`/dashboard/${wsId ? activeWorkspace?.slug : ""}/page-builder`}>
-                      Open Page Builder
-                    </Link>
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => disableSystemMutation.mutate()}
-                    disabled={disableSystemMutation.isPending}
-                  >
-                    {disableSystemMutation.isPending && <Loader2 className="w-3 h-3 mr-2 animate-spin" />}
-                    Disable System
-                  </Button>
+                  <div className="flex gap-4">
+                    <Button asChild variant="outline" size="sm">
+                      <Link to={`/dashboard/${wsId ? activeWorkspace?.slug : ""}/page-builder`}>
+                        Open Page Builder
+                      </Link>
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => disableSystemMutation.mutate()}
+                      disabled={disableSystemMutation.isPending}
+                    >
+                      {disableSystemMutation.isPending && <Loader2 className="w-3 h-3 mr-2 animate-spin" />}
+                      Disable System
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

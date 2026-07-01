@@ -227,14 +227,14 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
           type="submit"
           disabled={submitMutation.isPending || (!financeBook && !isPreview)}
           className="w-full rounded-full h-12 text-base font-bold shadow-md hover:shadow-lg transition-all"
-          style={{ background: themeColor, color: "#fff" }}
+          style={{ background: themeColor, color: "#fff", opacity: (!financeBook && !isPreview) ? 0.5 : 1 }}
         >
           {submitMutation.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
           Submit {formType}
         </Button>
-        {!financeBook && !isPreview && books.length > 0 && (
-          <p className="text-xs text-destructive text-center mt-2">
-            The finance team has not set up the Requests book yet.
+        {!financeBook && !isPreview && (
+          <p className="text-xs text-destructive text-center mt-2 font-medium">
+            The finance team has not set up the Requests book yet. Go to Finance Dashboard to enable it.
           </p>
         )}
       </form>

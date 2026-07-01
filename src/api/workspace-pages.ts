@@ -52,7 +52,8 @@ export const getAllWorkspacePages = createServerFn({ method: "POST" }).handler(a
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+  const payload = (ctx.data as any).data || ctx.data;
+  const { workspace_id } = payload;
 
   const query = `
     query GetAllWorkspacePages($workspace_id: uuid!) {
@@ -67,6 +68,7 @@ export const getAllWorkspacePages = createServerFn({ method: "POST" }).handler(a
         is_published
         header_image_url
         theme_color
+        components
         updated_at
       }
     }
