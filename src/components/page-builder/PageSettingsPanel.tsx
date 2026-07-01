@@ -20,6 +20,9 @@ import {
   CreditCard,
   QrCode,
   AlertTriangle,
+  UploadCloud,
+  FileText,
+  DollarSign,
 } from "lucide-react";
 
 export function PageSettingsPanel({
@@ -33,6 +36,23 @@ export function PageSettingsPanel({
   set: (key: string) => (val: any) => void;
   handleImageUpload: (file: File, callback: (url: string) => void) => void;
 }) {
+  const toolboxItems = [
+    { type: "text", icon: Type, label: "Text" },
+    { type: "image", icon: ImageIcon, label: "Image" },
+    { type: "split_block", icon: Columns, label: "Split" },
+    { type: "button", icon: Link2, label: "Button" },
+    { type: "payment_button", icon: CreditCard, label: "Pay" },
+    { type: "qr_code", icon: QrCode, label: "QR" },
+    { type: "form_link", icon: LayoutTemplate, label: "Form Link" },
+    {
+      type: "form_grid",
+      icon: Grid,
+      label: "Form Grid",
+      highlight: true,
+    },
+    { type: "sponsor_logos", icon: Users2, label: "Logos" },
+  ];
+
   return (
     <div className="md:col-span-1 space-y-5">
       {/* Toolbox */}
@@ -40,38 +60,48 @@ export function PageSettingsPanel({
         <h2 className="font-semibold mb-3 text-xs uppercase tracking-wider text-muted-foreground">
           Add Blocks
         </h2>
-        <div className="flex flex-col gap-1.5">
-          {[
-            { type: "text", icon: Type, label: "Text Block" },
-            { type: "image", icon: ImageIcon, label: "Image Block" },
-            { type: "split_block", icon: Columns, label: "Split Layout" },
-            { type: "button", icon: Link2, label: "Action Button" },
-            { type: "payment_button", icon: CreditCard, label: "Payment Button" },
-            { type: "qr_code", icon: QrCode, label: "QR Code" },
-            { type: "budget_request", icon: AlertTriangle, label: "Budget & Damage Request", highlight: true },
-            { type: "form_link", icon: LayoutTemplate, label: "Basic Form Link" },
-            {
-              type: "form_grid",
-              icon: Grid,
-              label: "Advanced Form Grid",
-              highlight: true,
-            },
-            { type: "sponsor_logos", icon: Users2, label: "Logos Grid" },
-          ].map(({ type, icon: Icon, label, highlight }) => (
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            {/* Forms */}
+            <div className="col-span-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-2 mb-1">
+              Data Collection
+            </div>
+            {toolboxItems.map((item) => (
+              <Button
+                key={item.type}
+                variant="outline"
+                className={`justify-start gap-2 h-10 ${
+                  item.highlight
+                    ? "border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 text-primary font-semibold"
+                    : "bg-secondary/20 hover:bg-secondary/40"
+                }`}
+                onClick={() => addComponent(item.type)}
+              >
+                <item.icon className={`h-4 w-4 ${item.highlight ? "text-primary" : ""}`} />
+                {item.label}
+              </Button>
+            ))}
+            
+            {/* Custom Request Blocks */}
+            <div className="col-span-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-4 mb-1">
+              Internal Requests
+            </div>
             <Button
-              key={type}
               variant="outline"
-              size="sm"
-              className={`justify-start gap-2.5 w-full h-9 ${
-                highlight ? "border-primary/40 text-primary hover:bg-primary/5" : ""
-              }`}
-              onClick={() => addComponent(type)}
+              className="justify-start gap-2 h-10 border-red-500/30 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/50 text-red-600 font-semibold"
+              onClick={() => addComponent("damage_report")}
             >
-              <Icon className="w-4 h-4 shrink-0 text-muted-foreground" />
-              <span className="text-xs">{label}</span>
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              Damage Report
             </Button>
-          ))}
-        </div>
+            <Button
+              variant="outline"
+              className="justify-start gap-2 h-10 border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/50 text-blue-600 font-semibold"
+              onClick={() => addComponent("budget_request")}
+            >
+              <DollarSign className="h-4 w-4 text-blue-600" />
+              Budget Request
+            </Button>
+          </div>
       </div>
 
       {/* Page Settings */}

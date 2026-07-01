@@ -43,10 +43,8 @@ function FinancePage() {
   const queryClient = useQueryClient();
 
   const [addOpen, setAddOpen] = useState(false);
-  const [addRequestOpen, setAddRequestOpen] = useState(false);
   const [entryType, setEntryType] = useState<EntryType>("income");
   const [form, setForm] = useState({ description: "", amount: "", category: "" });
-  const [requestForm, setRequestForm] = useState({ type: "Damage Report", title: "", details: "", amount: "", requestedBy: "" });
   const [periodFilter, setPeriodFilter] = useState<"month" | "quarter" | "year">("month");
 
   // ── Load workspace-level finance books ─────────────────────────────────────
@@ -164,32 +162,6 @@ function FinancePage() {
       toast.success("Request status updated");
       queryClient.invalidateQueries({ queryKey: ["workspace-books", wsId] });
     },
-  });
-
-  const addManualRequestMutation = useMutation({
-    mutationFn: async () => {
-      if (!requestsBook) throw new Error("Requests book not initialized");
-      return createAgatikeBookRecord({
-        data: {
-          book_id: requestsBook.id,
-          record_data: {
-            Type: requestForm.type,
-            Title: requestForm.title,
-            Details: requestForm.details,
-            Amount: Number(requestForm.amount),
-            "Requested By": requestForm.requestedBy,
-            Status: "Pending",
-          },
-        },
-      } as any);
-    },
-    onSuccess: () => {
-      toast.success("Request created successfully");
-      setAddRequestOpen(false);
-      setRequestForm({ type: "Damage Report", title: "", details: "", amount: "", requestedBy: "" });
-      queryClient.invalidateQueries({ queryKey: ["workspace-books", wsId] });
-    },
-    onError: (err: any) => toast.error(err.message || "Failed to create request"),
   });
 
   const disableSystemMutation = useMutation({
@@ -372,8 +344,10 @@ function FinancePage() {
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold">All Requests</h3>
-                  <Button size="sm" onClick={() => setAddRequestOpen(true)} className="gap-2 rounded-full">
-                    <Plus className="h-4 w-4" /> New Request
+                  <Button size="sm" asChild className="gap-2 rounded-full">
+                    <Link to={`/dashboard/${wsId ? activeWorkspace?.slug : ""}/book/new-finance-request`}>
+                      <Plus className="h-4 w-4" /> New Request
+                    </Link>
                   </Button>
                 </div>
                 {!requestsBook ? (
@@ -575,81 +549,6 @@ function FinancePage() {
             >
               {addRecordMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Entry
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Request Dialog */}
-      <Dialog open={addRequestOpen} onOpenChange={setAddRequestOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl">
-          <DialogHeader>
-            <DialogTitle>Submit Internal Request</DialogTitle>
-          </DialogHeader>
-          <div className="mt-2 space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Request Type *</Label>
-              <select 
-                className="w-full h-11 rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                value={requestForm.type}
-                onChange={(e) => setRequestForm({ ...requestForm, type: e.target.value })}
-              >
-                <option value="Damage Report">Damage Report</option>
-                <option value="Budget Request">Budget Request</option>
-                <option value="Purchase Request">Purchase Request</option>
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs">Title / Subject *</Label>
-              <Input
-                value={requestForm.title}
-                onChange={(e) => setRequestForm({ ...requestForm, title: e.target.value })}
-                placeholder="e.g. Broken Main Stage Speaker"
-                className="h-11 rounded-xl"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Amount ({currency}) *</Label>
-                <Input
-                  type="number"
-                  value={requestForm.amount}
-                  onChange={(e) => setRequestForm({ ...requestForm, amount: e.target.value })}
-                  placeholder="e.g. 50000"
-                  className="h-11 rounded-xl"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Requested By *</Label>
-                <Input
-                  value={requestForm.requestedBy}
-                  onChange={(e) => setRequestForm({ ...requestForm, requestedBy: e.target.value })}
-                  placeholder="e.g. John"
-                  className="h-11 rounded-xl"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs">Full Details *</Label>
-              <textarea
-                value={requestForm.details}
-                onChange={(e) => setRequestForm({ ...requestForm, details: e.target.value })}
-                placeholder="Please provide all necessary details about this request..."
-                className="w-full bg-background border border-border/60 rounded-xl p-3 text-sm min-h-[100px] focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-
-            <Button
-              onClick={() => addManualRequestMutation.mutate()}
-              disabled={addManualRequestMutation.isPending || !requestForm.title || !requestForm.amount || !requestForm.details || !requestForm.requestedBy}
-              className="w-full h-11 rounded-xl"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              {addManualRequestMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Submit Request
             </Button>
           </div>
         </DialogContent>

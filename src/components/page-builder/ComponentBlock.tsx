@@ -253,14 +253,14 @@ export function ComponentBlock({
           )}
 
           {/* BUDGET & DAMAGE REQUEST */}
-          {comp.type === "budget_request" && (
+          {(comp.type === "budget_request" || comp.type === "damage_report") && (
             <div className="space-y-4">
               <div className="space-y-1">
                 <Label className="text-xs">Form Title</Label>
                 <Input
                   value={comp.title || ""}
                   onChange={(e) => updateComponent(idx, "title", e.target.value)}
-                  placeholder="e.g. Budget & Damage Request"
+                  placeholder={comp.type === "damage_report" ? "e.g. Damage Report" : "e.g. Budget Request"}
                   className="bg-background"
                 />
               </div>
@@ -269,9 +269,74 @@ export function ComponentBlock({
                 <textarea
                   value={comp.description || ""}
                   onChange={(e) => updateComponent(idx, "description", e.target.value)}
-                  placeholder="e.g. Submit a request to the finance team."
+                  placeholder="e.g. Please list items below."
                   className="w-full bg-background border border-border/60 rounded-md p-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary resize-y min-h-[60px]"
                 />
+              </div>
+
+              {/* Columns Designer */}
+              <div className="space-y-2 mt-4 pt-4 border-t border-border/60">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Spreadsheet Columns</Label>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-7 text-[10px] gap-1 px-2"
+                    onClick={() => {
+                      const cols = comp.columns || [];
+                      updateComponent(idx, "columns", [...cols, { name: "New Column", type: "text" }]);
+                    }}
+                  >
+                    <Plus className="w-3 h-3" /> Add Column
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {(comp.columns || []).map((col: any, colIdx: number) => (
+                    <div key={colIdx} className="flex gap-2 items-center bg-secondary/20 p-2 rounded-lg border border-border/40">
+                      <Input
+                        value={col.name}
+                        onChange={(e) => {
+                          const newCols = [...comp.columns];
+                          newCols[colIdx].name = e.target.value;
+                          updateComponent(idx, "columns", newCols);
+                        }}
+                        className="h-8 text-xs bg-background flex-1"
+                        placeholder="Column Name"
+                      />
+                      <Select
+                        value={col.type}
+                        onValueChange={(val) => {
+                          const newCols = [...comp.columns];
+                          newCols[colIdx].type = val;
+                          updateComponent(idx, "columns", newCols);
+                        }}
+                      >
+                        <SelectTrigger className="h-8 w-24 text-xs bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="text">Text</SelectItem>
+                          <SelectItem value="number">Number</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                        onClick={() => {
+                          const newCols = [...comp.columns];
+                          newCols.splice(colIdx, 1);
+                          updateComponent(idx, "columns", newCols);
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  {(!comp.columns || comp.columns.length === 0) && (
+                    <p className="text-xs text-muted-foreground italic">No columns added yet. Click "Add Column".</p>
+                  )}
+                </div>
               </div>
             </div>
           )}

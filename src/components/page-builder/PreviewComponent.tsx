@@ -1,5 +1,6 @@
 import QRCode from "react-qr-code";
 import { EmbeddedForm } from "./EmbeddedForm";
+import { SpreadsheetEntryForm } from "./SpreadsheetEntryForm";
 
 export function PreviewComponent({
   comp,
@@ -163,6 +164,8 @@ export function PreviewComponent({
       };
     }
 
+
+
     if (comp.design === "embedded") {
       return (
         <div className="w-full pointer-events-none">
@@ -243,33 +246,10 @@ export function PreviewComponent({
     );
   }
 
-  if (comp.type === "budget_request") {
+  if (comp.type === "budget_request" || comp.type === "damage_report") {
     return (
-      <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm max-w-lg mx-auto pointer-events-none my-8">
-        <h3 className="text-xl font-bold mb-2">{comp.title || "Budget & Damage Request"}</h3>
-        <p className="text-sm text-muted-foreground mb-6">
-          {comp.description || "Submit a request to the finance team for approval."}
-        </p>
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <div className="h-4 w-24 bg-secondary rounded" />
-            <div className="h-10 w-full bg-secondary/50 rounded-lg" />
-          </div>
-          <div className="space-y-1.5">
-            <div className="h-4 w-32 bg-secondary rounded" />
-            <div className="h-10 w-full bg-secondary/50 rounded-lg" />
-          </div>
-          <div className="space-y-1.5">
-            <div className="h-4 w-16 bg-secondary rounded" />
-            <div className="h-20 w-full bg-secondary/50 rounded-lg" />
-          </div>
-          <div
-            className="w-full rounded-full py-3.5 mt-6 text-center text-white text-sm font-bold shadow-md"
-            style={{ background: themeColor }}
-          >
-            Submit Request
-          </div>
-        </div>
+      <div className="w-full pointer-events-none opacity-80">
+        <SpreadsheetEntryForm workspace_id="preview" themeColor={themeColor || "#000"} comp={comp} />
       </div>
     );
   }
