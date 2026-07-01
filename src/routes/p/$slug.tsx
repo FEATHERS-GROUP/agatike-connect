@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { EmbeddedForm } from "@/components/page-builder/EmbeddedForm";
 import { SpreadsheetEntryForm } from "@/components/page-builder/SpreadsheetEntryForm";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 
 export const Route = createFileRoute("/p/$slug")({
   component: PublicCompanyPage,
@@ -71,10 +73,20 @@ function PublicCompanyPage() {
 
   const { title, description, header_image_url, logo_url, theme_color, components } = page;
 
-  // Extract settings from components
   const settingsBlock = components?.find((c: any) => c.type === "page_settings");
   const logoPosition = settingsBlock?.logoPosition || "hero";
+  const navbarStyle = settingsBlock?.navbarStyle || "transparent";
   const fontFamily = settingsBlock?.fontFamily || "Inter";
+  const heroAlign = settingsBlock?.heroAlign || "center";
+  const heroOverlayColor = settingsBlock?.heroOverlayColor || "#000000";
+  const heroOverlayOpacity = settingsBlock?.heroOverlayOpacity ?? 40;
+  const heroButtonText = settingsBlock?.heroButtonText || "";
+  const heroButtonActionType = settingsBlock?.heroButtonActionType || "url";
+  const heroButtonLink = settingsBlock?.heroButtonLink || "";
+  const heroForegroundImageUrl = settingsBlock?.heroForegroundImageUrl || "";
+  const heroForegroundPosition = settingsBlock?.heroForegroundPosition || "right";
+  const elementShape = settingsBlock?.elementShape || "rounded-2xl";
+
   const actualComponents = components?.filter((c: any) => c.type !== "page_settings") || [];
 
   const activeForms = forms.filter((f: any) => f.is_active);
@@ -134,7 +146,11 @@ function PublicCompanyPage() {
       >
         {/* Sticky Navbar */}
         {hasNavbar && (
-          <nav className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm transition-all">
+          <nav className={
+            navbarStyle === "transparent"
+              ? "absolute top-0 left-0 right-0 z-50 w-full bg-transparent border-b border-white/10"
+              : "sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm transition-all"
+          }>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
               {/* Logo */}
               <div className="flex-shrink-0 flex items-center">
@@ -143,7 +159,9 @@ function PublicCompanyPage() {
                     <img src={logo_url} alt="Logo" className="h-10 w-auto object-contain rounded" />
                   </a>
                 ) : logoPosition === "navbar" && siteTitle ? (
-                  <a href={siteLinks.length > 0 ? siteLinks[0].url : "#"} className="font-bold text-xl tracking-tight truncate max-w-[200px] text-foreground hover:text-primary transition-colors">
+                  <a href={siteLinks.length > 0 ? siteLinks[0].url : "#"} className={`font-bold text-xl tracking-tight truncate max-w-[200px] transition-colors ${
+                    navbarStyle === "transparent" ? "text-white hover:text-white/80" : "text-foreground hover:text-primary"
+                  }`}>
                     {siteTitle}
                   </a>
                 ) : (
@@ -158,7 +176,9 @@ function PublicCompanyPage() {
                     key={link.url}
                     href={link.url}
                     className={`text-sm font-medium transition-colors whitespace-nowrap ${
-                      link.isActive ? "text-primary" : "text-muted-foreground hover:text-primary"
+                      link.isActive 
+                        ? (navbarStyle === "transparent" ? "text-white" : "text-primary") 
+                        : (navbarStyle === "transparent" ? "text-white/70 hover:text-white" : "text-muted-foreground hover:text-primary")
                     }`}
                   >
                     {link.name}
@@ -173,7 +193,9 @@ function PublicCompanyPage() {
                   <button
                     key={link.id}
                     onClick={() => scrollToSection(link.id)}
-                    className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                    className={`text-sm font-medium transition-colors whitespace-nowrap ${
+                      navbarStyle === "transparent" ? "text-white/70 hover:text-white" : "text-muted-foreground hover:text-primary"
+                    }`}
                   >
                     {link.name}
                   </button>
@@ -184,7 +206,17 @@ function PublicCompanyPage() {
         )}
 
         {/* Header Overlay Section */}
-        <div className="relative w-full min-h-[50vh] md:min-h-[60vh] bg-secondary flex flex-col items-center justify-center text-center p-6 md:p-12 overflow-hidden">
+        <div className={`relative w-full min-h-[50vh] md:min-h-[60vh] bg-secondary flex flex-col p-8 md:p-16 ${
+          heroAlign === "top-left" ? "justify-start items-start text-left" :
+          heroAlign === "top-center" ? "justify-start items-center text-center" :
+          heroAlign === "top-right" ? "justify-start items-end text-right" :
+          heroAlign === "center-left" ? "justify-center items-start text-left" :
+          heroAlign === "center" ? "justify-center items-center text-center" :
+          heroAlign === "center-right" ? "justify-center items-end text-right" :
+          heroAlign === "bottom-left" ? "justify-end items-start text-left" :
+          heroAlign === "bottom-center" ? "justify-end items-center text-center" :
+          "justify-end items-end text-right"
+        } ${navbarStyle === "transparent" && hasNavbar ? "pt-24 md:pt-32" : ""}`}>
           {header_image_url ? (
             <img
               src={header_image_url}
@@ -194,23 +226,62 @@ function PublicCompanyPage() {
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-primary/40" />
           )}
-          <div className="absolute inset-0 bg-black/60" />
+          
+          {/* Overlay */}
+          <div 
+            className="absolute inset-0 pointer-events-none" 
+            style={{ 
+              backgroundColor: heroOverlayColor,
+              opacity: heroOverlayOpacity / 100 
+            }} 
+          />
 
-          <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center mt-12 md:mt-0">
-            {logo_url && logoPosition === "hero" && (
-              <div className="w-28 h-28 md:w-40 md:h-40 rounded-3xl shadow-2xl overflow-hidden mb-8 bg-background border-4 border-background/50 backdrop-blur-sm">
-                <img src={logo_url} alt="Logo" className="w-full h-full object-cover" />
+          <div className={`relative z-10 w-full max-w-5xl mx-auto flex items-center gap-8 ${
+             heroForegroundImageUrl && heroForegroundPosition === "left" ? "flex-row-reverse" : ""
+          }`}>
+            <div className={`flex flex-col space-y-4 md:space-y-6 flex-1 ${
+               heroAlign.includes("left") ? "items-start text-left" : heroAlign.includes("right") ? "items-end text-right" : "items-center text-center"
+            }`}>
+              {logo_url && logoPosition === "hero" && (
+                <div className={`w-24 h-24 md:w-32 md:h-32 shadow-2xl overflow-hidden mb-4 bg-background border-4 border-background/50 backdrop-blur-sm ${elementShape}`}>
+                  <img src={logo_url} alt="Logo" className="w-full h-full object-cover" />
+                </div>
+              )}
+              {title && (
+                <h1 className={`text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-white drop-shadow-lg leading-tight ${
+                  heroAlign.includes("left") ? "text-left" : heroAlign.includes("right") ? "text-right" : "text-center"
+                }`}>
+                  {title}
+                </h1>
+              )}
+              {description && (
+                <p className={`text-lg sm:text-xl md:text-2xl text-white/90 max-w-3xl drop-shadow-md whitespace-pre-wrap leading-relaxed ${
+                  heroAlign.includes("left") ? "text-left" : heroAlign.includes("right") ? "text-right" : "text-center"
+                }`}>
+                  {description}
+                </p>
+              )}
+              
+              {heroButtonText && heroButtonLink && (
+                <Button asChild size="lg" className="mt-4 shadow-xl hover:scale-105 transition-transform rounded-full border border-white/20">
+                  <Link 
+                    to={heroButtonActionType === "page" ? (heroButtonLink as any) : undefined} 
+                    href={
+                      heroButtonActionType === "phone" ? (heroButtonLink.startsWith("tel:") ? heroButtonLink : `tel:${heroButtonLink}`) 
+                      : heroButtonActionType !== "page" ? heroButtonLink 
+                      : undefined
+                    }
+                  >
+                    {heroButtonText}
+                  </Link>
+                </Button>
+              )}
+            </div>
+
+            {heroForegroundImageUrl && (
+              <div className="flex-1 hidden md:flex items-center justify-center relative">
+                 <img src={heroForegroundImageUrl} alt="Foreground" className={`w-full max-w-sm lg:max-w-md h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500`} />
               </div>
-            )}
-            {title && (
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 text-white drop-shadow-lg leading-tight">
-                {title}
-              </h1>
-            )}
-            {description && (
-              <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-3xl drop-shadow-md whitespace-pre-wrap leading-relaxed">
-                {description}
-              </p>
             )}
           </div>
         </div>
@@ -222,7 +293,7 @@ function PublicCompanyPage() {
               const renderComponent = () => {
                 if (comp.type === "text") {
                   return (
-                    <div className="prose prose-lg dark:prose-invert max-w-none bg-card p-8 rounded-3xl shadow-sm">
+                    <div className={`prose prose-lg dark:prose-invert max-w-none bg-card p-8 shadow-sm ${elementShape}`}>
                       <p className="whitespace-pre-wrap">{comp.content}</p>
                     </div>
                   );
@@ -230,7 +301,7 @@ function PublicCompanyPage() {
 
                 if (comp.type === "image" && comp.url) {
                   return (
-                    <div key={comp.id} className="w-full rounded-3xl overflow-hidden shadow-sm">
+                    <div key={comp.id} className={`w-full overflow-hidden shadow-sm ${elementShape}`}>
                       <img
                         src={comp.url}
                         alt="Content"
@@ -247,7 +318,7 @@ function PublicCompanyPage() {
                       className={`flex flex-col md:flex-row gap-8 items-center ${comp.imagePosition === "right" ? "md:flex-row-reverse" : ""}`}
                     >
                       {comp.imageUrl && (
-                        <div className="w-full md:w-1/2 rounded-3xl overflow-hidden shadow-sm">
+                        <div className={`w-full md:w-1/2 overflow-hidden shadow-sm ${elementShape}`}>
                           <img
                             src={comp.imageUrl}
                             alt="Split Content"
@@ -307,7 +378,7 @@ function PublicCompanyPage() {
                         return (
                           <div
                             key={idx}
-                            className="border border-border/60 rounded-3xl p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col h-full group"
+                            className={`border border-border/60 p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col h-full group ${elementShape}`}
                             style={{
                               backgroundColor: comp.cardBgColor || "var(--card)",
                               color: comp.cardTextColor || "inherit",
@@ -318,7 +389,7 @@ function PublicCompanyPage() {
                                 {card.customTitle || linkedForm.title}
                               </h3>
                               {linkedForm.cover_image_url && (
-                                <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 ml-4 hidden sm:block">
+                                <div className={`w-16 h-16 overflow-hidden shrink-0 ml-4 hidden sm:block ${elementShape}`}>
                                   <img
                                     src={linkedForm.cover_image_url}
                                     alt={linkedForm.title}
@@ -346,16 +417,41 @@ function PublicCompanyPage() {
                               <div className="flex-1" />
                             )}
 
-                            <Button
-                              asChild
-                              className="w-full rounded-full mt-auto group-hover:shadow-md transition-all"
-                              style={{ background: theme_color }}
-                            >
-                              <Link to={`/f/${linkedForm.id}` as any}>
-                                {card.buttonLabel || "Register"}{" "}
-                                <ArrowRight className="w-4 h-4 ml-2" />
-                              </Link>
-                            </Button>
+                            {comp.openAction === "modal" ? (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button className="w-full rounded-full mt-auto group-hover:shadow-md transition-all" style={{ background: theme_color }}>
+                                    {card.buttonLabel || "Register"} <ArrowRight className="w-4 h-4 ml-2" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
+                                  <DialogTitle className="sr-only">Form</DialogTitle>
+                                  <div className="bg-background rounded-xl overflow-hidden shadow-2xl h-full relative">
+                                    <EmbeddedForm formId={linkedForm.id} />
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            ) : comp.openAction === "drawer" ? (
+                              <Sheet>
+                                <SheetTrigger asChild>
+                                  <Button className="w-full rounded-full mt-auto group-hover:shadow-md transition-all" style={{ background: theme_color }}>
+                                    {card.buttonLabel || "Register"} <ArrowRight className="w-4 h-4 ml-2" />
+                                  </Button>
+                                </SheetTrigger>
+                                <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0">
+                                  <SheetTitle className="sr-only">Form</SheetTitle>
+                                  <div className="h-full relative bg-background">
+                                    <EmbeddedForm formId={linkedForm.id} />
+                                  </div>
+                                </SheetContent>
+                              </Sheet>
+                            ) : (
+                              <Button asChild className="w-full rounded-full mt-auto group-hover:shadow-md transition-all" style={{ background: theme_color }}>
+                                <Link to={`/f/${linkedForm.id}` as any}>
+                                  {card.buttonLabel || "Register"} <ArrowRight className="w-4 h-4 ml-2" />
+                                </Link>
+                              </Button>
+                            )}
                           </div>
                         );
                       })}
@@ -410,60 +506,127 @@ function PublicCompanyPage() {
                   }
 
                   if (comp.design === "button") {
+                    const buttonContent = (
+                      <Button size="lg" className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center cursor-pointer" style={{ background: theme_color }}>
+                        {linkedForm.title} <ArrowRight className="w-5 h-5 ml-2 md:ml-3 shrink-0" />
+                      </Button>
+                    );
+
+                    let contentWrapper = buttonContent;
+                    if (comp.openAction === "modal") {
+                      contentWrapper = (
+                        <Dialog>
+                          <DialogTrigger asChild>{buttonContent}</DialogTrigger>
+                          <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
+                            <DialogTitle className="sr-only">Form</DialogTitle>
+                            <div className="bg-background rounded-xl overflow-hidden shadow-2xl h-full relative">
+                              <EmbeddedForm formId={linkedForm.id} />
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      );
+                    } else if (comp.openAction === "drawer") {
+                      contentWrapper = (
+                        <Sheet>
+                          <SheetTrigger asChild>{buttonContent}</SheetTrigger>
+                          <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0">
+                            <SheetTitle className="sr-only">Form</SheetTitle>
+                            <div className="h-full relative bg-background">
+                              <EmbeddedForm formId={linkedForm.id} />
+                            </div>
+                          </SheetContent>
+                        </Sheet>
+                      );
+                    } else {
+                      contentWrapper = (
+                        <Link to={`/f/${linkedForm.id}` as any}>
+                          {buttonContent}
+                        </Link>
+                      );
+                    }
+
                     return (
-                      <div key={comp.id} className="flex justify-center w-full px-4">
-                        <Button
-                          asChild
-                          size="lg"
-                          className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center"
-                          style={{ background: theme_color }}
-                        >
-                          <Link to={`/f/${linkedForm.id}` as any}>
-                            {linkedForm.title}{" "}
-                            <ArrowRight className="w-5 h-5 ml-2 md:ml-3 shrink-0" />
-                          </Link>
-                        </Button>
+                      <div key={comp.id} className="flex justify-center w-full px-4 group">
+                        {contentWrapper}
                       </div>
                     );
                   }
 
-                  return (
-                    <Link key={comp.id} to={`/f/${linkedForm.id}` as any} className="block group">
-                      <div className="bg-card border border-border/60 rounded-3xl p-6 md:p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col md:flex-row items-center gap-6">
-                        {linkedForm.cover_image_url ? (
-                          <div className="w-full md:w-48 h-32 rounded-2xl overflow-hidden shrink-0">
-                            <img
-                              src={linkedForm.cover_image_url}
-                              alt={linkedForm.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-full md:w-48 h-32 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                            <span className="text-4xl font-bold text-primary/30">
-                              {linkedForm.title.charAt(0)}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
-                          <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
-                            {linkedForm.title}
-                          </h3>
-                          {linkedForm.description && (
-                            <p className="text-muted-foreground line-clamp-2 mb-4">
-                              {linkedForm.description}
-                            </p>
-                          )}
-                          <Button
-                            className="mt-auto rounded-full w-full md:w-auto"
-                            style={{ background: theme_color }}
-                          >
-                            Fill Form <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
+                  const cardContent = (
+                    <div className={`bg-card border border-border/60 p-6 md:p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col md:flex-row items-center gap-6 ${elementShape} cursor-pointer w-full text-left`}>
+                      {linkedForm.cover_image_url ? (
+                        <div className={`w-full md:w-48 h-32 overflow-hidden shrink-0 ${elementShape}`}>
+                          <img
+                            src={linkedForm.cover_image_url}
+                            alt={linkedForm.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
                         </div>
+                      ) : (
+                        <div className={`w-full md:w-48 h-32 bg-primary/10 flex items-center justify-center shrink-0 ${elementShape}`}>
+                          <span className="text-4xl font-bold text-primary/30">
+                            {linkedForm.title.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left w-full">
+                        <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
+                          {linkedForm.title}
+                        </h3>
+                        {linkedForm.description && (
+                          <p className="text-muted-foreground line-clamp-2 mb-4">
+                            {linkedForm.description}
+                          </p>
+                        )}
+                        <Button
+                          className="mt-auto rounded-full w-full md:w-auto"
+                          style={{ background: theme_color }}
+                        >
+                          Fill Form <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
                       </div>
-                    </Link>
+                    </div>
                   );
+
+                  if (comp.openAction === "modal") {
+                    return (
+                      <div key={comp.id} className="group">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <button className="w-full text-left focus:outline-none">{cardContent}</button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
+                            <DialogTitle className="sr-only">Form</DialogTitle>
+                            <div className="bg-background rounded-xl overflow-hidden shadow-2xl h-full relative">
+                              <EmbeddedForm formId={linkedForm.id} />
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    );
+                  } else if (comp.openAction === "drawer") {
+                    return (
+                      <div key={comp.id} className="group">
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <button className="w-full text-left focus:outline-none">{cardContent}</button>
+                          </SheetTrigger>
+                          <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0">
+                            <SheetTitle className="sr-only">Form</SheetTitle>
+                            <div className="h-full relative bg-background">
+                              <EmbeddedForm formId={linkedForm.id} />
+                            </div>
+                          </SheetContent>
+                        </Sheet>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <Link key={comp.id} to={`/f/${linkedForm.id}` as any} className="block group">
+                        {cardContent}
+                      </Link>
+                    );
+                  }
                 }
 
                 if (comp.type === "payment_button") {
@@ -512,7 +675,7 @@ function PublicCompanyPage() {
                   const size = comp.size || 192;
                   return (
                     <div className="flex flex-col items-center justify-center w-full py-12 gap-6">
-                      <div className="bg-white p-6 rounded-2xl shadow-lg border border-border/60 hover:shadow-xl transition-shadow">
+                      <div className={`bg-white p-6 shadow-lg border border-border/60 hover:shadow-xl transition-shadow ${elementShape}`}>
                         <QRCode value={comp.content || "https://agatike.com"} size={size} />
                       </div>
                       {comp.title && (
@@ -525,11 +688,80 @@ function PublicCompanyPage() {
                 }
 
                 if (comp.type === "budget_request" || comp.type === "damage_report") {
-                  return (
-                    <div key={comp.id} className="w-full">
-                      <SpreadsheetEntryForm workspace_id={workspace_id} themeColor={theme_color} comp={comp} />
-                    </div>
-                  );
+                  if (comp.design === "embedded" || !comp.design) {
+                    return (
+                      <div key={comp.id} className="w-full">
+                        <SpreadsheetEntryForm workspace_id={workspace_id} themeColor={theme_color} comp={comp} />
+                      </div>
+                    );
+                  }
+
+                  const title = comp.title || (comp.type === "budget_request" ? "Budget Request" : "Damage Report");
+                  const description = comp.description || "Click to open form";
+
+                  let triggerContent;
+                  if (comp.design === "button") {
+                    triggerContent = (
+                      <Button size="lg" className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center cursor-pointer" style={{ background: theme_color }}>
+                        {title} <ArrowRight className="w-5 h-5 ml-2 md:ml-3 shrink-0" />
+                      </Button>
+                    );
+                  } else {
+                    triggerContent = (
+                      <div className={`bg-card border border-border/60 p-6 md:p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col items-center gap-4 ${elementShape} cursor-pointer w-full text-center max-w-sm mx-auto`}>
+                        <div className={`w-16 h-16 bg-primary/10 flex items-center justify-center shrink-0 ${elementShape} mb-2`}>
+                          <span className="text-2xl font-bold text-primary/30">
+                            {title.charAt(0)}
+                          </span>
+                        </div>
+                        <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
+                          {title}
+                        </h3>
+                        <p className="text-muted-foreground line-clamp-2 text-sm">
+                          {description}
+                        </p>
+                        <Button className="mt-4 rounded-full w-full" style={{ background: theme_color }}>
+                          Open Form <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      </div>
+                    );
+                  }
+
+                  const openAction = comp.openAction || "modal";
+                  
+                  if (openAction === "modal") {
+                    return (
+                      <div key={comp.id} className="flex justify-center w-full px-4 group">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <button className="focus:outline-none w-full flex justify-center">{triggerContent}</button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
+                            <DialogTitle className="sr-only">{title}</DialogTitle>
+                            <div className="bg-background rounded-xl overflow-hidden shadow-2xl h-full relative">
+                              <SpreadsheetEntryForm workspace_id={workspace_id} themeColor={theme_color} comp={comp} />
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div key={comp.id} className="flex justify-center w-full px-4 group">
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <button className="focus:outline-none w-full flex justify-center">{triggerContent}</button>
+                          </SheetTrigger>
+                          <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0">
+                            <SheetTitle className="sr-only">{title}</SheetTitle>
+                            <div className="h-full relative bg-background">
+                              <SpreadsheetEntryForm workspace_id={workspace_id} themeColor={theme_color} comp={comp} />
+                            </div>
+                          </SheetContent>
+                        </Sheet>
+                      </div>
+                    );
+                  }
                 }
 
                 return null;

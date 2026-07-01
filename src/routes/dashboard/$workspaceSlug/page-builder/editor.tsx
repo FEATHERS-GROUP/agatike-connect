@@ -85,7 +85,17 @@ function makeBlankPage() {
     headerImageUrl: "",
     logoUrl: "",
     logoPosition: "hero" as "hero" | "navbar",
+    navbarStyle: "transparent" as "transparent" | "solid",
     fontFamily: "Inter",
+    heroAlign: "center" as "center" | "top-left" | "top-center" | "top-right" | "center-left" | "center-right" | "bottom-left" | "bottom-center" | "bottom-right",
+    heroOverlayColor: "#000000",
+    heroOverlayOpacity: 40,
+    heroButtonText: "",
+    heroButtonActionType: "url" as "url" | "page" | "form" | "phone",
+    heroButtonLink: "",
+    heroForegroundImageUrl: "",
+    heroForegroundPosition: "right" as "left" | "right",
+    elementShape: "rounded-2xl",
     parent_id: null as string | null,
     components: [] as any[],
   };
@@ -147,7 +157,17 @@ function PageBuilder() {
         headerImageUrl: pageData.header_image_url || "",
         logoUrl: pageData.logo_url || "",
         logoPosition: settingsBlock?.logoPosition || "hero",
+        navbarStyle: settingsBlock?.navbarStyle || "transparent",
         fontFamily: settingsBlock?.fontFamily || "Inter",
+        heroAlign: settingsBlock?.heroAlign || "center",
+        heroOverlayColor: settingsBlock?.heroOverlayColor || "#000000",
+        heroOverlayOpacity: settingsBlock?.heroOverlayOpacity ?? 40,
+        heroButtonText: settingsBlock?.heroButtonText || "",
+        heroButtonActionType: settingsBlock?.heroButtonActionType || "url",
+        heroButtonLink: settingsBlock?.heroButtonLink || "",
+        heroForegroundImageUrl: settingsBlock?.heroForegroundImageUrl || "",
+        heroForegroundPosition: settingsBlock?.heroForegroundPosition || "right",
+        elementShape: settingsBlock?.elementShape || "rounded-2xl",
         parent_id: pageData.parent_id || null,
         components: pageData.components?.filter((c: any) => c.type !== "page_settings") || [],
       });
@@ -164,7 +184,17 @@ function PageBuilder() {
           headerImageUrl: template.headerImageUrl,
           logoUrl: "",
           logoPosition: template.logoPosition,
+          navbarStyle: "transparent",
           fontFamily: template.fontFamily,
+          heroAlign: "center",
+          heroOverlayColor: "#000000",
+          heroOverlayOpacity: 40,
+          heroButtonText: "",
+          heroButtonActionType: "url",
+          heroButtonLink: "",
+          heroForegroundImageUrl: "",
+          heroForegroundPosition: "right",
+          elementShape: "rounded-2xl",
           parent_id: parentId || null,
           components: JSON.parse(JSON.stringify(template.components)), // Deep copy
         });
@@ -223,7 +253,17 @@ function PageBuilder() {
         {
           type: "page_settings",
           logoPosition: editorState.logoPosition,
+          navbarStyle: editorState.navbarStyle,
           fontFamily: editorState.fontFamily,
+          heroAlign: editorState.heroAlign,
+          heroOverlayColor: editorState.heroOverlayColor,
+          heroOverlayOpacity: editorState.heroOverlayOpacity,
+          heroButtonText: editorState.heroButtonText,
+          heroButtonActionType: editorState.heroButtonActionType,
+          heroButtonLink: editorState.heroButtonLink,
+          heroForegroundImageUrl: editorState.heroForegroundImageUrl,
+          heroForegroundPosition: editorState.heroForegroundPosition,
+          elementShape: editorState.elementShape,
         },
         ...editorState.components,
       ],
@@ -335,6 +375,7 @@ function PageBuilder() {
             editorState={editorState}
             set={set}
             handleImageUpload={handleImageUpload}
+            allPages={allPages}
             forms={forms}
             workspace_id={workspace_id}
             updateComponent={updateComponent}

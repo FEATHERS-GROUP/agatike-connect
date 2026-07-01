@@ -147,36 +147,68 @@ export function PageSettingsPanel({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5 flex flex-col">
-              <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Logo Position</Label>
-              <Select value={editorState.logoPosition} onValueChange={set("logoPosition")}>
-                <SelectTrigger className="h-7 text-[11px] bg-secondary/20 border-border/40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hero" className="text-[11px]">Hero</SelectItem>
-                  <SelectItem value="navbar" className="text-[11px]">Navbar</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5 flex flex-col">
+                <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Logo Position</Label>
+                <Select value={editorState.logoPosition} onValueChange={set("logoPosition")}>
+                  <SelectTrigger className="h-7 text-[11px] bg-secondary/20 border-border/40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hero" className="text-[11px]">Hero</SelectItem>
+                    <SelectItem value="navbar" className="text-[11px]">Navbar</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5 flex flex-col">
+                <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Navbar Style</Label>
+                <Select value={editorState.navbarStyle || "transparent"} onValueChange={set("navbarStyle")}>
+                  <SelectTrigger className="h-7 text-[11px] bg-secondary/20 border-border/40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="transparent" className="text-[11px]">Transparent Overlay</SelectItem>
+                    <SelectItem value="solid" className="text-[11px]">Solid Top Block</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-1.5 flex flex-col">
-              <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Font Family</Label>
-              <Select value={editorState.fontFamily} onValueChange={set("fontFamily")}>
-                <SelectTrigger className="h-7 text-[11px] bg-secondary/20 border-border/40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Inter" className="text-[11px]">Inter</SelectItem>
-                  <SelectItem value="Outfit" className="text-[11px]">Outfit</SelectItem>
-                  <SelectItem value="Montserrat" className="text-[11px]">Montserrat</SelectItem>
-                  <SelectItem value="Playfair Display" className="text-[11px]">Playfair</SelectItem>
-                  <SelectItem value="Lora" className="text-[11px]">Lora</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5 flex flex-col">
+                <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Font Family</Label>
+                <Select value={editorState.fontFamily} onValueChange={set("fontFamily")}>
+                  <SelectTrigger className="h-7 text-[11px] bg-secondary/20 border-border/40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Inter" className="text-[11px]">Inter</SelectItem>
+                    <SelectItem value="Outfit" className="text-[11px]">Outfit</SelectItem>
+                    <SelectItem value="Montserrat" className="text-[11px]">Montserrat</SelectItem>
+                    <SelectItem value="Playfair Display" className="text-[11px]">Playfair</SelectItem>
+                    <SelectItem value="Lora" className="text-[11px]">Lora</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5 flex flex-col">
+                <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Element Shape</Label>
+                <Select value={editorState.elementShape || "rounded-2xl"} onValueChange={set("elementShape")}>
+                  <SelectTrigger className="h-7 text-[11px] bg-secondary/20 border-border/40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rounded-none" className="text-[11px]">Sharp (Square)</SelectItem>
+                    <SelectItem value="rounded-lg" className="text-[11px]">Classic (Rounded)</SelectItem>
+                    <SelectItem value="rounded-2xl" className="text-[11px]">Soft (Very Round)</SelectItem>
+                    <SelectItem value="rounded-full" className="text-[11px]">Pill / Circle</SelectItem>
+                    <SelectItem value="rounded-tr-[3rem] rounded-bl-[3rem]" className="text-[11px]">Leaf</SelectItem>
+                    <SelectItem value="rounded-tl-[3rem] rounded-br-[3rem]" className="text-[11px]">Diagonal Leaf</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
 
           <div className="space-y-1.5">
             <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Brand Logo</Label>

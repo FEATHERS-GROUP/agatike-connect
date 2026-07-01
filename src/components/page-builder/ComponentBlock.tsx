@@ -255,6 +255,42 @@ export function ComponentBlock({
           {/* BUDGET & DAMAGE REQUEST */}
           {(comp.type === "budget_request" || comp.type === "damage_report") && (
             <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-[1.5] space-y-1">
+                  <Label className="text-xs">Design</Label>
+                  <Select
+                    value={comp.design || "embedded"}
+                    onValueChange={(val) => updateComponent(idx, "design", val)}
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="embedded">Embedded Form</SelectItem>
+                      <SelectItem value="button">Simple Button</SelectItem>
+                      <SelectItem value="card">Large Card</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {comp.design !== "embedded" && (
+                  <div className="flex-[1.5] space-y-1">
+                    <Label className="text-xs">Open In</Label>
+                    <Select
+                      value={comp.openAction || "modal"}
+                      onValueChange={(val) => updateComponent(idx, "openAction", val)}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="modal">Popup Modal</SelectItem>
+                        <SelectItem value="drawer">Side Drawer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+              
               <div className="space-y-1">
                 <Label className="text-xs">Form Title</Label>
                 <Input
@@ -453,7 +489,7 @@ export function ComponentBlock({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex-1 space-y-1">
+                <div className="flex-[1.5] space-y-1">
                   <Label className="text-xs">Design</Label>
                   <Select
                     value={comp.design || "card"}
@@ -469,6 +505,24 @@ export function ComponentBlock({
                     </SelectContent>
                   </Select>
                 </div>
+                {comp.design !== "embedded" && (
+                  <div className="flex-[1.5] space-y-1">
+                    <Label className="text-xs">Open In</Label>
+                    <Select
+                      value={comp.openAction || "page"}
+                      onValueChange={(val) => updateComponent(idx, "openAction", val)}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="page">New Page</SelectItem>
+                        <SelectItem value="modal">Popup Modal</SelectItem>
+                        <SelectItem value="drawer">Side Drawer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               {comp.content && comp.design !== "button" && (
                 <div className="p-3 border border-primary/20 rounded-lg bg-primary/5 flex items-center gap-3">
@@ -537,6 +591,19 @@ export function ComponentBlock({
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <Label className="text-xs text-muted-foreground">Advanced Form Grid</Label>
                 <div className="flex items-center gap-2">
+                  <Select
+                    value={comp.openAction || "page"}
+                    onValueChange={(val) => updateComponent(idx, "openAction", val)}
+                  >
+                    <SelectTrigger className="w-24 bg-background h-8 text-xs">
+                      <SelectValue placeholder="Open In" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="page">Page</SelectItem>
+                      <SelectItem value="modal">Modal</SelectItem>
+                      <SelectItem value="drawer">Drawer</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
                     <Label
                       className="text-[10px] text-muted-foreground cursor-pointer"
