@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   LayoutTemplate,
   Copy,
+  Download,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -30,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/finance")({
@@ -48,6 +50,39 @@ function FinancePage() {
   const [entryType, setEntryType] = useState<EntryType>("income");
   const [form, setForm] = useState({ description: "", amount: "", category: "" });
   const [periodFilter, setPeriodFilter] = useState<"month" | "quarter" | "year">("month");
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+
+  const calculateAmount = (data: any) => {
+    if (data.Amount && Number(data.Amount) > 0) return Number(data.Amount);
+    if (data.LineItems && Array.isArray(data.LineItems)) {
+      return data.LineItems.reduce((acc: number, item: any) => {
+        let rowTotal = 0;
+        Object.keys(item).forEach(key => {
+          const lowerKey = key.toLowerCase();
+          if (lowerKey.includes("price") || lowerKey.includes("amount") || lowerKey.includes("cost") || lowerKey.includes("total")) {
+            const val = Number(item[key]);
+            if (!isNaN(val)) rowTotal += val;
+          }
+        });
+        return acc + rowTotal;
+      }, 0);
+    }
+    return 0;
+  };
+
+  const exportToCsv = (lineItems: any[], title: string) => {
+    if (!lineItems || lineItems.length === 0) return;
+    const headers = Object.keys(lineItems[0]);
+    const rows = lineItems.map(item => headers.map(h => `"${String(item[h] || '').replace(/"/g, '""')}"`).join(','));
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `${title || 'export'}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // ── Load workspace-level finance books ─────────────────────────────────────
   const { data: books = [], isLoading } = useQuery({
@@ -159,7 +194,7 @@ function FinancePage() {
             book_id: expenseBook.id,
             record_data: {
               Description: `Approved Request: ${recordData.Title}`,
-              Amount: Number(recordData.Amount) || 0,
+              Amount: calculateAmount(recordData),
               Category: "Budget/Damage Approval",
             },
           },
@@ -398,7 +433,10 @@ function FinancePage() {
                       return (
                         <div key={req.id} className="p-4 border border-border/60 rounded-xl hover:bg-secondary/20 transition-colors">
                           <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
-                            <div>
+                            <div 
+                              className="flex-1 cursor-pointer" 
+                              onClick={() => setSelectedRequest(req)}
+                            >
                               <div className="flex items-center gap-2 mb-1">
                                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                                   data.Type === "Damage Report" ? "bg-red-500/10 text-red-500" : "bg-blue-500/10 text-blue-500"
@@ -408,74 +446,81 @@ function FinancePage() {
                                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                                   data.Status === "Pending" ? "bg-amber-500/10 text-amber-500" :
                                   data.Status === "Approved" ? "bg-green-500/10 text-green-500" :
+                                  data.Status === "Resolved" ? "bg-green-500/10 text-green-500" :
                                   "bg-red-500/10 text-red-500"
                                 }`}>
                                   {data.Status || "Pending"}
                                 </span>
                               </div>
-                              <h4 className="font-semibold">{data.Title || "Untitled"}</h4>
+                              <h4 className="font-semibold hover:text-primary transition-colors">{data.Title || "Untitled"}</h4>
                               <p className="text-sm text-muted-foreground mt-0.5">
-                                By {data["Requested By"]} • {Number(data.Amount || 0).toLocaleString()} {currency}
+                                {data.Type === "Damage Report" ? "Reported by" : "Requested by"} {data["Requested By"]} • {calculateAmount(data).toLocaleString()} {currency}
+                                {data.LineItems && data.LineItems.length > 0 && ` • ${data.LineItems.length} items`}
                               </p>
                             </div>
                             {isPending && (
                               <div className="flex items-center gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-destructive border-destructive/30 hover:bg-destructive/10"
-                                  onClick={() => updateRequestStatusMutation.mutate({
-                                    id: req.id,
-                                    newStatus: "Rejected",
-                                    recordData: data,
-                                    autoExpense: false
-                                  })}
-                                  disabled={updateRequestStatusMutation.isPending}
-                                >
-                                  Reject
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                  onClick={() => updateRequestStatusMutation.mutate({
-                                    id: req.id,
-                                    newStatus: "Approved",
-                                    recordData: data,
-                                    autoExpense: true
-                                  })}
-                                  disabled={updateRequestStatusMutation.isPending}
-                                >
-                                  Approve & Record Expense
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                          <div className="mt-3 space-y-3">
-                            {data.Details && (
-                              <div className="text-sm bg-secondary/30 p-3 rounded-lg text-foreground/80">
-                                {data.Details}
-                              </div>
-                            )}
-                            {data.LineItems && data.LineItems.length > 0 && (
-                              <div className="border border-border/60 rounded-lg overflow-hidden bg-background">
-                                <table className="w-full text-xs text-left">
-                                  <thead className="bg-secondary/50 border-b border-border/60 uppercase text-muted-foreground">
-                                    <tr>
-                                      {Object.keys(data.LineItems[0]).map((key) => (
-                                        <th key={key} className="px-3 py-2 font-semibold">{key}</th>
-                                      ))}
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {data.LineItems.map((item: any, idx: number) => (
-                                      <tr key={idx} className="border-b border-border/40 last:border-0 hover:bg-secondary/10">
-                                        {Object.keys(data.LineItems[0]).map((key, vIdx) => (
-                                          <td key={vIdx} className="px-3 py-2">{String(item[key] || "")}</td>
-                                        ))}
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
+                                {data.Type === "Damage Report" ? (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                                      onClick={() => updateRequestStatusMutation.mutate({
+                                        id: req.id,
+                                        newStatus: "Dismissed",
+                                        recordData: data,
+                                        autoExpense: false
+                                      })}
+                                      disabled={updateRequestStatusMutation.isPending}
+                                    >
+                                      Dismiss
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      className="bg-green-600 hover:bg-green-700 text-white"
+                                      onClick={() => updateRequestStatusMutation.mutate({
+                                        id: req.id,
+                                        newStatus: "Resolved",
+                                        recordData: data,
+                                        autoExpense: false
+                                      })}
+                                      disabled={updateRequestStatusMutation.isPending}
+                                    >
+                                      Mark as Resolved
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                                      onClick={() => updateRequestStatusMutation.mutate({
+                                        id: req.id,
+                                        newStatus: "Rejected",
+                                        recordData: data,
+                                        autoExpense: false
+                                      })}
+                                      disabled={updateRequestStatusMutation.isPending}
+                                    >
+                                      Reject
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      className="bg-green-600 hover:bg-green-700 text-white"
+                                      onClick={() => updateRequestStatusMutation.mutate({
+                                        id: req.id,
+                                        newStatus: "Approved",
+                                        recordData: data,
+                                        autoExpense: true
+                                      })}
+                                      disabled={updateRequestStatusMutation.isPending}
+                                    >
+                                      Approve & Record Expense
+                                    </Button>
+                                  </>
+                                )}
                               </div>
                             )}
                           </div>
@@ -634,6 +679,90 @@ function FinancePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Request Details Sheet */}
+      <Sheet open={!!selectedRequest} onOpenChange={(open) => !open && setSelectedRequest(null)}>
+        <SheetContent side="right" className="sm:max-w-[90vw] w-full overflow-y-auto">
+          {selectedRequest && (
+            <div className="space-y-6 pt-6">
+              <SheetHeader>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
+                    selectedRequest.record_data.Type === "Damage Report" ? "bg-red-500/10 text-red-500" : "bg-blue-500/10 text-blue-500"
+                  }`}>
+                    {selectedRequest.record_data.Type}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
+                    selectedRequest.record_data.Status === "Pending" ? "bg-amber-500/10 text-amber-500" :
+                    selectedRequest.record_data.Status === "Approved" || selectedRequest.record_data.Status === "Resolved" ? "bg-green-500/10 text-green-500" :
+                    "bg-red-500/10 text-red-500"
+                  }`}>
+                    {selectedRequest.record_data.Status || "Pending"}
+                  </span>
+                </div>
+                <SheetTitle className="text-2xl">{selectedRequest.record_data.Title || "Untitled Request"}</SheetTitle>
+                <SheetDescription className="text-base">
+                  {selectedRequest.record_data.Type === "Damage Report" ? "Reported by" : "Requested by"} <span className="font-semibold text-foreground">{selectedRequest.record_data["Requested By"]}</span>
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="bg-secondary/30 p-4 rounded-xl border border-border/50">
+                <p className="text-sm text-muted-foreground uppercase tracking-widest font-semibold mb-1">Total Amount</p>
+                <p className="text-3xl font-black text-foreground">
+                  {calculateAmount(selectedRequest.record_data).toLocaleString()} <span className="text-xl text-muted-foreground">{currency}</span>
+                </p>
+              </div>
+
+              {selectedRequest.record_data.Details && (
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Details</h4>
+                  <div className="text-sm bg-secondary/30 p-4 rounded-xl text-foreground/90 whitespace-pre-wrap">
+                    {selectedRequest.record_data.Details}
+                  </div>
+                </div>
+              )}
+
+              {selectedRequest.record_data.LineItems && selectedRequest.record_data.LineItems.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Line Items</h4>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-2 h-8"
+                      onClick={() => exportToCsv(selectedRequest.record_data.LineItems, selectedRequest.record_data.Title)}
+                    >
+                      <Download className="w-3.5 h-3.5" /> Export to CSV
+                    </Button>
+                  </div>
+                  <div className="border border-border/60 rounded-xl overflow-hidden bg-background">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-secondary/50 border-b border-border/60 uppercase text-muted-foreground">
+                          <tr>
+                            {Object.keys(selectedRequest.record_data.LineItems[0]).map((key) => (
+                              <th key={key} className="px-4 py-3 font-semibold whitespace-nowrap">{key}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedRequest.record_data.LineItems.map((item: any, idx: number) => (
+                            <tr key={idx} className="border-b border-border/40 last:border-0 hover:bg-secondary/10">
+                              {Object.keys(selectedRequest.record_data.LineItems[0]).map((key, vIdx) => (
+                                <td key={vIdx} className="px-4 py-3 whitespace-nowrap">{String(item[key] || "")}</td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
