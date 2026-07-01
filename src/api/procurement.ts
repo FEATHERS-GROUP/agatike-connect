@@ -7,7 +7,7 @@ import { getSession } from "./auth";
 
 const GET_PROCUREMENT_INVOICES = `
   query GetProcurementInvoices($workspace_id: String!) {
-    workspace_invoices(
+    agatike_book_invoices(
       where: { workspace_id: { _eq: $workspace_id } }
       order_by: { created_at: desc }
     ) {
@@ -38,15 +38,15 @@ const GET_PROCUREMENT_INVOICES = `
 
 export const getProcurementInvoices = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { workspace_id } = ctx.data as unknown as { workspace_id: string };
-  const data = await hasuraRequest<{ workspace_invoices: any[] }>(GET_PROCUREMENT_INVOICES, {
+  const data = await hasuraRequest<{ agatike_book_invoices: any[] }>(GET_PROCUREMENT_INVOICES, {
     workspace_id,
   });
-  return data.workspace_invoices || [];
+  return data.agatike_book_invoices || [];
 });
 
 const CREATE_PROCUREMENT_INVOICE = `
-  mutation CreateProcurementInvoice($object: workspace_invoices_insert_input!) {
-    insert_workspace_invoices_one(object: $object) {
+  mutation CreateProcurementInvoice($object: agatike_book_invoices_insert_input!) {
+    insert_agatike_book_invoices_one(object: $object) {
       id
       invoice_number
       status
@@ -61,8 +61,8 @@ export const createProcurementInvoice = createServerFn({ method: "POST" }).handl
 });
 
 const UPDATE_PROCUREMENT_INVOICE = `
-  mutation UpdateProcurementInvoice($id: uuid!, $set: workspace_invoices_set_input!) {
-    update_workspace_invoices_by_pk(pk_columns: { id: $id }, _set: $set) {
+  mutation UpdateProcurementInvoice($id: uuid!, $set: agatike_book_invoices_set_input!) {
+    update_agatike_book_invoices_by_pk(pk_columns: { id: $id }, _set: $set) {
       id
       status
     }
@@ -78,7 +78,7 @@ export const updateProcurementInvoice = createServerFn({ method: "POST" }).handl
 
 const DELETE_PROCUREMENT_INVOICE = `
   mutation DeleteProcurementInvoice($id: uuid!) {
-    delete_workspace_invoices_by_pk(id: $id) { id }
+    delete_agatike_book_invoices_by_pk(id: $id) { id }
   }
 `;
 

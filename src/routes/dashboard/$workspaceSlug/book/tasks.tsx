@@ -53,6 +53,7 @@ function TasksPage() {
 
   const [view, setView] = useState<"kanban" | "list">("kanban");
   const [createOpen, setCreateOpen] = useState(false);
+  const [editTask, setEditTask] = useState<any>(null);
   const [filterPriority, setFilterPriority] = useState<Priority | "all">("all");
   const [form, setForm] = useState({
     title: "",
@@ -102,8 +103,10 @@ function TasksPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (vars: { id: string; status: Status }) =>
-      updateWorkspaceTask({ data: { id: vars.id, status: vars.status } } as any),
+    mutationFn: (vars: { id: string; [k: string]: any }) => {
+      const { id, ...rest } = vars;
+      return updateWorkspaceTask({ data: { id, ...rest } } as any);
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspace-tasks", wsId] }),
   });
 
@@ -225,6 +228,7 @@ function TasksPage() {
                       allColumns={dynamicColumns}
                       onStatusChange={(status) => updateMutation.mutate({ id: task.id, status })}
                       onDelete={() => deleteMutation.mutate(task.id)}
+                      onClick={() => setEditTask(task)}
                     />
                   ))}
                   {colTasks.length === 0 && (
@@ -407,15 +411,102 @@ function TasksPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Task Dialog */}
+      <Dialog open={!!editTask} onOpenChange={(open) => !open && setEditTask(null)}>
+        <DialogContent className="sm:max-w-md rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Edit Task</DialogTitle>
+          </DialogHeader>
+          {editTask && (
+          <form
+            onSubmit={(e) => { 
+              e.preventDefault(); 
+              updateMutation.mutate(editTask); 
+              setEditTask(null); 
+            }}
+            className="space-y-4 mt-2"
+          >
+            <div className="space-y-2">
+              <Label>Task Title *</Label>
+              <Input
+                required
+                value={editTask.title}
+                onChange={(e) => setEditTask({ ...editTask, title: e.target.value })}
+                className="h-11 rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <textarea
+                value={editTask.description || ""}
+                onChange={(e) => setEditTask({ ...editTask, description: e.target.value })}
+                rows={3}
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Priority</Label>
+                <select
+                  value={editTask.priority}
+                  onChange={(e) => setEditTask({ ...editTask, priority: e.target.value as Priority })}
+                  className="w-full h-11 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>Due Date</Label>
+                <Input
+                  type="date"
+                  value={editTask.due_date || ""}
+                  onChange={(e) => setEditTask({ ...editTask, due_date: e.target.value })}
+                  className="h-11 rounded-xl"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Assigned To</Label>
+              <select
+                value={editTask.assigned_to || ""}
+                onChange={(e) => setEditTask({ ...editTask, assigned_to: e.target.value })}
+                className="w-full h-11 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none"
+              >
+                <option value="">Unassigned</option>
+                {users.map((u: any) => (
+                  <option key={u.id} value={u.name}>{u.name} ({u.email})</option>
+                ))}
+              </select>
+            </div>
+            <Button
+              type="submit"
+              disabled={updateMutation.isPending}
+              className="w-full h-11 rounded-xl"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Changes
+            </Button>
+          </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-function TaskCard({ task, allColumns, onStatusChange, onDelete }: { task: any; allColumns: any[]; onStatusChange: (s: Status) => void; onDelete: () => void }) {
+function TaskCard({ task, allColumns, onStatusChange, onDelete, onClick }: { task: any; allColumns: any[]; onStatusChange: (s: Status) => void; onDelete: () => void; onClick: () => void }) {
   const pc = PRIORITY_CONFIG[task.priority as Priority] || PRIORITY_CONFIG.low;
 
   return (
-    <div className="rounded-2xl bg-card border border-border/60 p-4 hover:border-primary/30 transition-colors group">
+    <div 
+      className="rounded-2xl bg-card border border-border/60 p-4 hover:border-primary/30 transition-colors group cursor-pointer"
+      onClick={onClick}
+    >
       <div className="flex items-start justify-between gap-2 mb-2">
         <span className={cn("text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border", pc.color)}>
           {pc.label}
@@ -424,7 +515,7 @@ function TaskCard({ task, allColumns, onStatusChange, onDelete }: { task: any; a
           variant="ghost"
           size="icon"
           className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
-          onClick={onDelete}
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
         >
           <Trash2 className="h-3 w-3" />
         </Button>
@@ -432,14 +523,22 @@ function TaskCard({ task, allColumns, onStatusChange, onDelete }: { task: any; a
       <p className={cn("text-sm font-medium leading-snug mb-3", task.status === "done" && "line-through opacity-50")}>
         {task.title}
       </p>
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center flex-wrap gap-2 mb-2">
+        {task.assigned_to && (
+          <span className="text-xs text-muted-foreground flex items-center gap-1 bg-secondary px-2 py-0.5 rounded-md">
+            <User className="h-3 w-3" /> {task.assigned_to}
+          </span>
+        )}
         {task.due_date && (
-          <span className="text-xs text-muted-foreground flex items-center gap-1">
+          <span className="text-xs text-muted-foreground flex items-center gap-1 bg-secondary px-2 py-0.5 rounded-md">
             <Calendar className="h-3 w-3" />
             {new Date(task.due_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           </span>
         )}
-        <div className="ml-auto">
+      </div>
+
+      <div className="flex items-center justify-between gap-2 border-t border-border/30 pt-2 mt-2">
+        <div className="ml-auto" onClick={(e) => e.stopPropagation()}>
           <select
             value={task.status}
             onChange={(e) => onStatusChange(e.target.value)}
