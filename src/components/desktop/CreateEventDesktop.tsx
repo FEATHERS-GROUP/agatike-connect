@@ -23,7 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createEvent } from "@/api/events";
 import { getWorkspaceVipPrivileges } from "@/api/vip";
-import { getCoordinates, getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
+import { getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { uploadFile } from "@/api/storage";
@@ -396,10 +396,10 @@ export function CreateEventDesktop() {
           time: loc.time || null,
           ...(idx === 0 && data.isUpcoming
             ? {
-                is_upcoming: true,
-                waitlist_url: data.waitlistUrl || null,
-                timer_date: data.timerDate || null,
-              }
+              is_upcoming: true,
+              waitlist_url: data.waitlistUrl || null,
+              timer_date: data.timerDate || null,
+            }
             : {}),
         })),
         event_requency:
@@ -1176,11 +1176,10 @@ function TicketStep({
                     return (
                       <div
                         key={privilege.id}
-                        className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                          isSelected
+                        className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${isSelected
                             ? "bg-primary/20 border-primary text-primary"
                             : "bg-background border-border/60 text-muted-foreground hover:border-primary/50"
-                        }`}
+                          }`}
                         onClick={() => {
                           const currentIds = t.vip_privilege_ids || [];
                           if (isSelected) {
