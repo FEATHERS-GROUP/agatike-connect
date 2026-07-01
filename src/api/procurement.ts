@@ -6,7 +6,7 @@ import { getSession } from "./auth";
 // Separate from the space subscription invoices in invoices.ts
 
 const GET_PROCUREMENT_INVOICES = `
-  query GetProcurementInvoices($workspace_id: String!) {
+  query GetProcurementInvoices($workspace_id: uuid!) {
     agatike_book_invoices(
       where: { workspace_id: { _eq: $workspace_id } }
       order_by: { created_at: desc }
@@ -26,7 +26,7 @@ const GET_PROCUREMENT_INVOICES = `
       status
       currency
       created_at
-      items: workspace_invoice_items(order_by: { created_at: asc }) {
+      items(order_by: { created_at: asc }) {
         id
         description
         quantity

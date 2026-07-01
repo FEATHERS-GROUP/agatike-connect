@@ -88,7 +88,7 @@ function CreateInvoicePage() {
           payment_terms: paymentTerms,
           status,
           currency,
-          workspace_invoice_items: {
+          items: {
             data: items.map((item) => ({
               description: item.description,
               quantity: item.quantity,
