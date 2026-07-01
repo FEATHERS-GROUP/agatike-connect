@@ -21,14 +21,15 @@ export const Route = createFileRoute("/venues/")({
       id: s.id,
       name: s.name,
       type: s.type,
-      city: s.locations?.[0]?.city || "Kigali",
-      address: s.locations?.[0]?.address || "Multiple Locations",
+      city: s.locations?.[0]?.city,
+      address: s.locations?.[0]?.address,
       opening_hours: "08:00",
       closing_hours: "20:00",
       description: s.description,
       cover_url: s.cover_url,
-      currency: s.currency,
+      currency: s.workspace?.currency || s.currency,
       source: "space",
+      status: s.status,
       pricing_tiers:
         s.plans?.map((p: any) => ({
           name: p.name,
@@ -36,7 +37,14 @@ export const Route = createFileRoute("/venues/")({
         })) || [],
     }));
 
-    return [...data.map((v: any) => ({ ...v, source: "venue" })), ...formattedSpaces];
+    return [
+      ...data.map((v: any) => ({
+        ...v,
+        source: "venue",
+        currency: v.workspace?.currency || v.currency,
+      })),
+      ...formattedSpaces,
+    ];
   },
   component: VenuesIndex,
 });

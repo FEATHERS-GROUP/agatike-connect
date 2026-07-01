@@ -797,3 +797,80 @@ export const deleteEventHighlight = createServerFn({ method: "POST" }).handler(a
   const data = await hasuraRequest<{ delete_event_highlights_by_pk: any }>(mutation, { id });
   return data.delete_event_highlights_by_pk;
 });
+
+export const getCommunityMoments = createServerFn({ method: "GET" }).handler(async () => {
+  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+
+  const query = `
+    query GetCommunityMoments($twoWeeksAgo: timestamptz!) {
+      event_stories(
+        where: { created_at: { _gte: $twoWeeksAgo } }
+        order_by: { created_at: desc }
+      ) {
+        id
+        media_url
+        caption
+        created_at
+        workspaces {
+          name
+          organizer {
+            handle
+            name
+          }
+        }
+      }
+      event_highlights(
+        where: { created_at: { _gte: $twoWeeksAgo } }
+        order_by: { created_at: desc }
+      ) {
+        id
+        media_url
+        title
+        content
+        created_at
+        workspace {
+          name
+          organizer {
+            handle
+            name
+          }
+        }
+      }
+    }
+  `;
+
+  const res = await hasuraRequest<{ event_stories: any[]; event_highlights: any[] }>(query, {
+    twoWeeksAgo,
+  });
+
+  const stories = (res.event_stories || []).map((s) => ({
+    id: s.id,
+    image: s.media_url,
+    handle:
+      s.workspaces?.organizer?.handle ||
+      s.workspaces?.name?.toLowerCase().replace(/\s+/g, "") ||
+      "organizer",
+    caption: s.caption || s.workspaces?.name || "Moment",
+    created_at: s.created_at,
+  }));
+
+  const highlights = (res.event_highlights || [])
+    .filter((h) => h.media_url) // only highlights with images
+    .map((h) => ({
+      id: h.id,
+      image: h.media_url,
+      handle:
+        h.workspace?.organizer?.handle ||
+        h.workspace?.name?.toLowerCase().replace(/\s+/g, "") ||
+        "organizer",
+      caption: h.title || h.content || h.workspace?.name || "Highlight",
+      created_at: h.created_at,
+    }));
+
+  // Combine and sort by created_at desc
+  const combined = [...stories, ...highlights].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
+
+  return combined;
+});

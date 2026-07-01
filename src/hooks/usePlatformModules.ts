@@ -17,6 +17,9 @@ export type WorkspaceModule = {
 const CANONICAL_ORDER: string[] = [
   "Dashboard",
   "Events",
+  "Experiences",
+  "Cinema / Theater",
+  "Spaces",
   "Tickets",
   "RSVPs",
   "Attendees",
@@ -27,10 +30,12 @@ const CANONICAL_ORDER: string[] = [
   "Campaigns",
   "Venue Listings",
   "Venue Designer",
+  "Memberships",
   "Badge Designer",
   "Page Builder",
-  "Experiences",
   "Analytics",
+  "Community",
+  "Agatike Book",
   "Users",
   "Withdrawals",
   "Settings",
@@ -72,7 +77,7 @@ export function usePlatformModules() {
           desc: "Engage with your followers",
           href: "community",
           icon: LucideIcons.Users,
-          category: "Engagement",
+          category: "SHARED",
           mandatory: true,
         });
       }
@@ -81,5 +86,28 @@ export function usePlatformModules() {
     },
     staleTime: 1000 * 60 * 60 * 24, // 24 hours for platform modules
     refetchOnWindowFocus: false,
+  });
+}
+
+export function getModulesForWorkspaceType(
+  modules: WorkspaceModule[],
+  type: string,
+): WorkspaceModule[] {
+  const allowedCategories = ["SHARED"];
+
+  if (type === "EVENT") {
+    allowedCategories.push("EVENT", "SALES");
+  } else if (type === "EXPERIENCE") {
+    allowedCategories.push("EXPERIENCE", "SALES");
+  } else if (type === "VENUE" || type === "SPACE" || type === "GYM") {
+    allowedCategories.push("VENUE");
+  } else if (type === "CINEMA" || type === "THEATER") {
+    allowedCategories.push("MOVIES");
+  }
+
+  return modules.filter((m) => {
+    if (!m.category) return true; // Show uncategorized as fallback just in case
+    const cat = m.category.toUpperCase();
+    return allowedCategories.includes(cat);
   });
 }

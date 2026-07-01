@@ -1,31 +1,21 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-  Plus,
-  Search,
-  Filter,
-  MoreHorizontal,
-  Users,
-  Calendar,
-  LayoutTemplate,
-  Link as LinkIcon,
-  Loader2,
-  Edit2,
-  Eye,
-  Ban,
-} from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Plus, Loader2, LayoutTemplate } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { useQuery } from "@tanstack/react-query";
-import { getWorkspaceForms } from "@/api/rsvps";
-import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  getWorkspaceForms,
+  updateCustomForm,
+  deleteCustomForm,
+  getFormDetails,
+  CustomForm,
+} from "@/api/rsvps";
+import { useState } from "react";
+import { toast } from "sonner";
+import { RsvpSummaryCards } from "@/components/dashboard/rsvps/RsvpSummaryCards";
+import { RsvpSearchFilters } from "@/components/dashboard/rsvps/RsvpSearchFilters";
+import { FormCard } from "@/components/dashboard/rsvps/FormCard";
+import { DeleteFormDialog } from "@/components/dashboard/rsvps/DeleteFormDialog";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/rsvps/")({
   component: RsvpsPage,
@@ -33,15 +23,114 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/rsvps/")({
 
 function RsvpsPage() {
   const { activeWorkspace } = useWorkspace();
-  const navigate = useNavigate();
   const { workspaceSlug } = Route.useParams();
   const [search, setSearch] = useState("");
+  const queryClient = useQueryClient();
+  const [deleteConfirmForm, setDeleteConfirmForm] = useState<CustomForm | null>(null);
+  const [isExportingBeforeDelete, setIsExportingBeforeDelete] = useState(false);
 
-  const { data: forms = [], isLoading } = useQuery({
+  const { data: forms = [], isLoading } = useQuery<CustomForm[]>({
     queryKey: ["workspace-forms", activeWorkspace?.id],
     queryFn: () => getWorkspaceForms({ data: { workspace_id: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
+
+  const toggleActiveMutation = useMutation({
+    mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
+      updateCustomForm({ data: { id, is_active } } as any),
+    onSuccess: (_, variables) => {
+      toast.success(variables.is_active ? "Form opened to responses" : "Form closed successfully");
+      queryClient.invalidateQueries({ queryKey: ["workspace-forms", activeWorkspace?.id] });
+    },
+    onError: (err: any) => toast.error(err.message || "Failed to update form status"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteCustomForm({ data: { id } } as any),
+    onSuccess: () => {
+      toast.success("Form deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["workspace-forms", activeWorkspace?.id] });
+      setDeleteConfirmForm(null);
+    },
+    onError: (err: any) => toast.error(err.message || "Failed to delete form"),
+  });
+
+  const handleExportDataForForm = async (formId: string, formTitle: string) => {
+    setIsExportingBeforeDelete(true);
+    const loadingToast = toast.loading("Fetching form details for export...");
+    try {
+      const fullForm = await getFormDetails({ data: { id: formId } } as any);
+      if (!fullForm) {
+        toast.error("Form not found", { id: loadingToast });
+        setIsExportingBeforeDelete(false);
+        return;
+      }
+
+      const rsvps = fullForm.rsvps || [];
+      const dynamicFields = fullForm.form_fields || [];
+
+      if (!rsvps.length) {
+        toast.error("No responses to export", { id: loadingToast });
+        setIsExportingBeforeDelete(false);
+        return;
+      }
+
+      const headers = ["First Name", "Last Name", "Email Address", "Status", "Date Registered"];
+      dynamicFields.forEach((f: any) => headers.push(f.label));
+
+      // Escape header column names to prevent syntax issues if header contains commas or quotes
+      const csvRows = [headers.map((h) => `"${String(h).replace(/"/g, '""')}"`).join(",")];
+
+      rsvps.forEach((rsvp: any) => {
+        const row = [
+          `"${(rsvp.first_name || "").replace(/"/g, '""')}"`,
+          `"${(rsvp.last_name || "").replace(/"/g, '""')}"`,
+          `"${(rsvp.email || "").replace(/"/g, '""')}"`,
+          `"${(rsvp.status || "Registered").replace(/"/g, '""')}"`,
+          `"${new Date(rsvp.created_at).toLocaleString()}"`,
+        ];
+
+        dynamicFields.forEach((f: any) => {
+          const answerObj = rsvp.rsvp_answers?.find((a: any) => a.field_id === f.id);
+          let val = answerObj?.answer_value || "";
+
+          // If it's a JSON array (e.g. multi-checkbox answers), parse and format nicely
+          if (typeof val === "string" && val.startsWith("[") && val.endsWith("]")) {
+            try {
+              const parsed = JSON.parse(val);
+              if (Array.isArray(parsed)) {
+                val = parsed.join(", ");
+              }
+            } catch (e) {
+              // Keep original string if not valid JSON
+            }
+          }
+
+          val = String(val).replace(/"/g, '""');
+          row.push(`"${val}"`);
+        });
+
+        csvRows.push(row.join(","));
+      });
+
+      const csvString = csvRows.join("\n");
+      // Prepend UTF-8 BOM (\ufeff) to make Excel parse special characters correctly
+      const blob = new Blob(["\ufeff" + csvString], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${formTitle.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_rsvps.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.success("Export successful", { id: loadingToast });
+    } catch (error) {
+      console.error("Export failed:", error);
+      toast.error("Failed to export data", { id: loadingToast });
+    } finally {
+      setIsExportingBeforeDelete(false);
+    }
+  };
 
   const filteredForms = forms.filter(
     (f: any) => !search || f.title.toLowerCase().includes(search.toLowerCase()),
@@ -70,52 +159,10 @@ function RsvpsPage() {
       </header>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Active Forms</p>
-              <h3 className="text-3xl font-bold mt-2">{forms.filter((f) => f.is_active).length}</h3>
-            </div>
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-              <LayoutTemplate className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
+      <RsvpSummaryCards forms={forms} />
 
-        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Total RSVPs</p>
-              <h3 className="text-3xl font-bold mt-2">
-                {forms.reduce((acc, f) => acc + (f.rsvps?.length || 0), 0)}
-              </h3>
-            </div>
-            <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
-              <Users className="h-6 w-6" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card p-4 rounded-2xl border border-border/60 shadow-sm">
-        <div className="relative flex-1 w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search forms by name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 rounded-full bg-secondary/50 border-transparent focus-visible:ring-primary/20"
-          />
-        </div>
-        <div className="flex gap-3 w-full sm:w-auto">
-          <Button variant="outline" className="rounded-full shadow-sm w-full sm:w-auto">
-            <Filter className="mr-2 h-4 w-4" /> Filter
-          </Button>
-        </div>
-      </div>
+      {/* Search and Filter */}
+      <RsvpSearchFilters search={search} setSearch={setSearch} />
 
       {isLoading ? (
         <div className="flex justify-center p-12">
@@ -136,103 +183,30 @@ function RsvpsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredForms.map((form: any) => (
-            <div
+          {filteredForms.map((form: CustomForm) => (
+            <FormCard
               key={form.id}
-              className="group rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col"
-              onClick={() =>
-                navigate({
-                  to: "/dashboard/$workspaceSlug/rsvps/$formId",
-                  params: {
-                    workspaceSlug,
-                    formId: form.id,
-                  },
-                })
+              form={form}
+              workspaceSlug={workspaceSlug}
+              onToggleActive={(f) =>
+                toggleActiveMutation.mutate({ id: f.id, is_active: !f.is_active })
               }
-            >
-              <div className="h-32 w-full bg-secondary relative overflow-hidden">
-                <img
-                  src={form.cover_image_url || "/default-form-cover.png"}
-                  alt={form.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-3 right-3">
-                  <span
-                    className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      form.is_active
-                        ? "bg-green-500/90 text-white backdrop-blur-sm shadow-sm"
-                        : "bg-secondary/90 text-muted-foreground backdrop-blur-sm"
-                    }`}
-                  >
-                    {form.is_active ? "Active" : "Closed"}
-                  </span>
-                </div>
-              </div>
-              <div className="p-5 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">
-                    {form.title}
-                  </h3>
-
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-full -mt-1 -mr-2"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="rounded-xl w-48">
-                        <DropdownMenuItem
-                          onClick={() => {
-                            navigator.clipboard.writeText(`${window.location.origin}/f/${form.id}`);
-                          }}
-                        >
-                          <LinkIcon className="mr-2 h-4 w-4" /> Copy Public Link
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            navigate({
-                              to: "/dashboard/$workspaceSlug/rsvps/$formId",
-                              params: { workspaceSlug, formId: form.id },
-                            })
-                          }
-                        >
-                          <Eye className="mr-2 h-4 w-4" /> View RSVPs
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit2 className="mr-2 h-4 w-4" /> Edit Form
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
-                          <Ban className="mr-2 h-4 w-4" /> Close Form
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
-                  {form.description || "No description provided."}
-                </p>
-
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/40">
-                  <div className="flex items-center text-sm font-medium">
-                    <Users className="mr-1.5 h-4 w-4 text-muted-foreground" />
-                    {form.rsvps?.length || 0} RSVPs
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {new Date(form.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-            </div>
+              onDeleteClick={(f) => setDeleteConfirmForm(f)}
+              isToggling={toggleActiveMutation.isPending}
+            />
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteFormDialog
+        form={deleteConfirmForm}
+        onClose={() => setDeleteConfirmForm(null)}
+        onDelete={(id) => deleteMutation.mutate(id)}
+        isDeleting={deleteMutation.isPending}
+        onExport={handleExportDataForForm}
+        isExporting={isExportingBeforeDelete}
+      />
     </div>
   );
 }

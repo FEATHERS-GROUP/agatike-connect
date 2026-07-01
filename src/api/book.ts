@@ -91,3 +91,33 @@ export const deleteAgatikeBookRecord = createServerFn({ method: "POST" }).handle
   const { id } = ctx.data as unknown as { id: string };
   return hasuraRequest(DELETE_AGATIKE_BOOK_RECORD, { id });
 });
+
+const GET_AGATIKE_BOOKS_BY_WORKSPACE = `
+  query GetAgatikeBooksByWorkspace($workspace_id: uuid!) {
+    agatike_books(
+      where: { workspace_id: { _eq: $workspace_id }, event_id: { _is_null: true } },
+      order_by: { created_at: desc }
+    ) {
+      id
+      name
+      icon
+      schema_fields
+      created_at
+      records(order_by: { created_at: desc }) {
+        id
+        record_data
+        created_at
+      }
+    }
+  }
+`;
+
+export const getAgatikeBooksByWorkspace = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+    const data = await hasuraRequest<{ agatike_books: any[] }>(GET_AGATIKE_BOOKS_BY_WORKSPACE, {
+      workspace_id,
+    });
+    return data.agatike_books || [];
+  },
+);

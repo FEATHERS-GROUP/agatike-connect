@@ -1,10 +1,19 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Download, Search, Settings, Ticket, User, MoreHorizontal } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import {
+  ArrowLeft,
+  Download,
+  Search,
+  Settings,
+  Ticket,
+  User,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getFormDetails, updateCustomForm, updateRsvpStatus } from "@/api/rsvps";
+import { getFormDetails, updateCustomForm, updateRsvpStatus, deleteCustomForm } from "@/api/rsvps";
 import { getWorkspaceEvents } from "@/api/events";
 import { addEventStaff } from "@/api/staff";
 import { useState } from "react";
@@ -51,6 +60,18 @@ function FormRsvpsPage() {
   const [settingsTitle, setSettingsTitle] = useState("");
   const [settingsDesc, setSettingsDesc] = useState("");
   const [settingsActive, setSettingsActive] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteCustomForm({ data: { id: formId } } as any),
+    onSuccess: () => {
+      toast.success("Form deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["workspace-forms"] });
+      navigate({ to: "/dashboard/$workspaceSlug/rsvps", params: { workspaceSlug } });
+    },
+    onError: (err: any) => toast.error(err.message || "Failed to delete form"),
+  });
 
   const { data: form, isLoading } = useQuery({
     queryKey: ["custom-form", formId],
@@ -128,21 +149,35 @@ function FormRsvpsPage() {
     const headers = ["First Name", "Last Name", "Email Address", "Status", "Date Registered"];
     dynamicFields.forEach((f: any) => headers.push(f.label));
 
-    const csvRows = [headers.join(",")];
+    // Escape header column names to prevent syntax issues if header contains commas or quotes
+    const csvRows = [headers.map((h) => `"${String(h).replace(/"/g, '""')}"`).join(",")];
 
     filteredRsvps.forEach((rsvp: any) => {
       const row = [
-        `"${rsvp.first_name || ""}"`,
-        `"${rsvp.last_name || ""}"`,
-        `"${rsvp.email || ""}"`,
-        `"${rsvp.status || "Registered"}"`,
+        `"${(rsvp.first_name || "").replace(/"/g, '""')}"`,
+        `"${(rsvp.last_name || "").replace(/"/g, '""')}"`,
+        `"${(rsvp.email || "").replace(/"/g, '""')}"`,
+        `"${(rsvp.status || "Registered").replace(/"/g, '""')}"`,
         `"${new Date(rsvp.created_at).toLocaleString()}"`,
       ];
 
       dynamicFields.forEach((f: any) => {
         const answerObj = rsvp.rsvp_answers?.find((a: any) => a.field_id === f.id);
         let val = answerObj?.answer_value || "";
-        val = val.replace(/"/g, '""');
+
+        // If it's a JSON array (e.g. multi-checkbox answers), parse and format nicely
+        if (typeof val === "string" && val.startsWith("[") && val.endsWith("]")) {
+          try {
+            const parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) {
+              val = parsed.join(", ");
+            }
+          } catch (e) {
+            // Keep original string if not valid JSON
+          }
+        }
+
+        val = String(val).replace(/"/g, '""');
         row.push(`"${val}"`);
       });
 
@@ -150,7 +185,8 @@ function FormRsvpsPage() {
     });
 
     const csvString = csvRows.join("\n");
-    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    // Prepend UTF-8 BOM (\ufeff) to make Excel parse special characters correctly
+    const blob = new Blob(["\ufeff" + csvString], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -207,6 +243,13 @@ function FormRsvpsPage() {
           </Button>
           <Button className="rounded-full shadow-sm" variant="outline" onClick={handleExportData}>
             <Download className="mr-2 h-4 w-4" /> Export Data
+          </Button>
+          <Button
+            variant="destructive"
+            className="rounded-full shadow-sm bg-red-600 hover:bg-red-700 text-white"
+            onClick={() => setIsDeleteDialogOpen(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" /> Delete Form
           </Button>
         </div>
       </header>
@@ -421,6 +464,101 @@ function FormRsvpsPage() {
             >
               {updateMutation.isPending ? "Saving..." : "Save changes"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          if (!open && !deleteMutation.isPending) {
+            setIsDeleteDialogOpen(false);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[480px] rounded-2xl p-6 gap-6">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive text-xl font-bold">
+              <Trash2 className="h-5 w-5" />
+              Delete RSVP Form
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div className="pt-3 text-sm text-muted-foreground space-y-4">
+                {rsvps.length > 0 ? (
+                  <>
+                    <p className="leading-relaxed">
+                      This form contains{" "}
+                      <strong className="text-foreground">{rsvps.length} responses</strong>. Would
+                      you like to export them to Excel (CSV) before deleting the form?
+                    </p>
+                    <p className="text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-xs leading-relaxed">
+                      <span className="font-semibold text-red-500 block mb-0.5">Warning:</span>
+                      Once deleted, the form and all its responses are permanently removed and
+                      cannot be recovered.
+                    </p>
+                  </>
+                ) : (
+                  <p className="leading-relaxed">
+                    Are you sure you want to delete this form? This action cannot be undone.
+                  </p>
+                )}
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-border/40">
+            <Button
+              variant="outline"
+              className="rounded-full w-full sm:w-auto order-last sm:order-first"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={deleteMutation.isPending}
+            >
+              Cancel
+            </Button>
+            {rsvps.length > 0 ? (
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button
+                  variant="destructive"
+                  className="rounded-full w-full sm:w-auto bg-red-600 hover:bg-red-700 font-medium"
+                  onClick={() => deleteMutation.mutate()}
+                  disabled={deleteMutation.isPending}
+                >
+                  {deleteMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...
+                    </>
+                  ) : (
+                    "Delete Anyway"
+                  )}
+                </Button>
+                <Button
+                  className="rounded-full w-full sm:w-auto text-white font-medium shadow-sm transition-all hover:opacity-90"
+                  style={{ background: "var(--gradient-primary)" }}
+                  onClick={async () => {
+                    handleExportData();
+                    deleteMutation.mutate();
+                  }}
+                  disabled={deleteMutation.isPending}
+                >
+                  Export & Delete
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="destructive"
+                className="rounded-full w-full sm:w-auto bg-red-600 hover:bg-red-700 font-medium"
+                onClick={() => deleteMutation.mutate()}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...
+                  </>
+                ) : (
+                  "Delete Form"
+                )}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

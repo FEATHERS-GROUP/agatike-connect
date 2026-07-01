@@ -12,7 +12,7 @@ import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
 import { getOrganizersRatings } from "@/api/feedback";
-import { getGlobalFeedPosts } from "@/api/experience";
+import { getGlobalFeedPosts, getCommunityMoments } from "@/api/experience";
 import { getPublicEvents } from "@/api/events";
 import { getPublicMovieSchedules } from "@/api/cinemas";
 import { mapDbEventToEvent, isWeekendEvent } from "@/lib/utils";
@@ -118,6 +118,11 @@ export function HomeDesktop() {
   const { data: dbPosts = [] } = useQuery({
     queryKey: ["global-feed-posts"],
     queryFn: () => getGlobalFeedPosts(),
+  });
+
+  const { data: communityMoments = [] } = useQuery({
+    queryKey: ["community-moments"],
+    queryFn: () => getCommunityMoments(),
   });
 
   const { data: ratingsMap = {} } = useQuery({
@@ -301,20 +306,42 @@ export function HomeDesktop() {
 
       {/* Trending */}
       <Section title="Trending events" subtitle="What everyone's talking about right now">
-        <Grid>
-          {trending.map((e) => (
-            <EventCard key={e.id} event={e} />
-          ))}
-        </Grid>
+        {trending.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 px-4 border border-border/40 bg-card rounded-3xl text-center shadow-[var(--shadow-card)]">
+            <span className="text-base font-semibold text-foreground">
+              No trending events found in your country
+            </span>
+            <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+              Please check back later or explore other sections.
+            </p>
+          </div>
+        ) : (
+          <Grid>
+            {trending.map((e) => (
+              <EventCard key={e.id} event={e} />
+            ))}
+          </Grid>
+        )}
       </Section>
 
       {/* Weekend */}
       <Section title="Upcoming this weekend" subtitle="Lock your plans in for the next 48 hours">
-        <Grid cols={4}>
-          {weekend.map((e) => (
-            <EventCard key={e.id} event={e} />
-          ))}
-        </Grid>
+        {weekend.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 px-4 border border-border/40 bg-card rounded-3xl text-center shadow-[var(--shadow-card)]">
+            <span className="text-base font-semibold text-foreground">
+              No upcoming events found for this weekend in your country
+            </span>
+            <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+              Check back soon for new weekend schedules.
+            </p>
+          </div>
+        ) : (
+          <Grid cols={4}>
+            {weekend.map((e) => (
+              <EventCard key={e.id} event={e} />
+            ))}
+          </Grid>
+        )}
       </Section>
 
       {/* Movies */}
@@ -414,14 +441,16 @@ export function HomeDesktop() {
                     </span>
                   </div>
 
-                  <Button
-                    size="sm"
-                    className="mt-4 w-full rounded-full"
-                    variant={isFollowing(org.id) ? "outline" : "default"}
-                    onClick={() => toggleFollow(org.id)}
-                  >
-                    {isFollowing(org.id) ? "Following" : "Follow"}
-                  </Button>
+                  {isLoggedIn && (
+                    <Button
+                      size="sm"
+                      className="mt-4 w-full rounded-full"
+                      variant={isFollowing(org.id) ? "outline" : "default"}
+                      onClick={() => toggleFollow(org.id)}
+                    >
+                      {isFollowing(org.id) ? "Following" : "Follow"}
+                    </Button>
+                  )}
                 </div>
               );
             })}
@@ -443,15 +472,11 @@ export function HomeDesktop() {
           </Link>
         </div>
         {(() => {
-          const filteredPosts = isLoggedIn
-            ? dbPosts.filter((post) => isFollowing(post.organizerId))
-            : dbPosts;
-
-          if (filteredPosts.length === 0) {
+          if (communityMoments.length === 0) {
             return (
               <div className="flex flex-col items-center justify-center py-12 text-center bg-card rounded-2xl border border-border/40">
                 <p className="text-muted-foreground font-medium text-sm">
-                  Follow organizers to see their community moments here.
+                  No community moments found from the past 2 weeks.
                 </p>
               </div>
             );
@@ -459,7 +484,7 @@ export function HomeDesktop() {
 
           return (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {filteredPosts.slice(0, 4).map((p) => (
+              {communityMoments.slice(0, 4).map((p: any) => (
                 <div
                   key={p.id}
                   className="group relative aspect-square overflow-hidden rounded-2xl"
@@ -502,12 +527,14 @@ export function HomeDesktop() {
                   Open organizer dashboard <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                className="rounded-full border-white/40 bg-transparent text-primary-foreground hover:bg-white/10"
-              >
-                See pricing
-              </Button>
+              <Link to="/pricing">
+                <Button
+                  variant="outline"
+                  className="rounded-full border-white/40 bg-transparent text-primary-foreground hover:bg-white/10"
+                >
+                  See pricing
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

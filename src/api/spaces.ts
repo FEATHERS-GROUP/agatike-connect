@@ -77,7 +77,7 @@ export const getSpaces = createServerFn({ method: "POST" })
 
 const GET_PUBLIC_SPACES = `
   query GetPublicSpaces {
-    spaces(where: { status: { _eq: "Active" } }, order_by: { created_at: desc }) {
+    spaces(where: { status: { _in: ["Active", "Maintenance"] } }, order_by: { created_at: desc }) {
       id
       name
       type
@@ -86,6 +86,10 @@ const GET_PUBLIC_SPACES = `
       cover_url
       locations
       plans
+      status
+      workspace {
+        currency
+      }
     }
   }
 `;

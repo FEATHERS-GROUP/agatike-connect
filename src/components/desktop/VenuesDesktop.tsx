@@ -104,6 +104,11 @@ export function VenuesDesktop() {
                   <div className="absolute top-4 right-4 bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-bold shadow-sm">
                     {venue.type}
                   </div>
+                  {venue.status === "Maintenance" && (
+                    <div className="absolute top-4 left-4 bg-orange-500 text-white rounded-full px-3 py-1 text-xs font-bold shadow-sm">
+                      Maintenance
+                    </div>
+                  )}
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-bold tracking-tight">{venue.name}</h3>
@@ -131,7 +136,14 @@ export function VenuesDesktop() {
                           : "Free"}
                       </span>
                     </div>
-                    {venue.source === "space" ? (
+                    {venue.status === "Maintenance" ? (
+                      <Button
+                        disabled
+                        className="rounded-xl px-6 bg-muted text-muted-foreground cursor-not-allowed border border-border"
+                      >
+                        Maintenance
+                      </Button>
+                    ) : venue.source === "space" ? (
                       <Link to="/spaces/$spaceId" params={{ spaceId: venue.id }}>
                         <Button
                           className="rounded-xl px-6 shadow-[var(--shadow-glow)] transition-all group-hover:scale-105"

@@ -72,14 +72,12 @@ export function VenuesMobile() {
             <p>No venues found</p>
           </div>
         ) : (
-          filteredVenues.map((venue) => (
-            <Link
-              key={venue.id}
-              to={venue.source === "space" ? "/spaces/$spaceId" : "/venues/$venueId"}
-              params={venue.source === "space" ? { spaceId: venue.id } : { venueId: venue.id }}
-              className="block active:scale-[0.98] transition-transform"
-            >
-              <div className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm">
+          filteredVenues.map((venue) => {
+            const isMaintenance = venue.status === "Maintenance";
+            const CardContent = (
+              <div
+                className={`rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm ${isMaintenance ? "opacity-75" : ""}`}
+              >
                 <div className="aspect-[16/9] relative">
                   <img
                     src={venue.cover_url}
@@ -89,6 +87,11 @@ export function VenuesMobile() {
                   <div className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm">
                     {venue.type}
                   </div>
+                  {isMaintenance && (
+                    <div className="absolute top-3 left-3 bg-orange-500 text-white rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm">
+                      Maintenance
+                    </div>
+                  )}
                 </div>
                 <div className="p-4">
                   <h3 className="font-bold text-base leading-tight mb-1">{venue.name}</h3>
@@ -108,17 +111,42 @@ export function VenuesMobile() {
                           : "Free"}
                       </span>
                     </div>
-                    <div
-                      className="h-8 px-4 rounded-lg flex items-center justify-center text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)]"
-                      style={{ background: "var(--gradient-primary)" }}
-                    >
-                      {venue.source === "space" ? "Explore" : "Get Ticket"}
-                    </div>
+                    {isMaintenance ? (
+                      <div className="h-8 px-4 rounded-lg flex items-center justify-center text-xs font-bold bg-muted text-muted-foreground border border-border">
+                        Maintenance
+                      </div>
+                    ) : (
+                      <div
+                        className="h-8 px-4 rounded-lg flex items-center justify-center text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)]"
+                        style={{ background: "var(--gradient-primary)" }}
+                      >
+                        {venue.source === "space" ? "Explore" : "Get Ticket"}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            </Link>
-          ))
+            );
+
+            if (isMaintenance) {
+              return (
+                <div key={venue.id} className="block cursor-not-allowed">
+                  {CardContent}
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={venue.id}
+                to={venue.source === "space" ? "/spaces/$spaceId" : "/venues/$venueId"}
+                params={venue.source === "space" ? { spaceId: venue.id } : { venueId: venue.id }}
+                className="block active:scale-[0.98] transition-transform"
+              >
+                {CardContent}
+              </Link>
+            );
+          })
         )}
       </div>
 
