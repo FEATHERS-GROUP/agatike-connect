@@ -35,6 +35,7 @@ const CANONICAL_ORDER: string[] = [
   "Page Builder",
   "Analytics",
   "Community",
+  "Agatike Book",
   "Users",
   "Withdrawals",
   "Settings",
