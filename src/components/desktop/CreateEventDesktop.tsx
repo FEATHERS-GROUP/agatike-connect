@@ -392,10 +392,12 @@ export function CreateEventDesktop() {
         workspace_id: activeWorkspace?.id,
         tour_stops: data.locations.map((loc, idx) => ({
           ...loc,
+          date: loc.date || null,
+          time: loc.time || null,
           ...(idx === 0 && data.isUpcoming ? {
             is_upcoming: true,
-            waitlist_url: data.waitlistUrl,
-            timer_date: data.timerDate,
+            waitlist_url: data.waitlistUrl || null,
+            timer_date: data.timerDate || null,
           } : {})
         })),
         event_requency: (data.isRecurring && !data.isUpcoming)

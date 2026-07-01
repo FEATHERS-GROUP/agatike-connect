@@ -149,17 +149,13 @@ export function CreateExperienceDesktop({
 
   const isRouteBased = ROUTE_CATEGORIES.includes(data.category);
   const locationStepName = isRouteBased ? "Itinerary" : "Venue";
-  const steps = isRouteBased
-    ? ([
-        "Category",
-        "Details",
-        "Duration",
-        locationStepName,
-        "Tickets",
-        "Media",
-        "Publish",
-      ] as const)
-    : (["Category", "Details", locationStepName, "Tickets", "Media", "Publish"] as const);
+  const baseStepsRoute = ["Category", "Details", "Duration", locationStepName] as const;
+  const baseStepsNonRoute = ["Category", "Details", locationStepName] as const;
+  const endSteps = data.isUpcoming ? ["Media", "Publish"] : ["Tickets", "Media", "Publish"];
+  
+  const steps = isRouteBased 
+    ? [...baseStepsRoute, ...endSteps] 
+    : [...baseStepsNonRoute, ...endSteps];
 
   const setStep = (newStep: number) => {
     navigate({ search: { step: newStep } as any, replace: true });
@@ -232,15 +228,15 @@ export function CreateExperienceDesktop({
           itinerary: data.itinerary,
           included: data.tickets.flatMap((t: any) => t.includes || []).filter(Boolean),
           is_upcoming: data.isUpcoming,
-          waitlist_url: data.waitlistUrl,
-          timer_date: data.timerDate,
+          waitlist_url: data.waitlistUrl || null,
+          timer_date: data.timerDate || null,
         },
         event_requency: {
-          date: data.date,
+          date: data.date || null,
           numberOfDays: data.numberOfDays,
         },
         event_tickets: {
-          data: data.tickets.map((t: any) => ({
+          data: data.isUpcoming ? [] : data.tickets.map((t: any) => ({
             id: t.id,
             type: t.name,
             cost: t.price.toString(),
@@ -249,23 +245,24 @@ export function CreateExperienceDesktop({
             form_id: t.form_id || null,
           })),
         },
-        schedules: {
-          data: [
-            {
-              start_date: data.date,
-              end_date: (() => {
-                if (!data.date) return data.date;
-                const d = new Date(data.date);
-                d.setDate(d.getDate() + Math.max(1, data.numberOfDays || 1) - 1);
-                return d.toISOString().split("T")[0];
-              })(),
-              total_spots: data.tickets.reduce(
-                (sum: number, t: any) => sum + parseInt(t.quantity || 0),
-                0,
-              ),
-            },
-          ],
-        },
+        ...(data.date ? {
+          schedules: {
+            data: [
+              {
+                start_date: data.date,
+                end_date: (() => {
+                  const d = new Date(data.date);
+                  d.setDate(d.getDate() + Math.max(1, data.numberOfDays || 1) - 1);
+                  return d.toISOString().split("T")[0];
+                })(),
+                total_spots: data.tickets.reduce(
+                  (sum: number, t: any) => sum + parseInt(t.quantity || 0),
+                  0,
+                ),
+              },
+            ],
+          },
+        } : {}),
       };
 
       if (isEdit && initialData?.id) {

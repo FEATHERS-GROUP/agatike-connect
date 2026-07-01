@@ -63,7 +63,9 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   const tourStops =
     Array.isArray(ev.tour_stops) && ev.tour_stops.length > 0
       ? ev.tour_stops
-      : [{ city: ev.city, venue: ev.venue, date: ev.date, time: ev.time }];
+      : ev.tour_stops && typeof ev.tour_stops === "object" && !Array.isArray(ev.tour_stops)
+        ? [ev.tour_stops]
+        : [{ city: ev.city, venue: ev.venue, date: ev.date, time: ev.time }];
 
   const [selectedStopIdx, setSelectedStopIdx] = useState(0);
   const [hasSelectedStop, setHasSelectedStop] = useState(
