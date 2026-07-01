@@ -13,9 +13,10 @@ import {
   User,
   ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getWorkspaceTasks, createWorkspaceTask, updateWorkspaceTask, deleteWorkspaceTask } from "@/api/tasks";
+import { getWorkspaceUsers } from "@/api/workspace_users";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/book/tasks")({
   component: TasksPage,
 });
 
-type Status = "todo" | "in_progress" | "done";
+type Status = string;
 type Priority = "low" | "medium" | "high" | "urgent";
 
 const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; dot: string }> = {
@@ -59,7 +60,28 @@ function TasksPage() {
     priority: "medium" as Priority,
     due_date: "",
     assigned_to: "",
+    status: "todo" as Status,
   });
+
+  const { data: users = [] } = useQuery({
+    queryKey: ["workspace-users"],
+    queryFn: () => getWorkspaceUsers(),
+  });
+
+  const [localColumns, setLocalColumns] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem(`workspace-task-cols-${wsId}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (wsId) {
+      localStorage.setItem(`workspace-task-cols-${wsId}`, JSON.stringify(localColumns));
+    }
+  }, [localColumns, wsId]);
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ["workspace-tasks", wsId],
@@ -69,11 +91,11 @@ function TasksPage() {
 
   const createMutation = useMutation({
     mutationFn: () =>
-      createWorkspaceTask({ data: { workspace_id: wsId, title: form.title, description: form.description || null, priority: form.priority, status: "todo", due_date: form.due_date || null, assigned_to: form.assigned_to || null } } as any),
+      createWorkspaceTask({ data: { workspace_id: wsId, title: form.title, description: form.description || null, priority: form.priority, status: form.status, due_date: form.due_date || null, assigned_to: form.assigned_to || null } } as any),
     onSuccess: () => {
       toast.success("Task created!");
       setCreateOpen(false);
-      setForm({ title: "", description: "", priority: "medium", due_date: "", assigned_to: "" });
+      setForm({ title: "", description: "", priority: "medium", due_date: "", assigned_to: "", status: "todo" });
       queryClient.invalidateQueries({ queryKey: ["workspace-tasks", wsId] });
     },
     onError: () => toast.error("Failed to create task"),
@@ -98,6 +120,22 @@ function TasksPage() {
   );
 
   const tasksByStatus = (status: Status) => filtered.filter((t: any) => t.status === status);
+
+  const defaultCols = ["todo", "in_progress", "done"];
+  const dbCols = Array.from(new Set(tasks.map((t: any) => t.status)));
+  const allColIds = Array.from(new Set([...defaultCols, ...localColumns, ...dbCols]));
+
+  const dynamicColumns = allColIds.map(id => {
+    const def = STATUS_COLUMNS.find(c => c.id === id);
+    if (def) return def;
+    return {
+      id,
+      label: (id as string).replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+      icon: CheckSquare,
+      color: "text-slate-500",
+      bg: "bg-slate-500/10"
+    };
+  });
 
   return (
     <div className="space-y-6 pb-12">
@@ -150,7 +188,7 @@ function TasksPage() {
             </button>
           </div>
           <Button
-            onClick={() => setCreateOpen(true)}
+            onClick={() => { setForm({ ...form, status: "todo" }); setCreateOpen(true); }}
             className="rounded-full gap-2 shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
           >
@@ -165,36 +203,61 @@ function TasksPage() {
         </div>
       ) : view === "kanban" ? (
         /* ── Kanban board ────────────────────────────────────── */
-        <div className="grid grid-cols-3 gap-4">
-          {STATUS_COLUMNS.map((col) => {
+        <div className="flex gap-4 overflow-x-auto pb-4 snap-x">
+          {dynamicColumns.map((col) => {
             const colTasks = tasksByStatus(col.id);
             return (
-              <div key={col.id} className="rounded-3xl border border-border/60 bg-card/50 overflow-hidden">
+              <div key={col.id} className="rounded-3xl border border-border/60 bg-card/50 overflow-hidden flex-none w-[320px] snap-center flex flex-col max-h-[80vh]">
                 <div className={`p-4 border-b border-border/60 flex items-center gap-2.5`}>
-                  <div className={`h-8 w-8 rounded-xl ${col.bg} ${col.color} flex items-center justify-center`}>
+                  <div className={`h-8 w-8 rounded-xl ${col.bg} ${col.color} flex items-center justify-center shrink-0`}>
                     <col.icon className="h-4 w-4" />
                   </div>
-                  <span className="font-semibold">{col.label}</span>
-                  <span className="ml-auto text-xs font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                  <span className="font-semibold truncate">{col.label}</span>
+                  <span className="ml-auto text-xs font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full shrink-0">
                     {colTasks.length}
                   </span>
                 </div>
-                <div className="p-3 space-y-2 min-h-[200px]">
+                <div className="p-3 space-y-2 flex-1 overflow-y-auto min-h-[200px]">
                   {colTasks.map((task: any) => (
                     <TaskCard
                       key={task.id}
                       task={task}
+                      allColumns={dynamicColumns}
                       onStatusChange={(status) => updateMutation.mutate({ id: task.id, status })}
                       onDelete={() => deleteMutation.mutate(task.id)}
                     />
                   ))}
                   {colTasks.length === 0 && (
-                    <p className="text-center text-muted-foreground text-xs py-8">No tasks</p>
+                    <p className="text-center text-muted-foreground text-xs py-8 opacity-60">No tasks here</p>
                   )}
+                </div>
+                <div className="p-3 border-t border-border/30 bg-secondary/10">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    onClick={() => { setForm({ ...form, status: col.id as string }); setCreateOpen(true); }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Add Task...
+                  </Button>
                 </div>
               </div>
             );
           })}
+          <div className="flex flex-col flex-none w-[320px] rounded-3xl border border-dashed border-border/60 bg-secondary/20 items-center justify-center min-h-[200px] snap-center opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
+               onClick={() => {
+                 const name = prompt("Enter new column name:");
+                 if (name) {
+                   const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+                   if (id && !localColumns.includes(id)) {
+                     setLocalColumns(prev => [...prev, id]);
+                   }
+                 }
+               }}>
+             <div className="h-12 w-12 rounded-full bg-secondary text-muted-foreground flex items-center justify-center mb-3">
+               <Plus className="h-6 w-6" />
+             </div>
+             <span className="font-medium">Add Column</span>
+          </div>
         </div>
       ) : (
         /* ── List view ──────────────────────────────────────── */
@@ -238,9 +301,7 @@ function TasksPage() {
                     onChange={(e) => updateMutation.mutate({ id: task.id, status: e.target.value as Status })}
                     className="text-xs font-medium rounded-lg border border-input bg-background px-2 py-1 focus:outline-none"
                   >
-                    <option value="todo">To Do</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="done">Done</option>
+                    {dynamicColumns.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                   </select>
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     {task.due_date ? (
@@ -323,12 +384,16 @@ function TasksPage() {
             </div>
             <div className="space-y-2">
               <Label>Assigned To</Label>
-              <Input
-                placeholder="Name or email"
+              <select
                 value={form.assigned_to}
                 onChange={(e) => setForm({ ...form, assigned_to: e.target.value })}
-                className="h-11 rounded-xl"
-              />
+                className="w-full h-11 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none"
+              >
+                <option value="">Unassigned</option>
+                {users.map((u: any) => (
+                  <option key={u.id} value={u.name}>{u.name} ({u.email})</option>
+                ))}
+              </select>
             </div>
             <Button
               type="submit"
@@ -346,9 +411,8 @@ function TasksPage() {
   );
 }
 
-function TaskCard({ task, onStatusChange, onDelete }: { task: any; onStatusChange: (s: Status) => void; onDelete: () => void }) {
+function TaskCard({ task, allColumns, onStatusChange, onDelete }: { task: any; allColumns: any[]; onStatusChange: (s: Status) => void; onDelete: () => void }) {
   const pc = PRIORITY_CONFIG[task.priority as Priority] || PRIORITY_CONFIG.low;
-  const nextStatus: Record<Status, Status> = { todo: "in_progress", in_progress: "done", done: "todo" };
 
   return (
     <div className="rounded-2xl bg-card border border-border/60 p-4 hover:border-primary/30 transition-colors group">
@@ -375,13 +439,15 @@ function TaskCard({ task, onStatusChange, onDelete }: { task: any; onStatusChang
             {new Date(task.due_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           </span>
         )}
-        <button
-          onClick={() => onStatusChange(nextStatus[task.status as Status])}
-          className="ml-auto text-xs font-semibold text-primary hover:underline flex items-center gap-0.5"
-        >
-          {task.status === "done" ? "Reopen" : task.status === "todo" ? "Start" : "Complete"}
-          <ChevronDown className="h-3 w-3 -rotate-90" />
-        </button>
+        <div className="ml-auto">
+          <select
+            value={task.status}
+            onChange={(e) => onStatusChange(e.target.value)}
+            className="text-xs font-semibold text-primary bg-transparent focus:outline-none cursor-pointer hover:underline"
+          >
+            {allColumns.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+          </select>
+        </div>
       </div>
     </div>
   );
