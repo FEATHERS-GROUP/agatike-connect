@@ -19,10 +19,11 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
   const { data: books = [] } = useQuery({
     queryKey: ["public-books", workspace_id],
     queryFn: () => getPublicAgatikeBooksByWorkspace({ data: { workspace_id } } as any),
-    enabled: !!workspace_id,
+    enabled: !!workspace_id && workspace_id !== "preview",
   });
 
   const financeBook = (books as any[]).find((b: any) => b.name === "__finance_requests");
+  const isPreview = workspace_id === "preview" || (typeof window !== "undefined" && window.location.search.includes("preview=true"));
   const columns = comp.columns || [];
   const formType = comp.type === "damage_report" ? "Damage Report" : "Budget Request";
 
@@ -71,6 +72,11 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
     }
     if (columns.length > 0 && lineItems.length === 0) {
       toast.error("Please add at least one line item to the table.");
+      return;
+    }
+    if (isPreview) {
+      toast.success("Preview Mode: Request submitted successfully");
+      setIsSubmitted(true);
       return;
     }
     submitMutation.mutate();
@@ -217,14 +223,14 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
 
         <Button
           type="submit"
-          disabled={submitMutation.isPending || !financeBook}
+          disabled={submitMutation.isPending || (!financeBook && !isPreview)}
           className="w-full rounded-full h-12 text-base font-bold shadow-md hover:shadow-lg transition-all"
           style={{ background: themeColor, color: "#fff" }}
         >
           {submitMutation.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
           Submit {formType}
         </Button>
-        {!financeBook && books.length > 0 && (
+        {!financeBook && !isPreview && books.length > 0 && (
           <p className="text-xs text-destructive text-center mt-2">
             The finance team has not set up the Requests book yet.
           </p>
