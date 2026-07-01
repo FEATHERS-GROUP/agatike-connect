@@ -9,7 +9,9 @@ import {
   createAgatikeBookRecord,
   deleteAgatikeBook,
   deleteAgatikeBookRecord,
+  updateAgatikeBookFolder,
 } from "@/api/book";
+import { FolderManager } from "@/components/ui/FolderManager";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -130,6 +132,20 @@ function BooksPage() {
     mutationFn: (id: string) => deleteAgatikeBookRecord({ data: { id } } as any),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspace-books", wsId] }),
   });
+
+  const moveMutation = useMutation({
+    mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) =>
+      updateAgatikeBookFolder({ data: { id, folder_id: folderId } } as any),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspace-books", wsId] }),
+  });
+
+  const handleBulkMove = async (itemIds: string[], folderId: string | null) => {
+    await Promise.all(itemIds.map((id) => moveMutation.mutateAsync({ id, folderId })));
+  };
+
+  const handleBulkDelete = async (itemIds: string[]) => {
+    await Promise.all(itemIds.map((id) => deleteBookMutation.mutateAsync(id)));
+  };
 
   React.useEffect(() => {
     if (activeBook && (books as any[]).length > 0) {
@@ -311,48 +327,75 @@ function BooksPage() {
           <p className="text-sm mt-1">Create a custom book to start tracking anything.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {visibleBooks.map((book: any) => {
-            const numericField = book.schema_fields?.find((f: any) => f.type === "number");
-            const total = numericField
-              ? book.records?.reduce(
-                  (s: number, r: any) => s + (Number(r.record_data?.[numericField.name]) || 0),
-                  0,
-                )
-              : null;
-            return (
-              <div
-                key={book.id}
-                onClick={() => setActiveBook(book)}
-                className="cursor-pointer group rounded-3xl border border-border/60 bg-card p-6 hover:border-primary/30 hover:shadow-md transition-all"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 opacity-0 group-hover:opacity-100 text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteBookMutation.mutate(book.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <h3 className="font-bold text-lg">{book.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {book.records?.length || 0} records · {book.schema_fields?.length || 0} columns
-                </p>
-                {total !== null && (
-                  <p className="text-primary font-bold mt-2">{total.toLocaleString()}</p>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <FolderManager
+          moduleType="agatike_books"
+          items={visibleBooks}
+          getItemId={(item: any) => item.id}
+          getFolderId={(item: any) => item.folder_id}
+          onMoveItems={handleBulkMove}
+          onDeleteItems={handleBulkDelete}
+        >
+          {({ filteredItems, handleSelect, selectedIds, ItemMenu }) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(filteredItems as any[]).map((book: any) => {
+                const numericField = book.schema_fields?.find((f: any) => f.type === "number");
+                const total = numericField
+                  ? book.records?.reduce(
+                      (s: number, r: any) => s + (Number(r.record_data?.[numericField.name]) || 0),
+                      0,
+                    )
+                  : null;
+                const isSelected = selectedIds.has(book.id);
+                return (
+                  <ItemMenu key={book.id} itemId={book.id} folderId={book.folder_id}>
+                    <div
+                      onClick={() => setActiveBook(book)}
+                      className="cursor-pointer group rounded-3xl border bg-card p-6 hover:border-primary/30 hover:shadow-md transition-all"
+                      style={{
+                        borderColor: isSelected
+                          ? "hsl(var(--primary))"
+                          : "hsl(var(--border) / 0.6)",
+                      }}
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={(c) => handleSelect(book.id, c as boolean)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="data-[state=checked]:bg-primary"
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteBookMutation.mutate(book.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <h3 className="font-bold text-lg">{book.name}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {book.records?.length || 0} records · {book.schema_fields?.length || 0}{" "}
+                        columns
+                      </p>
+                      {total !== null && (
+                        <p className="text-primary font-bold mt-2">{total.toLocaleString()}</p>
+                      )}
+                    </div>
+                  </ItemMenu>
+                );
+              })}
+            </div>
+          )}
+        </FolderManager>
       )}
 
       {/* Book builder dialog */}

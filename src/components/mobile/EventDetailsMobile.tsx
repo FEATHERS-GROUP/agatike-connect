@@ -291,6 +291,9 @@ export function EventDetailsMobile({
         total={d.total}
         totalTickets={d.totalTickets}
         selectedSeatsObj={d.selectedSeatsObj}
+        isUpcoming={d.isUpcoming}
+        waitlistUrl={d.waitlistUrl}
+        timerDate={d.timerDate}
       />
 
       {d.currentVenueProject && d.activeTicketIdForMap && (

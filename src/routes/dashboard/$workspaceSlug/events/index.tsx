@@ -34,8 +34,10 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/events/")({
   component: DashboardEvents,
 });
 
-function getEventStatus(event: any): "Live" | "Past" | "Suspended" {
+function getEventStatus(event: any): "Upcoming" | "Live" | "Past" | "Suspended" {
   if (event.suspended) return "Suspended";
+  const isUpcoming = Array.isArray(event.tour_stops) && event.tour_stops[0]?.is_upcoming;
+  if (isUpcoming) return "Upcoming";
   return "Live";
 }
 
@@ -185,7 +187,7 @@ function EventsFilterBar({
       </div>
 
       <div className="flex bg-secondary/50 p-1 rounded-full w-full md:w-auto">
-        {["All", "Live", "Drafts", "Past"].map((f) => (
+        {["All", "Live", "Upcoming", "Drafts", "Past"].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -311,27 +313,33 @@ function EventsTable({
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center font-medium">
-                        <Ticket className="h-3.5 w-3.5 mr-1.5 text-primary" />
-                        <span>{event.salesPct}% sold</span>
+                    {event.status === "Upcoming" ? (
+                      <span className="text-muted-foreground italic text-xs">No tickets</span>
+                    ) : (
+                      <div className="space-y-1">
+                        <div className="flex items-center font-medium">
+                          <Ticket className="h-3.5 w-3.5 mr-1.5 text-primary" />
+                          <span>{event.salesPct}% sold</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 min-w-[120px]">
+                          <DollarSign className="h-4 w-4 text-muted-foreground" />
+                          <span>{formatCurrency(event.revenue, activeWorkspace?.currency)}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5 min-w-[120px]">
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        <span>{formatCurrency(event.revenue, activeWorkspace?.currency)}</span>
-                      </div>
-                    </div>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         event.status === "Suspended"
                           ? "bg-red-500/10 text-red-500"
-                          : event.status === "Live"
-                            ? "bg-green-500/10 text-green-500"
-                            : event.status === "Drafts"
-                              ? "bg-yellow-500/10 text-yellow-500"
-                              : "bg-secondary text-muted-foreground"
+                          : event.status === "Upcoming"
+                            ? "bg-blue-500/10 text-blue-500"
+                            : event.status === "Live"
+                              ? "bg-green-500/10 text-green-500"
+                              : event.status === "Drafts"
+                                ? "bg-yellow-500/10 text-yellow-500"
+                                : "bg-secondary text-muted-foreground"
                       }`}
                     >
                       {event.status}

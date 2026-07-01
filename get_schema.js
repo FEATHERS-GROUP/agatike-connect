@@ -1,20 +1,18 @@
-import dotenv from "dotenv";
-dotenv.config();
-const API_BASE = process.env.HASURA_ADMIN_API.replace("/v1/graphql", "");
-const SECRET = process.env.HASURA_ADMIN_SECRETE;
-
-async function run() {
-  const res = await fetch(`${API_BASE}/v2/query`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-hasura-admin-secret": SECRET },
-    body: JSON.stringify({
-      type: "run_sql",
-      args: {
-        source: "default",
-        sql: "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'spaces';",
-      },
-    }),
-  });
-  console.log(await res.json());
-}
-run();
+const { execSync } = require("child_process");
+const query = `
+  query {
+    __type(name: "events") {
+      fields {
+        name
+        type {
+          name
+          kind
+        }
+      }
+    }
+  }
+`;
+const result = execSync(
+  `curl -s -X POST -H "Content-Type: application/json" -d '{"query":"${query.replace(/\n/g, " ")}"}' http://localhost:8080/v1/graphql`,
+);
+console.log(JSON.parse(result.toString()).data.__type.fields.map((f) => f.name));

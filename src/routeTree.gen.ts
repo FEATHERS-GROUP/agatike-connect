@@ -103,6 +103,7 @@ import { Route as DashboardWorkspaceSlugEventsCreateEventRouteImport } from './r
 import { Route as DashboardWorkspaceSlugBookTasksRouteImport } from './routes/dashboard/$workspaceSlug/book/tasks'
 import { Route as DashboardWorkspaceSlugBookProcurementRouteImport } from './routes/dashboard/$workspaceSlug/book/procurement'
 import { Route as DashboardWorkspaceSlugBookNotesRouteImport } from './routes/dashboard/$workspaceSlug/book/notes'
+import { Route as DashboardWorkspaceSlugBookNewFinanceRequestRouteImport } from './routes/dashboard/$workspaceSlug/book/new-finance-request'
 import { Route as DashboardWorkspaceSlugBookFinanceRouteImport } from './routes/dashboard/$workspaceSlug/book/finance'
 import { Route as DashboardWorkspaceSlugBookBooksRouteImport } from './routes/dashboard/$workspaceSlug/book/books'
 import { Route as DashboardWorkspaceSlugBadgeDesignerProjectIdRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/$projectId'
@@ -145,6 +146,7 @@ import { Route as DashboardWorkspaceSlugEventsEventIdExperienceRouteImport } fro
 import { Route as DashboardWorkspaceSlugEventsEventIdEditRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/edit'
 import { Route as DashboardWorkspaceSlugEventsEventIdAttendeesRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/attendees'
 import { Route as DashboardWorkspaceSlugBookProcurementCreateRouteImport } from './routes/dashboard/$workspaceSlug/book/procurement_.create'
+import { Route as DashboardWorkspaceSlugBookProcurementIdRouteImport } from './routes/dashboard/$workspaceSlug/book/procurement_.$id'
 import { Route as DashboardWorkspaceSlugBookNotesNoteIdRouteImport } from './routes/dashboard/$workspaceSlug/book/notes_.$noteId'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdSettingsRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
@@ -669,6 +671,12 @@ const DashboardWorkspaceSlugBookNotesRoute =
     path: '/$workspaceSlug/book/notes',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugBookNewFinanceRequestRoute =
+  DashboardWorkspaceSlugBookNewFinanceRequestRouteImport.update({
+    id: '/$workspaceSlug/book/new-finance-request',
+    path: '/$workspaceSlug/book/new-finance-request',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugBookFinanceRoute =
   DashboardWorkspaceSlugBookFinanceRouteImport.update({
     id: '/$workspaceSlug/book/finance',
@@ -923,6 +931,12 @@ const DashboardWorkspaceSlugBookProcurementCreateRoute =
     path: '/$workspaceSlug/book/procurement/create',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugBookProcurementIdRoute =
+  DashboardWorkspaceSlugBookProcurementIdRouteImport.update({
+    id: '/$workspaceSlug/book/procurement_/$id',
+    path: '/$workspaceSlug/book/procurement/$id',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugBookNotesNoteIdRoute =
   DashboardWorkspaceSlugBookNotesNoteIdRouteImport.update({
     id: '/$workspaceSlug/book/notes_/$noteId',
@@ -1070,6 +1084,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/book/books': typeof DashboardWorkspaceSlugBookBooksRoute
   '/dashboard/$workspaceSlug/book/finance': typeof DashboardWorkspaceSlugBookFinanceRoute
+  '/dashboard/$workspaceSlug/book/new-finance-request': typeof DashboardWorkspaceSlugBookNewFinanceRequestRoute
   '/dashboard/$workspaceSlug/book/notes': typeof DashboardWorkspaceSlugBookNotesRoute
   '/dashboard/$workspaceSlug/book/procurement': typeof DashboardWorkspaceSlugBookProcurementRoute
   '/dashboard/$workspaceSlug/book/tasks': typeof DashboardWorkspaceSlugBookTasksRoute
@@ -1112,6 +1127,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings': typeof DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers': typeof DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute
   '/dashboard/$workspaceSlug/book/notes/$noteId': typeof DashboardWorkspaceSlugBookNotesNoteIdRoute
+  '/dashboard/$workspaceSlug/book/procurement/$id': typeof DashboardWorkspaceSlugBookProcurementIdRoute
   '/dashboard/$workspaceSlug/book/procurement/create': typeof DashboardWorkspaceSlugBookProcurementCreateRoute
   '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
@@ -1219,6 +1235,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/book/books': typeof DashboardWorkspaceSlugBookBooksRoute
   '/dashboard/$workspaceSlug/book/finance': typeof DashboardWorkspaceSlugBookFinanceRoute
+  '/dashboard/$workspaceSlug/book/new-finance-request': typeof DashboardWorkspaceSlugBookNewFinanceRequestRoute
   '/dashboard/$workspaceSlug/book/notes': typeof DashboardWorkspaceSlugBookNotesRoute
   '/dashboard/$workspaceSlug/book/procurement': typeof DashboardWorkspaceSlugBookProcurementRoute
   '/dashboard/$workspaceSlug/book/tasks': typeof DashboardWorkspaceSlugBookTasksRoute
@@ -1260,6 +1277,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings': typeof DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers': typeof DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute
   '/dashboard/$workspaceSlug/book/notes/$noteId': typeof DashboardWorkspaceSlugBookNotesNoteIdRoute
+  '/dashboard/$workspaceSlug/book/procurement/$id': typeof DashboardWorkspaceSlugBookProcurementIdRoute
   '/dashboard/$workspaceSlug/book/procurement/create': typeof DashboardWorkspaceSlugBookProcurementCreateRoute
   '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
@@ -1369,6 +1387,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/book/books': typeof DashboardWorkspaceSlugBookBooksRoute
   '/dashboard/$workspaceSlug/book/finance': typeof DashboardWorkspaceSlugBookFinanceRoute
+  '/dashboard/$workspaceSlug/book/new-finance-request': typeof DashboardWorkspaceSlugBookNewFinanceRequestRoute
   '/dashboard/$workspaceSlug/book/notes': typeof DashboardWorkspaceSlugBookNotesRoute
   '/dashboard/$workspaceSlug/book/procurement': typeof DashboardWorkspaceSlugBookProcurementRoute
   '/dashboard/$workspaceSlug/book/tasks': typeof DashboardWorkspaceSlugBookTasksRoute
@@ -1411,6 +1430,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings': typeof DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers': typeof DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute
   '/dashboard/$workspaceSlug/book/notes_/$noteId': typeof DashboardWorkspaceSlugBookNotesNoteIdRoute
+  '/dashboard/$workspaceSlug/book/procurement_/$id': typeof DashboardWorkspaceSlugBookProcurementIdRoute
   '/dashboard/$workspaceSlug/book/procurement_/create': typeof DashboardWorkspaceSlugBookProcurementCreateRoute
   '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
@@ -1521,6 +1541,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/book/books'
     | '/dashboard/$workspaceSlug/book/finance'
+    | '/dashboard/$workspaceSlug/book/new-finance-request'
     | '/dashboard/$workspaceSlug/book/notes'
     | '/dashboard/$workspaceSlug/book/procurement'
     | '/dashboard/$workspaceSlug/book/tasks'
@@ -1563,6 +1584,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
     | '/dashboard/$workspaceSlug/book/notes/$noteId'
+    | '/dashboard/$workspaceSlug/book/procurement/$id'
     | '/dashboard/$workspaceSlug/book/procurement/create'
     | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
@@ -1670,6 +1692,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/book/books'
     | '/dashboard/$workspaceSlug/book/finance'
+    | '/dashboard/$workspaceSlug/book/new-finance-request'
     | '/dashboard/$workspaceSlug/book/notes'
     | '/dashboard/$workspaceSlug/book/procurement'
     | '/dashboard/$workspaceSlug/book/tasks'
@@ -1711,6 +1734,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
     | '/dashboard/$workspaceSlug/book/notes/$noteId'
+    | '/dashboard/$workspaceSlug/book/procurement/$id'
     | '/dashboard/$workspaceSlug/book/procurement/create'
     | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
@@ -1819,6 +1843,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/book/books'
     | '/dashboard/$workspaceSlug/book/finance'
+    | '/dashboard/$workspaceSlug/book/new-finance-request'
     | '/dashboard/$workspaceSlug/book/notes'
     | '/dashboard/$workspaceSlug/book/procurement'
     | '/dashboard/$workspaceSlug/book/tasks'
@@ -1861,6 +1886,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
     | '/dashboard/$workspaceSlug/book/notes_/$noteId'
+    | '/dashboard/$workspaceSlug/book/procurement_/$id'
     | '/dashboard/$workspaceSlug/book/procurement_/create'
     | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
@@ -2607,6 +2633,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugBookNotesRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/book/new-finance-request': {
+      id: '/dashboard/$workspaceSlug/book/new-finance-request'
+      path: '/$workspaceSlug/book/new-finance-request'
+      fullPath: '/dashboard/$workspaceSlug/book/new-finance-request'
+      preLoaderRoute: typeof DashboardWorkspaceSlugBookNewFinanceRequestRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/book/finance': {
       id: '/dashboard/$workspaceSlug/book/finance'
       path: '/$workspaceSlug/book/finance'
@@ -2901,6 +2934,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugBookProcurementCreateRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/book/procurement_/$id': {
+      id: '/dashboard/$workspaceSlug/book/procurement_/$id'
+      path: '/$workspaceSlug/book/procurement/$id'
+      fullPath: '/dashboard/$workspaceSlug/book/procurement/$id'
+      preLoaderRoute: typeof DashboardWorkspaceSlugBookProcurementIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/book/notes_/$noteId': {
       id: '/dashboard/$workspaceSlug/book/notes_/$noteId'
       path: '/$workspaceSlug/book/notes/$noteId'
@@ -3116,6 +3156,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugBadgeDesignerProjectIdRoute: typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   DashboardWorkspaceSlugBookBooksRoute: typeof DashboardWorkspaceSlugBookBooksRoute
   DashboardWorkspaceSlugBookFinanceRoute: typeof DashboardWorkspaceSlugBookFinanceRoute
+  DashboardWorkspaceSlugBookNewFinanceRequestRoute: typeof DashboardWorkspaceSlugBookNewFinanceRequestRoute
   DashboardWorkspaceSlugBookNotesRoute: typeof DashboardWorkspaceSlugBookNotesRoute
   DashboardWorkspaceSlugBookProcurementRoute: typeof DashboardWorkspaceSlugBookProcurementRoute
   DashboardWorkspaceSlugBookTasksRoute: typeof DashboardWorkspaceSlugBookTasksRoute
@@ -3148,6 +3189,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugWithdrawalsIndexRoute: typeof DashboardWorkspaceSlugWithdrawalsIndexRoute
   DashboardBillingSubscriptionsIndexRoute: typeof DashboardBillingSubscriptionsIndexRoute
   DashboardWorkspaceSlugBookNotesNoteIdRoute: typeof DashboardWorkspaceSlugBookNotesNoteIdRoute
+  DashboardWorkspaceSlugBookProcurementIdRoute: typeof DashboardWorkspaceSlugBookProcurementIdRoute
   DashboardWorkspaceSlugBookProcurementCreateRoute: typeof DashboardWorkspaceSlugBookProcurementCreateRoute
   DashboardWorkspaceSlugEventsEventIdAttendeesRoute: typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   DashboardWorkspaceSlugEventsEventIdEditRoute: typeof DashboardWorkspaceSlugEventsEventIdEditRoute
@@ -3208,6 +3250,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardWorkspaceSlugBookBooksRoute: DashboardWorkspaceSlugBookBooksRoute,
   DashboardWorkspaceSlugBookFinanceRoute:
     DashboardWorkspaceSlugBookFinanceRoute,
+  DashboardWorkspaceSlugBookNewFinanceRequestRoute:
+    DashboardWorkspaceSlugBookNewFinanceRequestRoute,
   DashboardWorkspaceSlugBookNotesRoute: DashboardWorkspaceSlugBookNotesRoute,
   DashboardWorkspaceSlugBookProcurementRoute:
     DashboardWorkspaceSlugBookProcurementRoute,
@@ -3267,6 +3311,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardBillingSubscriptionsIndexRoute,
   DashboardWorkspaceSlugBookNotesNoteIdRoute:
     DashboardWorkspaceSlugBookNotesNoteIdRoute,
+  DashboardWorkspaceSlugBookProcurementIdRoute:
+    DashboardWorkspaceSlugBookProcurementIdRoute,
   DashboardWorkspaceSlugBookProcurementCreateRoute:
     DashboardWorkspaceSlugBookProcurementCreateRoute,
   DashboardWorkspaceSlugEventsEventIdAttendeesRoute:

@@ -7,9 +7,12 @@ import {
   getWorkspaceForms,
   updateCustomForm,
   deleteCustomForm,
+  updateCustomFormFolder,
   getFormDetails,
   CustomForm,
 } from "@/api/rsvps";
+import { FolderManager } from "@/components/ui/FolderManager";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { toast } from "sonner";
 import { RsvpSummaryCards } from "@/components/dashboard/rsvps/RsvpSummaryCards";
@@ -35,6 +38,14 @@ function RsvpsPage() {
     enabled: !!activeWorkspace?.id,
   });
 
+  const moveMutation = useMutation({
+    mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) => {
+      return await updateCustomFormFolder({ data: { id, folder_id: folderId } } as any);
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["workspace-forms", activeWorkspace?.id] }),
+  });
+
   const toggleActiveMutation = useMutation({
     mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
       updateCustomForm({ data: { id, is_active } } as any),
@@ -54,6 +65,16 @@ function RsvpsPage() {
     },
     onError: (err: any) => toast.error(err.message || "Failed to delete form"),
   });
+
+  const handleBulkMove = async (itemIds: string[], folderId: string | null) => {
+    const promises = itemIds.map((id) => moveMutation.mutateAsync({ id, folderId }));
+    await Promise.all(promises);
+  };
+
+  const handleBulkDelete = async (itemIds: string[]) => {
+    const promises = itemIds.map((id) => deleteMutation.mutateAsync(id));
+    await Promise.all(promises);
+  };
 
   const handleExportDataForForm = async (formId: string, formTitle: string) => {
     setIsExportingBeforeDelete(true);
@@ -132,10 +153,6 @@ function RsvpsPage() {
     }
   };
 
-  const filteredForms = forms.filter(
-    (f: any) => !search || f.title.toLowerCase().includes(search.toLowerCase()),
-  );
-
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="flex flex-wrap items-center justify-between gap-4">
@@ -168,34 +185,63 @@ function RsvpsPage() {
         <div className="flex justify-center p-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      ) : filteredForms.length === 0 ? (
-        <div className="rounded-2xl border border-border/60 bg-card p-12 text-center shadow-sm">
-          <LayoutTemplate className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-xl font-semibold">No forms found</h3>
-          <p className="text-sm text-muted-foreground mt-1 mb-6">
-            You haven't created any custom RSVP forms yet.
-          </p>
-          <Link to="/dashboard/$workspaceSlug/rsvps/create" params={{ workspaceSlug }}>
-            <Button className="rounded-full">
-              <Plus className="mr-2 h-4 w-4" /> Create First Form
-            </Button>
-          </Link>
-        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredForms.map((form: CustomForm) => (
-            <FormCard
-              key={form.id}
-              form={form}
-              workspaceSlug={workspaceSlug}
-              onToggleActive={(f) =>
-                toggleActiveMutation.mutate({ id: f.id, is_active: !f.is_active })
-              }
-              onDeleteClick={(f) => setDeleteConfirmForm(f)}
-              isToggling={toggleActiveMutation.isPending}
-            />
-          ))}
-        </div>
+        <FolderManager
+          moduleType="rsvp_forms"
+          items={forms}
+          getItemId={(item) => (item as any).id}
+          getFolderId={(item) => (item as any).folder_id}
+          onMoveItems={handleBulkMove}
+          onDeleteItems={handleBulkDelete}
+        >
+          {({ filteredItems, handleSelect, selectedIds, ItemMenu }) => {
+            const visibleForms = (filteredItems as CustomForm[]).filter(
+              (f: any) => !search || f.title.toLowerCase().includes(search.toLowerCase()),
+            );
+            return visibleForms.length === 0 ? (
+              <div className="rounded-2xl border border-border/60 bg-card p-12 text-center shadow-sm">
+                <LayoutTemplate className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-xl font-semibold">No forms found</h3>
+                <p className="text-sm text-muted-foreground mt-1 mb-6">
+                  You haven't created any custom RSVP forms yet.
+                </p>
+                <Link to="/dashboard/$workspaceSlug/rsvps/create" params={{ workspaceSlug }}>
+                  <Button className="rounded-full">
+                    <Plus className="mr-2 h-4 w-4" /> Create First Form
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {visibleForms.map((form: CustomForm) => (
+                  <ItemMenu key={form.id} itemId={form.id} folderId={(form as any).folder_id}>
+                    <div className="relative">
+                      <div
+                        className="absolute top-3 right-3 z-20"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Checkbox
+                          checked={selectedIds.has(form.id)}
+                          onCheckedChange={(c) => handleSelect(form.id, c as boolean)}
+                          className="data-[state=checked]:bg-primary"
+                        />
+                      </div>
+                      <FormCard
+                        form={form}
+                        workspaceSlug={workspaceSlug}
+                        onToggleActive={(f) =>
+                          toggleActiveMutation.mutate({ id: f.id, is_active: !f.is_active })
+                        }
+                        onDeleteClick={(f) => setDeleteConfirmForm(f)}
+                        isToggling={toggleActiveMutation.isPending}
+                      />
+                    </div>
+                  </ItemMenu>
+                ))}
+              </div>
+            );
+          }}
+        </FolderManager>
       )}
 
       {/* Delete Confirmation Dialog */}

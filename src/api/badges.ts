@@ -8,6 +8,7 @@ const GET_ALL_BADGE_PROJECTS = `
       order_by: {created_at: desc}
     ) {
       id
+      folder_id
       logo_text
       theme
       gradient_class
@@ -85,6 +86,30 @@ const INSERT_BADGE_PROJECT_MUTATION = `
     }
   }
 `;
+
+export const updateBadgeProjectFolder = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, folder_id } = ctx.data as any;
+  const q = `
+    mutation UpdateBadgeProjectFolder($id: uuid!, $folder_id: uuid) {
+      update_badge_projects_by_pk(pk_columns: {id: $id}, _set: {folder_id: $folder_id}) {
+        id
+      }
+    }
+  `;
+  return hasuraRequest(q, { id, folder_id });
+});
+
+export const deleteBadgeProject = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as any;
+  const q = `
+    mutation DeleteBadgeProject($id: uuid!) {
+      delete_badge_projects_by_pk(id: $id) {
+        id
+      }
+    }
+  `;
+  return hasuraRequest(q, { id });
+});
 
 export const saveBadgeProject = createServerFn({ method: "POST" }).handler(async (ctx) => {
   return await hasuraRequest(INSERT_BADGE_PROJECT_MUTATION, ctx.data);

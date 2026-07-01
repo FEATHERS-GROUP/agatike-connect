@@ -68,6 +68,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder/edi
     return {
       pageId: search.pageId as string | undefined,
       templateId: search.templateId as string | undefined,
+      parentId: search.parentId as string | undefined,
     };
   },
   component: PageBuilder,
@@ -84,14 +85,34 @@ function makeBlankPage() {
     headerImageUrl: "",
     logoUrl: "",
     logoPosition: "hero" as "hero" | "navbar",
+    navbarStyle: "transparent" as "transparent" | "solid",
     fontFamily: "Inter",
+    heroAlign: "center" as
+      | "center"
+      | "top-left"
+      | "top-center"
+      | "top-right"
+      | "center-left"
+      | "center-right"
+      | "bottom-left"
+      | "bottom-center"
+      | "bottom-right",
+    heroOverlayColor: "#000000",
+    heroOverlayOpacity: 40,
+    heroButtonText: "",
+    heroButtonActionType: "url" as "url" | "page" | "form" | "phone",
+    heroButtonLink: "",
+    heroForegroundImageUrl: "",
+    heroForegroundPosition: "right" as "left" | "right",
+    elementShape: "rounded-2xl",
+    parent_id: null as string | null,
     components: [] as any[],
   };
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 function PageBuilder() {
-  const { pageId, templateId } = Route.useSearch();
+  const { pageId, templateId, parentId } = Route.useSearch();
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const workspace_id = activeWorkspace?.id;
@@ -102,11 +123,27 @@ function PageBuilder() {
   const [editorState, setEditorState] = useState(makeBlankPage());
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // ── Sync URL params to local state ────────────────────────────────────────
+  useEffect(() => {
+    setActivePageId(pageId || null);
+    setIsInitialized(false);
+    if (!pageId && !templateId) {
+      setEditorState({ ...makeBlankPage(), parent_id: parentId || null });
+    }
+  }, [pageId, templateId, parentId]);
+
   // ── Fetch: individual page when activePageId changes ──────────────────────
   const { data: pageData, isLoading: isLoadingPage } = useQuery({
     queryKey: ["workspace-page", activePageId],
     queryFn: () => getWorkspacePage({ data: { id: activePageId } } as any),
     enabled: !!activePageId,
+  });
+
+  // ── Fetch: all pages for the dropdown switcher ────────────────────────────
+  const { data: allPages = [] } = useQuery({
+    queryKey: ["all-workspace-pages", workspace_id],
+    queryFn: () => getAllWorkspacePages({ data: { workspace_id } } as any),
+    enabled: !!workspace_id,
   });
 
   // ── Forms for linking ─────────────────────────────────────────────────────
@@ -129,7 +166,18 @@ function PageBuilder() {
         headerImageUrl: pageData.header_image_url || "",
         logoUrl: pageData.logo_url || "",
         logoPosition: settingsBlock?.logoPosition || "hero",
+        navbarStyle: settingsBlock?.navbarStyle || "transparent",
         fontFamily: settingsBlock?.fontFamily || "Inter",
+        heroAlign: settingsBlock?.heroAlign || "center",
+        heroOverlayColor: settingsBlock?.heroOverlayColor || "#000000",
+        heroOverlayOpacity: settingsBlock?.heroOverlayOpacity ?? 40,
+        heroButtonText: settingsBlock?.heroButtonText || "",
+        heroButtonActionType: settingsBlock?.heroButtonActionType || "url",
+        heroButtonLink: settingsBlock?.heroButtonLink || "",
+        heroForegroundImageUrl: settingsBlock?.heroForegroundImageUrl || "",
+        heroForegroundPosition: settingsBlock?.heroForegroundPosition || "right",
+        elementShape: settingsBlock?.elementShape || "rounded-2xl",
+        parent_id: pageData.parent_id || null,
         components: pageData.components?.filter((c: any) => c.type !== "page_settings") || [],
       });
       setIsInitialized(true);
@@ -145,7 +193,18 @@ function PageBuilder() {
           headerImageUrl: template.headerImageUrl,
           logoUrl: "",
           logoPosition: template.logoPosition,
+          navbarStyle: "transparent",
           fontFamily: template.fontFamily,
+          heroAlign: "center",
+          heroOverlayColor: "#000000",
+          heroOverlayOpacity: 40,
+          heroButtonText: "",
+          heroButtonActionType: "url",
+          heroButtonLink: "",
+          heroForegroundImageUrl: "",
+          heroForegroundPosition: "right",
+          elementShape: "rounded-2xl",
+          parent_id: parentId || null,
           components: JSON.parse(JSON.stringify(template.components)), // Deep copy
         });
       }
@@ -198,11 +257,22 @@ function PageBuilder() {
       theme_color: editorState.themeColor,
       header_image_url: editorState.headerImageUrl,
       logo_url: editorState.logoUrl,
+      parent_id: editorState.parent_id,
       components: [
         {
           type: "page_settings",
           logoPosition: editorState.logoPosition,
+          navbarStyle: editorState.navbarStyle,
           fontFamily: editorState.fontFamily,
+          heroAlign: editorState.heroAlign,
+          heroOverlayColor: editorState.heroOverlayColor,
+          heroOverlayOpacity: editorState.heroOverlayOpacity,
+          heroButtonText: editorState.heroButtonText,
+          heroButtonActionType: editorState.heroButtonActionType,
+          heroButtonLink: editorState.heroButtonLink,
+          heroForegroundImageUrl: editorState.heroForegroundImageUrl,
+          heroForegroundPosition: editorState.heroForegroundPosition,
+          elementShape: editorState.elementShape,
         },
         ...editorState.components,
       ],
@@ -289,13 +359,14 @@ function PageBuilder() {
     setEditorState((prev) => ({ ...prev, [field]: value }));
 
   return (
-    <div className="flex h-full overflow-hidden">
-      <div className="flex-1 overflow-y-auto flex flex-col bg-secondary/20">
+    <div className="flex h-screen w-full overflow-hidden">
+      <div className="flex-1 overflow-y-auto bg-secondary/20 relative">
         {/* Top Bar */}
         <EditorTopbar
           activeWorkspace={activeWorkspace}
           editorState={editorState}
           workspace_id={workspace_id}
+          allPages={allPages}
           handleCopyLink={handleCopyLink}
           deleteMutation={deleteMutation}
           handlePublish={handlePublish}
@@ -313,6 +384,7 @@ function PageBuilder() {
             editorState={editorState}
             set={set}
             handleImageUpload={handleImageUpload}
+            allPages={allPages}
             forms={forms}
             workspace_id={workspace_id}
             updateComponent={updateComponent}

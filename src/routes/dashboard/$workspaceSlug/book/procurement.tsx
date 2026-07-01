@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
 import {
   Plus,
   FileText,
@@ -12,6 +12,10 @@ import {
   AlertCircle,
   FilePlus,
   ArrowLeft,
+  Folder,
+  FolderPlus,
+  MoreVertical,
+  MoveRight,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -19,12 +23,42 @@ import {
   getProcurementInvoices,
   deleteProcurementInvoice,
   updateProcurementInvoice,
+  getProcurementFolders,
+  createProcurementFolder,
+  deleteProcurementFolder,
 } from "@/api/procurement";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/procurement")({
   component: ProcurementPage,
@@ -67,29 +101,75 @@ function ProcurementPage() {
   const wsId = activeWorkspace?.id;
   const currency = activeWorkspace?.currency || "RWF";
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<InvoiceStatus | "all">("all");
   const [filterType, setFilterType] = useState<InvoiceType | "all">("all");
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
 
-  const { data: invoices = [], isLoading } = useQuery({
+  const { data: invoices = [], isLoading: loadingInvoices } = useQuery({
     queryKey: ["procurement-invoices", wsId],
     queryFn: () => getProcurementInvoices({ data: { workspace_id: wsId! } } as any),
     enabled: !!wsId,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteProcurementInvoice({ data: { id } } as any),
+  const { data: folders = [], isLoading: loadingFolders } = useQuery({
+    queryKey: ["procurement-folders", wsId],
+    queryFn: () => getProcurementFolders({ data: { workspace_id: wsId! } } as any),
+    enabled: !!wsId,
+  });
+
+  const createFolderMutation = useMutation({
+    mutationFn: (name: string) =>
+      createProcurementFolder({ data: { workspace_id: wsId, name } } as any),
     onSuccess: () => {
-      toast.success("Invoice deleted");
+      toast.success("Folder created");
+      queryClient.invalidateQueries({ queryKey: ["procurement-folders", wsId] });
+      setIsCreateFolderModalOpen(false);
+      setNewFolderName("");
+    },
+  });
+
+  const deleteFolderMutation = useMutation({
+    mutationFn: (id: string) => deleteProcurementFolder({ data: { id } } as any),
+    onSuccess: () => {
+      toast.success("Folder deleted");
+      if (currentFolderId) setCurrentFolderId(null);
+      queryClient.invalidateQueries({ queryKey: ["procurement-folders", wsId] });
       queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] });
     },
   });
 
-  const updateStatusMutation = useMutation({
-    mutationFn: (vars: { id: string; status: InvoiceStatus }) =>
-      updateProcurementInvoice({ data: { id: vars.id, status: vars.status } } as any),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] }),
+  const handleDeleteFolder = (folderId: string) => {
+    const count = (invoices as any[]).filter((i: any) => i.folder_id === folderId).length;
+    if (count > 0) {
+      toast.error("Please move all documents out of this folder before deleting it.");
+      return;
+    }
+    deleteFolderMutation.mutate(folderId);
+  };
+
+  const deleteInvoiceMutation = useMutation({
+    mutationFn: (id: string) => deleteProcurementInvoice({ data: { id } } as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] });
+    },
+  });
+
+  const updateInvoiceMutation = useMutation({
+    mutationFn: (vars: { id: string; status?: InvoiceStatus; folder_id?: string | null }) => {
+      const setPayload: any = {};
+      if (vars.status) setPayload.status = vars.status;
+      if (vars.folder_id !== undefined) setPayload.folder_id = vars.folder_id;
+      return updateProcurementInvoice({ data: { id: vars.id, ...setPayload } } as any);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] });
+    },
   });
 
   const filtered = (invoices as any[]).filter((inv) => {
@@ -99,7 +179,8 @@ function ProcurementPage() {
       inv.invoice_number?.toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === "all" || inv.status === filterStatus;
     const matchType = filterType === "all" || inv.invoice_type === filterType;
-    return matchSearch && matchStatus && matchType;
+    const matchFolder = currentFolderId ? inv.folder_id === currentFolderId : !inv.folder_id;
+    return matchSearch && matchStatus && matchType && matchFolder;
   });
 
   const totalPaid = (invoices as any[])
@@ -109,217 +190,493 @@ function ProcurementPage() {
     .filter((i) => i.status === "sent" || i.status === "overdue")
     .reduce((s, i) => s + calcInvoiceTotal(i), 0);
 
+  const currentFolder = folders.find((f: any) => f.id === currentFolderId);
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedInvoices(new Set(filtered.map((i) => i.id)));
+    } else {
+      setSelectedInvoices(new Set());
+    }
+  };
+
+  const handleSelect = (id: string, checked: boolean) => {
+    const next = new Set(selectedInvoices);
+    if (checked) next.add(id);
+    else next.delete(id);
+    setSelectedInvoices(next);
+  };
+
+  const handleBulkMove = async (folderId: string | null) => {
+    const promises = Array.from(selectedInvoices).map((id) =>
+      updateInvoiceMutation.mutateAsync({ id, folder_id: folderId }),
+    );
+    await Promise.all(promises);
+    setSelectedInvoices(new Set());
+    toast.success("Documents moved successfully");
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete the selected documents?")) return;
+    const promises = Array.from(selectedInvoices).map((id) =>
+      deleteInvoiceMutation.mutateAsync(id),
+    );
+    await Promise.all(promises);
+    setSelectedInvoices(new Set());
+    toast.success("Documents deleted");
+  };
+
   return (
-    <div className="space-y-6 pb-12">
-      <div className="mb-2">
-        <Link
-          to={`/dashboard/${wsId ? activeWorkspace?.slug : ""}/book`}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-secondary/30 hover:bg-secondary px-3 py-1.5 rounded-full border border-border/30"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Agatike Book
-        </Link>
-      </div>
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Procurement</h1>
-          <p className="text-muted-foreground mt-1">
-            Proforma invoices, bills, and client documents.
-          </p>
-        </div>
-        <Link to={`/dashboard/${workspaceSlug}/book/procurement/create` as any}>
-          <Button
-            className="rounded-full gap-2 shadow-[var(--shadow-glow)]"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            <FilePlus className="h-4 w-4" /> New Invoice
-          </Button>
-        </Link>
-      </div>
-
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          {
-            label: "Total Invoices",
-            value: (invoices as any[]).length,
-            color: "text-foreground",
-            bg: "bg-secondary",
-          },
-          {
-            label: "Draft",
-            value: (invoices as any[]).filter((i) => i.status === "draft").length,
-            color: "text-slate-500",
-            bg: "bg-slate-500/10",
-          },
-          {
-            label: "Paid",
-            value: `${totalPaid.toLocaleString()} ${currency}`,
-            color: "text-green-500",
-            bg: "bg-green-500/10",
-          },
-          {
-            label: "Outstanding",
-            value: `${totalPending.toLocaleString()} ${currency}`,
-            color: "text-orange-500",
-            bg: "bg-orange-500/10",
-          },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="bg-card border border-border/60 rounded-2xl p-4 flex items-center gap-3"
-          >
-            <div className={`h-9 w-9 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}>
-              <FileText className={`h-4 w-4 ${s.color}`} />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-semibold">{s.label}</p>
-              <p className={`font-black text-lg ${s.color}`}>{s.value}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 items-center">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by client or number..."
-            className="pl-9 h-10 rounded-xl w-64"
-          />
-        </div>
-        <div className="flex gap-1 bg-secondary/50 p-1 rounded-xl">
-          {(["all", "proforma", "invoice"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setFilterType(t)}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors",
-                filterType === t
-                  ? "bg-background shadow-sm text-foreground"
-                  : "text-muted-foreground",
-              )}
-            >
-              {t === "all" ? "All Types" : t === "proforma" ? "Proforma" : "Invoice"}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-1 bg-secondary/50 p-1 rounded-xl">
-          {(["all", "draft", "sent", "paid", "overdue"] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setFilterStatus(s)}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors",
-                filterStatus === s
-                  ? "bg-background shadow-sm text-foreground"
-                  : "text-muted-foreground",
-              )}
-            >
-              {s === "all" ? "All" : s}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Invoice list */}
-      {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-border/60 py-20 text-center text-muted-foreground">
-          <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="font-semibold">No invoices found</p>
-          <p className="text-sm mt-1">Create your first invoice to get started.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map((inv: any) => {
-            const sc = STATUS_CONFIG[inv.status as InvoiceStatus] || STATUS_CONFIG.draft;
-            const total = calcInvoiceTotal(inv);
-            return (
-              <div
-                key={inv.id}
-                className="bg-card border border-border/60 rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-primary/30 transition-colors group"
+    <>
+      <ContextMenu>
+        <ContextMenuTrigger className="block min-h-[80vh]">
+          <div className="space-y-6 pb-12">
+            <div className="mb-2">
+              <Link
+                to={`/dashboard/${wsId ? activeWorkspace?.slug : ""}/book`}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-secondary/30 hover:bg-secondary px-3 py-1.5 rounded-full border border-border/30"
               >
-                <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm">{inv.invoice_number}</span>
-                    <span
-                      className={cn(
-                        "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border",
-                        sc.color,
-                      )}
-                    >
-                      {sc.label}
-                    </span>
-                    <span className="text-[10px] uppercase font-semibold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
-                      {inv.invoice_type === "proforma" ? "Proforma" : "Invoice"}
-                    </span>
+                <ArrowLeft className="h-4 w-4" /> Back to Agatike Book
+              </Link>
+            </div>
+            {/* Header */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Procurement</h1>
+                <p className="text-muted-foreground mt-1">
+                  Right-click anywhere to organize your documents in folders.
+                </p>
+              </div>
+              <Link
+                to={
+                  `/dashboard/${workspaceSlug}/book/procurement/create${currentFolderId ? `?folder=${currentFolderId}` : ""}` as any
+                }
+              >
+                <Button
+                  className="rounded-full gap-2 shadow-[var(--shadow-glow)]"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  <FilePlus className="h-4 w-4" /> New Document
+                </Button>
+              </Link>
+            </div>
+
+            {/* Summary cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {
+                  label: "Total Documents",
+                  value: (invoices as any[]).length,
+                  color: "text-foreground",
+                  bg: "bg-secondary",
+                },
+                {
+                  label: "Draft",
+                  value: (invoices as any[]).filter((i) => i.status === "draft").length,
+                  color: "text-slate-500",
+                  bg: "bg-slate-500/10",
+                },
+                {
+                  label: "Paid / Cleared",
+                  value: `${totalPaid.toLocaleString()} ${currency}`,
+                  color: "text-green-500",
+                  bg: "bg-green-500/10",
+                },
+                {
+                  label: "Outstanding",
+                  value: `${totalPending.toLocaleString()} ${currency}`,
+                  color: "text-orange-500",
+                  bg: "bg-orange-500/10",
+                },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="bg-card border border-border/60 rounded-2xl p-4 flex items-center gap-3"
+                >
+                  <div
+                    className={`h-9 w-9 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}
+                  >
+                    <FileText className={`h-4 w-4 ${s.color}`} />
                   </div>
-                  <p className="text-sm text-muted-foreground truncate mt-0.5">
-                    {inv.client_name}
-                    {inv.client_company ? ` · ${inv.client_company}` : ""}
-                  </p>
+                  <div>
+                    <p className="text-xs text-muted-foreground font-semibold">{s.label}</p>
+                    <p className={`font-black text-lg ${s.color}`}>{s.value}</p>
+                  </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="font-black text-base">
-                    {total.toLocaleString()} {currency}
-                  </p>
-                  {inv.due_date && (
-                    <p className="text-xs text-muted-foreground">
-                      Due{" "}
-                      {new Date(inv.due_date).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {inv.status !== "paid" && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-green-500"
-                      title="Mark as Paid"
-                      onClick={() => updateStatusMutation.mutate({ id: inv.id, status: "paid" })}
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {inv.status === "draft" && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-blue-500"
-                      title="Mark as Sent"
-                      onClick={() => updateStatusMutation.mutate({ id: inv.id, status: "sent" })}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  )}
+              ))}
+            </div>
+
+            {/* Folder Navigation */}
+            {currentFolderId ? (
+              <div className="flex items-center gap-2 bg-secondary/30 p-2 rounded-xl border border-border/30 w-fit mb-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-2"
+                  onClick={() => setCurrentFolderId(null)}
+                >
+                  <Folder className="h-4 w-4 text-blue-500" /> All Folders
+                </Button>
+                <span className="text-muted-foreground">/</span>
+                <span className="font-semibold text-sm px-2 flex items-center gap-2">
+                  {currentFolder?.name}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-destructive"
-                    onClick={() => deleteMutation.mutate(inv.id)}
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive ml-2"
+                    onClick={() => handleDeleteFolder(currentFolderId)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </span>
+              </div>
+            ) : (
+              folders.length > 0 && (
+                <div className="flex flex-wrap gap-3 mb-6">
+                  {folders.map((folder: any) => {
+                    const count = (invoices as any[]).filter(
+                      (i) => i.folder_id === folder.id,
+                    ).length;
+                    return (
+                      <div
+                        key={folder.id}
+                        onClick={() => setCurrentFolderId(folder.id)}
+                        className="flex items-center gap-3 bg-card border border-border/60 rounded-2xl px-4 py-3 cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all w-[200px]"
+                      >
+                        <Folder
+                          className="h-8 w-8 text-blue-500 shrink-0"
+                          fill="currentColor"
+                          fillOpacity={0.2}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm truncate">{folder.name}</p>
+                          <p className="text-xs text-muted-foreground">{count} items</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
+            )}
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-3 items-center">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search by client or number..."
+                  className="pl-9 h-10 rounded-xl w-64"
+                />
+              </div>
+              <div className="flex gap-1 bg-secondary/50 p-1 rounded-xl">
+                {(["all", "draft", "sent", "paid", "overdue"] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setFilterStatus(s)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors",
+                      filterStatus === s
+                        ? "bg-background shadow-sm text-foreground"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {s === "all" ? "All" : s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Bulk Actions */}
+            {selectedInvoices.size > 0 && (
+              <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 flex items-center justify-between mb-2 animate-in slide-in-from-bottom-2 fade-in">
+                <span className="font-semibold text-primary">
+                  {selectedInvoices.size} items selected
+                </span>
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 gap-2 bg-white">
+                        <MoveRight className="h-4 w-4" /> Bulk Move...
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-48">
+                      <DropdownMenuItem onClick={() => handleBulkMove(null)}>
+                        Root (No Folder)
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {folders.map((f: any) => (
+                        <DropdownMenuItem key={f.id} onClick={() => handleBulkMove(f.id)}>
+                          <Folder className="mr-2 h-4 w-4" /> {f.name}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="h-8 gap-2"
+                    onClick={handleBulkDelete}
+                  >
+                    <Trash2 className="h-4 w-4" /> Bulk Delete
                   </Button>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+            )}
+
+            {/* Invoice list */}
+            {loadingInvoices ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-border/60 py-20 text-center text-muted-foreground">
+                <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                <p className="font-semibold">No documents here</p>
+                <p className="text-sm mt-1">
+                  Right-click to create a folder, or create a new document.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center gap-4 px-5 py-2">
+                  <Checkbox
+                    checked={selectedInvoices.size === filtered.length && filtered.length > 0}
+                    onCheckedChange={(c) => handleSelectAll(c as boolean)}
+                  />
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Select All
+                  </span>
+                </div>
+                {filtered.map((inv: any) => {
+                  const sc = STATUS_CONFIG[inv.status as InvoiceStatus] || STATUS_CONFIG.draft;
+                  const total = calcInvoiceTotal(inv);
+                  const isSelected = selectedInvoices.has(inv.id);
+                  return (
+                    <ContextMenu key={inv.id}>
+                      <ContextMenuTrigger asChild>
+                        <div
+                          onClick={() =>
+                            navigate({
+                              to: `/dashboard/${workspaceSlug}/book/procurement/${inv.id}` as any,
+                            })
+                          }
+                          className={cn(
+                            "bg-card border rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer group",
+                            isSelected ? "border-primary bg-primary/5" : "border-border/60",
+                          )}
+                        >
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="shrink-0 flex items-center justify-center"
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={(c) => handleSelect(inv.id, c as boolean)}
+                            />
+                          </div>
+                          <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <FileText className="h-5 w-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm">{inv.invoice_number}</span>
+                              <span
+                                className={cn(
+                                  "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border",
+                                  sc.color,
+                                )}
+                              >
+                                {sc.label}
+                              </span>
+                              <span className="text-[10px] uppercase font-semibold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                                {inv.invoice_type.replace("_", " ")}
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground truncate mt-0.5">
+                              {inv.client_name}
+                              {inv.client_company ? ` · ${inv.client_company}` : ""}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-black text-base">
+                              {total.toLocaleString()} {currency}
+                            </p>
+                            {inv.due_date && (
+                              <p className="text-xs text-muted-foreground">
+                                Due{" "}
+                                {new Date(inv.due_date).toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "short",
+                                })}
+                              </p>
+                            )}
+                          </div>
+                          <div
+                            className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => e.stopPropagation()} // Prevent nav when clicking buttons
+                          >
+                            {inv.status !== "paid" && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-green-500"
+                                title="Mark as Paid"
+                                onClick={() => {
+                                  updateInvoiceMutation.mutate({ id: inv.id, status: "paid" });
+                                  toast.success("Marked as Paid");
+                                }}
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {inv.status === "draft" && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-blue-500"
+                                title="Mark as Sent"
+                                onClick={() => {
+                                  updateInvoiceMutation.mutate({ id: inv.id, status: "sent" });
+                                  toast.success("Marked as Sent");
+                                }}
+                              >
+                                <Send className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => {
+                                deleteInvoiceMutation.mutate(inv.id);
+                                toast.success("Document deleted");
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </ContextMenuTrigger>
+
+                      <ContextMenuContent className="w-48">
+                        <ContextMenuItem
+                          onClick={() =>
+                            navigate({
+                              to: `/dashboard/${workspaceSlug}/book/procurement/${inv.id}` as any,
+                            })
+                          }
+                        >
+                          <FileText className="mr-2 h-4 w-4" /> View Preview
+                        </ContextMenuItem>
+                        <ContextMenuSub>
+                          <ContextMenuSubTrigger>
+                            <MoveRight className="mr-2 h-4 w-4" /> Move to Folder
+                          </ContextMenuSubTrigger>
+                          <ContextMenuSubContent className="w-48">
+                            <ContextMenuItem
+                              onClick={() => {
+                                updateInvoiceMutation.mutate({ id: inv.id, folder_id: null });
+                                toast.success("Moved to Root");
+                              }}
+                            >
+                              Root (No Folder)
+                            </ContextMenuItem>
+                            <ContextMenuSeparator />
+                            {folders.map((f: any) => (
+                              <ContextMenuItem
+                                key={f.id}
+                                onClick={() => {
+                                  updateInvoiceMutation.mutate({ id: inv.id, folder_id: f.id });
+                                  toast.success(`Moved to ${f.name}`);
+                                }}
+                              >
+                                <Folder className="mr-2 h-4 w-4" /> {f.name}
+                              </ContextMenuItem>
+                            ))}
+                          </ContextMenuSubContent>
+                        </ContextMenuSub>
+                        <ContextMenuSeparator />
+                        <ContextMenuItem
+                          className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                          onClick={() => {
+                            deleteInvoiceMutation.mutate(inv.id);
+                            toast.success("Document deleted");
+                          }}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete Document
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </ContextMenuTrigger>
+
+        <ContextMenuContent className="w-48">
+          {!currentFolderId && (
+            <ContextMenuItem onClick={() => setIsCreateFolderModalOpen(true)}>
+              <FolderPlus className="mr-2 h-4 w-4" /> Create New Folder
+            </ContextMenuItem>
+          )}
+          <ContextMenuItem
+            onClick={() =>
+              navigate({
+                to: `/dashboard/${workspaceSlug}/book/procurement/create${currentFolderId ? `?folder=${currentFolderId}` : ""}` as any,
+              })
+            }
+          >
+            <FilePlus className="mr-2 h-4 w-4" /> Create Document
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+
+      <Dialog open={isCreateFolderModalOpen} onOpenChange={setIsCreateFolderModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Folder</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              autoFocus
+              placeholder="Folder name..."
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && newFolderName.trim() && !createFolderMutation.isPending) {
+                  createFolderMutation.mutate(newFolderName.trim());
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateFolderModalOpen(false);
+                setNewFolderName("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!newFolderName.trim() || createFolderMutation.isPending}
+              onClick={() => {
+                createFolderMutation.mutate(newFolderName.trim());
+              }}
+            >
+              {createFolderMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Create Folder"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

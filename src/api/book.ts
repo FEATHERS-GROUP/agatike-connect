@@ -7,6 +7,7 @@ const GET_AGATIKE_BOOKS = `
     agatike_books(where: { event_id: { _eq: $event_id } }, order_by: { created_at: desc }) {
       id
       name
+      folder_id
       icon
       schema_fields
       created_at
@@ -20,7 +21,8 @@ const GET_AGATIKE_BOOKS = `
 `;
 
 export const getAgatikeBooks = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { event_id } = ctx.data as unknown as { event_id: string };
+  const payload = (ctx.data as any).data || ctx.data;
+  const { event_id } = payload;
   const data = await hasuraRequest<{ agatike_books: any[] }>(GET_AGATIKE_BOOKS, { event_id });
   return data.agatike_books || [];
 });
@@ -38,8 +40,11 @@ export const createAgatikeBook = createServerFn({ method: "POST" }).handler(asyn
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const bookData = ctx.data as any;
-  bookData.workspace_id = session.sub;
+  const payload = (ctx.data as any).data || ctx.data;
+  const bookData = payload;
+  if (!bookData.workspace_id) {
+    bookData.workspace_id = session.sub;
+  }
 
   return hasuraRequest(CREATE_AGATIKE_BOOK, { object: bookData });
 });
@@ -56,9 +61,19 @@ export const createAgatikeBookRecord = createServerFn({ method: "POST" }).handle
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const recordData = ctx.data as any;
+  const payload = (ctx.data as any).data || ctx.data;
+  const recordData = payload;
   return hasuraRequest(CREATE_AGATIKE_BOOK_RECORD, { object: recordData });
 });
+
+export const createPublicAgatikeBookRecord = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    // Public endpoint for Page Builder forms (no auth required)
+    const payload = (ctx.data as any).data || ctx.data;
+    const recordData = payload;
+    return hasuraRequest(CREATE_AGATIKE_BOOK_RECORD, { object: recordData });
+  },
+);
 
 const DELETE_AGATIKE_BOOK = `
   mutation DeleteAgatikeBook($id: uuid!) {
@@ -72,7 +87,8 @@ export const deleteAgatikeBook = createServerFn({ method: "POST" }).handler(asyn
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const { id } = ctx.data as unknown as { id: string };
+  const payload = (ctx.data as any).data || ctx.data;
+  const { id } = payload;
   return hasuraRequest(DELETE_AGATIKE_BOOK, { id });
 });
 
@@ -88,8 +104,44 @@ export const deleteAgatikeBookRecord = createServerFn({ method: "POST" }).handle
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const { id } = ctx.data as unknown as { id: string };
+  const payload = (ctx.data as any).data || ctx.data;
+  const { id } = payload;
   return hasuraRequest(DELETE_AGATIKE_BOOK_RECORD, { id });
+});
+
+const UPDATE_AGATIKE_BOOK_RECORD = `
+  mutation UpdateAgatikeBookRecord($id: uuid!, $record_data: jsonb!) {
+    update_agatike_book_records_by_pk(pk_columns: { id: $id }, _set: { record_data: $record_data }) {
+      id
+      record_data
+    }
+  }
+`;
+
+export const updateAgatikeBookRecord = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+
+  const { id, record_data } = ctx.data as unknown as { id: string; record_data: any };
+  return hasuraRequest(UPDATE_AGATIKE_BOOK_RECORD, { id, record_data });
+});
+
+const UPDATE_AGATIKE_BOOK_NAME = `
+  mutation UpdateAgatikeBookName($id: uuid!, $name: String!) {
+    update_agatike_books_by_pk(pk_columns: { id: $id }, _set: { name: $name }) {
+      id
+      name
+    }
+  }
+`;
+
+export const updateAgatikeBookName = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+
+  const payload = (ctx.data as any).data || ctx.data;
+  const { id, name } = payload;
+  return hasuraRequest(UPDATE_AGATIKE_BOOK_NAME, { id, name });
 });
 
 const GET_AGATIKE_BOOKS_BY_WORKSPACE = `
@@ -100,6 +152,7 @@ const GET_AGATIKE_BOOKS_BY_WORKSPACE = `
     ) {
       id
       name
+      folder_id
       icon
       schema_fields
       created_at
@@ -114,10 +167,34 @@ const GET_AGATIKE_BOOKS_BY_WORKSPACE = `
 
 export const getAgatikeBooksByWorkspace = createServerFn({ method: "POST" }).handler(
   async (ctx) => {
-    const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+    const payload = (ctx.data as any).data || ctx.data;
+    const { workspace_id } = payload;
     const data = await hasuraRequest<{ agatike_books: any[] }>(GET_AGATIKE_BOOKS_BY_WORKSPACE, {
       workspace_id,
     });
     return data.agatike_books || [];
   },
 );
+
+export const getPublicAgatikeBooksByWorkspace = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    // Public endpoint for Page Builder forms (no auth required)
+    const payload = (ctx.data as any).data || ctx.data;
+    const { workspace_id } = payload;
+    const data = await hasuraRequest<{ agatike_books: any[] }>(GET_AGATIKE_BOOKS_BY_WORKSPACE, {
+      workspace_id,
+    });
+    return data.agatike_books || [];
+  },
+);
+
+export const updateAgatikeBookFolder = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, folder_id } = ctx.data as any;
+  const res = await hasuraRequest<{ update_agatike_books_by_pk: { id: string } }>(
+    `mutation UpdateBookFolder($id: uuid!, $folder_id: uuid) {
+      update_agatike_books_by_pk(pk_columns: {id: $id}, _set: {folder_id: $folder_id}) { id }
+    }`,
+    { id, folder_id },
+  );
+  return res.update_agatike_books_by_pk;
+});

@@ -1,5 +1,6 @@
 import QRCode from "react-qr-code";
 import { EmbeddedForm } from "./EmbeddedForm";
+import { SpreadsheetEntryForm } from "./SpreadsheetEntryForm";
 
 export function PreviewComponent({
   comp,
@@ -239,6 +240,18 @@ export function PreviewComponent({
           <QRCode value={comp.content || "https://agatike.com"} size={size} />
         </div>
         {comp.title && <p className="text-sm font-medium text-center">{comp.title}</p>}
+      </div>
+    );
+  }
+
+  if (comp.type === "budget_request" || comp.type === "damage_report") {
+    return (
+      <div className="w-full pointer-events-none opacity-80">
+        <SpreadsheetEntryForm
+          workspace_id="preview"
+          themeColor={themeColor || "#000"}
+          comp={comp}
+        />
       </div>
     );
   }

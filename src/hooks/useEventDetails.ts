@@ -63,7 +63,9 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   const tourStops =
     Array.isArray(ev.tour_stops) && ev.tour_stops.length > 0
       ? ev.tour_stops
-      : [{ city: ev.city, venue: ev.venue, date: ev.date, time: ev.time }];
+      : ev.tour_stops && typeof ev.tour_stops === "object" && !Array.isArray(ev.tour_stops)
+        ? [ev.tour_stops]
+        : [{ city: ev.city, venue: ev.venue, date: ev.date, time: ev.time }];
 
   const [selectedStopIdx, setSelectedStopIdx] = useState(0);
   const [hasSelectedStop, setHasSelectedStop] = useState(
@@ -71,7 +73,16 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   );
 
   const currentStop = tourStops[selectedStopIdx] || tourStops[0];
-  const date = isMock ? ev.date : currentStop.date || "TBD";
+  const isUpcoming = currentStop?.is_upcoming === true;
+  const timerDate = currentStop?.timer_date;
+  const waitlistUrl = currentStop?.waitlist_url;
+
+  const dateStr = isMock ? ev.date : currentStop.date || "TBD";
+  const date = isUpcoming
+    ? timerDate
+      ? `Drops ${new Date(timerDate).toLocaleDateString("en-US")}`
+      : "Coming Soon"
+    : dateStr;
   const time = isMock ? ev.time || ev.duration : currentStop.time || "";
   const venue = isMock ? ev.venue || ev.cinema : currentStop.venue || "";
   const city = isMock ? ev.city : currentStop.venue || currentStop.city || "";
@@ -385,5 +396,8 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     attendeesList,
     reviews,
     avgRating,
+    isUpcoming,
+    timerDate,
+    waitlistUrl,
   };
 }

@@ -35,6 +35,7 @@ export default function BlockNoteEditor({
     <div className="h-full mt-4 [&_.bn-editor]:px-0">
       <BlockNoteView
         editor={editor}
+        theme="light"
         onChange={async () => {
           isUpdatingRef.current = true;
           const html = await editor.blocksToHTMLLossy(editor.document);

@@ -264,7 +264,12 @@ function NotesPage() {
               <div className="flex-1 min-h-[300px] -mx-8 relative z-10">
                 <Suspense
                   fallback={
-                    <div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />
+                    <div className="flex flex-col space-y-4 pt-4 px-10">
+                      <div className="h-4 w-full bg-secondary/40 rounded animate-pulse" />
+                      <div className="h-4 w-11/12 bg-secondary/40 rounded animate-pulse" />
+                      <div className="h-4 w-4/5 bg-secondary/40 rounded animate-pulse" />
+                      <div className="h-4 w-full bg-secondary/40 rounded animate-pulse" />
+                    </div>
                   }
                 >
                   <BlockNoteEditor value={draftContent} onChange={setDraftContent} />
@@ -369,41 +374,7 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
 
   return (
     <div className="flex flex-col h-full w-full px-10 py-10 overflow-y-auto">
-      {/* Top action bar */}
-      <div className="flex items-center justify-between mb-8 opacity-0 hover:opacity-100 transition-opacity focus-within:opacity-100 group">
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <Button variant="ghost" size="sm" className="h-8 gap-2 text-xs" onClick={onExpand}>
-            <Maximize2 className="h-3 w-3" /> Open as Page
-          </Button>
-          {note.pinned && (
-            <span className="flex items-center gap-1 text-primary bg-primary/10 px-2 py-0.5 rounded-sm ml-2">
-              <Pin className="h-3 w-3" /> Pinned
-            </span>
-          )}
-          {isSaving ? (
-            <span className="flex items-center gap-1 text-muted-foreground/60 ml-2">
-              <Loader2 className="h-3 w-3 animate-spin" /> Saving...
-            </span>
-          ) : dirty ? (
-            <span className="text-muted-foreground/60 ml-2 italic">Saving soon...</span>
-          ) : (
-            <span className="text-muted-foreground/60 ml-2">Saved</span>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onPin}>
-            {note.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:bg-destructive/10"
-            onClick={onDelete}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      {/* Top action bar removed per user request */}
 
       <input
         className="text-4xl md:text-5xl font-extrabold bg-transparent border-0 outline-none w-full placeholder:text-muted-foreground/30 mb-6"
@@ -429,7 +400,15 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
       <div className="flex-1 -mx-10 mt-4 relative z-10">
         <Suspense
           fallback={
-            <div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />
+            <div className="flex flex-col space-y-4 pt-4 px-10">
+              <div className="h-4 w-full bg-secondary/40 rounded animate-pulse" />
+              <div className="h-4 w-11/12 bg-secondary/40 rounded animate-pulse" />
+              <div className="h-4 w-4/5 bg-secondary/40 rounded animate-pulse" />
+              <div className="h-4 w-full bg-secondary/40 rounded animate-pulse" />
+              <div className="h-4 w-3/4 bg-secondary/40 rounded animate-pulse" />
+              <div className="h-4 w-[85%] bg-secondary/40 rounded animate-pulse" />
+              <div className="h-4 w-full bg-secondary/40 rounded animate-pulse" />
+            </div>
           }
         >
           <BlockNoteEditor

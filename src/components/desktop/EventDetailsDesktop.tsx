@@ -192,6 +192,9 @@ export function EventDetailsDesktop({
           totalTickets={d.totalTickets}
           selectedSeatsObj={d.selectedSeatsObj}
           attendeesCount={d.attendeesCount}
+          isUpcoming={d.isUpcoming}
+          waitlistUrl={d.waitlistUrl}
+          timerDate={d.timerDate}
         />
       </div>
 

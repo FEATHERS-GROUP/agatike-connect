@@ -10,6 +10,7 @@ import {
   ChevronRight,
   UserCheck,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,9 +24,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getWorkspaceEvents } from "@/api/events";
-import { getAllBadgeProjects, saveBadgeProject } from "@/api/badges";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  getAllBadgeProjects,
+  saveBadgeProject,
+  deleteBadgeProject,
+  updateBadgeProjectFolder,
+} from "@/api/badges";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { FolderManager } from "@/components/ui/FolderManager";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/badge-designer/")({
@@ -102,6 +110,34 @@ function BadgeDesignerIndex() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("Untitled Badge");
   const [selectedEventId, setSelectedEventId] = useState("");
+
+  const queryClient = useQueryClient();
+
+  const moveMutation = useMutation({
+    mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) => {
+      return await updateBadgeProjectFolder({ data: { id, folder_id: folderId } } as any);
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["badge-projects", activeWorkspace?.id] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await deleteBadgeProject({ data: { id } } as any);
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["badge-projects", activeWorkspace?.id] }),
+  });
+
+  const handleBulkMove = async (itemIds: string[], folderId: string | null) => {
+    const promises = itemIds.map((id) => moveMutation.mutateAsync({ id, folderId }));
+    await Promise.all(promises);
+  };
+
+  const handleBulkDelete = async (itemIds: string[]) => {
+    const promises = itemIds.map((id) => deleteMutation.mutateAsync(id));
+    await Promise.all(promises);
+  };
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -278,59 +314,109 @@ function BadgeDesignerIndex() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {isLoadingProjects ? (
-              <div className="col-span-full flex flex-col items-center justify-center py-12">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-              </div>
-            ) : dbProjects.length === 0 ? (
-              <div className="col-span-full text-center py-12 bg-card rounded-[2rem] border border-dashed border-border/60 p-8">
-                <UserCheck className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
-                <h3 className="text-lg font-semibold">No Saved Designs</h3>
-                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-                  Create your first badge design by selecting a template above.
-                </p>
-              </div>
-            ) : (
-              dbProjects.map((proj: any) => {
-                const eventObj = events.find((e: any) => e.id === proj.event_id);
-                const displayTitle = proj.logo_text || "Untitled Badge";
-                const gradient = proj.gradient_class || "from-slate-900 to-black";
-                const accent = proj.accent_color || "#f59e0b";
+          <FolderManager
+            moduleType="badge_projects"
+            items={dbProjects}
+            getItemId={(item) => item.id}
+            getFolderId={(item) => item.folder_id}
+            onMoveItems={handleBulkMove}
+            onDeleteItems={handleBulkDelete}
+          >
+            {({ filteredItems, handleSelect, selectedIds, ItemMenu }) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                {isLoadingProjects ? (
+                  <div className="col-span-full flex flex-col items-center justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                  </div>
+                ) : filteredItems.length === 0 ? (
+                  <div className="col-span-full text-center py-12 bg-card rounded-[2rem] border border-dashed border-border/60 p-8">
+                    <UserCheck className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+                    <h3 className="text-lg font-semibold">No Saved Designs</h3>
+                    <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                      Create your first badge design by selecting a template above.
+                    </p>
+                  </div>
+                ) : (
+                  filteredItems.map((proj: any) => {
+                    const eventObj = events.find((e: any) => e.id === proj.event_id);
+                    const displayTitle = proj.logo_text || "Untitled Badge";
+                    const gradient = proj.gradient_class || "from-slate-900 to-black";
+                    const accent = proj.accent_color || "#f59e0b";
+                    const isSelected = selectedIds.has(proj.id);
 
-                return (
-                  <Link
-                    key={proj.id}
-                    to="/dashboard/$workspaceSlug/badge-designer/$projectId"
-                    params={{ workspaceSlug, projectId: proj.id }}
-                    className="group block rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
-                  >
-                    <div
-                      className={`h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br ${gradient}`}
-                    >
-                      <div className="absolute inset-0 bg-white/5 backdrop-blur-md pointer-events-none" />
-                      <div className="relative z-10 flex justify-between items-start">
-                        <span
-                          className="px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider"
-                          style={{ background: `${accent}33`, color: accent }}
+                    return (
+                      <ItemMenu key={proj.id} itemId={proj.id} folderId={proj.folder_id}>
+                        <div
+                          className="relative group rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
+                          style={{
+                            borderColor: isSelected
+                              ? "hsl(var(--primary))"
+                              : "hsl(var(--border) / 0.6)",
+                          }}
                         >
-                          {proj.theme || "glass"}
-                        </span>
-                      </div>
-                      <div className="relative z-10 text-white drop-shadow-md">
-                        <p className="text-xs opacity-70">{eventObj?.title || "No event linked"}</p>
-                        <h3 className="text-xl font-bold leading-tight">{displayTitle}</h3>
-                      </div>
-                    </div>
-                    <div className="px-5 py-3 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                      <span>Edit Design</span>
-                      <ChevronRight className="h-4 w-4" />
-                    </div>
-                  </Link>
-                );
-              })
+                          <div
+                            className="absolute top-3 left-3 z-20"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={(c) => handleSelect(proj.id, c as boolean)}
+                              className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
+                            />
+                          </div>
+                          <Link
+                            to="/dashboard/$workspaceSlug/badge-designer/$projectId"
+                            params={{ workspaceSlug, projectId: proj.id }}
+                            className="block"
+                          >
+                            <div
+                              className={`h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br ${gradient}`}
+                            >
+                              <div className="absolute inset-0 bg-white/5 backdrop-blur-md pointer-events-none" />
+                              <div className="relative z-10 flex justify-between items-start">
+                                <span
+                                  className="px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider"
+                                  style={{ background: `${accent}33`, color: accent }}
+                                >
+                                  {proj.theme || "glass"}
+                                </span>
+                              </div>
+                              <div className="relative z-10 text-white drop-shadow-md">
+                                <p className="text-xs opacity-70">
+                                  {eventObj?.title || "No event linked"}
+                                </p>
+                                <h3 className="text-xl font-bold leading-tight">{displayTitle}</h3>
+                              </div>
+                            </div>
+                            <div className="px-5 py-3 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                              <span>Edit Design</span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors z-20"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (
+                                      confirm("Are you sure you want to delete this badge design?")
+                                    ) {
+                                      deleteMutation.mutate(proj.id);
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                                <ChevronRight className="h-4 w-4" />
+                              </div>
+                            </div>
+                          </Link>
+                        </div>
+                      </ItemMenu>
+                    );
+                  })
+                )}
+              </div>
             )}
-          </div>
+          </FolderManager>
         </section>
       </main>
     </div>

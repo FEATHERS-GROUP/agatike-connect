@@ -252,6 +252,141 @@ export function ComponentBlock({
             </div>
           )}
 
+          {/* BUDGET & DAMAGE REQUEST */}
+          {(comp.type === "budget_request" || comp.type === "damage_report") && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-[1.5] space-y-1">
+                  <Label className="text-xs">Design</Label>
+                  <Select
+                    value={comp.design || "embedded"}
+                    onValueChange={(val) => updateComponent(idx, "design", val)}
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="embedded">Embedded Form</SelectItem>
+                      <SelectItem value="button">Simple Button</SelectItem>
+                      <SelectItem value="card">Large Card</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {comp.design !== "embedded" && (
+                  <div className="flex-[1.5] space-y-1">
+                    <Label className="text-xs">Open In</Label>
+                    <Select
+                      value={comp.openAction || "modal"}
+                      onValueChange={(val) => updateComponent(idx, "openAction", val)}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="modal">Popup Modal</SelectItem>
+                        <SelectItem value="drawer">Side Drawer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs">Form Title</Label>
+                <Input
+                  value={comp.title || ""}
+                  onChange={(e) => updateComponent(idx, "title", e.target.value)}
+                  placeholder={
+                    comp.type === "damage_report" ? "e.g. Damage Report" : "e.g. Budget Request"
+                  }
+                  className="bg-background"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Description</Label>
+                <textarea
+                  value={comp.description || ""}
+                  onChange={(e) => updateComponent(idx, "description", e.target.value)}
+                  placeholder="e.g. Please list items below."
+                  className="w-full bg-background border border-border/60 rounded-md p-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary resize-y min-h-[60px]"
+                />
+              </div>
+
+              {/* Columns Designer */}
+              <div className="space-y-2 mt-4 pt-4 border-t border-border/60">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Spreadsheet Columns</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-[10px] gap-1 px-2"
+                    onClick={() => {
+                      const cols = comp.columns || [];
+                      updateComponent(idx, "columns", [
+                        ...cols,
+                        { name: "New Column", type: "text" },
+                      ]);
+                    }}
+                  >
+                    <Plus className="w-3 h-3" /> Add Column
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {(comp.columns || []).map((col: any, colIdx: number) => (
+                    <div
+                      key={colIdx}
+                      className="flex gap-2 items-center bg-secondary/20 p-2 rounded-lg border border-border/40"
+                    >
+                      <Input
+                        value={col.name}
+                        onChange={(e) => {
+                          const newCols = [...comp.columns];
+                          newCols[colIdx].name = e.target.value;
+                          updateComponent(idx, "columns", newCols);
+                        }}
+                        className="h-8 text-xs bg-background flex-1"
+                        placeholder="Column Name"
+                      />
+                      <Select
+                        value={col.type}
+                        onValueChange={(val) => {
+                          const newCols = [...comp.columns];
+                          newCols[colIdx].type = val;
+                          updateComponent(idx, "columns", newCols);
+                        }}
+                      >
+                        <SelectTrigger className="h-8 w-24 text-xs bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="text">Text</SelectItem>
+                          <SelectItem value="number">Number</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                        onClick={() => {
+                          const newCols = [...comp.columns];
+                          newCols.splice(colIdx, 1);
+                          updateComponent(idx, "columns", newCols);
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  {(!comp.columns || comp.columns.length === 0) && (
+                    <p className="text-xs text-muted-foreground italic">
+                      No columns added yet. Click "Add Column".
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* PAYMENT BUTTON */}
           {comp.type === "payment_button" && (
             <div className="space-y-4">
@@ -364,7 +499,7 @@ export function ComponentBlock({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex-1 space-y-1">
+                <div className="flex-[1.5] space-y-1">
                   <Label className="text-xs">Design</Label>
                   <Select
                     value={comp.design || "card"}
@@ -380,6 +515,24 @@ export function ComponentBlock({
                     </SelectContent>
                   </Select>
                 </div>
+                {comp.design !== "embedded" && (
+                  <div className="flex-[1.5] space-y-1">
+                    <Label className="text-xs">Open In</Label>
+                    <Select
+                      value={comp.openAction || "page"}
+                      onValueChange={(val) => updateComponent(idx, "openAction", val)}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="page">New Page</SelectItem>
+                        <SelectItem value="modal">Popup Modal</SelectItem>
+                        <SelectItem value="drawer">Side Drawer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               {comp.content && comp.design !== "button" && (
                 <div className="p-3 border border-primary/20 rounded-lg bg-primary/5 flex items-center gap-3">
@@ -448,6 +601,19 @@ export function ComponentBlock({
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <Label className="text-xs text-muted-foreground">Advanced Form Grid</Label>
                 <div className="flex items-center gap-2">
+                  <Select
+                    value={comp.openAction || "page"}
+                    onValueChange={(val) => updateComponent(idx, "openAction", val)}
+                  >
+                    <SelectTrigger className="w-24 bg-background h-8 text-xs">
+                      <SelectValue placeholder="Open In" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="page">Page</SelectItem>
+                      <SelectItem value="modal">Modal</SelectItem>
+                      <SelectItem value="drawer">Drawer</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
                     <Label
                       className="text-[10px] text-muted-foreground cursor-pointer"
