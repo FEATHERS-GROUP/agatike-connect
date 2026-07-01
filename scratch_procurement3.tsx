@@ -52,8 +52,6 @@ function CreateInvoicePage() {
   const wsId = activeWorkspace?.id;
   const currency = activeWorkspace?.currency || "RWF";
   const queryClient = useQueryClient();
-  const searchParams = Route.useSearch() as any;
-  const folderId = searchParams?.folder || null;
 
   const [hasSelectedType, setHasSelectedType] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -88,16 +86,6 @@ function CreateInvoicePage() {
   const dateLabel = isQuote ? "Valid Until" : isPO ? "Expected Delivery" : isReceipt ? "Payment Date" : "Due Date";
   const termsLabel = isPO ? "Delivery Instructions" : isQuote ? "Terms & Conditions" : "Payment Terms";
 
-  // Theme Logic
-  const theme = {
-     bgLight: isReceipt ? "bg-emerald-50" : isQuote ? "bg-amber-50" : isCredit ? "bg-red-50" : isPO ? "bg-slate-100" : "bg-slate-50",
-     textAccent: isReceipt ? "text-emerald-700" : isQuote ? "text-amber-700" : isCredit ? "text-red-700" : isPO ? "text-slate-800" : "text-primary",
-     borderAccent: isReceipt ? "border-emerald-200" : isQuote ? "border-amber-200" : isCredit ? "border-red-200" : isPO ? "border-slate-800" : "border-slate-200",
-     tableHeaderBg: isPO ? "bg-slate-800 text-white" : "border-b-2 border-slate-800 text-slate-500",
-     pageBorder: isPO ? "border-4 border-slate-900" : isQuote ? "border border-amber-100" : "border-none",
-     watermark: isReceipt ? "PAID" : isCredit ? "CREDITED" : isQuote ? "ESTIMATE" : null,
-  };
-
   const addItem = () => setItems([...items, { description: "", quantity: 1, unit_price: 0 }]);
   const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx));
   const updateItem = (idx: number, field: keyof LineItem, value: string | number) => {
@@ -120,7 +108,6 @@ function CreateInvoicePage() {
           issue_date: issueDate,
           due_date: dueDate || null,
           tax_rate: taxRate,
-          folder_id: folderId,
           notes: notes,
           payment_terms: paymentTerms,
           status,
@@ -276,17 +263,25 @@ function CreateInvoicePage() {
             <Download className="h-4 w-4" /> Download PDF
           </Button>
           <Button
-            className="rounded-xl gap-2 h-10 shadow-[var(--shadow-glow)] text-white"
-            style={{ background: "var(--gradient-primary)" }}
+            variant="outline"
+            className="rounded-xl gap-2 h-10"
             disabled={createMutation.isPending || !client.name}
-            onClick={() => createMutation.mutate("sent")}
+            onClick={() => createMutation.mutate("draft")}
           >
             {createMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Save className="h-4 w-4" />
             )}
-            Save Document
+            Save Draft
+          </Button>
+          <Button
+            className="rounded-xl gap-2 h-10 shadow-[var(--shadow-glow)] text-white"
+            style={{ background: "var(--gradient-primary)" }}
+            disabled={createMutation.isPending || !client.name}
+            onClick={() => createMutation.mutate("sent")}
+          >
+            <Send className="h-4 w-4" /> Send {titleLabel}
           </Button>
         </div>
       </div>
@@ -296,7 +291,6 @@ function CreateInvoicePage() {
         <div className="space-y-6 print:hidden sticky top-6">
           <div className="bg-card border border-border/60 rounded-3xl p-5 space-y-4">
             <h3 className="font-bold text-base border-b border-border/60 pb-2">Settings</h3>
-
             <div className="grid grid-cols-2 gap-3 pt-2">
               <div className="space-y-1.5">
                 <Label className="text-xs">Issue Date</Label>
@@ -387,18 +381,12 @@ function CreateInvoicePage() {
         <div className="flex-1 overflow-x-auto bg-slate-100 p-8 rounded-3xl shadow-inner min-h-[800px] flex items-start justify-center print:bg-white print:p-0 print:shadow-none print:rounded-none">
           
           {/* A4 Page container */}
-          <div className={cn("bg-white text-slate-900 w-[210mm] min-h-[297mm] shadow-2xl p-[20mm] flex flex-col relative print:shadow-none print:w-full print:h-full print:p-0", theme.pageBorder)}>
+          <div className="bg-white text-slate-900 w-[210mm] min-h-[297mm] shadow-2xl p-[20mm] flex flex-col relative print:shadow-none print:w-full print:h-full print:p-0">
             
-            {theme.watermark && (
-               <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-[0.03] overflow-hidden">
-                  <span className="text-[150px] font-black -rotate-45 whitespace-nowrap">{theme.watermark}</span>
-               </div>
-            )}
-
             {/* Canvas Header */}
-            <div className="flex justify-between items-start mb-12 relative z-10">
+            <div className="flex justify-between items-start mb-12">
               <div className="space-y-2">
-                <h1 className={cn("text-4xl font-black uppercase tracking-widest", theme.textAccent)}>
+                <h1 className="text-4xl font-black uppercase tracking-widest text-slate-800">
                   {titleLabel}
                 </h1>
                 <p className="text-slate-500 font-medium">#{invoiceNumber}</p>
@@ -426,13 +414,13 @@ function CreateInvoicePage() {
             </div>
 
             {/* Bill To & Details */}
-            <div className="grid grid-cols-2 gap-12 mb-12 relative z-10">
-               <div className={cn("p-4 rounded-xl", isPO ? "bg-slate-100 border border-slate-200" : "")}>
-                  <h3 className={cn("text-xs font-bold uppercase tracking-wider mb-3", isPO ? "text-slate-700" : "text-slate-400")}>{billToLabel}</h3>
+            <div className="grid grid-cols-2 gap-12 mb-12">
+               <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">{billToLabel}</h3>
                   <div className="space-y-1">
                      <input
                         type="text"
-                        placeholder="Name"
+                        placeholder="Client Name"
                         value={client.name}
                         onChange={(e) => setClient({ ...client, name: e.target.value })}
                         className="w-full font-bold text-lg bg-transparent border-0 border-b border-transparent hover:border-slate-200 focus:border-primary focus:ring-0 px-0 py-0.5"
@@ -446,7 +434,7 @@ function CreateInvoicePage() {
                      />
                      <input
                         type="text"
-                        placeholder="Address"
+                        placeholder="Billing Address"
                         value={client.address}
                         onChange={(e) => setClient({ ...client, address: e.target.value })}
                         className="w-full text-slate-600 bg-transparent border-0 border-b border-transparent hover:border-slate-200 focus:border-primary focus:ring-0 px-0 py-0.5"
@@ -490,23 +478,23 @@ function CreateInvoicePage() {
             </div>
 
             {/* Canvas Items Table */}
-            <div className="mb-8 flex-1 relative z-10">
-               <div className={cn("grid grid-cols-[1fr_80px_120px_120px_40px] gap-4 pb-2 mb-4", theme.tableHeaderBg, isPO ? "p-3 rounded-t-lg" : "")}>
-                  <div className={cn("text-xs font-bold uppercase tracking-wider", isPO ? "text-slate-200" : "")}>Description</div>
-                  <div className={cn("text-xs font-bold uppercase tracking-wider text-center", isPO ? "text-slate-200" : "")}>Qty</div>
-                  <div className={cn("text-xs font-bold uppercase tracking-wider text-right", isPO ? "text-slate-200" : "")}>Unit Price</div>
-                  <div className={cn("text-xs font-bold uppercase tracking-wider text-right", isPO ? "text-slate-200" : "")}>Amount</div>
+            <div className="mb-8 flex-1">
+               <div className="grid grid-cols-[1fr_80px_120px_120px_40px] gap-4 border-b-2 border-slate-800 pb-2 mb-4">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-500">Description</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-500 text-center">Qty</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-500 text-right">Unit Price</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-500 text-right">Amount</div>
                   <div></div>
                </div>
                
                <div className="space-y-2">
                   {items.map((item, idx) => (
-                     <div key={idx} className={cn("grid grid-cols-[1fr_80px_120px_120px_40px] gap-4 items-center group", isPO ? "border-b border-slate-100 pb-2" : "")}>
+                     <div key={idx} className="grid grid-cols-[1fr_80px_120px_120px_40px] gap-4 items-center group">
                         <input
                            placeholder="Item description..."
                            value={item.description}
                            onChange={(e) => updateItem(idx, "description", e.target.value)}
-                           className="w-full bg-transparent border-0 border-b border-transparent hover:border-slate-200 focus:border-primary focus:ring-0 px-1 py-2 text-sm font-medium"
+                           className="w-full bg-transparent border-0 border-b border-transparent hover:border-slate-200 focus:border-primary focus:ring-0 px-1 py-2 text-sm"
                         />
                         <input
                            type="number"
@@ -535,14 +523,14 @@ function CreateInvoicePage() {
                </div>
                
                <div className="mt-4 print:hidden">
-                  <Button variant="outline" size="sm" className={cn("rounded-xl gap-1.5 border-dashed border-2 hover:bg-transparent", isPO ? "border-slate-300 text-slate-600" : "text-slate-500 hover:text-slate-800")} onClick={addItem}>
+                  <Button variant="outline" size="sm" className="rounded-xl gap-1.5 border-dashed border-2 text-slate-500 hover:text-slate-800" onClick={addItem}>
                      <Plus className="h-3.5 w-3.5" /> Add Row
                   </Button>
                </div>
             </div>
 
             {/* Totals & Notes */}
-            <div className="grid grid-cols-2 gap-12 mt-auto relative z-10">
+            <div className="grid grid-cols-2 gap-12 mt-auto">
                <div className="space-y-6">
                   <div>
                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Notes</h3>
@@ -565,7 +553,7 @@ function CreateInvoicePage() {
                   </div>
                </div>
 
-               <div className={cn("p-6 rounded-2xl flex flex-col justify-center space-y-3", theme.bgLight)}>
+               <div className="bg-slate-50 p-6 rounded-2xl flex flex-col justify-center space-y-3">
                   <div className="flex justify-between text-sm text-slate-600">
                      <span>Subtotal</span>
                      <span className="font-semibold">{subtotal.toLocaleString()} {currency}</span>
@@ -573,25 +561,25 @@ function CreateInvoicePage() {
                   <div className="flex justify-between text-sm text-slate-600">
                      <span className="flex items-center gap-2">
                         Tax 
-                        <input type="number" className="w-16 h-6 text-xs px-1 border rounded text-center bg-white/50 focus:bg-white" value={taxRate} onChange={(e) => setTaxRate(Number(e.target.value))} />
+                        <input type="number" className="w-16 h-6 text-xs px-1 border rounded text-center bg-white" value={taxRate} onChange={(e) => setTaxRate(Number(e.target.value))} />
                         %
                      </span>
                      <span className="font-semibold">{taxAmount.toLocaleString()} {currency}</span>
                   </div>
-                  <div className={cn("flex justify-between text-xl font-black pt-3 border-t-2", theme.borderAccent, theme.textAccent)}>
+                  <div className="flex justify-between text-xl font-black text-slate-900 pt-3 border-t-2 border-slate-200">
                      <span>{isCredit ? "Total Credit" : "Total"}</span>
-                     <span>{isCredit ? "-" : ""}{total.toLocaleString()} {currency}</span>
+                     <span className={isCredit ? "text-destructive" : ""}>{isCredit ? "-" : ""}{total.toLocaleString()} {currency}</span>
                   </div>
                   
                   {isReceipt && (
                      <>
-                        <div className="flex justify-between text-sm text-emerald-800 pt-2 font-medium">
+                        <div className="flex justify-between text-sm text-slate-600 pt-2">
                            <span>Amount Paid</span>
-                           <span>-{total.toLocaleString()} {currency}</span>
+                           <span className="font-bold text-green-600">-{total.toLocaleString()} {currency}</span>
                         </div>
-                        <div className="flex justify-between text-sm text-emerald-900 font-bold">
+                        <div className="flex justify-between text-sm text-slate-600">
                            <span>Balance Due</span>
-                           <span>0.00 {currency}</span>
+                           <span className="font-bold">0.00 {currency}</span>
                         </div>
                      </>
                   )}
@@ -599,7 +587,7 @@ function CreateInvoicePage() {
             </div>
 
             {/* Signature & Stamp Areas */}
-            <div className="grid grid-cols-2 gap-12 mt-12 pt-8 border-t border-slate-100 relative z-10">
+            <div className="grid grid-cols-2 gap-12 mt-12 pt-8 border-t border-slate-100">
                {/* Signature */}
                <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 text-center">Authorized Signature</h3>

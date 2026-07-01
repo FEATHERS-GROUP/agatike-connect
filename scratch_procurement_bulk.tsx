@@ -32,15 +32,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-
 import {
   ContextMenu,
   ContextMenuContent,
@@ -58,7 +49,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/procurement")({
   component: ProcurementPage,
@@ -109,7 +99,6 @@ function ProcurementPage() {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
-  const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
 
   const { data: invoices = [], isLoading: loadingInvoices } = useQuery({
     queryKey: ["procurement-invoices", wsId],
@@ -155,6 +144,7 @@ function ProcurementPage() {
   const deleteInvoiceMutation = useMutation({
     mutationFn: (id: string) => deleteProcurementInvoice({ data: { id } } as any),
     onSuccess: () => {
+      toast.success("Invoice deleted");
       queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] });
     },
   });
@@ -167,9 +157,14 @@ function ProcurementPage() {
       return updateProcurementInvoice({ data: { id: vars.id, ...setPayload } } as any);
     },
     onSuccess: () => {
+      toast.success("Updated");
       queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] });
     },
   });
+
+  const handleCreateFolder = () => {
+    setIsCreateFolderModalOpen(true);
+  };
 
   const filtered = (invoices as any[]).filter((inv) => {
     const matchSearch =
@@ -190,40 +185,6 @@ function ProcurementPage() {
     .reduce((s, i) => s + calcInvoiceTotal(i), 0);
 
   const currentFolder = folders.find((f: any) => f.id === currentFolderId);
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedInvoices(new Set(filtered.map(i => i.id)));
-    } else {
-      setSelectedInvoices(new Set());
-    }
-  };
-
-  const handleSelect = (id: string, checked: boolean) => {
-    const next = new Set(selectedInvoices);
-    if (checked) next.add(id);
-    else next.delete(id);
-    setSelectedInvoices(next);
-  };
-
-  const handleBulkMove = async (folderId: string | null) => {
-    const promises = Array.from(selectedInvoices).map(id =>
-      updateInvoiceMutation.mutateAsync({ id, folder_id: folderId })
-    );
-    await Promise.all(promises);
-    setSelectedInvoices(new Set());
-    toast.success("Documents moved successfully");
-  };
-
-  const handleBulkDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete the selected documents?")) return;
-    const promises = Array.from(selectedInvoices).map(id =>
-      deleteInvoiceMutation.mutateAsync(id)
-    );
-    await Promise.all(promises);
-    setSelectedInvoices(new Set());
-    toast.success("Documents deleted");
-  };
 
   return (
     <>
@@ -365,34 +326,6 @@ function ProcurementPage() {
               </div>
             </div>
 
-            {/* Bulk Actions */}
-            {selectedInvoices.size > 0 && (
-               <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 flex items-center justify-between mb-2 animate-in slide-in-from-bottom-2 fade-in">
-                  <span className="font-semibold text-primary">{selectedInvoices.size} items selected</span>
-                  <div className="flex items-center gap-2">
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                           <Button variant="outline" size="sm" className="h-8 gap-2 bg-white">
-                              <MoveRight className="h-4 w-4" /> Bulk Move...
-                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-48">
-                           <DropdownMenuItem onClick={() => handleBulkMove(null)}>Root (No Folder)</DropdownMenuItem>
-                           <DropdownMenuSeparator />
-                           {folders.map((f: any) => (
-                              <DropdownMenuItem key={f.id} onClick={() => handleBulkMove(f.id)}>
-                                 <Folder className="mr-2 h-4 w-4" /> {f.name}
-                              </DropdownMenuItem>
-                           ))}
-                        </DropdownMenuContent>
-                     </DropdownMenu>
-                     <Button variant="destructive" size="sm" className="h-8 gap-2" onClick={handleBulkDelete}>
-                        <Trash2 className="h-4 w-4" /> Bulk Delete
-                     </Button>
-                  </div>
-               </div>
-            )}
-
             {/* Invoice list */}
             {loadingInvoices ? (
               <div className="flex justify-center py-20">
@@ -406,33 +339,16 @@ function ProcurementPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="flex items-center gap-4 px-5 py-2">
-                   <Checkbox 
-                     checked={selectedInvoices.size === filtered.length && filtered.length > 0}
-                     onCheckedChange={(c) => handleSelectAll(c as boolean)}
-                   />
-                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Select All</span>
-                </div>
                 {filtered.map((inv: any) => {
                   const sc = STATUS_CONFIG[inv.status as InvoiceStatus] || STATUS_CONFIG.draft;
                   const total = calcInvoiceTotal(inv);
-                  const isSelected = selectedInvoices.has(inv.id);
                   return (
                     <ContextMenu key={inv.id}>
                       <ContextMenuTrigger asChild>
                          <div
                            onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/book/procurement/${inv.id}` as any })}
-                           className={cn(
-                              "bg-card border rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer group",
-                              isSelected ? "border-primary bg-primary/5" : "border-border/60"
-                           )}
+                           className="bg-card border border-border/60 rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer group"
                          >
-                           <div onClick={(e) => e.stopPropagation()} className="shrink-0 flex items-center justify-center">
-                              <Checkbox 
-                                 checked={isSelected} 
-                                 onCheckedChange={(c) => handleSelect(inv.id, c as boolean)}
-                              />
-                           </div>
                            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                              <FileText className="h-5 w-5" />
                            </div>
@@ -480,10 +396,7 @@ function ProcurementPage() {
                                  size="icon"
                                  className="h-8 w-8 text-green-500"
                                  title="Mark as Paid"
-                                 onClick={() => {
-                                    updateInvoiceMutation.mutate({ id: inv.id, status: "paid" });
-                                    toast.success("Marked as Paid");
-                                 }}
+                                 onClick={() => updateInvoiceMutation.mutate({ id: inv.id, status: "paid" })}
                                >
                                  <CheckCircle2 className="h-4 w-4" />
                                </Button>
@@ -494,10 +407,7 @@ function ProcurementPage() {
                                  size="icon"
                                  className="h-8 w-8 text-blue-500"
                                  title="Mark as Sent"
-                                 onClick={() => {
-                                    updateInvoiceMutation.mutate({ id: inv.id, status: "sent" });
-                                    toast.success("Marked as Sent");
-                                 }}
+                                 onClick={() => updateInvoiceMutation.mutate({ id: inv.id, status: "sent" })}
                                >
                                  <Send className="h-4 w-4" />
                                </Button>
@@ -506,10 +416,7 @@ function ProcurementPage() {
                                variant="ghost"
                                size="icon"
                                className="h-8 w-8 text-destructive"
-                               onClick={() => {
-                                 deleteInvoiceMutation.mutate(inv.id);
-                                 toast.success("Document deleted");
-                               }}
+                               onClick={() => deleteInvoiceMutation.mutate(inv.id)}
                              >
                                <Trash2 className="h-4 w-4" />
                              </Button>
@@ -526,28 +433,19 @@ function ProcurementPage() {
                                <MoveRight className="mr-2 h-4 w-4" /> Move to Folder
                             </ContextMenuSubTrigger>
                             <ContextMenuSubContent className="w-48">
-                               <ContextMenuItem onClick={() => {
-                                  updateInvoiceMutation.mutate({ id: inv.id, folder_id: null });
-                                  toast.success("Moved to Root");
-                               }}>
+                               <ContextMenuItem onClick={() => updateInvoiceMutation.mutate({ id: inv.id, folder_id: null })}>
                                   Root (No Folder)
                                </ContextMenuItem>
                                <ContextMenuSeparator />
                                {folders.map((f: any) => (
-                                  <ContextMenuItem key={f.id} onClick={() => {
-                                     updateInvoiceMutation.mutate({ id: inv.id, folder_id: f.id });
-                                     toast.success(`Moved to ${f.name}`);
-                                  }}>
+                                  <ContextMenuItem key={f.id} onClick={() => updateInvoiceMutation.mutate({ id: inv.id, folder_id: f.id })}>
                                      <Folder className="mr-2 h-4 w-4" /> {f.name}
                                   </ContextMenuItem>
                                ))}
                             </ContextMenuSubContent>
                          </ContextMenuSub>
                          <ContextMenuSeparator />
-                         <ContextMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => {
-                            deleteInvoiceMutation.mutate(inv.id);
-                            toast.success("Document deleted");
-                         }}>
+                         <ContextMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => deleteInvoiceMutation.mutate(inv.id)}>
                             <Trash2 className="mr-2 h-4 w-4" /> Delete Document
                          </ContextMenuItem>
                       </ContextMenuContent>
@@ -561,7 +459,7 @@ function ProcurementPage() {
         
         <ContextMenuContent className="w-48">
            {!currentFolderId && (
-             <ContextMenuItem onClick={() => setIsCreateFolderModalOpen(true)}>
+             <ContextMenuItem onClick={handleCreateFolder}>
                 <FolderPlus className="mr-2 h-4 w-4" /> Create New Folder
              </ContextMenuItem>
            )}
