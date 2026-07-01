@@ -145,6 +145,7 @@ import { Route as DashboardWorkspaceSlugEventsEventIdExperienceRouteImport } fro
 import { Route as DashboardWorkspaceSlugEventsEventIdEditRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/edit'
 import { Route as DashboardWorkspaceSlugEventsEventIdAttendeesRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/attendees'
 import { Route as DashboardWorkspaceSlugBookProcurementCreateRouteImport } from './routes/dashboard/$workspaceSlug/book/procurement_.create'
+import { Route as DashboardWorkspaceSlugBookNotesNoteIdRouteImport } from './routes/dashboard/$workspaceSlug/book/notes_.$noteId'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdSettingsRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdScreensRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/screens'
@@ -922,6 +923,12 @@ const DashboardWorkspaceSlugBookProcurementCreateRoute =
     path: '/$workspaceSlug/book/procurement/create',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugBookNotesNoteIdRoute =
+  DashboardWorkspaceSlugBookNotesNoteIdRouteImport.update({
+    id: '/$workspaceSlug/book/notes_/$noteId',
+    path: '/$workspaceSlug/book/notes/$noteId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute =
   DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRouteImport.update({
     id: '/ticket-tiers',
@@ -1104,6 +1111,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens': typeof DashboardWorkspaceSlugCinemaCinemaIdScreensRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings': typeof DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers': typeof DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute
+  '/dashboard/$workspaceSlug/book/notes/$noteId': typeof DashboardWorkspaceSlugBookNotesNoteIdRoute
   '/dashboard/$workspaceSlug/book/procurement/create': typeof DashboardWorkspaceSlugBookProcurementCreateRoute
   '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
@@ -1251,6 +1259,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens': typeof DashboardWorkspaceSlugCinemaCinemaIdScreensRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings': typeof DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers': typeof DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute
+  '/dashboard/$workspaceSlug/book/notes/$noteId': typeof DashboardWorkspaceSlugBookNotesNoteIdRoute
   '/dashboard/$workspaceSlug/book/procurement/create': typeof DashboardWorkspaceSlugBookProcurementCreateRoute
   '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
@@ -1401,6 +1410,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens': typeof DashboardWorkspaceSlugCinemaCinemaIdScreensRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings': typeof DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers': typeof DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute
+  '/dashboard/$workspaceSlug/book/notes_/$noteId': typeof DashboardWorkspaceSlugBookNotesNoteIdRoute
   '/dashboard/$workspaceSlug/book/procurement_/create': typeof DashboardWorkspaceSlugBookProcurementCreateRoute
   '/dashboard/$workspaceSlug/events/$eventId/attendees': typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   '/dashboard/$workspaceSlug/events/$eventId/edit': typeof DashboardWorkspaceSlugEventsEventIdEditRoute
@@ -1552,6 +1562,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
+    | '/dashboard/$workspaceSlug/book/notes/$noteId'
     | '/dashboard/$workspaceSlug/book/procurement/create'
     | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
@@ -1699,6 +1710,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
+    | '/dashboard/$workspaceSlug/book/notes/$noteId'
     | '/dashboard/$workspaceSlug/book/procurement/create'
     | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
@@ -1848,6 +1860,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
+    | '/dashboard/$workspaceSlug/book/notes_/$noteId'
     | '/dashboard/$workspaceSlug/book/procurement_/create'
     | '/dashboard/$workspaceSlug/events/$eventId/attendees'
     | '/dashboard/$workspaceSlug/events/$eventId/edit'
@@ -2888,6 +2901,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugBookProcurementCreateRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/book/notes_/$noteId': {
+      id: '/dashboard/$workspaceSlug/book/notes_/$noteId'
+      path: '/$workspaceSlug/book/notes/$noteId'
+      fullPath: '/dashboard/$workspaceSlug/book/notes/$noteId'
+      preLoaderRoute: typeof DashboardWorkspaceSlugBookNotesNoteIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers': {
       id: '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
       path: '/ticket-tiers'
@@ -3127,6 +3147,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugVenueDesignerIndexRoute: typeof DashboardWorkspaceSlugVenueDesignerIndexRoute
   DashboardWorkspaceSlugWithdrawalsIndexRoute: typeof DashboardWorkspaceSlugWithdrawalsIndexRoute
   DashboardBillingSubscriptionsIndexRoute: typeof DashboardBillingSubscriptionsIndexRoute
+  DashboardWorkspaceSlugBookNotesNoteIdRoute: typeof DashboardWorkspaceSlugBookNotesNoteIdRoute
   DashboardWorkspaceSlugBookProcurementCreateRoute: typeof DashboardWorkspaceSlugBookProcurementCreateRoute
   DashboardWorkspaceSlugEventsEventIdAttendeesRoute: typeof DashboardWorkspaceSlugEventsEventIdAttendeesRoute
   DashboardWorkspaceSlugEventsEventIdEditRoute: typeof DashboardWorkspaceSlugEventsEventIdEditRoute
@@ -3244,6 +3265,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugWithdrawalsIndexRoute,
   DashboardBillingSubscriptionsIndexRoute:
     DashboardBillingSubscriptionsIndexRoute,
+  DashboardWorkspaceSlugBookNotesNoteIdRoute:
+    DashboardWorkspaceSlugBookNotesNoteIdRoute,
   DashboardWorkspaceSlugBookProcurementCreateRoute:
     DashboardWorkspaceSlugBookProcurementCreateRoute,
   DashboardWorkspaceSlugEventsEventIdAttendeesRoute:

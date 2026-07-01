@@ -25,6 +25,27 @@ export const getWorkspaceNotes = createServerFn({ method: "POST" }).handler(asyn
   return data.workspace_notes || [];
 });
 
+const GET_NOTE_BY_ID = `
+  query GetWorkspaceNoteById($id: uuid!) {
+    workspace_notes_by_pk(id: $id) {
+      id
+      workspace_id
+      title
+      content
+      pinned
+      tags
+      created_at
+      updated_at
+    }
+  }
+`;
+
+export const getWorkspaceNoteById = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as unknown as { id: string };
+  const data = await hasuraRequest<{ workspace_notes_by_pk: any }>(GET_NOTE_BY_ID, { id });
+  return data.workspace_notes_by_pk;
+});
+
 const CREATE_NOTE = `
   mutation CreateWorkspaceNote($object: workspace_notes_insert_input!) {
     insert_workspace_notes_one(object: $object) {
