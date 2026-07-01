@@ -21,16 +21,23 @@ export const updateBookFolder = createServerFn({ method: "POST" }).handler(async
 });
 `;
 
-code = code.replace("export const getWorkspaceBooks = createServerFn({ method: \"POST\" }).handler(async (ctx) => {", newMutation + "\nexport const getWorkspaceBooks = createServerFn({ method: \"POST\" }).handler(async (ctx) => {");
+code = code.replace(
+  'export const getWorkspaceBooks = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+  newMutation +
+    '\nexport const getWorkspaceBooks = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+);
 
-code = code.replace(`
+code = code.replace(
+  `
       id
       name
-`, `
+`,
+  `
       id
       name
       folder_id
-`);
+`,
+);
 
 fs.writeFileSync(file, code);
 console.log("Updated book.ts");

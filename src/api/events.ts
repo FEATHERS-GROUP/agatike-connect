@@ -663,7 +663,6 @@ const UPDATE_TICKET_PROJECT = `
   }
 `;
 
-
 export const updateTicketProjectFolder = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { id, folder_id } = ctx.data as any;
   const q = `

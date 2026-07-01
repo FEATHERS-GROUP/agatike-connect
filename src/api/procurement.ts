@@ -110,7 +110,9 @@ const GET_PROCUREMENT_FOLDERS = `
 
 export const getProcurementFolders = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { workspace_id } = ctx.data as unknown as { workspace_id: string };
-  const data = await hasuraRequest<{ agatike_book_folders: any[] }>(GET_PROCUREMENT_FOLDERS, { workspace_id });
+  const data = await hasuraRequest<{ agatike_book_folders: any[] }>(GET_PROCUREMENT_FOLDERS, {
+    workspace_id,
+  });
   return data.agatike_book_folders || [];
 });
 
@@ -177,6 +179,9 @@ const GET_PROCUREMENT_INVOICE_BY_ID = `
 
 export const getProcurementInvoiceById = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { id } = ctx.data as unknown as { id: string };
-  const data = await hasuraRequest<{ agatike_book_invoices_by_pk: any }>(GET_PROCUREMENT_INVOICE_BY_ID, { id });
+  const data = await hasuraRequest<{ agatike_book_invoices_by_pk: any }>(
+    GET_PROCUREMENT_INVOICE_BY_ID,
+    { id },
+  );
   return data.agatike_book_invoices_by_pk;
 });

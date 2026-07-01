@@ -66,12 +66,14 @@ export const createAgatikeBookRecord = createServerFn({ method: "POST" }).handle
   return hasuraRequest(CREATE_AGATIKE_BOOK_RECORD, { object: recordData });
 });
 
-export const createPublicAgatikeBookRecord = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  // Public endpoint for Page Builder forms (no auth required)
-  const payload = (ctx.data as any).data || ctx.data;
-  const recordData = payload;
-  return hasuraRequest(CREATE_AGATIKE_BOOK_RECORD, { object: recordData });
-});
+export const createPublicAgatikeBookRecord = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    // Public endpoint for Page Builder forms (no auth required)
+    const payload = (ctx.data as any).data || ctx.data;
+    const recordData = payload;
+    return hasuraRequest(CREATE_AGATIKE_BOOK_RECORD, { object: recordData });
+  },
+);
 
 const DELETE_AGATIKE_BOOK = `
   mutation DeleteAgatikeBook($id: uuid!) {

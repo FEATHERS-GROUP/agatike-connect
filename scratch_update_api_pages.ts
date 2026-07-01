@@ -17,16 +17,23 @@ export const updateWorkspacePageFolder = createServerFn({ method: "POST" }).hand
 });
 `;
 
-code = code.replace("export const deleteWorkspacePage = createServerFn({ method: \"POST\" }).handler(async (ctx) => {", newMutation + "\nexport const deleteWorkspacePage = createServerFn({ method: \"POST\" }).handler(async (ctx) => {");
+code = code.replace(
+  'export const deleteWorkspacePage = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+  newMutation +
+    '\nexport const deleteWorkspacePage = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+);
 
-code = code.replace(`
+code = code.replace(
+  `
         id
         slug
-`, `
+`,
+  `
         id
         slug
         folder_id
-`);
+`,
+);
 
 fs.writeFileSync(file, code);
 console.log("Updated workspace-pages.ts");

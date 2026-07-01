@@ -21,16 +21,23 @@ export const updateMovieFolder = createServerFn({ method: "POST" }).handler(asyn
 });
 `;
 
-code = code.replace("export const updateMovie = createServerFn({ method: \"POST\" }).handler(async (ctx) => {", newMutation + "\nexport const updateMovie = createServerFn({ method: \"POST\" }).handler(async (ctx) => {");
+code = code.replace(
+  'export const updateMovie = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+  newMutation +
+    '\nexport const updateMovie = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+);
 
-code = code.replace(`
+code = code.replace(
+  `
       id
       title
-`, `
+`,
+  `
       id
       title
       folder_id
-`);
+`,
+);
 
 fs.writeFileSync(file, code);
 console.log("Updated cinema_management.ts");

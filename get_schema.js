@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+const { execSync } = require("child_process");
 const query = `
   query {
     __type(name: "events") {
@@ -12,5 +12,7 @@ const query = `
     }
   }
 `;
-const result = execSync(`curl -s -X POST -H "Content-Type: application/json" -d '{"query":"${query.replace(/\n/g, ' ')}"}' http://localhost:8080/v1/graphql`);
-console.log(JSON.parse(result.toString()).data.__type.fields.map(f => f.name));
+const result = execSync(
+  `curl -s -X POST -H "Content-Type: application/json" -d '{"query":"${query.replace(/\n/g, " ")}"}' http://localhost:8080/v1/graphql`,
+);
+console.log(JSON.parse(result.toString()).data.__type.fields.map((f) => f.name));

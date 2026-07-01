@@ -176,7 +176,7 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
       theme_color: input.theme_color || "",
       components: input.components || [],
       is_published: input.is_published ?? true,
-      parent_id: input.parent_id || null
+      parent_id: input.parent_id || null,
     };
     const data = await hasuraRequest<{ update_workspace_pages_by_pk: any }>(mutation, updateInput);
     return data.update_workspace_pages_by_pk;
@@ -225,13 +225,12 @@ export const upsertWorkspacePage = createServerFn({ method: "POST" }).handler(as
       theme_color: input.theme_color || "",
       components: input.components || [],
       is_published: input.is_published ?? true,
-      parent_id: input.parent_id || null
+      parent_id: input.parent_id || null,
     };
     const data = await hasuraRequest<{ insert_workspace_pages_one: any }>(mutation, insertInput);
     return data.insert_workspace_pages_one;
   }
 });
-
 
 export const updateWorkspacePageFolder = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { id, folder_id } = ctx.data as any;

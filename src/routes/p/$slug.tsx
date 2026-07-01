@@ -109,13 +109,17 @@ function PublicCompanyPage() {
   // Generate site links for multi-page hierarchy
   const siteLinks: { name: string; url: string; isActive: boolean }[] = [];
   let siteTitle = title;
-  
+
   if (page?.parent) {
     siteTitle = page.parent.title || "Home";
     siteLinks.push({ name: "Home", url: `/p/${page.parent.slug}`, isActive: false });
     if (page.parent.children) {
       page.parent.children.forEach((child: any) => {
-        siteLinks.push({ name: child.title || "Untitled", url: `/p/${child.slug}`, isActive: child.slug === slug });
+        siteLinks.push({
+          name: child.title || "Untitled",
+          url: `/p/${child.slug}`,
+          isActive: child.slug === slug,
+        });
       });
     }
   } else if (page?.children && page.children.length > 0) {
@@ -146,11 +150,13 @@ function PublicCompanyPage() {
       >
         {/* Sticky Navbar */}
         {hasNavbar && (
-          <nav className={
-            navbarStyle === "transparent"
-              ? "absolute top-0 left-0 right-0 z-50 w-full bg-transparent border-b border-white/10"
-              : "sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm transition-all"
-          }>
+          <nav
+            className={
+              navbarStyle === "transparent"
+                ? "absolute top-0 left-0 right-0 z-50 w-full bg-transparent border-b border-white/10"
+                : "sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm transition-all"
+            }
+          >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
               {/* Logo */}
               <div className="flex-shrink-0 flex items-center">
@@ -159,9 +165,14 @@ function PublicCompanyPage() {
                     <img src={logo_url} alt="Logo" className="h-10 w-auto object-contain rounded" />
                   </a>
                 ) : logoPosition === "navbar" && siteTitle ? (
-                  <a href={siteLinks.length > 0 ? siteLinks[0].url : "#"} className={`font-bold text-xl tracking-tight truncate max-w-[200px] transition-colors ${
-                    navbarStyle === "transparent" ? "text-white hover:text-white/80" : "text-foreground hover:text-primary"
-                  }`}>
+                  <a
+                    href={siteLinks.length > 0 ? siteLinks[0].url : "#"}
+                    className={`font-bold text-xl tracking-tight truncate max-w-[200px] transition-colors ${
+                      navbarStyle === "transparent"
+                        ? "text-white hover:text-white/80"
+                        : "text-foreground hover:text-primary"
+                    }`}
+                  >
                     {siteTitle}
                   </a>
                 ) : (
@@ -176,15 +187,19 @@ function PublicCompanyPage() {
                     key={link.url}
                     href={link.url}
                     className={`text-sm font-medium transition-colors whitespace-nowrap ${
-                      link.isActive 
-                        ? (navbarStyle === "transparent" ? "text-white" : "text-primary") 
-                        : (navbarStyle === "transparent" ? "text-white/70 hover:text-white" : "text-muted-foreground hover:text-primary")
+                      link.isActive
+                        ? navbarStyle === "transparent"
+                          ? "text-white"
+                          : "text-primary"
+                        : navbarStyle === "transparent"
+                          ? "text-white/70 hover:text-white"
+                          : "text-muted-foreground hover:text-primary"
                     }`}
                   >
                     {link.name}
                   </a>
                 ))}
-                
+
                 {menuLinks.length > 0 && siteLinks.length > 0 && (
                   <div className="w-px h-4 bg-border/60 mx-2" />
                 )}
@@ -194,7 +209,9 @@ function PublicCompanyPage() {
                     key={link.id}
                     onClick={() => scrollToSection(link.id)}
                     className={`text-sm font-medium transition-colors whitespace-nowrap ${
-                      navbarStyle === "transparent" ? "text-white/70 hover:text-white" : "text-muted-foreground hover:text-primary"
+                      navbarStyle === "transparent"
+                        ? "text-white/70 hover:text-white"
+                        : "text-muted-foreground hover:text-primary"
                     }`}
                   >
                     {link.name}
@@ -206,17 +223,27 @@ function PublicCompanyPage() {
         )}
 
         {/* Header Overlay Section */}
-        <div className={`relative w-full min-h-[50vh] md:min-h-[60vh] bg-secondary flex flex-col p-8 md:p-16 ${
-          heroAlign === "top-left" ? "justify-start items-start text-left" :
-          heroAlign === "top-center" ? "justify-start items-center text-center" :
-          heroAlign === "top-right" ? "justify-start items-end text-right" :
-          heroAlign === "center-left" ? "justify-center items-start text-left" :
-          heroAlign === "center" ? "justify-center items-center text-center" :
-          heroAlign === "center-right" ? "justify-center items-end text-right" :
-          heroAlign === "bottom-left" ? "justify-end items-start text-left" :
-          heroAlign === "bottom-center" ? "justify-end items-center text-center" :
-          "justify-end items-end text-right"
-        } ${navbarStyle === "transparent" && hasNavbar ? "pt-24 md:pt-32" : ""}`}>
+        <div
+          className={`relative w-full min-h-[50vh] md:min-h-[60vh] bg-secondary flex flex-col p-8 md:p-16 ${
+            heroAlign === "top-left"
+              ? "justify-start items-start text-left"
+              : heroAlign === "top-center"
+                ? "justify-start items-center text-center"
+                : heroAlign === "top-right"
+                  ? "justify-start items-end text-right"
+                  : heroAlign === "center-left"
+                    ? "justify-center items-start text-left"
+                    : heroAlign === "center"
+                      ? "justify-center items-center text-center"
+                      : heroAlign === "center-right"
+                        ? "justify-center items-end text-right"
+                        : heroAlign === "bottom-left"
+                          ? "justify-end items-start text-left"
+                          : heroAlign === "bottom-center"
+                            ? "justify-end items-center text-center"
+                            : "justify-end items-end text-right"
+          } ${navbarStyle === "transparent" && hasNavbar ? "pt-24 md:pt-32" : ""}`}
+        >
           {header_image_url ? (
             <img
               src={header_image_url}
@@ -226,50 +253,80 @@ function PublicCompanyPage() {
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-primary/40" />
           )}
-          
+
           {/* Overlay */}
-          <div 
-            className="absolute inset-0 pointer-events-none" 
-            style={{ 
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
               backgroundColor: heroOverlayColor,
-              opacity: heroOverlayOpacity / 100 
-            }} 
+              opacity: heroOverlayOpacity / 100,
+            }}
           />
 
-          <div className={`relative z-10 w-full max-w-5xl mx-auto flex items-center gap-8 ${
-             heroForegroundImageUrl && heroForegroundPosition === "left" ? "flex-row-reverse" : ""
-          }`}>
-            <div className={`flex flex-col space-y-4 md:space-y-6 flex-1 ${
-               heroAlign.includes("left") ? "items-start text-left" : heroAlign.includes("right") ? "items-end text-right" : "items-center text-center"
-            }`}>
+          <div
+            className={`relative z-10 w-full max-w-5xl mx-auto flex items-center gap-8 ${
+              heroForegroundImageUrl && heroForegroundPosition === "left" ? "flex-row-reverse" : ""
+            }`}
+          >
+            <div
+              className={`flex flex-col space-y-4 md:space-y-6 flex-1 ${
+                heroAlign.includes("left")
+                  ? "items-start text-left"
+                  : heroAlign.includes("right")
+                    ? "items-end text-right"
+                    : "items-center text-center"
+              }`}
+            >
               {logo_url && logoPosition === "hero" && (
-                <div className={`w-24 h-24 md:w-32 md:h-32 shadow-2xl overflow-hidden mb-4 bg-background border-4 border-background/50 backdrop-blur-sm ${elementShape}`}>
+                <div
+                  className={`w-24 h-24 md:w-32 md:h-32 shadow-2xl overflow-hidden mb-4 bg-background border-4 border-background/50 backdrop-blur-sm ${elementShape}`}
+                >
                   <img src={logo_url} alt="Logo" className="w-full h-full object-cover" />
                 </div>
               )}
               {title && (
-                <h1 className={`text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-white drop-shadow-lg leading-tight ${
-                  heroAlign.includes("left") ? "text-left" : heroAlign.includes("right") ? "text-right" : "text-center"
-                }`}>
+                <h1
+                  className={`text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-white drop-shadow-lg leading-tight ${
+                    heroAlign.includes("left")
+                      ? "text-left"
+                      : heroAlign.includes("right")
+                        ? "text-right"
+                        : "text-center"
+                  }`}
+                >
                   {title}
                 </h1>
               )}
               {description && (
-                <p className={`text-lg sm:text-xl md:text-2xl text-white/90 max-w-3xl drop-shadow-md whitespace-pre-wrap leading-relaxed ${
-                  heroAlign.includes("left") ? "text-left" : heroAlign.includes("right") ? "text-right" : "text-center"
-                }`}>
+                <p
+                  className={`text-lg sm:text-xl md:text-2xl text-white/90 max-w-3xl drop-shadow-md whitespace-pre-wrap leading-relaxed ${
+                    heroAlign.includes("left")
+                      ? "text-left"
+                      : heroAlign.includes("right")
+                        ? "text-right"
+                        : "text-center"
+                  }`}
+                >
                   {description}
                 </p>
               )}
-              
+
               {heroButtonText && heroButtonLink && (
-                <Button asChild size="lg" className="mt-4 shadow-xl hover:scale-105 transition-transform rounded-full border border-white/20">
-                  <Link 
-                    to={heroButtonActionType === "page" ? (heroButtonLink as any) : undefined} 
+                <Button
+                  asChild
+                  size="lg"
+                  className="mt-4 shadow-xl hover:scale-105 transition-transform rounded-full border border-white/20"
+                >
+                  <Link
+                    to={heroButtonActionType === "page" ? (heroButtonLink as any) : undefined}
                     href={
-                      heroButtonActionType === "phone" ? (heroButtonLink.startsWith("tel:") ? heroButtonLink : `tel:${heroButtonLink}`) 
-                      : heroButtonActionType !== "page" ? heroButtonLink 
-                      : undefined
+                      heroButtonActionType === "phone"
+                        ? heroButtonLink.startsWith("tel:")
+                          ? heroButtonLink
+                          : `tel:${heroButtonLink}`
+                        : heroButtonActionType !== "page"
+                          ? heroButtonLink
+                          : undefined
                     }
                   >
                     {heroButtonText}
@@ -280,7 +337,11 @@ function PublicCompanyPage() {
 
             {heroForegroundImageUrl && (
               <div className="flex-1 hidden md:flex items-center justify-center relative">
-                 <img src={heroForegroundImageUrl} alt="Foreground" className={`w-full max-w-sm lg:max-w-md h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500`} />
+                <img
+                  src={heroForegroundImageUrl}
+                  alt="Foreground"
+                  className={`w-full max-w-sm lg:max-w-md h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500`}
+                />
               </div>
             )}
           </div>
@@ -293,7 +354,9 @@ function PublicCompanyPage() {
               const renderComponent = () => {
                 if (comp.type === "text") {
                   return (
-                    <div className={`prose prose-lg dark:prose-invert max-w-none bg-card p-8 shadow-sm ${elementShape}`}>
+                    <div
+                      className={`prose prose-lg dark:prose-invert max-w-none bg-card p-8 shadow-sm ${elementShape}`}
+                    >
                       <p className="whitespace-pre-wrap">{comp.content}</p>
                     </div>
                   );
@@ -301,7 +364,10 @@ function PublicCompanyPage() {
 
                 if (comp.type === "image" && comp.url) {
                   return (
-                    <div key={comp.id} className={`w-full overflow-hidden shadow-sm ${elementShape}`}>
+                    <div
+                      key={comp.id}
+                      className={`w-full overflow-hidden shadow-sm ${elementShape}`}
+                    >
                       <img
                         src={comp.url}
                         alt="Content"
@@ -318,7 +384,9 @@ function PublicCompanyPage() {
                       className={`flex flex-col md:flex-row gap-8 items-center ${comp.imagePosition === "right" ? "md:flex-row-reverse" : ""}`}
                     >
                       {comp.imageUrl && (
-                        <div className={`w-full md:w-1/2 overflow-hidden shadow-sm ${elementShape}`}>
+                        <div
+                          className={`w-full md:w-1/2 overflow-hidden shadow-sm ${elementShape}`}
+                        >
                           <img
                             src={comp.imageUrl}
                             alt="Split Content"
@@ -389,7 +457,9 @@ function PublicCompanyPage() {
                                 {card.customTitle || linkedForm.title}
                               </h3>
                               {linkedForm.cover_image_url && (
-                                <div className={`w-16 h-16 overflow-hidden shrink-0 ml-4 hidden sm:block ${elementShape}`}>
+                                <div
+                                  className={`w-16 h-16 overflow-hidden shrink-0 ml-4 hidden sm:block ${elementShape}`}
+                                >
                                   <img
                                     src={linkedForm.cover_image_url}
                                     alt={linkedForm.title}
@@ -420,8 +490,12 @@ function PublicCompanyPage() {
                             {comp.openAction === "modal" ? (
                               <Dialog>
                                 <DialogTrigger asChild>
-                                  <Button className="w-full rounded-full mt-auto group-hover:shadow-md transition-all" style={{ background: theme_color }}>
-                                    {card.buttonLabel || "Register"} <ArrowRight className="w-4 h-4 ml-2" />
+                                  <Button
+                                    className="w-full rounded-full mt-auto group-hover:shadow-md transition-all"
+                                    style={{ background: theme_color }}
+                                  >
+                                    {card.buttonLabel || "Register"}{" "}
+                                    <ArrowRight className="w-4 h-4 ml-2" />
                                   </Button>
                                 </DialogTrigger>
                                 <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
@@ -434,11 +508,18 @@ function PublicCompanyPage() {
                             ) : comp.openAction === "drawer" ? (
                               <Sheet>
                                 <SheetTrigger asChild>
-                                  <Button className="w-full rounded-full mt-auto group-hover:shadow-md transition-all" style={{ background: theme_color }}>
-                                    {card.buttonLabel || "Register"} <ArrowRight className="w-4 h-4 ml-2" />
+                                  <Button
+                                    className="w-full rounded-full mt-auto group-hover:shadow-md transition-all"
+                                    style={{ background: theme_color }}
+                                  >
+                                    {card.buttonLabel || "Register"}{" "}
+                                    <ArrowRight className="w-4 h-4 ml-2" />
                                   </Button>
                                 </SheetTrigger>
-                                <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0">
+                                <SheetContent
+                                  side="right"
+                                  className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0"
+                                >
                                   <SheetTitle className="sr-only">Form</SheetTitle>
                                   <div className="h-full relative bg-background">
                                     <EmbeddedForm formId={linkedForm.id} />
@@ -446,9 +527,14 @@ function PublicCompanyPage() {
                                 </SheetContent>
                               </Sheet>
                             ) : (
-                              <Button asChild className="w-full rounded-full mt-auto group-hover:shadow-md transition-all" style={{ background: theme_color }}>
+                              <Button
+                                asChild
+                                className="w-full rounded-full mt-auto group-hover:shadow-md transition-all"
+                                style={{ background: theme_color }}
+                              >
                                 <Link to={`/f/${linkedForm.id}` as any}>
-                                  {card.buttonLabel || "Register"} <ArrowRight className="w-4 h-4 ml-2" />
+                                  {card.buttonLabel || "Register"}{" "}
+                                  <ArrowRight className="w-4 h-4 ml-2" />
                                 </Link>
                               </Button>
                             )}
@@ -507,7 +593,11 @@ function PublicCompanyPage() {
 
                   if (comp.design === "button") {
                     const buttonContent = (
-                      <Button size="lg" className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center cursor-pointer" style={{ background: theme_color }}>
+                      <Button
+                        size="lg"
+                        className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center cursor-pointer"
+                        style={{ background: theme_color }}
+                      >
                         {linkedForm.title} <ArrowRight className="w-5 h-5 ml-2 md:ml-3 shrink-0" />
                       </Button>
                     );
@@ -529,7 +619,10 @@ function PublicCompanyPage() {
                       contentWrapper = (
                         <Sheet>
                           <SheetTrigger asChild>{buttonContent}</SheetTrigger>
-                          <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0">
+                          <SheetContent
+                            side="right"
+                            className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0"
+                          >
                             <SheetTitle className="sr-only">Form</SheetTitle>
                             <div className="h-full relative bg-background">
                               <EmbeddedForm formId={linkedForm.id} />
@@ -539,9 +632,7 @@ function PublicCompanyPage() {
                       );
                     } else {
                       contentWrapper = (
-                        <Link to={`/f/${linkedForm.id}` as any}>
-                          {buttonContent}
-                        </Link>
+                        <Link to={`/f/${linkedForm.id}` as any}>{buttonContent}</Link>
                       );
                     }
 
@@ -553,9 +644,13 @@ function PublicCompanyPage() {
                   }
 
                   const cardContent = (
-                    <div className={`bg-card border border-border/60 p-6 md:p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col md:flex-row items-center gap-6 ${elementShape} cursor-pointer w-full text-left`}>
+                    <div
+                      className={`bg-card border border-border/60 p-6 md:p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col md:flex-row items-center gap-6 ${elementShape} cursor-pointer w-full text-left`}
+                    >
                       {linkedForm.cover_image_url ? (
-                        <div className={`w-full md:w-48 h-32 overflow-hidden shrink-0 ${elementShape}`}>
+                        <div
+                          className={`w-full md:w-48 h-32 overflow-hidden shrink-0 ${elementShape}`}
+                        >
                           <img
                             src={linkedForm.cover_image_url}
                             alt={linkedForm.title}
@@ -563,7 +658,9 @@ function PublicCompanyPage() {
                           />
                         </div>
                       ) : (
-                        <div className={`w-full md:w-48 h-32 bg-primary/10 flex items-center justify-center shrink-0 ${elementShape}`}>
+                        <div
+                          className={`w-full md:w-48 h-32 bg-primary/10 flex items-center justify-center shrink-0 ${elementShape}`}
+                        >
                           <span className="text-4xl font-bold text-primary/30">
                             {linkedForm.title.charAt(0)}
                           </span>
@@ -593,7 +690,9 @@ function PublicCompanyPage() {
                       <div key={comp.id} className="group">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <button className="w-full text-left focus:outline-none">{cardContent}</button>
+                            <button className="w-full text-left focus:outline-none">
+                              {cardContent}
+                            </button>
                           </DialogTrigger>
                           <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
                             <DialogTitle className="sr-only">Form</DialogTitle>
@@ -609,9 +708,14 @@ function PublicCompanyPage() {
                       <div key={comp.id} className="group">
                         <Sheet>
                           <SheetTrigger asChild>
-                            <button className="w-full text-left focus:outline-none">{cardContent}</button>
+                            <button className="w-full text-left focus:outline-none">
+                              {cardContent}
+                            </button>
                           </SheetTrigger>
-                          <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0">
+                          <SheetContent
+                            side="right"
+                            className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0"
+                          >
                             <SheetTitle className="sr-only">Form</SheetTitle>
                             <div className="h-full relative bg-background">
                               <EmbeddedForm formId={linkedForm.id} />
@@ -675,7 +779,9 @@ function PublicCompanyPage() {
                   const size = comp.size || 192;
                   return (
                     <div className="flex flex-col items-center justify-center w-full py-12 gap-6">
-                      <div className={`bg-white p-6 shadow-lg border border-border/60 hover:shadow-xl transition-shadow ${elementShape}`}>
+                      <div
+                        className={`bg-white p-6 shadow-lg border border-border/60 hover:shadow-xl transition-shadow ${elementShape}`}
+                      >
                         <QRCode value={comp.content || "https://agatike.com"} size={size} />
                       </div>
                       {comp.title && (
@@ -691,25 +797,39 @@ function PublicCompanyPage() {
                   if (comp.design === "embedded" || !comp.design) {
                     return (
                       <div key={comp.id} className="w-full">
-                        <SpreadsheetEntryForm workspace_id={workspace_id} themeColor={theme_color} comp={comp} />
+                        <SpreadsheetEntryForm
+                          workspace_id={workspace_id}
+                          themeColor={theme_color}
+                          comp={comp}
+                        />
                       </div>
                     );
                   }
 
-                  const title = comp.title || (comp.type === "budget_request" ? "Budget Request" : "Damage Report");
+                  const title =
+                    comp.title ||
+                    (comp.type === "budget_request" ? "Budget Request" : "Damage Report");
                   const description = comp.description || "Click to open form";
 
                   let triggerContent;
                   if (comp.design === "button") {
                     triggerContent = (
-                      <Button size="lg" className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center cursor-pointer" style={{ background: theme_color }}>
+                      <Button
+                        size="lg"
+                        className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center cursor-pointer"
+                        style={{ background: theme_color }}
+                      >
                         {title} <ArrowRight className="w-5 h-5 ml-2 md:ml-3 shrink-0" />
                       </Button>
                     );
                   } else {
                     triggerContent = (
-                      <div className={`bg-card border border-border/60 p-6 md:p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col items-center gap-4 ${elementShape} cursor-pointer w-full text-center max-w-sm mx-auto`}>
-                        <div className={`w-16 h-16 bg-primary/10 flex items-center justify-center shrink-0 ${elementShape} mb-2`}>
+                      <div
+                        className={`bg-card border border-border/60 p-6 md:p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col items-center gap-4 ${elementShape} cursor-pointer w-full text-center max-w-sm mx-auto`}
+                      >
+                        <div
+                          className={`w-16 h-16 bg-primary/10 flex items-center justify-center shrink-0 ${elementShape} mb-2`}
+                        >
                           <span className="text-2xl font-bold text-primary/30">
                             {title.charAt(0)}
                           </span>
@@ -717,10 +837,11 @@ function PublicCompanyPage() {
                         <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
                           {title}
                         </h3>
-                        <p className="text-muted-foreground line-clamp-2 text-sm">
-                          {description}
-                        </p>
-                        <Button className="mt-4 rounded-full w-full" style={{ background: theme_color }}>
+                        <p className="text-muted-foreground line-clamp-2 text-sm">{description}</p>
+                        <Button
+                          className="mt-4 rounded-full w-full"
+                          style={{ background: theme_color }}
+                        >
                           Open Form <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
                       </div>
@@ -728,18 +849,24 @@ function PublicCompanyPage() {
                   }
 
                   const openAction = comp.openAction || "modal";
-                  
+
                   if (openAction === "modal") {
                     return (
                       <div key={comp.id} className="flex justify-center w-full px-4 group">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <button className="focus:outline-none w-full flex justify-center">{triggerContent}</button>
+                            <button className="focus:outline-none w-full flex justify-center">
+                              {triggerContent}
+                            </button>
                           </DialogTrigger>
                           <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
                             <DialogTitle className="sr-only">{title}</DialogTitle>
                             <div className="bg-background rounded-xl overflow-hidden shadow-2xl h-full relative">
-                              <SpreadsheetEntryForm workspace_id={workspace_id} themeColor={theme_color} comp={comp} />
+                              <SpreadsheetEntryForm
+                                workspace_id={workspace_id}
+                                themeColor={theme_color}
+                                comp={comp}
+                              />
                             </div>
                           </DialogContent>
                         </Dialog>
@@ -750,12 +877,21 @@ function PublicCompanyPage() {
                       <div key={comp.id} className="flex justify-center w-full px-4 group">
                         <Sheet>
                           <SheetTrigger asChild>
-                            <button className="focus:outline-none w-full flex justify-center">{triggerContent}</button>
+                            <button className="focus:outline-none w-full flex justify-center">
+                              {triggerContent}
+                            </button>
                           </SheetTrigger>
-                          <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0">
+                          <SheetContent
+                            side="right"
+                            className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0"
+                          >
                             <SheetTitle className="sr-only">{title}</SheetTitle>
                             <div className="h-full relative bg-background">
-                              <SpreadsheetEntryForm workspace_id={workspace_id} themeColor={theme_color} comp={comp} />
+                              <SpreadsheetEntryForm
+                                workspace_id={workspace_id}
+                                themeColor={theme_color}
+                                comp={comp}
+                              />
                             </div>
                           </SheetContent>
                         </Sheet>

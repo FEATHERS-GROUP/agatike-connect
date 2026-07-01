@@ -121,8 +121,12 @@ function DashboardExperiences() {
 
         const isUpcoming = ts.is_upcoming === true;
         const displayDate = isUpcoming
-          ? (ts.timer_date ? `Drops on ${new Date(ts.timer_date).toLocaleDateString("en-US")}` : "Coming Soon")
-          : (numDays > 1 && dateStr ? `${dateStr} to ${endDateStr}` : dateStr || "Not scheduled");
+          ? ts.timer_date
+            ? `Drops on ${new Date(ts.timer_date).toLocaleDateString("en-US")}`
+            : "Coming Soon"
+          : numDays > 1 && dateStr
+            ? `${dateStr} to ${endDateStr}`
+            : dateStr || "Not scheduled";
         const city = ts.city || ts.venueName || "Location not set";
 
         return {

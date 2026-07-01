@@ -17,16 +17,23 @@ export const updateCustomFormFolder = createServerFn({ method: "POST" }).handler
 });
 `;
 
-code = code.replace("export const deleteCustomForm = createServerFn({ method: \"POST\" }).handler(async (ctx) => {", newMutation + "\nexport const deleteCustomForm = createServerFn({ method: \"POST\" }).handler(async (ctx) => {");
+code = code.replace(
+  'export const deleteCustomForm = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+  newMutation +
+    '\nexport const deleteCustomForm = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+);
 
-code = code.replace(`
+code = code.replace(
+  `
       id
       title
-`, `
+`,
+  `
       id
       title
       folder_id
-`);
+`,
+);
 
 fs.writeFileSync(file, code);
 console.log("Updated rsvps.ts");

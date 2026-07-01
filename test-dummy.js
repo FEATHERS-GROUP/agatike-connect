@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 
 const endpoint = "https://open-languages.hasura.app/v1/graphql";
 const secret = "tbK6HLeobyLxHpgiwuMNUlKNSl4r7yrF3XOnSYWza9ocZQ57NKghx5xFFq7YNn9e";
@@ -7,7 +7,9 @@ async function run() {
   const wsRes = await fetch(endpoint, {
     method: "POST",
     headers: { "x-hasura-admin-secret": secret, "Content-Type": "application/json" },
-    body: JSON.stringify({ query: 'query { workspaces(where: {slug: {_eq: "planet-events"}}) { id } }' })
+    body: JSON.stringify({
+      query: 'query { workspaces(where: {slug: {_eq: "planet-events"}}) { id } }',
+    }),
   });
   const wsData = await wsRes.json();
   const wsId = wsData.data.workspaces[0].id;
@@ -15,10 +17,12 @@ async function run() {
   const bookRes = await fetch(endpoint, {
     method: "POST",
     headers: { "x-hasura-admin-secret": secret, "Content-Type": "application/json" },
-    body: JSON.stringify({ query: `query { agatike_books(where: {workspace_id: {_eq: "${wsId}"}, name: {_eq: "__finance_requests"}}) { id } }` })
+    body: JSON.stringify({
+      query: `query { agatike_books(where: {workspace_id: {_eq: "${wsId}"}, name: {_eq: "__finance_requests"}}) { id } }`,
+    }),
   });
   const bookData = await bookRes.json();
-  
+
   if (!bookData.data.agatike_books.length) {
     console.log("Book not found");
     return;
@@ -34,8 +38,8 @@ async function run() {
     Status: "Pending",
     LineItems: [
       { Item: "Stage Light Rig", Cost: 1000, Qty: 1 },
-      { Item: "Cables", Cost: 250, Qty: 2 }
-    ]
+      { Item: "Cables", Cost: 250, Qty: 2 },
+    ],
   };
 
   const insertRes = await fetch(endpoint, {
@@ -48,10 +52,10 @@ async function run() {
       variables: {
         object: {
           book_id: bookId,
-          record_data: recordData
-        }
-      }
-    })
+          record_data: recordData,
+        },
+      },
+    }),
   });
   const insertData = await insertRes.json();
   console.log("Inserted:", insertData);

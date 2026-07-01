@@ -211,8 +211,6 @@ function CinemaOverview() {
     },
   ];
 
-
-
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Hero Section */}

@@ -18,7 +18,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowLeft, Globe, Check, Copy, ExternalLink, Eye, Trash2, Loader2, ChevronDown, FileText, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  Globe,
+  Check,
+  Copy,
+  ExternalLink,
+  Eye,
+  Trash2,
+  Loader2,
+  ChevronDown,
+  FileText,
+  Plus,
+} from "lucide-react";
 
 export function EditorTopbar({
   activeWorkspace,
@@ -47,9 +59,15 @@ export function EditorTopbar({
         <div className="flex items-center gap-2 min-w-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2 -ml-2 text-muted-foreground hover:text-foreground">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1.5 px-2 -ml-2 text-muted-foreground hover:text-foreground"
+              >
                 <Globe className="h-4 w-4 shrink-0" />
-                <span className="text-sm font-semibold truncate max-w-[150px]">{editorState.slug || "untitled"}</span>
+                <span className="text-sm font-semibold truncate max-w-[150px]">
+                  {editorState.slug || "untitled"}
+                </span>
                 <ChevronDown className="h-3.5 w-3.5 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
@@ -59,43 +77,57 @@ export function EditorTopbar({
               </div>
               <DropdownMenuSeparator />
               <div className="max-h-[300px] overflow-y-auto">
-                {allPages.filter((p: any) => !p.parent_id).map((page: any) => (
-                  <div key={page.id}>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
-                        search={{ pageId: page.id }}
-                        className="cursor-pointer py-2"
-                      >
-                        <FileText className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <span className="truncate font-medium">{page.title || "Untitled"}</span>
-                          <span className="text-[10px] text-muted-foreground truncate">/p/{page.slug || "untitled"}</span>
-                        </div>
-                        {page.id === editorState.id && (
-                          <Check className="h-3.5 w-3.5 text-primary ml-2 shrink-0" />
-                        )}
-                      </Link>
-                    </DropdownMenuItem>
-                    {allPages.filter((child: any) => child.parent_id === page.id).map((child: any) => (
-                      <DropdownMenuItem key={child.id} asChild className="ml-6 pl-2 border-l border-border/60 rounded-none">
+                {allPages
+                  .filter((p: any) => !p.parent_id)
+                  .map((page: any) => (
+                    <div key={page.id}>
+                      <DropdownMenuItem asChild>
                         <Link
                           to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
-                          search={{ pageId: child.id }}
-                          className="cursor-pointer py-1.5"
+                          search={{ pageId: page.id }}
+                          className="cursor-pointer py-2"
                         >
+                          <FileText className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
                           <div className="flex flex-col min-w-0 flex-1">
-                            <span className="truncate text-xs font-medium">{child.title || "Untitled"}</span>
-                            <span className="text-[9px] text-muted-foreground truncate">/p/{child.slug || "untitled"}</span>
+                            <span className="truncate font-medium">{page.title || "Untitled"}</span>
+                            <span className="text-[10px] text-muted-foreground truncate">
+                              /p/{page.slug || "untitled"}
+                            </span>
                           </div>
-                          {child.id === editorState.id && (
-                            <Check className="h-3 w-3 text-primary ml-2 shrink-0" />
+                          {page.id === editorState.id && (
+                            <Check className="h-3.5 w-3.5 text-primary ml-2 shrink-0" />
                           )}
                         </Link>
                       </DropdownMenuItem>
-                    ))}
-                  </div>
-                ))}
+                      {allPages
+                        .filter((child: any) => child.parent_id === page.id)
+                        .map((child: any) => (
+                          <DropdownMenuItem
+                            key={child.id}
+                            asChild
+                            className="ml-6 pl-2 border-l border-border/60 rounded-none"
+                          >
+                            <Link
+                              to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
+                              search={{ pageId: child.id }}
+                              className="cursor-pointer py-1.5"
+                            >
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <span className="truncate text-xs font-medium">
+                                  {child.title || "Untitled"}
+                                </span>
+                                <span className="text-[9px] text-muted-foreground truncate">
+                                  /p/{child.slug || "untitled"}
+                                </span>
+                              </div>
+                              {child.id === editorState.id && (
+                                <Check className="h-3 w-3 text-primary ml-2 shrink-0" />
+                              )}
+                            </Link>
+                          </DropdownMenuItem>
+                        ))}
+                    </div>
+                  ))}
               </div>
               <DropdownMenuSeparator />
               {editorState.id && !editorState.parent_id && (
@@ -122,7 +154,7 @@ export function EditorTopbar({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           {editorState.id && (
             <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-500/10 text-green-600 border border-green-500/20">
               <Check className="w-2.5 h-2.5" /> Saved

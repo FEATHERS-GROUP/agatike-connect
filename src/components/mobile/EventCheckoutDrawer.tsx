@@ -79,14 +79,21 @@ export function EventCheckoutDrawer({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-lg">Coming Soon</h3>
-                  {timerDate && <p className="text-sm text-muted-foreground">Dropping {new Date(timerDate).toLocaleDateString("en-US")}</p>}
+                  {timerDate && (
+                    <p className="text-sm text-muted-foreground">
+                      Dropping {new Date(timerDate).toLocaleDateString("en-US")}
+                    </p>
+                  )}
                 </div>
               </div>
               <Button
                 asChild={!!waitlistUrl}
                 disabled={!waitlistUrl}
                 className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] tracking-wide"
-                style={{ background: waitlistUrl ? "var(--gradient-primary)" : "var(--muted)", color: waitlistUrl ? undefined : "var(--muted-foreground)" }}
+                style={{
+                  background: waitlistUrl ? "var(--gradient-primary)" : "var(--muted)",
+                  color: waitlistUrl ? undefined : "var(--muted-foreground)",
+                }}
               >
                 {waitlistUrl ? (
                   waitlistUrl.startsWith("/") ? (
@@ -94,12 +101,19 @@ export function EventCheckoutDrawer({
                       Join Waitlist / RSVP
                     </Link>
                   ) : (
-                    <a href={waitlistUrl} target="_blank" rel="noreferrer" className="w-full block text-center leading-[48px]">
+                    <a
+                      href={waitlistUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full block text-center leading-[48px]"
+                    >
                       Join Waitlist / RSVP
                     </a>
                   )
                 ) : (
-                  <span className="w-full block text-center leading-[48px]">Tickets Coming Soon</span>
+                  <span className="w-full block text-center leading-[48px]">
+                    Tickets Coming Soon
+                  </span>
                 )}
               </Button>
             </div>
@@ -113,7 +127,9 @@ export function EventCheckoutDrawer({
                 }}
               >
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm text-muted-foreground font-semibold">Tickets & Pricing</span>
+                  <span className="text-sm text-muted-foreground font-semibold">
+                    Tickets & Pricing
+                  </span>
                   <ChevronUp
                     className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${isTicketsExpanded ? "rotate-180" : ""}`}
                   />
@@ -145,7 +161,8 @@ export function EventCheckoutDrawer({
                               stopOrSchedule.total_spots ?? stopOrSchedule.totalSpots ?? 0;
                             const spotsFilled =
                               stopOrSchedule.spots_filled ?? stopOrSchedule.spotsFilled ?? 0;
-                            const dateStr = stopOrSchedule.start_date || stopOrSchedule.date || "TBD";
+                            const dateStr =
+                              stopOrSchedule.start_date || stopOrSchedule.date || "TBD";
                             const isFull = spotsFilled >= totalSpots;
 
                             if (hasSelectedStop && !isSelected) {
@@ -324,7 +341,9 @@ export function EventCheckoutDrawer({
                         </p>
 
                         <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
-                          <span className="text-xs font-medium text-muted-foreground">Quantity</span>
+                          <span className="text-xs font-medium text-muted-foreground">
+                            Quantity
+                          </span>
                           {isSuspended ? (
                             <div className="bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
                               Suspended
@@ -343,7 +362,10 @@ export function EventCheckoutDrawer({
                               <button
                                 className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
                                 onClick={() =>
-                                  setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
+                                  setCart((prev) => ({
+                                    ...prev,
+                                    [cartKey]: Math.max(0, itemQty - 1),
+                                  }))
                                 }
                                 disabled={itemQty === 0}
                               >
@@ -352,7 +374,9 @@ export function EventCheckoutDrawer({
                               <span className="w-4 text-center font-bold text-xs">{itemQty}</span>
                               <button
                                 className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
-                                onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                                onClick={() =>
+                                  setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))
+                                }
                                 disabled={itemQty >= t.remaining}
                               >
                                 <Plus className="h-3 w-3" />
@@ -405,7 +429,9 @@ export function EventCheckoutDrawer({
                           </p>
 
                           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
-                            <span className="text-xs font-medium text-muted-foreground">Quantity</span>
+                            <span className="text-xs font-medium text-muted-foreground">
+                              Quantity
+                            </span>
                             {isSuspended ? (
                               <div className="bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
                                 Suspended
@@ -474,7 +500,9 @@ export function EventCheckoutDrawer({
                           ? "var(--foreground)"
                           : "var(--gradient-primary)",
                     opacity:
-                      isPastEvent || isSuspended || (totalTickets === 0 && hasSelectedStop) ? 0.5 : 1,
+                      isPastEvent || isSuspended || (totalTickets === 0 && hasSelectedStop)
+                        ? 0.5
+                        : 1,
                     pointerEvents:
                       isPastEvent || isSuspended || (totalTickets === 0 && hasSelectedStop)
                         ? "none"

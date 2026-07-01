@@ -6,10 +6,12 @@ let code = fs.readFileSync(file, "utf8");
 // Imports
 code = code.replace(
   'import { getMovies, deleteMovie } from "@/api/cinema_management";',
-  'import { getMovies, deleteMovie, updateMovieFolder } from "@/api/cinema_management";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { Checkbox } from "@/components/ui/checkbox";'
+  'import { getMovies, deleteMovie, updateMovieFolder } from "@/api/cinema_management";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { Checkbox } from "@/components/ui/checkbox";',
 );
-code = code.replace('import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";', 'import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";\nimport { Checkbox as RadixCheckbox } from "@/components/ui/checkbox";'); // In case Checkbox is already imported, wait no, I used replace above. Let's just fix it.
-
+code = code.replace(
+  'import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";',
+  'import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";\nimport { Checkbox as RadixCheckbox } from "@/components/ui/checkbox";',
+); // In case Checkbox is already imported, wait no, I used replace above. Let's just fix it.
 
 // Mutations
 const mutationsStr = `
@@ -31,7 +33,10 @@ const mutationsStr = `
   };
 `;
 
-code = code.replace("  const deleteMutation = useMutation({", mutationsStr + "\n  const deleteMutation = useMutation({");
+code = code.replace(
+  "  const deleteMutation = useMutation({",
+  mutationsStr + "\n  const deleteMutation = useMutation({",
+);
 
 // Wrapper
 const wrapperStart = `
@@ -63,7 +68,7 @@ const wrapperStart = `
 
 code = code.replace(
   /<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">[\s\S]*?movies\.map\(\(movie\) => \{/g,
-  wrapperStart
+  wrapperStart,
 );
 
 const itemRenderContent = `
@@ -83,14 +88,14 @@ const itemRenderContent = `
 
 code = code.replace(
   /return \(\s*<div\s*key=\{movie\.id\}\s*className="group relative overflow-hidden rounded-3xl border border-border\/60 bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"\s*>\s*<div className="aspect-\[2\/3\] w-full overflow-hidden bg-muted">/g,
-  itemRenderContent
+  itemRenderContent,
 );
 
 const linkEndMatch = code.match(/<\/div>\s*\);\s*\}\)\s*\)\}\s*<\/div>/);
 if (linkEndMatch) {
   code = code.replace(
     /<\/div>\s*\);\s*\}\)\s*\)\}\s*<\/div>/g,
-    `</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`
+    `</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`,
   );
 }
 

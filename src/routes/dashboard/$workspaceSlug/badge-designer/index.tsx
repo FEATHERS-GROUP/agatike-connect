@@ -24,7 +24,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getWorkspaceEvents } from "@/api/events";
-import { getAllBadgeProjects, saveBadgeProject, deleteBadgeProject, updateBadgeProjectFolder } from "@/api/badges";
+import {
+  getAllBadgeProjects,
+  saveBadgeProject,
+  deleteBadgeProject,
+  updateBadgeProjectFolder,
+} from "@/api/badges";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { FolderManager } from "@/components/ui/FolderManager";
@@ -105,30 +110,32 @@ function BadgeDesignerIndex() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("Untitled Badge");
   const [selectedEventId, setSelectedEventId] = useState("");
-  
+
   const queryClient = useQueryClient();
 
   const moveMutation = useMutation({
     mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) => {
       return await updateBadgeProjectFolder({ data: { id, folder_id: folderId } } as any);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["badge-projects", activeWorkspace?.id] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["badge-projects", activeWorkspace?.id] }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       return await deleteBadgeProject({ data: { id } } as any);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["badge-projects", activeWorkspace?.id] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["badge-projects", activeWorkspace?.id] }),
   });
 
   const handleBulkMove = async (itemIds: string[], folderId: string | null) => {
-    const promises = itemIds.map(id => moveMutation.mutateAsync({ id, folderId }));
+    const promises = itemIds.map((id) => moveMutation.mutateAsync({ id, folderId }));
     await Promise.all(promises);
   };
 
   const handleBulkDelete = async (itemIds: string[]) => {
-    const promises = itemIds.map(id => deleteMutation.mutateAsync(id));
+    const promises = itemIds.map((id) => deleteMutation.mutateAsync(id));
     await Promise.all(promises);
   };
 
@@ -339,10 +346,23 @@ function BadgeDesignerIndex() {
 
                     return (
                       <ItemMenu key={proj.id} itemId={proj.id} folderId={proj.folder_id}>
-                        <div className="relative group rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
-                             style={{ borderColor: isSelected ? "hsl(var(--primary))" : "hsl(var(--border) / 0.6)" }}>
-                          <div className="absolute top-3 left-3 z-20" onClick={(e) => e.stopPropagation()}>
-                             <Checkbox checked={isSelected} onCheckedChange={(c) => handleSelect(proj.id, c as boolean)} className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary" />
+                        <div
+                          className="relative group rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
+                          style={{
+                            borderColor: isSelected
+                              ? "hsl(var(--primary))"
+                              : "hsl(var(--border) / 0.6)",
+                          }}
+                        >
+                          <div
+                            className="absolute top-3 left-3 z-20"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={(c) => handleSelect(proj.id, c as boolean)}
+                              className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
+                            />
                           </div>
                           <Link
                             to="/dashboard/$workspaceSlug/badge-designer/$projectId"
@@ -362,7 +382,9 @@ function BadgeDesignerIndex() {
                                 </span>
                               </div>
                               <div className="relative z-10 text-white drop-shadow-md">
-                                <p className="text-xs opacity-70">{eventObj?.title || "No event linked"}</p>
+                                <p className="text-xs opacity-70">
+                                  {eventObj?.title || "No event linked"}
+                                </p>
                                 <h3 className="text-xl font-bold leading-tight">{displayTitle}</h3>
                               </div>
                             </div>
@@ -374,7 +396,9 @@ function BadgeDesignerIndex() {
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    if(confirm("Are you sure you want to delete this badge design?")) {
+                                    if (
+                                      confirm("Are you sure you want to delete this badge design?")
+                                    ) {
                                       deleteMutation.mutate(proj.id);
                                     }
                                   }}

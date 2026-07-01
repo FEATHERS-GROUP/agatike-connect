@@ -56,9 +56,12 @@ The **Page Builder** has been enhanced to offer advanced block-based website cre
 
 `;
 
-content = content.replace("---
+content = content.replace(
+  `---
 
-_Last updated: June 2026 — Agatike Connect_", newContent + "\n---\n\n_Last updated: July 2026 — Agatike Connect_");
+_Last updated: June 2026 — Agatike Connect_`,
+  newContent + "\n---\n\n_Last updated: July 2026 — Agatike Connect_",
+);
 
 fs.writeFileSync(readmePath, content);
 console.log("README updated");

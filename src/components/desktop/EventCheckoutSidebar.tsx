@@ -64,7 +64,9 @@ export function EventCheckoutSidebar({
           <div className="mt-5 text-center">
             {timerDate ? (
               <div className="mb-6">
-                <p className="text-sm font-medium text-muted-foreground mb-2">Tickets dropping in</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">
+                  Tickets dropping in
+                </p>
                 <div className="flex justify-center gap-3">
                   {(() => {
                     // Simple static UI for the timer. A real timer would use an interval
@@ -76,15 +78,25 @@ export function EventCheckoutSidebar({
                       <>
                         <div className="bg-secondary/50 rounded-xl p-3 min-w-[60px] border border-border/40 shadow-sm">
                           <div className="text-2xl font-bold font-mono">{d}</div>
-                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1">Days</div>
+                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1">
+                            Days
+                          </div>
                         </div>
                         <div className="bg-secondary/50 rounded-xl p-3 min-w-[60px] border border-border/40 shadow-sm">
-                          <div className="text-2xl font-bold font-mono">{h.toString().padStart(2, '0')}</div>
-                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1">Hours</div>
+                          <div className="text-2xl font-bold font-mono">
+                            {h.toString().padStart(2, "0")}
+                          </div>
+                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1">
+                            Hours
+                          </div>
                         </div>
                         <div className="bg-secondary/50 rounded-xl p-3 min-w-[60px] border border-border/40 shadow-sm">
-                          <div className="text-2xl font-bold font-mono">{m.toString().padStart(2, '0')}</div>
-                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1">Mins</div>
+                          <div className="text-2xl font-bold font-mono">
+                            {m.toString().padStart(2, "0")}
+                          </div>
+                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mt-1">
+                            Mins
+                          </div>
                         </div>
                       </>
                     );
@@ -247,7 +259,10 @@ export function EventCheckoutSidebar({
                                 size="icon"
                                 className="h-7 w-7 rounded-full"
                                 onClick={() =>
-                                  setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
+                                  setCart((prev) => ({
+                                    ...prev,
+                                    [cartKey]: Math.max(0, itemQty - 1),
+                                  }))
                                 }
                                 disabled={itemQty === 0}
                               >
@@ -258,7 +273,9 @@ export function EventCheckoutSidebar({
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7 rounded-full"
-                                onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                                onClick={() =>
+                                  setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))
+                                }
                                 disabled={itemQty >= t.remaining}
                               >
                                 <Plus className="h-3.5 w-3.5" />
@@ -275,7 +292,9 @@ export function EventCheckoutSidebar({
 
                 <div className="mt-5 flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Total ({totalTickets} items)</span>
-                  <span className="text-lg font-semibold">{formatCurrency(total, currencyCode)}</span>
+                  <span className="text-lg font-semibold">
+                    {formatCurrency(total, currencyCode)}
+                  </span>
                 </div>
               </>
             )}
@@ -298,7 +317,10 @@ export function EventCheckoutSidebar({
               onClick={() => {
                 if (isPastEvent || isSuspended) return;
                 localStorage.setItem(`event_checkout_${ev.id}`, JSON.stringify(cart));
-                localStorage.setItem(`event_checkout_seats_${ev.id}`, JSON.stringify(selectedSeatsObj));
+                localStorage.setItem(
+                  `event_checkout_seats_${ev.id}`,
+                  JSON.stringify(selectedSeatsObj),
+                );
               }}
             >
               {isSuspended ? (

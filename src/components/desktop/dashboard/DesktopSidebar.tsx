@@ -117,14 +117,21 @@ export function DesktopSidebar() {
         {hasBook && (
           <div className="mt-2 space-y-0.5">
             <div className="flex w-full items-center justify-between rounded-lg px-2.5 py-1 text-left text-sm transition-colors text-muted-foreground hover:bg-secondary hover:text-foreground">
-              <Link 
-                to={activeWorkspace ? (`/dashboard/${activeWorkspace.slug}/book` as any) : ("/dashboard/book" as any)}
+              <Link
+                to={
+                  activeWorkspace
+                    ? (`/dashboard/${activeWorkspace.slug}/book` as any)
+                    : ("/dashboard/book" as any)
+                }
                 className="flex items-center gap-2.5 flex-1 py-1"
               >
                 <LucideIcons.BookOpen className="h-4 w-4 shrink-0" />
                 <span className="truncate font-medium">Agatike Book</span>
               </Link>
-              <button onClick={() => setIsBookOpen(!isBookOpen)} className="p-1 hover:bg-secondary/80 rounded transition-colors">
+              <button
+                onClick={() => setIsBookOpen(!isBookOpen)}
+                className="p-1 hover:bg-secondary/80 rounded transition-colors"
+              >
                 {isBookOpen ? (
                   <LucideIcons.ChevronDown className="h-4 w-4 shrink-0" />
                 ) : (

@@ -51,8 +51,10 @@ function EventCard({ event }: { event: any }) {
   const isUpcoming = getVal("is_upcoming") === true;
   const timerDate = getVal("timer_date");
   const dateStr = getVal("date") || event.event_requency?.date || "TBD";
-  const date = isUpcoming 
-    ? (timerDate ? `Drops ${new Date(timerDate).toLocaleDateString("en-US")}` : "Coming Soon") 
+  const date = isUpcoming
+    ? timerDate
+      ? `Drops ${new Date(timerDate).toLocaleDateString("en-US")}`
+      : "Coming Soon"
     : dateStr;
   const time = isMock ? event.time || event.duration : getVal("time");
   const venue = getVal("venue") || getVal("venueName") || "";

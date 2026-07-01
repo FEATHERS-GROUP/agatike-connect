@@ -1,11 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import {
-  getWorkspaceFolders,
-  createWorkspaceFolder,
-  deleteWorkspaceFolder,
-} from "@/api/folders";
+import { getWorkspaceFolders, createWorkspaceFolder, deleteWorkspaceFolder } from "@/api/folders";
 import {
   Folder,
   FolderOpen,
@@ -63,7 +59,11 @@ interface FolderManagerProps<T> {
     handleSelect: (id: string, checked: boolean) => void;
     handleSelectAll: (checked: boolean) => void;
     /** Wrap any item card with this to get a per-item right-click context menu */
-    ItemMenu: (props: { itemId: string; folderId?: string | null; children: React.ReactNode }) => React.ReactElement;
+    ItemMenu: (props: {
+      itemId: string;
+      folderId?: string | null;
+      children: React.ReactNode;
+    }) => React.ReactElement;
   }) => React.ReactNode;
 }
 
@@ -90,7 +90,8 @@ export function FolderManager<T>({
 
   const { data: folders = [] } = useQuery({
     queryKey: ["workspace-folders", wsId, moduleType],
-    queryFn: () => getWorkspaceFolders({ data: { workspace_id: wsId!, module_type: moduleType } } as any),
+    queryFn: () =>
+      getWorkspaceFolders({ data: { workspace_id: wsId!, module_type: moduleType } } as any),
     enabled: !!wsId,
   });
 
@@ -157,7 +158,9 @@ export function FolderManager<T>({
   };
 
   const filteredItems = items.filter((item) => {
-    const matchFolder = currentFolderId ? getFolderId(item) === currentFolderId : !getFolderId(item);
+    const matchFolder = currentFolderId
+      ? getFolderId(item) === currentFolderId
+      : !getFolderId(item);
     const matchSearch = filterItem && search ? filterItem(item, search) : true;
     return matchFolder && matchSearch;
   });
@@ -235,10 +238,7 @@ export function FolderManager<T>({
           <ContextMenuSeparator />
 
           {/* Create new folder */}
-          <ContextMenuItem
-            className="gap-2"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
+          <ContextMenuItem className="gap-2" onClick={() => setIsCreateModalOpen(true)}>
             <FolderPlus className="h-4 w-4 text-green-500" />
             Create New Folder
           </ContextMenuItem>
@@ -270,7 +270,6 @@ export function FolderManager<T>({
       <ContextMenu>
         <ContextMenuTrigger className="block min-h-[50vh]">
           <div className="space-y-4">
-
             {/* Top Bar: Folder Nav & Create Button */}
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-2">
@@ -367,14 +366,16 @@ export function FolderManager<T>({
                   >
                     <X className="h-4 w-4" />
                   </Button>
-                  <span className="font-semibold text-primary">
-                    {selectedIds.size} selected
-                  </span>
+                  <span className="font-semibold text-primary">{selectedIds.size} selected</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-8 gap-2 bg-card border-border/50">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-2 bg-card border-border/50"
+                      >
                         <MoveRight className="h-4 w-4" /> Move to...
                       </Button>
                     </DropdownMenuTrigger>

@@ -6,7 +6,7 @@ let code = fs.readFileSync(file, "utf8");
 // Imports
 code = code.replace(
   'import { getWorkspacePages, createWorkspacePage, deleteWorkspacePage } from "@/api/workspace-pages";',
-  'import { getWorkspacePages, createWorkspacePage, deleteWorkspacePage, updateWorkspacePageFolder } from "@/api/workspace-pages";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { Checkbox } from "@/components/ui/checkbox";'
+  'import { getWorkspacePages, createWorkspacePage, deleteWorkspacePage, updateWorkspacePageFolder } from "@/api/workspace-pages";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { Checkbox } from "@/components/ui/checkbox";',
 );
 
 // Mutations
@@ -29,7 +29,10 @@ const mutationsStr = `
   };
 `;
 
-code = code.replace("  const createMutation = useMutation({", mutationsStr + "\n  const createMutation = useMutation({");
+code = code.replace(
+  "  const createMutation = useMutation({",
+  mutationsStr + "\n  const createMutation = useMutation({",
+);
 
 // Wrapper
 const wrapperStart = `
@@ -62,7 +65,7 @@ const wrapperStart = `
 
 code = code.replace(
   /<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">[\s\S]*?pages\.map\(\(page: any\) => \{/g,
-  wrapperStart
+  wrapperStart,
 );
 
 const itemRenderContent = `
@@ -83,14 +86,14 @@ const itemRenderContent = `
 
 code = code.replace(
   /return \(\s*<Link\s*key=\{page\.id\}[\s\S]*?className="group block rounded-3xl border border-border\/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary\/50"\s*>/g,
-  itemRenderContent
+  itemRenderContent,
 );
 
 const linkEndMatch = code.match(/<\/Link>\s*\);\s*\}\)\s*\)\}\s*<\/div>/);
 if (linkEndMatch) {
   code = code.replace(
     /<\/Link>\s*\);\s*\}\)\s*\)\}\s*<\/div>/g,
-    `</Link>\n</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`
+    `</Link>\n</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`,
   );
 }
 

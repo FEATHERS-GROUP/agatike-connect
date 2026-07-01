@@ -290,13 +290,15 @@ export function ComponentBlock({
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-1">
                 <Label className="text-xs">Form Title</Label>
                 <Input
                   value={comp.title || ""}
                   onChange={(e) => updateComponent(idx, "title", e.target.value)}
-                  placeholder={comp.type === "damage_report" ? "e.g. Damage Report" : "e.g. Budget Request"}
+                  placeholder={
+                    comp.type === "damage_report" ? "e.g. Damage Report" : "e.g. Budget Request"
+                  }
                   className="bg-background"
                 />
               </div>
@@ -314,13 +316,16 @@ export function ComponentBlock({
               <div className="space-y-2 mt-4 pt-4 border-t border-border/60">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold">Spreadsheet Columns</Label>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="h-7 text-[10px] gap-1 px-2"
                     onClick={() => {
                       const cols = comp.columns || [];
-                      updateComponent(idx, "columns", [...cols, { name: "New Column", type: "text" }]);
+                      updateComponent(idx, "columns", [
+                        ...cols,
+                        { name: "New Column", type: "text" },
+                      ]);
                     }}
                   >
                     <Plus className="w-3 h-3" /> Add Column
@@ -328,7 +333,10 @@ export function ComponentBlock({
                 </div>
                 <div className="space-y-2">
                   {(comp.columns || []).map((col: any, colIdx: number) => (
-                    <div key={colIdx} className="flex gap-2 items-center bg-secondary/20 p-2 rounded-lg border border-border/40">
+                    <div
+                      key={colIdx}
+                      className="flex gap-2 items-center bg-secondary/20 p-2 rounded-lg border border-border/40"
+                    >
                       <Input
                         value={col.name}
                         onChange={(e) => {
@@ -370,7 +378,9 @@ export function ComponentBlock({
                     </div>
                   ))}
                   {(!comp.columns || comp.columns.length === 0) && (
-                    <p className="text-xs text-muted-foreground italic">No columns added yet. Click "Add Column".</p>
+                    <p className="text-xs text-muted-foreground italic">
+                      No columns added yet. Click "Add Column".
+                    </p>
                   )}
                 </div>
               </div>

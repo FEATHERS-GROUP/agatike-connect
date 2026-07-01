@@ -140,11 +140,11 @@ function BooksPage() {
   });
 
   const handleBulkMove = async (itemIds: string[], folderId: string | null) => {
-    await Promise.all(itemIds.map(id => moveMutation.mutateAsync({ id, folderId })));
+    await Promise.all(itemIds.map((id) => moveMutation.mutateAsync({ id, folderId })));
   };
 
   const handleBulkDelete = async (itemIds: string[]) => {
-    await Promise.all(itemIds.map(id => deleteBookMutation.mutateAsync(id)));
+    await Promise.all(itemIds.map((id) => deleteBookMutation.mutateAsync(id)));
   };
 
   React.useEffect(() => {
@@ -351,7 +351,11 @@ function BooksPage() {
                     <div
                       onClick={() => setActiveBook(book)}
                       className="cursor-pointer group rounded-3xl border bg-card p-6 hover:border-primary/30 hover:shadow-md transition-all"
-                      style={{ borderColor: isSelected ? "hsl(var(--primary))" : "hsl(var(--border) / 0.6)" }}
+                      style={{
+                        borderColor: isSelected
+                          ? "hsl(var(--primary))"
+                          : "hsl(var(--border) / 0.6)",
+                      }}
                     >
                       <div className="flex justify-between items-start mb-4">
                         <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
@@ -379,7 +383,8 @@ function BooksPage() {
                       </div>
                       <h3 className="font-bold text-lg">{book.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {book.records?.length || 0} records · {book.schema_fields?.length || 0} columns
+                        {book.records?.length || 0} records · {book.schema_fields?.length || 0}{" "}
+                        columns
                       </p>
                       {total !== null && (
                         <p className="text-primary font-bold mt-2">{total.toLocaleString()}</p>

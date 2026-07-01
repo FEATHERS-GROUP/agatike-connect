@@ -61,7 +61,6 @@ export const createVenueProject = createServerFn({ method: "POST" }).handler(asy
   return res.insert_venue_projects_one;
 });
 
-
 export const updateVenueProjectFolder = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { id, folder_id } = ctx.data as any;
   const q = `

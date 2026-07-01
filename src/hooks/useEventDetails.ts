@@ -78,8 +78,10 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   const waitlistUrl = currentStop?.waitlist_url;
 
   const dateStr = isMock ? ev.date : currentStop.date || "TBD";
-  const date = isUpcoming 
-    ? (timerDate ? `Drops ${new Date(timerDate).toLocaleDateString("en-US")}` : "Coming Soon") 
+  const date = isUpcoming
+    ? timerDate
+      ? `Drops ${new Date(timerDate).toLocaleDateString("en-US")}`
+      : "Coming Soon"
     : dateStr;
   const time = isMock ? ev.time || ev.duration : currentStop.time || "";
   const venue = isMock ? ev.venue || ev.cinema : currentStop.venue || "";

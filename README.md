@@ -1991,7 +1991,7 @@ To prevent clutter as organizers generate hundreds of documents, the Procurement
 
 - **Structure:** Uses a flat `agatike_book_folders` table holding `name` and `workspace_id`.
 - **Linking:** `agatike_book_invoices` has a nullable `folder_id` foreign key.
-- **UX (Right-Click Organization):** The UI uses Radix UI Context Menus. Users can right-click the background to "Create Folder" (opening a Dialog modal) or right-click any specific document to move it to a specific folder. 
+- **UX (Right-Click Organization):** The UI uses Radix UI Context Menus. Users can right-click the background to "Create Folder" (opening a Dialog modal) or right-click any specific document to move it to a specific folder.
 - **Bulk Operations:** Users can select multiple documents at once via Checkboxes and trigger a "Bulk Move" or "Bulk Delete" dropdown menu.
 - **Safety Constraints:** The system prevents the deletion of a folder if there are any documents inside it, requiring the organizer to move them out first.
 
@@ -2013,7 +2013,8 @@ flowchart TD
 
 **Route:** `/dashboard/$workspaceSlug/page-builder`
 
-The **Page Builder** has been enhanced to offer advanced block-based website creation tools for organizers building public-facing event hubs. 
+The **Page Builder** has been enhanced to offer advanced block-based website creation tools for organizers building public-facing event hubs.
+
 - Organizers can dynamically stack layout blocks (Hero, Features, Pricing, Testimonials).
 - State is strictly controlled via a centralized `editorState` context, persisting changes to JSONB layouts in the database.
 - It seamlessly integrates with the `b.$qrString.tsx` verification endpoints to ensure all public routing retains the organizer's exact stylistic choices.

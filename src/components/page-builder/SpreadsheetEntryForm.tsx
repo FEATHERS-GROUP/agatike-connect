@@ -7,9 +7,24 @@ import { Label } from "@/components/ui/label";
 import { Loader2, CheckCircle2, Plus, Trash2, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
-export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { workspace_id: string; themeColor: string; comp: any }) {
+export function SpreadsheetEntryForm({
+  workspace_id,
+  themeColor,
+  comp,
+}: {
+  workspace_id: string;
+  themeColor: string;
+  comp: any;
+}) {
   const [formData, setFormData] = useState({
     Title: "",
     "Requested By": "",
@@ -32,7 +47,9 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
   });
 
   const financeBook = (books as any[]).find((b: any) => b.name === "__finance_requests");
-  const isPreview = workspace_id === "preview" || (typeof window !== "undefined" && window.location.search.includes("preview=true"));
+  const isPreview =
+    workspace_id === "preview" ||
+    (typeof window !== "undefined" && window.location.search.includes("preview=true"));
   const columns = comp.columns || [];
   const formType = comp.type === "damage_report" ? "Damage Report" : "Budget Request";
 
@@ -41,10 +58,15 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
       if (!financeBook) {
         throw new Error("Requests book not configured for this workspace yet.");
       }
-      
+
       // Calculate total amount if there is an amount/price/cost column
       let totalAmount = 0;
-      const amountCol = columns.find((c: any) => c.name.toLowerCase().includes("amount") || c.name.toLowerCase().includes("cost") || c.name.toLowerCase().includes("price"));
+      const amountCol = columns.find(
+        (c: any) =>
+          c.name.toLowerCase().includes("amount") ||
+          c.name.toLowerCase().includes("cost") ||
+          c.name.toLowerCase().includes("price"),
+      );
       if (amountCol) {
         totalAmount = lineItems.reduce((sum, item) => sum + (Number(item[amountCol.name]) || 0), 0);
       }
@@ -59,7 +81,7 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
             Details: formData.Details,
             Amount: totalAmount,
             LineItems: lineItems,
-            Status: "Pending"
+            Status: "Pending",
           },
         },
       } as any);
@@ -125,11 +147,11 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
         }
 
         const rawHeaders = data[0].map((h: any, idx: number) => String(h || `Column_${idx + 1}`));
-        
+
         // Ensure unique headers to prevent overwriting or duplicate React keys
         const headers: string[] = [];
         const counts: Record<string, number> = {};
-        rawHeaders.forEach(h => {
+        rawHeaders.forEach((h) => {
           if (counts[h]) {
             counts[h]++;
             headers.push(`${h} (${counts[h]})`);
@@ -153,7 +175,7 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
         // Auto-map columns if names match exactly (case-insensitive)
         const newMap: Record<string, string> = {};
         columns.forEach((c: any) => {
-          const match = headers.find(h => h.toLowerCase() === c.name.toLowerCase());
+          const match = headers.find((h) => h.toLowerCase() === c.name.toLowerCase());
           if (match) newMap[c.name] = match;
         });
         setColumnMap(newMap);
@@ -167,7 +189,7 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
   };
 
   const handleConfirmMapping = () => {
-    const newRows = importedData.map(row => {
+    const newRows = importedData.map((row) => {
       const newRow: any = {};
       columns.forEach((c: any) => {
         const mappedHeader = columnMap[c.name];
@@ -192,18 +214,24 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
   if (isSubmitted) {
     return (
       <div className="bg-card border border-border/60 rounded-2xl p-8 shadow-sm max-w-3xl mx-auto my-8 text-center flex flex-col items-center">
-        <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: `${themeColor}20`, color: themeColor }}>
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+          style={{ background: `${themeColor}20`, color: themeColor }}
+        >
           <CheckCircle2 className="w-8 h-8" />
         </div>
         <h3 className="text-2xl font-bold mb-2">Request Submitted</h3>
         <p className="text-muted-foreground mb-6">
           Thank you! Your request has been sent to the finance team for review.
         </p>
-        <Button onClick={() => {
-          setIsSubmitted(false);
-          setFormData({ Title: "", Details: "", "Requested By": "" });
-          setLineItems([]);
-        }} variant="outline">
+        <Button
+          onClick={() => {
+            setIsSubmitted(false);
+            setFormData({ Title: "", Details: "", "Requested By": "" });
+            setLineItems([]);
+          }}
+          variant="outline"
+        >
           Submit Another Request
         </Button>
       </div>
@@ -244,35 +272,52 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
             <div className="flex items-center justify-between">
               <Label className="text-sm font-semibold">Line Items</Label>
               <div className="flex items-center gap-2">
-                <input 
-                  type="file" 
-                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
-                  className="hidden" 
+                <input
+                  type="file"
+                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                  className="hidden"
                   ref={fileInputRef}
                   onChange={handleFileUpload}
                 />
-                <Button type="button" size="sm" onClick={() => fileInputRef.current?.click()} variant="outline" className="gap-1 h-8">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  variant="outline"
+                  className="gap-1 h-8"
+                >
                   <FileSpreadsheet className="w-3 h-3" /> Import Excel/CSV
                 </Button>
-                <Button type="button" size="sm" onClick={addRow} variant="outline" className="gap-1 h-8">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={addRow}
+                  variant="outline"
+                  className="gap-1 h-8"
+                >
                   <Plus className="w-3 h-3" /> Add Row
                 </Button>
               </div>
             </div>
-            
+
             <div className="border border-border/60 rounded-xl overflow-x-auto bg-background">
               <table className="w-full text-sm text-left">
                 <thead className="text-xs uppercase bg-secondary/50 border-b border-border/60">
                   <tr>
                     {columns.map((c: any, i: number) => (
-                      <th key={i} className="px-4 py-3 font-semibold text-muted-foreground">{c.name}</th>
+                      <th key={i} className="px-4 py-3 font-semibold text-muted-foreground">
+                        {c.name}
+                      </th>
                     ))}
                     <th className="px-4 py-3 w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {lineItems.map((item, idx) => (
-                    <tr key={idx} className="border-b border-border/40 last:border-0 hover:bg-secondary/10">
+                    <tr
+                      key={idx}
+                      className="border-b border-border/40 last:border-0 hover:bg-secondary/10"
+                    >
                       {columns.map((c: any, colIdx: number) => (
                         <td key={colIdx} className="px-2 py-2">
                           <Input
@@ -299,7 +344,10 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
                   ))}
                   {lineItems.length === 0 && (
                     <tr>
-                      <td colSpan={columns.length + 1} className="px-4 py-8 text-center text-muted-foreground italic">
+                      <td
+                        colSpan={columns.length + 1}
+                        className="px-4 py-8 text-center text-muted-foreground italic"
+                      >
                         No items added. Click "Add Row" to start.
                       </td>
                     </tr>
@@ -324,14 +372,19 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
           type="submit"
           disabled={submitMutation.isPending || (!financeBook && !isPreview)}
           className="w-full rounded-full h-12 text-base font-bold shadow-md hover:shadow-lg transition-all"
-          style={{ background: themeColor, color: "#fff", opacity: (!financeBook && !isPreview) ? 0.5 : 1 }}
+          style={{
+            background: themeColor,
+            color: "#fff",
+            opacity: !financeBook && !isPreview ? 0.5 : 1,
+          }}
         >
           {submitMutation.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
           Submit {formType}
         </Button>
         {!financeBook && !isPreview && (
           <p className="text-xs text-destructive text-center mt-2 font-medium">
-            The finance team has not set up the Requests book yet. Go to Finance Dashboard to enable it.
+            The finance team has not set up the Requests book yet. Go to Finance Dashboard to enable
+            it.
           </p>
         )}
       </form>
@@ -356,14 +409,18 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
                 >
                   <option value="">-- Ignore this column --</option>
                   {importedHeaders.map((h, idx) => (
-                    <option key={`hdr-${idx}`} value={h}>{h}</option>
+                    <option key={`hdr-${idx}`} value={h}>
+                      {h}
+                    </option>
                   ))}
                 </select>
               </div>
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowMappingModal(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowMappingModal(false)}>
+              Cancel
+            </Button>
             <Button onClick={handleConfirmMapping}>Import {importedData.length} Rows</Button>
           </DialogFooter>
         </DialogContent>

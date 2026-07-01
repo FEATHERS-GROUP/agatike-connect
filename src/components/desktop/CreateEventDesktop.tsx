@@ -394,15 +394,18 @@ export function CreateEventDesktop() {
           ...loc,
           date: loc.date || null,
           time: loc.time || null,
-          ...(idx === 0 && data.isUpcoming ? {
-            is_upcoming: true,
-            waitlist_url: data.waitlistUrl || null,
-            timer_date: data.timerDate || null,
-          } : {})
+          ...(idx === 0 && data.isUpcoming
+            ? {
+                is_upcoming: true,
+                waitlist_url: data.waitlistUrl || null,
+                timer_date: data.timerDate || null,
+              }
+            : {}),
         })),
-        event_requency: (data.isRecurring && !data.isUpcoming)
-          ? { type: data.recurrenceType, count: data.recurrenceCount }
-          : {},
+        event_requency:
+          data.isRecurring && !data.isUpcoming
+            ? { type: data.recurrenceType, count: data.recurrenceCount }
+            : {},
         event_tickets: {
           data: tickets.map((t) => {
             let finalType = (t.type || "").toLowerCase();
@@ -555,7 +558,13 @@ export function CreateEventDesktop() {
                     <Label>Waitlist / RSVP Form (Optional)</Label>
                     <div className="flex flex-col sm:flex-row gap-2 mt-1">
                       <select
-                        value={data.waitlistUrl.startsWith("/f/") ? data.waitlistUrl : (data.waitlistUrl ? "external" : "")}
+                        value={
+                          data.waitlistUrl.startsWith("/f/")
+                            ? data.waitlistUrl
+                            : data.waitlistUrl
+                              ? "external"
+                              : ""
+                        }
                         onChange={(e) => {
                           if (e.target.value === "external") {
                             updateField("waitlistUrl", "https://");
@@ -567,11 +576,13 @@ export function CreateEventDesktop() {
                       >
                         <option value="">No form (Coming Soon)</option>
                         {forms?.map((f: any) => (
-                          <option key={f.id} value={`/f/${f.id}`}>{f.title}</option>
+                          <option key={f.id} value={`/f/${f.id}`}>
+                            {f.title}
+                          </option>
                         ))}
                         <option value="external">External Link</option>
                       </select>
-                      {(!data.waitlistUrl.startsWith("/f/") && data.waitlistUrl !== "") && (
+                      {!data.waitlistUrl.startsWith("/f/") && data.waitlistUrl !== "" && (
                         <Input
                           placeholder="https://..."
                           value={data.waitlistUrl}
@@ -740,7 +751,12 @@ export function CreateEventDesktop() {
                   <div className="space-y-5">
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
-                        <Label>Date {data.isUpcoming && <span className="text-muted-foreground font-normal">(Optional)</span>}</Label>
+                        <Label>
+                          Date{" "}
+                          {data.isUpcoming && (
+                            <span className="text-muted-foreground font-normal">(Optional)</span>
+                          )}
+                        </Label>
                         <Input
                           type="date"
                           value={loc.date}
@@ -753,7 +769,12 @@ export function CreateEventDesktop() {
                         />
                       </div>
                       <div>
-                        <Label>Time {data.isUpcoming && <span className="text-muted-foreground font-normal">(Optional)</span>}</Label>
+                        <Label>
+                          Time{" "}
+                          {data.isUpcoming && (
+                            <span className="text-muted-foreground font-normal">(Optional)</span>
+                          )}
+                        </Label>
                         <Input
                           type="time"
                           value={loc.time}

@@ -192,7 +192,6 @@ const DELETE_CUSTOM_FORM = `
   }
 `;
 
-
 export const updateCustomFormFolder = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { id, folder_id } = ctx.data as any;
   const q = `

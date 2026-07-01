@@ -23,9 +23,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects, updateTicketProjectFolder, deleteTicketProject } from "@/api/events";
+import {
+  getWorkspaceEvents,
+  saveTicketProject,
+  getWorkspaceTicketProjects,
+  updateTicketProjectFolder,
+  deleteTicketProject,
+} from "@/api/events";
 import { FolderManager } from "@/components/ui/FolderManager";
-import { ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from "@/components/ui/context-menu";
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+} from "@/components/ui/context-menu";
 import { Folder, Trash2 } from "lucide-react";
 import { getRentableVenues } from "@/api/rentable_venues";
 import { getCinemas } from "@/api/cinemas";
@@ -121,23 +133,29 @@ function TicketDesignerIndex() {
     mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) => {
       return await updateTicketProjectFolder({ data: { id, folder_id: folderId } } as any);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspace-ticket-projects", activeWorkspace?.id] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-ticket-projects", activeWorkspace?.id],
+      }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       return await deleteTicketProject({ data: { id } } as any);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspace-ticket-projects", activeWorkspace?.id] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-ticket-projects", activeWorkspace?.id],
+      }),
   });
 
   const handleBulkMove = async (itemIds: string[], folderId: string | null) => {
-    const promises = itemIds.map(id => moveMutation.mutateAsync({ id, folderId }));
+    const promises = itemIds.map((id) => moveMutation.mutateAsync({ id, folderId }));
     await Promise.all(promises);
   };
 
   const handleBulkDelete = async (itemIds: string[]) => {
-    const promises = itemIds.map(id => deleteMutation.mutateAsync(id));
+    const promises = itemIds.map((id) => deleteMutation.mutateAsync(id));
     await Promise.all(promises);
   };
 
@@ -324,7 +342,6 @@ function TicketDesignerIndex() {
             </div>
           </div>
 
-          
           <FolderManager
             moduleType="ticket_designer"
             items={dbProjects}
@@ -345,93 +362,110 @@ function TicketDesignerIndex() {
                     <Ticket className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
                     <h3 className="text-lg font-semibold">No Saved Projects</h3>
                     <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-                      Create your first ticket design by selecting a template above, or select a different folder.
+                      Create your first ticket design by selecting a template above, or select a
+                      different folder.
                     </p>
                   </div>
                 ) : (
                   filteredItems.map((proj: any) => {
+                    const eventObj = proj.events || events.find((e: any) => e.id === proj.eventId);
+                    const venueObj =
+                      proj.rentable_venues || venues.find((v: any) => v.id === proj.venueId);
+                    const cinemaObj = cinemas.find((c: any) => c.id === proj.cinemaId);
+                    const displayTitle =
+                      eventObj?.title ||
+                      venueObj?.name ||
+                      cinemaObj?.name ||
+                      proj.name ||
+                      "Untitled Design";
+                    const displaySubtitle =
+                      eventObj?.category ||
+                      venueObj?.type ||
+                      (cinemaObj ? "Cinema" : "Ticket Design");
+                    const palette = proj.palette || {
+                      from: "#f97316",
+                      to: "#db2777",
+                      name: "Sunset",
+                    };
+                    const updatedAt = proj.updated_on || new Date().toISOString();
+                    const coverUrl =
+                      proj.coverImage ||
+                      eventObj?.cover ||
+                      venueObj?.cover_url ||
+                      venueObj?.images?.[0] ||
+                      cinemaObj?.cover_url;
 
-                const eventObj = proj.events || events.find((e: any) => e.id === proj.eventId);
-                const venueObj =
-                  proj.rentable_venues || venues.find((v: any) => v.id === proj.venueId);
-                const cinemaObj = cinemas.find((c: any) => c.id === proj.cinemaId);
-                const displayTitle =
-                  eventObj?.title ||
-                  venueObj?.name ||
-                  cinemaObj?.name ||
-                  proj.name ||
-                  "Untitled Design";
-                const displaySubtitle =
-                  eventObj?.category || venueObj?.type || (cinemaObj ? "Cinema" : "Ticket Design");
-                const palette = proj.palette || { from: "#f97316", to: "#db2777", name: "Sunset" };
-                const updatedAt = proj.updated_on || new Date().toISOString();
-                const coverUrl =
-                  proj.coverImage ||
-                  eventObj?.cover ||
-                  venueObj?.cover_url ||
-                  venueObj?.images?.[0] ||
-                  cinemaObj?.cover_url;
-
-                
                     const isSelected = selectedIds.has(proj.id);
 
                     return (
                       <ItemMenu key={proj.id} itemId={proj.id} folderId={proj.folder_id}>
-                        <div className="relative group rounded-3xl border overflow-hidden shadow-sm transition-all hover:shadow-lg focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-                             style={{ borderColor: isSelected ? "hsl(var(--primary))" : "hsl(var(--border) / 0.6)" }}>
-                          <div className="absolute top-3 left-3 z-20" onClick={(e) => e.stopPropagation()}>
-                             <Checkbox checked={isSelected} onCheckedChange={(c) => handleSelect(proj.id, c as boolean)} className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary" />
+                        <div
+                          className="relative group rounded-3xl border overflow-hidden shadow-sm transition-all hover:shadow-lg focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
+                          style={{
+                            borderColor: isSelected
+                              ? "hsl(var(--primary))"
+                              : "hsl(var(--border) / 0.6)",
+                          }}
+                        >
+                          <div
+                            className="absolute top-3 left-3 z-20"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={(c) => handleSelect(proj.id, c as boolean)}
+                              className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
+                            />
                           </div>
                           <Link
                             to="/dashboard/$workspaceSlug/ticket-designer/$projectId"
                             params={{ workspaceSlug, projectId: proj.id }}
                             className="block h-full"
                           >
-
-                      <div
-                        className="h-32 p-4 flex flex-col justify-between relative overflow-hidden"
-                        style={{
-                          background: `linear-gradient(135deg, ${palette.from || "#f97316"}, ${palette.to || "#db2777"})`,
-                        }}
-                      >
-                        {coverUrl && (
-                          <img
-                            src={coverUrl}
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay pointer-events-none"
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none" />
-                        <div className="relative z-10 flex justify-between items-start">
-                          <span className="bg-black/30 text-white backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
-                            {proj.template}
-                          </span>
+                            <div
+                              className="h-32 p-4 flex flex-col justify-between relative overflow-hidden"
+                              style={{
+                                background: `linear-gradient(135deg, ${palette.from || "#f97316"}, ${palette.to || "#db2777"})`,
+                              }}
+                            >
+                              {coverUrl && (
+                                <img
+                                  src={coverUrl}
+                                  alt=""
+                                  className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay pointer-events-none"
+                                />
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none" />
+                              <div className="relative z-10 flex justify-between items-start">
+                                <span className="bg-black/30 text-white backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
+                                  {proj.template}
+                                </span>
+                              </div>
+                              <div className="relative z-10 text-white drop-shadow-md">
+                                <p className="text-sm opacity-80">{displaySubtitle}</p>
+                                <h3 className="text-xl font-bold leading-tight">{displayTitle}</h3>
+                              </div>
+                            </div>
+                            <div className="p-5 bg-card">
+                              <h4 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">
+                                {proj.name}
+                              </h4>
+                              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3.5 h-3.5" /> Updated{" "}
+                                  {new Date(updatedAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                          </Link>
                         </div>
-                        <div className="relative z-10 text-white drop-shadow-md">
-                          <p className="text-sm opacity-80">{displaySubtitle}</p>
-                          <h3 className="text-xl font-bold leading-tight">{displayTitle}</h3>
-                        </div>
-                      </div>
-                      <div className="p-5 bg-card">
-                        <h4 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">
-                          {proj.name}
-                        </h4>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5" /> Updated{" "}
-                            {new Date(updatedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                </ItemMenu>
-              );
-})
-)}
-</div>
-)}
-</FolderManager>
+                      </ItemMenu>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </FolderManager>
         </section>
       </main>
     </div>

@@ -3,7 +3,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Checkbox as RadixCheckbox } from "@/components/ui/checkbox";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getMovies, createMovie, updateMovie, deleteMovie, updateMovieFolder } from "@/api/cinema_management";
+import {
+  getMovies,
+  createMovie,
+  updateMovie,
+  deleteMovie,
+  updateMovieFolder,
+} from "@/api/cinema_management";
 import { FolderManager } from "@/components/ui/FolderManager";
 import {
   Plus,
@@ -90,15 +96,16 @@ function GlobalMoviesCatalog() {
   const moveMutation = useMutation({
     mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) =>
       updateMovieFolder({ data: { id, folder_id: folderId } } as any),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cinema_movies", activeWorkspace?.id] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["cinema_movies", activeWorkspace?.id] }),
   });
 
   const handleBulkMove = async (itemIds: string[], folderId: string | null) => {
-    await Promise.all(itemIds.map(id => moveMutation.mutateAsync({ id, folderId })));
+    await Promise.all(itemIds.map((id) => moveMutation.mutateAsync({ id, folderId })));
   };
 
   const handleBulkDelete = async (itemIds: string[]) => {
-    await Promise.all(itemIds.map(id => handleDelete(id, "")));
+    await Promise.all(itemIds.map((id) => handleDelete(id, "")));
   };
 
   // ── Handlers ──────────────────────────────────────────────────────────────
@@ -223,18 +230,28 @@ function GlobalMoviesCatalog() {
                   <Film className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
                   <h3 className="text-2xl font-bold mb-2">No Movies Found</h3>
                   <p className="text-muted-foreground mb-6">
-                    {search ? `No results for "${search}"` : "Your catalog is empty. Add movies to get started."}
+                    {search
+                      ? `No results for "${search}"`
+                      : "Your catalog is empty. Add movies to get started."}
                   </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {visibleMovies.map((movie: any) => (
                     <ItemMenu key={movie.id} itemId={movie.id} folderId={movie.folder_id}>
-                      <div className="group relative flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm hover:shadow-md transition-all duration-300"
-                        style={{ outline: selectedIds.has(movie.id) ? "2px solid hsl(var(--primary))" : undefined }}
+                      <div
+                        className="group relative flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm hover:shadow-md transition-all duration-300"
+                        style={{
+                          outline: selectedIds.has(movie.id)
+                            ? "2px solid hsl(var(--primary))"
+                            : undefined,
+                        }}
                       >
                         {/* Checkbox */}
-                        <div className="absolute top-2 left-2 z-20" onClick={(e) => e.stopPropagation()}>
+                        <div
+                          className="absolute top-2 left-2 z-20"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <RadixCheckbox
                             checked={selectedIds.has(movie.id)}
                             onCheckedChange={(c) => handleSelect(movie.id, c as boolean)}
@@ -259,10 +276,14 @@ function GlobalMoviesCatalog() {
                           {/* Tags */}
                           <div className="absolute top-2 left-8 flex gap-1 flex-wrap max-w-[80%]">
                             {movie.is_imax && (
-                              <span className="bg-white text-black px-1.5 py-0.5 rounded text-[10px] font-black uppercase shadow-sm">IMAX</span>
+                              <span className="bg-white text-black px-1.5 py-0.5 rounded text-[10px] font-black uppercase shadow-sm">
+                                IMAX
+                              </span>
                             )}
                             {movie.is_3d && (
-                              <span className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded text-[10px] font-black uppercase shadow-sm">3D</span>
+                              <span className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded text-[10px] font-black uppercase shadow-sm">
+                                3D
+                              </span>
                             )}
                           </div>
 
@@ -270,15 +291,25 @@ function GlobalMoviesCatalog() {
                           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/10 hover:bg-black/70">
+                                <Button
+                                  size="icon"
+                                  variant="secondary"
+                                  className="h-8 w-8 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/10 hover:bg-black/70"
+                                >
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="rounded-xl">
-                                <DropdownMenuItem onClick={() => handleOpenEdit(movie)} className="gap-2">
+                                <DropdownMenuItem
+                                  onClick={() => handleOpenEdit(movie)}
+                                  className="gap-2"
+                                >
                                   <Edit2 className="h-3.5 w-3.5" /> Edit Details
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive focus:text-destructive gap-2" onClick={() => handleDelete(movie.id, movie.title)}>
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive gap-2"
+                                  onClick={() => handleDelete(movie.id, movie.title)}
+                                >
                                   <Trash2 className="h-3.5 w-3.5" /> Delete Movie
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
@@ -289,18 +320,27 @@ function GlobalMoviesCatalog() {
                         {/* Details */}
                         <div className="p-4 flex flex-col gap-2">
                           <div>
-                            <h3 className="font-bold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors" title={movie.title}>
+                            <h3
+                              className="font-bold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors"
+                              title={movie.title}
+                            >
                               {movie.title}
                             </h3>
                             <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                              <span className={`px-1.5 py-0.5 rounded font-semibold border ${RATING_COLORS[movie.rating] || RATING_COLORS["PG-13"]}`}>
+                              <span
+                                className={`px-1.5 py-0.5 rounded font-semibold border ${RATING_COLORS[movie.rating] || RATING_COLORS["PG-13"]}`}
+                              >
                                 {movie.rating}
                               </span>
                               <span>•</span>
-                              <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {movie.duration_minutes}m</span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" /> {movie.duration_minutes}m
+                              </span>
                             </div>
                           </div>
-                          <div className="text-xs text-muted-foreground line-clamp-1">{movie.genre || "Uncategorized"}</div>
+                          <div className="text-xs text-muted-foreground line-clamp-1">
+                            {movie.genre || "Uncategorized"}
+                          </div>
                         </div>
                       </div>
                     </ItemMenu>

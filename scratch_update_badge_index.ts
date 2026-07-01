@@ -6,10 +6,12 @@ let code = fs.readFileSync(file, "utf8");
 // Imports
 code = code.replace(
   'import { getAllBadgeProjects } from "@/api/badges";',
-  'import { getAllBadgeProjects, updateBadgeProjectFolder, deleteBadgeProject } from "@/api/badges";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { Checkbox } from "@/components/ui/checkbox";'
+  'import { getAllBadgeProjects, updateBadgeProjectFolder, deleteBadgeProject } from "@/api/badges";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { Checkbox } from "@/components/ui/checkbox";',
 );
-code = code.replace('import { useWorkspace } from "@/contexts/WorkspaceContext";', 'import { useWorkspace } from "@/contexts/WorkspaceContext";\nimport { useQueryClient, useMutation } from "@tanstack/react-query";');
-
+code = code.replace(
+  'import { useWorkspace } from "@/contexts/WorkspaceContext";',
+  'import { useWorkspace } from "@/contexts/WorkspaceContext";\nimport { useQueryClient, useMutation } from "@tanstack/react-query";',
+);
 
 // Mutations
 const mutationsStr = `
@@ -40,7 +42,10 @@ const mutationsStr = `
   };
 `;
 
-code = code.replace("  const [isCreating, setIsCreating] = useState(false);", mutationsStr + "\n  const [isCreating, setIsCreating] = useState(false);");
+code = code.replace(
+  "  const [isCreating, setIsCreating] = useState(false);",
+  mutationsStr + "\n  const [isCreating, setIsCreating] = useState(false);",
+);
 
 // Wrapper
 const wrapperStart = `
@@ -71,7 +76,7 @@ const wrapperStart = `
 
 code = code.replace(
   /<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">[\s\S]*?dbProjects\.map\(\(proj: any\) => \{/g,
-  wrapperStart
+  wrapperStart,
 );
 
 const itemRenderContent = `
@@ -93,14 +98,14 @@ const itemRenderContent = `
 
 code = code.replace(
   /return \(\s*<div\s*key=\{proj\.id\}[\s\S]*?className="h-32 p-4 relative"/g,
-  itemRenderContent
+  itemRenderContent,
 );
 
 const linkEndMatch = code.match(/<\/div>\s*\);\s*\}\)\s*\)\}\s*<\/div>/);
 if (linkEndMatch) {
   code = code.replace(
     /<\/div>\s*\);\s*\}\)\s*\)\}\s*<\/div>/g,
-    `</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`
+    `</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`,
   );
 }
 

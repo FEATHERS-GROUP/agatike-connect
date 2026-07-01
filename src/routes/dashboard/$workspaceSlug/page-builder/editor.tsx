@@ -87,7 +87,16 @@ function makeBlankPage() {
     logoPosition: "hero" as "hero" | "navbar",
     navbarStyle: "transparent" as "transparent" | "solid",
     fontFamily: "Inter",
-    heroAlign: "center" as "center" | "top-left" | "top-center" | "top-right" | "center-left" | "center-right" | "bottom-left" | "bottom-center" | "bottom-right",
+    heroAlign: "center" as
+      | "center"
+      | "top-left"
+      | "top-center"
+      | "top-right"
+      | "center-left"
+      | "center-right"
+      | "bottom-left"
+      | "bottom-center"
+      | "bottom-right",
     heroOverlayColor: "#000000",
     heroOverlayOpacity: 40,
     heroButtonText: "",

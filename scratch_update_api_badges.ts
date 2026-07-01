@@ -29,16 +29,23 @@ export const deleteBadgeProject = createServerFn({ method: "POST" }).handler(asy
 });
 `;
 
-code = code.replace("export const saveBadgeProject = createServerFn({ method: \"POST\" }).handler(async (ctx) => {", newMutation + "\nexport const saveBadgeProject = createServerFn({ method: \"POST\" }).handler(async (ctx) => {");
+code = code.replace(
+  'export const saveBadgeProject = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+  newMutation +
+    '\nexport const saveBadgeProject = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+);
 
-code = code.replace(`
+code = code.replace(
+  `
       id
       theme
-`, `
+`,
+  `
       id
       theme
       folder_id
-`);
+`,
+);
 
 fs.writeFileSync(file, code);
 console.log("Updated badges.ts");

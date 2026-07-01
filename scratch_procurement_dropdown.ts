@@ -13,7 +13,10 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 `;
-code = code.replace(`import { cn } from "@/lib/utils";`, `import { cn } from "@/lib/utils";\n${dropdownImports}`);
+code = code.replace(
+  `import { cn } from "@/lib/utils";`,
+  `import { cn } from "@/lib/utils";\n${dropdownImports}`,
+);
 
 // Replace ContextMenu for the Bulk Move button
 const searchStr = `<ContextMenu>

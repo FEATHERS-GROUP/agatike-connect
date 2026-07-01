@@ -6,9 +6,12 @@ let code = fs.readFileSync(file, "utf8");
 // Imports
 code = code.replace(
   'import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects } from "@/api/events";',
-  'import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects, updateTicketProjectFolder, deleteTicketProject } from "@/api/events";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from "@/components/ui/context-menu";\nimport { Folder, Trash2 } from "lucide-react";'
+  'import { getWorkspaceEvents, saveTicketProject, getWorkspaceTicketProjects, updateTicketProjectFolder, deleteTicketProject } from "@/api/events";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger } from "@/components/ui/context-menu";\nimport { Folder, Trash2 } from "lucide-react";',
 );
-code = code.replace('import { useWorkspace } from "@/contexts/WorkspaceContext";', 'import { useWorkspace } from "@/contexts/WorkspaceContext";\nimport { useQueryClient } from "@tanstack/react-query";\nimport { Checkbox } from "@/components/ui/checkbox";');
+code = code.replace(
+  'import { useWorkspace } from "@/contexts/WorkspaceContext";',
+  'import { useWorkspace } from "@/contexts/WorkspaceContext";\nimport { useQueryClient } from "@tanstack/react-query";\nimport { Checkbox } from "@/components/ui/checkbox";',
+);
 
 // Mutations
 const mutationsStr = `
@@ -37,7 +40,12 @@ const mutationsStr = `
   };
 `;
 
-code = code.replace("  const createMutation = useMutation({", "  const queryClient = useQueryClient();\n" + mutationsStr + "\n  const createMutation = useMutation({");
+code = code.replace(
+  "  const createMutation = useMutation({",
+  "  const queryClient = useQueryClient();\n" +
+    mutationsStr +
+    "\n  const createMutation = useMutation({",
+);
 
 // Wrapper
 const wrapperStart = `
@@ -70,7 +78,7 @@ const wrapperStart = `
 
 code = code.replace(
   /<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">[\s\S]*?dbProjects\.map\(\(proj: any\) => \{/g,
-  wrapperStart
+  wrapperStart,
 );
 
 const itemRenderContent = `
@@ -91,14 +99,14 @@ const itemRenderContent = `
 
 code = code.replace(
   /return \(\s*<Link\s*key=\{proj\.id\}[\s\S]*?className="group block rounded-3xl border border-border\/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary\/50"\s*>/g,
-  itemRenderContent
+  itemRenderContent,
 );
 
 const linkEndMatch = code.match(/<\/Link>\s*\);\s*\}\)\s*\)\}\s*<\/div>/);
 if (linkEndMatch) {
   code = code.replace(
     /<\/Link>\s*\);\s*\}\)\s*\)\}\s*<\/div>/g,
-    `</Link>\n</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`
+    `</Link>\n</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`,
   );
 } else {
   console.log("Could not find end match");

@@ -42,7 +42,8 @@ function RsvpsPage() {
     mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) => {
       return await updateCustomFormFolder({ data: { id, folder_id: folderId } } as any);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspace-forms", activeWorkspace?.id] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["workspace-forms", activeWorkspace?.id] }),
   });
 
   const toggleActiveMutation = useMutation({
@@ -66,12 +67,12 @@ function RsvpsPage() {
   });
 
   const handleBulkMove = async (itemIds: string[], folderId: string | null) => {
-    const promises = itemIds.map(id => moveMutation.mutateAsync({ id, folderId }));
+    const promises = itemIds.map((id) => moveMutation.mutateAsync({ id, folderId }));
     await Promise.all(promises);
   };
 
   const handleBulkDelete = async (itemIds: string[]) => {
-    const promises = itemIds.map(id => deleteMutation.mutateAsync(id));
+    const promises = itemIds.map((id) => deleteMutation.mutateAsync(id));
     await Promise.all(promises);
   };
 
@@ -151,7 +152,6 @@ function RsvpsPage() {
       setIsExportingBeforeDelete(false);
     }
   };
-
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

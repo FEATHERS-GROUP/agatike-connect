@@ -10,16 +10,19 @@ const files = [
 
 let fixed = 0;
 for (const file of files) {
-  if (!fs.existsSync(file)) { console.log("SKIP", file); continue; }
+  if (!fs.existsSync(file)) {
+    console.log("SKIP", file);
+    continue;
+  }
   let code = fs.readFileSync(file, "utf8");
-  
+
   // Replace: { filteredItems, handleSelect, selectedIds } with ItemMenu added
   const before = code;
   code = code.replace(
     /\{\s*filteredItems,\s*handleSelect,\s*selectedIds\s*\}/g,
-    "{ filteredItems, handleSelect, selectedIds, ItemMenu }"
+    "{ filteredItems, handleSelect, selectedIds, ItemMenu }",
   );
-  
+
   if (code !== before) {
     fs.writeFileSync(file, code);
     console.log("Updated:", file);

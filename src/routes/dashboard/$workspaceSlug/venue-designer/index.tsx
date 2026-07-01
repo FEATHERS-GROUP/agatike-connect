@@ -24,7 +24,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getWorkspaceEvents } from "@/api/events";
-import { getWorkspaceVenueProjects, createVenueProject, deleteVenueProject, updateVenueProjectFolder } from "@/api/venues";
+import {
+  getWorkspaceVenueProjects,
+  createVenueProject,
+  deleteVenueProject,
+  updateVenueProjectFolder,
+} from "@/api/venues";
 import { FolderManager } from "@/components/ui/FolderManager";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -107,23 +112,25 @@ function VenueDesignerIndex() {
   >("rect");
   const [pitchType, setPitchType] = useState<PitchType>("none");
 
-
   const queryClient = useQueryClient();
 
   const moveMutation = useMutation({
     mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) => {
       return await updateVenueProjectFolder({ data: { id, folder_id: folderId } } as any);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspace-venue-projects", activeWorkspace?.id] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-venue-projects", activeWorkspace?.id],
+      }),
   });
 
   const handleBulkMove = async (itemIds: string[], folderId: string | null) => {
-    const promises = itemIds.map(id => moveMutation.mutateAsync({ id, folderId }));
+    const promises = itemIds.map((id) => moveMutation.mutateAsync({ id, folderId }));
     await Promise.all(promises);
   };
 
   const handleBulkDelete = async (itemIds: string[]) => {
-    const promises = itemIds.map(id => deleteMutation.mutateAsync(id));
+    const promises = itemIds.map((id) => deleteMutation.mutateAsync(id));
     await Promise.all(promises);
   };
 
@@ -434,7 +441,6 @@ function VenueDesignerIndex() {
             </div>
           </div>
 
-          
           <FolderManager
             moduleType="venue_designer"
             items={dbProjects}
@@ -460,88 +466,98 @@ function VenueDesignerIndex() {
                   </div>
                 ) : (
                   filteredItems.map((proj: any) => {
+                    const eventObj = events.find((e: any) => e.id === proj.event_id);
+                    const displayTitle = proj.name || "Untitled Venue";
+                    const stopIdx = proj.tour_stop_idx ?? 0;
+                    let venueImage = null;
+                    let locationName = "";
 
-                const eventObj = events.find((e: any) => e.id === proj.event_id);
-                const displayTitle = proj.name || "Untitled Venue";
-                const stopIdx = proj.tour_stop_idx ?? 0;
-                let venueImage = null;
-                let locationName = "";
+                    if (stopIdx === -1) {
+                      venueImage = eventObj?.cover || null;
+                      if (Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > 1) {
+                        locationName = " - All Locations";
+                      }
+                    } else if (
+                      Array.isArray(eventObj?.tour_stops) &&
+                      eventObj.tour_stops.length > stopIdx
+                    ) {
+                      venueImage = eventObj.tour_stops[stopIdx].venue_image_url;
+                      if (eventObj.tour_stops.length > 1) {
+                        locationName = ` - ${eventObj.tour_stops[stopIdx].venue || eventObj.tour_stops[stopIdx].city || `Location ${stopIdx + 1}`}`;
+                      }
+                    }
 
-                if (stopIdx === -1) {
-                  venueImage = eventObj?.cover || null;
-                  if (Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > 1) {
-                    locationName = " - All Locations";
-                  }
-                } else if (
-                  Array.isArray(eventObj?.tour_stops) &&
-                  eventObj.tour_stops.length > stopIdx
-                ) {
-                  venueImage = eventObj.tour_stops[stopIdx].venue_image_url;
-                  if (eventObj.tour_stops.length > 1) {
-                    locationName = ` - ${eventObj.tour_stops[stopIdx].venue || eventObj.tour_stops[stopIdx].city || `Location ${stopIdx + 1}`}`;
-                  }
-                }
-
-                
                     const isSelected = selectedIds.has(proj.id);
 
                     return (
                       <ItemMenu key={proj.id} itemId={proj.id} folderId={proj.folder_id}>
-                        <div className="relative group rounded-3xl border overflow-hidden shadow-sm transition-all hover:shadow-lg focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-                             style={{ borderColor: isSelected ? "hsl(var(--primary))" : "hsl(var(--border) / 0.6)" }}>
-                          <div className="absolute top-3 left-3 z-20" onClick={(e) => e.stopPropagation()}>
-                             <Checkbox checked={isSelected} onCheckedChange={(c) => handleSelect(proj.id, c as boolean)} className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary" />
+                        <div
+                          className="relative group rounded-3xl border overflow-hidden shadow-sm transition-all hover:shadow-lg focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
+                          style={{
+                            borderColor: isSelected
+                              ? "hsl(var(--primary))"
+                              : "hsl(var(--border) / 0.6)",
+                          }}
+                        >
+                          <div
+                            className="absolute top-3 left-3 z-20"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={(c) => handleSelect(proj.id, c as boolean)}
+                              className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
+                            />
                           </div>
                           <Link
                             to="/dashboard/$workspaceSlug/venue-designer/$projectId"
                             params={{ workspaceSlug, projectId: proj.id }}
                             className="block h-full"
                           >
-
-                      <div className="h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-secondary/50">
-                        {venueImage && (
-                          <img
-                            src={venueImage}
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-500"
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 pointer-events-none" />
-                        <div className="relative z-10 text-white drop-shadow-md">
-                          <p className="text-xs opacity-80 uppercase tracking-wider line-clamp-1">
-                            {eventObj?.title || "No event linked"}
-                            {locationName}
-                          </p>
-                          <h3 className="text-xl font-bold leading-tight mt-1 drop-shadow-lg">
-                            {displayTitle}
-                          </h3>
+                            <div className="h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-secondary/50">
+                              {venueImage && (
+                                <img
+                                  src={venueImage}
+                                  alt=""
+                                  className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-500"
+                                />
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 pointer-events-none" />
+                              <div className="relative z-10 text-white drop-shadow-md">
+                                <p className="text-xs opacity-80 uppercase tracking-wider line-clamp-1">
+                                  {eventObj?.title || "No event linked"}
+                                  {locationName}
+                                </p>
+                                <h3 className="text-xl font-bold leading-tight mt-1 drop-shadow-lg">
+                                  {displayTitle}
+                                </h3>
+                              </div>
+                            </div>
+                            <div className="px-5 py-3 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                              <span>Edit Map</span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setProjectToDelete(proj.id);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                                <ChevronRight className="h-4 w-4" />
+                              </div>
+                            </div>
+                          </Link>
                         </div>
-                      </div>
-                      <div className="px-5 py-3 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                        <span>Edit Map</span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setProjectToDelete(proj.id);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                          <ChevronRight className="h-4 w-4" />
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                </ItemMenu>
-              );
-})
-)}
-</div>
-)}
-</FolderManager>
+                      </ItemMenu>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </FolderManager>
         </section>
       </main>
     </div>

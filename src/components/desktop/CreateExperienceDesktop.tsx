@@ -152,9 +152,9 @@ export function CreateExperienceDesktop({
   const baseStepsRoute = ["Category", "Details", "Duration", locationStepName] as const;
   const baseStepsNonRoute = ["Category", "Details", locationStepName] as const;
   const endSteps = data.isUpcoming ? ["Media", "Publish"] : ["Tickets", "Media", "Publish"];
-  
-  const steps = isRouteBased 
-    ? [...baseStepsRoute, ...endSteps] 
+
+  const steps = isRouteBased
+    ? [...baseStepsRoute, ...endSteps]
     : [...baseStepsNonRoute, ...endSteps];
 
   const setStep = (newStep: number) => {
@@ -236,33 +236,37 @@ export function CreateExperienceDesktop({
           numberOfDays: data.numberOfDays,
         },
         event_tickets: {
-          data: data.isUpcoming ? [] : data.tickets.map((t: any) => ({
-            id: t.id,
-            type: t.name,
-            cost: t.price.toString(),
-            remaining: t.quantity.toString(),
-            sold: "0",
-            form_id: t.form_id || null,
-          })),
+          data: data.isUpcoming
+            ? []
+            : data.tickets.map((t: any) => ({
+                id: t.id,
+                type: t.name,
+                cost: t.price.toString(),
+                remaining: t.quantity.toString(),
+                sold: "0",
+                form_id: t.form_id || null,
+              })),
         },
-        ...(data.date ? {
-          schedules: {
-            data: [
-              {
-                start_date: data.date,
-                end_date: (() => {
-                  const d = new Date(data.date);
-                  d.setDate(d.getDate() + Math.max(1, data.numberOfDays || 1) - 1);
-                  return d.toISOString().split("T")[0];
-                })(),
-                total_spots: data.tickets.reduce(
-                  (sum: number, t: any) => sum + parseInt(t.quantity || 0),
-                  0,
-                ),
+        ...(data.date
+          ? {
+              schedules: {
+                data: [
+                  {
+                    start_date: data.date,
+                    end_date: (() => {
+                      const d = new Date(data.date);
+                      d.setDate(d.getDate() + Math.max(1, data.numberOfDays || 1) - 1);
+                      return d.toISOString().split("T")[0];
+                    })(),
+                    total_spots: data.tickets.reduce(
+                      (sum: number, t: any) => sum + parseInt(t.quantity || 0),
+                      0,
+                    ),
+                  },
+                ],
               },
-            ],
-          },
-        } : {}),
+            }
+          : {}),
       };
 
       if (isEdit && initialData?.id) {
@@ -385,7 +389,13 @@ export function CreateExperienceDesktop({
                     <Label>Waitlist / RSVP Form (Optional)</Label>
                     <div className="flex flex-col sm:flex-row gap-2 mt-1">
                       <select
-                        value={data.waitlistUrl.startsWith("/f/") ? data.waitlistUrl : (data.waitlistUrl ? "external" : "")}
+                        value={
+                          data.waitlistUrl.startsWith("/f/")
+                            ? data.waitlistUrl
+                            : data.waitlistUrl
+                              ? "external"
+                              : ""
+                        }
                         onChange={(e) => {
                           if (e.target.value === "external") {
                             updateField("waitlistUrl", "https://");
@@ -397,11 +407,13 @@ export function CreateExperienceDesktop({
                       >
                         <option value="">No form (Coming Soon)</option>
                         {forms?.map((f: any) => (
-                          <option key={f.id} value={`/f/${f.id}`}>{f.title}</option>
+                          <option key={f.id} value={`/f/${f.id}`}>
+                            {f.title}
+                          </option>
                         ))}
                         <option value="external">External Link</option>
                       </select>
-                      {(!data.waitlistUrl.startsWith("/f/") && data.waitlistUrl !== "") && (
+                      {!data.waitlistUrl.startsWith("/f/") && data.waitlistUrl !== "" && (
                         <Input
                           placeholder="https://..."
                           value={data.waitlistUrl}
@@ -462,7 +474,12 @@ export function CreateExperienceDesktop({
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <Label>Start Date {data.isUpcoming && <span className="text-muted-foreground font-normal">(Optional)</span>}</Label>
+                <Label>
+                  Start Date{" "}
+                  {data.isUpcoming && (
+                    <span className="text-muted-foreground font-normal">(Optional)</span>
+                  )}
+                </Label>
                 <Input
                   type="date"
                   value={data.date || ""}
@@ -472,7 +489,10 @@ export function CreateExperienceDesktop({
               </div>
               <div>
                 <Label>
-                  End Date {data.isUpcoming && <span className="text-muted-foreground font-normal">(Optional)</span>}
+                  End Date{" "}
+                  {data.isUpcoming && (
+                    <span className="text-muted-foreground font-normal">(Optional)</span>
+                  )}
                   {!data.isUpcoming && (
                     <span className="text-xs text-muted-foreground font-normal ml-1">
                       (auto-calculated)

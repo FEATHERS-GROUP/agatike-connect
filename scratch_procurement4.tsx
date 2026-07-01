@@ -15,7 +15,7 @@ import {
   Folder,
   FolderPlus,
   MoreVertical,
-  MoveRight
+  MoveRight,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -25,7 +25,7 @@ import {
   updateProcurementInvoice,
   getProcurementFolders,
   createProcurementFolder,
-  deleteProcurementFolder
+  deleteProcurementFolder,
 } from "@/api/procurement";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
@@ -104,7 +104,8 @@ function ProcurementPage() {
   });
 
   const createFolderMutation = useMutation({
-    mutationFn: (name: string) => createProcurementFolder({ data: { workspace_id: wsId, name } } as any),
+    mutationFn: (name: string) =>
+      createProcurementFolder({ data: { workspace_id: wsId, name } } as any),
     onSuccess: () => {
       toast.success("Folder created");
       queryClient.invalidateQueries({ queryKey: ["procurement-folders", wsId] });
@@ -229,7 +230,9 @@ function ProcurementPage() {
                 key={s.label}
                 className="bg-card border border-border/60 rounded-2xl p-4 flex items-center gap-3"
               >
-                <div className={`h-9 w-9 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}>
+                <div
+                  className={`h-9 w-9 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}
+                >
                   <FileText className={`h-4 w-4 ${s.color}`} />
                 </div>
                 <div>
@@ -243,38 +246,52 @@ function ProcurementPage() {
           {/* Folder Navigation */}
           {currentFolderId ? (
             <div className="flex items-center gap-2 bg-secondary/30 p-2 rounded-xl border border-border/30 w-fit mb-4">
-              <Button variant="ghost" size="sm" className="h-8 gap-2" onClick={() => setCurrentFolderId(null)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-2"
+                onClick={() => setCurrentFolderId(null)}
+              >
                 <Folder className="h-4 w-4 text-blue-500" /> All Folders
               </Button>
               <span className="text-muted-foreground">/</span>
               <span className="font-semibold text-sm px-2 flex items-center gap-2">
                 {currentFolder?.name}
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive ml-2" onClick={() => deleteFolderMutation.mutate(currentFolderId)}>
-                   <Trash2 className="h-3 w-3" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground hover:text-destructive ml-2"
+                  onClick={() => deleteFolderMutation.mutate(currentFolderId)}
+                >
+                  <Trash2 className="h-3 w-3" />
                 </Button>
               </span>
             </div>
           ) : (
-             folders.length > 0 && (
-                <div className="flex flex-wrap gap-3 mb-6">
-                   {folders.map((folder: any) => {
-                      const count = (invoices as any[]).filter(i => i.folder_id === folder.id).length;
-                      return (
-                         <div
-                            key={folder.id}
-                            onClick={() => setCurrentFolderId(folder.id)}
-                            className="flex items-center gap-3 bg-card border border-border/60 rounded-2xl px-4 py-3 cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all w-[200px]"
-                         >
-                            <Folder className="h-8 w-8 text-blue-500 shrink-0" fill="currentColor" fillOpacity={0.2} />
-                            <div className="flex-1 min-w-0">
-                               <p className="font-semibold text-sm truncate">{folder.name}</p>
-                               <p className="text-xs text-muted-foreground">{count} items</p>
-                            </div>
-                         </div>
-                      );
-                   })}
-                </div>
-             )
+            folders.length > 0 && (
+              <div className="flex flex-wrap gap-3 mb-6">
+                {folders.map((folder: any) => {
+                  const count = (invoices as any[]).filter((i) => i.folder_id === folder.id).length;
+                  return (
+                    <div
+                      key={folder.id}
+                      onClick={() => setCurrentFolderId(folder.id)}
+                      className="flex items-center gap-3 bg-card border border-border/60 rounded-2xl px-4 py-3 cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all w-[200px]"
+                    >
+                      <Folder
+                        className="h-8 w-8 text-blue-500 shrink-0"
+                        fill="currentColor"
+                        fillOpacity={0.2}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">{folder.name}</p>
+                        <p className="text-xs text-muted-foreground">{count} items</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )
           )}
 
           {/* Filters */}
@@ -315,7 +332,9 @@ function ProcurementPage() {
             <div className="rounded-3xl border border-dashed border-border/60 py-20 text-center text-muted-foreground">
               <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
               <p className="font-semibold">No documents here</p>
-              <p className="text-sm mt-1">Right-click to create a folder, or create a new document.</p>
+              <p className="text-sm mt-1">
+                Right-click to create a folder, or create a new document.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -325,109 +344,135 @@ function ProcurementPage() {
                 return (
                   <ContextMenu key={inv.id}>
                     <ContextMenuTrigger asChild>
-                       <div
-                         onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/book/procurement/${inv.id}` as any })}
-                         className="bg-card border border-border/60 rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer group"
-                       >
-                         <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                           <FileText className="h-5 w-5" />
-                         </div>
-                         <div className="flex-1 min-w-0">
-                           <div className="flex items-center gap-2">
-                             <span className="font-bold text-sm">{inv.invoice_number}</span>
-                             <span
-                               className={cn(
-                                 "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border",
-                                 sc.color,
-                               )}
-                             >
-                               {sc.label}
-                             </span>
-                             <span className="text-[10px] uppercase font-semibold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
-                               {inv.invoice_type.replace("_", " ")}
-                             </span>
-                           </div>
-                           <p className="text-sm text-muted-foreground truncate mt-0.5">
-                             {inv.client_name}
-                             {inv.client_company ? ` · ${inv.client_company}` : ""}
-                           </p>
-                         </div>
-                         <div className="text-right shrink-0">
-                           <p className="font-black text-base">
-                             {total.toLocaleString()} {currency}
-                           </p>
-                           {inv.due_date && (
-                             <p className="text-xs text-muted-foreground">
-                               Due{" "}
-                               {new Date(inv.due_date).toLocaleDateString("en-GB", {
-                                 day: "numeric",
-                                 month: "short",
-                               })}
-                             </p>
-                           )}
-                         </div>
-                         <div
-                            className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => e.stopPropagation()} // Prevent nav when clicking buttons
-                         >
-                           {inv.status !== "paid" && (
-                             <Button
-                               variant="ghost"
-                               size="icon"
-                               className="h-8 w-8 text-green-500"
-                               title="Mark as Paid"
-                               onClick={() => updateInvoiceMutation.mutate({ id: inv.id, status: "paid" })}
-                             >
-                               <CheckCircle2 className="h-4 w-4" />
-                             </Button>
-                           )}
-                           {inv.status === "draft" && (
-                             <Button
-                               variant="ghost"
-                               size="icon"
-                               className="h-8 w-8 text-blue-500"
-                               title="Mark as Sent"
-                               onClick={() => updateInvoiceMutation.mutate({ id: inv.id, status: "sent" })}
-                             >
-                               <Send className="h-4 w-4" />
-                             </Button>
-                           )}
-                           <Button
-                             variant="ghost"
-                             size="icon"
-                             className="h-8 w-8 text-destructive"
-                             onClick={() => deleteInvoiceMutation.mutate(inv.id)}
-                           >
-                             <Trash2 className="h-4 w-4" />
-                           </Button>
-                         </div>
-                       </div>
+                      <div
+                        onClick={() =>
+                          navigate({
+                            to: `/dashboard/${workspaceSlug}/book/procurement/${inv.id}` as any,
+                          })
+                        }
+                        className="bg-card border border-border/60 rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-primary/30 hover:bg-primary/5 transition-all cursor-pointer group"
+                      >
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm">{inv.invoice_number}</span>
+                            <span
+                              className={cn(
+                                "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border",
+                                sc.color,
+                              )}
+                            >
+                              {sc.label}
+                            </span>
+                            <span className="text-[10px] uppercase font-semibold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                              {inv.invoice_type.replace("_", " ")}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground truncate mt-0.5">
+                            {inv.client_name}
+                            {inv.client_company ? ` · ${inv.client_company}` : ""}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-black text-base">
+                            {total.toLocaleString()} {currency}
+                          </p>
+                          {inv.due_date && (
+                            <p className="text-xs text-muted-foreground">
+                              Due{" "}
+                              {new Date(inv.due_date).toLocaleDateString("en-GB", {
+                                day: "numeric",
+                                month: "short",
+                              })}
+                            </p>
+                          )}
+                        </div>
+                        <div
+                          className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => e.stopPropagation()} // Prevent nav when clicking buttons
+                        >
+                          {inv.status !== "paid" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-green-500"
+                              title="Mark as Paid"
+                              onClick={() =>
+                                updateInvoiceMutation.mutate({ id: inv.id, status: "paid" })
+                              }
+                            >
+                              <CheckCircle2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {inv.status === "draft" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-blue-500"
+                              title="Mark as Sent"
+                              onClick={() =>
+                                updateInvoiceMutation.mutate({ id: inv.id, status: "sent" })
+                              }
+                            >
+                              <Send className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive"
+                            onClick={() => deleteInvoiceMutation.mutate(inv.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
                     </ContextMenuTrigger>
-                    
+
                     <ContextMenuContent className="w-48">
-                       <ContextMenuItem onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/book/procurement/${inv.id}` as any })}>
-                          <FileText className="mr-2 h-4 w-4" /> View Preview
-                       </ContextMenuItem>
-                       <ContextMenuSub>
-                          <ContextMenuSubTrigger>
-                             <MoveRight className="mr-2 h-4 w-4" /> Move to Folder
-                          </ContextMenuSubTrigger>
-                          <ContextMenuSubContent className="w-48">
-                             <ContextMenuItem onClick={() => updateInvoiceMutation.mutate({ id: inv.id, folder_id: null })}>
-                                Root (No Folder)
-                             </ContextMenuItem>
-                             <ContextMenuSeparator />
-                             {folders.map((f: any) => (
-                                <ContextMenuItem key={f.id} onClick={() => updateInvoiceMutation.mutate({ id: inv.id, folder_id: f.id })}>
-                                   <Folder className="mr-2 h-4 w-4" /> {f.name}
-                                </ContextMenuItem>
-                             ))}
-                          </ContextMenuSubContent>
-                       </ContextMenuSub>
-                       <ContextMenuSeparator />
-                       <ContextMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={() => deleteInvoiceMutation.mutate(inv.id)}>
-                          <Trash2 className="mr-2 h-4 w-4" /> Delete Document
-                       </ContextMenuItem>
+                      <ContextMenuItem
+                        onClick={() =>
+                          navigate({
+                            to: `/dashboard/${workspaceSlug}/book/procurement/${inv.id}` as any,
+                          })
+                        }
+                      >
+                        <FileText className="mr-2 h-4 w-4" /> View Preview
+                      </ContextMenuItem>
+                      <ContextMenuSub>
+                        <ContextMenuSubTrigger>
+                          <MoveRight className="mr-2 h-4 w-4" /> Move to Folder
+                        </ContextMenuSubTrigger>
+                        <ContextMenuSubContent className="w-48">
+                          <ContextMenuItem
+                            onClick={() =>
+                              updateInvoiceMutation.mutate({ id: inv.id, folder_id: null })
+                            }
+                          >
+                            Root (No Folder)
+                          </ContextMenuItem>
+                          <ContextMenuSeparator />
+                          {folders.map((f: any) => (
+                            <ContextMenuItem
+                              key={f.id}
+                              onClick={() =>
+                                updateInvoiceMutation.mutate({ id: inv.id, folder_id: f.id })
+                              }
+                            >
+                              <Folder className="mr-2 h-4 w-4" /> {f.name}
+                            </ContextMenuItem>
+                          ))}
+                        </ContextMenuSubContent>
+                      </ContextMenuSub>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem
+                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                        onClick={() => deleteInvoiceMutation.mutate(inv.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete Document
+                      </ContextMenuItem>
                     </ContextMenuContent>
                   </ContextMenu>
                 );
@@ -436,14 +481,18 @@ function ProcurementPage() {
           )}
         </div>
       </ContextMenuTrigger>
-      
+
       <ContextMenuContent className="w-48">
-         <ContextMenuItem onClick={handleCreateFolder}>
-            <FolderPlus className="mr-2 h-4 w-4" /> Create New Folder
-         </ContextMenuItem>
-         <ContextMenuItem onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/book/procurement/create` as any })}>
-            <FilePlus className="mr-2 h-4 w-4" /> Create Document
-         </ContextMenuItem>
+        <ContextMenuItem onClick={handleCreateFolder}>
+          <FolderPlus className="mr-2 h-4 w-4" /> Create New Folder
+        </ContextMenuItem>
+        <ContextMenuItem
+          onClick={() =>
+            navigate({ to: `/dashboard/${workspaceSlug}/book/procurement/create` as any })
+          }
+        >
+          <FilePlus className="mr-2 h-4 w-4" /> Create Document
+        </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
   );

@@ -17,16 +17,23 @@ export const updateVenueProjectFolder = createServerFn({ method: "POST" }).handl
 });
 `;
 
-code = code.replace("export const saveVenueProject = createServerFn({ method: \"POST\" }).handler(async (ctx) => {", newMutation + "\nexport const saveVenueProject = createServerFn({ method: \"POST\" }).handler(async (ctx) => {");
+code = code.replace(
+  'export const saveVenueProject = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+  newMutation +
+    '\nexport const saveVenueProject = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+);
 
-code = code.replace(`
+code = code.replace(
+  `
       id
       name
-`, `
+`,
+  `
       id
       name
       folder_id
-`);
+`,
+);
 
 fs.writeFileSync(file, code);
 console.log("Updated venues.ts");

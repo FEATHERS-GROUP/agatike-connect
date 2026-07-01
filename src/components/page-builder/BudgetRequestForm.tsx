@@ -4,11 +4,25 @@ import { getPublicAgatikeBooksByWorkspace, createPublicAgatikeBookRecord } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
-export function BudgetRequestForm({ workspace_id, themeColor, comp }: { workspace_id: string; themeColor: string; comp: any }) {
+export function BudgetRequestForm({
+  workspace_id,
+  themeColor,
+  comp,
+}: {
+  workspace_id: string;
+  themeColor: string;
+  comp: any;
+}) {
   const [formData, setFormData] = useState({
     Type: "Damage Report",
     Title: "",
@@ -60,17 +74,30 @@ export function BudgetRequestForm({ workspace_id, themeColor, comp }: { workspac
   if (isSubmitted) {
     return (
       <div className="bg-card border border-border/60 rounded-2xl p-8 shadow-sm max-w-lg mx-auto my-8 text-center flex flex-col items-center">
-        <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: `${themeColor}20`, color: themeColor }}>
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+          style={{ background: `${themeColor}20`, color: themeColor }}
+        >
           <CheckCircle2 className="w-8 h-8" />
         </div>
         <h3 className="text-2xl font-bold mb-2">Request Submitted</h3>
         <p className="text-muted-foreground mb-6">
           Thank you! Your request has been sent to the finance team for review.
         </p>
-        <Button onClick={() => {
-          setIsSubmitted(false);
-          setFormData({ Type: "Damage Report", Title: "", Details: "", Amount: "", "Requested By": "", Status: "Pending" });
-        }} variant="outline">
+        <Button
+          onClick={() => {
+            setIsSubmitted(false);
+            setFormData({
+              Type: "Damage Report",
+              Title: "",
+              Details: "",
+              Amount: "",
+              "Requested By": "",
+              Status: "Pending",
+            });
+          }}
+          variant="outline"
+        >
           Submit Another Request
         </Button>
       </div>
@@ -79,7 +106,9 @@ export function BudgetRequestForm({ workspace_id, themeColor, comp }: { workspac
 
   return (
     <div className="bg-card border border-border/60 rounded-2xl p-6 md:p-8 shadow-sm max-w-lg mx-auto my-8">
-      <h3 className="text-xl md:text-2xl font-bold mb-2">{comp.title || "Budget & Damage Request"}</h3>
+      <h3 className="text-xl md:text-2xl font-bold mb-2">
+        {comp.title || "Budget & Damage Request"}
+      </h3>
       <p className="text-sm text-muted-foreground mb-6">
         {comp.description || "Submit a request to the finance team for approval."}
       </p>
@@ -87,7 +116,10 @@ export function BudgetRequestForm({ workspace_id, themeColor, comp }: { workspac
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5 text-left">
           <Label className="text-xs">Request Type *</Label>
-          <Select value={formData.Type} onValueChange={(v) => setFormData({ ...formData, Type: v })}>
+          <Select
+            value={formData.Type}
+            onValueChange={(v) => setFormData({ ...formData, Type: v })}
+          >
             <SelectTrigger className="h-11 rounded-lg">
               <SelectValue />
             </SelectTrigger>

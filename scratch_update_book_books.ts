@@ -6,10 +6,12 @@ let code = fs.readFileSync(file, "utf8");
 // Imports
 code = code.replace(
   'import { getWorkspaceBooks, createAgatikeBook, deleteAgatikeBook } from "@/api/book";',
-  'import { getWorkspaceBooks, createAgatikeBook, deleteAgatikeBook, updateBookFolder } from "@/api/book";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { Checkbox } from "@/components/ui/checkbox";'
+  'import { getWorkspaceBooks, createAgatikeBook, deleteAgatikeBook, updateBookFolder } from "@/api/book";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { Checkbox } from "@/components/ui/checkbox";',
 );
-code = code.replace('import { useWorkspace } from "@/contexts/WorkspaceContext";', 'import { useWorkspace } from "@/contexts/WorkspaceContext";\nimport { useQueryClient, useMutation } from "@tanstack/react-query";');
-
+code = code.replace(
+  'import { useWorkspace } from "@/contexts/WorkspaceContext";',
+  'import { useWorkspace } from "@/contexts/WorkspaceContext";\nimport { useQueryClient, useMutation } from "@tanstack/react-query";',
+);
 
 // Mutations
 const mutationsStr = `
@@ -40,7 +42,10 @@ const mutationsStr = `
   };
 `;
 
-code = code.replace("  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);", mutationsStr + "\n  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);");
+code = code.replace(
+  "  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);",
+  mutationsStr + "\n  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);",
+);
 
 // Wrapper
 const wrapperStart = `
@@ -72,7 +77,7 @@ const wrapperStart = `
 
 code = code.replace(
   /<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">[\s\S]*?books\.map\(\(book: any\) => \{/g,
-  wrapperStart
+  wrapperStart,
 );
 
 const itemRenderContent = `
@@ -89,14 +94,14 @@ const itemRenderContent = `
 
 code = code.replace(
   /return \(\s*<div\s*key=\{book\.id\}\s*className="group rounded-3xl border border-border\/60 bg-card p-6 shadow-sm transition-all hover:shadow-lg hover:border-primary\/50"\s*>\s*<div className="flex items-start gap-4 mb-4">/g,
-  itemRenderContent
+  itemRenderContent,
 );
 
 const linkEndMatch = code.match(/<\/div>\s*\);\s*\}\)\s*\)\}\s*<\/div>/);
 if (linkEndMatch) {
   code = code.replace(
     /<\/div>\s*\);\s*\}\)\s*\)\}\s*<\/div>/g,
-    `</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`
+    `</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`,
   );
 }
 

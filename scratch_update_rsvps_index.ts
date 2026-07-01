@@ -6,10 +6,12 @@ let code = fs.readFileSync(file, "utf8");
 // Imports
 code = code.replace(
   'import { getWorkspaceForms } from "@/api/rsvps";',
-  'import { getWorkspaceForms, updateCustomFormFolder, deleteCustomForm } from "@/api/rsvps";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { Checkbox } from "@/components/ui/checkbox";'
+  'import { getWorkspaceForms, updateCustomFormFolder, deleteCustomForm } from "@/api/rsvps";\nimport { FolderManager } from "@/components/ui/FolderManager";\nimport { Checkbox } from "@/components/ui/checkbox";',
 );
-code = code.replace('import { useWorkspace } from "@/contexts/WorkspaceContext";', 'import { useWorkspace } from "@/contexts/WorkspaceContext";\nimport { useQueryClient, useMutation } from "@tanstack/react-query";');
-
+code = code.replace(
+  'import { useWorkspace } from "@/contexts/WorkspaceContext";',
+  'import { useWorkspace } from "@/contexts/WorkspaceContext";\nimport { useQueryClient, useMutation } from "@tanstack/react-query";',
+);
 
 // Mutations
 const mutationsStr = `
@@ -40,7 +42,10 @@ const mutationsStr = `
   };
 `;
 
-code = code.replace("  const { activeWorkspace } = useWorkspace();", "  const { activeWorkspace } = useWorkspace();\n" + mutationsStr);
+code = code.replace(
+  "  const { activeWorkspace } = useWorkspace();",
+  "  const { activeWorkspace } = useWorkspace();\n" + mutationsStr,
+);
 
 // Wrapper
 const wrapperStart = `
@@ -72,7 +77,7 @@ const wrapperStart = `
 
 code = code.replace(
   /<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">[\s\S]*?forms\.map\(\(form: any\) => \{/g,
-  wrapperStart
+  wrapperStart,
 );
 
 const itemRenderContent = `
@@ -93,14 +98,14 @@ const itemRenderContent = `
 
 code = code.replace(
   /return \(\s*<Link\s*key=\{form\.id\}\s*to="\/dashboard\/\$workspaceSlug\/rsvps\/\$formId"\s*params=\{\{ workspaceSlug, formId: form\.id \}\}\s*className="group block rounded-3xl border border-border\/60 bg-card p-6 shadow-sm transition-all hover:shadow-lg hover:border-primary\/50"\s*>/g,
-  itemRenderContent
+  itemRenderContent,
 );
 
 const linkEndMatch = code.match(/<\/Link>\s*\);\s*\}\)\s*\)\}\s*<\/div>/);
 if (linkEndMatch) {
   code = code.replace(
     /<\/Link>\s*\);\s*\}\)\s*\)\}\s*<\/div>/g,
-    `</Link>\n</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`
+    `</Link>\n</div>\n);\n})\n)}\n</div>\n)}\n</FolderManager>`,
   );
 }
 

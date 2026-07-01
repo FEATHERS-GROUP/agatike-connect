@@ -12,14 +12,14 @@ const tablesToAlter = [
   "workspace_pages",
   "cinema_movies",
   "agatike_books",
-  "custom_forms"
+  "custom_forms",
 ];
 
 async function hasuraMetadata(payload: any) {
   const res = await fetch(API_METADATA, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-hasura-admin-secret": SECRET },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
   const data = await res.json();
   if (data.error || data.errors || data.internal) {
@@ -37,11 +37,11 @@ async function run() {
       args: {
         source: "default",
         schema: "public",
-        name: "workspace_folders"
-      }
+        name: "workspace_folders",
+      },
     });
     console.log("-> workspace_folders tracked successfully.");
-  } catch(e) {
+  } catch (e) {
     console.log("-> workspace_folders already tracked or error");
   }
 
@@ -55,12 +55,12 @@ async function run() {
           source: "default",
           name: "folder",
           using: {
-            foreign_key_constraint_on: "folder_id"
-          }
-        }
+            foreign_key_constraint_on: "folder_id",
+          },
+        },
       });
       console.log(`-> Tracked relationship for ${table}`);
-    } catch(e) {
+    } catch (e) {
       console.log(`-> Relationship already exists for ${table} or error`);
     }
   }

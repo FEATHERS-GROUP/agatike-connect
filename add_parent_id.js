@@ -98,7 +98,7 @@ async function run() {
     console.log("Setting up relationships...");
     await createObjectRelationship("workspace_pages", "parent", "workspace_pages", "parent_id");
     await createArrayRelationship("workspace_pages", "children", "workspace_pages", "parent_id");
-    
+
     console.log("Success!");
   } catch (e) {
     console.error("Migration failed:", e);

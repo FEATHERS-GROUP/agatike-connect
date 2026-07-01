@@ -29,14 +29,21 @@ export const deleteTicketProject = createServerFn({ method: "POST" }).handler(as
 });
 `;
 
-code = code.replace("export const updateTicketProject = createServerFn({ method: \"POST\" }).handler(async (ctx) => {", newMutation + "\nexport const updateTicketProject = createServerFn({ method: \"POST\" }).handler(async (ctx) => {");
+code = code.replace(
+  'export const updateTicketProject = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+  newMutation +
+    '\nexport const updateTicketProject = createServerFn({ method: "POST" }).handler(async (ctx) => {',
+);
 
-code = code.replace(`
+code = code.replace(
+  `
       cinemaId
-`, `
+`,
+  `
       cinemaId
       folder_id
-`);
+`,
+);
 
 fs.writeFileSync(file, code);
 console.log("Updated events.ts");
