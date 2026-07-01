@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPublicAgatikeBooksByWorkspace, createPublicAgatikeBookRecord } from "@/api/book";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { Loader2, CheckCircle2, Plus, Trash2, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { workspace_id: string; themeColor: string; comp: any }) {
   const [formData, setFormData] = useState({
@@ -16,6 +18,12 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
   const [lineItems, setLineItems] = useState<any[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const queryClient = useQueryClient();
+
+  const [importedData, setImportedData] = useState<any[]>([]);
+  const [importedHeaders, setImportedHeaders] = useState<string[]>([]);
+  const [columnMap, setColumnMap] = useState<Record<string, string>>({});
+  const [showMappingModal, setShowMappingModal] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: books = [] } = useQuery({
     queryKey: ["public-books", workspace_id],
@@ -98,6 +106,83 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
     setLineItems(newItems);
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: "binary" });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+
+        if (data.length < 2) {
+          toast.error("File appears to be empty or has no rows.");
+          return;
+        }
+
+        const rawHeaders = data[0].map((h: any, idx: number) => String(h || `Column_${idx + 1}`));
+        
+        // Ensure unique headers to prevent overwriting or duplicate React keys
+        const headers: string[] = [];
+        const counts: Record<string, number> = {};
+        rawHeaders.forEach(h => {
+          if (counts[h]) {
+            counts[h]++;
+            headers.push(`${h} (${counts[h]})`);
+          } else {
+            counts[h] = 1;
+            headers.push(h);
+          }
+        });
+
+        const rows = data.slice(1).map((row) => {
+          const rowData: any = {};
+          headers.forEach((h, idx) => {
+            rowData[h] = row[idx] !== undefined ? row[idx] : "";
+          });
+          return rowData;
+        });
+
+        setImportedHeaders(headers);
+        setImportedData(rows);
+
+        // Auto-map columns if names match exactly (case-insensitive)
+        const newMap: Record<string, string> = {};
+        columns.forEach((c: any) => {
+          const match = headers.find(h => h.toLowerCase() === c.name.toLowerCase());
+          if (match) newMap[c.name] = match;
+        });
+        setColumnMap(newMap);
+        setShowMappingModal(true);
+      } catch (err) {
+        toast.error("Error reading file.");
+      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  const handleConfirmMapping = () => {
+    const newRows = importedData.map(row => {
+      const newRow: any = {};
+      columns.forEach((c: any) => {
+        const mappedHeader = columnMap[c.name];
+        newRow[c.name] = mappedHeader ? row[mappedHeader] : "";
+      });
+      return newRow;
+    });
+
+    // We append the new rows to the existing line items (as chosen by the user)
+    setLineItems([...lineItems, ...newRows]);
+    setShowMappingModal(false);
+    setImportedData([]);
+    toast.success(`${newRows.length} rows imported successfully!`);
+  };
+
   const removeRow = (idx: number) => {
     const newItems = [...lineItems];
     newItems.splice(idx, 1);
@@ -158,9 +243,21 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-semibold">Line Items</Label>
-              <Button type="button" size="sm" onClick={addRow} variant="outline" className="gap-1 h-8">
-                <Plus className="w-3 h-3" /> Add Row
-              </Button>
+              <div className="flex items-center gap-2">
+                <input 
+                  type="file" 
+                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
+                  className="hidden" 
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                />
+                <Button type="button" size="sm" onClick={() => fileInputRef.current?.click()} variant="outline" className="gap-1 h-8">
+                  <FileSpreadsheet className="w-3 h-3" /> Import Excel/CSV
+                </Button>
+                <Button type="button" size="sm" onClick={addRow} variant="outline" className="gap-1 h-8">
+                  <Plus className="w-3 h-3" /> Add Row
+                </Button>
+              </div>
             </div>
             
             <div className="border border-border/60 rounded-xl overflow-x-auto bg-background">
@@ -238,6 +335,39 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
           </p>
         )}
       </form>
+
+      {/* Column Mapping Modal */}
+      <Dialog open={showMappingModal} onOpenChange={setShowMappingModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Map Columns</DialogTitle>
+            <DialogDescription>
+              Match the columns from your Excel file to the required fields for this form.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {columns.map((c: any) => (
+              <div key={c.name} className="flex flex-col gap-1.5">
+                <Label className="text-sm font-semibold">{c.name}</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={columnMap[c.name] || ""}
+                  onChange={(e) => setColumnMap({ ...columnMap, [c.name]: e.target.value })}
+                >
+                  <option value="">-- Ignore this column --</option>
+                  {importedHeaders.map((h, idx) => (
+                    <option key={`hdr-${idx}`} value={h}>{h}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowMappingModal(false)}>Cancel</Button>
+            <Button onClick={handleConfirmMapping}>Import {importedData.length} Rows</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

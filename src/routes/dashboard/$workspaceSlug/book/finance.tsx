@@ -51,6 +51,7 @@ function FinancePage() {
   const [form, setForm] = useState({ description: "", amount: "", category: "" });
   const [periodFilter, setPeriodFilter] = useState<"month" | "quarter" | "year">("month");
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const calculateAmount = (data: any) => {
     if (data.Amount && Number(data.Amount) > 0) return Number(data.Amount);
@@ -253,6 +254,18 @@ function FinancePage() {
     addRecordMutation.mutate({ book_id: book.id });
   };
 
+  const filteredRequestEntries = useMemo(() => {
+    if (!searchQuery.trim()) return requestEntries;
+    const lower = searchQuery.toLowerCase();
+    return requestEntries.filter((req: any) => {
+      const data = req.record_data || {};
+      const title = String(data.Title || "").toLowerCase();
+      const by = String(data["Requested By"] || "").toLowerCase();
+      const details = String(data.Details || "").toLowerCase();
+      return title.includes(lower) || by.includes(lower) || details.includes(lower);
+    });
+  }, [requestEntries, searchQuery]);
+
   const stats = [
     {
       label: "Total Income",
@@ -388,9 +401,19 @@ function FinancePage() {
             <div className="flex flex-col gap-6">
               {/* Main Requests List */}
               <div className="flex-1">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold">All Requests</h3>
-                  <Button size="sm" asChild className="gap-2 rounded-full">
+                <div className="flex items-center justify-between mb-6 gap-4">
+                  <h3 className="text-xl font-bold whitespace-nowrap">All Requests</h3>
+                  {requestsBook && requestEntries.length > 0 && (
+                    <div className="flex-1 max-w-sm">
+                      <Input 
+                        placeholder="Search requests..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="rounded-full bg-secondary/50 border-border/50 h-9 text-sm"
+                      />
+                    </div>
+                  )}
+                  <Button size="sm" asChild className="gap-2 rounded-full shrink-0">
                     <Link to={`/dashboard/${wsId ? activeWorkspace?.slug : ""}/book/new-finance-request`}>
                       <Plus className="h-4 w-4" /> New Request
                     </Link>
@@ -427,7 +450,7 @@ function FinancePage() {
                   )
                 ) : (
                   <div className="space-y-4">
-                    {requestEntries.map((req: any) => {
+                    {filteredRequestEntries.map((req: any) => {
                       const data = req.record_data || {};
                       const isPending = data.Status === "Pending";
                       return (
@@ -527,6 +550,11 @@ function FinancePage() {
                         </div>
                       );
                     })}
+                    {filteredRequestEntries.length === 0 && searchQuery && (
+                      <div className="py-8 text-center text-muted-foreground text-sm">
+                        No requests matched your search.
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
