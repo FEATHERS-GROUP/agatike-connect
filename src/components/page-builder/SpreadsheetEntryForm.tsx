@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPublicAgatikeBooksByWorkspace, createPublicAgatikeBookRecord } from "@/api/book";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
   });
   const [lineItems, setLineItems] = useState<any[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: books = [] } = useQuery({
     queryKey: ["public-books", workspace_id],
@@ -58,6 +59,7 @@ export function SpreadsheetEntryForm({ workspace_id, themeColor, comp }: { works
     onSuccess: () => {
       toast.success("Request submitted successfully");
       setIsSubmitted(true);
+      queryClient.invalidateQueries({ queryKey: ["workspace-books"] });
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to submit request");

@@ -429,8 +429,34 @@ function FinancePage() {
                               </div>
                             )}
                           </div>
-                          <div className="mt-3 text-sm bg-secondary/30 p-3 rounded-lg text-foreground/80">
-                            {data.Details}
+                          <div className="mt-3 space-y-3">
+                            {data.Details && (
+                              <div className="text-sm bg-secondary/30 p-3 rounded-lg text-foreground/80">
+                                {data.Details}
+                              </div>
+                            )}
+                            {data.LineItems && data.LineItems.length > 0 && (
+                              <div className="border border-border/60 rounded-lg overflow-hidden bg-background">
+                                <table className="w-full text-xs text-left">
+                                  <thead className="bg-secondary/50 border-b border-border/60 uppercase text-muted-foreground">
+                                    <tr>
+                                      {Object.keys(data.LineItems[0]).map((key) => (
+                                        <th key={key} className="px-3 py-2 font-semibold">{key}</th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {data.LineItems.map((item: any, idx: number) => (
+                                      <tr key={idx} className="border-b border-border/40 last:border-0 hover:bg-secondary/10">
+                                        {Object.keys(data.LineItems[0]).map((key, vIdx) => (
+                                          <td key={vIdx} className="px-3 py-2">{String(item[key] || "")}</td>
+                                        ))}
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
