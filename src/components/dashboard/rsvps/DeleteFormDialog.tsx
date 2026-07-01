@@ -51,12 +51,14 @@ export function DeleteFormDialog({
               {responsesCount > 0 ? (
                 <>
                   <p className="leading-relaxed">
-                    This form contains <strong className="text-foreground">{responsesCount} responses</strong>. 
-                    Would you like to export them to Excel (CSV) before deleting the form?
+                    This form contains{" "}
+                    <strong className="text-foreground">{responsesCount} responses</strong>. Would
+                    you like to export them to Excel (CSV) before deleting the form?
                   </p>
                   <p className="text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-xs leading-relaxed">
-                    <span className="font-semibold text-red-500 block mb-0.5">Warning:</span> 
-                    Once deleted, the form and all its responses are permanently removed and cannot be recovered.
+                    <span className="font-semibold text-red-500 block mb-0.5">Warning:</span>
+                    Once deleted, the form and all its responses are permanently removed and cannot
+                    be recovered.
                   </p>
                 </>
               ) : (

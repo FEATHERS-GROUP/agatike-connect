@@ -401,7 +401,8 @@ function EventsTable({
                             });
                           }}
                         >
-                          <Ban className="mr-2 h-4 w-4" /> {event.suspended ? "Unsuspend Event" : "Suspend Event"}
+                          <Ban className="mr-2 h-4 w-4" />{" "}
+                          {event.suspended ? "Unsuspend Event" : "Suspend Event"}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

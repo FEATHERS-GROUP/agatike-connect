@@ -60,7 +60,13 @@ function FinancePage() {
       (sum: number, r: any) => sum + (Number(r.record_data?.Amount) || 0),
       0,
     );
-    return { totalIncome, totalExpense, netBalance: totalIncome - totalExpense, incomeEntries, expenseEntries };
+    return {
+      totalIncome,
+      totalExpense,
+      netBalance: totalIncome - totalExpense,
+      incomeEntries,
+      expenseEntries,
+    };
   }, [incomeBook, expenseBook]);
 
   // ── Create system finance books if they don't exist ────────────────────────
@@ -83,7 +89,14 @@ function FinancePage() {
   const addRecordMutation = useMutation({
     mutationFn: async (vars: { book_id: string }) =>
       createAgatikeBookRecord({
-        data: { book_id: vars.book_id, record_data: { Description: form.description, Amount: Number(form.amount), Category: form.category || (entryType === "income" ? "Revenue" : "Expense") } },
+        data: {
+          book_id: vars.book_id,
+          record_data: {
+            Description: form.description,
+            Amount: Number(form.amount),
+            Category: form.category || (entryType === "income" ? "Revenue" : "Expense"),
+          },
+        },
       } as any),
     onSuccess: () => {
       toast.success(`${entryType === "income" ? "Income" : "Expense"} entry added!`);
@@ -167,7 +180,9 @@ function FinancePage() {
             key={s.label}
             className={`bg-card border ${s.border} rounded-3xl p-6 flex items-center gap-4 shadow-sm`}
           >
-            <div className={`h-12 w-12 rounded-2xl ${s.bg} ${s.color} flex items-center justify-center shrink-0`}>
+            <div
+              className={`h-12 w-12 rounded-2xl ${s.bg} ${s.color} flex items-center justify-center shrink-0`}
+            >
               <s.icon className="h-6 w-6" />
             </div>
             <div>
@@ -303,7 +318,9 @@ function EntryTable({
     <div className="rounded-3xl border border-border/60 bg-card overflow-hidden">
       <div className="p-5 border-b border-border/60 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`h-9 w-9 rounded-xl ${iconBg} ${iconColor} flex items-center justify-center`}>
+          <div
+            className={`h-9 w-9 rounded-xl ${iconBg} ${iconColor} flex items-center justify-center`}
+          >
             <Icon className="h-4 w-4" />
           </div>
           <h3 className="font-bold text-lg">{title}</h3>
@@ -317,7 +334,10 @@ function EntryTable({
           <p className="py-10 text-center text-sm text-muted-foreground">{emptyLabel}</p>
         )}
         {entries.map((r: any, i: number) => (
-          <div key={r.id || i} className="flex items-center justify-between px-5 py-3 hover:bg-secondary/20 text-sm">
+          <div
+            key={r.id || i}
+            className="flex items-center justify-between px-5 py-3 hover:bg-secondary/20 text-sm"
+          >
             <div>
               <p className="font-medium">{r.record_data?.Description}</p>
               {r.record_data?.Category && (

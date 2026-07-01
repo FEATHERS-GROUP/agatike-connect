@@ -3,7 +3,13 @@ import { Plus, Loader2, LayoutTemplate } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getWorkspaceForms, updateCustomForm, deleteCustomForm, getFormDetails, CustomForm } from "@/api/rsvps";
+import {
+  getWorkspaceForms,
+  updateCustomForm,
+  deleteCustomForm,
+  getFormDetails,
+  CustomForm,
+} from "@/api/rsvps";
 import { useState } from "react";
 import { toast } from "sonner";
 import { RsvpSummaryCards } from "@/components/dashboard/rsvps/RsvpSummaryCards";
@@ -59,10 +65,10 @@ function RsvpsPage() {
         setIsExportingBeforeDelete(false);
         return;
       }
-      
+
       const rsvps = fullForm.rsvps || [];
       const dynamicFields = fullForm.form_fields || [];
-      
+
       if (!rsvps.length) {
         toast.error("No responses to export", { id: loadingToast });
         setIsExportingBeforeDelete(false);
@@ -73,9 +79,7 @@ function RsvpsPage() {
       dynamicFields.forEach((f: any) => headers.push(f.label));
 
       // Escape header column names to prevent syntax issues if header contains commas or quotes
-      const csvRows = [
-        headers.map(h => `"${String(h).replace(/"/g, '""')}"`).join(",")
-      ];
+      const csvRows = [headers.map((h) => `"${String(h).replace(/"/g, '""')}"`).join(",")];
 
       rsvps.forEach((rsvp: any) => {
         const row = [
@@ -89,7 +93,7 @@ function RsvpsPage() {
         dynamicFields.forEach((f: any) => {
           const answerObj = rsvp.rsvp_answers?.find((a: any) => a.field_id === f.id);
           let val = answerObj?.answer_value || "";
-          
+
           // If it's a JSON array (e.g. multi-checkbox answers), parse and format nicely
           if (typeof val === "string" && val.startsWith("[") && val.endsWith("]")) {
             try {
@@ -101,7 +105,7 @@ function RsvpsPage() {
               // Keep original string if not valid JSON
             }
           }
-          
+
           val = String(val).replace(/"/g, '""');
           row.push(`"${val}"`);
         });

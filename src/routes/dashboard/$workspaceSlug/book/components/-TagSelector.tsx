@@ -1,7 +1,13 @@
 import { useState, KeyboardEvent } from "react";
 import { X, Plus, Tag as TagIcon, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 
 export interface Tag {
@@ -58,7 +64,9 @@ export function TagSelector({ tags, onChange, availableTags }: TagSelectorProps)
     if (e.key === "Enter" && inputValue && !selectingColor) {
       e.preventDefault();
       // If it perfectly matches an existing tag, pick it. Otherwise, prompt color.
-      const existing = availableTags.find((t) => t.label.toLowerCase() === inputValue.trim().toLowerCase());
+      const existing = availableTags.find(
+        (t) => t.label.toLowerCase() === inputValue.trim().toLowerCase(),
+      );
       if (existing) {
         handleSelectExisting(existing);
       } else {
@@ -69,13 +77,19 @@ export function TagSelector({ tags, onChange, availableTags }: TagSelectorProps)
 
   // Filter out already selected tags from suggestions
   const suggestions = availableTags.filter(
-    (t) => !tags.find((st) => st.label === t.label) && t.label.toLowerCase().includes(inputValue.toLowerCase())
+    (t) =>
+      !tags.find((st) => st.label === t.label) &&
+      t.label.toLowerCase().includes(inputValue.toLowerCase()),
   );
-  
-  // Deduplicate available tags by label in case of accidental duplicates
-  const uniqueSuggestions = Array.from(new Map(suggestions.map(item => [item.label, item])).values());
 
-  const exactMatchExists = uniqueSuggestions.find((t) => t.label.toLowerCase() === inputValue.trim().toLowerCase());
+  // Deduplicate available tags by label in case of accidental duplicates
+  const uniqueSuggestions = Array.from(
+    new Map(suggestions.map((item) => [item.label, item])).values(),
+  );
+
+  const exactMatchExists = uniqueSuggestions.find(
+    (t) => t.label.toLowerCase() === inputValue.trim().toLowerCase(),
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 w-full">
@@ -84,7 +98,7 @@ export function TagSelector({ tags, onChange, availableTags }: TagSelectorProps)
           key={tag.label}
           className={cn(
             "flex items-center gap-1 text-xs px-2 py-0.5 rounded-md font-medium group",
-            tag.color
+            tag.color,
           )}
         >
           {tag.label}
@@ -97,8 +111,8 @@ export function TagSelector({ tags, onChange, availableTags }: TagSelectorProps)
         </span>
       ))}
 
-      <Popover 
-        open={open} 
+      <Popover
+        open={open}
         onOpenChange={(val) => {
           setOpen(val);
           if (!val) {
@@ -111,7 +125,7 @@ export function TagSelector({ tags, onChange, availableTags }: TagSelectorProps)
           <button
             className={cn(
               "flex items-center gap-1 text-xs px-2 py-0.5 rounded-md font-medium text-muted-foreground hover:bg-secondary/50 transition-colors",
-              tags.length === 0 && "opacity-60 hover:opacity-100"
+              tags.length === 0 && "opacity-60 hover:opacity-100",
             )}
           >
             <Plus className="h-3 w-3" /> {tags.length === 0 ? "Add tag" : ""}
@@ -128,13 +142,13 @@ export function TagSelector({ tags, onChange, availableTags }: TagSelectorProps)
                     onClick={() => handleCreateNew(color)}
                     className={cn(
                       "h-6 w-full rounded-md border border-border/50 hover:ring-2 hover:ring-primary/40 transition-all",
-                      color
+                      color,
                     )}
                   />
                 ))}
               </div>
-              <button 
-                onClick={() => setSelectingColor(false)} 
+              <button
+                onClick={() => setSelectingColor(false)}
                 className="text-xs text-muted-foreground hover:text-foreground mt-4 block w-full text-center"
               >
                 Back
@@ -174,11 +188,19 @@ export function TagSelector({ tags, onChange, availableTags }: TagSelectorProps)
                       className="cursor-pointer flex items-center justify-between group/item"
                     >
                       <span>{suggestion.label}</span>
-                      <span className={cn("h-3 w-3 rounded-full opacity-50 group-hover/item:opacity-100", suggestion.color)} />
+                      <span
+                        className={cn(
+                          "h-3 w-3 rounded-full opacity-50 group-hover/item:opacity-100",
+                          suggestion.color,
+                        )}
+                      />
                     </CommandItem>
                   ))}
                   {inputValue && !exactMatchExists && (
-                    <CommandItem onSelect={() => setSelectingColor(true)} className="cursor-pointer font-medium text-primary">
+                    <CommandItem
+                      onSelect={() => setSelectingColor(true)}
+                      className="cursor-pointer font-medium text-primary"
+                    >
                       Create "{inputValue}"
                     </CommandItem>
                   )}

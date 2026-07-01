@@ -73,9 +73,8 @@ function CreateInvoicePage() {
       createProcurementInvoice({
         data: {
           workspace_id: wsId,
-          invoice_number: invoiceType === "proforma"
-            ? generateInvoiceNumber("proforma")
-            : invoiceNumber,
+          invoice_number:
+            invoiceType === "proforma" ? generateInvoiceNumber("proforma") : invoiceNumber,
           invoice_type: invoiceType,
           client_name: client.name,
           client_email: client.email,
@@ -119,7 +118,12 @@ function CreateInvoicePage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-secondary/50" onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/book/procurement` as any })}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 rounded-full bg-secondary/50"
+            onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/book/procurement` as any })}
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
@@ -135,11 +139,25 @@ function CreateInvoicePage() {
           <Button variant="outline" className="rounded-xl gap-2 h-10" onClick={printInvoice}>
             <Download className="h-4 w-4" /> Download PDF
           </Button>
-          <Button variant="outline" className="rounded-xl gap-2 h-10" disabled={createMutation.isPending || !client.name} onClick={() => createMutation.mutate("draft")}>
-            {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          <Button
+            variant="outline"
+            className="rounded-xl gap-2 h-10"
+            disabled={createMutation.isPending || !client.name}
+            onClick={() => createMutation.mutate("draft")}
+          >
+            {createMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
             Save Draft
           </Button>
-          <Button className="rounded-xl gap-2 h-10 shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }} disabled={createMutation.isPending || !client.name} onClick={() => createMutation.mutate("sent")}>
+          <Button
+            className="rounded-xl gap-2 h-10 shadow-[var(--shadow-glow)]"
+            style={{ background: "var(--gradient-primary)" }}
+            disabled={createMutation.isPending || !client.name}
+            onClick={() => createMutation.mutate("sent")}
+          >
             <Send className="h-4 w-4" /> Send Invoice
           </Button>
         </div>
@@ -175,19 +193,40 @@ function CreateInvoicePage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Client Name *</Label>
-                <Input placeholder="John Doe" value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} className="h-10 rounded-xl" />
+                <Input
+                  placeholder="John Doe"
+                  value={client.name}
+                  onChange={(e) => setClient({ ...client, name: e.target.value })}
+                  className="h-10 rounded-xl"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Email</Label>
-                <Input type="email" placeholder="john@example.com" value={client.email} onChange={(e) => setClient({ ...client, email: e.target.value })} className="h-10 rounded-xl" />
+                <Input
+                  type="email"
+                  placeholder="john@example.com"
+                  value={client.email}
+                  onChange={(e) => setClient({ ...client, email: e.target.value })}
+                  className="h-10 rounded-xl"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Company</Label>
-                <Input placeholder="Acme Corp" value={client.company} onChange={(e) => setClient({ ...client, company: e.target.value })} className="h-10 rounded-xl" />
+                <Input
+                  placeholder="Acme Corp"
+                  value={client.company}
+                  onChange={(e) => setClient({ ...client, company: e.target.value })}
+                  className="h-10 rounded-xl"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Address</Label>
-                <Input placeholder="123 Street, City" value={client.address} onChange={(e) => setClient({ ...client, address: e.target.value })} className="h-10 rounded-xl" />
+                <Input
+                  placeholder="123 Street, City"
+                  value={client.address}
+                  onChange={(e) => setClient({ ...client, address: e.target.value })}
+                  className="h-10 rounded-xl"
+                />
               </div>
             </div>
           </div>
@@ -204,7 +243,10 @@ function CreateInvoicePage() {
                 <span />
               </div>
               {items.map((item, idx) => (
-                <div key={idx} className="grid grid-cols-[1fr_80px_100px_90px_32px] gap-2 items-center">
+                <div
+                  key={idx}
+                  className="grid grid-cols-[1fr_80px_100px_90px_32px] gap-2 items-center"
+                >
                   <Input
                     placeholder="Service or item description"
                     value={item.description}
@@ -277,11 +319,21 @@ function CreateInvoicePage() {
             <h3 className="font-bold text-base">Dates</h3>
             <div className="space-y-1.5">
               <Label>Issue Date</Label>
-              <Input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="h-10 rounded-xl" />
+              <Input
+                type="date"
+                value={issueDate}
+                onChange={(e) => setIssueDate(e.target.value)}
+                className="h-10 rounded-xl"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Due Date</Label>
-              <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="h-10 rounded-xl" />
+              <Input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="h-10 rounded-xl"
+              />
             </div>
           </div>
 
@@ -302,15 +354,21 @@ function CreateInvoicePage() {
             <div className="space-y-2 pt-2 border-t border-border/60">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-semibold">{subtotal.toLocaleString()} {currency}</span>
+                <span className="font-semibold">
+                  {subtotal.toLocaleString()} {currency}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Tax ({taxRate}%)</span>
-                <span className="font-semibold">{taxAmount.toLocaleString()} {currency}</span>
+                <span className="font-semibold">
+                  {taxAmount.toLocaleString()} {currency}
+                </span>
               </div>
               <div className="flex justify-between text-lg font-black pt-2 border-t border-border/60">
                 <span>Total</span>
-                <span className="text-primary">{total.toLocaleString()} {currency}</span>
+                <span className="text-primary">
+                  {total.toLocaleString()} {currency}
+                </span>
               </div>
             </div>
           </div>
@@ -322,9 +380,15 @@ function CreateInvoicePage() {
               <span className="font-bold text-sm">Invoice Preview</span>
             </div>
             <div className="space-y-1 text-xs text-muted-foreground">
-              <p><span className="text-foreground font-semibold">#{invoiceNumber}</span></p>
-              <p>Type: <span className="capitalize">{invoiceType}</span></p>
-              <p>Client: <span className="text-foreground">{client.name || "—"}</span></p>
+              <p>
+                <span className="text-foreground font-semibold">#{invoiceNumber}</span>
+              </p>
+              <p>
+                Type: <span className="capitalize">{invoiceType}</span>
+              </p>
+              <p>
+                Client: <span className="text-foreground">{client.name || "—"}</span>
+              </p>
               <p>Items: {items.filter((i) => i.description).length}</p>
               <p>Currency: {currency}</p>
             </div>

@@ -1,5 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Download, Search, Settings, Ticket, User, MoreHorizontal, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Search,
+  Settings,
+  Ticket,
+  User,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -141,9 +150,7 @@ function FormRsvpsPage() {
     dynamicFields.forEach((f: any) => headers.push(f.label));
 
     // Escape header column names to prevent syntax issues if header contains commas or quotes
-    const csvRows = [
-      headers.map(h => `"${String(h).replace(/"/g, '""')}"`).join(",")
-    ];
+    const csvRows = [headers.map((h) => `"${String(h).replace(/"/g, '""')}"`).join(",")];
 
     filteredRsvps.forEach((rsvp: any) => {
       const row = [
@@ -157,7 +164,7 @@ function FormRsvpsPage() {
       dynamicFields.forEach((f: any) => {
         const answerObj = rsvp.rsvp_answers?.find((a: any) => a.field_id === f.id);
         let val = answerObj?.answer_value || "";
-        
+
         // If it's a JSON array (e.g. multi-checkbox answers), parse and format nicely
         if (typeof val === "string" && val.startsWith("[") && val.endsWith("]")) {
           try {
@@ -169,7 +176,7 @@ function FormRsvpsPage() {
             // Keep original string if not valid JSON
           }
         }
-        
+
         val = String(val).replace(/"/g, '""');
         row.push(`"${val}"`);
       });
@@ -481,12 +488,14 @@ function FormRsvpsPage() {
                 {rsvps.length > 0 ? (
                   <>
                     <p className="leading-relaxed">
-                      This form contains <strong className="text-foreground">{rsvps.length} responses</strong>. 
-                      Would you like to export them to Excel (CSV) before deleting the form?
+                      This form contains{" "}
+                      <strong className="text-foreground">{rsvps.length} responses</strong>. Would
+                      you like to export them to Excel (CSV) before deleting the form?
                     </p>
                     <p className="text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-xs leading-relaxed">
-                      <span className="font-semibold text-red-500 block mb-0.5">Warning:</span> 
-                      Once deleted, the form and all its responses are permanently removed and cannot be recovered.
+                      <span className="font-semibold text-red-500 block mb-0.5">Warning:</span>
+                      Once deleted, the form and all its responses are permanently removed and
+                      cannot be recovered.
                     </p>
                   </>
                 ) : (

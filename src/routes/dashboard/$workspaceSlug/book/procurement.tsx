@@ -14,7 +14,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProcurementInvoices, deleteProcurementInvoice, updateProcurementInvoice } from "@/api/procurement";
+import {
+  getProcurementInvoices,
+  deleteProcurementInvoice,
+  updateProcurementInvoice,
+} from "@/api/procurement";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,10 +33,22 @@ type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
 type InvoiceType = "proforma" | "invoice";
 
 const STATUS_CONFIG: Record<InvoiceStatus, { label: string; color: string; icon: any }> = {
-  draft: { label: "Draft", color: "bg-slate-500/15 text-slate-500 border-slate-500/30", icon: FileText },
+  draft: {
+    label: "Draft",
+    color: "bg-slate-500/15 text-slate-500 border-slate-500/30",
+    icon: FileText,
+  },
   sent: { label: "Sent", color: "bg-blue-500/15 text-blue-500 border-blue-500/30", icon: Send },
-  paid: { label: "Paid", color: "bg-green-500/15 text-green-600 border-green-500/30", icon: CheckCircle2 },
-  overdue: { label: "Overdue", color: "bg-red-500/15 text-red-500 border-red-500/30", icon: AlertCircle },
+  paid: {
+    label: "Paid",
+    color: "bg-green-500/15 text-green-600 border-green-500/30",
+    icon: CheckCircle2,
+  },
+  overdue: {
+    label: "Overdue",
+    color: "bg-red-500/15 text-red-500 border-red-500/30",
+    icon: AlertCircle,
+  },
 };
 
 function calcInvoiceTotal(invoice: any) {
@@ -63,7 +79,10 @@ function ProcurementPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteProcurementInvoice({ data: { id } } as any),
-    onSuccess: () => { toast.success("Invoice deleted"); queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] }); },
+    onSuccess: () => {
+      toast.success("Invoice deleted");
+      queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] });
+    },
   });
 
   const updateStatusMutation = useMutation({
@@ -82,8 +101,12 @@ function ProcurementPage() {
     return matchSearch && matchStatus && matchType;
   });
 
-  const totalPaid = (invoices as any[]).filter((i) => i.status === "paid").reduce((s, i) => s + calcInvoiceTotal(i), 0);
-  const totalPending = (invoices as any[]).filter((i) => i.status === "sent" || i.status === "overdue").reduce((s, i) => s + calcInvoiceTotal(i), 0);
+  const totalPaid = (invoices as any[])
+    .filter((i) => i.status === "paid")
+    .reduce((s, i) => s + calcInvoiceTotal(i), 0);
+  const totalPending = (invoices as any[])
+    .filter((i) => i.status === "sent" || i.status === "overdue")
+    .reduce((s, i) => s + calcInvoiceTotal(i), 0);
 
   return (
     <div className="space-y-6 pb-12">
@@ -96,7 +119,10 @@ function ProcurementPage() {
           </p>
         </div>
         <Link to={`/dashboard/${workspaceSlug}/book/procurement/create` as any}>
-          <Button className="rounded-full gap-2 shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+          <Button
+            className="rounded-full gap-2 shadow-[var(--shadow-glow)]"
+            style={{ background: "var(--gradient-primary)" }}
+          >
             <FilePlus className="h-4 w-4" /> New Invoice
           </Button>
         </Link>
@@ -105,12 +131,35 @@ function ProcurementPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Invoices", value: (invoices as any[]).length, color: "text-foreground", bg: "bg-secondary" },
-          { label: "Draft", value: (invoices as any[]).filter((i) => i.status === "draft").length, color: "text-slate-500", bg: "bg-slate-500/10" },
-          { label: "Paid", value: `${totalPaid.toLocaleString()} ${currency}`, color: "text-green-500", bg: "bg-green-500/10" },
-          { label: "Outstanding", value: `${totalPending.toLocaleString()} ${currency}`, color: "text-orange-500", bg: "bg-orange-500/10" },
+          {
+            label: "Total Invoices",
+            value: (invoices as any[]).length,
+            color: "text-foreground",
+            bg: "bg-secondary",
+          },
+          {
+            label: "Draft",
+            value: (invoices as any[]).filter((i) => i.status === "draft").length,
+            color: "text-slate-500",
+            bg: "bg-slate-500/10",
+          },
+          {
+            label: "Paid",
+            value: `${totalPaid.toLocaleString()} ${currency}`,
+            color: "text-green-500",
+            bg: "bg-green-500/10",
+          },
+          {
+            label: "Outstanding",
+            value: `${totalPending.toLocaleString()} ${currency}`,
+            color: "text-orange-500",
+            bg: "bg-orange-500/10",
+          },
         ].map((s) => (
-          <div key={s.label} className="bg-card border border-border/60 rounded-2xl p-4 flex items-center gap-3">
+          <div
+            key={s.label}
+            className="bg-card border border-border/60 rounded-2xl p-4 flex items-center gap-3"
+          >
             <div className={`h-9 w-9 rounded-xl ${s.bg} flex items-center justify-center shrink-0`}>
               <FileText className={`h-4 w-4 ${s.color}`} />
             </div>
@@ -138,7 +187,12 @@ function ProcurementPage() {
             <button
               key={t}
               onClick={() => setFilterType(t)}
-              className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors", filterType === t ? "bg-background shadow-sm text-foreground" : "text-muted-foreground")}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors",
+                filterType === t
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground",
+              )}
             >
               {t === "all" ? "All Types" : t === "proforma" ? "Proforma" : "Invoice"}
             </button>
@@ -149,7 +203,12 @@ function ProcurementPage() {
             <button
               key={s}
               onClick={() => setFilterStatus(s)}
-              className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors", filterStatus === s ? "bg-background shadow-sm text-foreground" : "text-muted-foreground")}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors",
+                filterStatus === s
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground",
+              )}
             >
               {s === "all" ? "All" : s}
             </button>
@@ -159,7 +218,9 @@ function ProcurementPage() {
 
       {/* Invoice list */}
       {isLoading ? (
-        <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-border/60 py-20 text-center text-muted-foreground">
           <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
@@ -172,14 +233,22 @@ function ProcurementPage() {
             const sc = STATUS_CONFIG[inv.status as InvoiceStatus] || STATUS_CONFIG.draft;
             const total = calcInvoiceTotal(inv);
             return (
-              <div key={inv.id} className="bg-card border border-border/60 rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-primary/30 transition-colors group">
+              <div
+                key={inv.id}
+                className="bg-card border border-border/60 rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-primary/30 transition-colors group"
+              >
                 <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <FileText className="h-5 w-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-sm">{inv.invoice_number}</span>
-                    <span className={cn("text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border", sc.color)}>
+                    <span
+                      className={cn(
+                        "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border",
+                        sc.color,
+                      )}
+                    >
                       {sc.label}
                     </span>
                     <span className="text-[10px] uppercase font-semibold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
@@ -187,29 +256,53 @@ function ProcurementPage() {
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground truncate mt-0.5">
-                    {inv.client_name}{inv.client_company ? ` · ${inv.client_company}` : ""}
+                    {inv.client_name}
+                    {inv.client_company ? ` · ${inv.client_company}` : ""}
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="font-black text-base">{total.toLocaleString()} {currency}</p>
+                  <p className="font-black text-base">
+                    {total.toLocaleString()} {currency}
+                  </p>
                   {inv.due_date && (
                     <p className="text-xs text-muted-foreground">
-                      Due {new Date(inv.due_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                      Due{" "}
+                      {new Date(inv.due_date).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                      })}
                     </p>
                   )}
                 </div>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   {inv.status !== "paid" && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-green-500" title="Mark as Paid" onClick={() => updateStatusMutation.mutate({ id: inv.id, status: "paid" })}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-green-500"
+                      title="Mark as Paid"
+                      onClick={() => updateStatusMutation.mutate({ id: inv.id, status: "paid" })}
+                    >
                       <CheckCircle2 className="h-4 w-4" />
                     </Button>
                   )}
                   {inv.status === "draft" && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" title="Mark as Sent" onClick={() => updateStatusMutation.mutate({ id: inv.id, status: "sent" })}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-blue-500"
+                      title="Mark as Sent"
+                      onClick={() => updateStatusMutation.mutate({ id: inv.id, status: "sent" })}
+                    >
                       <Send className="h-4 w-4" />
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteMutation.mutate(inv.id)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive"
+                    onClick={() => deleteMutation.mutate(inv.id)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

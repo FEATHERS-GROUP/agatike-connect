@@ -140,8 +140,8 @@ function AgatikeBookHub() {
           <h1 className="text-4xl font-bold tracking-tight">Agatike Book</h1>
           <p className="text-muted-foreground mt-2 text-lg">
             Everything you need to run{" "}
-            <span className="font-semibold text-foreground">{activeWorkspace?.name}</span> —
-            tasks, notes, finances, and procurement in one place.
+            <span className="font-semibold text-foreground">{activeWorkspace?.name}</span> — tasks,
+            notes, finances, and procurement in one place.
           </p>
         </div>
         <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center shrink-0">
@@ -159,7 +159,9 @@ function AgatikeBookHub() {
           >
             <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-60`} />
             <div className="relative p-6 flex flex-col h-full min-h-[180px]">
-              <div className={`h-12 w-12 rounded-2xl ${s.bg} ${s.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+              <div
+                className={`h-12 w-12 rounded-2xl ${s.bg} ${s.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+              >
                 <s.icon className="h-6 w-6" />
               </div>
               <h3 className="text-xl font-bold tracking-tight">{s.label}</h3>
@@ -205,11 +207,15 @@ function AgatikeBookHub() {
                     >
                       {task.priority}
                     </span>
-                    <span className={`text-sm font-medium ${task.status === "done" ? "line-through opacity-50" : ""}`}>
+                    <span
+                      className={`text-sm font-medium ${task.status === "done" ? "line-through opacity-50" : ""}`}
+                    >
                       {task.title}
                     </span>
                   </div>
-                  <span className={`text-xs font-semibold capitalize ${statusColors[task.status] || ""}`}>
+                  <span
+                    className={`text-xs font-semibold capitalize ${statusColors[task.status] || ""}`}
+                  >
                     {task.status?.replace("_", " ")}
                   </span>
                 </div>

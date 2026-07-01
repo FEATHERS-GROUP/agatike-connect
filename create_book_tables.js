@@ -67,9 +67,9 @@ async function createArrayRelationship(table, relName, refTable, mapping) {
         using: {
           foreign_key_constraint_on: {
             table: refTable,
-            columns: [mapping]
-          }
-        }
+            columns: [mapping],
+          },
+        },
       },
     }),
   });
@@ -150,7 +150,12 @@ async function run() {
     await trackTable("workspace_invoice_items");
 
     console.log("Creating relationships...");
-    await createArrayRelationship("workspace_invoices", "items", "workspace_invoice_items", "invoice_id");
+    await createArrayRelationship(
+      "workspace_invoices",
+      "items",
+      "workspace_invoice_items",
+      "invoice_id",
+    );
 
     console.log("Done!");
   } catch (err) {

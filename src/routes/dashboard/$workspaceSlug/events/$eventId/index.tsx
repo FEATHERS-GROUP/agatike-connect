@@ -1158,7 +1158,8 @@ function DashboardEventDetails() {
             >
               {toggleSuspend.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {event.suspended ? "Unsuspending..." : "Suspending..."}
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                  {event.suspended ? "Unsuspending..." : "Suspending..."}
                 </>
               ) : event.suspended ? (
                 "Unsuspend Event"

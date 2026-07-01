@@ -113,8 +113,12 @@ function NotesPage() {
   ];
 
   const dbTags = notes.flatMap((n: any) => n.tags || []) as TagType[];
-  const allTagObjects = [...DEFAULT_TAGS, ...dbTags].filter((t) => typeof t === "object" && t.label);
-  const availableTags = Array.from(new Map(allTagObjects.map(item => [item.label, item])).values());
+  const allTagObjects = [...DEFAULT_TAGS, ...dbTags].filter(
+    (t) => typeof t === "object" && t.label,
+  );
+  const availableTags = Array.from(
+    new Map(allTagObjects.map((item) => [item.label, item])).values(),
+  );
 
   return (
     <div className="pb-16 max-w-6xl mx-auto space-y-6">
@@ -137,7 +141,10 @@ function NotesPage() {
           <Button
             className="rounded-xl h-10 gap-2 shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
-            onClick={() => { setIsCreating(true); setActiveNote(null); }}
+            onClick={() => {
+              setIsCreating(true);
+              setActiveNote(null);
+            }}
           >
             <Plus className="h-4 w-4" /> New Note
           </Button>
@@ -196,7 +203,7 @@ function NotesPage() {
       )}
 
       {/* ── Dialogs: Peek view & Create view ──────────────── */}
-      
+
       <Dialog open={!!activeNote} onOpenChange={(open) => !open && setActiveNote(null)}>
         <DialogContent className="max-w-4xl p-0 border-0 bg-transparent shadow-none h-[85vh]">
           <DialogTitle className="sr-only">Note Dialog</DialogTitle>
@@ -210,7 +217,10 @@ function NotesPage() {
                   updateMutation.mutate({ id: activeNote.id, ...data });
                   setActiveNote({ ...activeNote, ...data });
                 }}
-                onDelete={() => { deleteMutation.mutate(activeNote.id); setActiveNote(null); }}
+                onDelete={() => {
+                  deleteMutation.mutate(activeNote.id);
+                  setActiveNote(null);
+                }}
                 onPin={() => {
                   updateMutation.mutate({ id: activeNote.id, pinned: !activeNote.pinned });
                   setActiveNote({ ...activeNote, pinned: !activeNote.pinned });
@@ -232,7 +242,7 @@ function NotesPage() {
                 onChange={(e) => setDraftTitle(e.target.value)}
                 className="text-4xl md:text-5xl font-extrabold bg-transparent border-0 outline-none w-full placeholder:text-muted-foreground/30 mb-6"
               />
-              
+
               <div className="mb-8 border-b border-border/40 pb-4">
                 <TagSelector
                   tags={draftTags}
@@ -242,11 +252,15 @@ function NotesPage() {
               </div>
 
               <div className="flex-1 min-h-[300px] -mx-8 relative z-10">
-                <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+                <Suspense
+                  fallback={
+                    <div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />
+                  }
+                >
                   <BlockNoteEditor value={draftContent} onChange={setDraftContent} />
                 </Suspense>
               </div>
-              
+
               <div className="pt-6 mt-auto">
                 <Button
                   onClick={() => createMutation.mutate()}
@@ -262,7 +276,6 @@ function NotesPage() {
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }
@@ -274,35 +287,51 @@ function NoteCard({ note, onClick, onPin }: any) {
       className="group relative bg-card border border-border/50 rounded-2xl p-5 cursor-pointer hover:border-primary/30 hover:shadow-md transition-all flex flex-col h-48 overflow-hidden"
     >
       <div className="flex items-start justify-between gap-2 mb-3">
-        <h4 className="font-bold text-lg leading-tight line-clamp-2">
-          {note.title || "Untitled"}
-        </h4>
+        <h4 className="font-bold text-lg leading-tight line-clamp-2">{note.title || "Untitled"}</h4>
         <button
-          onClick={(e) => { e.stopPropagation(); onPin(); }}
-          className={cn("p-1.5 rounded-lg text-muted-foreground hover:bg-secondary", note.pinned && "text-primary opacity-100")}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPin();
+          }}
+          className={cn(
+            "p-1.5 rounded-lg text-muted-foreground hover:bg-secondary",
+            note.pinned && "text-primary opacity-100",
+          )}
         >
           {note.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
         </button>
       </div>
-      
+
       <p className="text-sm text-muted-foreground line-clamp-3 flex-1">
-        {note.content ? note.content.replace(/<[^>]+>/g, '') : "Empty note..."}
+        {note.content ? note.content.replace(/<[^>]+>/g, "") : "Empty note..."}
       </p>
 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
         <span className="text-xs text-muted-foreground">
           {new Date(note.updated_at || note.created_at).toLocaleDateString("en-GB", {
-            day: "numeric", month: "short", year: "numeric"
+            day: "numeric",
+            month: "short",
+            year: "numeric",
           })}
         </span>
         {note.tags?.length > 0 && (
           <div className="flex gap-1 overflow-hidden">
             {note.tags.slice(0, 2).map((tag: TagType) => (
-              <span key={tag.label} className={cn("text-[10px] px-1.5 py-0.5 rounded-md font-medium whitespace-nowrap", tag.color)}>
+              <span
+                key={tag.label}
+                className={cn(
+                  "text-[10px] px-1.5 py-0.5 rounded-md font-medium whitespace-nowrap",
+                  tag.color,
+                )}
+              >
                 {tag.label}
               </span>
             ))}
-            {note.tags.length > 2 && <span className="text-[10px] text-muted-foreground px-1">+{note.tags.length - 2}</span>}
+            {note.tags.length > 2 && (
+              <span className="text-[10px] text-muted-foreground px-1">
+                +{note.tags.length - 2}
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -355,7 +384,12 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onPin}>
             {note.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={onDelete}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+            onClick={onDelete}
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -365,22 +399,35 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
         className="text-4xl md:text-5xl font-extrabold bg-transparent border-0 outline-none w-full placeholder:text-muted-foreground/30 mb-6"
         placeholder="Untitled"
         value={title}
-        onChange={(e) => { setTitle(e.target.value); setDirty(true); }}
+        onChange={(e) => {
+          setTitle(e.target.value);
+          setDirty(true);
+        }}
       />
-      
+
       <div className="mb-8">
         <TagSelector
           tags={tags}
-          onChange={(newTags) => { setTags(newTags); setDirty(true); }}
+          onChange={(newTags) => {
+            setTags(newTags);
+            setDirty(true);
+          }}
           availableTags={availableTags}
         />
       </div>
-      
+
       <div className="flex-1 -mx-10 mt-4 relative z-10">
-        <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+        <Suspense
+          fallback={
+            <div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />
+          }
+        >
           <BlockNoteEditor
             value={content}
-            onChange={(val) => { setContent(val); setDirty(true); }}
+            onChange={(val) => {
+              setContent(val);
+              setDirty(true);
+            }}
           />
         </Suspense>
       </div>

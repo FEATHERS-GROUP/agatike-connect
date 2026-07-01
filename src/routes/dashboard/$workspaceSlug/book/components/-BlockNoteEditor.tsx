@@ -4,7 +4,13 @@ import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 import { useEffect, useState, useRef } from "react";
 
-export default function BlockNoteEditor({ value, onChange }: { value: string; onChange: (val: string) => void }) {
+export default function BlockNoteEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
   const editor = useCreateBlockNote();
   const [isLoaded, setIsLoaded] = useState(false);
   const isUpdatingRef = useRef(false);
@@ -22,7 +28,8 @@ export default function BlockNoteEditor({ value, onChange }: { value: string; on
     }
   }, [editor, value, isLoaded]);
 
-  if (!isLoaded) return <div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />;
+  if (!isLoaded)
+    return <div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />;
 
   return (
     <div className="h-full mt-4 [&_.bn-editor]:px-0">

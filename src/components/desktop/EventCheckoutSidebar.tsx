@@ -58,154 +58,158 @@ export function EventCheckoutSidebar({
           <>
             {isExperience
               ? schedules.length > 0 && (
-              <div className="mt-5">
-                <p className="text-sm font-medium mb-2 text-muted-foreground">Select Schedule</p>
-                <div className="grid grid-cols-1 gap-2">
-                  {schedules.map((schedule: any, idx: number) => {
-                    const totalSpots = schedule.total_spots ?? schedule.totalSpots ?? 0;
-                    const spotsFilled = schedule.spots_filled ?? schedule.spotsFilled ?? 0;
-                    const dateStr = schedule.start_date || schedule.date || "TBD";
-                    const isFull = spotsFilled >= totalSpots;
-                    return (
-                      <button
-                        key={schedule.id || idx}
-                        onClick={() => {
-                          if (!isFull) {
-                            setSelectedStopIdx(idx);
-                          }
-                        }}
-                        disabled={isFull}
-                        className={`w-full px-3 py-2.5 rounded-xl text-left border transition-all ${
-                          selectedStopIdx === idx
-                            ? "bg-primary/10 border-primary text-foreground"
-                            : isFull
-                              ? "bg-secondary/30 border-border/40 opacity-60 cursor-not-allowed"
-                              : "bg-background border-border hover:bg-secondary"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-[13px]">{dateStr}</span>
-                          {isFull ? (
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">
-                              Sold Out
-                            </span>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">
-                              {totalSpots - spotsFilled} spots
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )
-          : tourStops.length > 1 && (
-              <div className="mt-5">
-                <p className="text-sm font-medium mb-2 text-muted-foreground">Select Tour Stop</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {tourStops.map((stop: any, idx: number) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setSelectedStopIdx(idx);
-                      }}
-                      className={`w-full px-2 py-2 rounded-xl text-[11px] leading-tight font-semibold border transition-all ${
-                        selectedStopIdx === idx
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-background border-border hover:bg-secondary"
-                      }`}
-                    >
-                      <span className="block truncate">{stop.city}</span>
-                      <span className="block opacity-80 mt-0.5">{stop.date}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-        <div className="mt-5 space-y-3">
-          {activeTicketTiers.map((t: any) => {
-            const cartKey = `${selectedStopIdx}_${t.id}`;
-            const itemQty = cart[cartKey] || 0;
-            const isSelected = itemQty > 0;
-
-            const isMapped = currentVenueProject?.sections_data?.some(
-              (s: any) => s.ticketId === t.id,
-            );
-
-            return (
-              <div
-                key={t.id}
-                className={`w-full rounded-2xl border p-4 text-left transition ${
-                  isSelected
-                    ? "border-primary bg-accent/40"
-                    : "border-border bg-background hover:bg-secondary"
-                } ${isMapped ? "cursor-pointer" : ""}`}
-                onClick={() => {
-                  if (isMapped) {
-                    setActiveTicketIdForMap(t.id);
-                    setIsSeatModalOpen(true);
-                  }
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{t.name}</p>
-                    <p className="font-semibold">{formatCurrency(t.price, currencyCode)}</p>
+                  <div className="mt-5">
+                    <p className="text-sm font-medium mb-2 text-muted-foreground">
+                      Select Schedule
+                    </p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {schedules.map((schedule: any, idx: number) => {
+                        const totalSpots = schedule.total_spots ?? schedule.totalSpots ?? 0;
+                        const spotsFilled = schedule.spots_filled ?? schedule.spotsFilled ?? 0;
+                        const dateStr = schedule.start_date || schedule.date || "TBD";
+                        const isFull = spotsFilled >= totalSpots;
+                        return (
+                          <button
+                            key={schedule.id || idx}
+                            onClick={() => {
+                              if (!isFull) {
+                                setSelectedStopIdx(idx);
+                              }
+                            }}
+                            disabled={isFull}
+                            className={`w-full px-3 py-2.5 rounded-xl text-left border transition-all ${
+                              selectedStopIdx === idx
+                                ? "bg-primary/10 border-primary text-foreground"
+                                : isFull
+                                  ? "bg-secondary/30 border-border/40 opacity-60 cursor-not-allowed"
+                                  : "bg-background border-border hover:bg-secondary"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-[13px]">{dateStr}</span>
+                              {isFull ? (
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">
+                                  Sold Out
+                                </span>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">
+                                  {totalSpots - spotsFilled} spots
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-
-                  {isSuspended ? (
-                    <div className="bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
-                      Suspended
+                )
+              : tourStops.length > 1 && (
+                  <div className="mt-5">
+                    <p className="text-sm font-medium mb-2 text-muted-foreground">
+                      Select Tour Stop
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {tourStops.map((stop: any, idx: number) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setSelectedStopIdx(idx);
+                          }}
+                          className={`w-full px-2 py-2 rounded-xl text-[11px] leading-tight font-semibold border transition-all ${
+                            selectedStopIdx === idx
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-background border-border hover:bg-secondary"
+                          }`}
+                        >
+                          <span className="block truncate">{stop.city}</span>
+                          <span className="block opacity-80 mt-0.5">{stop.date}</span>
+                        </button>
+                      ))}
                     </div>
-                  ) : isMapped ? (
-                    itemQty > 0 && (
-                      <div className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
-                        {itemQty} Selected
+                  </div>
+                )}
+
+            <div className="mt-5 space-y-3">
+              {activeTicketTiers.map((t: any) => {
+                const cartKey = `${selectedStopIdx}_${t.id}`;
+                const itemQty = cart[cartKey] || 0;
+                const isSelected = itemQty > 0;
+
+                const isMapped = currentVenueProject?.sections_data?.some(
+                  (s: any) => s.ticketId === t.id,
+                );
+
+                return (
+                  <div
+                    key={t.id}
+                    className={`w-full rounded-2xl border p-4 text-left transition ${
+                      isSelected
+                        ? "border-primary bg-accent/40"
+                        : "border-border bg-background hover:bg-secondary"
+                    } ${isMapped ? "cursor-pointer" : ""}`}
+                    onClick={() => {
+                      if (isMapped) {
+                        setActiveTicketIdForMap(t.id);
+                        setIsSeatModalOpen(true);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{t.name}</p>
+                        <p className="font-semibold">{formatCurrency(t.price, currencyCode)}</p>
                       </div>
-                    )
-                  ) : (
-                    <div
-                      className="flex items-center gap-2 bg-background rounded-full border p-1 shadow-sm"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 rounded-full"
-                        onClick={() =>
-                          setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
-                        }
-                        disabled={itemQty === 0}
-                      >
-                        <Minus className="h-3.5 w-3.5" />
-                      </Button>
-                      <span className="w-4 text-center text-sm font-medium">{itemQty}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 rounded-full"
-                        onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
-                        disabled={itemQty >= t.remaining}
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">{t.perks.join(" · ")}</p>
-                <p className="mt-1 text-xs text-primary">{t.remaining} left</p>
-              </div>
-            );
-          })}
-        </div>
 
-        <div className="mt-5 flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Total ({totalTickets} items)</span>
-          <span className="text-lg font-semibold">{formatCurrency(total, currencyCode)}</span>
-        </div>
+                      {isSuspended ? (
+                        <div className="bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
+                          Suspended
+                        </div>
+                      ) : isMapped ? (
+                        itemQty > 0 && (
+                          <div className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
+                            {itemQty} Selected
+                          </div>
+                        )
+                      ) : (
+                        <div
+                          className="flex items-center gap-2 bg-background rounded-full border p-1 shadow-sm"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() =>
+                              setCart((prev) => ({ ...prev, [cartKey]: Math.max(0, itemQty - 1) }))
+                            }
+                            disabled={itemQty === 0}
+                          >
+                            <Minus className="h-3.5 w-3.5" />
+                          </Button>
+                          <span className="w-4 text-center text-sm font-medium">{itemQty}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => setCart((prev) => ({ ...prev, [cartKey]: itemQty + 1 }))}
+                            disabled={itemQty >= t.remaining}
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">{t.perks.join(" · ")}</p>
+                    <p className="mt-1 text-xs text-primary">{t.remaining} left</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-5 flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Total ({totalTickets} items)</span>
+              <span className="text-lg font-semibold">{formatCurrency(total, currencyCode)}</span>
+            </div>
           </>
         )}
 
@@ -214,11 +218,12 @@ export function EventCheckoutSidebar({
           disabled={isPastEvent || isSuspended || totalTickets === 0}
           className="mt-4 h-12 w-full rounded-2xl text-base shadow-[var(--shadow-glow)]"
           style={{
-            background: isPastEvent || isSuspended
-              ? "var(--muted)"
-              : total === 0 && totalTickets > 0
-                ? "var(--foreground)"
-                : "var(--gradient-primary)",
+            background:
+              isPastEvent || isSuspended
+                ? "var(--muted)"
+                : total === 0 && totalTickets > 0
+                  ? "var(--foreground)"
+                  : "var(--gradient-primary)",
             opacity: isPastEvent || isSuspended || totalTickets === 0 ? 0.5 : 1,
             pointerEvents: isPastEvent || isSuspended || totalTickets === 0 ? "none" : "auto",
             color: isPastEvent || isSuspended ? "var(--muted-foreground)" : undefined,

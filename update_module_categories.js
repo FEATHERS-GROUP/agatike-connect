@@ -31,7 +31,7 @@ async function updateCategory(label, newCategory) {
     console.error(`Error updating ${label}:`, json.errors);
   } else {
     console.log(
-      `Updated ${label} -> ${newCategory} (${json.data.update_platformModules.affected_rows} rows)`
+      `Updated ${label} -> ${newCategory} (${json.data.update_platformModules.affected_rows} rows)`,
     );
   }
 }

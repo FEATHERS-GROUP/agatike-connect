@@ -45,8 +45,12 @@ function NoteFullPage() {
   ];
 
   const dbTags = allNotes.flatMap((n: any) => n.tags || []) as TagType[];
-  const allTagObjects = [...DEFAULT_TAGS, ...dbTags].filter((t) => typeof t === "object" && t.label);
-  const availableTags = Array.from(new Map(allTagObjects.map(item => [item.label, item])).values());
+  const allTagObjects = [...DEFAULT_TAGS, ...dbTags].filter(
+    (t) => typeof t === "object" && t.label,
+  );
+  const availableTags = Array.from(
+    new Map(allTagObjects.map((item) => [item.label, item])).values(),
+  );
 
   const updateMutation = useMutation({
     mutationFn: (vars: { id: string; [k: string]: any }) =>
@@ -90,7 +94,10 @@ function NoteFullPage() {
     return (
       <div className="text-center py-20 text-muted-foreground">
         <p>Note not found</p>
-        <Button variant="link" onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/book/notes` as any })}>
+        <Button
+          variant="link"
+          onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/book/notes` as any })}
+        >
           Return to notes
         </Button>
       </div>
@@ -138,7 +145,10 @@ function NoteFullPage() {
             <span>
               Last edited{" "}
               {new Date(note.updated_at || note.created_at).toLocaleDateString("en-GB", {
-                day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
               })}
             </span>
             {updateMutation.isPending ? (
@@ -155,7 +165,12 @@ function NoteFullPage() {
           <Button variant="ghost" size="icon" className="h-9 w-9" onClick={handlePin}>
             {note.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
           </Button>
-          <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:bg-destructive/10" onClick={handleDelete}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-destructive hover:bg-destructive/10"
+            onClick={handleDelete}
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -166,22 +181,35 @@ function NoteFullPage() {
         className="text-4xl md:text-5xl font-extrabold bg-transparent border-0 outline-none w-full placeholder:text-muted-foreground/30 mb-6"
         placeholder="Untitled"
         value={title}
-        onChange={(e) => { setTitle(e.target.value); setDirty(true); }}
+        onChange={(e) => {
+          setTitle(e.target.value);
+          setDirty(true);
+        }}
       />
-      
+
       <div className="mb-8">
         <TagSelector
           tags={tags}
-          onChange={(newTags) => { setTags(newTags); setDirty(true); }}
+          onChange={(newTags) => {
+            setTags(newTags);
+            setDirty(true);
+          }}
           availableTags={availableTags}
         />
       </div>
-      
+
       <div className="flex-1 -mx-10 mt-4 relative z-10">
-        <Suspense fallback={<div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />}>
+        <Suspense
+          fallback={
+            <div className="h-full min-h-[300px] animate-pulse bg-muted/10 rounded-xl mx-4" />
+          }
+        >
           <BlockNoteEditor
             value={content}
-            onChange={(val) => { setContent(val); setDirty(true); }}
+            onChange={(val) => {
+              setContent(val);
+              setDirty(true);
+            }}
           />
         </Suspense>
       </div>

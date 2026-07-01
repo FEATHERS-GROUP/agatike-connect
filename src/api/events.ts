@@ -422,9 +422,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
         ? eventUpdateVars.allowed_public
         : existingEvent.allowed_public,
     suspended:
-      eventUpdateVars.suspended !== undefined
-        ? eventUpdateVars.suspended
-        : existingEvent.suspended,
+      eventUpdateVars.suspended !== undefined ? eventUpdateVars.suspended : existingEvent.suspended,
   };
 
   // 1. Update the event table basic info

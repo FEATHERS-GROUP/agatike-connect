@@ -89,7 +89,10 @@ export function usePlatformModules() {
   });
 }
 
-export function getModulesForWorkspaceType(modules: WorkspaceModule[], type: string): WorkspaceModule[] {
+export function getModulesForWorkspaceType(
+  modules: WorkspaceModule[],
+  type: string,
+): WorkspaceModule[] {
   const allowedCategories = ["SHARED"];
 
   if (type === "EVENT") {

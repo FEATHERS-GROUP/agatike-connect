@@ -39,7 +39,6 @@ export interface CustomForm {
   rsvps?: { id: string; status: string }[] | Rsvp[];
 }
 
-
 const GET_WORKSPACE_FORMS = `
   query GetWorkspaceForms($workspace_id: uuid!) {
     custom_forms(where: { workspace_id: { _eq: $workspace_id } }, order_by: { created_at: desc }) {
@@ -139,10 +138,10 @@ export const updateCustomForm = createServerFn({ method: "POST" }).handler(async
       cleanedChanges[key] = value;
     }
   }
-  const data = await hasuraRequest<{ update_custom_forms_by_pk: any }>(
-    UPDATE_CUSTOM_FORM,
-    { id, changes: cleanedChanges },
-  );
+  const data = await hasuraRequest<{ update_custom_forms_by_pk: any }>(UPDATE_CUSTOM_FORM, {
+    id,
+    changes: cleanedChanges,
+  });
   return data.update_custom_forms_by_pk;
 });
 
@@ -194,10 +193,6 @@ const DELETE_CUSTOM_FORM = `
 
 export const deleteCustomForm = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { id } = ctx.data as unknown as { id: string };
-  const data = await hasuraRequest<{ delete_custom_forms_by_pk: any }>(
-    DELETE_CUSTOM_FORM,
-    { id }
-  );
+  const data = await hasuraRequest<{ delete_custom_forms_by_pk: any }>(DELETE_CUSTOM_FORM, { id });
   return data.delete_custom_forms_by_pk;
 });
-
