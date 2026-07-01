@@ -101,7 +101,17 @@ function NotesPage() {
     navigate({ to: `./${id}` as any });
   };
 
-  const availableTags = Array.from(new Set(notes.flatMap((n: any) => n.tags || []))) as string[];
+  const availableTags = Array.from(
+    new Set([
+      "Important",
+      "Meeting",
+      "To-Do",
+      "Idea",
+      "Project",
+      "Draft",
+      ...notes.flatMap((n: any) => n.tags || []),
+    ])
+  ) as string[];
 
   return (
     <div className="pb-16 max-w-6xl mx-auto space-y-6">

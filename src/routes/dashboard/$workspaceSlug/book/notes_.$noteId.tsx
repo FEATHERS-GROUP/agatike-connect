@@ -33,7 +33,17 @@ function NoteFullPage() {
     enabled: !!wsId,
   });
 
-  const availableTags = Array.from(new Set(allNotes.flatMap((n: any) => n.tags || []))) as string[];
+  const availableTags = Array.from(
+    new Set([
+      "Important",
+      "Meeting",
+      "To-Do",
+      "Idea",
+      "Project",
+      "Draft",
+      ...allNotes.flatMap((n: any) => n.tags || []),
+    ])
+  ) as string[];
 
   const updateMutation = useMutation({
     mutationFn: (vars: { id: string; [k: string]: any }) =>
