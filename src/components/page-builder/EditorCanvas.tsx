@@ -16,18 +16,10 @@ export function EditorCanvas({
   moveComponent,
 }: any) {
   return (
-    <div className="p-4 md:p-6 flex-1">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
-        {/* ─── Settings + Toolbox Panel ─────────────────────────── */}
-        <PageSettingsPanel
-          addComponent={addComponent}
-          editorState={editorState}
-          set={set}
-          handleImageUpload={handleImageUpload}
-        />
-
+    <div className="p-4 md:p-6 bg-background/50 w-full relative">
+      <div className="flex flex-col md:flex-row items-start gap-6 max-w-[1400px] mx-auto">
         {/* ─── Builder Canvas ───────────────────────────────────── */}
-        <div className="md:col-span-2 space-y-5">
+        <div className="flex-1 space-y-5 min-w-0">
           <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-sm">
             {/* Hero Header */}
             <div className="relative h-72 bg-secondary flex flex-col items-center justify-center text-center p-6">
@@ -98,7 +90,7 @@ export function EditorCanvas({
                 <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-xl">
                   <Plus className="h-8 w-8 mb-2 opacity-40" />
                   <p className="text-sm">
-                    Add blocks from the panel on the left to build your page.
+                    Add blocks from the panel on the right to build your page.
                   </p>
                 </div>
               )}
@@ -122,6 +114,16 @@ export function EditorCanvas({
               ))}
             </div>
           </div>
+        </div>
+
+        {/* ─── Settings + Toolbox Panel ─────────────────────────── */}
+        <div className="w-full md:w-64 lg:w-72 shrink-0 md:sticky top-6 md:top-20 md:max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide rounded-xl">
+          <PageSettingsPanel
+            addComponent={addComponent}
+            editorState={editorState}
+            set={set}
+            handleImageUpload={handleImageUpload}
+          />
         </div>
       </div>
     </div>

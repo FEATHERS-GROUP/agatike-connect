@@ -54,159 +54,163 @@ export function PageSettingsPanel({
   ];
 
   return (
-    <div className="md:col-span-1 space-y-5">
+    <div className="flex flex-col gap-px bg-border/40 rounded-xl overflow-hidden border border-border/50 shadow-sm min-h-full">
       {/* Toolbox */}
-      <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm">
-        <h2 className="font-semibold mb-3 text-xs uppercase tracking-wider text-muted-foreground">
-          Add Blocks
+      <div className="bg-card p-4">
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-3 flex items-center gap-2">
+          <Grid className="w-3 h-3" />
+          Content Blocks
         </h2>
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            {/* Forms */}
-            <div className="col-span-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-2 mb-1">
-              Data Collection
-            </div>
-            {toolboxItems.map((item) => (
-              <Button
-                key={item.type}
-                variant="outline"
-                className={`justify-start gap-2 h-10 ${
-                  item.highlight
-                    ? "border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 text-primary font-semibold"
-                    : "bg-secondary/20 hover:bg-secondary/40"
-                }`}
-                onClick={() => addComponent(item.type)}
-              >
-                <item.icon className={`h-4 w-4 ${item.highlight ? "text-primary" : ""}`} />
-                {item.label}
-              </Button>
-            ))}
-            
-            {/* Custom Request Blocks */}
-            <div className="col-span-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-4 mb-1">
-              Internal Requests
-            </div>
+        <div className="grid grid-cols-2 gap-1">
+          {toolboxItems.map((item) => (
             <Button
-              variant="outline"
-              className="justify-start gap-2 h-10 border-red-500/30 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/50 text-red-600 font-semibold"
-              onClick={() => addComponent("damage_report")}
+              key={item.type}
+              variant="ghost"
+              className={`justify-start gap-2 h-8 px-2.5 text-[11px] font-medium rounded-md transition-colors ${
+                item.highlight
+                  ? "bg-primary/10 text-primary hover:bg-primary/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+              }`}
+              onClick={() => addComponent(item.type)}
             >
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              Damage Report
+              <item.icon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{item.label}</span>
             </Button>
-            <Button
-              variant="outline"
-              className="justify-start gap-2 h-10 border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/50 text-blue-600 font-semibold"
-              onClick={() => addComponent("budget_request")}
-            >
-              <DollarSign className="h-4 w-4 text-blue-600" />
-              Budget Request
-            </Button>
-          </div>
+          ))}
+        </div>
+        
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground mt-5 mb-2 flex items-center gap-2">
+          <FileText className="w-3 h-3" />
+          Internal Forms
+        </h2>
+        <div className="flex flex-col gap-1">
+          <Button
+            variant="ghost"
+            className="justify-start gap-2 h-8 px-2.5 text-[11px] font-medium rounded-md text-red-600/80 hover:text-red-600 hover:bg-red-500/10 transition-colors"
+            onClick={() => addComponent("damage_report")}
+          >
+            <AlertTriangle className="h-3.5 w-3.5" />
+            Damage Report
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start gap-2 h-8 px-2.5 text-[11px] font-medium rounded-md text-blue-600/80 hover:text-blue-600 hover:bg-blue-500/10 transition-colors"
+            onClick={() => addComponent("budget_request")}
+          >
+            <DollarSign className="h-3.5 w-3.5" />
+            Budget Request
+          </Button>
+        </div>
       </div>
 
       {/* Page Settings */}
-      <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm space-y-4">
-        <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+      <div className="bg-card p-4 flex-1">
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-4 flex items-center gap-2">
+          <LayoutTemplate className="w-3 h-3" />
           Page Settings
         </h2>
 
-        <div className="space-y-1.5">
-          <Label className="text-xs">Page URL Slug</Label>
-          <div className="flex items-center">
-            <span className="bg-secondary px-2.5 py-2 rounded-l-md border border-r-0 border-border/60 text-xs text-muted-foreground">
-              /p/
-            </span>
-            <Input
-              value={editorState.slug}
-              onChange={(e) =>
-                set("slug")(
-                  e.target.value
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")
-                    .replace(/[^a-z0-9-]/g, ""),
-                )
-              }
-              placeholder="my-event-page"
-              className="rounded-l-none text-sm"
-            />
+        <div className="space-y-4">
+          <div className="space-y-1.5 flex flex-col">
+            <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">URL Slug</Label>
+            <div className="flex items-center bg-secondary/20 rounded-md border border-border/40 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+              <span className="px-2 text-[11px] text-muted-foreground border-r border-border/40 select-none">/p/</span>
+              <Input
+                value={editorState.slug}
+                onChange={(e) =>
+                  set("slug")(
+                    e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+                  )
+                }
+                placeholder="my-page"
+                className="h-7 text-[11px] rounded-none border-0 bg-transparent focus-visible:ring-0 px-2"
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-xs">Theme Color</Label>
-          <div className="flex items-center gap-2.5">
-            <Input
-              type="color"
-              value={editorState.themeColor}
-              onChange={(e) => set("themeColor")(e.target.value)}
-              className="w-10 h-10 p-1 rounded-lg cursor-pointer"
-            />
-            <span className="text-sm text-muted-foreground font-mono">
-              {editorState.themeColor}
-            </span>
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="text-xs">Logo Position</Label>
-          <Select value={editorState.logoPosition} onValueChange={set("logoPosition")}>
-            <SelectTrigger className="text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="hero">Centered on Hero</SelectItem>
-              <SelectItem value="navbar">Top Navigation Bar</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="text-xs">Font Family</Label>
-          <Select value={editorState.fontFamily} onValueChange={set("fontFamily")}>
-            <SelectTrigger className="text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Inter">Inter (Modern)</SelectItem>
-              <SelectItem value="Outfit">Outfit (Geometric)</SelectItem>
-              <SelectItem value="Montserrat">Montserrat (Bold)</SelectItem>
-              <SelectItem value="Playfair Display">Playfair (Elegant)</SelectItem>
-              <SelectItem value="Lora">Lora (Serif)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="text-xs">Logo Image</Label>
-          {editorState.logoUrl ? (
-            <div className="relative w-16 h-16 rounded-xl border border-border/60 overflow-hidden group">
-              <img src={editorState.logoUrl} alt="Logo" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Trash2
-                  className="w-4 h-4 text-white cursor-pointer"
-                  onClick={() => set("logoUrl")("")}
+          <div className="space-y-1.5 flex flex-col">
+            <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Theme Color</Label>
+            <div className="flex items-center gap-2">
+              <div className="relative w-7 h-7 rounded-md overflow-hidden border border-border/60 shrink-0 cursor-pointer group">
+                <Input
+                  type="color"
+                  value={editorState.themeColor}
+                  onChange={(e) => set("themeColor")(e.target.value)}
+                  className="absolute -inset-4 w-16 h-16 cursor-pointer"
                 />
               </div>
-            </div>
-          ) : (
-            <label className="cursor-pointer block w-full">
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files?.[0]) {
-                    if (e.target.files[0].size > 2 * 1024 * 1024)
-                      return alert("File too large (max 2MB)");
-                    handleImageUpload(e.target.files[0], set("logoUrl"));
-                  }
-                }}
+              <Input
+                value={editorState.themeColor}
+                onChange={(e) => set("themeColor")(e.target.value)}
+                className="h-7 text-[11px] font-mono bg-secondary/20 border-border/40 uppercase"
               />
-              <div className="border-2 border-dashed border-border p-2 rounded-lg text-center text-xs text-muted-foreground hover:bg-secondary/50">
-                Upload Logo
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5 flex flex-col">
+              <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Logo Position</Label>
+              <Select value={editorState.logoPosition} onValueChange={set("logoPosition")}>
+                <SelectTrigger className="h-7 text-[11px] bg-secondary/20 border-border/40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hero" className="text-[11px]">Hero</SelectItem>
+                  <SelectItem value="navbar" className="text-[11px]">Navbar</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5 flex flex-col">
+              <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Font Family</Label>
+              <Select value={editorState.fontFamily} onValueChange={set("fontFamily")}>
+                <SelectTrigger className="h-7 text-[11px] bg-secondary/20 border-border/40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Inter" className="text-[11px]">Inter</SelectItem>
+                  <SelectItem value="Outfit" className="text-[11px]">Outfit</SelectItem>
+                  <SelectItem value="Montserrat" className="text-[11px]">Montserrat</SelectItem>
+                  <SelectItem value="Playfair Display" className="text-[11px]">Playfair</SelectItem>
+                  <SelectItem value="Lora" className="text-[11px]">Lora</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Brand Logo</Label>
+            {editorState.logoUrl ? (
+              <div className="relative w-12 h-12 rounded-lg border border-border/60 overflow-hidden group">
+                <img src={editorState.logoUrl} alt="Logo" className="w-full h-full object-contain bg-black/5" />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                  <Trash2
+                    className="w-3.5 h-3.5 text-white cursor-pointer hover:text-red-400 transition-colors"
+                    onClick={() => set("logoUrl")("")}
+                  />
+                </div>
               </div>
-            </label>
-          )}
+            ) : (
+              <label className="cursor-pointer block w-full">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                      if (e.target.files[0].size > 2 * 1024 * 1024)
+                        return alert("File too large (max 2MB)");
+                      handleImageUpload(e.target.files[0], set("logoUrl"));
+                    }
+                  }}
+                />
+                <div className="border border-dashed border-border/60 rounded-lg p-3 text-center bg-secondary/10 hover:bg-secondary/30 transition-colors flex flex-col items-center gap-1.5">
+                  <UploadCloud className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground">Upload Logo</span>
+                </div>
+              </label>
+            )}
+          </div>
         </div>
       </div>
     </div>

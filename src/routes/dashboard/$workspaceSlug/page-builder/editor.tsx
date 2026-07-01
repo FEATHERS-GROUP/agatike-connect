@@ -289,8 +289,8 @@ function PageBuilder() {
     setEditorState((prev) => ({ ...prev, [field]: value }));
 
   return (
-    <div className="flex h-full overflow-hidden">
-      <div className="flex-1 overflow-y-auto flex flex-col bg-secondary/20">
+    <div className="flex h-screen w-full overflow-hidden">
+      <div className="flex-1 overflow-y-auto bg-secondary/20 relative">
         {/* Top Bar */}
         <EditorTopbar
           activeWorkspace={activeWorkspace}
