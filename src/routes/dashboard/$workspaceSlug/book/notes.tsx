@@ -370,7 +370,7 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
   return (
     <div className="flex flex-col h-full w-full px-10 py-10 overflow-y-auto">
       {/* Top action bar */}
-      <div className="flex items-center justify-between mb-8 opacity-0 hover:opacity-100 transition-opacity focus-within:opacity-100 group">
+      <div className="flex items-center justify-between mb-8 transition-opacity">
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <Button variant="ghost" size="sm" className="h-8 gap-2 text-xs" onClick={onExpand}>
             <Maximize2 className="h-3 w-3" /> Open as Page
