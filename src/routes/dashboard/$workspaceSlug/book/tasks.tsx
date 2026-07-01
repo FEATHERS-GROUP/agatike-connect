@@ -1,4 +1,4 @@
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, useParams, Link } from "@tanstack/react-router";
 import {
   Plus,
   CheckSquare,
@@ -12,6 +12,7 @@ import {
   Calendar,
   User,
   ChevronDown,
+  ArrowLeft,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -186,6 +187,15 @@ function TasksPage() {
 
   return (
     <div className="space-y-6 pb-12">
+      <div className="mb-2">
+        <Link
+          to={`/dashboard/${wsId ? activeWorkspace?.slug : ""}/book`}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-secondary/30 hover:bg-secondary px-3 py-1.5 rounded-full border border-border/30"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Agatike Book
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>

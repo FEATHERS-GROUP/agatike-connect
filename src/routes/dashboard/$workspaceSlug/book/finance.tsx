@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   TrendingUp,
   TrendingDown,
@@ -8,6 +8,9 @@ import {
   Loader2,
   ArrowUpRight,
   ArrowDownRight,
+  Activity,
+  Calendar,
+  ArrowLeft,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -155,6 +158,14 @@ function FinancePage() {
 
   return (
     <div className="space-y-8 pb-12">
+      <div className="mb-2">
+        <Link
+          to={`/dashboard/${wsId ? activeWorkspace?.slug : ""}/book`}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-secondary/30 hover:bg-secondary px-3 py-1.5 rounded-full border border-border/30"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Agatike Book
+        </Link>
+      </div>
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>

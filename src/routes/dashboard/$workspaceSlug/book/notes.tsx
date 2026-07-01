@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import {
   Plus,
   Pin,
@@ -10,6 +10,7 @@ import {
   X,
   Tag,
   Maximize2,
+  ArrowLeft,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -122,6 +123,15 @@ function NotesPage() {
 
   return (
     <div className="pb-16 max-w-6xl mx-auto space-y-6">
+      <div className="mb-2">
+        <Link
+          to={`/dashboard/${activeWorkspace?.slug}/book`}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-secondary/30 hover:bg-secondary px-3 py-1.5 rounded-full border border-border/30"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Agatike Book
+        </Link>
+      </div>
+
       {/* ── Top Bar ──────────────────────────── */}
       <div className="flex items-center justify-between gap-4">
         <div>

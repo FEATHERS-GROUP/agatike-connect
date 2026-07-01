@@ -12,6 +12,7 @@ export function DesktopSidebar() {
   const location = useRouterState({ select: (s) => s.location });
   const { activeWorkspace, currentUser } = useWorkspace();
   const [isStudioOpen, setIsStudioOpen] = useState(false);
+  const [isBookOpen, setIsBookOpen] = useState(false);
   const [isBillingGroupOpen, setIsBillingGroupOpen] = useState(false);
 
   const { data: platformModules = [] } = usePlatformModules();
@@ -54,8 +55,9 @@ export function DesktopSidebar() {
   });
 
   const studioLabels = ["Badge Designer", "Venue Designer", "Tickets", "Page Builder"];
-  const mainNav = nav.filter((m) => !studioLabels.includes(m.label));
+  const mainNav = nav.filter((m) => !studioLabels.includes(m.label) && m.label !== "Agatike Book");
   const studioNav = nav.filter((m) => studioLabels.includes(m.label));
+  const hasBook = nav.some((m) => m.label === "Agatike Book");
 
   const workspacePrefix = activeWorkspace ? `/dashboard/${activeWorkspace.slug}` : "/dashboard";
 
@@ -111,6 +113,86 @@ export function DesktopSidebar() {
 
       <nav className="space-y-0.5 text-sm flex-1">
         {mainNav.map((n) => renderNavItem(n))}
+
+        {hasBook && (
+          <div className="mt-2 space-y-0.5">
+            <div className="flex w-full items-center justify-between rounded-lg px-2.5 py-1 text-left text-sm transition-colors text-muted-foreground hover:bg-secondary hover:text-foreground">
+              <Link 
+                to={activeWorkspace ? (`/dashboard/${activeWorkspace.slug}/book` as any) : ("/dashboard/book" as any)}
+                className="flex items-center gap-2.5 flex-1 py-1"
+              >
+                <LucideIcons.BookOpen className="h-4 w-4 shrink-0" />
+                <span className="truncate font-medium">Agatike Book</span>
+              </Link>
+              <button onClick={() => setIsBookOpen(!isBookOpen)} className="p-1 hover:bg-secondary/80 rounded transition-colors">
+                {isBookOpen ? (
+                  <LucideIcons.ChevronDown className="h-4 w-4 shrink-0" />
+                ) : (
+                  <LucideIcons.ChevronRight className="h-4 w-4 shrink-0" />
+                )}
+              </button>
+            </div>
+            {isBookOpen && activeWorkspace && (
+              <div className="ml-2 mt-1 space-y-0.5 border-l-2 border-border/40 pl-2">
+                <Link
+                  to={`/dashboard/${activeWorkspace.slug}/book/tasks` as any}
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                    location.pathname.includes("/book/tasks")
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <LucideIcons.CheckSquare className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">Tasks</span>
+                </Link>
+                <Link
+                  to={`/dashboard/${activeWorkspace.slug}/book/notes` as any}
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                    location.pathname.includes("/book/notes")
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <LucideIcons.StickyNote className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">Notes</span>
+                </Link>
+                <Link
+                  to={`/dashboard/${activeWorkspace.slug}/book/finance` as any}
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                    location.pathname.includes("/book/finance")
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <LucideIcons.TrendingUp className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">Finance</span>
+                </Link>
+                <Link
+                  to={`/dashboard/${activeWorkspace.slug}/book/books` as any}
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                    location.pathname.includes("/book/books")
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <LucideIcons.FileText className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">Custom Books</span>
+                </Link>
+                <Link
+                  to={`/dashboard/${activeWorkspace.slug}/book/procurement` as any}
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                    location.pathname.includes("/book/procurement")
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <LucideIcons.ShoppingCart className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">Procurement</span>
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
 
         {studioNav.length > 0 && (
           <div className="mt-2 space-y-0.5">
