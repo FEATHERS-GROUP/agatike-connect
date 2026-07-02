@@ -12,7 +12,11 @@ export function AdminOrganizerSidebar() {
   const basePath = `/internal/control/admin/organizers/${orgId}`;
 
   const mainNav = [
-    { label: "Back to Organizers", href: "/internal/control/admin/organizers", icon: LucideIcons.ArrowLeft },
+    {
+      label: "Back to Organizers",
+      href: "/internal/control/admin/organizers",
+      icon: LucideIcons.ArrowLeft,
+    },
     { type: "divider" },
     { label: "Overview", href: basePath, icon: LucideIcons.LayoutDashboard, exact: true },
     { label: "Subscriptions", href: `${basePath}/subscriptions`, icon: LucideIcons.CreditCard },

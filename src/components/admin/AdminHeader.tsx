@@ -14,12 +14,17 @@ export function AdminHeader() {
   return (
     <header className="flex h-12 w-full shrink-0 items-center justify-between bg-[#1b1b1c] px-3 font-sans text-sm border-b border-[#333333]">
       <div className="flex items-center gap-4">
-        <Link to="/internal/control/admin" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <Link
+          to="/internal/control/admin"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <div className="text-[#f97316]">
             <Grid className="h-5 w-5" />
           </div>
           <span className="font-semibold text-white tracking-tight">Agatike</span>
-          <span className="text-[#cccccc] text-xs px-2 border-l border-[#333333] ml-2">Master Control</span>
+          <span className="text-[#cccccc] text-xs px-2 border-l border-[#333333] ml-2">
+            Master Control
+          </span>
         </Link>
       </div>
 
@@ -42,12 +47,15 @@ export function AdminHeader() {
         <button className="p-2 hover:bg-[#333333] rounded-sm transition-colors" title="Help">
           <HelpCircle className="h-4 w-4" />
         </button>
-        <button className="relative p-2 hover:bg-[#333333] rounded-sm transition-colors" title="Notifications">
+        <button
+          className="relative p-2 hover:bg-[#333333] rounded-sm transition-colors"
+          title="Notifications"
+        >
           <Bell className="h-4 w-4" />
           <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#f97316]" />
         </button>
         <div className="h-4 w-px bg-[#333333] mx-1" />
-        <button 
+        <button
           onClick={handleLogout}
           className="flex items-center gap-1.5 p-1.5 px-3 hover:bg-[#333333] rounded-sm transition-colors text-xs"
           title="Sign out"

@@ -1,15 +1,48 @@
 import { createFileRoute, getRouteApi, useRouter } from "@tanstack/react-router";
-import { Users, Calendar, MapPin, Ticket, CreditCard, Ban, CheckCircle, MessageSquare, Image, Building, Banknote } from "lucide-react";
+import {
+  Users,
+  Calendar,
+  MapPin,
+  Ticket,
+  CreditCard,
+  Ban,
+  CheckCircle,
+  MessageSquare,
+  Image,
+  Building,
+  Banknote,
+} from "lucide-react";
 import { setAdminOrganizerStatus } from "@/api/admin_organizer_control";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Legend,
+} from "recharts";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/")({
   component: OrganizerOverview,
 });
 
-function StatCard({ title, value, icon: Icon, colorClass }: { title: string, value: number | string, icon: any, colorClass: string }) {
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+  colorClass,
+}: {
+  title: string;
+  value: number | string;
+  icon: any;
+  colorClass: string;
+}) {
   return (
     <div className="bg-[#252526] border border-[#333333] rounded-sm p-4 flex items-center gap-4">
       <div className={`p-3 rounded-sm ${colorClass}`}>
@@ -24,7 +57,7 @@ function StatCard({ title, value, icon: Icon, colorClass }: { title: string, val
 }
 
 function OrganizerOverview() {
-  const routeApi = getRouteApi('/internal/control/admin/organizers/$organizerId');
+  const routeApi = getRouteApi("/internal/control/admin/organizers/$organizerId");
   const { overview } = routeApi.useLoaderData();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -37,7 +70,9 @@ function OrganizerOverview() {
       await setAdminOrganizerStatus({
         data: { organizerId: overview.id, active: newStatus },
       } as any);
-      toast.success(newStatus ? "Organizer activated successfully" : "Organizer banned successfully");
+      toast.success(
+        newStatus ? "Organizer activated successfully" : "Organizer banned successfully",
+      );
       router.invalidate();
     } catch (err: any) {
       toast.error(err.message || "Failed to update organizer status");
@@ -51,7 +86,7 @@ function OrganizerOverview() {
   // -------------------------------------------------------------
   const { upcomingEvents, eventsChartData, revenueChartData } = useMemo(() => {
     const now = new Date();
-    
+
     // 1. Upcoming Events
     const upcoming = (overview.allEvents || [])
       .map((e: any) => ({ ...e, start_date: e.schedules?.[0]?.start_date }))
@@ -64,7 +99,7 @@ function OrganizerOverview() {
     (overview.allEvents || []).forEach((e: any) => {
       if (!e.created_at) return;
       const date = new Date(e.created_at);
-      const month = date.toLocaleString('default', { month: 'short', year: '2-digit' });
+      const month = date.toLocaleString("default", { month: "short", year: "2-digit" });
       eventsByMonth[month] = (eventsByMonth[month] || 0) + 1;
     });
 
@@ -73,8 +108,8 @@ function OrganizerOverview() {
     (overview.walletTx || []).forEach((tx: any) => {
       if (!tx.created_at || !tx.net_amount) return;
       const date = new Date(tx.created_at);
-      const month = date.toLocaleString('default', { month: 'short', year: '2-digit' });
-      
+      const month = date.toLocaleString("default", { month: "short", year: "2-digit" });
+
       if (!revenueByMonth[month]) {
         revenueByMonth[month] = { name: month, tickets: 0, spaces: 0, venues: 0, experiences: 0 };
       }
@@ -86,22 +121,29 @@ function OrganizerOverview() {
       else revenueByMonth[month].experiences += amount; // Fallback for other incoming revenue
     });
 
-    const evChart = Object.keys(eventsByMonth).map(k => ({ name: k, count: eventsByMonth[k] }));
-    const revChart = Object.keys(revenueByMonth).map(k => revenueByMonth[k]);
+    const evChart = Object.keys(eventsByMonth).map((k) => ({ name: k, count: eventsByMonth[k] }));
+    const revChart = Object.keys(revenueByMonth).map((k) => revenueByMonth[k]);
 
     return { upcomingEvents: upcoming, eventsChartData: evChart, revenueChartData: revChart };
   }, [overview]);
 
-  const totalInvoices = (overview.invoices || []).reduce((sum: number, inv: any) => sum + (parseFloat(inv.amount) || 0), 0);
+  const totalInvoices = (overview.invoices || []).reduce(
+    (sum: number, inv: any) => sum + (parseFloat(inv.amount) || 0),
+    0,
+  );
 
   return (
     <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between pb-2 border-b border-[#333333]">
         <h2 className="text-xl font-medium text-white">Organizer Dashboard</h2>
-        
+
         <div className="flex items-center gap-3">
           <span className="text-[#797775] text-sm">Status:</span>
-          <span className={overview.active ? "text-[#84c87e] font-medium" : "text-[#f43f5e] font-medium"}>
+          <span
+            className={
+              overview.active ? "text-[#84c87e] font-medium" : "text-[#f43f5e] font-medium"
+            }
+          >
             {overview.active ? "Active" : "Inactive (Banned)"}
           </span>
           {overview.active ? (
@@ -125,7 +167,7 @@ function OrganizerOverview() {
           )}
         </div>
       </div>
-      
+
       {/* ORGANIZER IDENTITY DETAILS */}
       <div className="bg-[#1e1e1e] border border-[#333333] rounded-sm p-5 mb-6">
         <h3 className="text-md font-medium text-white mb-4 flex items-center gap-2 border-b border-[#333333] pb-2">
@@ -142,7 +184,9 @@ function OrganizerOverview() {
           </div>
           <div>
             <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Date of Birth</p>
-            <p className="text-[#cccccc]">{overview.dateOfBirth ? new Date(overview.dateOfBirth).toLocaleDateString() : "—"}</p>
+            <p className="text-[#cccccc]">
+              {overview.dateOfBirth ? new Date(overview.dateOfBirth).toLocaleDateString() : "—"}
+            </p>
           </div>
           <div>
             <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Type</p>
@@ -164,7 +208,12 @@ function OrganizerOverview() {
         {/* Documents */}
         <div className="mt-6 pt-4 border-t border-[#333333] flex flex-wrap gap-4">
           {overview.national_id ? (
-            <a href={overview.national_id} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] hover:border-[#569cd6] text-[#569cd6] text-xs rounded-sm transition-colors">
+            <a
+              href={overview.national_id}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] hover:border-[#569cd6] text-[#569cd6] text-xs rounded-sm transition-colors"
+            >
               View National ID
             </a>
           ) : (
@@ -174,7 +223,12 @@ function OrganizerOverview() {
           )}
 
           {overview.business_cert ? (
-            <a href={overview.business_cert} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] hover:border-[#c586c0] text-[#c586c0] text-xs rounded-sm transition-colors">
+            <a
+              href={overview.business_cert}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] hover:border-[#c586c0] text-[#c586c0] text-xs rounded-sm transition-colors"
+            >
               View Business Certificate
             </a>
           ) : (
@@ -188,18 +242,57 @@ function OrganizerOverview() {
       {/* EXHAUSTIVE STATS GRID */}
       <h3 className="text-md font-medium text-[#cccccc]">Platform Usage</h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Events" value={overview.eventsCount} icon={Calendar} colorClass="bg-[#84c87e]/10 text-[#84c87e]" />
-        <StatCard title="Ticket Attendees" value={overview.attendeesCount} icon={Ticket} colorClass="bg-[#c586c0]/10 text-[#c586c0]" />
-        <StatCard title="Venues Created" value={overview.venuesCount} icon={MapPin} colorClass="bg-[#569cd6]/10 text-[#569cd6]" />
-        <StatCard title="Spaces Claimed" value={overview.spacesCount} icon={Building} colorClass="bg-[#dcdcaa]/10 text-[#dcdcaa]" />
-        <StatCard title="Community Posts" value={overview.postsCount} icon={MessageSquare} colorClass="bg-[#4ec9b0]/10 text-[#4ec9b0]" />
-        <StatCard title="Stories/Highlights" value={overview.storiesCount} icon={Image} colorClass="bg-[#ce9178]/10 text-[#ce9178]" />
-        <StatCard title="Workspace Users" value={overview.usersCount} icon={Users} colorClass="bg-[#f97316]/10 text-[#f97316]" />
-        <StatCard title="Total Paid to Gatike" value={`$${totalInvoices.toFixed(2)}`} icon={CreditCard} colorClass="bg-[#569cd6]/10 text-[#569cd6]" />
+        <StatCard
+          title="Total Events"
+          value={overview.eventsCount}
+          icon={Calendar}
+          colorClass="bg-[#84c87e]/10 text-[#84c87e]"
+        />
+        <StatCard
+          title="Ticket Attendees"
+          value={overview.attendeesCount}
+          icon={Ticket}
+          colorClass="bg-[#c586c0]/10 text-[#c586c0]"
+        />
+        <StatCard
+          title="Venues Created"
+          value={overview.venuesCount}
+          icon={MapPin}
+          colorClass="bg-[#569cd6]/10 text-[#569cd6]"
+        />
+        <StatCard
+          title="Spaces Claimed"
+          value={overview.spacesCount}
+          icon={Building}
+          colorClass="bg-[#dcdcaa]/10 text-[#dcdcaa]"
+        />
+        <StatCard
+          title="Community Posts"
+          value={overview.postsCount}
+          icon={MessageSquare}
+          colorClass="bg-[#4ec9b0]/10 text-[#4ec9b0]"
+        />
+        <StatCard
+          title="Stories/Highlights"
+          value={overview.storiesCount}
+          icon={Image}
+          colorClass="bg-[#ce9178]/10 text-[#ce9178]"
+        />
+        <StatCard
+          title="Workspace Users"
+          value={overview.usersCount}
+          icon={Users}
+          colorClass="bg-[#f97316]/10 text-[#f97316]"
+        />
+        <StatCard
+          title="Total Paid to Gatike"
+          value={`$${totalInvoices.toFixed(2)}`}
+          icon={CreditCard}
+          colorClass="bg-[#569cd6]/10 text-[#569cd6]"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        
         {/* REVENUE TIMELINE */}
         <div className="bg-[#252526] border border-[#333333] rounded-sm p-5">
           <h3 className="text-md font-medium text-white mb-6 flex items-center gap-2">
@@ -208,36 +301,86 @@ function OrganizerOverview() {
           </h3>
           <div className="h-[250px] w-full">
             {revenueChartData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-[#797775]">No revenue data found</div>
+              <div className="h-full flex items-center justify-center text-[#797775]">
+                No revenue data found
+              </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <AreaChart
+                  data={revenueChartData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
                   <defs>
                     <linearGradient id="colorTickets" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#c586c0" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#c586c0" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#c586c0" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#c586c0" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorSpaces" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#dcdcaa" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#dcdcaa" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#dcdcaa" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#dcdcaa" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorVenues" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#569cd6" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#569cd6" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#569cd6" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#569cd6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="name" stroke="#797775" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#797775" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333333" vertical={false} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#1e1e1e', borderColor: '#333333', color: '#fff' }}
-                    itemStyle={{ color: '#cccccc' }}
+                  <XAxis
+                    dataKey="name"
+                    stroke="#797775"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
                   />
-                  <Legend wrapperStyle={{ fontSize: '12px', color: '#cccccc' }} />
-                  <Area type="monotone" dataKey="tickets" name="Tickets" stackId="1" stroke="#c586c0" fill="url(#colorTickets)" />
-                  <Area type="monotone" dataKey="venues" name="Venues" stackId="1" stroke="#569cd6" fill="url(#colorVenues)" />
-                  <Area type="monotone" dataKey="spaces" name="Spaces" stackId="1" stroke="#dcdcaa" fill="url(#colorSpaces)" />
-                  <Area type="monotone" dataKey="experiences" name="Experiences" stackId="1" stroke="#4ec9b0" fill="#4ec9b0" fillOpacity={0.3} />
+                  <YAxis
+                    stroke="#797775"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(val) => `${val / 1000}k`}
+                  />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333333" vertical={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1e1e1e",
+                      borderColor: "#333333",
+                      color: "#fff",
+                    }}
+                    itemStyle={{ color: "#cccccc" }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: "12px", color: "#cccccc" }} />
+                  <Area
+                    type="monotone"
+                    dataKey="tickets"
+                    name="Tickets"
+                    stackId="1"
+                    stroke="#c586c0"
+                    fill="url(#colorTickets)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="venues"
+                    name="Venues"
+                    stackId="1"
+                    stroke="#569cd6"
+                    fill="url(#colorVenues)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="spaces"
+                    name="Spaces"
+                    stackId="1"
+                    stroke="#dcdcaa"
+                    fill="url(#colorSpaces)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="experiences"
+                    name="Experiences"
+                    stackId="1"
+                    stroke="#4ec9b0"
+                    fill="#4ec9b0"
+                    fillOpacity={0.3}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             )}
@@ -252,32 +395,60 @@ function OrganizerOverview() {
           </h3>
           <div className="h-[250px] w-full">
             {eventsChartData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-[#797775]">No event data found</div>
+              <div className="h-full flex items-center justify-center text-[#797775]">
+                No event data found
+              </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={eventsChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <BarChart
+                  data={eventsChartData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#333333" vertical={false} />
-                  <XAxis dataKey="name" stroke="#797775" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#797775" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#1e1e1e', borderColor: '#333333', color: '#fff' }}
-                    itemStyle={{ color: '#84c87e' }}
-                    cursor={{fill: '#333333', opacity: 0.4}}
+                  <XAxis
+                    dataKey="name"
+                    stroke="#797775"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
                   />
-                  <Bar dataKey="count" name="Events" fill="#84c87e" radius={[4, 4, 0, 0]} barSize={30} />
+                  <YAxis
+                    stroke="#797775"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1e1e1e",
+                      borderColor: "#333333",
+                      color: "#fff",
+                    }}
+                    itemStyle={{ color: "#84c87e" }}
+                    cursor={{ fill: "#333333", opacity: 0.4 }}
+                  />
+                  <Bar
+                    dataKey="count"
+                    name="Events"
+                    fill="#84c87e"
+                    radius={[4, 4, 0, 0]}
+                    barSize={30}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
         </div>
-
       </div>
 
       {/* UPCOMING EVENTS LIST */}
       <div className="bg-[#252526] border border-[#333333] rounded-sm mt-6">
         <div className="p-4 border-b border-[#333333] flex items-center gap-2">
           <h3 className="text-md font-medium text-white">Upcoming Events</h3>
-          <span className="bg-[#333333] text-[#cccccc] text-xs px-2 py-0.5 rounded-full">{upcomingEvents.length}</span>
+          <span className="bg-[#333333] text-[#cccccc] text-xs px-2 py-0.5 rounded-full">
+            {upcomingEvents.length}
+          </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-[13px] whitespace-nowrap">
@@ -298,9 +469,18 @@ function OrganizerOverview() {
               ) : (
                 upcomingEvents.map((evt: any) => (
                   <tr key={evt.id} className="hover:bg-[#2d2d30] transition-colors">
-                    <td className="py-2 px-4 font-medium text-white">{evt.title || "Untitled Event"}</td>
+                    <td className="py-2 px-4 font-medium text-white">
+                      {evt.title || "Untitled Event"}
+                    </td>
                     <td className="py-2 px-4">
-                      {evt.start_date ? new Date(evt.start_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : "—"}
+                      {evt.start_date
+                        ? new Date(evt.start_date).toLocaleDateString("en-US", {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "—"}
                     </td>
                     <td className="py-2 px-4">
                       <span className="text-[#84c87e]">Scheduled</span>
@@ -312,7 +492,6 @@ function OrganizerOverview() {
           </table>
         </div>
       </div>
-
     </div>
   );
 }

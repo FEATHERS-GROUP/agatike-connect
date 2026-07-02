@@ -36,7 +36,6 @@ function AdminLogin() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#0d0e15] font-sans">
       <div className="w-full max-w-sm bg-[#161821] border border-[#2b2e40] rounded-md shadow-2xl p-8">
-        
         <div className="flex flex-col items-center mb-8">
           <div className="bg-blue-600/10 p-3 rounded-lg mb-4 border border-blue-600/20">
             <Shield className="h-8 w-8 text-blue-500" />

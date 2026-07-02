@@ -36,7 +36,22 @@ export const Route = createFileRoute("/internal/control/admin/organizers/$organi
   component: OrganizerSettings,
 });
 
-const CURRENCIES = ["RWF", "USD", "EUR", "GBP", "KES", "UGX", "TZS", "NGN", "GHS", "ZAR", "XOF", "XAF", "EGP", "MAD"];
+const CURRENCIES = [
+  "RWF",
+  "USD",
+  "EUR",
+  "GBP",
+  "KES",
+  "UGX",
+  "TZS",
+  "NGN",
+  "GHS",
+  "ZAR",
+  "XOF",
+  "XAF",
+  "EGP",
+  "MAD",
+];
 
 // ── Confirmation Modal ────────────────────────────────────────────────────────
 interface ConfirmModal {
@@ -48,21 +63,15 @@ interface ConfirmModal {
   onConfirm: () => Promise<void>;
 }
 
-function ConfirmDialog({
-  modal,
-  onClose,
-}: {
-  modal: ConfirmModal;
-  onClose: () => void;
-}) {
+function ConfirmDialog({ modal, onClose }: { modal: ConfirmModal; onClose: () => void }) {
   const [loading, setLoading] = useState(false);
 
   const iconColor =
     modal.icon === "danger"
       ? "text-[#f43f5e] bg-[#f43f5e]/10"
       : modal.icon === "warning"
-      ? "text-[#dcdcaa] bg-[#dcdcaa]/10"
-      : "text-[#569cd6] bg-[#569cd6]/10";
+        ? "text-[#dcdcaa] bg-[#dcdcaa]/10"
+        : "text-[#569cd6] bg-[#569cd6]/10";
 
   const btnClass =
     modal.confirmClass ||
@@ -113,7 +122,11 @@ function ConfirmDialog({
             disabled={loading}
             className={`flex items-center gap-2 px-4 py-2 text-sm border rounded-sm transition-colors disabled:opacity-50 font-medium ${btnClass}`}
           >
-            {loading ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+            {loading ? (
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Check className="h-3.5 w-3.5" />
+            )}
             {loading ? "Processing..." : modal.confirmLabel}
           </button>
         </div>
@@ -134,7 +147,12 @@ function OrganizerSettings() {
   // Track pending currency selection per workspace before confirming
   const [pendingCurrency, setPendingCurrency] = useState<Record<string, string>>({});
 
-  const { workspaces = [], pricingPlans = [], activeSubscription, subscriptions = [] } = billing || {};
+  const {
+    workspaces = [],
+    pricingPlans = [],
+    activeSubscription,
+    subscriptions = [],
+  } = billing || {};
 
   const dismiss = () => setConfirmModal(null);
 
@@ -151,7 +169,9 @@ function OrganizerSettings() {
         ? "bg-[#84c87e]/10 text-[#84c87e] border-[#84c87e]/30 hover:bg-[#84c87e]/20"
         : "bg-[#f43f5e]/10 text-[#f43f5e] border-[#f43f5e]/30 hover:bg-[#f43f5e]/20",
       onConfirm: async () => {
-        await setAdminOrganizerStatus({ data: { organizerId: overview.id, active: newStatus } } as any);
+        await setAdminOrganizerStatus({
+          data: { organizerId: overview.id, active: newStatus },
+        } as any);
         toast.success(newStatus ? "Organizer activated" : "Organizer banned");
         router.invalidate();
       },
@@ -169,7 +189,9 @@ function OrganizerSettings() {
       icon: "warning",
       confirmClass: "bg-[#c586c0]/10 text-[#c586c0] border-[#c586c0]/30 hover:bg-[#c586c0]/20",
       onConfirm: async () => {
-        await updateAdminWorkspaceCurrency({ data: { workspaceId: ws.id, currency: newCurrency } } as any);
+        await updateAdminWorkspaceCurrency({
+          data: { workspaceId: ws.id, currency: newCurrency },
+        } as any);
         toast.success(`${ws.name} currency set to ${newCurrency}`);
         router.invalidate();
       },
@@ -202,7 +224,6 @@ function OrganizerSettings() {
       {confirmModal && <ConfirmDialog modal={confirmModal} onClose={dismiss} />}
 
       <div className="space-y-0 font-sans text-sm pb-10">
-
         {/* ── Page header ─────────────────────────────────── */}
         <div className="flex items-center gap-2 py-4 px-0 border-b border-[#333333] mb-0">
           <Settings className="h-5 w-5 text-[#cccccc]" />
@@ -218,18 +239,24 @@ function OrganizerSettings() {
               </div>
               <div>
                 <h3 className="text-white font-medium text-sm">Account Access &amp; Status</h3>
-                <p className="text-[#797775] text-xs mt-0.5">Control login access for this organizer.</p>
+                <p className="text-[#797775] text-xs mt-0.5">
+                  Control login access for this organizer.
+                </p>
               </div>
             </div>
 
             <div className="flex items-center justify-between bg-[#1a1a1a] border border-[#333333] px-5 py-4">
               <div className="flex items-center gap-3">
-                <div className={`h-2.5 w-2.5 rounded-full ${overview?.active ? "bg-[#84c87e]" : "bg-[#f43f5e]"} ring-2 ${overview?.active ? "ring-[#84c87e]/20" : "ring-[#f43f5e]/20"}`} />
+                <div
+                  className={`h-2.5 w-2.5 rounded-full ${overview?.active ? "bg-[#84c87e]" : "bg-[#f43f5e]"} ring-2 ${overview?.active ? "ring-[#84c87e]/20" : "ring-[#f43f5e]/20"}`}
+                />
                 <div>
                   <p className="text-white font-medium">{overview?.name}</p>
                   <p className="text-[#797775] text-xs">{overview?.email}</p>
                 </div>
-                <span className={`ml-3 text-xs px-2 py-0.5 rounded-sm border ${overview?.active ? "text-[#84c87e] bg-[#84c87e]/10 border-[#84c87e]/30" : "text-[#f43f5e] bg-[#f43f5e]/10 border-[#f43f5e]/30"}`}>
+                <span
+                  className={`ml-3 text-xs px-2 py-0.5 rounded-sm border ${overview?.active ? "text-[#84c87e] bg-[#84c87e]/10 border-[#84c87e]/30" : "text-[#f43f5e] bg-[#f43f5e]/10 border-[#f43f5e]/30"}`}
+                >
                   {overview?.active ? "Active" : "Banned"}
                 </span>
               </div>
@@ -263,7 +290,9 @@ function OrganizerSettings() {
               </div>
               <div>
                 <h3 className="text-white font-medium text-sm">Current Subscription</h3>
-                <p className="text-[#797775] text-xs mt-0.5">Active billing plan and renewal schedule.</p>
+                <p className="text-[#797775] text-xs mt-0.5">
+                  Active billing plan and renewal schedule.
+                </p>
               </div>
             </div>
 
@@ -273,9 +302,10 @@ function OrganizerSettings() {
                   {
                     label: "Plan",
                     value: activeSubscription.pricing_plan?.name || "Unknown",
-                    sub: activeSubscription.amount > 0
-                      ? `${activeSubscription.pricing_plan?.currency || "RWF"} ${activeSubscription.amount} / ${activeSubscription.pricing_plan?.billing_cycle}`
-                      : "Free plan",
+                    sub:
+                      activeSubscription.amount > 0
+                        ? `${activeSubscription.pricing_plan?.currency || "RWF"} ${activeSubscription.amount} / ${activeSubscription.pricing_plan?.billing_cycle}`
+                        : "Free plan",
                     subColor: "text-[#84c87e]",
                     icon: <Sparkles className="h-3.5 w-3.5 text-[#dcdcaa]" />,
                   },
@@ -297,14 +327,22 @@ function OrganizerSettings() {
                       : "",
                     subColor: "text-[#797775]",
                     icon: <Calendar className="h-3.5 w-3.5 text-[#c586c0]" />,
-                    valueClass: new Date(activeSubscription.next_billing_date) < new Date() ? "text-[#f43f5e]" : "text-white",
+                    valueClass:
+                      new Date(activeSubscription.next_billing_date) < new Date()
+                        ? "text-[#f43f5e]"
+                        : "text-white",
                   },
                 ].map((card, i) => (
                   <div key={i} className="bg-[#1a1a1a] px-5 py-4">
                     <div className="flex items-center gap-1.5 text-[#797775] text-xs uppercase tracking-wider mb-2">
-                      {card.icon}{card.label}
+                      {card.icon}
+                      {card.label}
                     </div>
-                    <p className={`font-semibold text-base mb-0.5 ${card.valueClass || "text-white"}`}>{card.value}</p>
+                    <p
+                      className={`font-semibold text-base mb-0.5 ${card.valueClass || "text-white"}`}
+                    >
+                      {card.value}
+                    </p>
                     {card.sub && <p className={`text-xs ${card.subColor}`}>{card.sub}</p>}
                   </div>
                 ))}
@@ -319,10 +357,21 @@ function OrganizerSettings() {
             {subscriptions.length > 1 && (
               <div className="mt-3 border border-[#333333] divide-y divide-[#333333]">
                 {subscriptions.slice(1, 4).map((s: any) => (
-                  <div key={s.id} className="flex items-center justify-between bg-[#111111] px-4 py-2.5 text-xs">
-                    <span className="text-[#cccccc] font-medium">{s.pricing_plan?.name || "Unknown Plan"}</span>
-                    <span className="text-[#797775]">{new Date(s.start_date).toLocaleDateString("en-US")}</span>
-                    <span className={`capitalize ${s.status === "active" ? "text-[#84c87e]" : "text-[#797775]"}`}>{s.status}</span>
+                  <div
+                    key={s.id}
+                    className="flex items-center justify-between bg-[#111111] px-4 py-2.5 text-xs"
+                  >
+                    <span className="text-[#cccccc] font-medium">
+                      {s.pricing_plan?.name || "Unknown Plan"}
+                    </span>
+                    <span className="text-[#797775]">
+                      {new Date(s.start_date).toLocaleDateString("en-US")}
+                    </span>
+                    <span
+                      className={`capitalize ${s.status === "active" ? "text-[#84c87e]" : "text-[#797775]"}`}
+                    >
+                      {s.status}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -339,7 +388,9 @@ function OrganizerSettings() {
               </div>
               <div>
                 <h3 className="text-white font-medium text-sm">Change Subscription Plan</h3>
-                <p className="text-[#797775] text-xs mt-0.5">Select a plan then confirm to override. Cancels the current plan immediately.</p>
+                <p className="text-[#797775] text-xs mt-0.5">
+                  Select a plan then confirm to override. Cancels the current plan immediately.
+                </p>
               </div>
             </div>
 
@@ -355,8 +406,8 @@ function OrganizerSettings() {
                       isSelected
                         ? "bg-[#569cd6]/10 outline outline-1 outline-[#569cd6] z-10"
                         : isActive
-                        ? "bg-[#84c87e]/5"
-                        : "bg-[#1a1a1a] hover:bg-[#252526]"
+                          ? "bg-[#84c87e]/5"
+                          : "bg-[#1a1a1a] hover:bg-[#252526]"
                     }`}
                   >
                     {isActive && (
@@ -377,13 +428,29 @@ function OrganizerSettings() {
                     <p className="font-semibold text-white text-sm mb-1 pr-8">{plan.name}</p>
                     <p className="text-[#84c87e] font-medium">
                       {plan.price === 0 ? "Free" : `${plan.currency} ${plan.price}`}
-                      <span className="text-[#797775] font-normal text-xs"> /{plan.billing_cycle}</span>
+                      <span className="text-[#797775] font-normal text-xs">
+                        {" "}
+                        /{plan.billing_cycle}
+                      </span>
                     </p>
                     <p className="text-[#797775] text-xs mt-2 line-clamp-2">{plan.description}</p>
                     <div className="mt-3 pt-2 border-t border-[#333333] space-y-1 text-xs text-[#797775]">
-                      <div className="flex justify-between"><span>Svc fee</span><span className="text-[#cccccc]">{plan.customer_service_fee_percentage ?? 2}%</span></div>
-                      <div className="flex justify-between"><span>Withdrawals/wk</span><span className="text-[#cccccc]">{plan.max_withdrawals_per_week ?? "∞"}</span></div>
-                      <div className="flex justify-between"><span>Margin buffer</span><span className="text-[#cccccc]">{plan.platform_margin_buffer ?? 0}%</span></div>
+                      <div className="flex justify-between">
+                        <span>Svc fee</span>
+                        <span className="text-[#cccccc]">
+                          {plan.customer_service_fee_percentage ?? 2}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Withdrawals/wk</span>
+                        <span className="text-[#cccccc]">
+                          {plan.max_withdrawals_per_week ?? "∞"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Margin buffer</span>
+                        <span className="text-[#cccccc]">{plan.platform_margin_buffer ?? 0}%</span>
+                      </div>
                     </div>
                   </button>
                 );
@@ -393,7 +460,9 @@ function OrganizerSettings() {
             {selectedPlanId && (
               <div className="mt-3 flex items-center justify-between bg-[#569cd6]/5 border border-[#569cd6]/30 px-4 py-3">
                 <p className="text-[#569cd6] text-sm">
-                  Selected: <strong>{pricingPlans.find((p: any) => p.id === selectedPlanId)?.name}</strong> — confirm to apply
+                  Selected:{" "}
+                  <strong>{pricingPlans.find((p: any) => p.id === selectedPlanId)?.name}</strong> —
+                  confirm to apply
                 </p>
                 <div className="flex items-center gap-2">
                   <button
@@ -424,7 +493,8 @@ function OrganizerSettings() {
               <div>
                 <h3 className="text-white font-medium text-sm">Workspace Currencies</h3>
                 <p className="text-[#797775] text-xs mt-0.5">
-                  Set the display currency per workspace. Affects ticket prices, invoices, and wallet balances.
+                  Set the display currency per workspace. Affects ticket prices, invoices, and
+                  wallet balances.
                 </p>
               </div>
             </div>
@@ -440,11 +510,18 @@ function OrganizerSettings() {
                   const currentCurrency = ws.currency || "RWF";
                   const hasChange = pending && pending !== currentCurrency;
                   return (
-                    <div key={ws.id} className={`flex items-center gap-4 px-5 py-4 ${i % 2 === 0 ? "bg-[#1a1a1a]" : "bg-[#111111]"}`}>
+                    <div
+                      key={ws.id}
+                      className={`flex items-center gap-4 px-5 py-4 ${i % 2 === 0 ? "bg-[#1a1a1a]" : "bg-[#111111]"}`}
+                    >
                       {/* Workspace identity */}
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         {ws.logo ? (
-                          <img src={ws.logo} alt="logo" className="h-8 w-8 object-cover border border-[#333333] shrink-0" />
+                          <img
+                            src={ws.logo}
+                            alt="logo"
+                            className="h-8 w-8 object-cover border border-[#333333] shrink-0"
+                          />
                         ) : (
                           <div className="h-8 w-8 bg-[#252526] border border-[#333333] flex items-center justify-center shrink-0">
                             <Building2 className="h-4 w-4 text-[#797775]" />
@@ -452,19 +529,22 @@ function OrganizerSettings() {
                         )}
                         <div className="min-w-0">
                           <p className="text-white font-medium text-sm truncate">{ws.name}</p>
-                          <p className="text-[#797775] text-xs">{ws.city}{ws.country ? `, ${ws.country}` : ""}</p>
+                          <p className="text-[#797775] text-xs">
+                            {ws.city}
+                            {ws.country ? `, ${ws.country}` : ""}
+                          </p>
                         </div>
                       </div>
 
                       {/* Current currency badge */}
                       <div className="shrink-0 text-center hidden sm:block">
                         <p className="text-[#797775] text-xs mb-0.5">Current</p>
-                        <span className="text-[#cccccc] font-mono font-semibold text-sm">{currentCurrency}</span>
+                        <span className="text-[#cccccc] font-mono font-semibold text-sm">
+                          {currentCurrency}
+                        </span>
                       </div>
 
-                      {hasChange && (
-                        <div className="text-[#797775] text-xs shrink-0">→</div>
-                      )}
+                      {hasChange && <div className="text-[#797775] text-xs shrink-0">→</div>}
 
                       {/* Currency selector */}
                       <div className="relative shrink-0">
@@ -476,7 +556,9 @@ function OrganizerSettings() {
                           className="appearance-none bg-[#252526] border border-[#333333] text-white text-sm px-3 py-2 pr-8 focus:outline-none focus:border-[#569cd6] transition-colors cursor-pointer"
                         >
                           {CURRENCIES.map((c) => (
-                            <option key={c} value={c}>{c}</option>
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
                           ))}
                         </select>
                         <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#797775] pointer-events-none" />

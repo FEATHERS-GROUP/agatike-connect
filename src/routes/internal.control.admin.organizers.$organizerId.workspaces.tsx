@@ -1,6 +1,23 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { getAdminOrganizerWorkspaces, setAdminWorkspaceStatus } from "@/api/admin_organizer_control";
-import { Building2, Power, PowerOff, Search, Eye, MapPin, Tag, Calendar as CalendarIcon, Hash, Map, Banknote, Layers, Clock } from "lucide-react";
+import {
+  getAdminOrganizerWorkspaces,
+  setAdminWorkspaceStatus,
+} from "@/api/admin_organizer_control";
+import {
+  Building2,
+  Power,
+  PowerOff,
+  Search,
+  Eye,
+  MapPin,
+  Tag,
+  Calendar as CalendarIcon,
+  Hash,
+  Map,
+  Banknote,
+  Layers,
+  Clock,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -8,7 +25,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/workspaces")({
   loader: async ({ params }) => {
-    const data = await getAdminOrganizerWorkspaces({ data: { organizerId: params.organizerId } } as any);
+    const data = await getAdminOrganizerWorkspaces({
+      data: { organizerId: params.organizerId },
+    } as any);
     return data;
   },
   component: OrganizerWorkspaces,
@@ -21,13 +40,12 @@ function OrganizerWorkspaces() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Build a lookup map: id -> label
-  const moduleMap = Object.fromEntries(
-    (platformModules || []).map((m: any) => [m.id, m.label])
-  );
+  const moduleMap = Object.fromEntries((platformModules || []).map((m: any) => [m.id, m.label]));
 
-  const filteredWorkspaces = workspaces.filter((w: any) => 
-    (w.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (w.id || "").toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredWorkspaces = workspaces.filter(
+    (w: any) =>
+      (w.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (w.id || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleToggleStatus = async (id: string, newDeletedStatus: boolean) => {
@@ -36,7 +54,9 @@ function OrganizerWorkspaces() {
       await setAdminWorkspaceStatus({
         data: { workspaceId: id, deleted: newDeletedStatus },
       } as any);
-      toast.success(newDeletedStatus ? "Workspace disabled successfully" : "Workspace activated successfully");
+      toast.success(
+        newDeletedStatus ? "Workspace disabled successfully" : "Workspace activated successfully",
+      );
       router.invalidate();
     } catch (err: any) {
       toast.error(err.message || "Failed to update workspace status");
@@ -52,7 +72,7 @@ function OrganizerWorkspaces() {
           <Building2 className="h-5 w-5 text-[#569cd6]" />
           Workspaces ({workspaces.length})
         </h2>
-        
+
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-4 w-4 text-[#797775]" />
@@ -79,7 +99,9 @@ function OrganizerWorkspaces() {
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Type</th>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Status</th>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Created</th>
-                <th className="font-semibold py-2 px-4 border-b border-[#333333] text-right">Actions</th>
+                <th className="font-semibold py-2 px-4 border-b border-[#333333] text-right">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#333333] text-[#cccccc]">
@@ -92,10 +114,16 @@ function OrganizerWorkspaces() {
               ) : (
                 filteredWorkspaces.map((w: any) => (
                   <tr key={w.id} className="hover:bg-[#2d2d30] transition-colors">
-                    <td className="py-2 px-4 font-medium text-[#797775]">{String(w.id).substring(0,8)}...</td>
+                    <td className="py-2 px-4 font-medium text-[#797775]">
+                      {String(w.id).substring(0, 8)}...
+                    </td>
                     <td className="py-2 px-4">
                       {w.logo ? (
-                        <img src={w.logo} alt={w.name} className="h-8 w-8 rounded-sm object-cover bg-[#1e1e1e]" />
+                        <img
+                          src={w.logo}
+                          alt={w.name}
+                          className="h-8 w-8 rounded-sm object-cover bg-[#1e1e1e]"
+                        />
                       ) : (
                         <div className="h-8 w-8 rounded-sm bg-[#333333] flex items-center justify-center text-[#797775] text-xs">
                           <Building2 className="h-4 w-4" />
@@ -115,7 +143,7 @@ function OrganizerWorkspaces() {
                       )}
                     </td>
                     <td className="py-2 px-4">
-                      {w.created_at ? new Date(w.created_at).toLocaleDateString('en-US') : "—"}
+                      {w.created_at ? new Date(w.created_at).toLocaleDateString("en-US") : "—"}
                     </td>
                     <td className="py-2 px-4">
                       <div className="flex items-center justify-end gap-2">
@@ -130,29 +158,41 @@ function OrganizerWorkspaces() {
                             <div className="p-6 border-b border-[#333333] shrink-0">
                               <SheetHeader className="flex flex-row items-center gap-4 space-y-0">
                                 {w.logo ? (
-                                  <img src={w.logo} alt={w.name} className="h-16 w-16 rounded-md object-cover bg-[#252526]" />
+                                  <img
+                                    src={w.logo}
+                                    alt={w.name}
+                                    className="h-16 w-16 rounded-md object-cover bg-[#252526]"
+                                  />
                                 ) : (
                                   <div className="h-16 w-16 rounded-md bg-[#252526] flex items-center justify-center text-[#797775]">
                                     <Building2 className="h-8 w-8" />
                                   </div>
                                 )}
                                 <div>
-                                  <SheetTitle className="text-xl font-semibold text-white">{w.name || "Unnamed Workspace"}</SheetTitle>
+                                  <SheetTitle className="text-xl font-semibold text-white">
+                                    {w.name || "Unnamed Workspace"}
+                                  </SheetTitle>
                                   <div className="flex items-center gap-2 mt-1">
-                                    <span className={`text-xs px-2 py-0.5 rounded-sm ${w.deleted ? "bg-[#f43f5e]/10 text-[#f43f5e]" : "bg-[#84c87e]/10 text-[#84c87e]"}`}>
+                                    <span
+                                      className={`text-xs px-2 py-0.5 rounded-sm ${w.deleted ? "bg-[#f43f5e]/10 text-[#f43f5e]" : "bg-[#84c87e]/10 text-[#84c87e]"}`}
+                                    >
                                       {w.deleted ? "Disabled" : "Active"}
                                     </span>
-                                    <span className="text-xs text-[#797775] capitalize">{w.type}</span>
+                                    <span className="text-xs text-[#797775] capitalize">
+                                      {w.type}
+                                    </span>
                                   </div>
                                 </div>
                               </SheetHeader>
                             </div>
-                            
+
                             <ScrollArea className="flex-1">
                               <div className="p-6 space-y-6">
                                 <div className="space-y-4">
-                                  <h3 className="text-sm font-medium text-[#cccccc] uppercase tracking-wider">Workspace Details</h3>
-                                  
+                                  <h3 className="text-sm font-medium text-[#cccccc] uppercase tracking-wider">
+                                    Workspace Details
+                                  </h3>
+
                                   <div className="grid grid-cols-1 gap-4">
                                     <div className="flex items-center gap-3">
                                       <div className="p-2 bg-[#2d2d30] rounded-sm text-[#797775]">
@@ -160,7 +200,9 @@ function OrganizerWorkspaces() {
                                       </div>
                                       <div className="min-w-0">
                                         <div className="text-xs text-[#797775]">Workspace ID</div>
-                                        <div className="text-sm text-white font-mono truncate">{w.id}</div>
+                                        <div className="text-sm text-white font-mono truncate">
+                                          {w.id}
+                                        </div>
                                       </div>
                                     </div>
 
@@ -170,7 +212,11 @@ function OrganizerWorkspaces() {
                                       </div>
                                       <div>
                                         <div className="text-xs text-[#797775]">City / Country</div>
-                                        <div className="text-sm text-white">{w.city && w.country ? `${w.city}, ${w.country}` : w.city || w.country || "Not specified"}</div>
+                                        <div className="text-sm text-white">
+                                          {w.city && w.country
+                                            ? `${w.city}, ${w.country}`
+                                            : w.city || w.country || "Not specified"}
+                                        </div>
                                       </div>
                                     </div>
 
@@ -180,7 +226,9 @@ function OrganizerWorkspaces() {
                                       </div>
                                       <div>
                                         <div className="text-xs text-[#797775]">Address</div>
-                                        <div className="text-sm text-white">{w.address || "Not specified"}</div>
+                                        <div className="text-sm text-white">
+                                          {w.address || "Not specified"}
+                                        </div>
                                       </div>
                                     </div>
 
@@ -190,7 +238,9 @@ function OrganizerWorkspaces() {
                                       </div>
                                       <div>
                                         <div className="text-xs text-[#797775]">Type</div>
-                                        <div className="text-sm text-white capitalize">{w.type || "Not specified"}</div>
+                                        <div className="text-sm text-white capitalize">
+                                          {w.type || "Not specified"}
+                                        </div>
                                       </div>
                                     </div>
 
@@ -200,7 +250,9 @@ function OrganizerWorkspaces() {
                                       </div>
                                       <div>
                                         <div className="text-xs text-[#797775]">Currency</div>
-                                        <div className="text-sm text-white uppercase">{w.currency || "Not specified"}</div>
+                                        <div className="text-sm text-white uppercase">
+                                          {w.currency || "Not specified"}
+                                        </div>
                                       </div>
                                     </div>
 
@@ -211,7 +263,11 @@ function OrganizerWorkspaces() {
                                       <div>
                                         <div className="text-xs text-[#797775]">Created At</div>
                                         <div className="text-sm text-white">
-                                          {w.created_at ? new Date(w.created_at).toLocaleDateString('en-US', { dateStyle: 'long' }) : "Unknown"}
+                                          {w.created_at
+                                            ? new Date(w.created_at).toLocaleDateString("en-US", {
+                                                dateStyle: "long",
+                                              })
+                                            : "Unknown"}
                                         </div>
                                       </div>
                                     </div>
@@ -223,7 +279,12 @@ function OrganizerWorkspaces() {
                                       <div>
                                         <div className="text-xs text-[#797775]">Last Updated</div>
                                         <div className="text-sm text-white">
-                                          {w.updated_at ? new Date(w.updated_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : "Unknown"}
+                                          {w.updated_at
+                                            ? new Date(w.updated_at).toLocaleString("en-US", {
+                                                dateStyle: "medium",
+                                                timeStyle: "short",
+                                              })
+                                            : "Unknown"}
                                         </div>
                                       </div>
                                     </div>
@@ -231,17 +292,24 @@ function OrganizerWorkspaces() {
                                     <div className="mt-2">
                                       <div className="flex items-center gap-2 mb-2">
                                         <Layers className="h-4 w-4 text-[#797775]" />
-                                        <div className="text-xs text-[#797775]">Enabled Modules</div>
+                                        <div className="text-xs text-[#797775]">
+                                          Enabled Modules
+                                        </div>
                                       </div>
                                       <div className="flex flex-wrap gap-2">
                                         {w.moduls && w.moduls.length > 0 ? (
                                           w.moduls.map((modId: string) => (
-                                            <span key={modId} className="bg-[#2d2d30] text-[#cccccc] text-xs px-2.5 py-1 rounded-full capitalize">
+                                            <span
+                                              key={modId}
+                                              className="bg-[#2d2d30] text-[#cccccc] text-xs px-2.5 py-1 rounded-full capitalize"
+                                            >
                                               {moduleMap[modId] || modId.substring(0, 8) + "…"}
                                             </span>
                                           ))
                                         ) : (
-                                          <span className="text-sm text-[#797775] italic">No modules enabled</span>
+                                          <span className="text-sm text-[#797775] italic">
+                                            No modules enabled
+                                          </span>
                                         )}
                                       </div>
                                     </div>

@@ -44,7 +44,7 @@ export const getAdminOrganizerOverview = createServerFn({ method: "POST" })
       }
     `;
     const data = await hasuraRequest<any>(query, { id: ctx.data.organizerId });
-    
+
     const workspaceIds = data.workspaces?.map((w: any) => w.id) || [];
     let eventsCount = 0;
     let venuesCount = 0;
@@ -76,7 +76,10 @@ export const getAdminOrganizerOverview = createServerFn({ method: "POST" })
         }
       `;
       try {
-        const eventsData = await hasuraRequest<any>(eventsQuery, { wsIds: workspaceIds, orgId: ctx.data.organizerId });
+        const eventsData = await hasuraRequest<any>(eventsQuery, {
+          wsIds: workspaceIds,
+          orgId: ctx.data.organizerId,
+        });
         allEvents = eventsData.events || [];
         invoices = eventsData.organizer_invoices || [];
       } catch (err) {
@@ -103,7 +106,10 @@ export const getAdminOrganizerOverview = createServerFn({ method: "POST" })
         }
       `;
       try {
-        const countsData = await hasuraRequest<any>(countsQuery, { wsIds: workspaceIds, eventIds: eventIds.length > 0 ? eventIds : ["00000000-0000-0000-0000-000000000000"] });
+        const countsData = await hasuraRequest<any>(countsQuery, {
+          wsIds: workspaceIds,
+          eventIds: eventIds.length > 0 ? eventIds : ["00000000-0000-0000-0000-000000000000"],
+        });
         venuesCount = countsData.venue_projects_aggregate?.aggregate?.count || 0;
         projectsCount = countsData.ticket_projects_aggregate?.aggregate?.count || 0;
         spacesCount = countsData.spaces_aggregate?.aggregate?.count || 0;
@@ -172,11 +178,14 @@ export const getAdminOrganizerSubscriptions = createServerFn({ method: "POST" })
     `;
     let data;
     try {
-      data = await hasuraRequest<any>(query, { id: ctx.data.organizerId, wsIds: wsIds.length > 0 ? wsIds : ["00000000-0000-0000-0000-000000000000"] });
+      data = await hasuraRequest<any>(query, {
+        id: ctx.data.organizerId,
+        wsIds: wsIds.length > 0 ? wsIds : ["00000000-0000-0000-0000-000000000000"],
+      });
     } catch {
       data = { subscriptions: [], wallet_transactions: [] };
     }
-    
+
     return {
       subscriptions: data.subscriptions || [],
       transactions: data.wallet_transactions || [],
@@ -261,7 +270,10 @@ export const setAdminWorkspaceStatus = createServerFn({ method: "POST" })
         }
       }
     `;
-    const data = await hasuraRequest<any>(mutation, { id: ctx.data.workspaceId, deleted: ctx.data.deleted });
+    const data = await hasuraRequest<any>(mutation, {
+      id: ctx.data.workspaceId,
+      deleted: ctx.data.deleted,
+    });
     return data.update_workspaces_by_pk;
   });
 
@@ -326,7 +338,7 @@ export const getAdminOrganizerVenues = createServerFn({ method: "POST" })
       }
     `;
     const data = await hasuraRequest<any>(query, { wsIds });
-    
+
     const venues = (data.rentable_venues || []).map((v: any) => ({
       ...v,
       workspaceName: wsNameMap[v.workspace_id] || "—",
@@ -455,13 +467,24 @@ export const getAdminOrganizerProjects = createServerFn({ method: "POST" })
         workspaceName: wsNameMap[b.events?.workspace_id] || "—",
         eventTitle: b.events?.title || "—",
       }));
-    } catch (_) { /* non-critical */ }
+    } catch (_) {
+      /* non-critical */
+    }
 
     return {
-      tickets: (data.ticket_projects || []).map((t: any) => ({ ...t, workspaceName: wsNameMap[t.workspaceId] || "—" })),
+      tickets: (data.ticket_projects || []).map((t: any) => ({
+        ...t,
+        workspaceName: wsNameMap[t.workspaceId] || "—",
+      })),
       badges: badgeProjects,
-      venues: (data.venue_projects || []).map((v: any) => ({ ...v, workspaceName: wsNameMap[v.workspace_id] || "—" })),
-      pages: (data.workspace_pages || []).map((p: any) => ({ ...p, workspaceName: wsNameMap[p.workspace_id] || "—" })),
+      venues: (data.venue_projects || []).map((v: any) => ({
+        ...v,
+        workspaceName: wsNameMap[v.workspace_id] || "—",
+      })),
+      pages: (data.workspace_pages || []).map((p: any) => ({
+        ...p,
+        workspaceName: wsNameMap[p.workspace_id] || "—",
+      })),
     };
   });
 
@@ -504,7 +527,10 @@ export const setAdminOrganizerStatus = createServerFn({ method: "POST" })
         }
       }
     `;
-    const data = await hasuraRequest<any>(mutation, { id: ctx.data.organizerId, active: ctx.data.active });
+    const data = await hasuraRequest<any>(mutation, {
+      id: ctx.data.organizerId,
+      active: ctx.data.active,
+    });
     return data.update_organizers_by_pk;
   });
 
@@ -650,9 +676,9 @@ export const getAdminOrganizerBookInvoices = createServerFn({ method: "POST" })
 
     if (wsIds.length === 0) return [];
 
-    // Assuming we don't have direct workspace_id on invoices, 
+    // Assuming we don't have direct workspace_id on invoices,
     // we'll fetch invoices linked to space_subscriptions or books within these workspaces.
-    // For safety, let's just fetch recent invoices and try to filter if needed, 
+    // For safety, let's just fetch recent invoices and try to filter if needed,
     // or just fetch invoices where reference_id matches books.
     // A safer query for now is all invoices (we might not have a direct relation set up in Hasura).
     // Let's try fetching invoices linked to space_id for now, or just all for this organizer.
@@ -832,7 +858,8 @@ export const getAdminOrganizerBillingSettings = createServerFn({ method: "POST" 
     return {
       organizer: data.organizers_by_pk,
       subscriptions: data.subscriptions || [],
-      activeSubscription: (data.subscriptions || []).find((s: any) => s.status === "active") || null,
+      activeSubscription:
+        (data.subscriptions || []).find((s: any) => s.status === "active") || null,
       workspaces: data.workspaces || [],
       pricingPlans: data.pricing_plans || [],
     };
@@ -938,12 +965,15 @@ export const getAdminOrganizerSubscriptionsDetail = createServerFn({ method: "PO
       const walletsData = await hasuraRequest<any>(walletsQuery, { wsIds: safeWsIds });
       const wallets: any[] = walletsData.wallets || [];
       walletIds = wallets.map((w: any) => w.id);
-      wallets.forEach((w: any) => { walletIdToWsMap[w.id] = w.workspace_id; });
+      wallets.forEach((w: any) => {
+        walletIdToWsMap[w.id] = w.workspace_id;
+      });
     } catch (e) {
       console.error("Failed to fetch wallets:", e);
     }
 
-    const safeWalletIds = walletIds.length > 0 ? walletIds : ["00000000-0000-0000-0000-000000000000"];
+    const safeWalletIds =
+      walletIds.length > 0 ? walletIds : ["00000000-0000-0000-0000-000000000000"];
 
     // 3. Main query: subscriptions + transactions (by BOTH workspace_id and wallet_id)
     const query = `

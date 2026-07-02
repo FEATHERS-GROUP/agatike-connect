@@ -35,7 +35,16 @@ export const getPlatformModules = createServerFn({ method: "GET" }).handler(asyn
 });
 
 export const createPlatformModule = createServerFn({ method: "POST" })
-  .validator((d: { category: string; desc: string; href: string; icon: string; label: string; mandatory: boolean }) => d)
+  .validator(
+    (d: {
+      category: string;
+      desc: string;
+      href: string;
+      icon: string;
+      label: string;
+      mandatory: boolean;
+    }) => d,
+  )
   .handler(async ({ data }) => {
     const mutation = `
       mutation InsertPlatformModule($object: platformModules_insert_input!) {
@@ -54,14 +63,26 @@ export const createPlatformModule = createServerFn({ method: "POST" })
     `;
 
     const res = await hasuraRequest<{ insert_platformModules_one: PlatformModule }>(mutation, {
-      object: data
+      object: data,
     });
 
     return res.insert_platformModules_one;
   });
 
 export const updatePlatformModule = createServerFn({ method: "POST" })
-  .validator((d: { id: string; data: { category: string; desc: string; href: string; icon: string; label: string; mandatory: boolean } }) => d)
+  .validator(
+    (d: {
+      id: string;
+      data: {
+        category: string;
+        desc: string;
+        href: string;
+        icon: string;
+        label: string;
+        mandatory: boolean;
+      };
+    }) => d,
+  )
   .handler(async ({ data: { id, data } }) => {
     const mutation = `
       mutation UpdatePlatformModule($id: uuid!, $set: platformModules_set_input!) {
@@ -81,7 +102,7 @@ export const updatePlatformModule = createServerFn({ method: "POST" })
 
     const res = await hasuraRequest<{ update_platformModules_by_pk: PlatformModule }>(mutation, {
       id,
-      set: data
+      set: data,
     });
 
     return res.update_platformModules_by_pk;

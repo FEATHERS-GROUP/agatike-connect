@@ -17,7 +17,7 @@ function AdminOrganizers() {
     <div className="space-y-4 font-sans text-sm pb-10">
       <div className="flex items-center justify-between pb-2 border-b border-[#333333]">
         <h1 className="text-xl font-semibold text-white">Organizers</h1>
-        
+
         <div className="flex items-center gap-2">
           <button className="flex items-center gap-1.5 px-3 py-1 hover:bg-[#333333] text-[#cccccc] font-medium text-[13px] transition-colors">
             <Plus className="h-4 w-4 text-[#f97316]" />
@@ -41,7 +41,7 @@ function AdminOrganizers() {
               className="h-7 w-full rounded-sm border border-[#333333] bg-[#111111] pl-8 pr-3 text-[13px] text-white outline-none focus:border-[#f97316] transition-colors placeholder:text-[#797775]"
             />
           </div>
-          
+
           <button className="flex items-center gap-1.5 px-3 py-1 hover:bg-[#333333] text-[#cccccc] text-[13px] transition-colors border border-transparent hover:border-[#333333] rounded-sm">
             <Filter className="h-3.5 w-3.5" />
             Add filter
@@ -54,7 +54,10 @@ function AdminOrganizers() {
             <thead className="bg-[#2d2d30] text-[#cccccc]">
               <tr>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333] w-8">
-                  <input type="checkbox" className="rounded-sm border-[#333333] bg-[#111111] accent-[#f97316]" />
+                  <input
+                    type="checkbox"
+                    className="rounded-sm border-[#333333] bg-[#111111] accent-[#f97316]"
+                  />
                 </th>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Name</th>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Handle</th>
@@ -75,7 +78,10 @@ function AdminOrganizers() {
                 organizers.map((org) => (
                   <tr key={org.id} className="hover:bg-[#2d2d30] transition-colors">
                     <td className="py-2 px-4">
-                      <input type="checkbox" className="rounded-sm border-[#333333] bg-[#111111] accent-[#f97316]" />
+                      <input
+                        type="checkbox"
+                        className="rounded-sm border-[#333333] bg-[#111111] accent-[#f97316]"
+                      />
                     </td>
                     <td className="py-2 px-4 font-medium text-white flex items-center gap-2">
                       {org.image ? (
@@ -85,7 +91,9 @@ function AdminOrganizers() {
                       )}
                       {org.name}
                     </td>
-                    <td className="py-2 px-4 text-[#f97316] hover:underline cursor-pointer">@{org.handle}</td>
+                    <td className="py-2 px-4 text-[#f97316] hover:underline cursor-pointer">
+                      @{org.handle}
+                    </td>
                     <td className="py-2 px-4">{org.email || "—"}</td>
                     <td className="py-2 px-4">
                       {org.active ? (
@@ -102,8 +110,8 @@ function AdminOrganizers() {
                     </td>
                     <td className="py-2 px-4">{org.followers?.toLocaleString() || "0"}</td>
                     <td className="py-2 px-4 text-right">
-                      <Link 
-                        to={`/internal/control/admin/organizers/${org.id}`} 
+                      <Link
+                        to={`/internal/control/admin/organizers/${org.id}`}
                         className="inline-flex p-1 hover:bg-[#333333] rounded-sm text-[#cccccc] transition-colors"
                         title="View Details"
                       >
@@ -116,13 +124,17 @@ function AdminOrganizers() {
             </tbody>
           </table>
         </div>
-        
+
         {/* Table Footer */}
         <div className="flex items-center justify-between p-2 border-t border-[#333333] bg-[#252526] text-[#797775] text-[11px]">
           <div>Showing {organizers.length} items</div>
           <div className="flex items-center gap-4">
-            <button className="hover:text-white transition-colors disabled:opacity-50" disabled>Previous</button>
-            <button className="hover:text-white transition-colors disabled:opacity-50" disabled>Next</button>
+            <button className="hover:text-white transition-colors disabled:opacity-50" disabled>
+              Previous
+            </button>
+            <button className="hover:text-white transition-colors disabled:opacity-50" disabled>
+              Next
+            </button>
           </div>
         </div>
       </div>

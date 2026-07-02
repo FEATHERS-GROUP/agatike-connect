@@ -50,7 +50,7 @@ async function run() {
       },
     }),
   });
-  
+
   const trackData = await trackRes.json();
   if (trackData.error && trackData.error !== "table/view is already tracked") {
     console.error("Error tracking table:", trackData.error);

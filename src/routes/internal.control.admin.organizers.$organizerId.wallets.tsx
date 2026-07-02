@@ -9,7 +9,7 @@ export const Route = createFileRoute("/internal/control/admin/organizers/$organi
   loader: async ({ params }) => {
     const [workspaces, pawaNetworks] = await Promise.all([
       getAdminOrganizerWallets({ data: { organizerId: params.organizerId } } as any),
-      getPawaPayNetworks() as any
+      getPawaPayNetworks() as any,
     ]);
     return { workspaces, pawaNetworks };
   },
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/internal/control/admin/organizers/$organi
 function OrganizerWallets() {
   const { workspaces, pawaNetworks = [] } = Route.useLoaderData();
   const router = useRouter();
-  
+
   const [editingWallet, setEditingWallet] = useState<string | null>(null);
   const [selectedNetworks, setSelectedNetworks] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -30,8 +30,8 @@ function OrganizerWallets() {
   };
 
   const toggleNetwork = (network: string) => {
-    setSelectedNetworks(prev => 
-      prev.includes(network) ? prev.filter(n => n !== network) : [...prev, network]
+    setSelectedNetworks((prev) =>
+      prev.includes(network) ? prev.filter((n) => n !== network) : [...prev, network],
     );
   };
 
@@ -39,7 +39,9 @@ function OrganizerWallets() {
     if (!editingWallet) return;
     setLoading(true);
     try {
-      await updateAdminWalletNetworks({ data: { walletId: editingWallet, networks: selectedNetworks } } as any);
+      await updateAdminWalletNetworks({
+        data: { walletId: editingWallet, networks: selectedNetworks },
+      } as any);
       toast.success("Networks updated successfully");
       setEditingWallet(null);
       router.invalidate();
@@ -62,13 +64,18 @@ function OrganizerWallets() {
           const wallet = ws.wallet;
           if (!wallet) {
             return (
-              <div key={ws.id} className="bg-[#1a1a1a] border border-[#333333] p-5 flex items-center justify-between">
+              <div
+                key={ws.id}
+                className="bg-[#1a1a1a] border border-[#333333] p-5 flex items-center justify-between"
+              >
                 <div>
                   <h3 className="text-white font-medium flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-[#797775]" />
                     {ws.name}
                   </h3>
-                  <p className="text-[#797775] text-xs mt-1">{ws.city || "Unknown City"}, {ws.country || "Unknown Country"}</p>
+                  <p className="text-[#797775] text-xs mt-1">
+                    {ws.city || "Unknown City"}, {ws.country || "Unknown Country"}
+                  </p>
                 </div>
                 <div className="text-[#f43f5e] text-xs flex items-center gap-1 bg-[#f43f5e]/10 px-2 py-1 rounded-sm border border-[#f43f5e]/30">
                   <AlertTriangle className="h-3 w-3" /> No wallet created yet
@@ -78,7 +85,7 @@ function OrganizerWallets() {
           }
 
           const isEditing = editingWallet === wallet.id;
-          const currentNetworks = isEditing ? selectedNetworks : (wallet.supported_networks || []);
+          const currentNetworks = isEditing ? selectedNetworks : wallet.supported_networks || [];
 
           return (
             <div key={ws.id} className="bg-[#1a1a1a] border border-[#333333] overflow-hidden">
@@ -89,14 +96,21 @@ function OrganizerWallets() {
                     {ws.name}
                   </h3>
                   <div className="flex flex-wrap items-center gap-3 mt-2 text-[#797775] text-xs">
-                    <span className="font-mono text-[#569cd6] bg-[#569cd6]/10 px-1.5 py-0.5 border border-[#569cd6]/20">ID: {String(wallet.id).substring(0, 8)}...</span>
+                    <span className="font-mono text-[#569cd6] bg-[#569cd6]/10 px-1.5 py-0.5 border border-[#569cd6]/20">
+                      ID: {String(wallet.id).substring(0, 8)}...
+                    </span>
                     <span>No: {wallet.walletNumber || "Not setup"}</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Current Balance</p>
+                  <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">
+                    Current Balance
+                  </p>
                   <p className="text-[#84c87e] text-2xl font-bold">
-                    {new Intl.NumberFormat("en-US", { style: "currency", currency: wallet.currency || "RWF" }).format(wallet.amount || 0)}
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: wallet.currency || "RWF",
+                    }).format(wallet.amount || 0)}
                   </p>
                 </div>
               </div>
@@ -107,7 +121,7 @@ function OrganizerWallets() {
                     <Globe className="h-4 w-4 text-[#c586c0]" /> Supported Networks
                   </h4>
                   {!isEditing && (
-                    <button 
+                    <button
                       onClick={() => startEditing(wallet.id, wallet.supported_networks)}
                       className="text-[#569cd6] text-xs hover:underline"
                     >
@@ -126,31 +140,43 @@ function OrganizerWallets() {
                             key={net.id}
                             onClick={() => toggleNetwork(net.id)}
                             className={`px-3 py-1.5 text-xs rounded-sm border flex flex-col items-start gap-1 transition-colors ${
-                              active ? "bg-[#84c87e]/10 border-[#84c87e]/40 text-[#84c87e]" : "bg-[#111] border-[#333] text-[#797775] hover:border-[#555] hover:text-white"
+                              active
+                                ? "bg-[#84c87e]/10 border-[#84c87e]/40 text-[#84c87e]"
+                                : "bg-[#111] border-[#333] text-[#797775] hover:border-[#555] hover:text-white"
                             }`}
                           >
                             <div className="flex items-center gap-1.5 w-full">
-                              <div className={`h-3 w-3 shrink-0 rounded-full border ${active ? "bg-[#84c87e] border-[#84c87e]" : "border-[#555]"}`} />
-                              <span className="capitalize font-medium truncate max-w-[120px]">{net.name}</span>
+                              <div
+                                className={`h-3 w-3 shrink-0 rounded-full border ${active ? "bg-[#84c87e] border-[#84c87e]" : "border-[#555]"}`}
+                              />
+                              <span className="capitalize font-medium truncate max-w-[120px]">
+                                {net.name}
+                              </span>
                             </div>
-                            <span className="text-[10px] uppercase opacity-70 ml-4.5">{net.country} · {net.currency}</span>
+                            <span className="text-[10px] uppercase opacity-70 ml-4.5">
+                              {net.country} · {net.currency}
+                            </span>
                           </button>
                         );
                       })}
                     </div>
                     <div className="flex items-center gap-2 pt-2">
-                      <button 
+                      <button
                         onClick={() => setEditingWallet(null)}
                         className="px-3 py-1.5 text-xs border border-[#333333] text-[#797775] hover:text-white transition-colors flex items-center gap-1 rounded-sm"
                       >
                         <X className="h-3 w-3" /> Cancel
                       </button>
-                      <button 
+                      <button
                         onClick={saveNetworks}
                         disabled={loading}
                         className="px-3 py-1.5 text-xs bg-[#569cd6] text-white hover:bg-[#4a8cc0] transition-colors flex items-center gap-1 rounded-sm disabled:opacity-50"
                       >
-                        {loading ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} 
+                        {loading ? (
+                          <RefreshCw className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Check className="h-3 w-3" />
+                        )}
                         Save Networks
                       </button>
                     </div>
@@ -163,7 +189,10 @@ function OrganizerWallets() {
                       currentNetworks.map((n: string) => {
                         const networkObj = pawaNetworks.find((pn: any) => pn.id === n);
                         return (
-                          <span key={n} className="px-2.5 py-1 text-[11px] bg-[#333333] text-[#cccccc] rounded-sm capitalize border border-[#444444]">
+                          <span
+                            key={n}
+                            className="px-2.5 py-1 text-[11px] bg-[#333333] text-[#cccccc] rounded-sm capitalize border border-[#444444]"
+                          >
                             {networkObj ? `${networkObj.name} (${networkObj.country})` : n}
                           </span>
                         );

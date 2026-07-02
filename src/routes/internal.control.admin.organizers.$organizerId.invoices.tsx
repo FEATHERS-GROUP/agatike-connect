@@ -4,7 +4,9 @@ import { Receipt } from "lucide-react";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/invoices")({
   loader: async ({ params }) => {
-    const invoices = await getAdminOrganizerInvoices({ data: { organizerId: params.organizerId } } as any);
+    const invoices = await getAdminOrganizerInvoices({
+      data: { organizerId: params.organizerId },
+    } as any);
     return { invoices };
   },
   component: OrganizerInvoices,
@@ -43,8 +45,12 @@ function OrganizerInvoices() {
               ) : (
                 invoices.map((inv: any) => (
                   <tr key={inv.id} className="hover:bg-[#2d2d30] transition-colors">
-                    <td className="py-2 px-4 font-medium text-[#cccccc]">{String(inv.id).substring(0,8)}...</td>
-                    <td className="py-2 px-4 font-medium text-white">{inv.amount ? `$${parseFloat(inv.amount).toFixed(2)}` : "Free"}</td>
+                    <td className="py-2 px-4 font-medium text-[#cccccc]">
+                      {String(inv.id).substring(0, 8)}...
+                    </td>
+                    <td className="py-2 px-4 font-medium text-white">
+                      {inv.amount ? `$${parseFloat(inv.amount).toFixed(2)}` : "Free"}
+                    </td>
                     <td className="py-2 px-4">
                       {inv.status === "paid" ? (
                         <span className="text-[#84c87e] capitalize">{inv.status}</span>
@@ -53,7 +59,7 @@ function OrganizerInvoices() {
                       )}
                     </td>
                     <td className="py-2 px-4">
-                      {inv.created_at ? new Date(inv.created_at).toLocaleDateString('en-US') : "—"}
+                      {inv.created_at ? new Date(inv.created_at).toLocaleDateString("en-US") : "—"}
                     </td>
                   </tr>
                 ))

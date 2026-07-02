@@ -3,9 +3,13 @@ import { getAdminOrganizerBookInvoices } from "@/api/admin_organizer_control";
 import { FileText, Search, CreditCard, Clock } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/book-invoices")({
+export const Route = createFileRoute(
+  "/internal/control/admin/organizers/$organizerId/book-invoices",
+)({
   loader: async ({ params }) => {
-    const invoices = await getAdminOrganizerBookInvoices({ data: { organizerId: params.organizerId } } as any);
+    const invoices = await getAdminOrganizerBookInvoices({
+      data: { organizerId: params.organizerId },
+    } as any);
     return { invoices };
   },
   component: OrganizerBookInvoices,
@@ -15,10 +19,11 @@ function OrganizerBookInvoices() {
   const { invoices } = Route.useLoaderData();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredInvoices = invoices.filter((inv: any) =>
-    (inv.invoice_number || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (inv.customer_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (inv.customer_email || "").toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredInvoices = invoices.filter(
+    (inv: any) =>
+      (inv.invoice_number || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (inv.customer_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (inv.customer_email || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -47,7 +52,9 @@ function OrganizerBookInvoices() {
           <table className="w-full text-left text-[13px] whitespace-nowrap">
             <thead className="bg-[#2d2d30] text-[#cccccc]">
               <tr>
-                <th className="font-semibold py-2 px-4 border-b border-[#333333]">Invoice Number</th>
+                <th className="font-semibold py-2 px-4 border-b border-[#333333]">
+                  Invoice Number
+                </th>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Customer</th>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Type</th>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Amount</th>
@@ -70,13 +77,15 @@ function OrganizerBookInvoices() {
                     </td>
                     <td className="py-2 px-4">
                       <div className="font-medium text-white">{inv.customer_name || "Unknown"}</div>
-                      <div className="text-xs text-[#797775]">{inv.customer_email || "No Email"}</div>
+                      <div className="text-xs text-[#797775]">
+                        {inv.customer_email || "No Email"}
+                      </div>
                     </td>
-                    <td className="py-2 px-4 capitalize">
-                      {inv.type?.replace(/_/g, " ") || "—"}
-                    </td>
+                    <td className="py-2 px-4 capitalize">{inv.type?.replace(/_/g, " ") || "—"}</td>
                     <td className="py-2 px-4">
-                      <span className="text-[#dcdcaa] font-medium">{inv.currency || "USD"} {inv.amount}</span>
+                      <span className="text-[#dcdcaa] font-medium">
+                        {inv.currency || "USD"} {inv.amount}
+                      </span>
                     </td>
                     <td className="py-2 px-4">
                       {inv.status === "paid" ? (
@@ -90,7 +99,7 @@ function OrganizerBookInvoices() {
                       )}
                     </td>
                     <td className="py-2 px-4 text-[#797775]">
-                      {inv.created_at ? new Date(inv.created_at).toLocaleDateString('en-US') : "—"}
+                      {inv.created_at ? new Date(inv.created_at).toLocaleDateString("en-US") : "—"}
                     </td>
                   </tr>
                 ))

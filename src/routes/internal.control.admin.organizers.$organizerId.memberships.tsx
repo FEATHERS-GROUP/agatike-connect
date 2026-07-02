@@ -3,24 +3,29 @@ import { getAdminOrganizerMemberships } from "@/api/admin_organizer_control";
 import { Users, Search, Building2, LayoutGrid, CheckCircle2, XCircle } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/memberships")({
-  loader: async ({ params }) => {
-    const memberships = await getAdminOrganizerMemberships({ data: { organizerId: params.organizerId } } as any);
-    return { memberships };
+export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/memberships")(
+  {
+    loader: async ({ params }) => {
+      const memberships = await getAdminOrganizerMemberships({
+        data: { organizerId: params.organizerId },
+      } as any);
+      return { memberships };
+    },
+    component: OrganizerMemberships,
   },
-  component: OrganizerMemberships,
-});
+);
 
 function OrganizerMemberships() {
   const { memberships } = Route.useLoaderData();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredMemberships = memberships.filter((m: any) =>
-    (m.customer_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (m.customer_email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (m.plan_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (m.workspaceName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (m.spaceName || "").toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredMemberships = memberships.filter(
+    (m: any) =>
+      (m.customer_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.customer_email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.plan_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.workspaceName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.spaceName || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -52,7 +57,9 @@ function OrganizerMemberships() {
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">ID</th>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Member</th>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Plan / Type</th>
-                <th className="font-semibold py-2 px-4 border-b border-[#333333]">Location (Space)</th>
+                <th className="font-semibold py-2 px-4 border-b border-[#333333]">
+                  Location (Space)
+                </th>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Status</th>
                 <th className="font-semibold py-2 px-4 border-b border-[#333333]">Joined</th>
               </tr>
@@ -67,14 +74,20 @@ function OrganizerMemberships() {
               ) : (
                 filteredMemberships.map((m: any) => (
                   <tr key={m.id} className="hover:bg-[#2d2d30] transition-colors">
-                    <td className="py-2 px-4 font-mono text-[#797775] text-xs">{String(m.id).substring(0, 8)}...</td>
+                    <td className="py-2 px-4 font-mono text-[#797775] text-xs">
+                      {String(m.id).substring(0, 8)}...
+                    </td>
                     <td className="py-2 px-4">
                       <div className="font-medium text-white">{m.customer_name || "Unknown"}</div>
                       <div className="text-xs text-[#797775]">{m.customer_email || "No Email"}</div>
                     </td>
                     <td className="py-2 px-4">
-                      <div className="text-[#dcdcaa] font-medium">{m.plan_name || "Custom Plan"}</div>
-                      <div className="text-xs text-[#797775] capitalize">{m.booking_type || "individual"}</div>
+                      <div className="text-[#dcdcaa] font-medium">
+                        {m.plan_name || "Custom Plan"}
+                      </div>
+                      <div className="text-xs text-[#797775] capitalize">
+                        {m.booking_type || "individual"}
+                      </div>
                     </td>
                     <td className="py-2 px-4">
                       <div className="flex flex-col gap-1">
@@ -100,7 +113,7 @@ function OrganizerMemberships() {
                       )}
                     </td>
                     <td className="py-2 px-4 text-[#797775]">
-                      {m.created_at ? new Date(m.created_at).toLocaleDateString('en-US') : "—"}
+                      {m.created_at ? new Date(m.created_at).toLocaleDateString("en-US") : "—"}
                     </td>
                   </tr>
                 ))

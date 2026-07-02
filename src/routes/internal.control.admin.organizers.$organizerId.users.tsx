@@ -4,7 +4,9 @@ import { Users } from "lucide-react";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/users")({
   loader: async ({ params }) => {
-    const users = await getAdminOrganizerUsers({ data: { organizerId: params.organizerId } } as any);
+    const users = await getAdminOrganizerUsers({
+      data: { organizerId: params.organizerId },
+    } as any);
     return { users };
   },
   component: OrganizerUsers,

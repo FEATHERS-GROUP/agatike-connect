@@ -15,9 +15,10 @@ function OrganizerBooks() {
   const { books } = Route.useLoaderData();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredBooks = books.filter((b: any) =>
-    (b.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (b.workspaceName || "").toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredBooks = books.filter(
+    (b: any) =>
+      (b.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (b.workspaceName || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -66,7 +67,9 @@ function OrganizerBooks() {
                   const fields = Array.isArray(b.schema_fields) ? b.schema_fields : [];
                   return (
                     <tr key={b.id} className="hover:bg-[#2d2d30] transition-colors">
-                      <td className="py-2 px-4 font-mono text-[#797775] text-xs">{String(b.id).substring(0, 8)}...</td>
+                      <td className="py-2 px-4 font-mono text-[#797775] text-xs">
+                        {String(b.id).substring(0, 8)}...
+                      </td>
                       <td className="py-2 px-4">
                         <div className="flex items-center gap-2 font-medium text-white">
                           <BookOpen className="h-3.5 w-3.5 text-[#dcdcaa] shrink-0" />
@@ -76,7 +79,13 @@ function OrganizerBooks() {
                       <td className="py-2 px-4">
                         <div className="flex items-center gap-1.5">
                           <Building2 className="h-3.5 w-3.5 text-[#797775] shrink-0" />
-                          <span className={b.workspaceName !== "—" ? "text-[#cccccc]" : "text-[#797775] italic"}>{b.workspaceName}</span>
+                          <span
+                            className={
+                              b.workspaceName !== "—" ? "text-[#cccccc]" : "text-[#797775] italic"
+                            }
+                          >
+                            {b.workspaceName}
+                          </span>
                         </div>
                       </td>
                       <td className="py-2 px-4">
@@ -86,13 +95,17 @@ function OrganizerBooks() {
                         </div>
                       </td>
                       <td className="py-2 px-4 text-[#797775]">
-                        {fields.length > 0
-                          ? fields.map((f: any) => f.label || f.name || f.key || "?").join(", ").substring(0, 40) + (fields.length > 3 ? "…" : "")
-                          : <span className="italic">No fields</span>
-                        }
+                        {fields.length > 0 ? (
+                          fields
+                            .map((f: any) => f.label || f.name || f.key || "?")
+                            .join(", ")
+                            .substring(0, 40) + (fields.length > 3 ? "…" : "")
+                        ) : (
+                          <span className="italic">No fields</span>
+                        )}
                       </td>
                       <td className="py-2 px-4 text-[#797775]">
-                        {b.created_at ? new Date(b.created_at).toLocaleDateString('en-US') : "—"}
+                        {b.created_at ? new Date(b.created_at).toLocaleDateString("en-US") : "—"}
                       </td>
                     </tr>
                   );

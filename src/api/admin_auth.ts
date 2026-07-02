@@ -25,7 +25,9 @@ export const loginAdmin = createServerFn({ method: "POST" }).handler(async (ctx)
       }
     `;
 
-  const result = await hasuraRequest<{ admin_users: { id: string; password: string; role: string; is_super_admin: boolean }[] }>(query, {
+  const result = await hasuraRequest<{
+    admin_users: { id: string; password: string; role: string; is_super_admin: boolean }[];
+  }>(query, {
     email,
   });
   const admin = result.admin_users[0];
@@ -39,16 +41,15 @@ export const loginAdmin = createServerFn({ method: "POST" }).handler(async (ctx)
     throw new Error("Invalid email or password");
   }
 
-  const token = await new SignJWT({ 
-      sub: admin.id, 
-      type: "global_admin",
-      role: admin.role,
-      is_super_admin: admin.is_super_admin 
-    })
+  const token = await new SignJWT({
+    sub: admin.id,
+    type: "global_admin",
+    role: admin.role,
+    is_super_admin: admin.is_super_admin,
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setExpirationTime("24h") // 24 hours as requested
     .sign(SECRET);
-
 
   setCookie("agatike_admin_auth", token, {
     httpOnly: true,
@@ -62,16 +63,20 @@ export const loginAdmin = createServerFn({ method: "POST" }).handler(async (ctx)
 
 export const getAdminSession = createServerFn({ method: "POST" }).handler(async () => {
   const token = getCookie("agatike_admin_auth");
-  
 
   if (!token) return null;
 
   try {
     const { payload } = await jwtVerify(token, SECRET);
-    const session = payload as unknown as { sub: string; type: string; role: string; is_super_admin: boolean };
-    
+    const session = payload as unknown as {
+      sub: string;
+      type: string;
+      role: string;
+      is_super_admin: boolean;
+    };
+
     if (session.type !== "global_admin") {
-        return null;
+      return null;
     }
 
     return session;

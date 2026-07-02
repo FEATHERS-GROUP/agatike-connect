@@ -5,7 +5,9 @@ import { useState } from "react";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/attendees")({
   loader: async ({ params }) => {
-    const attendees = await getAdminOrganizerAttendees({ data: { organizerId: params.organizerId } } as any);
+    const attendees = await getAdminOrganizerAttendees({
+      data: { organizerId: params.organizerId },
+    } as any);
     return { attendees };
   },
   component: OrganizerAttendees,
@@ -15,12 +17,13 @@ function OrganizerAttendees() {
   const { attendees } = Route.useLoaderData();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredAttendees = attendees.filter((a: any) =>
-    (a.names || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (a.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (a.qrcode_number || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (a.workspaceName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (a.eventTitle || "").toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredAttendees = attendees.filter(
+    (a: any) =>
+      (a.names || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (a.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (a.qrcode_number || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (a.workspaceName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (a.eventTitle || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -75,7 +78,9 @@ function OrganizerAttendees() {
                     </td>
                     <td className="py-2 px-4">
                       <div className="font-medium text-white">{a.names || "Unknown"}</div>
-                      <div className="text-xs text-[#797775]">{a.email || a.phone || "No Contact"}</div>
+                      <div className="text-xs text-[#797775]">
+                        {a.email || a.phone || "No Contact"}
+                      </div>
                     </td>
                     <td className="py-2 px-4">
                       <div className="flex flex-col gap-1">
@@ -90,20 +95,30 @@ function OrganizerAttendees() {
                       </div>
                     </td>
                     <td className="py-2 px-4">
-                      <div className="capitalize text-[#cccccc]">{a.ticket_type === "ga" ? "General Admission" : a.ticket_type || "Standard"}</div>
+                      <div className="capitalize text-[#cccccc]">
+                        {a.ticket_type === "ga" ? "General Admission" : a.ticket_type || "Standard"}
+                      </div>
                       <div className="text-xs text-[#797775]">Qty: {a.quanity || 1}</div>
                     </td>
                     <td className="py-2 px-4">
-                      {a.status === "completed" || a.status === "approved" || a.status === "valid" ? (
-                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e] capitalize">{a.status}</span>
+                      {a.status === "completed" ||
+                      a.status === "approved" ||
+                      a.status === "valid" ? (
+                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e] capitalize">
+                          {a.status}
+                        </span>
                       ) : a.status === "pending" ? (
-                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#c586c0]/10 text-[#c586c0] capitalize">{a.status}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#c586c0]/10 text-[#c586c0] capitalize">
+                          {a.status}
+                        </span>
                       ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#f43f5e]/10 text-[#f43f5e] capitalize">{a.status || "—"}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#f43f5e]/10 text-[#f43f5e] capitalize">
+                          {a.status || "—"}
+                        </span>
                       )}
                     </td>
                     <td className="py-2 px-4 text-[#797775]">
-                      {a.created_at ? new Date(a.created_at).toLocaleDateString('en-US') : "—"}
+                      {a.created_at ? new Date(a.created_at).toLocaleDateString("en-US") : "—"}
                     </td>
                   </tr>
                 ))

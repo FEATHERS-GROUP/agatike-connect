@@ -15,7 +15,7 @@ import {
 import { useState, useMemo } from "react";
 
 export const Route = createFileRoute(
-  "/internal/control/admin/organizers/$organizerId/contributors"
+  "/internal/control/admin/organizers/$organizerId/contributors",
 )({
   loader: async ({ params }) => {
     const contributors = await getAdminOrganizerContributors({
@@ -98,12 +98,18 @@ function OrganizerContributors() {
   const [filterAccess, setFilterAccess] = useState("all");
 
   const resourceTypes = useMemo(
-    () => ["all", ...Array.from(new Set(contributors.map((c: any) => c.resource_type).filter(Boolean)))],
-    [contributors]
+    () => [
+      "all",
+      ...Array.from(new Set(contributors.map((c: any) => c.resource_type).filter(Boolean))),
+    ],
+    [contributors],
   );
   const accessLevels = useMemo(
-    () => ["all", ...Array.from(new Set(contributors.map((c: any) => c.access_level).filter(Boolean)))],
-    [contributors]
+    () => [
+      "all",
+      ...Array.from(new Set(contributors.map((c: any) => c.access_level).filter(Boolean))),
+    ],
+    [contributors],
   );
 
   const filtered = useMemo(() => {
@@ -128,12 +134,11 @@ function OrganizerContributors() {
   // Stats
   const editCount = contributors.filter((c: any) => c.access_level === "edit").length;
   const pendingCount = contributors.filter(
-    (c: any) => (c.status || "").toLowerCase() === "pending"
+    (c: any) => (c.status || "").toLowerCase() === "pending",
   ).length;
 
   return (
     <div className="font-sans text-sm pb-10">
-
       {/* ── KPI Strip ─────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-[#333333] border border-[#333333] mb-0">
         {[
@@ -185,7 +190,10 @@ function OrganizerContributors() {
             {/* Resource type filter */}
             <select
               value={filterType}
-              onChange={(e) => { setFilterType(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setFilterType(e.target.value);
+                setPage(1);
+              }}
               className="bg-[#1a1a1a] border border-[#333333] text-[#cccccc] text-xs px-2 py-1.5 focus:outline-none focus:border-[#569cd6] transition-colors"
             >
               {resourceTypes.map((t) => (
@@ -198,7 +206,10 @@ function OrganizerContributors() {
             {/* Access level filter */}
             <select
               value={filterAccess}
-              onChange={(e) => { setFilterAccess(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setFilterAccess(e.target.value);
+                setPage(1);
+              }}
               className="bg-[#1a1a1a] border border-[#333333] text-[#cccccc] text-xs px-2 py-1.5 focus:outline-none focus:border-[#569cd6] transition-colors"
             >
               {accessLevels.map((a) => (
@@ -215,7 +226,10 @@ function OrganizerContributors() {
                 type="text"
                 placeholder="Search by email or workspace…"
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
                 className="bg-[#1a1a1a] border border-[#333333] text-white text-xs pl-9 pr-4 py-1.5 w-56 focus:outline-none focus:border-[#569cd6] transition-colors placeholder-[#797775]"
               />
             </div>
@@ -229,9 +243,13 @@ function OrganizerContributors() {
                 <tr className="bg-[#2d2d30] text-[#797775] text-xs uppercase tracking-wider">
                   <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Email</th>
                   <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Workspace</th>
-                  <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Resource Type</th>
+                  <th className="py-2.5 px-5 font-medium border-b border-[#333333]">
+                    Resource Type
+                  </th>
                   <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Resource ID</th>
-                  <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Access Level</th>
+                  <th className="py-2.5 px-5 font-medium border-b border-[#333333]">
+                    Access Level
+                  </th>
                   <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Status</th>
                   <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Added</th>
                 </tr>
@@ -273,9 +291,7 @@ function OrganizerContributors() {
                         <StatusPill status={c.status} />
                       </td>
                       <td className="py-3 px-5 text-[#797775]">
-                        {c.created_at
-                          ? new Date(c.created_at).toLocaleDateString("en-US")
-                          : "—"}
+                        {c.created_at ? new Date(c.created_at).toLocaleDateString("en-US") : "—"}
                       </td>
                     </tr>
                   ))

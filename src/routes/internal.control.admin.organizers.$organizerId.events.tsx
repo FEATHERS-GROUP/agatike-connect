@@ -5,13 +5,21 @@ import { useState } from "react";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/events")({
   loader: async ({ params }) => {
-    const events = await getAdminOrganizerEvents({ data: { organizerId: params.organizerId } } as any);
+    const events = await getAdminOrganizerEvents({
+      data: { organizerId: params.organizerId },
+    } as any);
     return { events };
   },
   component: OrganizerEvents,
 });
 
-function StatusBadge({ suspended, allowed_public }: { suspended: boolean; allowed_public: boolean }) {
+function StatusBadge({
+  suspended,
+  allowed_public,
+}: {
+  suspended: boolean;
+  allowed_public: boolean;
+}) {
   if (suspended) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-[#f43f5e]/10 text-[#f43f5e] text-xs font-medium">
@@ -40,10 +48,11 @@ function OrganizerEvents() {
   const { events } = Route.useLoaderData();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filtered = events.filter((e: any) =>
-    (e.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (e.category || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (e.workspaceName || "").toLowerCase().includes(searchQuery.toLowerCase())
+  const filtered = events.filter(
+    (e: any) =>
+      (e.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (e.category || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (e.workspaceName || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const now = new Date();
@@ -100,7 +109,9 @@ function OrganizerEvents() {
 
                   return (
                     <tr key={evt.id} className="hover:bg-[#2d2d30] transition-colors">
-                      <td className="py-2 px-4 font-mono text-[#797775] text-xs">{String(evt.id).substring(0, 8)}...</td>
+                      <td className="py-2 px-4 font-mono text-[#797775] text-xs">
+                        {String(evt.id).substring(0, 8)}...
+                      </td>
                       <td className="py-2 px-4 font-medium text-white max-w-[200px]">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-3.5 w-3.5 text-[#f97316] shrink-0" />
@@ -110,14 +121,22 @@ function OrganizerEvents() {
                       <td className="py-2 px-4">
                         <div className="flex items-center gap-1.5">
                           <Building2 className="h-3.5 w-3.5 text-[#797775] shrink-0" />
-                          <span className={evt.workspaceName && evt.workspaceName !== "—" ? "text-[#cccccc]" : "text-[#797775] italic"}>
+                          <span
+                            className={
+                              evt.workspaceName && evt.workspaceName !== "—"
+                                ? "text-[#cccccc]"
+                                : "text-[#797775] italic"
+                            }
+                          >
                             {evt.workspaceName || "—"}
                           </span>
                         </div>
                       </td>
                       <td className="py-2 px-4 capitalize">
                         {evt.category ? (
-                          <span className="bg-[#2d2d30] px-2 py-0.5 rounded-full text-xs text-[#cccccc]">{evt.category}</span>
+                          <span className="bg-[#2d2d30] px-2 py-0.5 rounded-full text-xs text-[#cccccc]">
+                            {evt.category}
+                          </span>
                         ) : (
                           <span className="text-[#797775]">—</span>
                         )}
@@ -131,19 +150,34 @@ function OrganizerEvents() {
                       </td>
                       <td className="py-2 px-4">
                         {startDate ? (
-                          <span className={isUpcoming ? "text-[#84c87e]" : isPast ? "text-[#797775]" : ""}>
-                            {startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            <span className="ml-1.5 text-[10px] opacity-60">{isUpcoming ? "↑ upcoming" : "past"}</span>
+                          <span
+                            className={
+                              isUpcoming ? "text-[#84c87e]" : isPast ? "text-[#797775]" : ""
+                            }
+                          >
+                            {startDate.toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                            <span className="ml-1.5 text-[10px] opacity-60">
+                              {isUpcoming ? "↑ upcoming" : "past"}
+                            </span>
                           </span>
                         ) : (
                           <span className="text-[#797775] italic">No schedule</span>
                         )}
                       </td>
                       <td className="py-2 px-4">
-                        <StatusBadge suspended={evt.suspended} allowed_public={evt.allowed_public} />
+                        <StatusBadge
+                          suspended={evt.suspended}
+                          allowed_public={evt.allowed_public}
+                        />
                       </td>
                       <td className="py-2 px-4 text-[#797775]">
-                        {evt.created_at ? new Date(evt.created_at).toLocaleDateString('en-US') : "—"}
+                        {evt.created_at
+                          ? new Date(evt.created_at).toLocaleDateString("en-US")
+                          : "—"}
                       </td>
                     </tr>
                   );

@@ -5,7 +5,9 @@ import { useState } from "react";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/rsvps")({
   loader: async ({ params }) => {
-    const rsvps = await getAdminOrganizerRSVPs({ data: { organizerId: params.organizerId } } as any);
+    const rsvps = await getAdminOrganizerRSVPs({
+      data: { organizerId: params.organizerId },
+    } as any);
     return { rsvps };
   },
   component: OrganizerRSVPs,
@@ -15,11 +17,12 @@ function OrganizerRSVPs() {
   const { rsvps } = Route.useLoaderData();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredRsvps = rsvps.filter((r: any) =>
-    (r.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (r.first_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (r.last_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (r.workspaceName || "").toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredRsvps = rsvps.filter(
+    (r: any) =>
+      (r.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (r.first_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (r.last_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (r.workspaceName || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -66,9 +69,13 @@ function OrganizerRSVPs() {
               ) : (
                 filteredRsvps.map((r: any) => (
                   <tr key={r.id} className="hover:bg-[#2d2d30] transition-colors">
-                    <td className="py-2 px-4 font-mono text-[#797775] text-xs">{String(r.id).substring(0, 8)}...</td>
+                    <td className="py-2 px-4 font-mono text-[#797775] text-xs">
+                      {String(r.id).substring(0, 8)}...
+                    </td>
                     <td className="py-2 px-4">
-                      <div className="font-medium text-white">{r.first_name} {r.last_name}</div>
+                      <div className="font-medium text-white">
+                        {r.first_name} {r.last_name}
+                      </div>
                       <div className="text-xs text-[#797775]">{r.email}</div>
                     </td>
                     <td className="py-2 px-4">
@@ -80,20 +87,32 @@ function OrganizerRSVPs() {
                     <td className="py-2 px-4">
                       <div className="flex items-center gap-1.5">
                         <Building2 className="h-3.5 w-3.5 text-[#797775] shrink-0" />
-                        <span className={r.workspaceName !== "—" ? "text-[#cccccc]" : "text-[#797775] italic"}>{r.workspaceName}</span>
+                        <span
+                          className={
+                            r.workspaceName !== "—" ? "text-[#cccccc]" : "text-[#797775] italic"
+                          }
+                        >
+                          {r.workspaceName}
+                        </span>
                       </div>
                     </td>
                     <td className="py-2 px-4">
                       {r.status === "approved" ? (
-                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e] capitalize">{r.status}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e] capitalize">
+                          {r.status}
+                        </span>
                       ) : r.status === "rejected" ? (
-                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#f43f5e]/10 text-[#f43f5e] capitalize">{r.status}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#f43f5e]/10 text-[#f43f5e] capitalize">
+                          {r.status}
+                        </span>
                       ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#c586c0]/10 text-[#c586c0] capitalize">{r.status || "pending"}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#c586c0]/10 text-[#c586c0] capitalize">
+                          {r.status || "pending"}
+                        </span>
                       )}
                     </td>
                     <td className="py-2 px-4 text-[#797775]">
-                      {r.created_at ? new Date(r.created_at).toLocaleDateString('en-US') : "—"}
+                      {r.created_at ? new Date(r.created_at).toLocaleDateString("en-US") : "—"}
                     </td>
                   </tr>
                 ))

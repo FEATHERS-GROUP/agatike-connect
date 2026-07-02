@@ -37,7 +37,7 @@ async function run() {
 
   console.log("2. Seeding super admin user...");
   const hashedPassword = await bcrypt.hash("SuperAdmin@123!", 10);
-  
+
   const seedRes = await fetch(`${API_BASE}/v2/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-hasura-admin-secret": SECRET },
@@ -61,7 +61,9 @@ async function run() {
   if (seedData.error) {
     console.error("Error seeding super admin:", seedData.error);
   } else {
-    console.log("Super admin seeded successfully! Email: admin@agatike.com, Password: SuperAdmin@123!");
+    console.log(
+      "Super admin seeded successfully! Email: admin@agatike.com, Password: SuperAdmin@123!",
+    );
   }
 }
 

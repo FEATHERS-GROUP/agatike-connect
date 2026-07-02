@@ -11,7 +11,7 @@ function AdminDashboard() {
     <div className="space-y-4 font-sans text-sm pb-10">
       <div className="flex items-center justify-between pb-2 border-b border-[#333333]">
         <h1 className="text-xl font-semibold text-white">Dashboard Overview</h1>
-        
+
         <div className="flex items-center gap-2">
           <button className="flex items-center gap-1.5 px-3 py-1 hover:bg-[#333333] text-[#cccccc] font-medium text-[13px] transition-colors">
             <Plus className="h-4 w-4 text-[#f97316]" />
@@ -25,12 +25,7 @@ function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-        <StatCard
-          title="Total Users"
-          value="124,592"
-          trend="+12.5% vs last month"
-          icon={Users}
-        />
+        <StatCard title="Total Users" value="124,592" trend="+12.5% vs last month" icon={Users} />
         <StatCard
           title="Revenue (30d)"
           value="$842,500"
@@ -73,10 +68,15 @@ function AdminDashboard() {
 
         {/* Recent Activity */}
         <div className="col-span-1 bg-[#252526] p-4">
-          <h3 className="text-[13px] font-semibold text-[#cccccc] mb-4 pb-2 border-b border-[#333333]">Activity log</h3>
+          <h3 className="text-[13px] font-semibold text-[#cccccc] mb-4 pb-2 border-b border-[#333333]">
+            Activity log
+          </h3>
           <div className="space-y-0">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="flex gap-3 py-2 border-b border-[#333333] last:border-0 hover:bg-[#2d2d30] px-2 -mx-2 cursor-pointer transition-colors">
+              <div
+                key={i}
+                className="flex gap-3 py-2 border-b border-[#333333] last:border-0 hover:bg-[#2d2d30] px-2 -mx-2 cursor-pointer transition-colors"
+              >
                 <div className="mt-0.5 h-4 w-4 shrink-0 flex items-center justify-center">
                   <Activity className="h-4 w-4 text-[#f97316]" />
                 </div>

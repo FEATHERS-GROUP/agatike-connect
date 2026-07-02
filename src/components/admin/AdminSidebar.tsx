@@ -6,18 +6,42 @@ export function AdminSidebar() {
 
   const mainNav = [
     { label: "Home", href: "/internal/control/admin", icon: LucideIcons.Home },
-    { label: "Dashboard", href: "/internal/control/admin/dashboard", icon: LucideIcons.LayoutDashboard },
+    {
+      label: "Dashboard",
+      href: "/internal/control/admin/dashboard",
+      icon: LucideIcons.LayoutDashboard,
+    },
     { label: "All services", href: "/internal/control/admin/services", icon: LucideIcons.List },
     { type: "divider" },
-    { label: "Resource groups", href: "/internal/control/admin/resources", icon: LucideIcons.Cuboid },
+    {
+      label: "Resource groups",
+      href: "/internal/control/admin/resources",
+      icon: LucideIcons.Cuboid,
+    },
     { label: "Users & Roles", href: "/internal/control/admin/users", icon: LucideIcons.Users },
-    { label: "Organizers", href: "/internal/control/admin/organizers", icon: LucideIcons.Building2 },
-    { label: "Transactions", href: "/internal/control/admin/transactions", icon: LucideIcons.CreditCard },
+    {
+      label: "Organizers",
+      href: "/internal/control/admin/organizers",
+      icon: LucideIcons.Building2,
+    },
+    {
+      label: "Transactions",
+      href: "/internal/control/admin/transactions",
+      icon: LucideIcons.CreditCard,
+    },
     { label: "System Health", href: "/internal/control/admin/health", icon: LucideIcons.Activity },
-    { label: "Moderation", href: "/internal/control/admin/moderation", icon: LucideIcons.ShieldAlert },
+    {
+      label: "Moderation",
+      href: "/internal/control/admin/moderation",
+      icon: LucideIcons.ShieldAlert,
+    },
     { label: "Modules", href: "/internal/control/admin/modules", icon: LucideIcons.Package },
     { type: "divider" },
-    { label: "Help + support", href: "/internal/control/admin/support", icon: LucideIcons.HelpCircle },
+    {
+      label: "Help + support",
+      href: "/internal/control/admin/support",
+      icon: LucideIcons.HelpCircle,
+    },
   ];
 
   const renderNavItem = (n: any, idx: number) => {
@@ -38,7 +62,7 @@ export function AdminSidebar() {
 
     return (
       <Link key={n.label} to={n.href as any} className={cls}>
-        <n.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-[#f97316]' : 'text-[#cccccc]'}`} />
+        <n.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#f97316]" : "text-[#cccccc]"}`} />
         <span className="truncate flex-1">{n.label}</span>
       </Link>
     );
