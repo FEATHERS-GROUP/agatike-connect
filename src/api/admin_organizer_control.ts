@@ -133,8 +133,13 @@ export const getAdminOrganizerSubscriptions = createServerFn({ method: "POST" })
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
 
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id name } }`;
+    const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+
     const query = `
-      query GetSubs($id: uuid!) {
+      query GetSubs($id: uuid!, $wsIds: [uuid!]!) {
         subscriptions(where: { organizer_id: { _eq: $id } }, order_by: { start_date: desc }) {
           id
           status
@@ -144,10 +149,29 @@ export const getAdminOrganizerSubscriptions = createServerFn({ method: "POST" })
             name
           }
         }
+        wallet_transactions(where: { workspace_id: { _in: $wsIds } }, order_by: { created_at: desc }) {
+          id
+          type
+          amount
+          currency
+          status
+          description
+          created_at
+          provider_reference
+        }
       }
     `;
-    const data = await hasuraRequest<any>(query, { id: ctx.data.organizerId });
-    return data.subscriptions || [];
+    let data;
+    try {
+      data = await hasuraRequest<any>(query, { id: ctx.data.organizerId, wsIds: wsIds.length > 0 ? wsIds : ["00000000-0000-0000-0000-000000000000"] });
+    } catch {
+      data = { subscriptions: [], wallet_transactions: [] };
+    }
+    
+    return {
+      subscriptions: data.subscriptions || [],
+      transactions: data.wallet_transactions || [],
+    };
   });
 
 // ----------------------------------------------------
@@ -473,4 +497,263 @@ export const setAdminOrganizerStatus = createServerFn({ method: "POST" })
     `;
     const data = await hasuraRequest<any>(mutation, { id: ctx.data.organizerId, active: ctx.data.active });
     return data.update_organizers_by_pk;
+  });
+
+// ----------------------------------------------------
+// FORMS & RSVPS
+// ----------------------------------------------------
+export const getAdminOrganizerForms = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id name } }`;
+    const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+    const wsNameMap = Object.fromEntries(workspaces.map((w: any) => [w.id, w.name]));
+
+    if (wsIds.length === 0) return [];
+
+    const query = `
+      query GetForms($wsIds: [uuid!]!) {
+        custom_forms(where: { workspace_id: { _in: $wsIds } }, order_by: { created_at: desc }) {
+          id
+          title
+          description
+          is_active
+          workspace_id
+          created_at
+          rsvps {
+            id
+          }
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(query, { wsIds });
+    return (data.custom_forms || []).map((f: any) => ({
+      ...f,
+      workspaceName: wsNameMap[f.workspace_id] || "—",
+      rsvpCount: f.rsvps?.length || 0,
+    }));
+  });
+
+export const getAdminOrganizerRSVPs = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id name } }`;
+    const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+    const wsNameMap = Object.fromEntries(workspaces.map((w: any) => [w.id, w.name]));
+
+    if (wsIds.length === 0) return [];
+
+    const query = `
+      query GetRSVPs($wsIds: [uuid!]!) {
+        rsvps(where: { custom_form: { workspace_id: { _in: $wsIds } } }, order_by: { created_at: desc }) {
+          id
+          email
+          first_name
+          last_name
+          status
+          created_at
+          custom_form {
+            id
+            title
+            workspace_id
+          }
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(query, { wsIds });
+    return (data.rsvps || []).map((r: any) => ({
+      ...r,
+      formTitle: r.custom_form?.title || "—",
+      workspaceName: wsNameMap[r.custom_form?.workspace_id] || "—",
+    }));
+  });
+
+// ----------------------------------------------------
+// BOOK & INVOICES
+// ----------------------------------------------------
+export const getAdminOrganizerBook = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    // The agatike_books usually links to event_id. We fetch org's workspaces -> events -> books
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id name } }`;
+    const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+    const wsNameMap = Object.fromEntries(workspaces.map((w: any) => [w.id, w.name]));
+
+    if (wsIds.length === 0) return [];
+
+    // agatike_books has direct workspace_id column (not events relation for filtering)
+    // It also has event_id for linking to events
+    const query = `
+      query GetBooks($wsIds: [uuid!]!) {
+        agatike_books(where: { workspace_id: { _in: $wsIds } }, order_by: { created_at: desc }) {
+          id
+          name
+          workspace_id
+          event_id
+          schema_fields
+          created_at
+          records {
+            id
+          }
+        }
+      }
+    `;
+    let data;
+    try {
+      data = await hasuraRequest<any>(query, { wsIds });
+    } catch {
+      data = { agatike_books: [] };
+    }
+
+    return (data.agatike_books || []).map((b: any) => ({
+      ...b,
+      workspaceName: wsNameMap[b.workspace_id] || "—",
+      recordCount: b.records?.length || 0,
+    }));
+  });
+
+export const getAdminOrganizerBookInvoices = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    // Let's just fetch all invoices that have type 'book' or 'agatike_book' for this organizer's scope
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id name } }`;
+    const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+
+    if (wsIds.length === 0) return [];
+
+    // Assuming we don't have direct workspace_id on invoices, 
+    // we'll fetch invoices linked to space_subscriptions or books within these workspaces.
+    // For safety, let's just fetch recent invoices and try to filter if needed, 
+    // or just fetch invoices where reference_id matches books.
+    // A safer query for now is all invoices (we might not have a direct relation set up in Hasura).
+    // Let's try fetching invoices linked to space_id for now, or just all for this organizer.
+    const query = `
+      query GetInvoices {
+        invoices(order_by: { created_at: desc }, limit: 100) {
+          id
+          invoice_number
+          type
+          customer_name
+          customer_email
+          amount
+          currency
+          status
+          created_at
+        }
+      }
+    `;
+    let data;
+    try {
+      data = await hasuraRequest<any>(query, {});
+    } catch {
+      data = { invoices: [] };
+    }
+    return data.invoices || [];
+  });
+
+// ----------------------------------------------------
+// MEMBERSHIPS
+// ----------------------------------------------------
+export const getAdminOrganizerMemberships = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id name } }`;
+    const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+    const wsNameMap = Object.fromEntries(workspaces.map((w: any) => [w.id, w.name]));
+
+    if (wsIds.length === 0) return [];
+
+    const query = `
+      query GetMemberships($wsIds: [uuid!]!) {
+        space_subscriptions(where: { space: { workspace_id: { _in: $wsIds } } }, order_by: { created_at: desc }) {
+          id
+          customer_name
+          customer_email
+          plan_name
+          status
+          booking_type
+          created_at
+          space {
+            name
+            workspace_id
+          }
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(query, { wsIds });
+    return (data.space_subscriptions || []).map((s: any) => ({
+      ...s,
+      workspaceName: wsNameMap[s.space?.workspace_id] || "—",
+      spaceName: s.space?.name || "—",
+    }));
+  });
+
+// ----------------------------------------------------
+// ATTENDEES
+// ----------------------------------------------------
+export const getAdminOrganizerAttendees = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id name } }`;
+    const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+    const wsNameMap = Object.fromEntries(workspaces.map((w: any) => [w.id, w.name]));
+
+    if (wsIds.length === 0) return [];
+
+    const query = `
+      query GetAttendees($wsIds: [uuid!]!) {
+        event_attendees(where: { events: { workspace_id: { _in: $wsIds } } }, order_by: { created_at: desc }) {
+          id
+          names
+          email
+          phone
+          status
+          ticket_type
+          quanity
+          qrcode_number
+          created_at
+          event_id
+          events {
+            title
+            workspace_id
+          }
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(query, { wsIds });
+    return (data.event_attendees || []).map((a: any) => ({
+      ...a,
+      eventTitle: a.events?.title || "—",
+      workspaceName: wsNameMap[a.events?.workspace_id] || "—",
+    }));
   });

@@ -169,9 +169,15 @@ import { Route as InternalControlAdminOrganizersOrganizerIdVenuesRouteImport } f
 import { Route as InternalControlAdminOrganizersOrganizerIdUsersRouteImport } from './routes/internal.control.admin.organizers.$organizerId.users'
 import { Route as InternalControlAdminOrganizersOrganizerIdSubscriptionsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.subscriptions'
 import { Route as InternalControlAdminOrganizersOrganizerIdSettingsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.settings'
+import { Route as InternalControlAdminOrganizersOrganizerIdRsvpsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.rsvps'
 import { Route as InternalControlAdminOrganizersOrganizerIdProjectsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.projects'
+import { Route as InternalControlAdminOrganizersOrganizerIdMembershipsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.memberships'
 import { Route as InternalControlAdminOrganizersOrganizerIdInvoicesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.invoices'
+import { Route as InternalControlAdminOrganizersOrganizerIdFormsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.forms'
 import { Route as InternalControlAdminOrganizersOrganizerIdEventsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.events'
+import { Route as InternalControlAdminOrganizersOrganizerIdBookInvoicesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.book-invoices'
+import { Route as InternalControlAdminOrganizersOrganizerIdBookRouteImport } from './routes/internal.control.admin.organizers.$organizerId.book'
+import { Route as InternalControlAdminOrganizersOrganizerIdAttendeesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.attendees'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
 
 const WalletRoute = WalletRouteImport.update({
@@ -1082,10 +1088,22 @@ const InternalControlAdminOrganizersOrganizerIdSettingsRoute =
     path: '/settings',
     getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
   } as any)
+const InternalControlAdminOrganizersOrganizerIdRsvpsRoute =
+  InternalControlAdminOrganizersOrganizerIdRsvpsRouteImport.update({
+    id: '/rsvps',
+    path: '/rsvps',
+    getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
+  } as any)
 const InternalControlAdminOrganizersOrganizerIdProjectsRoute =
   InternalControlAdminOrganizersOrganizerIdProjectsRouteImport.update({
     id: '/projects',
     path: '/projects',
+    getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
+  } as any)
+const InternalControlAdminOrganizersOrganizerIdMembershipsRoute =
+  InternalControlAdminOrganizersOrganizerIdMembershipsRouteImport.update({
+    id: '/memberships',
+    path: '/memberships',
     getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
   } as any)
 const InternalControlAdminOrganizersOrganizerIdInvoicesRoute =
@@ -1094,10 +1112,34 @@ const InternalControlAdminOrganizersOrganizerIdInvoicesRoute =
     path: '/invoices',
     getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
   } as any)
+const InternalControlAdminOrganizersOrganizerIdFormsRoute =
+  InternalControlAdminOrganizersOrganizerIdFormsRouteImport.update({
+    id: '/forms',
+    path: '/forms',
+    getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
+  } as any)
 const InternalControlAdminOrganizersOrganizerIdEventsRoute =
   InternalControlAdminOrganizersOrganizerIdEventsRouteImport.update({
     id: '/events',
     path: '/events',
+    getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
+  } as any)
+const InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute =
+  InternalControlAdminOrganizersOrganizerIdBookInvoicesRouteImport.update({
+    id: '/book-invoices',
+    path: '/book-invoices',
+    getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
+  } as any)
+const InternalControlAdminOrganizersOrganizerIdBookRoute =
+  InternalControlAdminOrganizersOrganizerIdBookRouteImport.update({
+    id: '/book',
+    path: '/book',
+    getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
+  } as any)
+const InternalControlAdminOrganizersOrganizerIdAttendeesRoute =
+  InternalControlAdminOrganizersOrganizerIdAttendeesRouteImport.update({
+    id: '/attendees',
+    path: '/attendees',
     getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
   } as any)
 const DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute =
@@ -1263,9 +1305,15 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/spaces/$spaceId/': typeof DashboardWorkspaceSlugSpacesSpaceIdIndexRoute
   '/internal/control/admin/organizers/': typeof InternalControlAdminOrganizersIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
+  '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
+  '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
+  '/internal/control/admin/organizers/$organizerId/book-invoices': typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute
   '/internal/control/admin/organizers/$organizerId/events': typeof InternalControlAdminOrganizersOrganizerIdEventsRoute
+  '/internal/control/admin/organizers/$organizerId/forms': typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   '/internal/control/admin/organizers/$organizerId/invoices': typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
+  '/internal/control/admin/organizers/$organizerId/memberships': typeof InternalControlAdminOrganizersOrganizerIdMembershipsRoute
   '/internal/control/admin/organizers/$organizerId/projects': typeof InternalControlAdminOrganizersOrganizerIdProjectsRoute
+  '/internal/control/admin/organizers/$organizerId/rsvps': typeof InternalControlAdminOrganizersOrganizerIdRsvpsRoute
   '/internal/control/admin/organizers/$organizerId/settings': typeof InternalControlAdminOrganizersOrganizerIdSettingsRoute
   '/internal/control/admin/organizers/$organizerId/subscriptions': typeof InternalControlAdminOrganizersOrganizerIdSubscriptionsRoute
   '/internal/control/admin/organizers/$organizerId/users': typeof InternalControlAdminOrganizersOrganizerIdUsersRoute
@@ -1425,9 +1473,15 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/spaces/$spaceId': typeof DashboardWorkspaceSlugSpacesSpaceIdIndexRoute
   '/internal/control/admin/organizers': typeof InternalControlAdminOrganizersIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
+  '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
+  '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
+  '/internal/control/admin/organizers/$organizerId/book-invoices': typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute
   '/internal/control/admin/organizers/$organizerId/events': typeof InternalControlAdminOrganizersOrganizerIdEventsRoute
+  '/internal/control/admin/organizers/$organizerId/forms': typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   '/internal/control/admin/organizers/$organizerId/invoices': typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
+  '/internal/control/admin/organizers/$organizerId/memberships': typeof InternalControlAdminOrganizersOrganizerIdMembershipsRoute
   '/internal/control/admin/organizers/$organizerId/projects': typeof InternalControlAdminOrganizersOrganizerIdProjectsRoute
+  '/internal/control/admin/organizers/$organizerId/rsvps': typeof InternalControlAdminOrganizersOrganizerIdRsvpsRoute
   '/internal/control/admin/organizers/$organizerId/settings': typeof InternalControlAdminOrganizersOrganizerIdSettingsRoute
   '/internal/control/admin/organizers/$organizerId/subscriptions': typeof InternalControlAdminOrganizersOrganizerIdSubscriptionsRoute
   '/internal/control/admin/organizers/$organizerId/users': typeof InternalControlAdminOrganizersOrganizerIdUsersRoute
@@ -1592,9 +1646,15 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/spaces/$spaceId/': typeof DashboardWorkspaceSlugSpacesSpaceIdIndexRoute
   '/internal/control/admin/organizers/': typeof InternalControlAdminOrganizersIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
+  '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
+  '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
+  '/internal/control/admin/organizers/$organizerId/book-invoices': typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute
   '/internal/control/admin/organizers/$organizerId/events': typeof InternalControlAdminOrganizersOrganizerIdEventsRoute
+  '/internal/control/admin/organizers/$organizerId/forms': typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   '/internal/control/admin/organizers/$organizerId/invoices': typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
+  '/internal/control/admin/organizers/$organizerId/memberships': typeof InternalControlAdminOrganizersOrganizerIdMembershipsRoute
   '/internal/control/admin/organizers/$organizerId/projects': typeof InternalControlAdminOrganizersOrganizerIdProjectsRoute
+  '/internal/control/admin/organizers/$organizerId/rsvps': typeof InternalControlAdminOrganizersOrganizerIdRsvpsRoute
   '/internal/control/admin/organizers/$organizerId/settings': typeof InternalControlAdminOrganizersOrganizerIdSettingsRoute
   '/internal/control/admin/organizers/$organizerId/subscriptions': typeof InternalControlAdminOrganizersOrganizerIdSubscriptionsRoute
   '/internal/control/admin/organizers/$organizerId/users': typeof InternalControlAdminOrganizersOrganizerIdUsersRoute
@@ -1760,9 +1820,15 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/spaces/$spaceId/'
     | '/internal/control/admin/organizers/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
+    | '/internal/control/admin/organizers/$organizerId/attendees'
+    | '/internal/control/admin/organizers/$organizerId/book'
+    | '/internal/control/admin/organizers/$organizerId/book-invoices'
     | '/internal/control/admin/organizers/$organizerId/events'
+    | '/internal/control/admin/organizers/$organizerId/forms'
     | '/internal/control/admin/organizers/$organizerId/invoices'
+    | '/internal/control/admin/organizers/$organizerId/memberships'
     | '/internal/control/admin/organizers/$organizerId/projects'
+    | '/internal/control/admin/organizers/$organizerId/rsvps'
     | '/internal/control/admin/organizers/$organizerId/settings'
     | '/internal/control/admin/organizers/$organizerId/subscriptions'
     | '/internal/control/admin/organizers/$organizerId/users'
@@ -1922,9 +1988,15 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/spaces/$spaceId'
     | '/internal/control/admin/organizers'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
+    | '/internal/control/admin/organizers/$organizerId/attendees'
+    | '/internal/control/admin/organizers/$organizerId/book'
+    | '/internal/control/admin/organizers/$organizerId/book-invoices'
     | '/internal/control/admin/organizers/$organizerId/events'
+    | '/internal/control/admin/organizers/$organizerId/forms'
     | '/internal/control/admin/organizers/$organizerId/invoices'
+    | '/internal/control/admin/organizers/$organizerId/memberships'
     | '/internal/control/admin/organizers/$organizerId/projects'
+    | '/internal/control/admin/organizers/$organizerId/rsvps'
     | '/internal/control/admin/organizers/$organizerId/settings'
     | '/internal/control/admin/organizers/$organizerId/subscriptions'
     | '/internal/control/admin/organizers/$organizerId/users'
@@ -2088,9 +2160,15 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/spaces/$spaceId/'
     | '/internal/control/admin/organizers/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
+    | '/internal/control/admin/organizers/$organizerId/attendees'
+    | '/internal/control/admin/organizers/$organizerId/book'
+    | '/internal/control/admin/organizers/$organizerId/book-invoices'
     | '/internal/control/admin/organizers/$organizerId/events'
+    | '/internal/control/admin/organizers/$organizerId/forms'
     | '/internal/control/admin/organizers/$organizerId/invoices'
+    | '/internal/control/admin/organizers/$organizerId/memberships'
     | '/internal/control/admin/organizers/$organizerId/projects'
+    | '/internal/control/admin/organizers/$organizerId/rsvps'
     | '/internal/control/admin/organizers/$organizerId/settings'
     | '/internal/control/admin/organizers/$organizerId/subscriptions'
     | '/internal/control/admin/organizers/$organizerId/users'
@@ -3273,11 +3351,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdSettingsRouteImport
       parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
     }
+    '/internal/control/admin/organizers/$organizerId/rsvps': {
+      id: '/internal/control/admin/organizers/$organizerId/rsvps'
+      path: '/rsvps'
+      fullPath: '/internal/control/admin/organizers/$organizerId/rsvps'
+      preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdRsvpsRouteImport
+      parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
+    }
     '/internal/control/admin/organizers/$organizerId/projects': {
       id: '/internal/control/admin/organizers/$organizerId/projects'
       path: '/projects'
       fullPath: '/internal/control/admin/organizers/$organizerId/projects'
       preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdProjectsRouteImport
+      parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
+    }
+    '/internal/control/admin/organizers/$organizerId/memberships': {
+      id: '/internal/control/admin/organizers/$organizerId/memberships'
+      path: '/memberships'
+      fullPath: '/internal/control/admin/organizers/$organizerId/memberships'
+      preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdMembershipsRouteImport
       parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
     }
     '/internal/control/admin/organizers/$organizerId/invoices': {
@@ -3287,11 +3379,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdInvoicesRouteImport
       parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
     }
+    '/internal/control/admin/organizers/$organizerId/forms': {
+      id: '/internal/control/admin/organizers/$organizerId/forms'
+      path: '/forms'
+      fullPath: '/internal/control/admin/organizers/$organizerId/forms'
+      preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdFormsRouteImport
+      parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
+    }
     '/internal/control/admin/organizers/$organizerId/events': {
       id: '/internal/control/admin/organizers/$organizerId/events'
       path: '/events'
       fullPath: '/internal/control/admin/organizers/$organizerId/events'
       preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdEventsRouteImport
+      parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
+    }
+    '/internal/control/admin/organizers/$organizerId/book-invoices': {
+      id: '/internal/control/admin/organizers/$organizerId/book-invoices'
+      path: '/book-invoices'
+      fullPath: '/internal/control/admin/organizers/$organizerId/book-invoices'
+      preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRouteImport
+      parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
+    }
+    '/internal/control/admin/organizers/$organizerId/book': {
+      id: '/internal/control/admin/organizers/$organizerId/book'
+      path: '/book'
+      fullPath: '/internal/control/admin/organizers/$organizerId/book'
+      preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdBookRouteImport
+      parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
+    }
+    '/internal/control/admin/organizers/$organizerId/attendees': {
+      id: '/internal/control/admin/organizers/$organizerId/attendees'
+      path: '/attendees'
+      fullPath: '/internal/control/admin/organizers/$organizerId/attendees'
+      preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdAttendeesRouteImport
       parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
     }
     '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': {
@@ -3638,9 +3758,15 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 )
 
 interface InternalControlAdminOrganizersOrganizerIdRouteChildren {
+  InternalControlAdminOrganizersOrganizerIdAttendeesRoute: typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
+  InternalControlAdminOrganizersOrganizerIdBookRoute: typeof InternalControlAdminOrganizersOrganizerIdBookRoute
+  InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute: typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute
   InternalControlAdminOrganizersOrganizerIdEventsRoute: typeof InternalControlAdminOrganizersOrganizerIdEventsRoute
+  InternalControlAdminOrganizersOrganizerIdFormsRoute: typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   InternalControlAdminOrganizersOrganizerIdInvoicesRoute: typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
+  InternalControlAdminOrganizersOrganizerIdMembershipsRoute: typeof InternalControlAdminOrganizersOrganizerIdMembershipsRoute
   InternalControlAdminOrganizersOrganizerIdProjectsRoute: typeof InternalControlAdminOrganizersOrganizerIdProjectsRoute
+  InternalControlAdminOrganizersOrganizerIdRsvpsRoute: typeof InternalControlAdminOrganizersOrganizerIdRsvpsRoute
   InternalControlAdminOrganizersOrganizerIdSettingsRoute: typeof InternalControlAdminOrganizersOrganizerIdSettingsRoute
   InternalControlAdminOrganizersOrganizerIdSubscriptionsRoute: typeof InternalControlAdminOrganizersOrganizerIdSubscriptionsRoute
   InternalControlAdminOrganizersOrganizerIdUsersRoute: typeof InternalControlAdminOrganizersOrganizerIdUsersRoute
@@ -3651,12 +3777,24 @@ interface InternalControlAdminOrganizersOrganizerIdRouteChildren {
 
 const InternalControlAdminOrganizersOrganizerIdRouteChildren: InternalControlAdminOrganizersOrganizerIdRouteChildren =
   {
+    InternalControlAdminOrganizersOrganizerIdAttendeesRoute:
+      InternalControlAdminOrganizersOrganizerIdAttendeesRoute,
+    InternalControlAdminOrganizersOrganizerIdBookRoute:
+      InternalControlAdminOrganizersOrganizerIdBookRoute,
+    InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute:
+      InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute,
     InternalControlAdminOrganizersOrganizerIdEventsRoute:
       InternalControlAdminOrganizersOrganizerIdEventsRoute,
+    InternalControlAdminOrganizersOrganizerIdFormsRoute:
+      InternalControlAdminOrganizersOrganizerIdFormsRoute,
     InternalControlAdminOrganizersOrganizerIdInvoicesRoute:
       InternalControlAdminOrganizersOrganizerIdInvoicesRoute,
+    InternalControlAdminOrganizersOrganizerIdMembershipsRoute:
+      InternalControlAdminOrganizersOrganizerIdMembershipsRoute,
     InternalControlAdminOrganizersOrganizerIdProjectsRoute:
       InternalControlAdminOrganizersOrganizerIdProjectsRoute,
+    InternalControlAdminOrganizersOrganizerIdRsvpsRoute:
+      InternalControlAdminOrganizersOrganizerIdRsvpsRoute,
     InternalControlAdminOrganizersOrganizerIdSettingsRoute:
       InternalControlAdminOrganizersOrganizerIdSettingsRoute,
     InternalControlAdminOrganizersOrganizerIdSubscriptionsRoute:
