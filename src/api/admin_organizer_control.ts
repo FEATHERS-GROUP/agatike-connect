@@ -757,3 +757,308 @@ export const getAdminOrganizerAttendees = createServerFn({ method: "POST" })
       workspaceName: wsNameMap[a.events?.workspace_id] || "—",
     }));
   });
+
+// ----------------------------------------------------
+// BILLING SETTINGS (for Settings page)
+// ----------------------------------------------------
+export const getAdminOrganizerBillingSettings = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const query = `
+      query GetBillingSettings($id: uuid!) {
+        organizers_by_pk(id: $id) {
+          id
+          name
+          email
+        }
+        subscriptions(where: { organizer_id: { _eq: $id } }, order_by: { start_date: desc }) {
+          id
+          status
+          amount
+          start_date
+          next_billing_date
+          plan_id
+          pricing_plan {
+            id
+            name
+            description
+            price
+            currency
+            billing_cycle
+            features
+            customer_service_fee_percentage
+            organizer_platform_contribution
+            platform_margin_buffer
+            max_withdrawals_per_week
+          }
+        }
+        workspaces(where: { orgnizer_id: { _eq: $id } }, order_by: { created_at: desc }) {
+          id
+          name
+          currency
+          city
+          country
+          logo
+        }
+        pricing_plans(order_by: { price: asc }) {
+          id
+          name
+          description
+          price
+          currency
+          billing_cycle
+          features
+          is_popular
+          customer_service_fee_percentage
+          organizer_platform_contribution
+          platform_margin_buffer
+          max_withdrawals_per_week
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(query, { id: ctx.data.organizerId });
+    return {
+      organizer: data.organizers_by_pk,
+      subscriptions: data.subscriptions || [],
+      activeSubscription: (data.subscriptions || []).find((s: any) => s.status === "active") || null,
+      workspaces: data.workspaces || [],
+      pricingPlans: data.pricing_plans || [],
+    };
+  });
+
+export const updateAdminWorkspaceCurrency = createServerFn({ method: "POST" })
+  .validator((d: { workspaceId: string; currency: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const mutation = `
+      mutation UpdateWorkspaceCurrency($id: uuid!, $currency: String!) {
+        update_workspaces_by_pk(pk_columns: { id: $id }, _set: { currency: $currency }) {
+          id
+          currency
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(mutation, {
+      id: ctx.data.workspaceId,
+      currency: ctx.data.currency,
+    });
+    return data.update_workspaces_by_pk;
+  });
+
+export const updateAdminOrganizerSubscriptionPlan = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string; planId: string; amount: number }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    // Cancel any active sub first
+    const cancelMutation = `
+      mutation CancelActiveSubs($orgId: uuid!) {
+        update_subscriptions(where: { organizer_id: { _eq: $orgId }, status: { _eq: "active" } }, _set: { status: "canceled" }) {
+          affected_rows
+        }
+      }
+    `;
+    await hasuraRequest<any>(cancelMutation, { orgId: ctx.data.organizerId });
+
+    const nextBillingDate = new Date();
+    nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+
+    const createMutation = `
+      mutation CreateSub($object: subscriptions_insert_input!) {
+        insert_subscriptions_one(
+          object: $object,
+          on_conflict: {
+            constraint: subscriptions_organizer_id_key,
+            update_columns: [plan_id, amount, status, next_billing_date, updated_at]
+          }
+        ) {
+          id
+          status
+          next_billing_date
+          pricing_plan { name }
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(createMutation, {
+      object: {
+        organizer_id: ctx.data.organizerId,
+        plan_id: ctx.data.planId,
+        amount: ctx.data.amount,
+        status: "active",
+        next_billing_date: nextBillingDate.toISOString(),
+      },
+    });
+    return data.insert_subscriptions_one;
+  });
+
+// ----------------------------------------------------
+// ENHANCED SUBSCRIPTIONS (with fee simulations)
+// ----------------------------------------------------
+export const getAdminOrganizerSubscriptionsDetail = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    // 1. Get workspaces
+    const wsQuery = `query GetWs($id: uuid!) {
+      workspaces(where: { orgnizer_id: { _eq: $id } }) { id name }
+    }`;
+    const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+    const safeWsIds = wsIds.length > 0 ? wsIds : ["00000000-0000-0000-0000-000000000000"];
+    const wsNameMap = Object.fromEntries(workspaces.map((w: any) => [w.id, w.name]));
+
+    // 2. Get wallets for all workspaces
+    let walletIds: string[] = [];
+    const walletIdToWsMap: Record<string, string> = {};
+    try {
+      const walletsQuery = `query GetWallets($wsIds: [uuid!]!) {
+        wallets(where: { workspace_id: { _in: $wsIds } }) { id workspace_id }
+      }`;
+      const walletsData = await hasuraRequest<any>(walletsQuery, { wsIds: safeWsIds });
+      const wallets: any[] = walletsData.wallets || [];
+      walletIds = wallets.map((w: any) => w.id);
+      wallets.forEach((w: any) => { walletIdToWsMap[w.id] = w.workspace_id; });
+    } catch (e) {
+      console.error("Failed to fetch wallets:", e);
+    }
+
+    const safeWalletIds = walletIds.length > 0 ? walletIds : ["00000000-0000-0000-0000-000000000000"];
+
+    // 3. Main query: subscriptions + transactions (by BOTH workspace_id and wallet_id)
+    const query = `
+      query GetSubsDetail($id: uuid!, $wsIds: [uuid!]!, $walletIds: [uuid!]!) {
+        subscriptions(where: { organizer_id: { _eq: $id } }, order_by: { start_date: desc }) {
+          id
+          status
+          amount
+          start_date
+          next_billing_date
+          pricing_plan {
+            id
+            name
+            price
+            currency
+            billing_cycle
+            customer_service_fee_percentage
+            organizer_platform_contribution
+            platform_margin_buffer
+            max_withdrawals_per_week
+          }
+        }
+        wallet_transactions(
+          where: {
+            _or: [
+              { workspace_id: { _in: $wsIds } },
+              { wallet_id: { _in: $walletIds } }
+            ]
+          },
+          order_by: { created_at: desc }
+        ) {
+          id
+          type
+          amount
+          net_amount
+          currency
+          status
+          description
+          created_at
+          provider_reference
+          workspace_id
+          wallet_id
+          payout_method
+          payout_account
+        }
+        fee_simulations(order_by: { created_at: desc }, limit: 100) {
+          transaction_id
+          expected_collection_cost
+          expected_disbursement_cost
+          expected_margin
+          decision
+          input_snapshot
+          created_at
+        }
+      }
+    `;
+    let data;
+    try {
+      data = await hasuraRequest<any>(query, {
+        id: ctx.data.organizerId,
+        wsIds: safeWsIds,
+        walletIds: safeWalletIds,
+      });
+    } catch {
+      data = { subscriptions: [], wallet_transactions: [], fee_simulations: [] };
+    }
+
+    // Map workspace names — resolve via workspace_id first, fallback via wallet_id
+    const transactions = (data.wallet_transactions || []).map((t: any) => {
+      const wsId = t.workspace_id || walletIdToWsMap[t.wallet_id];
+      return {
+        ...t,
+        workspaceName: wsNameMap[wsId] || "—",
+      };
+    });
+
+    return {
+      subscriptions: data.subscriptions || [],
+      transactions,
+      feeSimulations: data.fee_simulations || [],
+    };
+  });
+
+// ----------------------------------------------------
+// PROJECT CONTRIBUTORS (all for the organizer)
+// ----------------------------------------------------
+export const getAdminOrganizerContributors = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    // Get all workspace IDs for this organizer
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id name } }`;
+    const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+    const wsNameMap = Object.fromEntries(workspaces.map((w: any) => [w.id, w.name]));
+
+    if (wsIds.length === 0) return [];
+
+    const query = `
+      query GetOrgContributors($wsIds: [uuid!]!) {
+        project_contributors(
+          where: { workspace_id: { _in: $wsIds } },
+          order_by: { created_at: desc }
+        ) {
+          id
+          email
+          access_level
+          status
+          resource_type
+          resource_id
+          workspace_id
+          created_at
+        }
+      }
+    `;
+    let data;
+    try {
+      data = await hasuraRequest<any>(query, { wsIds });
+    } catch {
+      data = { project_contributors: [] };
+    }
+
+    return (data.project_contributors || []).map((c: any) => ({
+      ...c,
+      workspaceName: wsNameMap[c.workspace_id] || "—",
+    }));
+  });

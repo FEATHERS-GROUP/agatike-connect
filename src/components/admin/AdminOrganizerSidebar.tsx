@@ -25,6 +25,7 @@ export function AdminOrganizerSidebar() {
     { label: "Venues", href: `${basePath}/venues`, icon: LucideIcons.MapPin },
     { label: "Events", href: `${basePath}/events`, icon: LucideIcons.Calendar },
     { label: "Projects", href: `${basePath}/projects`, icon: LucideIcons.Ticket },
+    { label: "Contributors", href: `${basePath}/contributors`, icon: LucideIcons.Users2 },
     { label: "Forms", href: `${basePath}/forms`, icon: LucideIcons.ClipboardList },
     { label: "RSVPs", href: `${basePath}/rsvps`, icon: LucideIcons.UserCheck },
     { label: "Attendees", href: `${basePath}/attendees`, icon: LucideIcons.UserRound },

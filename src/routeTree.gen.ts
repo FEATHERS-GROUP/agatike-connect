@@ -175,6 +175,7 @@ import { Route as InternalControlAdminOrganizersOrganizerIdMembershipsRouteImpor
 import { Route as InternalControlAdminOrganizersOrganizerIdInvoicesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.invoices'
 import { Route as InternalControlAdminOrganizersOrganizerIdFormsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.forms'
 import { Route as InternalControlAdminOrganizersOrganizerIdEventsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.events'
+import { Route as InternalControlAdminOrganizersOrganizerIdContributorsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.contributors'
 import { Route as InternalControlAdminOrganizersOrganizerIdBookInvoicesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.book-invoices'
 import { Route as InternalControlAdminOrganizersOrganizerIdBookRouteImport } from './routes/internal.control.admin.organizers.$organizerId.book'
 import { Route as InternalControlAdminOrganizersOrganizerIdAttendeesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.attendees'
@@ -1124,6 +1125,12 @@ const InternalControlAdminOrganizersOrganizerIdEventsRoute =
     path: '/events',
     getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
   } as any)
+const InternalControlAdminOrganizersOrganizerIdContributorsRoute =
+  InternalControlAdminOrganizersOrganizerIdContributorsRouteImport.update({
+    id: '/contributors',
+    path: '/contributors',
+    getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
+  } as any)
 const InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute =
   InternalControlAdminOrganizersOrganizerIdBookInvoicesRouteImport.update({
     id: '/book-invoices',
@@ -1308,6 +1315,7 @@ export interface FileRoutesByFullPath {
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
   '/internal/control/admin/organizers/$organizerId/book-invoices': typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute
+  '/internal/control/admin/organizers/$organizerId/contributors': typeof InternalControlAdminOrganizersOrganizerIdContributorsRoute
   '/internal/control/admin/organizers/$organizerId/events': typeof InternalControlAdminOrganizersOrganizerIdEventsRoute
   '/internal/control/admin/organizers/$organizerId/forms': typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   '/internal/control/admin/organizers/$organizerId/invoices': typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
@@ -1476,6 +1484,7 @@ export interface FileRoutesByTo {
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
   '/internal/control/admin/organizers/$organizerId/book-invoices': typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute
+  '/internal/control/admin/organizers/$organizerId/contributors': typeof InternalControlAdminOrganizersOrganizerIdContributorsRoute
   '/internal/control/admin/organizers/$organizerId/events': typeof InternalControlAdminOrganizersOrganizerIdEventsRoute
   '/internal/control/admin/organizers/$organizerId/forms': typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   '/internal/control/admin/organizers/$organizerId/invoices': typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
@@ -1649,6 +1658,7 @@ export interface FileRoutesById {
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
   '/internal/control/admin/organizers/$organizerId/book-invoices': typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute
+  '/internal/control/admin/organizers/$organizerId/contributors': typeof InternalControlAdminOrganizersOrganizerIdContributorsRoute
   '/internal/control/admin/organizers/$organizerId/events': typeof InternalControlAdminOrganizersOrganizerIdEventsRoute
   '/internal/control/admin/organizers/$organizerId/forms': typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   '/internal/control/admin/organizers/$organizerId/invoices': typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
@@ -1823,6 +1833,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
     | '/internal/control/admin/organizers/$organizerId/book-invoices'
+    | '/internal/control/admin/organizers/$organizerId/contributors'
     | '/internal/control/admin/organizers/$organizerId/events'
     | '/internal/control/admin/organizers/$organizerId/forms'
     | '/internal/control/admin/organizers/$organizerId/invoices'
@@ -1991,6 +2002,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
     | '/internal/control/admin/organizers/$organizerId/book-invoices'
+    | '/internal/control/admin/organizers/$organizerId/contributors'
     | '/internal/control/admin/organizers/$organizerId/events'
     | '/internal/control/admin/organizers/$organizerId/forms'
     | '/internal/control/admin/organizers/$organizerId/invoices'
@@ -2163,6 +2175,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
     | '/internal/control/admin/organizers/$organizerId/book-invoices'
+    | '/internal/control/admin/organizers/$organizerId/contributors'
     | '/internal/control/admin/organizers/$organizerId/events'
     | '/internal/control/admin/organizers/$organizerId/forms'
     | '/internal/control/admin/organizers/$organizerId/invoices'
@@ -3393,6 +3406,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdEventsRouteImport
       parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
     }
+    '/internal/control/admin/organizers/$organizerId/contributors': {
+      id: '/internal/control/admin/organizers/$organizerId/contributors'
+      path: '/contributors'
+      fullPath: '/internal/control/admin/organizers/$organizerId/contributors'
+      preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdContributorsRouteImport
+      parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
+    }
     '/internal/control/admin/organizers/$organizerId/book-invoices': {
       id: '/internal/control/admin/organizers/$organizerId/book-invoices'
       path: '/book-invoices'
@@ -3761,6 +3781,7 @@ interface InternalControlAdminOrganizersOrganizerIdRouteChildren {
   InternalControlAdminOrganizersOrganizerIdAttendeesRoute: typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   InternalControlAdminOrganizersOrganizerIdBookRoute: typeof InternalControlAdminOrganizersOrganizerIdBookRoute
   InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute: typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute
+  InternalControlAdminOrganizersOrganizerIdContributorsRoute: typeof InternalControlAdminOrganizersOrganizerIdContributorsRoute
   InternalControlAdminOrganizersOrganizerIdEventsRoute: typeof InternalControlAdminOrganizersOrganizerIdEventsRoute
   InternalControlAdminOrganizersOrganizerIdFormsRoute: typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   InternalControlAdminOrganizersOrganizerIdInvoicesRoute: typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
@@ -3783,6 +3804,8 @@ const InternalControlAdminOrganizersOrganizerIdRouteChildren: InternalControlAdm
       InternalControlAdminOrganizersOrganizerIdBookRoute,
     InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute:
       InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute,
+    InternalControlAdminOrganizersOrganizerIdContributorsRoute:
+      InternalControlAdminOrganizersOrganizerIdContributorsRoute,
     InternalControlAdminOrganizersOrganizerIdEventsRoute:
       InternalControlAdminOrganizersOrganizerIdEventsRoute,
     InternalControlAdminOrganizersOrganizerIdFormsRoute:
