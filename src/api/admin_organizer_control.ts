@@ -276,9 +276,11 @@ export const getAdminOrganizerEvents = createServerFn({ method: "POST" })
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
 
-    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id } }`;
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id name } }`;
     const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
-    const wsIds = wsData.workspaces?.map((w: any) => w.id) || [];
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+    const wsNameMap = Object.fromEntries(workspaces.map((w: any) => [w.id, w.name]));
 
     if (wsIds.length === 0) return [];
 
@@ -288,14 +290,23 @@ export const getAdminOrganizerEvents = createServerFn({ method: "POST" })
           id
           title
           category
+          event_type
+          workspace_id
           created_at
           suspended
           allowed_public
+          schedules {
+            start_date
+          }
         }
       }
     `;
     const data = await hasuraRequest<any>(query, { wsIds });
-    return data.events || [];
+    return (data.events || []).map((e: any) => ({
+      ...e,
+      workspaceName: wsNameMap[e.workspace_id] || "—",
+      startDate: e.schedules?.[0]?.start_date || null,
+    }));
   });
 
 // ----------------------------------------------------
