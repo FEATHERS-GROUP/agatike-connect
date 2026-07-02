@@ -165,12 +165,14 @@ import { Route as DashboardWorkspaceSlugCinemaCinemaIdBookingsRouteImport } from
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdArchiveRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/archive'
 import { Route as InternalControlAdminOrganizersOrganizerIdIndexRouteImport } from './routes/internal.control.admin.organizers.$organizerId.index'
 import { Route as InternalControlAdminOrganizersOrganizerIdWorkspacesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.workspaces'
+import { Route as InternalControlAdminOrganizersOrganizerIdWalletsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.wallets'
 import { Route as InternalControlAdminOrganizersOrganizerIdVenuesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.venues'
 import { Route as InternalControlAdminOrganizersOrganizerIdUsersRouteImport } from './routes/internal.control.admin.organizers.$organizerId.users'
 import { Route as InternalControlAdminOrganizersOrganizerIdSubscriptionsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.subscriptions'
 import { Route as InternalControlAdminOrganizersOrganizerIdSettingsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.settings'
 import { Route as InternalControlAdminOrganizersOrganizerIdRsvpsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.rsvps'
 import { Route as InternalControlAdminOrganizersOrganizerIdProjectsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.projects'
+import { Route as InternalControlAdminOrganizersOrganizerIdModulesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.modules'
 import { Route as InternalControlAdminOrganizersOrganizerIdMembershipsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.memberships'
 import { Route as InternalControlAdminOrganizersOrganizerIdInvoicesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.invoices'
 import { Route as InternalControlAdminOrganizersOrganizerIdFormsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.forms'
@@ -1065,6 +1067,12 @@ const InternalControlAdminOrganizersOrganizerIdWorkspacesRoute =
     path: '/workspaces',
     getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
   } as any)
+const InternalControlAdminOrganizersOrganizerIdWalletsRoute =
+  InternalControlAdminOrganizersOrganizerIdWalletsRouteImport.update({
+    id: '/wallets',
+    path: '/wallets',
+    getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
+  } as any)
 const InternalControlAdminOrganizersOrganizerIdVenuesRoute =
   InternalControlAdminOrganizersOrganizerIdVenuesRouteImport.update({
     id: '/venues',
@@ -1099,6 +1107,12 @@ const InternalControlAdminOrganizersOrganizerIdProjectsRoute =
   InternalControlAdminOrganizersOrganizerIdProjectsRouteImport.update({
     id: '/projects',
     path: '/projects',
+    getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
+  } as any)
+const InternalControlAdminOrganizersOrganizerIdModulesRoute =
+  InternalControlAdminOrganizersOrganizerIdModulesRouteImport.update({
+    id: '/modules',
+    path: '/modules',
     getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
   } as any)
 const InternalControlAdminOrganizersOrganizerIdMembershipsRoute =
@@ -1320,12 +1334,14 @@ export interface FileRoutesByFullPath {
   '/internal/control/admin/organizers/$organizerId/forms': typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   '/internal/control/admin/organizers/$organizerId/invoices': typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
   '/internal/control/admin/organizers/$organizerId/memberships': typeof InternalControlAdminOrganizersOrganizerIdMembershipsRoute
+  '/internal/control/admin/organizers/$organizerId/modules': typeof InternalControlAdminOrganizersOrganizerIdModulesRoute
   '/internal/control/admin/organizers/$organizerId/projects': typeof InternalControlAdminOrganizersOrganizerIdProjectsRoute
   '/internal/control/admin/organizers/$organizerId/rsvps': typeof InternalControlAdminOrganizersOrganizerIdRsvpsRoute
   '/internal/control/admin/organizers/$organizerId/settings': typeof InternalControlAdminOrganizersOrganizerIdSettingsRoute
   '/internal/control/admin/organizers/$organizerId/subscriptions': typeof InternalControlAdminOrganizersOrganizerIdSubscriptionsRoute
   '/internal/control/admin/organizers/$organizerId/users': typeof InternalControlAdminOrganizersOrganizerIdUsersRoute
   '/internal/control/admin/organizers/$organizerId/venues': typeof InternalControlAdminOrganizersOrganizerIdVenuesRoute
+  '/internal/control/admin/organizers/$organizerId/wallets': typeof InternalControlAdminOrganizersOrganizerIdWalletsRoute
   '/internal/control/admin/organizers/$organizerId/workspaces': typeof InternalControlAdminOrganizersOrganizerIdWorkspacesRoute
   '/internal/control/admin/organizers/$organizerId/': typeof InternalControlAdminOrganizersOrganizerIdIndexRoute
 }
@@ -1489,12 +1505,14 @@ export interface FileRoutesByTo {
   '/internal/control/admin/organizers/$organizerId/forms': typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   '/internal/control/admin/organizers/$organizerId/invoices': typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
   '/internal/control/admin/organizers/$organizerId/memberships': typeof InternalControlAdminOrganizersOrganizerIdMembershipsRoute
+  '/internal/control/admin/organizers/$organizerId/modules': typeof InternalControlAdminOrganizersOrganizerIdModulesRoute
   '/internal/control/admin/organizers/$organizerId/projects': typeof InternalControlAdminOrganizersOrganizerIdProjectsRoute
   '/internal/control/admin/organizers/$organizerId/rsvps': typeof InternalControlAdminOrganizersOrganizerIdRsvpsRoute
   '/internal/control/admin/organizers/$organizerId/settings': typeof InternalControlAdminOrganizersOrganizerIdSettingsRoute
   '/internal/control/admin/organizers/$organizerId/subscriptions': typeof InternalControlAdminOrganizersOrganizerIdSubscriptionsRoute
   '/internal/control/admin/organizers/$organizerId/users': typeof InternalControlAdminOrganizersOrganizerIdUsersRoute
   '/internal/control/admin/organizers/$organizerId/venues': typeof InternalControlAdminOrganizersOrganizerIdVenuesRoute
+  '/internal/control/admin/organizers/$organizerId/wallets': typeof InternalControlAdminOrganizersOrganizerIdWalletsRoute
   '/internal/control/admin/organizers/$organizerId/workspaces': typeof InternalControlAdminOrganizersOrganizerIdWorkspacesRoute
   '/internal/control/admin/organizers/$organizerId': typeof InternalControlAdminOrganizersOrganizerIdIndexRoute
 }
@@ -1663,12 +1681,14 @@ export interface FileRoutesById {
   '/internal/control/admin/organizers/$organizerId/forms': typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   '/internal/control/admin/organizers/$organizerId/invoices': typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
   '/internal/control/admin/organizers/$organizerId/memberships': typeof InternalControlAdminOrganizersOrganizerIdMembershipsRoute
+  '/internal/control/admin/organizers/$organizerId/modules': typeof InternalControlAdminOrganizersOrganizerIdModulesRoute
   '/internal/control/admin/organizers/$organizerId/projects': typeof InternalControlAdminOrganizersOrganizerIdProjectsRoute
   '/internal/control/admin/organizers/$organizerId/rsvps': typeof InternalControlAdminOrganizersOrganizerIdRsvpsRoute
   '/internal/control/admin/organizers/$organizerId/settings': typeof InternalControlAdminOrganizersOrganizerIdSettingsRoute
   '/internal/control/admin/organizers/$organizerId/subscriptions': typeof InternalControlAdminOrganizersOrganizerIdSubscriptionsRoute
   '/internal/control/admin/organizers/$organizerId/users': typeof InternalControlAdminOrganizersOrganizerIdUsersRoute
   '/internal/control/admin/organizers/$organizerId/venues': typeof InternalControlAdminOrganizersOrganizerIdVenuesRoute
+  '/internal/control/admin/organizers/$organizerId/wallets': typeof InternalControlAdminOrganizersOrganizerIdWalletsRoute
   '/internal/control/admin/organizers/$organizerId/workspaces': typeof InternalControlAdminOrganizersOrganizerIdWorkspacesRoute
   '/internal/control/admin/organizers/$organizerId/': typeof InternalControlAdminOrganizersOrganizerIdIndexRoute
 }
@@ -1838,12 +1858,14 @@ export interface FileRouteTypes {
     | '/internal/control/admin/organizers/$organizerId/forms'
     | '/internal/control/admin/organizers/$organizerId/invoices'
     | '/internal/control/admin/organizers/$organizerId/memberships'
+    | '/internal/control/admin/organizers/$organizerId/modules'
     | '/internal/control/admin/organizers/$organizerId/projects'
     | '/internal/control/admin/organizers/$organizerId/rsvps'
     | '/internal/control/admin/organizers/$organizerId/settings'
     | '/internal/control/admin/organizers/$organizerId/subscriptions'
     | '/internal/control/admin/organizers/$organizerId/users'
     | '/internal/control/admin/organizers/$organizerId/venues'
+    | '/internal/control/admin/organizers/$organizerId/wallets'
     | '/internal/control/admin/organizers/$organizerId/workspaces'
     | '/internal/control/admin/organizers/$organizerId/'
   fileRoutesByTo: FileRoutesByTo
@@ -2007,12 +2029,14 @@ export interface FileRouteTypes {
     | '/internal/control/admin/organizers/$organizerId/forms'
     | '/internal/control/admin/organizers/$organizerId/invoices'
     | '/internal/control/admin/organizers/$organizerId/memberships'
+    | '/internal/control/admin/organizers/$organizerId/modules'
     | '/internal/control/admin/organizers/$organizerId/projects'
     | '/internal/control/admin/organizers/$organizerId/rsvps'
     | '/internal/control/admin/organizers/$organizerId/settings'
     | '/internal/control/admin/organizers/$organizerId/subscriptions'
     | '/internal/control/admin/organizers/$organizerId/users'
     | '/internal/control/admin/organizers/$organizerId/venues'
+    | '/internal/control/admin/organizers/$organizerId/wallets'
     | '/internal/control/admin/organizers/$organizerId/workspaces'
     | '/internal/control/admin/organizers/$organizerId'
   id:
@@ -2180,12 +2204,14 @@ export interface FileRouteTypes {
     | '/internal/control/admin/organizers/$organizerId/forms'
     | '/internal/control/admin/organizers/$organizerId/invoices'
     | '/internal/control/admin/organizers/$organizerId/memberships'
+    | '/internal/control/admin/organizers/$organizerId/modules'
     | '/internal/control/admin/organizers/$organizerId/projects'
     | '/internal/control/admin/organizers/$organizerId/rsvps'
     | '/internal/control/admin/organizers/$organizerId/settings'
     | '/internal/control/admin/organizers/$organizerId/subscriptions'
     | '/internal/control/admin/organizers/$organizerId/users'
     | '/internal/control/admin/organizers/$organizerId/venues'
+    | '/internal/control/admin/organizers/$organizerId/wallets'
     | '/internal/control/admin/organizers/$organizerId/workspaces'
     | '/internal/control/admin/organizers/$organizerId/'
   fileRoutesById: FileRoutesById
@@ -3336,6 +3362,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdWorkspacesRouteImport
       parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
     }
+    '/internal/control/admin/organizers/$organizerId/wallets': {
+      id: '/internal/control/admin/organizers/$organizerId/wallets'
+      path: '/wallets'
+      fullPath: '/internal/control/admin/organizers/$organizerId/wallets'
+      preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdWalletsRouteImport
+      parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
+    }
     '/internal/control/admin/organizers/$organizerId/venues': {
       id: '/internal/control/admin/organizers/$organizerId/venues'
       path: '/venues'
@@ -3376,6 +3409,13 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/internal/control/admin/organizers/$organizerId/projects'
       preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdProjectsRouteImport
+      parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
+    }
+    '/internal/control/admin/organizers/$organizerId/modules': {
+      id: '/internal/control/admin/organizers/$organizerId/modules'
+      path: '/modules'
+      fullPath: '/internal/control/admin/organizers/$organizerId/modules'
+      preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdModulesRouteImport
       parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
     }
     '/internal/control/admin/organizers/$organizerId/memberships': {
@@ -3786,12 +3826,14 @@ interface InternalControlAdminOrganizersOrganizerIdRouteChildren {
   InternalControlAdminOrganizersOrganizerIdFormsRoute: typeof InternalControlAdminOrganizersOrganizerIdFormsRoute
   InternalControlAdminOrganizersOrganizerIdInvoicesRoute: typeof InternalControlAdminOrganizersOrganizerIdInvoicesRoute
   InternalControlAdminOrganizersOrganizerIdMembershipsRoute: typeof InternalControlAdminOrganizersOrganizerIdMembershipsRoute
+  InternalControlAdminOrganizersOrganizerIdModulesRoute: typeof InternalControlAdminOrganizersOrganizerIdModulesRoute
   InternalControlAdminOrganizersOrganizerIdProjectsRoute: typeof InternalControlAdminOrganizersOrganizerIdProjectsRoute
   InternalControlAdminOrganizersOrganizerIdRsvpsRoute: typeof InternalControlAdminOrganizersOrganizerIdRsvpsRoute
   InternalControlAdminOrganizersOrganizerIdSettingsRoute: typeof InternalControlAdminOrganizersOrganizerIdSettingsRoute
   InternalControlAdminOrganizersOrganizerIdSubscriptionsRoute: typeof InternalControlAdminOrganizersOrganizerIdSubscriptionsRoute
   InternalControlAdminOrganizersOrganizerIdUsersRoute: typeof InternalControlAdminOrganizersOrganizerIdUsersRoute
   InternalControlAdminOrganizersOrganizerIdVenuesRoute: typeof InternalControlAdminOrganizersOrganizerIdVenuesRoute
+  InternalControlAdminOrganizersOrganizerIdWalletsRoute: typeof InternalControlAdminOrganizersOrganizerIdWalletsRoute
   InternalControlAdminOrganizersOrganizerIdWorkspacesRoute: typeof InternalControlAdminOrganizersOrganizerIdWorkspacesRoute
   InternalControlAdminOrganizersOrganizerIdIndexRoute: typeof InternalControlAdminOrganizersOrganizerIdIndexRoute
 }
@@ -3814,6 +3856,8 @@ const InternalControlAdminOrganizersOrganizerIdRouteChildren: InternalControlAdm
       InternalControlAdminOrganizersOrganizerIdInvoicesRoute,
     InternalControlAdminOrganizersOrganizerIdMembershipsRoute:
       InternalControlAdminOrganizersOrganizerIdMembershipsRoute,
+    InternalControlAdminOrganizersOrganizerIdModulesRoute:
+      InternalControlAdminOrganizersOrganizerIdModulesRoute,
     InternalControlAdminOrganizersOrganizerIdProjectsRoute:
       InternalControlAdminOrganizersOrganizerIdProjectsRoute,
     InternalControlAdminOrganizersOrganizerIdRsvpsRoute:
@@ -3826,6 +3870,8 @@ const InternalControlAdminOrganizersOrganizerIdRouteChildren: InternalControlAdm
       InternalControlAdminOrganizersOrganizerIdUsersRoute,
     InternalControlAdminOrganizersOrganizerIdVenuesRoute:
       InternalControlAdminOrganizersOrganizerIdVenuesRoute,
+    InternalControlAdminOrganizersOrganizerIdWalletsRoute:
+      InternalControlAdminOrganizersOrganizerIdWalletsRoute,
     InternalControlAdminOrganizersOrganizerIdWorkspacesRoute:
       InternalControlAdminOrganizersOrganizerIdWorkspacesRoute,
     InternalControlAdminOrganizersOrganizerIdIndexRoute:

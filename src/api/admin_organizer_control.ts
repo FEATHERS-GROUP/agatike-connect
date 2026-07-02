@@ -1066,3 +1066,107 @@ export const getAdminOrganizerContributors = createServerFn({ method: "POST" })
       workspaceName: wsNameMap[c.workspace_id] || "—",
     }));
   });
+
+// ----------------------------------------------------
+// WALLETS (View and Configure Networks)
+// ----------------------------------------------------
+export const getAdminOrganizerWallets = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const wsQuery = `
+      query GetOrgWallets($id: uuid!) {
+        workspaces(where: { orgnizer_id: { _eq: $id } }, order_by: { created_at: desc }) {
+          id
+          name
+          city
+          country
+          wallet {
+            id
+            amount
+            currency
+            walletNumber
+            supported_networks
+            created_at
+            updated_at
+          }
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
+    return data.workspaces || [];
+  });
+
+export const updateAdminWalletNetworks = createServerFn({ method: "POST" })
+  .validator((d: { walletId: string; networks: string[] }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const query = `
+      mutation UpdateWalletNetworks($id: uuid!, $networks: jsonb!) {
+        update_wallets_by_pk(pk_columns: { id: $id }, _set: { supported_networks: $networks }) {
+          id
+          supported_networks
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(query, {
+      id: ctx.data.walletId,
+      networks: ctx.data.networks,
+    });
+    return data.update_wallets_by_pk;
+  });
+
+// ----------------------------------------------------
+// MODULES (Platform Modules assigned to Workspaces)
+// ----------------------------------------------------
+export const getAdminOrganizerModulesData = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const query = `
+      query GetOrgModules($id: uuid!) {
+        platformModules {
+          id
+          label
+          category
+        }
+        workspaces(where: { orgnizer_id: { _eq: $id } }, order_by: { created_at: desc }) {
+          id
+          name
+          moduls
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(query, { id: ctx.data.organizerId });
+    return {
+      platformModules: data.platformModules || [],
+      workspaces: data.workspaces || [],
+    };
+  });
+
+export const updateAdminWorkspaceModules = createServerFn({ method: "POST" })
+  .validator((d: { workspaceId: string; moduls: any }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const query = `
+      mutation UpdateWorkspaceModules($id: uuid!, $moduls: jsonb!) {
+        update_workspaces_by_pk(pk_columns: { id: $id }, _set: { moduls: $moduls }) {
+          id
+          moduls
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(query, {
+      id: ctx.data.workspaceId,
+      moduls: ctx.data.moduls,
+    });
+    return data.update_workspaces_by_pk;
+  });

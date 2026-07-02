@@ -34,6 +34,8 @@ export function AdminOrganizerSidebar() {
     { label: "Book Invoices", href: `${basePath}/book-invoices`, icon: LucideIcons.FileText },
     { type: "divider" },
     { label: "Settings", href: `${basePath}/settings`, icon: LucideIcons.Settings },
+    { label: "Wallets", href: `${basePath}/wallets`, icon: LucideIcons.Wallet },
+    { label: "Modules", href: `${basePath}/modules`, icon: LucideIcons.Blocks },
   ];
 
   const renderNavItem = (n: any, idx: number) => {
