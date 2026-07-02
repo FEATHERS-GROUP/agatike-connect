@@ -1,21 +1,23 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { getAdminOrganizerWallets, updateAdminWalletNetworks } from "@/api/admin_organizer_control";
+import { getPawaPayNetworks } from "@/api/pawapay";
 import { Wallet, Building2, Globe, Check, AlertTriangle, RefreshCw, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/wallets")({
   loader: async ({ params }) => {
-    const workspaces = await getAdminOrganizerWallets({ data: { organizerId: params.organizerId } } as any);
-    return { workspaces };
+    const [workspaces, pawaNetworks] = await Promise.all([
+      getAdminOrganizerWallets({ data: { organizerId: params.organizerId } } as any),
+      getPawaPayNetworks() as any
+    ]);
+    return { workspaces, pawaNetworks };
   },
   component: OrganizerWallets,
 });
 
-const ALL_NETWORKS = ["mtn", "airtel", "visa", "mastercard", "mpesa", "bk"]; // Sample list
-
 function OrganizerWallets() {
-  const { workspaces } = Route.useLoaderData();
+  const { workspaces, pawaNetworks = [] } = Route.useLoaderData();
   const router = useRouter();
   
   const [editingWallet, setEditingWallet] = useState<string | null>(null);
@@ -117,18 +119,21 @@ function OrganizerWallets() {
                 {isEditing ? (
                   <div className="space-y-4">
                     <div className="flex flex-wrap gap-2">
-                      {ALL_NETWORKS.map(net => {
-                        const active = selectedNetworks.includes(net);
+                      {pawaNetworks.map((net: any) => {
+                        const active = selectedNetworks.includes(net.id);
                         return (
                           <button
-                            key={net}
-                            onClick={() => toggleNetwork(net)}
-                            className={`px-3 py-1.5 text-xs rounded-sm border flex items-center gap-1.5 transition-colors ${
+                            key={net.id}
+                            onClick={() => toggleNetwork(net.id)}
+                            className={`px-3 py-1.5 text-xs rounded-sm border flex flex-col items-start gap-1 transition-colors ${
                               active ? "bg-[#84c87e]/10 border-[#84c87e]/40 text-[#84c87e]" : "bg-[#111] border-[#333] text-[#797775] hover:border-[#555] hover:text-white"
                             }`}
                           >
-                            <div className={`h-3 w-3 rounded-full border ${active ? "bg-[#84c87e] border-[#84c87e]" : "border-[#555]"}`} />
-                            <span className="capitalize">{net}</span>
+                            <div className="flex items-center gap-1.5 w-full">
+                              <div className={`h-3 w-3 shrink-0 rounded-full border ${active ? "bg-[#84c87e] border-[#84c87e]" : "border-[#555]"}`} />
+                              <span className="capitalize font-medium truncate max-w-[120px]">{net.name}</span>
+                            </div>
+                            <span className="text-[10px] uppercase opacity-70 ml-4.5">{net.country} · {net.currency}</span>
                           </button>
                         );
                       })}
@@ -155,11 +160,14 @@ function OrganizerWallets() {
                     {currentNetworks.length === 0 ? (
                       <span className="text-[#797775] text-xs italic">No networks configured.</span>
                     ) : (
-                      currentNetworks.map((n: string) => (
-                        <span key={n} className="px-2.5 py-1 text-[11px] bg-[#333333] text-[#cccccc] rounded-sm capitalize border border-[#444444]">
-                          {n}
-                        </span>
-                      ))
+                      currentNetworks.map((n: string) => {
+                        const networkObj = pawaNetworks.find((pn: any) => pn.id === n);
+                        return (
+                          <span key={n} className="px-2.5 py-1 text-[11px] bg-[#333333] text-[#cccccc] rounded-sm capitalize border border-[#444444]">
+                            {networkObj ? `${networkObj.name} (${networkObj.country})` : n}
+                          </span>
+                        );
+                      })
                     )}
                   </div>
                 )}

@@ -126,6 +126,65 @@ function OrganizerOverview() {
         </div>
       </div>
       
+      {/* ORGANIZER IDENTITY DETAILS */}
+      <div className="bg-[#1e1e1e] border border-[#333333] rounded-sm p-5 mb-6">
+        <h3 className="text-md font-medium text-white mb-4 flex items-center gap-2 border-b border-[#333333] pb-2">
+          Identity &amp; Business Details
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+          <div>
+            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Phone</p>
+            <p className="text-[#cccccc]">{overview.phone || "—"}</p>
+          </div>
+          <div>
+            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Gender</p>
+            <p className="text-[#cccccc] capitalize">{overview.gender || "—"}</p>
+          </div>
+          <div>
+            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Date of Birth</p>
+            <p className="text-[#cccccc]">{overview.dateOfBirth ? new Date(overview.dateOfBirth).toLocaleDateString() : "—"}</p>
+          </div>
+          <div>
+            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Type</p>
+            <p className={overview.business ? "text-[#569cd6]" : "text-[#dcdcaa]"}>
+              {overview.business ? "Business Entity" : "Individual"}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Industry / Field</p>
+            <p className="text-[#cccccc] capitalize">{overview.field || "—"}</p>
+          </div>
+          <div className="col-span-2">
+            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Bio</p>
+            <p className="text-[#cccccc] truncate">{overview.bio || "—"}</p>
+          </div>
+        </div>
+
+        {/* Documents */}
+        <div className="mt-6 pt-4 border-t border-[#333333] flex flex-wrap gap-4">
+          {overview.national_id ? (
+            <a href={overview.national_id} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] hover:border-[#569cd6] text-[#569cd6] text-xs rounded-sm transition-colors">
+              View National ID
+            </a>
+          ) : (
+            <span className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] text-[#797775] text-xs rounded-sm opacity-50 cursor-not-allowed">
+              No National ID
+            </span>
+          )}
+
+          {overview.business_cert ? (
+            <a href={overview.business_cert} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] hover:border-[#c586c0] text-[#c586c0] text-xs rounded-sm transition-colors">
+              View Business Certificate
+            </a>
+          ) : (
+            <span className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] text-[#797775] text-xs rounded-sm opacity-50 cursor-not-allowed">
+              No Business Cert
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* EXHAUSTIVE STATS GRID */}
       <h3 className="text-md font-medium text-[#cccccc]">Platform Usage</h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

@@ -22,6 +22,15 @@ export const getAdminOrganizerOverview = createServerFn({ method: "POST" })
           active
           followers
           image
+          bio
+          business
+          business_cert
+          dateOfBirth
+          field
+          gender
+          national_id
+          socials
+          speciality
         }
         subscriptions(where: { organizer_id: { _eq: $id }, status: { _eq: "active" } }) {
           id
@@ -836,10 +845,13 @@ export const updateAdminWorkspaceCurrency = createServerFn({ method: "POST" })
     if (!session) throw new Error("unauthenticated");
 
     const mutation = `
-      mutation UpdateWorkspaceCurrency($id: uuid!, $currency: String!) {
+      mutation UpdateWorkspaceAndWalletCurrency($id: uuid!, $currency: String!) {
         update_workspaces_by_pk(pk_columns: { id: $id }, _set: { currency: $currency }) {
           id
           currency
+        }
+        update_wallets(where: { workspace_id: { _eq: $id } }, _set: { currency: $currency }) {
+          affected_rows
         }
       }
     `;
