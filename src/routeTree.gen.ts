@@ -87,7 +87,9 @@ import { Route as DashboardWorkspaceSlugEventsIndexRouteImport } from './routes/
 import { Route as DashboardWorkspaceSlugBookIndexRouteImport } from './routes/dashboard/$workspaceSlug/book/index'
 import { Route as DashboardWorkspaceSlugBadgeDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/index'
 import { Route as DashboardWorkspaceSlugCinemaIndexRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/index'
+import { Route as InternalControlAdminModulesRouteImport } from './routes/internal.control.admin.modules'
 import { Route as InternalControlAdminLoginRouteImport } from './routes/internal.control.admin.login'
+import { Route as InternalControlAdminHealthRouteImport } from './routes/internal.control.admin.health'
 import { Route as DashboardWorkspaceUserEmailActivateRouteImport } from './routes/dashboard/workspace-user/$email.activate'
 import { Route as DashboardBillingSubscriptionsPricingplansRouteImport } from './routes/dashboard/billing/subscriptions/pricingplans'
 import { Route as DashboardWorkspaceSlugWithdrawalsRequestRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals/request'
@@ -597,10 +599,22 @@ const DashboardWorkspaceSlugCinemaIndexRoute =
     path: '/$workspaceSlug/Cinema/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const InternalControlAdminModulesRoute =
+  InternalControlAdminModulesRouteImport.update({
+    id: '/modules',
+    path: '/modules',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
 const InternalControlAdminLoginRoute =
   InternalControlAdminLoginRouteImport.update({
     id: '/login',
     path: '/login',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminHealthRoute =
+  InternalControlAdminHealthRouteImport.update({
+    id: '/health',
+    path: '/health',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
 const DashboardWorkspaceUserEmailActivateRoute =
@@ -1264,7 +1278,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
+  '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1436,7 +1452,9 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
+  '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
   '/dashboard/$workspaceSlug/Cinema': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1611,7 +1629,9 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
+  '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1788,7 +1808,9 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/health'
     | '/internal/control/admin/login'
+    | '/internal/control/admin/modules'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -1960,7 +1982,9 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/health'
     | '/internal/control/admin/login'
+    | '/internal/control/admin/modules'
     | '/dashboard/$workspaceSlug/Cinema'
     | '/dashboard/$workspaceSlug/badge-designer'
     | '/dashboard/$workspaceSlug/book'
@@ -2134,7 +2158,9 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/health'
     | '/internal/control/admin/login'
+    | '/internal/control/admin/modules'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -2816,11 +2842,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugCinemaIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/internal/control/admin/modules': {
+      id: '/internal/control/admin/modules'
+      path: '/modules'
+      fullPath: '/internal/control/admin/modules'
+      preLoaderRoute: typeof InternalControlAdminModulesRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
     '/internal/control/admin/login': {
       id: '/internal/control/admin/login'
       path: '/login'
       fullPath: '/internal/control/admin/login'
       preLoaderRoute: typeof InternalControlAdminLoginRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/health': {
+      id: '/internal/control/admin/health'
+      path: '/health'
+      fullPath: '/internal/control/admin/health'
+      preLoaderRoute: typeof InternalControlAdminHealthRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
     '/dashboard/workspace-user/$email/activate': {
@@ -3884,14 +3924,18 @@ const InternalControlAdminOrganizersOrganizerIdRouteWithChildren =
   )
 
 interface InternalControlAdminRouteChildren {
+  InternalControlAdminHealthRoute: typeof InternalControlAdminHealthRoute
   InternalControlAdminLoginRoute: typeof InternalControlAdminLoginRoute
+  InternalControlAdminModulesRoute: typeof InternalControlAdminModulesRoute
   InternalControlAdminIndexRoute: typeof InternalControlAdminIndexRoute
   InternalControlAdminOrganizersOrganizerIdRoute: typeof InternalControlAdminOrganizersOrganizerIdRouteWithChildren
   InternalControlAdminOrganizersIndexRoute: typeof InternalControlAdminOrganizersIndexRoute
 }
 
 const InternalControlAdminRouteChildren: InternalControlAdminRouteChildren = {
+  InternalControlAdminHealthRoute: InternalControlAdminHealthRoute,
   InternalControlAdminLoginRoute: InternalControlAdminLoginRoute,
+  InternalControlAdminModulesRoute: InternalControlAdminModulesRoute,
   InternalControlAdminIndexRoute: InternalControlAdminIndexRoute,
   InternalControlAdminOrganizersOrganizerIdRoute:
     InternalControlAdminOrganizersOrganizerIdRouteWithChildren,
