@@ -23,7 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createEvent } from "@/api/events";
 import { getWorkspaceVipPrivileges } from "@/api/vip";
-import { getCoordinates, getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
+import { getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { uploadFile } from "@/api/storage";

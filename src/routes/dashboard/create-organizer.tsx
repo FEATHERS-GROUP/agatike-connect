@@ -78,6 +78,7 @@ const formSchema = z
     numberOfEvents: z.string().min(1, "Please select the estimated volume of events"),
     bio: z.string().optional(),
     business_cert: z.string().optional(),
+    image: z.string().optional(),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirm_password: z.string(),
     phone: z.string().min(8, "Valid phone number is required"),
@@ -245,10 +246,31 @@ function CreateOrganizerPage() {
         }
       }
 
+      let finalImage = restValues.image;
+      if (finalImage && finalImage.startsWith("data:")) {
+        const match = finalImage.match(/^data:(.+);base64,(.+)$/);
+        if (match) {
+          try {
+            const res = await uploadFile({
+              data: {
+                base64: match[2],
+                contentType: match[1],
+                folder: "organizers/profiles",
+                ext: match[1].split("/")[1] || "bin",
+              },
+            } as any);
+            finalImage = res.url;
+          } catch (err) {
+            console.error("Failed to upload image", err);
+          }
+        }
+      }
+
       const payload = {
         ...restValues,
         business_cert: finalBusinessCert,
         national_id: finalNationalId,
+        image: finalImage,
         field: values.field.join(", "),
         user_id: syncUserId,
         speciality:
@@ -611,6 +633,36 @@ function CreateOrganizerPage() {
                       </label>
                     </div>
                   )}
+
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className="text-white/80">Profile Picture / Logo (Optional)</Label>
+                    <label className="flex h-20 w-full cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-white/20 bg-white/5 hover:bg-white/10 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              setValue("image", event.target?.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                      <span className="text-sm font-medium text-white/70 flex items-center gap-2">
+                        {watch("image") ? (
+                          <>
+                            <CheckCircle2 className="h-5 w-5 text-green-400" /> Image Attached
+                          </>
+                        ) : (
+                          "Click to upload profile picture"
+                        )}
+                      </span>
+                    </label>
+                  </div>
 
                   <div className="space-y-2">
                     <Label className="text-white/80">Date of Birth / Inception Date</Label>

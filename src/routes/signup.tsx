@@ -245,6 +245,8 @@ function SignUp() {
               ) : step === 0 ? (
                 <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500 mt-6">
                   <div className="space-y-3">
+                    {/* Google Signup Button Hidden per request */}
+                    {/* 
                     <Button
                       variant="outline"
                       type="button"
@@ -276,6 +278,7 @@ function SignUp() {
                       )}
                       {isLoading ? "Signing up..." : "Sign up with Google"}
                     </Button>
+                    */}
                     <Button
                       variant="outline"
                       type="button"

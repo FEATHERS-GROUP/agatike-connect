@@ -37,6 +37,7 @@ export interface OrganizerInput {
   user_id?: string | null;
   otpToken?: string;
   otp?: string;
+  image?: string;
 }
 
 export const checkOrganizerHandle = createServerFn({ method: "POST" }).handler(async (ctx) => {
@@ -90,10 +91,11 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
         $email: String = "",
         $socials: jsonb = "", 
         $speciality: jsonb = "", 
-        $user_id: uuid = null
+        $user_id: uuid = null,
+        $image: String = ""
       ) {
         insert_organizers(objects: {
-          active: false, 
+          active: true, 
           bio: $bio, 
           business: $business, 
           business_cert: $business_cert, 
@@ -111,7 +113,8 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
           socials: $socials, 
           speciality: $speciality, 
           updated_on: "now()", 
-          user_id: $user_id
+          user_id: $user_id,
+          image: $image
         }) {
           returning {
             id
