@@ -187,6 +187,7 @@ export const getAdminOrganizerWorkspaces = createServerFn({ method: "POST" })
         workspaces(where: { orgnizer_id: { _eq: $orgnizer_id } }, order_by: { created_at: desc }) {
           id
           name
+          logo
           city
           country
           created_at
