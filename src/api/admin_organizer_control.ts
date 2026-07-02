@@ -247,24 +247,64 @@ export const getAdminOrganizerVenues = createServerFn({ method: "POST" })
     const wsIds = workspaces.map((w: any) => w.id);
     const wsNameMap = Object.fromEntries(workspaces.map((w: any) => [w.id, w.name]));
 
-    if (wsIds.length === 0) return [];
+    if (wsIds.length === 0) return { venues: [], spaces: [] };
 
     const query = `
-      query GetVenues($wsIds: [uuid!]!) {
-        venue_projects(where: { workspace_id: { _in: $wsIds } }, order_by: { name: asc }) {
+      query GetVenuesAndSpaces($wsIds: [uuid!]!) {
+        rentable_venues(where: { workspace_id: { _in: $wsIds } }, order_by: { created_at: desc }) {
           id
           name
+          type
+          city
+          country
+          address
+          capacity
+          rental_type
+          currency
+          cover_url
+          status
+          created_at
           workspace_id
-          boundary_width
-          boundary_height
+          description
+          amenities
+          pricing_tiers
+          opening_hours
+          closing_hours
+          instructions
+          is_venue_private
+          images
+        }
+        spaces(where: { workspace_id: { _in: $wsIds } }, order_by: { created_at: desc }) {
+          id
+          name
+          type
+          currency
+          status
+          created_at
+          workspace_id
+          description
+          cover_url
+          locations
+          plans
+          rsvp_form_id
+          show_rsvp_form_button
+          rsvp_form_button_text
         }
       }
     `;
     const data = await hasuraRequest<any>(query, { wsIds });
-    return (data.venue_projects || []).map((v: any) => ({
+    
+    const venues = (data.rentable_venues || []).map((v: any) => ({
       ...v,
       workspaceName: wsNameMap[v.workspace_id] || "—",
     }));
+
+    const spaces = (data.spaces || []).map((s: any) => ({
+      ...s,
+      workspaceName: wsNameMap[s.workspace_id] || "—",
+    }));
+
+    return { venues, spaces };
   });
 
 // ----------------------------------------------------
@@ -318,24 +358,78 @@ export const getAdminOrganizerProjects = createServerFn({ method: "POST" })
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
 
-    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id } }`;
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id name } }`;
     const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
-    const wsIds = wsData.workspaces?.map((w: any) => w.id) || [];
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+    const wsNameMap = Object.fromEntries(workspaces.map((w: any) => [w.id, w.name]));
 
-    if (wsIds.length === 0) return [];
+    if (wsIds.length === 0) return { tickets: [], badges: [], venues: [], pages: [] };
 
     const query = `
-      query GetProjects($wsIds: [uuid!]!) {
+      query GetAllProjects($wsIds: [uuid!]!) {
         ticket_projects(where: { workspaceId: { _in: $wsIds } }, order_by: { created_at: desc }) {
           id
           name
+          workspaceId
+          template
+          coverImage
           created_at
           deleted
         }
+        venue_projects(where: { workspace_id: { _in: $wsIds } }, order_by: { name: asc }) {
+          id
+          name
+          workspace_id
+          boundary_width
+          boundary_height
+        }
+        workspace_pages(where: { workspace_id: { _in: $wsIds } }, order_by: { updated_at: desc }) {
+          id
+          title
+          slug
+          workspace_id
+          is_published
+          updated_at
+        }
       }
     `;
+
     const data = await hasuraRequest<any>(query, { wsIds });
-    return data.ticket_projects || [];
+
+    // Fetch badge_projects per workspace (they filter by event->workspace)
+    let badgeProjects: any[] = [];
+    try {
+      const badgeQ = `
+        query GetBadges($wsIds: [uuid!]!) {
+          badge_projects(where: { events: { workspace_id: { _in: $wsIds } } }, order_by: { created_at: desc }) {
+            id
+            logo_text
+            theme
+            gradient_class
+            accent_color
+            event_id
+            events {
+              title
+              workspace_id
+            }
+          }
+        }
+      `;
+      const badgeData = await hasuraRequest<any>(badgeQ, { wsIds });
+      badgeProjects = (badgeData.badge_projects || []).map((b: any) => ({
+        ...b,
+        workspaceName: wsNameMap[b.events?.workspace_id] || "—",
+        eventTitle: b.events?.title || "—",
+      }));
+    } catch (_) { /* non-critical */ }
+
+    return {
+      tickets: (data.ticket_projects || []).map((t: any) => ({ ...t, workspaceName: wsNameMap[t.workspaceId] || "—" })),
+      badges: badgeProjects,
+      venues: (data.venue_projects || []).map((v: any) => ({ ...v, workspaceName: wsNameMap[v.workspace_id] || "—" })),
+      pages: (data.workspace_pages || []).map((p: any) => ({ ...p, workspaceName: wsNameMap[p.workspace_id] || "—" })),
+    };
   });
 
 // ----------------------------------------------------
