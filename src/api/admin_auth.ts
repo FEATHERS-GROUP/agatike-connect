@@ -49,7 +49,6 @@ export const loginAdmin = createServerFn({ method: "POST" }).handler(async (ctx)
     .setExpirationTime("24h") // 24 hours as requested
     .sign(SECRET);
 
-  console.log("[AdminAuth] Login successful for:", email);
 
   setCookie("agatike_admin_auth", token, {
     httpOnly: true,
@@ -63,8 +62,8 @@ export const loginAdmin = createServerFn({ method: "POST" }).handler(async (ctx)
 
 export const getAdminSession = createServerFn({ method: "POST" }).handler(async () => {
   const token = getCookie("agatike_admin_auth");
-  console.log("[AdminAuth] getAdminSession called. Token present:", !!token);
   
+
   if (!token) return null;
 
   try {
@@ -72,14 +71,11 @@ export const getAdminSession = createServerFn({ method: "POST" }).handler(async 
     const session = payload as unknown as { sub: string; type: string; role: string; is_super_admin: boolean };
     
     if (session.type !== "global_admin") {
-        console.log("[AdminAuth] Invalid session type:", session.type);
         return null;
     }
 
-    console.log("[AdminAuth] Session valid for user ID:", session.sub);
     return session;
   } catch (e) {
-    console.log("[AdminAuth] Error verifying session token:", e);
     return null;
   }
 });

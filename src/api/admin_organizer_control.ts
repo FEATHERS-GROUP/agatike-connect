@@ -182,7 +182,7 @@ export const getAdminOrganizerWorkspaces = createServerFn({ method: "POST" })
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
 
-    const query = `
+    const wsQuery = `
       query GetWorkspaces($orgnizer_id: uuid!) {
         workspaces(where: { orgnizer_id: { _eq: $orgnizer_id } }, order_by: { created_at: desc }) {
           id
@@ -190,14 +190,28 @@ export const getAdminOrganizerWorkspaces = createServerFn({ method: "POST" })
           logo
           city
           country
+          address
+          currency
+          moduls
           created_at
+          updated_at
           type
           deleted
         }
       }
     `;
-    const data = await hasuraRequest<any>(query, { orgnizer_id: ctx.data.organizerId });
-    return data.workspaces || [];
+    const wsData = await hasuraRequest<any>(wsQuery, { orgnizer_id: ctx.data.organizerId });
+
+    let platformModules: any[] = [];
+    try {
+      const modQuery = `query { platformModules { id label } }`;
+      const modData = await hasuraRequest<any>(modQuery, {});
+      platformModules = modData.platformModules || [];
+    } catch (_) {
+      // Non-critical — fall back to empty so module IDs show truncated
+    }
+
+    return { workspaces: wsData.workspaces || [], platformModules };
   });
 
 export const setAdminWorkspaceStatus = createServerFn({ method: "POST" })
@@ -227,22 +241,30 @@ export const getAdminOrganizerVenues = createServerFn({ method: "POST" })
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
 
-    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id } }`;
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id name } }`;
     const wsData = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
-    const wsIds = wsData.workspaces?.map((w: any) => w.id) || [];
+    const workspaces: any[] = wsData.workspaces || [];
+    const wsIds = workspaces.map((w: any) => w.id);
+    const wsNameMap = Object.fromEntries(workspaces.map((w: any) => [w.id, w.name]));
 
     if (wsIds.length === 0) return [];
 
     const query = `
       query GetVenues($wsIds: [uuid!]!) {
-        venue_projects(where: { workspace_id: { _in: $wsIds } }) {
+        venue_projects(where: { workspace_id: { _in: $wsIds } }, order_by: { name: asc }) {
           id
           name
+          workspace_id
+          boundary_width
+          boundary_height
         }
       }
     `;
     const data = await hasuraRequest<any>(query, { wsIds });
-    return data.venue_projects || [];
+    return (data.venue_projects || []).map((v: any) => ({
+      ...v,
+      workspaceName: wsNameMap[v.workspace_id] || "—",
+    }));
   });
 
 // ----------------------------------------------------

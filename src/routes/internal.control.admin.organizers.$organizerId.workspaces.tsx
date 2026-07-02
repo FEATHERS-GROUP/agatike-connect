@@ -1,22 +1,29 @@
-import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { getAdminOrganizerWorkspaces, setAdminWorkspaceStatus } from "@/api/admin_organizer_control";
-import { Building2, Power, PowerOff, Search, Eye } from "lucide-react";
+import { Building2, Power, PowerOff, Search, Eye, MapPin, Tag, Calendar as CalendarIcon, Hash, Map, Banknote, Layers, Clock } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/workspaces")({
   loader: async ({ params }) => {
-    const workspaces = await getAdminOrganizerWorkspaces({ data: { organizerId: params.organizerId } } as any);
-    return { workspaces };
+    const data = await getAdminOrganizerWorkspaces({ data: { organizerId: params.organizerId } } as any);
+    return data;
   },
   component: OrganizerWorkspaces,
 });
 
 function OrganizerWorkspaces() {
-  const { workspaces } = Route.useLoaderData();
+  const { workspaces, platformModules } = Route.useLoaderData();
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Build a lookup map: id -> label
+  const moduleMap = Object.fromEntries(
+    (platformModules || []).map((m: any) => [m.id, m.label])
+  );
 
   const filteredWorkspaces = workspaces.filter((w: any) => 
     (w.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -112,13 +119,161 @@ function OrganizerWorkspaces() {
                     </td>
                     <td className="py-2 px-4">
                       <div className="flex items-center justify-end gap-2">
-                        <Link
-                          to="/dashboard"
-                          className="flex items-center gap-1.5 px-2 py-1 bg-[#2d2d30] hover:bg-[#333333] text-white border border-[#444] transition-colors rounded-sm text-[11px]"
-                        >
-                          <Eye className="h-3 w-3" />
-                          View
-                        </Link>
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <button className="flex items-center gap-1.5 px-2 py-1 bg-[#2d2d30] hover:bg-[#333333] text-white border border-[#444] transition-colors rounded-sm text-[11px]">
+                              <Eye className="h-3 w-3" />
+                              View
+                            </button>
+                          </SheetTrigger>
+                          <SheetContent className="bg-[#1e1e1e] border-[#333333] text-white sm:max-w-md w-full p-0 flex flex-col">
+                            <div className="p-6 border-b border-[#333333] shrink-0">
+                              <SheetHeader className="flex flex-row items-center gap-4 space-y-0">
+                                {w.logo ? (
+                                  <img src={w.logo} alt={w.name} className="h-16 w-16 rounded-md object-cover bg-[#252526]" />
+                                ) : (
+                                  <div className="h-16 w-16 rounded-md bg-[#252526] flex items-center justify-center text-[#797775]">
+                                    <Building2 className="h-8 w-8" />
+                                  </div>
+                                )}
+                                <div>
+                                  <SheetTitle className="text-xl font-semibold text-white">{w.name || "Unnamed Workspace"}</SheetTitle>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className={`text-xs px-2 py-0.5 rounded-sm ${w.deleted ? "bg-[#f43f5e]/10 text-[#f43f5e]" : "bg-[#84c87e]/10 text-[#84c87e]"}`}>
+                                      {w.deleted ? "Disabled" : "Active"}
+                                    </span>
+                                    <span className="text-xs text-[#797775] capitalize">{w.type}</span>
+                                  </div>
+                                </div>
+                              </SheetHeader>
+                            </div>
+                            
+                            <ScrollArea className="flex-1">
+                              <div className="p-6 space-y-6">
+                                <div className="space-y-4">
+                                  <h3 className="text-sm font-medium text-[#cccccc] uppercase tracking-wider">Workspace Details</h3>
+                                  
+                                  <div className="grid grid-cols-1 gap-4">
+                                    <div className="flex items-center gap-3">
+                                      <div className="p-2 bg-[#2d2d30] rounded-sm text-[#797775]">
+                                        <Hash className="h-4 w-4" />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <div className="text-xs text-[#797775]">Workspace ID</div>
+                                        <div className="text-sm text-white font-mono truncate">{w.id}</div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                      <div className="p-2 bg-[#2d2d30] rounded-sm text-[#797775]">
+                                        <MapPin className="h-4 w-4" />
+                                      </div>
+                                      <div>
+                                        <div className="text-xs text-[#797775]">City / Country</div>
+                                        <div className="text-sm text-white">{w.city && w.country ? `${w.city}, ${w.country}` : w.city || w.country || "Not specified"}</div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                      <div className="p-2 bg-[#2d2d30] rounded-sm text-[#797775]">
+                                        <Map className="h-4 w-4" />
+                                      </div>
+                                      <div>
+                                        <div className="text-xs text-[#797775]">Address</div>
+                                        <div className="text-sm text-white">{w.address || "Not specified"}</div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                      <div className="p-2 bg-[#2d2d30] rounded-sm text-[#797775]">
+                                        <Tag className="h-4 w-4" />
+                                      </div>
+                                      <div>
+                                        <div className="text-xs text-[#797775]">Type</div>
+                                        <div className="text-sm text-white capitalize">{w.type || "Not specified"}</div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                      <div className="p-2 bg-[#2d2d30] rounded-sm text-[#797775]">
+                                        <Banknote className="h-4 w-4" />
+                                      </div>
+                                      <div>
+                                        <div className="text-xs text-[#797775]">Currency</div>
+                                        <div className="text-sm text-white uppercase">{w.currency || "Not specified"}</div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                      <div className="p-2 bg-[#2d2d30] rounded-sm text-[#797775]">
+                                        <CalendarIcon className="h-4 w-4" />
+                                      </div>
+                                      <div>
+                                        <div className="text-xs text-[#797775]">Created At</div>
+                                        <div className="text-sm text-white">
+                                          {w.created_at ? new Date(w.created_at).toLocaleDateString('en-US', { dateStyle: 'long' }) : "Unknown"}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                      <div className="p-2 bg-[#2d2d30] rounded-sm text-[#797775]">
+                                        <Clock className="h-4 w-4" />
+                                      </div>
+                                      <div>
+                                        <div className="text-xs text-[#797775]">Last Updated</div>
+                                        <div className="text-sm text-white">
+                                          {w.updated_at ? new Date(w.updated_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : "Unknown"}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="mt-2">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Layers className="h-4 w-4 text-[#797775]" />
+                                        <div className="text-xs text-[#797775]">Enabled Modules</div>
+                                      </div>
+                                      <div className="flex flex-wrap gap-2">
+                                        {w.moduls && w.moduls.length > 0 ? (
+                                          w.moduls.map((modId: string) => (
+                                            <span key={modId} className="bg-[#2d2d30] text-[#cccccc] text-xs px-2.5 py-1 rounded-full capitalize">
+                                              {moduleMap[modId] || modId.substring(0, 8) + "…"}
+                                            </span>
+                                          ))
+                                        ) : (
+                                          <span className="text-sm text-[#797775] italic">No modules enabled</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </ScrollArea>
+
+                            {/* Action footer */}
+                            <div className="p-6 border-t border-[#333333] shrink-0">
+                              {w.deleted ? (
+                                <button
+                                  onClick={() => handleToggleStatus(w.id, false)}
+                                  disabled={loading === w.id}
+                                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#84c87e]/10 text-[#84c87e] border border-[#84c87e]/30 hover:bg-[#84c87e]/20 transition-colors rounded-sm disabled:opacity-50 font-medium"
+                                >
+                                  <Power className="h-4 w-4" />
+                                  {loading === w.id ? "Activating..." : "Activate Workspace"}
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleToggleStatus(w.id, true)}
+                                  disabled={loading === w.id}
+                                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#f43f5e]/10 text-[#f43f5e] border border-[#f43f5e]/30 hover:bg-[#f43f5e]/20 transition-colors rounded-sm disabled:opacity-50 font-medium"
+                                >
+                                  <PowerOff className="h-4 w-4" />
+                                  {loading === w.id ? "Disabling..." : "Disable Workspace"}
+                                </button>
+                              )}
+                            </div>
+                          </SheetContent>
+                        </Sheet>
                         {w.deleted ? (
                           <button
                             onClick={() => handleToggleStatus(w.id, false)}
