@@ -964,18 +964,22 @@ export const getAdminOrganizerSubscriptionsDetail = createServerFn({ method: "PO
           order_by: { created_at: desc }
         ) {
           id
+          wallet_id
+          workspace_id
           type
           amount
           net_amount
           currency
           status
-          description
-          created_at
+          provider_status
           provider_reference
-          workspace_id
-          wallet_id
+          reference_id
+          description
           payout_method
           payout_account
+          raw_callback_data
+          created_at
+          updated_at
         }
         fee_simulations(order_by: { created_at: desc }, limit: 100) {
           transaction_id
