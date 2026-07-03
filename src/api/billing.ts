@@ -91,7 +91,16 @@ const GET_ACTIVE_PLAN_FEES = `
     subscriptions(where: { organizer_id: { _eq: $organizer_id }, status: { _eq: "active" } }, limit: 1) {
       pricing_plan {
         customer_service_fee_percentage
+        customer_collection_fee_percentage
+        customer_collection_fee_fixed
         organizer_platform_contribution
+        organizer_collection_fee_percentage
+        organizer_collection_fee_fixed
+        withdrawal_fee_percentage
+        withdrawal_fee_fixed
+        max_collection_subsidy_percentage
+        enable_subsidized_collection
+        withdrawal_dependency_required
         platform_margin_buffer
         max_withdrawals_per_week
       }
@@ -105,7 +114,16 @@ export const getWorkspaceActivePlanFees = createServerFn({ method: "POST" })
     if (!ctx.data.organizer_id)
       return {
         customer_service_fee_percentage: 2.0,
+        customer_collection_fee_percentage: 2.0,
+        customer_collection_fee_fixed: 0,
         organizer_platform_contribution: 0,
+        organizer_collection_fee_percentage: 0,
+        organizer_collection_fee_fixed: 0,
+        withdrawal_fee_percentage: 0,
+        withdrawal_fee_fixed: 0,
+        max_collection_subsidy_percentage: 1.0,
+        enable_subsidized_collection: true,
+        withdrawal_dependency_required: true,
         platform_margin_buffer: 0,
       };
     const res = await hasuraRequest<any>(GET_ACTIVE_PLAN_FEES, {
@@ -114,7 +132,16 @@ export const getWorkspaceActivePlanFees = createServerFn({ method: "POST" })
     const plan = res.subscriptions?.[0]?.pricing_plan;
     return {
       customer_service_fee_percentage: plan?.customer_service_fee_percentage ?? 2.0,
+      customer_collection_fee_percentage: plan?.customer_collection_fee_percentage ?? 2.0,
+      customer_collection_fee_fixed: plan?.customer_collection_fee_fixed ?? 0,
       organizer_platform_contribution: plan?.organizer_platform_contribution ?? 0,
+      organizer_collection_fee_percentage: plan?.organizer_collection_fee_percentage ?? 0,
+      organizer_collection_fee_fixed: plan?.organizer_collection_fee_fixed ?? 0,
+      withdrawal_fee_percentage: plan?.withdrawal_fee_percentage ?? 0,
+      withdrawal_fee_fixed: plan?.withdrawal_fee_fixed ?? 0,
+      max_collection_subsidy_percentage: plan?.max_collection_subsidy_percentage ?? 1.0,
+      enable_subsidized_collection: plan?.enable_subsidized_collection ?? true,
+      withdrawal_dependency_required: plan?.withdrawal_dependency_required ?? true,
       platform_margin_buffer: plan?.platform_margin_buffer ?? 0,
     };
   });

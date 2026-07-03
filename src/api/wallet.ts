@@ -77,6 +77,7 @@ const GET_WALLET_TRANSACTIONS = `
       payout_method
       reference_id
       workspace_id
+      platform_fee
       raw_callback_data
     }
     withdrawal_requests(where: { wallet_id: { _eq: $wallet_id } }, order_by: { created_at: desc }) {

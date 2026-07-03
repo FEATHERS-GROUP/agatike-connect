@@ -13,7 +13,7 @@ import {
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspaceWallet } from "@/api/wallet";
-import { getExchangeRate } from "@/api/pawapay";
+import { getExchangeRate, getProfitableNetworks } from "@/api/pawapay";
 import { simulateTransaction } from "@/api/simulation";
 
 interface PaymentModalProps {
@@ -109,10 +109,17 @@ export function PaymentModal({
   const baseCurrency = propsBaseCurrency || wallet?.currency || "RWF";
   const supportedNetworks = wallet?.supported_networks || [];
 
+  // Fetch profitability check for all supported networks
+  const { data: profitableNetworksData, isLoading: isProfitableLoading } = useQuery({
+    queryKey: ["profitableNetworks", workspaceId, baseAmount, supportedNetworks],
+    queryFn: () => getProfitableNetworks({ data: { workspaceId, baseAmount, networks: supportedNetworks } } as any),
+    enabled: isOpen && !!workspaceId && supportedNetworks.length > 0 && !!baseAmount,
+  });
+
   const availableNetworks = useMemo(() => {
-    if (!supportedNetworks || supportedNetworks.length === 0) return [];
-    return ALL_NETWORKS.filter((n) => supportedNetworks.includes(n.value));
-  }, [supportedNetworks]);
+    if (!supportedNetworks || supportedNetworks.length === 0 || !profitableNetworksData) return [];
+    return ALL_NETWORKS.filter((n) => profitableNetworksData.includes(n.value));
+  }, [supportedNetworks, profitableNetworksData]);
 
   const selectedNetworkObj = useMemo(
     () => availableNetworks.find((n) => n.value === network),
@@ -278,7 +285,7 @@ export function PaymentModal({
                   <div className="pt-2 pb-1 space-y-4 animate-in slide-in-from-top-2 fade-in duration-200">
                     <div className="space-y-1.5 text-left">
                       <Label className="text-xs text-muted-foreground">Network Provider</Label>
-                      {isWalletLoading ? (
+                      {isWalletLoading || isProfitableLoading ? (
                         <div className="h-10 w-full animate-pulse bg-secondary rounded-lg" />
                       ) : availableNetworks.length === 0 ? (
                         <div className="p-3 bg-red-50 text-red-600 border border-red-200 rounded-md text-xs font-medium">

@@ -130,6 +130,105 @@ export const getAllPaymentProviderFees = createServerFn({ method: "GET" }).handl
   }
 });
 
+export const getProfitableNetworks = createServerFn({ method: "POST" })
+  .validator((d: { workspaceId: string; baseAmount: number; networks: string[]; countryCode?: string }) => d)
+  .handler(async (ctx) => {
+    const { workspaceId, baseAmount, networks } = ctx.data;
+    if (!workspaceId || !baseAmount || !networks || networks.length === 0) return networks;
+
+    const { hasuraRequest } = await import("./graphql.server");
+    const { getWorkspaceActivePlanFees } = await import("./billing");
+
+    // Fetch all provider fees and the workspace's organizer ID
+    const [feeRes, workspaceRes] = await Promise.all([
+      hasuraRequest<any>(
+        `query GetProviderFees {
+          payment_provider_fees {
+            network
+            collection_percentage
+            collection_fixed_fee
+            is_tiered
+            tiered_rules
+          }
+        }`
+      ),
+      hasuraRequest<any>(
+        `query GetWorkspaceOrg($workspace_id: uuid!) {
+          workspaces_by_pk(id: $workspace_id) {
+            orgnizer_id
+          }
+        }`,
+        { workspace_id: workspaceId }
+      ),
+    ]);
+
+    const allFees = feeRes.payment_provider_fees || [];
+    const organizerId = workspaceRes.workspaces_by_pk?.orgnizer_id;
+
+    // Fetch pricing plan using the billing service
+    const plan = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
+
+    const custPct   = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
+    const custFixed = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
+    const orgPct    = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
+    const orgFixed  = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
+
+    const planMaxSubsidyPct = parseFloat(plan.max_collection_subsidy_percentage as any) ?? 1.0;
+    const withdrawalFeePct = parseFloat(plan.withdrawal_fee_percentage as any) || 0;
+    const isSubsidyEnabled = plan.enable_subsidized_collection !== false;
+    
+    // Calculate final allowed subsidy amount
+    // Option B + A hybrid: cap subsidy percentage at (withdrawal margin * 0.7)
+    const finalSubsidyPct = Math.min(planMaxSubsidyPct, withdrawalFeePct * 0.7);
+    const maxAllowedSubsidyAmount = isSubsidyEnabled ? (baseAmount * (finalSubsidyPct / 100)) : 0;
+
+    const profitableNetworks = networks.filter((network) => {
+      const providerFees = allFees.find((f: any) => f.network === network) || {};
+      let collectionPercentage = parseFloat(providerFees.collection_percentage) || 0;
+      let collectionFixed      = parseFloat(providerFees.collection_fixed_fee) || 0;
+
+      // Calculate Customer Fee and Organizer Fee based on baseAmount
+      const customerFee = (baseAmount * (custPct / 100)) + custFixed;
+      const grossAmount = baseAmount + customerFee;
+      const organizerFee = (baseAmount * (orgPct / 100)) + orgFixed;
+
+      // Evaluate tiered rules based on grossAmount
+      if (providerFees.is_tiered && providerFees.tiered_rules) {
+        let rules = providerFees.tiered_rules;
+        try {
+          if (typeof rules === "string") rules = JSON.parse(rules);
+          if (typeof rules === "string") rules = JSON.parse(rules);
+        } catch (e) {
+          console.error("Failed to parse tiered rules", e);
+        }
+
+        if (rules && rules.collection && Array.isArray(rules.collection)) {
+          const matchedRule =
+            rules.collection.find((r: any) => grossAmount <= r.max) ||
+            rules.collection[rules.collection.length - 1];
+          if (matchedRule) {
+            collectionPercentage = matchedRule.pct || 0;
+            collectionFixed = matchedRule.fixed || 0;
+          }
+        }
+      }
+
+      // Calculate Provider Cost
+      const providerCost = (grossAmount * (collectionPercentage / 100)) + collectionFixed;
+
+      // New Profit Logic (Lifecycle Engine)
+      // The organizer and the customer share the collection fee, so both are used to cover the cost
+      const guaranteedRevenue = organizerFee + customerFee;
+      const shortfall = providerCost - guaranteedRevenue;
+
+      const hideNetwork = shortfall > maxAllowedSubsidyAmount;
+
+      return !hideNetwork;
+    });
+
+    return profitableNetworks;
+  });
+
 export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
@@ -218,54 +317,69 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       walletId = createRes.insert_wallets_one?.id;
     }
 
-    // Parallel fetch: PawaPay provider fees + workspace pricing plan
-    const [feeRes, planRes] = await Promise.all([
+    // Parallel fetch: PawaPay provider fees + workspace organizer
+    const [feeRes, workspaceRes] = await Promise.all([
       hasuraRequest<any>(
         `query GetProviderFees($network: String!) {
           payment_provider_fees(where: { network: { _eq: $network } }, limit: 1) {
             collection_percentage
             collection_fixed_fee
+            is_tiered
+            tiered_rules
           }
         }`,
         { network }
       ),
       hasuraRequest<any>(
-        `query GetWorkspacePlan($workspace_id: uuid!) {
+        `query GetWorkspaceOrg($workspace_id: uuid!) {
           workspaces_by_pk(id: $workspace_id) {
-            organizers {
-              subscriptions(where: { status: { _eq: "active" } }, order_by: { created_at: desc }, limit: 1) {
-                pricing_plan {
-                  customer_collection_fee_percentage
-                  customer_collection_fee_fixed
-                  organizer_collection_fee_percentage
-                  organizer_collection_fee_fixed
-                }
-              }
-            }
+            orgnizer_id
           }
         }`,
         { workspace_id: workspaceId }
       ),
     ]);
 
-    // ── Provider (PawaPay) cost ──────────────────────────────────────────────
-    const pf = feeRes.payment_provider_fees?.[0] || {};
-    const providerPct   = parseFloat(pf.collection_percentage) || 0;
-    const providerFixed = parseFloat(pf.collection_fixed_fee) || 0;
+    const organizerId = workspaceRes.workspaces_by_pk?.orgnizer_id;
+    const { getWorkspaceActivePlanFees } = await import("./billing");
+    const plan = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
+
+    // ── Pricing plan fees ────────────────────────────────────────────────────
+    const custPct    = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
+    const custFixed  = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
+    const orgPct     = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
+    const orgFixed   = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
 
     const grossAmount = parseFloat(amount);
     const baseAmt     = parseFloat(baseAmount || amount);
-    const providerCost = (grossAmount * (providerPct / 100)) + providerFixed;
-
-    // ── Pricing plan fees ────────────────────────────────────────────────────
-    const plan = planRes.workspaces_by_pk?.organizers?.[0]?.subscriptions?.[0]?.pricing_plan || {};
-    const custPct    = parseFloat(plan.customer_collection_fee_percentage) || 0;
-    const custFixed  = parseFloat(plan.customer_collection_fee_fixed) || 0;
-    const orgPct     = parseFloat(plan.organizer_collection_fee_percentage) || 0;
-    const orgFixed   = parseFloat(plan.organizer_collection_fee_fixed) || 0;
-
-    // Customer fee = what they paid above the base price (or configured minimum)
     const customerFee  = Math.max(grossAmount - baseAmt, (baseAmt * (custPct / 100)) + custFixed);
+
+    // ── Provider (PawaPay) cost ──────────────────────────────────────────────
+    const pf = feeRes.payment_provider_fees?.[0] || {};
+    let providerPct   = parseFloat(pf.collection_percentage) || 0;
+    let providerFixed = parseFloat(pf.collection_fixed_fee) || 0;
+
+    if (pf.is_tiered && pf.tiered_rules) {
+      let rules = pf.tiered_rules;
+      try {
+        if (typeof rules === "string") rules = JSON.parse(rules);
+        if (typeof rules === "string") rules = JSON.parse(rules);
+      } catch (e) {
+        console.error("Failed to parse tiered rules", e);
+      }
+
+      if (rules && rules.collection && Array.isArray(rules.collection)) {
+        const matchedRule =
+          rules.collection.find((r: any) => grossAmount <= r.max) ||
+          rules.collection[rules.collection.length - 1];
+        if (matchedRule) {
+          providerPct = matchedRule.pct || 0;
+          providerFixed = matchedRule.fixed || 0;
+        }
+      }
+    }
+
+    const providerCost = (grossAmount * (providerPct / 100)) + providerFixed;
 
     // Organizer fee = deducted from their wallet settlement
     const organizerFee = (baseAmt * (orgPct / 100)) + orgFixed;
@@ -287,13 +401,14 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         $type: String!, $provider_status: String!, $status: String!,
         $wallet_id: uuid!,
         $gross: numeric!, $cost: numeric!, $rev: numeric!, $profit: numeric!,
-        $cust_fee: numeric!, $org_fee: numeric!
+        $cust_fee: numeric!, $org_fee: numeric!, $platform_fee: numeric!
       ) {
         insert_wallet_transactions_one(object: {
           amount: $amount, net_amount: $net_amount, currency: $currency,
           provider_reference: $provider_reference, reference_id: $reference_id,
           type: $type, provider_status: $provider_status, status: $status,
-          wallet_id: $wallet_id, description: "PawaPay Deposit"
+          wallet_id: $wallet_id, description: "PawaPay Deposit",
+          platform_fee: $platform_fee
         }) { id }
         insert_earnings_one(object: {
           transaction_type: $type,
@@ -323,6 +438,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         profit: netProfit,
         cust_fee: customerFee,
         org_fee: organizerFee,
+        platform_fee: organizerFee,
       }
     );
 

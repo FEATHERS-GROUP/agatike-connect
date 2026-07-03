@@ -9,7 +9,13 @@ const LOG_SIMULATION = `
     $expected_collection_cost: numeric!,
     $expected_disbursement_cost: numeric!,
     $expected_margin: numeric!,
-    $decision: String!
+    $decision: String!,
+    $guaranteed_revenue: numeric,
+    $optional_revenue: numeric,
+    $provider_cost: numeric,
+    $subsidy_amount: numeric,
+    $max_allowed_subsidy: numeric,
+    $lifecycle_mode: String
   ) {
     insert_fee_simulations_one(object: {
       transaction_id: $transaction_id,
@@ -17,7 +23,13 @@ const LOG_SIMULATION = `
       expected_collection_cost: $expected_collection_cost,
       expected_disbursement_cost: $expected_disbursement_cost,
       expected_margin: $expected_margin,
-      decision: $decision
+      decision: $decision,
+      guaranteed_revenue: $guaranteed_revenue,
+      optional_revenue: $optional_revenue,
+      provider_cost: $provider_cost,
+      subsidy_amount: $subsidy_amount,
+      max_allowed_subsidy: $max_allowed_subsidy,
+      lifecycle_mode: $lifecycle_mode
     }) {
       transaction_id
     }
@@ -71,16 +83,18 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         data: { organizer_id: organizerId },
       } as any);
 
-      const customerServicePct = planFees.customer_service_fee_percentage || 2.0;
-      const organizerContributionPct = planFees.organizer_platform_contribution || 0;
+      const customerCollectionPct = planFees.customer_collection_fee_percentage ?? planFees.customer_service_fee_percentage ?? 2.0;
+      const customerCollectionFixed = planFees.customer_collection_fee_fixed ?? 0;
+      const organizerCollectionPct = planFees.organizer_collection_fee_percentage ?? planFees.organizer_platform_contribution ?? 1.0;
+      const organizerCollectionFixed = planFees.organizer_collection_fee_fixed ?? 0;
 
       // --- CORE SYSTEM EQUATION & COST HIERARCHY ---
       // 1. Customer Fee Engine
-      const customerFee = (basePrice * customerServicePct) / 100;
+      const customerFee = (basePrice * (customerCollectionPct / 100)) + customerCollectionFixed;
       const totalCustomerCharge = basePrice + customerFee;
 
       // 2. Organizer Pricing Engine
-      const organizerFee = (basePrice * organizerContributionPct) / 100;
+      const organizerFee = (basePrice * (organizerCollectionPct / 100)) + organizerCollectionFixed;
 
       // 3. Platform Margin Buffer
       const platformBufferPct = planFees.platform_margin_buffer || 0; // Explicitly defined, not ad-hoc
@@ -130,32 +144,47 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         expectedDisbursementCost = basePrice * (pawaPayDisbursementPct / 100) + disbFixed;
       }
 
-      // AT CHECKOUT: We only care about Collection Cost.
-      // Disbursement costs are charged directly to the organizer at withdrawal time.
-      const totalCost = expectedCollectionCost;
-      const netMargin = totalRevenue - totalCost;
+      // --- NEW: LIFECYCLE PROFITABILITY ENGINE ---
+      const providerCost = expectedCollectionCost;
+      // The organizer and the customer share the collection fee, so both are used to cover the cost
+      const guaranteedRevenue = organizerFee + customerFee;
+      const optionalRevenue = 0; // Everything is used for the baseline survival check
 
-      // --- OPTIMIZATION LAYER (ADAPTIVE ROUTING) ---
+      const totalCost = providerCost;
+      const shortfall = Math.max(0, providerCost - guaranteedRevenue);
+      const isSubsidized = shortfall > 0;
+
+      // Option B + A hybrid
+      const planMaxSubsidyPct = planFees.max_collection_subsidy_percentage ?? 1.0;
+      const withdrawalFeePct = planFees.withdrawal_fee_percentage ?? 0;
+      const isSubsidyEnabled = planFees.enable_subsidized_collection !== false;
+
+      const finalSubsidyPct = Math.min(planMaxSubsidyPct, withdrawalFeePct * 0.7);
+      const maxAllowedSubsidy = isSubsidyEnabled ? (basePrice * (finalSubsidyPct / 100)) : 0;
+
       let decision = "approved";
       let structuredError = null;
       let failureClassification = "OK";
+      
+      const expectedMargin = guaranteedRevenue + optionalRevenue - providerCost;
 
-      let finalOrganizerFee = organizerFee;
-      let finalNetMargin = netMargin;
-
-      let shortfall = 0;
-
-      if (netMargin < 0) {
-        // Instead of blocking the customer, the organizer dynamically absorbs the shortfall!
-        shortfall = Math.abs(netMargin);
-        finalOrganizerFee += shortfall;
-        finalNetMargin = 0; // Margin is balanced because organizer absorbed the cost
-
-        failureClassification = "ABSORBED_BY_ORGANIZER";
-
-        // We explicitly DO NOT BLOCK even if the organizer payout becomes negative
-        // The organizer will simply owe money (negative wallet balance) for extremely cheap tickets
-      } else if (netMargin < platformBuffer) {
+      if (isSubsidized && shortfall > maxAllowedSubsidy) {
+        decision = "blocked";
+        failureClassification = "UNPROFITABLE";
+        structuredError = {
+          title: "Payment Network Unavailable",
+          description: "This payment method is not available for this transaction amount.",
+          details: {
+            customerServiceFee: customerFee,
+            organizerContribution: organizerFee,
+            totalCost: totalCost,
+            message: "Transaction would result in a negative profit that exceeds the allowed subsidy threshold.",
+            shortfall: shortfall
+          }
+        };
+      } else if (isSubsidized) {
+        failureClassification = "SUBSIDIZED_COLLECTION";
+      } else if (expectedMargin < platformBuffer) {
         // C. MARGIN WARNING
         failureClassification = "MARGIN_WARNING";
       }
@@ -170,24 +199,30 @@ export const simulateTransaction = createServerFn({ method: "POST" })
           organizerId,
           network,
           countryCode,
-          customerServicePct,
-          organizerContributionPct,
+          customerServicePct: customerCollectionPct,
+          organizerContributionPct: organizerCollectionPct,
           providerFees,
         },
         expected_collection_cost: expectedCollectionCost,
         expected_disbursement_cost: expectedDisbursementCost,
-        expected_margin: finalNetMargin,
+        expected_margin: expectedMargin,
         decision,
+        guaranteed_revenue: guaranteedRevenue,
+        optional_revenue: optionalRevenue,
+        provider_cost: providerCost,
+        subsidy_amount: isSubsidized ? shortfall : 0,
+        max_allowed_subsidy: maxAllowedSubsidy,
+        lifecycle_mode: isSubsidized ? "collection_subsidy_enabled" : "profitable"
       });
 
       return {
         decision,
         failureClassification,
         serviceFee: customerFee,
-        organizerFee: finalOrganizerFee,
+        organizerFee: organizerFee,
         totalCustomerCharge,
-        expectedMargin: finalNetMargin,
-        shortfall,
+        expectedMargin,
+        shortfall: isSubsidized ? shortfall : 0,
         structuredError,
         transactionId,
       };
