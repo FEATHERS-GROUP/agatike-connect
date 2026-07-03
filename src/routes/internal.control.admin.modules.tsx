@@ -325,7 +325,7 @@ function ModuleModal({
 
     try {
       if (initialData) {
-        await updatePlatformModule({ id: initialData.id, data: formData });
+        await updatePlatformModule({ data: { id: initialData.id, data: formData } });
       } else {
         await createPlatformModule({ data: formData });
       }

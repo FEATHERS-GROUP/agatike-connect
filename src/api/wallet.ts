@@ -78,16 +78,45 @@ const GET_WALLET_TRANSACTIONS = `
       reference_id
       workspace_id
     }
+    withdrawal_requests(where: { wallet_id: { _eq: $wallet_id } }, order_by: { created_at: desc }) {
+      id
+      amount
+      net_amount
+      currency
+      payout_method
+      payout_account
+      status
+      created_at
+      updated_at
+      wallet_id
+      workspace_id
+      rejection_reason
+    }
   }
 `;
 
 export const getWalletTransactions = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { wallet_id } = ctx.data as unknown as { wallet_id: string };
-  const data = await hasuraRequest<{ wallet_transactions: any[] }>(GET_WALLET_TRANSACTIONS, {
+  const data = await hasuraRequest<any>(GET_WALLET_TRANSACTIONS, {
     wallet_id,
   });
 
-  return data.wallet_transactions || [];
+  const transactions = data.wallet_transactions || [];
+  const requests = data.withdrawal_requests || [];
+
+  const mappedRequests = requests.map((req: any) => ({
+    ...req,
+    type: "withdrawal",
+    description: `[Admin Review] Withdrawal Request to ${req.payout_method} (${req.payout_account})${req.status === "rejected" && req.rejection_reason ? ` - Rejected: ${req.rejection_reason}` : ""}`,
+    is_request: true,
+  }));
+
+  // Merge and sort descending by created_at
+  const all = [...transactions, ...mappedRequests].sort((a, b) => {
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  return all;
 });
 
 const ADD_MONEY_TO_WORKSPACE_WALLET = `
@@ -119,6 +148,8 @@ export const addMoneyToWorkspaceWallet = createServerFn({ method: "POST" }).hand
   return data.update_wallets?.returning?.[0] || null;
 });
 
+
+// Self-serve withdrawal (≤ 150,000) — deducts wallet + records in wallet_transactions immediately
 const REQUEST_WITHDRAWAL_MUTATION = `
   mutation RequestWithdrawal(
     $wallet_id: uuid!
@@ -141,10 +172,7 @@ const REQUEST_WITHDRAWAL_MUTATION = `
       _set: { updated_at: $updated_at }
     ) {
       affected_rows
-      returning {
-        id
-        amount
-      }
+      returning { id amount }
     }
     insert_wallet_transactions_one(object: {
       wallet_id: $wallet_id
@@ -163,6 +191,45 @@ const REQUEST_WITHDRAWAL_MUTATION = `
     }
   }
 `;
+
+// Admin-approval withdrawal (> 150,000) — records in withdrawal_requests only, NO wallet deduction yet
+const INSERT_WITHDRAWAL_REQUEST = `
+  mutation InsertWithdrawalRequest(
+    $workspace_id: uuid!
+    $wallet_id: uuid!
+    $amount: numeric!
+    $net_amount: numeric!
+    $currency: String!
+    $payout_method: String!
+    $payout_account: String!
+    $network_id: String
+    $country_code: String
+    $target_currency: String
+    $exchange_rate: numeric
+    $platform_fee: numeric
+    $network_fee: numeric
+  ) {
+    insert_withdrawal_requests_one(object: {
+      workspace_id: $workspace_id
+      wallet_id: $wallet_id
+      amount: $amount
+      net_amount: $net_amount
+      currency: $currency
+      payout_method: $payout_method
+      payout_account: $payout_account
+      network_id: $network_id
+      country_code: $country_code
+      target_currency: $target_currency
+      exchange_rate: $exchange_rate
+      platform_fee: $platform_fee
+      network_fee: $network_fee
+      status: "pending"
+    }) {
+      id
+    }
+  }
+`;
+
 
 export const sendWithdrawalOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { organizer_id } = ctx.data as unknown as { organizer_id: string };
@@ -274,30 +341,34 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     converted_net_payout,
   } = ctx.data as any;
 
-  if (!otpToken || !otp || !password) {
-    throw new Error("Missing security verification details.");
+  const ADMIN_APPROVAL_THRESHOLD = 150000;
+  const requiresAdminApproval = amount > ADMIN_APPROVAL_THRESHOLD;
+
+  if (!requiresAdminApproval) {
+    // --- SELF-SERVE FLOW (≤ 150,000) ---
+    if (!otpToken || !otp || !password) {
+      throw new Error("Missing security verification details.");
+    }
+
+    // 1. Verify OTP JWT
+    try {
+      const { payload } = await jwtVerify(otpToken, SECRET);
+      if (payload.type !== "withdrawal_otp") throw new Error("Invalid token type");
+      const otpHash = payload.otp as string;
+      const isOtpValid = await bcrypt.compare(otp, otpHash);
+      if (!isOtpValid) throw new Error("Invalid or expired OTP");
+    } catch (err: any) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    // 2. Verify Password
+    const orgQuery = `query GetOrg { organizers_by_pk(id: "${organizer_id}") { password } }`;
+    const orgRes = await hasuraRequest<{ organizers_by_pk: { password: string } }>(orgQuery);
+    const orgData = orgRes.organizers_by_pk;
+    if (!orgData) throw new Error("Organizer not found");
+    const isPasswordValid = await bcrypt.compare(password, orgData.password);
+    if (!isPasswordValid) throw new Error("Incorrect password");
   }
-
-  // 1. Verify OTP JWT
-  try {
-    const { payload } = await jwtVerify(otpToken, SECRET);
-    if (payload.type !== "withdrawal_otp") throw new Error("Invalid token type");
-
-    const otpHash = payload.otp as string;
-    const isOtpValid = await bcrypt.compare(otp, otpHash);
-    if (!isOtpValid) throw new Error("Invalid or expired OTP");
-  } catch (err: any) {
-    throw new Error("Invalid or expired OTP");
-  }
-
-  // 2. Verify Password
-  const orgQuery = `query GetOrg { organizers_by_pk(id: "${organizer_id}") { password } }`;
-  const orgRes = await hasuraRequest<{ organizers_by_pk: { password: string } }>(orgQuery);
-  const orgData = orgRes.organizers_by_pk;
-  if (!orgData) throw new Error("Organizer not found");
-
-  const isPasswordValid = await bcrypt.compare(password, orgData.password);
-  if (!isPasswordValid) throw new Error("Incorrect password");
 
   // 3. Get Wallet Balance
   const walletQuery = `query GetWallet { wallets_by_pk(id: "${wallet_id}") { amount } }`;
@@ -306,7 +377,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     throw new Error("Insufficient wallet balance.");
   }
 
-  // 2. Get Platform Fee from Subscription
+  // 4. Get Platform Fee from Subscription
   const subQuery = `
     query GetActiveSub {
       subscriptions(
@@ -323,7 +394,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
   `;
   const subRes = await hasuraRequest<{ subscriptions: any[] }>(subQuery);
   const platformPercentage =
-    subRes.subscriptions?.[0]?.pricing_plan?.organizer_platform_contribution || 3.0; // fallback 3%
+    subRes.subscriptions?.[0]?.pricing_plan?.organizer_platform_contribution || 3.0;
 
   const maxWeeklyLimitStr =
     subRes.subscriptions?.[0]?.pricing_plan?.max_withdrawals_per_week || "1";
@@ -331,41 +402,41 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     ? 1
     : parseInt(maxWeeklyLimitStr, 10);
 
-  // 2.5 Check Withdrawal Limits
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  // 5. Check Withdrawal Limits (only for self-serve)
+  if (!requiresAdminApproval) {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  const txQuery = `
-    query GetWeeklyWithdrawals($workspace_id: uuid!, $seven_days_ago: timestamptz!) {
-      wallet_transactions_aggregate(
-        where: {
-          workspace_id: { _eq: $workspace_id },
-          type: { _eq: "withdrawal" },
-          status: { _in: ["pending", "completed"] },
-          created_at: { _gte: $seven_days_ago }
-        }
-      ) {
-        aggregate {
-          count
+    const txQuery = `
+      query GetWeeklyWithdrawals($workspace_id: uuid!, $seven_days_ago: timestamptz!) {
+        wallet_transactions_aggregate(
+          where: {
+            workspace_id: { _eq: $workspace_id },
+            type: { _eq: "withdrawal" },
+            status: { _in: ["pending", "completed"] },
+            created_at: { _gte: $seven_days_ago }
+          }
+        ) {
+          aggregate { count }
         }
       }
-    }
-  `;
-  const txRes = await hasuraRequest<{
-    wallet_transactions_aggregate: { aggregate: { count: number } };
-  }>(txQuery, {
-    workspace_id,
-    seven_days_ago: sevenDaysAgo.toISOString(),
-  });
+    `;
+    const txRes = await hasuraRequest<{
+      wallet_transactions_aggregate: { aggregate: { count: number } };
+    }>(txQuery, {
+      workspace_id,
+      seven_days_ago: sevenDaysAgo.toISOString(),
+    });
 
-  const weeklyCount = txRes.wallet_transactions_aggregate?.aggregate?.count || 0;
-  if (weeklyCount >= maxWeeklyLimit) {
-    throw new Error(
-      `You have reached your limit of ${maxWeeklyLimit} withdrawal(s) per week for your current plan.`,
-    );
+    const weeklyCount = txRes.wallet_transactions_aggregate?.aggregate?.count || 0;
+    if (weeklyCount >= maxWeeklyLimit) {
+      throw new Error(
+        `You have reached your limit of ${maxWeeklyLimit} withdrawal(s) per week for your current plan.`,
+      );
+    }
   }
 
-  // 3. Get Network Disbursement Fee
+  // 6. Get Network Disbursement Fee
   let netPercentage = 0;
   let netFixed = 0;
   if (payout_method === "momo" && network_id) {
@@ -412,7 +483,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     }
   }
 
-  // 4. Calculate Total Fee and Net Payout
+  // 7. Calculate Total Fee and Net Payout
   const agatikeFee = amount * (platformPercentage / 100);
   const networkFee = amount * (netPercentage / 100) + netFixed;
   const totalFee = agatikeFee + networkFee;
@@ -422,52 +493,86 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     throw new Error("Withdrawal amount is too low to cover the processing fees.");
   }
 
-  // 5. Execute Transaction
-  const data = await hasuraRequest<any>(REQUEST_WITHDRAWAL_MUTATION, {
-    wallet_id,
-    workspace_id,
-    amount,
-    deduct_amount: -amount,
-    net_amount: netAmount,
-    currency,
-    payout_method,
-    payout_account,
-    description: `Withdrawal to ${payout_method} (${payout_account}) | Base: ${amount} ${currency} | Fee: ${totalFee.toFixed(2)} ${currency}`,
-    status: "pending",
-    type: "withdrawal",
-    raw_callback_data: {
-      network_id,
-      country_code,
-      payout_method,
+  // 8. Execute — two different paths based on amount
+  if (requiresAdminApproval) {
+    // --- ADMIN APPROVAL PATH (> 150,000) ---
+    // Insert a withdrawal REQUEST only. No wallet deduction yet.
+    // Admin will review, approve and then we deduct + trigger PawaPay.
+    const reqData = await hasuraRequest<any>(INSERT_WITHDRAWAL_REQUEST, {
+      workspace_id,
+      wallet_id,
       amount,
+      net_amount: netAmount,
+      currency,
+      payout_method,
+      payout_account,
+      network_id: network_id || null,
+      country_code: country_code || "RWA",
+      target_currency: target_currency || currency,
+      exchange_rate: exchange_rate || 1,
+      platform_fee: agatikeFee,
+      network_fee: networkFee,
+    });
+
+    return {
+      success: true,
+      requestId: reqData.insert_withdrawal_requests_one?.id,
       netAmount,
-      totalFee,
-      target_currency,
-      exchange_rate,
-      converted_amount,
-      converted_net_payout,
-    },
-    updated_at: new Date().toISOString(),
-  });
+      agatikeFee,
+      networkFee,
+      requiresAdminApproval: true,
+    };
+  } else {
+    // --- SELF-SERVE PATH (≤ 150,000) ---
+    // Deduct wallet and record directly in wallet_transactions.
+    const data = await hasuraRequest<any>(REQUEST_WITHDRAWAL_MUTATION, {
+      wallet_id,
+      workspace_id,
+      amount,
+      deduct_amount: -amount,
+      net_amount: netAmount,
+      currency,
+      payout_method,
+      payout_account,
+      description: `Withdrawal to ${payout_method} (${payout_account}) | Base: ${amount} ${currency} | Fee: ${totalFee.toFixed(2)} ${currency}`,
+      status: "pending",
+      type: "withdrawal",
+      raw_callback_data: {
+        network_id,
+        country_code,
+        payout_method,
+        amount,
+        netAmount,
+        totalFee,
+        target_currency,
+        exchange_rate,
+        converted_amount,
+        converted_net_payout,
+      },
+      updated_at: new Date().toISOString(),
+    });
 
-  if (data.update_wallets.affected_rows === 0) {
-    throw new Error("Failed to deduct from wallet. Please try again.");
+    if (data.update_wallets.affected_rows === 0) {
+      throw new Error("Failed to deduct from wallet. Please try again.");
+    }
+
+    return {
+      success: true,
+      transactionId: data.insert_wallet_transactions_one.id,
+      netAmount,
+      agatikeFee,
+      networkFee,
+      requiresAdminApproval: false,
+    };
   }
-
-  return {
-    success: true,
-    transactionId: data.insert_wallet_transactions_one.id,
-    netAmount,
-    agatikeFee,
-    networkFee,
-  };
 });
 
 export const getPendingWithdrawals = createServerFn({ method: "GET" }).handler(async () => {
+  // This now reads from the dedicated withdrawal_requests table
   const query = `
     query GetPendingWithdrawals {
-      wallet_transactions(
-        where: { type: { _eq: "withdrawal" }, status: { _eq: "pending" } }
+      withdrawal_requests(
+        where: { status: { _eq: "pending" } }
         order_by: { created_at: desc }
       ) {
         id
@@ -478,13 +583,13 @@ export const getPendingWithdrawals = createServerFn({ method: "GET" }).handler(a
         status
         payout_method
         payout_account
-        raw_callback_data
-        workspace {
-          name
-        }
+        network_id
+        country_code
+        workspace_id
       }
     }
   `;
-  const res = await hasuraRequest<{ wallet_transactions: any[] }>(query);
-  return res.wallet_transactions || [];
+  const res = await hasuraRequest<{ withdrawal_requests: any[] }>(query);
+  return res.withdrawal_requests || [];
 });
+

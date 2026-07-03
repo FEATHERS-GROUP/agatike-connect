@@ -30,6 +30,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/withdrawals/requ
 function RequestWithdrawalPage() {
   const { activeWorkspace } = useWorkspace();
   const navigate = useNavigate();
+  const ADMIN_APPROVAL_THRESHOLD = 150000;
   const [step, setStep] = useState(1);
   const [selectedCountry, setSelectedCountry] = useState("RWA");
   const [withdrawAmount, setWithdrawAmount] = useState("");
@@ -218,10 +219,14 @@ function RequestWithdrawalPage() {
           password,
         },
       } as any),
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ["wallet", activeWorkspace?.id] });
       queryClient.invalidateQueries({ queryKey: ["wallet-transactions", wallet?.id] });
-      toast.success("Withdrawal request submitted successfully!");
+      if (res?.requiresAdminApproval) {
+        toast.success("Your withdrawal request has been submitted. An Agatike admin will review and approve it shortly.");
+      } else {
+        toast.success("Withdrawal request submitted successfully!");
+      }
       navigate({
         to: "/dashboard/$workspaceSlug/withdrawals",
         params: { workspaceSlug: activeWorkspace?.slug || "" },
@@ -270,6 +275,12 @@ function RequestWithdrawalPage() {
 
     if (netPayout <= 0) {
       toast.error("Withdrawal amount is too low to cover the processing fees.");
+      return;
+    }
+
+    // Large amounts go straight to admin queue — no OTP needed
+    if (amountToWithdraw > ADMIN_APPROVAL_THRESHOLD) {
+      withdrawMutation.mutate();
       return;
     }
 
@@ -539,10 +550,14 @@ function RequestWithdrawalPage() {
                 <Button
                   size="lg"
                   className="w-2/3 h-14 rounded-xl text-lg"
-                  disabled={sendOtpMutation.isPending || !payoutAccount || netPayout <= 0}
+                  disabled={sendOtpMutation.isPending || withdrawMutation.isPending || !payoutAccount || netPayout <= 0}
                   onClick={handleInitiateWithdrawal}
                 >
-                  {sendOtpMutation.isPending ? "Sending OTP..." : "Confirm Request"}
+                  {sendOtpMutation.isPending || withdrawMutation.isPending
+                    ? "Processing..."
+                    : amountToWithdraw > ADMIN_APPROVAL_THRESHOLD
+                    ? "Submit for Admin Approval"
+                    : "Confirm Request"}
                 </Button>
               </div>
             </div>
@@ -554,7 +569,7 @@ function RequestWithdrawalPage() {
               <div className="bg-primary/10 p-5 rounded-2xl border border-primary/20 text-center space-y-2">
                 <h3 className="font-bold text-lg">Security Verification</h3>
                 <p className="text-sm text-muted-foreground">
-                  We've sent an 8-character One-Time Password (OTP) to your email address. Please
+                  We've sent a 6-digit One-Time Password (OTP) via SMS to your registered phone number. Please
                   enter it below along with your account password to authorize this payout.
                 </p>
               </div>
