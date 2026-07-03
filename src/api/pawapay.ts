@@ -197,112 +197,144 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       );
     }
 
-    // Save pending transaction
     const { hasuraRequest } = await import("./graphql.server");
 
-    // Get or Create Wallet
-    const getWalletQuery = `
-      query GetWorkspaceWallet($workspace_id: uuid!) {
-        wallets(where: { workspace_id: { _eq: $workspace_id } }) {
-          id
-        }
-      }
-    `;
-    const walletRes = await hasuraRequest<{ wallets: { id: string }[] }>(getWalletQuery, {
-      workspace_id: workspaceId,
-    });
+    // Get or Create Workspace Wallet
+    const walletRes = await hasuraRequest<{ wallets: { id: string }[] }>(
+      `query GetWorkspaceWallet($workspace_id: uuid!) {
+        wallets(where: { workspace_id: { _eq: $workspace_id } }) { id }
+      }`,
+      { workspace_id: workspaceId }
+    );
     let walletId = walletRes.wallets?.[0]?.id;
 
     if (!walletId) {
-      const createWalletMutation = `
-        mutation CreateWallet($workspace_id: uuid!, $currency: String!) {
-          insert_wallets_one(object: { workspace_id: $workspace_id, amount: 0, currency: $currency, walletNumber: "Not setup" }) {
-            id
-          }
-        }
-      `;
       const createRes = await hasuraRequest<{ insert_wallets_one: { id: string } }>(
-        createWalletMutation,
-        { workspace_id: workspaceId, currency: currency },
+        `mutation CreateWallet($workspace_id: uuid!, $currency: String!) {
+          insert_wallets_one(object: { workspace_id: $workspace_id, amount: 0, currency: $currency, walletNumber: "Not setup" }) { id }
+        }`,
+        { workspace_id: workspaceId, currency }
       );
       walletId = createRes.insert_wallets_one?.id;
     }
 
-    // Calculate Fees and Revenue for Earnings Tracking
-    const feeQuery = `
-      query GetProviderFees($network: String!) {
-        payment_provider_fees(where: { network: { _eq: $network } }, limit: 1) {
-          collection_percentage
-          collection_fixed_fee
-        }
-      }
-    `;
-    const feeRes = await hasuraRequest<any>(feeQuery, { network });
-    const providerFees = feeRes.payment_provider_fees?.[0] || { collection_percentage: 0, collection_fixed_fee: 0 };
-    
-    const collectionPercentage = parseFloat(providerFees.collection_percentage) || 0;
-    const collectionFixed = parseFloat(providerFees.collection_fixed_fee) || 0;
-    
-    const grossAmount = parseFloat(amount);
-    const baseAmt = parseFloat(baseAmount || amount);
-    const providerCost = (grossAmount * (collectionPercentage / 100)) + collectionFixed;
-    
-    // Platform revenue logic: 
-    // Subscriptions: The entire amount is our revenue.
-    // Tickets: Only the customer service fee (grossAmount - baseAmt) is our immediate revenue. The organizer's cut is taken at withdrawal.
-    const platformRevenue = type === "space_subscription" ? baseAmt : (grossAmount - baseAmt);
-    const netProfit = platformRevenue - providerCost;
+    // Parallel fetch: PawaPay provider fees + workspace pricing plan
+    const [feeRes, planRes] = await Promise.all([
+      hasuraRequest<any>(
+        `query GetProviderFees($network: String!) {
+          payment_provider_fees(where: { network: { _eq: $network } }, limit: 1) {
+            collection_percentage
+            collection_fixed_fee
+          }
+        }`,
+        { network }
+      ),
+      hasuraRequest<any>(
+        `query GetWorkspacePlan($workspace_id: uuid!) {
+          workspaces_by_pk(id: $workspace_id) {
+            organizers {
+              subscriptions(where: { status: { _eq: "active" } }, order_by: { created_at: desc }, limit: 1) {
+                pricing_plan {
+                  customer_collection_fee_percentage
+                  customer_collection_fee_fixed
+                  organizer_collection_fee_percentage
+                  organizer_collection_fee_fixed
+                }
+              }
+            }
+          }
+        }`,
+        { workspace_id: workspaceId }
+      ),
+    ]);
 
-    const insertQuery = `
-      mutation CreatePendingWalletTransactionAndEarnings($amount: String!, $net_amount: String!, $currency: String!, $provider_reference: String!, $reference_id: String!, $type: String!, $provider_status: String!, $status: String!, $wallet_id: uuid!, $gross: numeric!, $cost: numeric!, $rev: numeric!, $profit: numeric!) {
+    // ── Provider (PawaPay) cost ──────────────────────────────────────────────
+    const pf = feeRes.payment_provider_fees?.[0] || {};
+    const providerPct   = parseFloat(pf.collection_percentage) || 0;
+    const providerFixed = parseFloat(pf.collection_fixed_fee) || 0;
+
+    const grossAmount = parseFloat(amount);
+    const baseAmt     = parseFloat(baseAmount || amount);
+    const providerCost = (grossAmount * (providerPct / 100)) + providerFixed;
+
+    // ── Pricing plan fees ────────────────────────────────────────────────────
+    const plan = planRes.workspaces_by_pk?.organizers?.[0]?.subscriptions?.[0]?.pricing_plan || {};
+    const custPct    = parseFloat(plan.customer_collection_fee_percentage) || 0;
+    const custFixed  = parseFloat(plan.customer_collection_fee_fixed) || 0;
+    const orgPct     = parseFloat(plan.organizer_collection_fee_percentage) || 0;
+    const orgFixed   = parseFloat(plan.organizer_collection_fee_fixed) || 0;
+
+    // Customer fee = what they paid above the base price (or configured minimum)
+    const customerFee  = Math.max(grossAmount - baseAmt, (baseAmt * (custPct / 100)) + custFixed);
+
+    // Organizer fee = deducted from their wallet settlement
+    const organizerFee = (baseAmt * (orgPct / 100)) + orgFixed;
+
+    // ── Platform revenue & profit ────────────────────────────────────────────
+    // Platform Revenue = Customer Contribution + Organizer Contribution
+    // Net Profit       = Platform Revenue − Provider (PawaPay) Cost
+    const platformRevenue = customerFee + organizerFee;
+    const netProfit       = platformRevenue - providerCost;
+
+    // Organizer wallet receives base minus their contribution (and any shortfall)
+    const organizerNetAmount = Math.max(0, baseAmt - organizerFee - (shortfall || 0));
+
+    // ── Insert wallet transaction + earnings atomically ──────────────────────
+    const txRes = await hasuraRequest<any>(
+      `mutation CreatePendingWalletTransactionAndEarnings(
+        $amount: String!, $net_amount: String!, $currency: String!,
+        $provider_reference: String!, $reference_id: String!,
+        $type: String!, $provider_status: String!, $status: String!,
+        $wallet_id: uuid!,
+        $gross: numeric!, $cost: numeric!, $rev: numeric!, $profit: numeric!,
+        $cust_fee: numeric!, $org_fee: numeric!
+      ) {
         insert_wallet_transactions_one(object: {
-          amount: $amount,
-          net_amount: $net_amount,
-          currency: $currency,
-          provider_reference: $provider_reference,
-          reference_id: $reference_id,
-          type: $type,
-          provider_status: $provider_status,
-          status: $status,
-          wallet_id: $wallet_id,
-          description: "PawaPay Deposit"
-        }) {
-          id
-        }
+          amount: $amount, net_amount: $net_amount, currency: $currency,
+          provider_reference: $provider_reference, reference_id: $reference_id,
+          type: $type, provider_status: $provider_status, status: $status,
+          wallet_id: $wallet_id, description: "PawaPay Deposit"
+        }) { id }
         insert_earnings_one(object: {
           transaction_type: $type,
           gross_amount: $gross,
           provider_cost: $cost,
           platform_revenue: $rev,
           net_profit: $profit,
+          customer_fee: $cust_fee,
+          organizer_fee: $org_fee,
           currency: $currency,
           status: $status
-        }) {
-          id
-        }
+        }) { id }
+      }`,
+      {
+        amount: String(baseAmt),
+        net_amount: String(organizerNetAmount),
+        currency: baseCurrency || currency,
+        provider_reference: depositId,
+        reference_id: referenceId,
+        type,
+        provider_status: "PENDING",
+        status: "pending",
+        wallet_id: walletId,
+        gross: grossAmount,
+        cost: providerCost,
+        rev: platformRevenue,
+        profit: netProfit,
+        cust_fee: customerFee,
+        org_fee: organizerFee,
       }
-    `;
+    );
 
-    const txRes = await hasuraRequest<any>(insertQuery, {
-      amount: String(baseAmount || amount),
-      net_amount: String((baseAmount || amount) - shortfall),
-      currency: baseCurrency || currency,
-      provider_reference: depositId,
-      reference_id: referenceId, // Could be eventId or subscriptionId
-      type,
-      provider_status: "PENDING",
-      status: "pending",
-      wallet_id: walletId,
-      gross: grossAmount,
-      cost: providerCost,
-      rev: platformRevenue,
-      profit: netProfit
-    });
-
-    // Link the earnings to the newly created wallet transaction
-    const txId = txRes.insert_wallet_transactions_one.id;
+    // Link the earnings record to the wallet transaction via FK
+    const txId      = txRes.insert_wallet_transactions_one.id;
     const earningsId = txRes.insert_earnings_one.id;
-    await hasuraRequest(`mutation LinkEarnings($id: uuid!, $txId: uuid!) { update_earnings_by_pk(pk_columns: {id: $id}, _set: {wallet_transaction_id: $txId}) { id } }`, { id: earningsId, txId });
+    await hasuraRequest(
+      `mutation LinkEarnings($id: uuid!, $txId: uuid!) {
+        update_earnings_by_pk(pk_columns: {id: $id}, _set: {wallet_transaction_id: $txId}) { id }
+      }`,
+      { id: earningsId, txId }
+    );
 
     return { success: true, depositId };
   });

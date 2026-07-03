@@ -1590,9 +1590,13 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
     }
 
     const newTxId = execData.insert_wallet_transactions_one.id;
-    const netProfit = (req.platform_fee || 0) - (req.network_fee || 0);
 
     // 3. Mark the withdrawal request as approved, link the transaction, and insert earnings
+    // For withdrawals: customer pays nothing, organizer pays the platform withdrawal fee
+    const platformRevenue = req.platform_fee || 0;
+    const providerCost    = req.network_fee || 0;
+    const netProfit       = platformRevenue - providerCost;
+
     const updateReqMutation = `
       mutation UpdateRequestAndEarnings(
         $id: uuid!, 
@@ -1602,6 +1606,8 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
         $provider_cost: numeric!,
         $platform_revenue: numeric!,
         $net_profit: numeric!,
+        $cust_fee: numeric!,
+        $org_fee: numeric!,
         $currency: String!
       ) {
         update_withdrawal_requests_by_pk(
@@ -1623,6 +1629,8 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
           provider_cost: $provider_cost
           platform_revenue: $platform_revenue
           net_profit: $net_profit
+          customer_fee: $cust_fee
+          organizer_fee: $org_fee
           currency: $currency
           status: "pending"
         }) {
@@ -1635,9 +1643,11 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
       tx_id: newTxId, 
       admin_id: session.sub,
       gross_amount: req.amount,
-      provider_cost: req.network_fee || 0,
-      platform_revenue: req.platform_fee || 0,
+      provider_cost: providerCost,
+      platform_revenue: platformRevenue,
       net_profit: netProfit,
+      cust_fee: 0,             // customer pays no withdrawal fee
+      org_fee: platformRevenue, // organizer pays the full withdrawal platform fee
       currency: req.currency || "RWF"
     });
 
