@@ -152,3 +152,27 @@ export const saveFCMToken = createServerFn({ method: "POST" })
       return { success: false };
     }
   });
+
+export const getAllUsers = createServerFn({ method: "GET" }).handler(async () => {
+  const query = `
+    query GetAllUsers {
+      users(order_by: {created_at: desc}, limit: 500) {
+        id
+        username
+        handle
+        email
+        country
+        created_at
+        profile
+      }
+    }
+  `;
+
+  try {
+    const result = await hasuraRequest<{ users: any[] }>(query);
+    return result.users || [];
+  } catch (err) {
+    console.error("Failed to fetch all users", err);
+    return [];
+  }
+});

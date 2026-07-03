@@ -87,6 +87,7 @@ import { Route as DashboardWorkspaceSlugEventsIndexRouteImport } from './routes/
 import { Route as DashboardWorkspaceSlugBookIndexRouteImport } from './routes/dashboard/$workspaceSlug/book/index'
 import { Route as DashboardWorkspaceSlugBadgeDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/index'
 import { Route as DashboardWorkspaceSlugCinemaIndexRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/index'
+import { Route as InternalControlAdminResourcesRouteImport } from './routes/internal.control.admin.resources'
 import { Route as InternalControlAdminModulesRouteImport } from './routes/internal.control.admin.modules'
 import { Route as InternalControlAdminLoginRouteImport } from './routes/internal.control.admin.login'
 import { Route as InternalControlAdminHealthRouteImport } from './routes/internal.control.admin.health'
@@ -598,6 +599,12 @@ const DashboardWorkspaceSlugCinemaIndexRoute =
     id: '/$workspaceSlug/Cinema/',
     path: '/$workspaceSlug/Cinema/',
     getParentRoute: () => DashboardRoute,
+  } as any)
+const InternalControlAdminResourcesRoute =
+  InternalControlAdminResourcesRouteImport.update({
+    id: '/resources',
+    path: '/resources',
+    getParentRoute: () => InternalControlAdminRoute,
   } as any)
 const InternalControlAdminModulesRoute =
   InternalControlAdminModulesRouteImport.update({
@@ -1281,6 +1288,7 @@ export interface FileRoutesByFullPath {
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/resources': typeof InternalControlAdminResourcesRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1455,6 +1463,7 @@ export interface FileRoutesByTo {
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/resources': typeof InternalControlAdminResourcesRoute
   '/dashboard/$workspaceSlug/Cinema': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1632,6 +1641,7 @@ export interface FileRoutesById {
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/resources': typeof InternalControlAdminResourcesRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1811,6 +1821,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/health'
     | '/internal/control/admin/login'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/resources'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -1985,6 +1996,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/health'
     | '/internal/control/admin/login'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/resources'
     | '/dashboard/$workspaceSlug/Cinema'
     | '/dashboard/$workspaceSlug/badge-designer'
     | '/dashboard/$workspaceSlug/book'
@@ -2161,6 +2173,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/health'
     | '/internal/control/admin/login'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/resources'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -2841,6 +2854,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/$workspaceSlug/Cinema/'
       preLoaderRoute: typeof DashboardWorkspaceSlugCinemaIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/internal/control/admin/resources': {
+      id: '/internal/control/admin/resources'
+      path: '/resources'
+      fullPath: '/internal/control/admin/resources'
+      preLoaderRoute: typeof InternalControlAdminResourcesRouteImport
+      parentRoute: typeof InternalControlAdminRoute
     }
     '/internal/control/admin/modules': {
       id: '/internal/control/admin/modules'
@@ -3927,6 +3947,7 @@ interface InternalControlAdminRouteChildren {
   InternalControlAdminHealthRoute: typeof InternalControlAdminHealthRoute
   InternalControlAdminLoginRoute: typeof InternalControlAdminLoginRoute
   InternalControlAdminModulesRoute: typeof InternalControlAdminModulesRoute
+  InternalControlAdminResourcesRoute: typeof InternalControlAdminResourcesRoute
   InternalControlAdminIndexRoute: typeof InternalControlAdminIndexRoute
   InternalControlAdminOrganizersOrganizerIdRoute: typeof InternalControlAdminOrganizersOrganizerIdRouteWithChildren
   InternalControlAdminOrganizersIndexRoute: typeof InternalControlAdminOrganizersIndexRoute
@@ -3936,6 +3957,7 @@ const InternalControlAdminRouteChildren: InternalControlAdminRouteChildren = {
   InternalControlAdminHealthRoute: InternalControlAdminHealthRoute,
   InternalControlAdminLoginRoute: InternalControlAdminLoginRoute,
   InternalControlAdminModulesRoute: InternalControlAdminModulesRoute,
+  InternalControlAdminResourcesRoute: InternalControlAdminResourcesRoute,
   InternalControlAdminIndexRoute: InternalControlAdminIndexRoute,
   InternalControlAdminOrganizersOrganizerIdRoute:
     InternalControlAdminOrganizersOrganizerIdRouteWithChildren,
