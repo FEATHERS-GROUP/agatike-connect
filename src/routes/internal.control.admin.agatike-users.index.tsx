@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import * as LucideIcons from "lucide-react";
 import { useState } from "react";
 import { getAllUsers } from "@/api/users";
 
-export const Route = createFileRoute("/internal/control/admin/resources")({
+export const Route = createFileRoute("/internal/control/admin/agatike-users/")({
   loader: () => getAllUsers(),
   component: UsersPage,
 });
@@ -128,12 +128,13 @@ function UsersPage() {
                       }) : "Unknown"}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button 
-                        className="p-2 text-[#888888] hover:text-white hover:bg-[#333333] rounded-lg transition-colors"
+                      <Link 
+                        to={`/internal/control/admin/agatike-users/${user.id}`}
+                        className="p-2 text-[#888888] hover:text-white hover:bg-[#333333] rounded-lg transition-colors inline-block"
                         title="View User Details"
                       >
                         <LucideIcons.ExternalLink className="w-4 h-4" />
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))

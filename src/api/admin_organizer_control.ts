@@ -1212,3 +1212,64 @@ export const updateAdminWorkspaceModules = createServerFn({ method: "POST" })
     });
     return data.update_workspaces_by_pk;
   });
+
+// ----------------------------------------------------
+// PLATFORM WIDE TRANSACTIONS
+// ----------------------------------------------------
+export const getAllPlatformTransactions = createServerFn({ method: "POST" })
+  .handler(async () => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const query = `
+      query GetAllPlatformTransactions {
+        organizer_invoices(order_by: {created_at: desc}) {
+          id
+          amount
+          status
+          created_at
+          organizer_id
+          subscription_id
+        }
+        organizers {
+          id
+          name
+          handle
+          email
+          image
+        }
+        subscriptions {
+          id
+          next_billing_date
+          plan_id
+          pricing_plan {
+            name
+            currency
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await hasuraRequest<any>(query, {});
+      const invoices = data.organizer_invoices || [];
+      const organizers = data.organizers || [];
+      const subscriptions = data.subscriptions || [];
+
+      const orgMap = new Map(organizers.map((o: any) => [o.id, o]));
+      const subMap = new Map(subscriptions.map((s: any) => [s.id, s]));
+
+      return invoices.map((inv: any) => {
+        const org = orgMap.get(inv.organizer_id);
+        const sub = subMap.get(inv.subscription_id);
+        return {
+          ...inv,
+          organizer: org || null,
+          subscription: sub || null,
+        };
+      });
+    } catch (e) {
+      console.error("Failed to fetch platform transactions:", e);
+      return [];
+    }
+  });

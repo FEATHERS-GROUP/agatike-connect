@@ -14,9 +14,9 @@ export function AdminSidebar() {
     { label: "All services", href: "/internal/control/admin/services", icon: LucideIcons.List },
     { type: "divider" },
     {
-      label: "Resource groups",
-      href: "/internal/control/admin/resources",
-      icon: LucideIcons.Cuboid,
+      label: "Agatike Users",
+      href: "/internal/control/admin/agatike-users",
+      icon: LucideIcons.UserCheck,
     },
     { label: "Users & Roles", href: "/internal/control/admin/users", icon: LucideIcons.Users },
     {
