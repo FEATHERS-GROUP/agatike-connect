@@ -155,8 +155,9 @@ const REQUEST_WITHDRAWAL_MUTATION = `
     $wallet_id: uuid!
     $workspace_id: uuid!
     $amount: numeric!
+    $amount_str: String!
     $deduct_amount: numeric!
-    $net_amount: numeric!
+    $net_amount_str: String!
     $currency: String!
     $payout_method: String!
     $payout_account: String!
@@ -177,14 +178,16 @@ const REQUEST_WITHDRAWAL_MUTATION = `
     insert_wallet_transactions_one(object: {
       wallet_id: $wallet_id
       workspace_id: $workspace_id
-      amount: $amount
-      net_amount: $net_amount
+      amount: $amount_str
+      net_amount: $net_amount_str
       currency: $currency
       payout_method: $payout_method
       payout_account: $payout_account
       description: $description
       status: $status
       type: $type
+      provider_reference: "PENDING"
+      provider_status: "PENDING"
       raw_callback_data: $raw_callback_data
     }) {
       id
@@ -529,8 +532,9 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       wallet_id,
       workspace_id,
       amount,
+      amount_str: String(amount),
       deduct_amount: -amount,
-      net_amount: netAmount,
+      net_amount_str: String(netAmount),
       currency,
       payout_method,
       payout_account,

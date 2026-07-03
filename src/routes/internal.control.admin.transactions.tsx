@@ -144,7 +144,7 @@ function ApprovalModal({
                 className="mt-0.5 w-4 h-4 accent-[#f97316] shrink-0"
               />
               <span className="text-sm text-[#cccccc]">
-                I have called the organizer (<span className="text-white font-mono">{org.phone || org.email || "N/A"}</span>) and verified their identity and the withdrawal details.
+                I have called {org.name ? <span className="text-white font-medium">{org.name}</span> : "the organizer"} (<span className="text-white font-mono">{org.phone || org.email || "N/A"}</span>) and verified their identity and the withdrawal details.
               </span>
             </label>
           </div>

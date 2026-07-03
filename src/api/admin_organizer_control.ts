@@ -1518,12 +1518,12 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
     const totalFee = (req.platform_fee || 0) + (req.network_fee || 0);
     const executeMutation = `
       mutation ExecuteWithdrawal(
-        $req_id: uuid!
         $wallet_id: uuid!
         $workspace_id: uuid!
         $amount: numeric!
+        $amount_str: String!
         $deduct_amount: numeric!
-        $net_amount: numeric!
+        $net_amount_str: String!
         $currency: String!
         $payout_method: String!
         $payout_account: String!
@@ -1541,14 +1541,16 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
         insert_wallet_transactions_one(object: {
           wallet_id: $wallet_id
           workspace_id: $workspace_id
-          amount: $amount
-          net_amount: $net_amount
+          amount: $amount_str
+          net_amount: $net_amount_str
           currency: $currency
           payout_method: $payout_method
           payout_account: $payout_account
           description: $description
           status: "pending"
           type: "withdrawal"
+          provider_reference: "PENDING"
+          provider_status: "PENDING"
           raw_callback_data: $raw_callback_data
         }) {
           id
@@ -1559,12 +1561,12 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
     const description = `[ADMIN APPROVED] Withdrawal to ${req.payout_method} (${req.payout_account}) | Base: ${req.amount} ${req.currency} | Fee: ${totalFee.toFixed(2)} ${req.currency}`;
 
     const execData = await hasuraRequest<any>(executeMutation, {
-      req_id: req.id,
       wallet_id: req.wallet_id,
       workspace_id: req.workspace_id,
       amount: req.amount,
+      amount_str: String(req.amount),
       deduct_amount: -req.amount,
-      net_amount: req.net_amount,
+      net_amount_str: String(req.net_amount),
       currency: req.currency,
       payout_method: req.payout_method,
       payout_account: req.payout_account,
