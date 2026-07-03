@@ -21,7 +21,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
     if (providerReference) {
       // 1. Update the wallet transaction status
       const updateQuery = `
-        mutation UpdateWalletTransaction($provider_reference: String!, $provider_status: String!, $status: String!, $raw_callback_data: jsonb) {
+        mutation UpdateWalletTransactionAndEarnings($provider_reference: String!, $provider_status: String!, $status: String!, $raw_callback_data: jsonb) {
           update_wallet_transactions(
             where: { provider_reference: { _eq: $provider_reference } }, 
             _set: { 
@@ -39,6 +39,15 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               net_amount
               workspace_id
             }
+          }
+          update_earnings(
+            where: { wallet_transaction: { provider_reference: { _eq: $provider_reference } } },
+            _set: {
+              status: $status,
+              updated_at: "now()"
+            }
+          ) {
+            affected_rows
           }
         }
       `;

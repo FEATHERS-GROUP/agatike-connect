@@ -77,6 +77,7 @@ const GET_WALLET_TRANSACTIONS = `
       payout_method
       reference_id
       workspace_id
+      raw_callback_data
     }
     withdrawal_requests(where: { wallet_id: { _eq: $wallet_id } }, order_by: { created_at: desc }) {
       id
@@ -91,6 +92,8 @@ const GET_WALLET_TRANSACTIONS = `
       wallet_id
       workspace_id
       rejection_reason
+      platform_fee
+      network_fee
     }
   }
 `;
@@ -101,13 +104,17 @@ export const getWalletTransactions = createServerFn({ method: "POST" }).handler(
     wallet_id,
   });
 
-  const transactions = data.wallet_transactions || [];
+  const transactions = (data.wallet_transactions || []).map((tx: any) => ({
+    ...tx,
+    platform_fee: tx.raw_callback_data?.platform_fee || 0,
+    network_fee: tx.raw_callback_data?.network_fee || 0,
+  }));
   const requests = data.withdrawal_requests || [];
 
   const mappedRequests = requests.map((req: any) => ({
     ...req,
     type: "withdrawal",
-    description: `[Admin Review] Withdrawal Request to ${req.payout_method} (${req.payout_account})${req.status === "rejected" && req.rejection_reason ? ` - Rejected: ${req.rejection_reason}` : ""}`,
+    description: `[Agatike Team Review] Withdrawal Request to ${req.payout_method} (${req.payout_account})${req.status === "rejected" && req.rejection_reason ? ` - Rejected: ${req.rejection_reason}` : ""}`,
     is_request: true,
   }));
 
@@ -560,9 +567,35 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       throw new Error("Failed to deduct from wallet. Please try again.");
     }
 
+    const txId = data.insert_wallet_transactions_one.id;
+    const netProfit = agatikeFee - networkFee;
+
+    const earningsQuery = `
+      mutation InsertEarnings($tx_id: uuid!, $gross: numeric!, $cost: numeric!, $rev: numeric!, $profit: numeric!, $curr: String!) {
+        insert_earnings_one(object: {
+          wallet_transaction_id: $tx_id,
+          transaction_type: "withdrawal",
+          gross_amount: $gross,
+          provider_cost: $cost,
+          platform_revenue: $rev,
+          net_profit: $profit,
+          currency: $curr,
+          status: "pending"
+        }) { id }
+      }
+    `;
+    await hasuraRequest(earningsQuery, {
+      tx_id: txId,
+      gross: amount,
+      cost: networkFee,
+      rev: agatikeFee,
+      profit: netProfit,
+      curr: currency || "RWF"
+    });
+
     return {
       success: true,
-      transactionId: data.insert_wallet_transactions_one.id,
+      transactionId: txId,
       netAmount,
       agatikeFee,
       networkFee,

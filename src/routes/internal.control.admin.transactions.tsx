@@ -56,7 +56,7 @@ function ApprovalModal({
     }
     setIsApproving(true);
     try {
-      await approveAdminPayout({ data: { transactionId: tx.id, otpToken, otp } } as any);
+      await approveAdminPayout({ data: { transactionId: tx.id, otpToken, otp, overrideNetworkId } } as any);
       alert("Payout approved and submitted to PawaPay successfully!");
       onDone();
     } catch (err: any) {
@@ -116,7 +116,7 @@ function ApprovalModal({
                 <div className="text-xs text-[#888888]">{org.email}</div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="grid grid-cols-2 gap-3 text-xs mb-3">
               <div className="bg-[#111111] border border-[#333333] rounded-lg p-3">
                 <div className="text-[#888888] mb-1">Requested Amount</div>
                 <div className="text-xl font-bold text-white font-mono">{formatAmount(tx.amount)}</div>
@@ -126,7 +126,43 @@ function ApprovalModal({
                 <div className="text-xl font-bold text-green-400 font-mono">{formatAmount(tx.net_amount)}</div>
               </div>
             </div>
-            <div className="text-xs text-[#888888] grid grid-cols-2 gap-x-4 gap-y-1 mt-1">
+            
+            <div className="grid grid-cols-2 gap-3 text-xs mb-3 border-t border-[#333333] pt-3">
+              <div>
+                <span className="text-[#888888]">Agatike Fee (Platform)</span>
+                <div className="font-mono text-white mt-1">{formatAmount(tx.platform_fee || 0)}</div>
+              </div>
+              <div>
+                <span className="text-[#888888]">PawaPay Fee (Network)</span>
+                <div className="font-mono text-white mt-1">{formatAmount(tx.network_fee || 0)}</div>
+              </div>
+            </div>
+
+            <div className="mb-3 border-t border-[#333333] pt-3">
+              <label className="text-xs text-[#888888] block mb-1">Target Payment Network</label>
+              <select
+                value={overrideNetworkId}
+                onChange={(e) => setOverrideNetworkId(e.target.value)}
+                className="w-full bg-[#111111] border border-[#444444] rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-[#f97316]"
+              >
+                <option value="">-- Verify & Select Network --</option>
+                <option value="MTN_MOMO_RWA">MTN Rwanda (MTN_MOMO_RWA)</option>
+                <option value="AIRTEL_OAPI_RWA">Airtel Rwanda (AIRTEL_OAPI_RWA)</option>
+                <option value="MTN_MOMO_UGA">MTN Uganda (MTN_MOMO_UGA)</option>
+                <option value="AIRTEL_OAPI_UGA">Airtel Uganda (AIRTEL_OAPI_UGA)</option>
+                <option value="SAFARICOM_M_PESA_KEN">Safaricom M-Pesa Kenya (SAFARICOM_M_PESA_KEN)</option>
+                <option value="MTN_MOMO_ZMB">MTN Zambia (MTN_MOMO_ZMB)</option>
+                <option value="AIRTEL_OAPI_ZMB">Airtel Zambia (AIRTEL_OAPI_ZMB)</option>
+                <option value="MTN_MOMO_CMR">MTN Cameroon (MTN_MOMO_CMR)</option>
+                <option value="MTN_MOMO_CIV">MTN Cote d'Ivoire (MTN_MOMO_CIV)</option>
+                <option value="ORANGE_CIV">Orange Cote d'Ivoire (ORANGE_CIV)</option>
+                <option value="AIRTEL_OAPI_COD">Airtel DRC (AIRTEL_OAPI_COD)</option>
+                <option value="ORANGE_COD">Orange DRC (ORANGE_COD)</option>
+                <option value="VODACOM_MPESA_COD">Vodacom DRC (VODACOM_MPESA_COD)</option>
+              </select>
+            </div>
+
+            <div className="text-xs text-[#888888] grid grid-cols-2 gap-x-4 gap-y-1">
               <div><span className="text-[#666]">Method:</span> <span className="text-[#cccccc]">{tx.payout_method?.toUpperCase()}</span></div>
               <div><span className="text-[#666]">Account:</span> <span className="text-[#cccccc] font-mono">{tx.payout_account}</span></div>
               <div><span className="text-[#666]">Phone:</span> <span className="text-[#cccccc]">{org.phone || "N/A"}</span></div>

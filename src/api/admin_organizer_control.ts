@@ -1464,12 +1464,12 @@ export const sendAdminWithdrawalOtp = createServerFn({ method: "POST" })
   });
 
 export const approveAdminPayout = createServerFn({ method: "POST" })
-  .validator((d: { transactionId: string; otpToken: string; otp: string }) => d)
+  .validator((d: { transactionId: string; otpToken: string; otp: string; overrideNetworkId?: string }) => d)
   .handler(async (ctx) => {
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
 
-    const { transactionId, otpToken, otp } = ctx.data;
+    const { transactionId, otpToken, otp, overrideNetworkId } = ctx.data;
 
     // Verify OTP
     const { jwtVerify } = await import("jose");
@@ -1572,7 +1572,7 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
       payout_account: req.payout_account,
       description,
       raw_callback_data: {
-        network_id: req.network_id,
+        network_id: overrideNetworkId || req.network_id,
         country_code: req.country_code,
         payout_method: req.payout_method,
         amount: req.amount,
@@ -1590,10 +1590,20 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
     }
 
     const newTxId = execData.insert_wallet_transactions_one.id;
+    const netProfit = (req.platform_fee || 0) - (req.network_fee || 0);
 
-    // 3. Mark the withdrawal request as approved and link the transaction
+    // 3. Mark the withdrawal request as approved, link the transaction, and insert earnings
     const updateReqMutation = `
-      mutation UpdateRequest($id: uuid!, $tx_id: uuid!, $admin_id: uuid!) {
+      mutation UpdateRequestAndEarnings(
+        $id: uuid!, 
+        $tx_id: uuid!, 
+        $admin_id: uuid!,
+        $gross_amount: numeric!,
+        $provider_cost: numeric!,
+        $platform_revenue: numeric!,
+        $net_profit: numeric!,
+        $currency: String!
+      ) {
         update_withdrawal_requests_by_pk(
           pk_columns: { id: $id }
           _set: { 
@@ -1605,9 +1615,31 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
         ) {
           id
         }
+        insert_earnings_one(object: {
+          wallet_transaction_id: $tx_id
+          withdrawal_request_id: $id
+          transaction_type: "withdrawal"
+          gross_amount: $gross_amount
+          provider_cost: $provider_cost
+          platform_revenue: $platform_revenue
+          net_profit: $net_profit
+          currency: $currency
+          status: "pending"
+        }) {
+          id
+        }
       }
     `;
-    await hasuraRequest(updateReqMutation, { id: req.id, tx_id: newTxId, admin_id: session.sub });
+    await hasuraRequest(updateReqMutation, { 
+      id: req.id, 
+      tx_id: newTxId, 
+      admin_id: session.sub,
+      gross_amount: req.amount,
+      provider_cost: req.network_fee || 0,
+      platform_revenue: req.platform_fee || 0,
+      net_profit: netProfit,
+      currency: req.currency || "RWF"
+    });
 
     // 4. Trigger the PawaPay payout with the newly created wallet transaction ID
     const { triggerPawaPayPayout } = await import("./pawapay");
