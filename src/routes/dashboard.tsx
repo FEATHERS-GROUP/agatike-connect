@@ -107,6 +107,7 @@ function DashboardLayout() {
       location.pathname === "/dashboard/create-organizer" ||
       location.pathname === "/dashboard/settings" ||
       location.pathname === "/dashboard/workspaces" ||
+      location.pathname === "/dashboard/support" ||
       location.pathname === "/dashboard/workspace-user/activate" ||
       location.pathname.startsWith("/dashboard/billing")
     )
@@ -124,6 +125,9 @@ function DashboardLayout() {
         urlSlug &&
         urlSlug !== "workspaces" &&
         urlSlug !== "workspace-user" &&
+        urlSlug !== "billing" &&
+        urlSlug !== "support" &&
+        urlSlug !== "settings" &&
         urlSlug !== activeWorkspace.slug
       ) {
         const workspaceFromUrl = workspaces.find((w: any) => w.slug === urlSlug);
