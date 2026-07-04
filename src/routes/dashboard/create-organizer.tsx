@@ -49,6 +49,14 @@ const AVAILABLE_FIELDS = [
   "Food & Beverage",
   "Comedy",
   "Workshops",
+  "Festivals",
+  "Health & Wellness",
+  "Education",
+  "Fashion & Beauty",
+  "Gaming & E-Sports",
+  "Charity & Causes",
+  "Film & Media",
+  "Web3 & Crypto"
 ];
 
 const AVAILABLE_SPECIALITIES = [
@@ -61,6 +69,15 @@ const AVAILABLE_SPECIALITIES = [
   "Gala Dinners",
   "Exhibitions",
   "Brand Activations",
+  "Corporate Events",
+  "Hackathons",
+  "Stand-up Comedy",
+  "Food Festivals",
+  "Pop-up Shops",
+  "Webinars",
+  "Masterclasses",
+  "Trade Shows",
+  "R&B / Soul"
 ];
 
 const formSchema = z
@@ -99,7 +116,7 @@ type FormValues = z.infer<typeof formSchema>;
 function CreateOrganizerPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 6;
   const [isGeneratingHandle, setIsGeneratingHandle] = useState(false);
   const { currentUser, isLoaded } = useWorkspace();
 
@@ -321,7 +338,10 @@ function CreateOrganizerPage() {
       fieldsToValidate = ["name", "handle", "email", "phone"];
     }
     if (step === 4) {
-      fieldsToValidate = ["field", "numberOfEvents"];
+      fieldsToValidate = ["field"];
+    }
+    if (step === 5) {
+      fieldsToValidate = ["numberOfEvents"];
     }
 
     if (fieldsToValidate.length > 0) {
@@ -341,15 +361,10 @@ function CreateOrganizerPage() {
   };
 
   return (
-    <div className="relative min-h-[100dvh] bg-[#0a0a0a] text-white overflow-hidden flex flex-col py-10 px-4 items-center justify-center">
-      {/* Immersive Background Glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] opacity-60 mix-blend-screen" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px] opacity-40 mix-blend-screen" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[150px] opacity-30 mix-blend-screen" />
-      </div>
-
-      <div className="relative z-10 w-full max-w-3xl mx-auto flex flex-col">
+    <div className="flex min-h-[100dvh] w-full bg-[#0a0a0a] font-sans overflow-hidden">
+      {/* Left side: Form */}
+      <div className="w-full lg:w-[50%] flex flex-col px-6 sm:px-12 lg:px-16 py-12 z-10 overflow-y-auto max-h-[100dvh]">
+        <div className="w-full max-w-2xl mx-auto flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -448,7 +463,7 @@ function CreateOrganizerPage() {
                 </div>
 
                 <div className="pt-8 flex justify-end">
-                  <Button
+                  <Button type="button"
                     onClick={nextStep}
                     className="h-14 w-full md:w-auto px-10 rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                     style={{ background: "var(--gradient-primary)" }}
@@ -486,7 +501,7 @@ function CreateOrganizerPage() {
                       />
                     </div>
                     {syncUserId ? (
-                      <Button
+                      <Button type="button"
                         variant="outline"
                         className="h-14 rounded-xl px-8 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
                         onClick={() => {
@@ -497,7 +512,7 @@ function CreateOrganizerPage() {
                         Unlink
                       </Button>
                     ) : (
-                      <Button
+                      <Button type="button"
                         variant="secondary"
                         className="h-14 rounded-xl px-8 bg-white/10 text-white hover:bg-white/20 border-0"
                         onClick={handleLookup}
@@ -517,14 +532,14 @@ function CreateOrganizerPage() {
                 </div>
 
                 <div className="flex gap-4 pt-10 max-w-md mx-auto">
-                  <Button
+                  <Button type="button"
                     variant="outline"
                     onClick={prevStep}
                     className="h-14 flex-1 rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
                   >
                     Back
                   </Button>
-                  <Button
+                  <Button type="button"
                     onClick={nextStep}
                     className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                     style={{ background: "var(--gradient-primary)" }}
@@ -665,7 +680,7 @@ function CreateOrganizerPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-white/80">Date of Birth / Inception Date</Label>
+                    <Label className="text-white/80">{isBusiness ? "Date of Registration" : "Date of Birth"}</Label>
                     <Input
                       {...register("dateOfBirth")}
                       type="date"
@@ -673,32 +688,43 @@ function CreateOrganizerPage() {
                     />
                   </div>
 
-                  {!isBusiness && (
-                    <div className="space-y-2">
-                      <Label className="text-white/80">Gender</Label>
-                      <Select onValueChange={(v) => setValue("gender", v)}>
-                        <SelectTrigger className="h-12 rounded-xl bg-white/5 border-white/10 text-white focus:ring-primary focus:border-transparent">
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#111] border-white/10 text-white">
-                          <SelectItem value="M">Male</SelectItem>
-                          <SelectItem value="F">Female</SelectItem>
-                          <SelectItem value="O">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <Label className="text-white/80">{isBusiness ? "Organization Type" : "Gender"}</Label>
+                    <Select onValueChange={(v) => setValue("gender", v)}>
+                      <SelectTrigger className="h-12 rounded-xl bg-white/5 border-white/10 text-white focus:ring-primary focus:border-transparent">
+                        <SelectValue placeholder={isBusiness ? "Select organization type" : "Select gender"} />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#111] border-white/10 text-white">
+                        {isBusiness ? (
+                          <>
+                            <SelectItem value="LLC">Limited Liability Company (LLC)</SelectItem>
+                            <SelectItem value="Corp">Corporation</SelectItem>
+                            <SelectItem value="Non-Profit">Non-Profit Organization</SelectItem>
+                            <SelectItem value="Partnership">Partnership</SelectItem>
+                            <SelectItem value="SoleProprietorship">Sole Proprietorship</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </>
+                        ) : (
+                          <>
+                            <SelectItem value="M">Male</SelectItem>
+                            <SelectItem value="F">Female</SelectItem>
+                            <SelectItem value="O">Other</SelectItem>
+                          </>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="flex gap-4 pt-10">
-                  <Button
+                  <Button type="button"
                     variant="outline"
                     onClick={prevStep}
                     className="h-14 flex-1 rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
                   >
                     Back
                   </Button>
-                  <Button
+                  <Button type="button"
                     onClick={nextStep}
                     className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                     style={{ background: "var(--gradient-primary)" }}
@@ -746,12 +772,13 @@ function CreateOrganizerPage() {
                                 setValue("field", [...currentFields, f], { shouldValidate: true });
                               }
                             }}
-                            className={`px-5 py-2.5 rounded-full text-sm font-medium cursor-pointer transition-all duration-300 border ${
+                            className={`flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 border ${
                               isSelected
                                 ? "bg-primary text-white border-primary shadow-[0_0_15px_rgba(242,87,29,0.4)] scale-[1.02]"
                                 : "bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white"
                             }`}
                           >
+                            {isSelected && <Check className="w-4 h-4 mr-2 text-white" />}
                             {f}
                           </div>
                         );
@@ -787,19 +814,54 @@ function CreateOrganizerPage() {
                                 });
                               }
                             }}
-                            className={`px-5 py-2.5 rounded-full text-sm font-medium cursor-pointer transition-all duration-300 border ${
+                            className={`flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 border ${
                               isSelected
                                 ? "bg-primary text-white border-primary shadow-[0_0_15px_rgba(242,87,29,0.4)] scale-[1.02]"
                                 : "bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white"
                             }`}
                           >
+                            {isSelected && <Check className="w-4 h-4 mr-2 text-white" />}
                             {s}
                           </div>
                         );
                       })}
                     </div>
                   </div>
+                </div>
 
+                <div className="flex gap-4 pt-10">
+                  <Button type="button"
+                    variant="outline"
+                    onClick={prevStep}
+                    className="h-14 flex-1 rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
+                  >
+                    Back
+                  </Button>
+                  <Button type="button"
+                    onClick={nextStep}
+                    className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
+                    style={{ background: "var(--gradient-primary)" }}
+                  >
+                    Continue <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: Organizer Details */}
+            {step === 5 && (
+              <div className="animate-in fade-in slide-in-from-right-4 duration-700">
+                <div className="flex items-center gap-4 mb-8 pb-4 border-b border-white/10">
+                  <div className="p-2.5 bg-primary/20 rounded-xl shadow-[0_0_15px_rgba(242,87,29,0.2)]">
+                    <User className="h-6 w-6 text-primary drop-shadow-[0_0_8px_rgba(242,87,29,0.6)]" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Organizer Details</h2>
+                    <p className="text-sm text-white/60">Tell us a bit more about your brand.</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2 md:col-span-2">
                     <Label className="text-white/80">Estimated Events Per Year *</Label>
                     <Select
@@ -895,14 +957,14 @@ function CreateOrganizerPage() {
                 </div>
 
                 <div className="flex gap-4 pt-10">
-                  <Button
+                  <Button type="button"
                     variant="outline"
                     onClick={prevStep}
                     className="h-14 flex-1 rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
                   >
                     Back
                   </Button>
-                  <Button
+                  <Button type="button"
                     onClick={nextStep}
                     className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                     style={{ background: "var(--gradient-primary)" }}
@@ -913,8 +975,8 @@ function CreateOrganizerPage() {
               </div>
             )}
 
-            {/* STEP 5: Security & Agreement */}
-            {step === 5 && (
+            {/* STEP 6: Security & Agreement */}
+            {step === 6 && (
               <div className="animate-in fade-in slide-in-from-right-4 duration-700">
                 {otpStep ? (
                   <div className="space-y-6">
@@ -944,7 +1006,7 @@ function CreateOrganizerPage() {
                       />
                     </div>
                     <div className="max-w-xs mx-auto pt-6 flex gap-3">
-                      <Button
+                      <Button type="button"
                         variant="outline"
                         onClick={() => {
                           setOtpStep(false);
@@ -955,7 +1017,7 @@ function CreateOrganizerPage() {
                       >
                         Back
                       </Button>
-                      <Button
+                      <Button type="button"
                         onClick={handleSubmit(onSubmit)}
                         className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                         style={{ background: "var(--gradient-primary)" }}
@@ -1035,7 +1097,7 @@ function CreateOrganizerPage() {
                     </div>
 
                     <div className="flex gap-4 pt-10">
-                      <Button
+                      <Button type="button"
                         variant="outline"
                         onClick={prevStep}
                         className="h-14 flex-1 rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
@@ -1043,7 +1105,7 @@ function CreateOrganizerPage() {
                       >
                         Back
                       </Button>
-                      <Button
+                      <Button type="button"
                         onClick={handleSubmit(onSubmit)}
                         className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                         style={{ background: "var(--gradient-primary)" }}
@@ -1072,6 +1134,38 @@ function CreateOrganizerPage() {
                 Sign in
               </Link>
             </p>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      {/* Right side: Image showcase (Hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-[50%] relative overflow-hidden bg-[#111111] items-center justify-center p-12">
+        {/* Glow Effects */}
+        <div className="absolute top-1/4 -right-20 w-96 h-96 bg-primary/20 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-0 -left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]"></div>
+
+        <div className="relative z-10 w-full h-full max-h-[85vh] flex flex-col items-center justify-center">
+          <div className="w-full relative rounded-2xl overflow-visible shadow-2xl group">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/90 via-[#0a0a0a]/20 to-transparent z-10 pointer-events-none rounded-2xl"></div>
+            
+            <img 
+              src="/admin-dashboard-preview.png" 
+              alt="Dashboard Preview" 
+              className="w-full h-auto object-cover rounded-2xl border border-white/10"
+            />
+            
+            {/* Dynamic Features Card */}
+            <div className="absolute -bottom-8 left-10 right-10 z-20">
+              <div className="bg-black/60 backdrop-blur-xl border border-white/20 p-6 rounded-2xl w-full max-w-md relative min-h-[140px] shadow-2xl mx-auto lg:mx-0 flex flex-col justify-center">
+                <h3 className="text-white font-bold text-xl mb-2 flex items-center gap-2">
+                  <Building2 className="text-primary w-5 h-5" /> Join the Platform
+                </h3>
+                <p className="text-white/70 text-sm leading-relaxed">
+                  Powering the next generation of live experiences. Manage your events, analyze data, and engage your audience all in one place.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Users, Shield, Plus, Edit, Trash2, X, Check, Loader2, CheckSquare, Square } from "lucide-react";
 import { getAdminUsers, getAdminGroups, createAdminGroup, updateAdminGroup, deleteAdminGroup, createAdminUser, updateAdminUser, deleteAdminUser } from "@/api/admin_users";
 import type { AdminUser, AdminGroup } from "@/api/admin_users";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/internal/control/admin/users")({
   component: AdminUsersPage,
@@ -169,13 +170,14 @@ function UserModal({ user, groups, onClose }: { user: AdminUser | null; groups: 
       onClose();
     },
     onError: (error: any) => {
-      alert(`Error saving user: ${error.message}`);
+      console.error("Error saving user:", error);
+      toast.error(error.message || "Failed to save user");
     }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user && !password) return alert("Password is required for new users");
+    if (!user && !password) return toast.error("Password is required for new users");
     mutation.mutate({
       id: user?.id as string,
       email,
@@ -320,7 +322,8 @@ function GroupModal({ group, onClose }: { group: AdminGroup | null; onClose: () 
       onClose();
     },
     onError: (error: any) => {
-      alert(`Error saving group: ${error.message}`);
+      console.error("Error saving group:", error);
+      toast.error(error.message || "Failed to save group");
     }
   });
 
@@ -330,11 +333,12 @@ function GroupModal({ group, onClose }: { group: AdminGroup | null; onClose: () 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate({
-      id: group?.id as string,
-      name,
-      permissions: perms,
-    } as any);
+    
+    if (group) {
+      mutation.mutate({ id: group.id, name, permissions: perms } as any);
+    } else {
+      mutation.mutate({ name, permissions: perms } as any);
+    }
   };
 
   return (
