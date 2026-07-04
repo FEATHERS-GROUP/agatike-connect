@@ -15,6 +15,7 @@ const AVAILABLE_PAGES = [
   { path: "/internal/control/admin/agatike-users", label: "Agatike Users" },
   { path: "/internal/control/admin/users", label: "Users & Roles" },
   { path: "/internal/control/admin/organizers", label: "Organizers" },
+  { path: "/internal/control/admin/leads", label: "Leads" },
   { path: "/internal/control/admin/transactions", label: "Transactions" },
   { path: "/internal/control/admin/health", label: "System Health" },
   { path: "/internal/control/admin/moderation", label: "Moderation" },

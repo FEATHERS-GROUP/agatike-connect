@@ -25,6 +25,11 @@ export function AdminSidebar() {
       icon: LucideIcons.Building2,
     },
     {
+      label: "Leads",
+      href: "/internal/control/admin/leads",
+      icon: LucideIcons.Megaphone,
+    },
+    {
       label: "Transactions",
       href: "/internal/control/admin/transactions",
       icon: LucideIcons.CreditCard,
