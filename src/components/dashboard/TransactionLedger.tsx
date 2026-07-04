@@ -125,9 +125,9 @@ export function TransactionLedger({
                           </p>
                           <p className="text-xs text-muted-foreground capitalize">
                             {txn.type?.replace("_", " ")}
-                            {txn.platform_fee && Number(txn.platform_fee) > 0 ? (
+                            {(Number(txn.platform_fee || 0) + Number(txn.network_fee || 0)) > 0 ? (
                               <span className="ml-2 font-medium text-[#f97316]">
-                                · Platform Fee: {formatCurrency(Number(txn.platform_fee), txn.currency || "RWF")}
+                                · Processing Fee: {formatCurrency(Number(txn.platform_fee || 0) + Number(txn.network_fee || 0), txn.currency || "RWF")}
                               </span>
                             ) : null}
                           </p>

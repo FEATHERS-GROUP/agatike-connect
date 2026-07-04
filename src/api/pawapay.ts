@@ -168,10 +168,13 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
     // Fetch pricing plan using the billing service
     const plan = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
 
-    const custPct   = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
-    const custFixed = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
-    const orgPct    = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
-    const orgFixed  = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
+    const custCollectionPct   = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
+    const custFixed           = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
+    const custServicePct      = parseFloat(plan.customer_service_fee_percentage as any) || 0;
+
+    const orgCollectionPct    = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
+    const orgFixed            = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
+    const orgPlatformPct      = parseFloat(plan.organizer_platform_contribution as any) || 0;
 
     const planMaxSubsidyPct = parseFloat(plan.max_collection_subsidy_percentage as any) ?? 1.0;
     const withdrawalFeePct = parseFloat(plan.withdrawal_fee_percentage as any) || 0;
@@ -188,9 +191,9 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
       let collectionFixed      = parseFloat(providerFees.collection_fixed_fee) || 0;
 
       // Calculate Customer Fee and Organizer Fee based on baseAmount
-      const customerFee = (baseAmount * (custPct / 100)) + custFixed;
+      const customerFee = (baseAmount * (custCollectionPct / 100)) + custFixed + (baseAmount * (custServicePct / 100));
       const grossAmount = baseAmount + customerFee;
-      const organizerFee = (baseAmount * (orgPct / 100)) + orgFixed;
+      const organizerFee = (baseAmount * (orgCollectionPct / 100)) + orgFixed + (baseAmount * (orgPlatformPct / 100));
 
       // Evaluate tiered rules based on grossAmount
       if (providerFees.is_tiered && providerFees.tiered_rules) {
@@ -345,14 +348,18 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const plan = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
 
     // ── Pricing plan fees ────────────────────────────────────────────────────
-    const custPct    = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
-    const custFixed  = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
-    const orgPct     = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
-    const orgFixed   = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
+    const custCollectionPct   = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
+    const custFixed           = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
+    const custServicePct      = parseFloat(plan.customer_service_fee_percentage as any) || 0;
+
+    const orgCollectionPct    = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
+    const orgFixed            = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
+    const orgPlatformPct      = parseFloat(plan.organizer_platform_contribution as any) || 0;
 
     const grossAmount = parseFloat(amount);
     const baseAmt     = parseFloat(baseAmount || amount);
-    const customerFee  = Math.max(grossAmount - baseAmt, (baseAmt * (custPct / 100)) + custFixed);
+    const calculatedCustomerFee = (baseAmt * (custCollectionPct / 100)) + custFixed + (baseAmt * (custServicePct / 100));
+    const customerFee  = Math.max(grossAmount - baseAmt, calculatedCustomerFee);
 
     // ── Provider (PawaPay) cost ──────────────────────────────────────────────
     const pf = feeRes.payment_provider_fees?.[0] || {};
@@ -382,7 +389,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const providerCost = (grossAmount * (providerPct / 100)) + providerFixed;
 
     // Organizer fee = deducted from their wallet settlement
-    const organizerFee = (baseAmt * (orgPct / 100)) + orgFixed;
+    const organizerFee = (baseAmt * (orgCollectionPct / 100)) + orgFixed + (baseAmt * (orgPlatformPct / 100));
 
     // ── Platform revenue & profit ────────────────────────────────────────────
     // Platform Revenue = Customer Contribution + Organizer Contribution

@@ -132,10 +132,10 @@ function RequestWithdrawalPage() {
     .sort() as string[];
   const FILTERED_NETWORKS = NETWORKS.filter((n) => n.code === selectedCountry);
 
-  // Calculate live fees
   const amountToWithdraw = Number(withdrawAmount) || 0;
   const platformPercentage = subscription?.pricing_plan?.organizer_platform_contribution || 0;
-  const agatikeFee = amountToWithdraw * (platformPercentage / 100);
+  const platformFixed = subscription?.pricing_plan?.withdrawal_fee_fixed || 0;
+  const agatikeFee = amountToWithdraw * (platformPercentage / 100) + platformFixed;
 
   let netPercentage = 0;
   let netFixed = 0;
@@ -222,15 +222,15 @@ function RequestWithdrawalPage() {
     onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ["wallet", activeWorkspace?.id] });
       queryClient.invalidateQueries({ queryKey: ["wallet-transactions", wallet?.id] });
-      if (res?.requiresAdminApproval) {
-        toast.success("Your withdrawal request has been submitted. An Agatike admin will review and approve it shortly.");
-      } else {
-        toast.success("Withdrawal request submitted successfully!");
-      }
-      navigate({
-        to: "/dashboard/$workspaceSlug/withdrawals",
-        params: { workspaceSlug: activeWorkspace?.slug || "" },
-      });
+      
+      setStep(5);
+
+      setTimeout(() => {
+        navigate({
+          to: "/dashboard/$workspaceSlug/withdrawals",
+          params: { workspaceSlug: activeWorkspace?.slug || "" },
+        });
+      }, 4000);
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to submit withdrawal request.");
@@ -500,10 +500,10 @@ function RequestWithdrawalPage() {
                       platformPercentage + netPercentage > 0
                         ? `${platformPercentage + netPercentage}%`
                         : null,
-                      netFixed > 0
+                      (platformFixed + netFixed) > 0
                         ? showExchange && !isExchangeLoading
-                          ? formatCurrency(netFixed * rate, targetCurrency)
-                          : formatCurrency(netFixed, wallet?.currency)
+                          ? formatCurrency((platformFixed + netFixed) * rate, targetCurrency)
+                          : formatCurrency((platformFixed + netFixed), wallet?.currency)
                         : null,
                     ]
                       .filter(Boolean)
@@ -613,6 +613,30 @@ function RequestWithdrawalPage() {
                 >
                   {withdrawMutation.isPending ? "Authorizing..." : "Submit Withdrawal"}
                 </Button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5: Success / Processing Status */}
+          {step === 5 && (
+            <div className="space-y-6 text-center animate-in zoom-in-95 duration-500 py-12">
+              <div className="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
+                <Wallet className="h-12 w-12 animate-pulse" />
+              </div>
+              <h3 className="font-bold text-2xl">
+                {amountToWithdraw > ADMIN_APPROVAL_THRESHOLD
+                  ? "Request Submitted"
+                  : "Transfer in Progress!"}
+              </h3>
+              <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                {amountToWithdraw > ADMIN_APPROVAL_THRESHOLD
+                  ? "Your withdrawal request is pending admin approval. We will notify you once it is processed."
+                  : "Your funds are on their way to your mobile money account! If the transfer fails for any reason, the funds will be automatically refunded to your wallet."}
+              </p>
+              <div className="pt-6">
+                <p className="text-sm text-primary font-medium animate-pulse">
+                  Redirecting to your wallet...
+                </p>
               </div>
             </div>
           )}

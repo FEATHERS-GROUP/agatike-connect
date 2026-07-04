@@ -1592,10 +1592,10 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
     const newTxId = execData.insert_wallet_transactions_one.id;
 
     // 3. Mark the withdrawal request as approved, link the transaction, and insert earnings
-    // For withdrawals: customer pays nothing, organizer pays the platform withdrawal fee
-    const platformRevenue = req.platform_fee || 0;
+    // For withdrawals: customer pays nothing, organizer pays the total processing fee
+    const platformRevenue = (req.platform_fee || 0) + (req.network_fee || 0); // Total fee collected from org
     const providerCost    = req.network_fee || 0;
-    const netProfit       = platformRevenue - providerCost;
+    const netProfit       = req.platform_fee || 0; // Pure agatike margin
 
     const updateReqMutation = `
       mutation UpdateRequestAndEarnings(

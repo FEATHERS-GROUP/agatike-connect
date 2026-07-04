@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
+import { getSession } from "./auth";
+import { triggerPawaPayPayout } from "./pawapay";
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
 
@@ -107,7 +109,7 @@ export const getWalletTransactions = createServerFn({ method: "POST" }).handler(
 
   const transactions = (data.wallet_transactions || []).map((tx: any) => ({
     ...tx,
-    platform_fee: tx.raw_callback_data?.platform_fee || 0,
+    platform_fee: tx.platform_fee || tx.raw_callback_data?.platform_fee || 0,
     network_fee: tx.raw_callback_data?.network_fee || 0,
   }));
   const requests = data.withdrawal_requests || [];
@@ -245,26 +247,48 @@ const INSERT_WITHDRAWAL_REQUEST = `
 export const sendWithdrawalOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { organizer_id } = ctx.data as unknown as { organizer_id: string };
 
-  const query = `
-    query GetOrganizer($id: uuid!) {
-      organizers_by_pk(id: $id) {
-        email
+  // 1. Try to get the email from the logged-in user's session
+  let email = "";
+  try {
+    const session = await getSession();
+    if (session && session.sub) {
+      if (session.type === "user") {
+        const uQuery = `query GetUser($id: uuid!) { users_by_pk(id: $id) { email } }`;
+        const uRes = await hasuraRequest<{ users_by_pk: { email: string } }>(uQuery, { id: session.sub });
+        if (uRes.users_by_pk?.email) email = uRes.users_by_pk.email;
+      } else if (session.type === "workspace_user") {
+        const wuQuery = `query GetWU($id: uuid!) { workspace_users_by_pk(id: $id) { email } }`;
+        const wuRes = await hasuraRequest<{ workspace_users_by_pk: { email: string } }>(wuQuery, { id: session.sub });
+        if (wuRes.workspace_users_by_pk?.email) email = wuRes.workspace_users_by_pk.email;
       }
     }
-  `;
-  const result = await hasuraRequest<{ organizers_by_pk: { email: string } }>(query, {
-    id: organizer_id,
-  });
-  const email = result.organizers_by_pk?.email;
-
-  if (!email) {
-    throw new Error("Organizer not found");
+  } catch (err) {
+    // ignore
   }
 
-  // Generate 8-character alphanumeric OTP
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  // 2. Fallback to the organizer's email if no session email was found
+  if (!email) {
+    const query = `
+      query GetOrganizer($id: uuid!) {
+        organizers_by_pk(id: $id) {
+          email
+        }
+      }
+    `;
+    const result = await hasuraRequest<{ organizers_by_pk: { email: string } }>(query, {
+      id: organizer_id,
+    });
+    email = result.organizers_by_pk?.email || "";
+  }
+
+  if (!email) {
+    throw new Error("Organizer email not found");
+  }
+
+  // Generate 6-digit numeric OTP
+  const chars = "0123456789";
   let otp = "";
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 6; i++) {
     otp += chars.charAt(Math.floor(Math.random() * chars.length));
   }
 
@@ -397,7 +421,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
         limit: 1
       ) {
         pricing_plan {
-          withdrawal_fee_percentage
+          organizer_platform_contribution
           withdrawal_fee_fixed
           max_withdrawals_per_week
         }
@@ -406,7 +430,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
   `;
   const subRes = await hasuraRequest<{ subscriptions: any[] }>(subQuery);
   const plan = subRes.subscriptions?.[0]?.pricing_plan || {};
-  const withdrawalFeePercentage = parseFloat(plan.withdrawal_fee_percentage) || 0;
+  const withdrawalFeePercentage = parseFloat(plan.organizer_platform_contribution) || 0;
   const withdrawalFeeFixed      = parseFloat(plan.withdrawal_fee_fixed) || 0;
 
   const maxWeeklyLimitStr =
@@ -442,7 +466,9 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     });
 
     const weeklyCount = txRes.wallet_transactions_aggregate?.aggregate?.count || 0;
-    if (weeklyCount >= maxWeeklyLimit) {
+    
+    // If maxWeeklyLimit is 0, we treat it as unlimited.
+    if (maxWeeklyLimit > 0 && weeklyCount >= maxWeeklyLimit) {
       throw new Error(
         `You have reached your limit of ${maxWeeklyLimit} withdrawal(s) per week for your current plan.`,
       );
@@ -560,6 +586,8 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
         amount,
         netAmount,
         totalFee,
+        platform_fee: agatikeFee,
+        network_fee: networkFee,
         target_currency,
         exchange_rate,
         converted_amount,
@@ -573,10 +601,10 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     }
 
     const txId = data.insert_wallet_transactions_one.id;
-    const netProfit = agatikeFee - networkFee;
+    const netProfit = agatikeFee; // Pure agatike margin
 
-    // For withdrawals: Platform Revenue = organizer withdrawal fee (customer pays nothing)
-    // Net Profit = Platform Revenue − Provider (PawaPay) payout cost
+    // For withdrawals: Platform Revenue = Total fee collected (agatikeFee + networkFee)
+    // Net Profit = Platform Revenue − Provider (PawaPay) payout cost = agatikeFee
     const earningsQuery = `
       mutation InsertEarnings(
         $tx_id: uuid!, $gross: numeric!, $cost: numeric!,
@@ -601,12 +629,21 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       tx_id: txId,
       gross: amount,
       cost: networkFee,
-      rev: agatikeFee,
+      rev: totalFee,
       profit: netProfit,
       curr: currency || "RWF",
       cust_fee: 0,        // customer pays no withdrawal fee
-      org_fee: agatikeFee // organizer pays the full withdrawal platform fee
+      org_fee: totalFee // organizer pays the total fee
     });
+
+    // Trigger PawaPay payout automatically
+    try {
+      await triggerPawaPayPayout({ data: { transactionId: txId } } as any);
+    } catch (e) {
+      console.error("Failed to automatically trigger PawaPay payout:", e);
+      // We do not throw here to avoid rolling back the DB insert, 
+      // but it will remain 'pending' and admins can retry it.
+    }
 
     return {
       success: true,

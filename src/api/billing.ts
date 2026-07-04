@@ -17,6 +17,8 @@ export interface PricingPlan {
   organizer_platform_contribution?: number;
   platform_margin_buffer?: number;
   max_withdrawals_per_week?: string;
+  withdrawal_fee_percentage?: number;
+  withdrawal_fee_fixed?: number;
 }
 
 export interface Subscription {
@@ -72,6 +74,8 @@ const GET_ACTIVE_SUB = `
         organizer_platform_contribution
         platform_margin_buffer
         max_withdrawals_per_week
+        withdrawal_fee_percentage
+        withdrawal_fee_fixed
       }
     }
   }

@@ -83,18 +83,21 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         data: { organizer_id: organizerId },
       } as any);
 
-      const customerCollectionPct = planFees.customer_collection_fee_percentage ?? planFees.customer_service_fee_percentage ?? 2.0;
+      const customerCollectionPct = planFees.customer_collection_fee_percentage ?? 0;
       const customerCollectionFixed = planFees.customer_collection_fee_fixed ?? 0;
-      const organizerCollectionPct = planFees.organizer_collection_fee_percentage ?? planFees.organizer_platform_contribution ?? 1.0;
+      const customerServicePct = planFees.customer_service_fee_percentage ?? 0;
+
+      const organizerCollectionPct = planFees.organizer_collection_fee_percentage ?? 0;
       const organizerCollectionFixed = planFees.organizer_collection_fee_fixed ?? 0;
+      const organizerPlatformContributionPct = planFees.organizer_platform_contribution ?? 0;
 
       // --- CORE SYSTEM EQUATION & COST HIERARCHY ---
       // 1. Customer Fee Engine
-      const customerFee = (basePrice * (customerCollectionPct / 100)) + customerCollectionFixed;
+      const customerFee = (basePrice * (customerCollectionPct / 100)) + customerCollectionFixed + (basePrice * (customerServicePct / 100));
       const totalCustomerCharge = basePrice + customerFee;
 
       // 2. Organizer Pricing Engine
-      const organizerFee = (basePrice * (organizerCollectionPct / 100)) + organizerCollectionFixed;
+      const organizerFee = (basePrice * (organizerCollectionPct / 100)) + organizerCollectionFixed + (basePrice * (organizerPlatformContributionPct / 100));
 
       // 3. Platform Margin Buffer
       const platformBufferPct = planFees.platform_margin_buffer || 0; // Explicitly defined, not ad-hoc
