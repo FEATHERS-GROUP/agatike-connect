@@ -88,6 +88,7 @@ import { Route as DashboardWorkspaceSlugEventsIndexRouteImport } from './routes/
 import { Route as DashboardWorkspaceSlugBookIndexRouteImport } from './routes/dashboard/$workspaceSlug/book/index'
 import { Route as DashboardWorkspaceSlugBadgeDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/index'
 import { Route as DashboardWorkspaceSlugCinemaIndexRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/index'
+import { Route as InternalControlAdminUsersRouteImport } from './routes/internal.control.admin.users'
 import { Route as InternalControlAdminTransactionsRouteImport } from './routes/internal.control.admin.transactions'
 import { Route as InternalControlAdminProvidersRouteImport } from './routes/internal.control.admin.providers'
 import { Route as InternalControlAdminModulesRouteImport } from './routes/internal.control.admin.modules'
@@ -613,6 +614,12 @@ const DashboardWorkspaceSlugCinemaIndexRoute =
     id: '/$workspaceSlug/Cinema/',
     path: '/$workspaceSlug/Cinema/',
     getParentRoute: () => DashboardRoute,
+  } as any)
+const InternalControlAdminUsersRoute =
+  InternalControlAdminUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => InternalControlAdminRoute,
   } as any)
 const InternalControlAdminTransactionsRoute =
   InternalControlAdminTransactionsRouteImport.update({
@@ -1354,6 +1361,7 @@ export interface FileRoutesByFullPath {
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
+  '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1538,6 +1546,7 @@ export interface FileRoutesByTo {
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
+  '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
   '/dashboard/$workspaceSlug/Cinema': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1725,6 +1734,7 @@ export interface FileRoutesById {
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
+  '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1914,6 +1924,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/modules'
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
+    | '/internal/control/admin/users'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -2098,6 +2109,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/modules'
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
+    | '/internal/control/admin/users'
     | '/dashboard/$workspaceSlug/Cinema'
     | '/dashboard/$workspaceSlug/badge-designer'
     | '/dashboard/$workspaceSlug/book'
@@ -2284,6 +2296,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/modules'
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
+    | '/internal/control/admin/users'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -2977,6 +2990,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/$workspaceSlug/Cinema/'
       preLoaderRoute: typeof DashboardWorkspaceSlugCinemaIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/internal/control/admin/users': {
+      id: '/internal/control/admin/users'
+      path: '/users'
+      fullPath: '/internal/control/admin/users'
+      preLoaderRoute: typeof InternalControlAdminUsersRouteImport
+      parentRoute: typeof InternalControlAdminRoute
     }
     '/internal/control/admin/transactions': {
       id: '/internal/control/admin/transactions'
@@ -4131,6 +4151,7 @@ interface InternalControlAdminRouteChildren {
   InternalControlAdminModulesRoute: typeof InternalControlAdminModulesRoute
   InternalControlAdminProvidersRoute: typeof InternalControlAdminProvidersRoute
   InternalControlAdminTransactionsRoute: typeof InternalControlAdminTransactionsRoute
+  InternalControlAdminUsersRoute: typeof InternalControlAdminUsersRoute
   InternalControlAdminIndexRoute: typeof InternalControlAdminIndexRoute
   InternalControlAdminAgatikeUsersUserIdRoute: typeof InternalControlAdminAgatikeUsersUserIdRoute
   InternalControlAdminOrganizersOrganizerIdRoute: typeof InternalControlAdminOrganizersOrganizerIdRouteWithChildren
@@ -4149,6 +4170,7 @@ const InternalControlAdminRouteChildren: InternalControlAdminRouteChildren = {
   InternalControlAdminModulesRoute: InternalControlAdminModulesRoute,
   InternalControlAdminProvidersRoute: InternalControlAdminProvidersRoute,
   InternalControlAdminTransactionsRoute: InternalControlAdminTransactionsRoute,
+  InternalControlAdminUsersRoute: InternalControlAdminUsersRoute,
   InternalControlAdminIndexRoute: InternalControlAdminIndexRoute,
   InternalControlAdminAgatikeUsersUserIdRoute:
     InternalControlAdminAgatikeUsersUserIdRoute,

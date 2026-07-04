@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useRouteContext } from "@tanstack/react-router";
 import * as LucideIcons from "lucide-react";
 
 export function AdminSidebar() {
@@ -61,6 +61,17 @@ export function AdminSidebar() {
     },
   ];
 
+  const { session } = useRouteContext({ from: "/internal/control/admin" }) as any;
+  const permissions = session?.permissions || [];
+  const isSuperAdmin = session?.is_super_admin;
+
+  const filteredNav = mainNav.filter(n => {
+    if (n.type === "divider") return true;
+    if (isSuperAdmin) return true;
+    if (n.href === "/internal/control/admin") return true; // Everyone sees home
+    return permissions.some((p: string) => n.href?.startsWith(p));
+  });
+
   const renderNavItem = (n: any, idx: number) => {
     if (n.type === "divider") {
       return <div key={`div-${idx}`} className="h-px bg-[#333333] my-2 mx-3" />;
@@ -88,7 +99,7 @@ export function AdminSidebar() {
   return (
     <aside className="hidden w-52 shrink-0 border-r border-[#333333] bg-[#1b1b1c] py-2 flex-col md:flex overflow-y-auto font-sans">
       <nav className="space-y-0 text-sm flex-1">
-        {mainNav.map((n, idx) => renderNavItem(n, idx))}
+        {filteredNav.map((n, idx) => renderNavItem(n, idx))}
       </nav>
     </aside>
   );

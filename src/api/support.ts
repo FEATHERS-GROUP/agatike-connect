@@ -306,7 +306,7 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
     if (status === "unassigned") {
       whereClause = `{ assigned_to: { _is_null: true }, status: { _neq: "closed" } }`;
     } else if (status === "in_progress") {
-      whereClause = `{ status: { _neq: "closed" } }`;
+      whereClause = `{ assigned_to: { _is_null: false }, status: { _neq: "closed" } }`;
     } else if (status === "resolved" || status === "closed") {
       whereClause = `{ status: { _eq: "closed" } }`;
     }
@@ -600,9 +600,9 @@ export const getAdminSupportStats = createServerFn({ method: "POST" }).handler(a
   const query = `
     query GetSupportStats {
       total: support_tickets_aggregate { aggregate { count } }
-      open: support_tickets_aggregate(where: { status: { _eq: "open" } }) { aggregate { count } }
+      open: support_tickets_aggregate(where: { status: { _neq: "closed" } }) { aggregate { count } }
       unassigned: support_tickets_aggregate(where: { assigned_to: { _is_null: true }, status: { _neq: "closed" } }) { aggregate { count } }
-      in_progress: support_tickets_aggregate(where: { status: { _neq: "closed" } }) { aggregate { count } }
+      in_progress: support_tickets_aggregate(where: { assigned_to: { _is_null: false }, status: { _neq: "closed" } }) { aggregate { count } }
       closed: support_tickets_aggregate(where: { status: { _eq: "closed" } }) { aggregate { count } }
     }
   `;

@@ -21,12 +21,15 @@ export const loginAdmin = createServerFn({ method: "POST" }).handler(async (ctx)
           password
           role
           is_super_admin
+          group {
+            permissions
+          }
         }
       }
     `;
 
   const result = await hasuraRequest<{
-    admin_users: { id: string; password: string; role: string; is_super_admin: boolean }[];
+    admin_users: { id: string; password: string; role: string; is_super_admin: boolean; group?: { permissions: string[] } }[];
   }>(query, {
     email,
   });
@@ -46,6 +49,7 @@ export const loginAdmin = createServerFn({ method: "POST" }).handler(async (ctx)
     type: "global_admin",
     role: admin.role,
     is_super_admin: admin.is_super_admin,
+    permissions: admin.group?.permissions || [],
   })
     .setProtectedHeader({ alg: "HS256" })
     .setExpirationTime("24h") // 24 hours as requested
@@ -73,6 +77,7 @@ export const getAdminSession = createServerFn({ method: "POST" }).handler(async 
       type: string;
       role: string;
       is_super_admin: boolean;
+      permissions: string[];
     };
 
     if (session.type !== "global_admin") {
