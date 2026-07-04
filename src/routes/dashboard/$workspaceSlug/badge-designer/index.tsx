@@ -206,6 +206,12 @@ function BadgeDesignerIndex() {
   };
 
   const openSetupModal = (templateId: string) => {
+    if (!canCreateBadgeDesign()) {
+      toast.error("Badge Design Limit Reached", {
+        description: "You have reached the maximum number of badge designs for your plan."
+      });
+      return;
+    }
     setSelectedTemplate(templateId);
     setNewProjectName("Untitled Badge");
     setSelectedEventId("");

@@ -213,6 +213,12 @@ function VenueDesignerIndex() {
   });
 
   const openSetupModal = (templateId: string) => {
+    if (!canCreateVenueDesign()) {
+      toast.error("Venue Design Limit Reached", {
+        description: "You have reached the maximum number of venue designs for your plan."
+      });
+      return;
+    }
     setSelectedTemplate(templateId);
     setNewProjectName("Untitled Venue");
     setSelectedEventId("");

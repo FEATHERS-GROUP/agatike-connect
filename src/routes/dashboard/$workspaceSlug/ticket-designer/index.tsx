@@ -41,7 +41,7 @@ import {
 import { Folder, Trash2 } from "lucide-react";
 import { getRentableVenues } from "@/api/rentable_venues";
 import { getCinemas } from "@/api/cinemas";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -217,6 +217,12 @@ function TicketDesignerIndex() {
   };
 
   const openSetupModal = (templateId: string) => {
+    if (!canCreateTicketDesign()) {
+      toast.error("Ticket Design Limit Reached", {
+        description: "You have reached the maximum number of ticket designs for your plan."
+      });
+      return;
+    }
     setSelectedTemplate(templateId);
     setNewProjectName("Untitled Project");
     setSelectedAssignment("");
