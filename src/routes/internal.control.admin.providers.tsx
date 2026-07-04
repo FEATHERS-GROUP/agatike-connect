@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPaymentProviderFeesAdmin, updatePaymentProviderFeeAdmin, createPaymentProviderFeeAdmin } from "@/api/admin_finance";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
 import { COUNTRIES } from "@/lib/countries";
 import { Loader2, Edit2, Save, X, Plus, ExternalLink } from "lucide-react";
 

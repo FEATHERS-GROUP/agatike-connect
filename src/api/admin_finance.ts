@@ -142,11 +142,21 @@ export const updatePricingPlanAdmin = createServerFn({ method: "POST" })
     if (!session) throw new Error("Unauthorized");
 
     const { id, updates } = ctx.data;
-    const updateKeys = Object.keys(updates).filter(k => k !== "id");
+    let formattedUpdates = { ...updates };
+    
+    // JSON stringify for features and modules_included
+    if (formattedUpdates.features && typeof formattedUpdates.features !== "string") {
+      formattedUpdates.features = JSON.stringify(formattedUpdates.features);
+    }
+    if (formattedUpdates.modules_included && typeof formattedUpdates.modules_included !== "string") {
+      formattedUpdates.modules_included = JSON.stringify(formattedUpdates.modules_included);
+    }
+
+    const updateKeys = Object.keys(formattedUpdates).filter(k => k !== "id");
     const setArgs = updateKeys.map(k => `${k}: $${k}`).join(", ");
 
     const query = `
-      mutation UpdatePricingPlan($id: uuid!, ${updateKeys.map(k => `$${k}: ${typeof updates[k] === 'number' ? 'numeric' : typeof updates[k] === 'boolean' ? 'Boolean' : 'String'}`).join(', ')}) {
+      mutation UpdatePricingPlan($id: uuid!, ${updateKeys.map(k => `$${k}: ${typeof formattedUpdates[k] === 'number' ? 'numeric' : typeof formattedUpdates[k] === 'boolean' ? 'Boolean' : 'String'}`).join(', ')}) {
         update_pricing_plans_by_pk(
           pk_columns: { id: $id }
           _set: { ${setArgs} }
@@ -156,7 +166,57 @@ export const updatePricingPlanAdmin = createServerFn({ method: "POST" })
       }
     `;
 
-    await hasuraRequest(query, { id, ...updates });
+    await hasuraRequest(query, { id, ...formattedUpdates });
+    return { success: true };
+  });
+
+export const createPricingPlanAdmin = createServerFn({ method: "POST" })
+  .validator((d: { data: Record<string, any> }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("Unauthorized");
+
+    let formattedData = { ...ctx.data.data };
+    
+    // JSON stringify for features and modules_included
+    if (formattedData.features && typeof formattedData.features !== "string") {
+      formattedData.features = JSON.stringify(formattedData.features);
+    }
+    if (formattedData.modules_included && typeof formattedData.modules_included !== "string") {
+      formattedData.modules_included = JSON.stringify(formattedData.modules_included);
+    }
+
+    // Convert strings to numbers where appropriate
+    const numericFields = [
+      'price', 'yearly_price', 'customer_service_fee_percentage', 
+      'organizer_platform_contribution', 'platform_margin_buffer',
+      'customer_collection_fee_percentage', 'customer_collection_fee_fixed',
+      'organizer_collection_fee_percentage', 'organizer_collection_fee_fixed',
+      'withdrawal_fee_percentage', 'withdrawal_fee_fixed',
+      'max_collection_subsidy_percentage'
+    ];
+    for (const field of numericFields) {
+      if (formattedData[field] !== undefined && formattedData[field] !== null && formattedData[field] !== "") {
+        formattedData[field] = Number(formattedData[field]);
+      }
+    }
+    
+    // Booleans
+    const booleanFields = ['active', 'is_popular', 'enable_subsidized_collection', 'withdrawal_dependency_required'];
+    for (const field of booleanFields) {
+      if (formattedData[field] === "true") formattedData[field] = true;
+      if (formattedData[field] === "false") formattedData[field] = false;
+    }
+
+    const query = `
+      mutation CreatePricingPlan($object: pricing_plans_insert_input!) {
+        insert_pricing_plans_one(object: $object) {
+          id
+        }
+      }
+    `;
+
+    await hasuraRequest(query, { object: formattedData });
     return { success: true };
   });
 
@@ -220,3 +280,22 @@ export const getEarningsAnalyticsAdmin = createServerFn({ method: "POST" })
 
     return { records, stats };
   });
+
+// --- Platform Modules ---
+
+export const getPlatformModulesAdmin = createServerFn({ method: "GET" }).handler(async () => {
+  const session = await getAdminSession();
+  if (!session) throw new Error("Unauthorized");
+
+  const query = `
+    query GetPlatformModules {
+      platformModules(order_by: { label: asc }) {
+        id
+        label
+        category
+      }
+    }
+  `;
+  const data = await hasuraRequest<any>(query);
+  return data.platformModules || [];
+});
