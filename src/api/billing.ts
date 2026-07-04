@@ -296,6 +296,70 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+const GET_BASIC_PLAN = `
+  query GetBasicPlan {
+    pricing_plans(where: { name: { _eq: "Basic" } }, limit: 1) {
+      id
+      modules_included
+    }
+  }
+`;
+
+const UPDATE_WORKSPACES_MODULES = `
+  mutation UpdateWorkspacesModules($organizer_id: uuid!, $modules: jsonb!) {
+    update_workspaces(where: { orgnizer_id: { _eq: $organizer_id } }, _set: { moduls: $modules }) {
+      affected_rows
+    }
+  }
+`;
+
+export const cancelSubscriptionAdmin = createServerFn({ method: "POST" })
+  .validator((d: { organizer_id: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
+
+    const { organizer_id } = ctx.data;
+
+    // 1. Fetch Basic Plan
+    const basicPlanRes = await hasuraRequest<{ pricing_plans: { id: string; modules_included: any[] }[] }>(GET_BASIC_PLAN);
+    const basicPlan = basicPlanRes.pricing_plans[0];
+    if (!basicPlan) throw new Error("Basic plan not found");
+
+    // 2. Cancel existing active subscription(s)
+    const activeSubRes = await hasuraRequest<{ subscriptions: { id: string }[] }>(GET_ACTIVE_SUB, { organizer_id });
+    if (activeSubRes.subscriptions.length > 0) {
+      for (const sub of activeSubRes.subscriptions) {
+        await hasuraRequest(CANCEL_SUB, { id: sub.id });
+      }
+    }
+
+    // 3. Create a new subscription for Basic Plan
+    const nextBillingDate = new Date();
+    nextBillingDate.setDate(nextBillingDate.getDate() + 14); // Keep basic standard trial logic or just give them a placeholder expiration
+
+    await hasuraRequest<{ insert_subscriptions_one: { id: string } }>(
+      CREATE_SUB,
+      {
+        object: {
+          organizer_id,
+          plan_id: basicPlan.id,
+          amount: 0,
+          status: "active",
+          next_billing_date: nextBillingDate.toISOString(),
+        },
+      }
+    );
+
+    // 4. Update all workspaces' modules to basic modules
+    await hasuraRequest(UPDATE_WORKSPACES_MODULES, {
+      organizer_id,
+      modules: basicPlan.modules_included,
+    });
+
+    return { success: true };
+  });
+
 export const createEnterpriseLead = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
@@ -351,21 +415,11 @@ export const createEnterpriseLead = createServerFn({ method: "POST" })
 export const getOrganizerUsageStats = createServerFn({ method: "POST" })
   .validator((d: { organizer_id: string }) => d)
   .handler(async (ctx) => {
-    // Some tables use uuid for organizer_id, some use String for organizer_id.
     const query = `
       query GetOrganizerUsageStats($organizer_id_uuid: uuid!, $organizer_id_str: String!) {
-        workspaces_aggregate(where: { orgnizer_id: { _eq: $organizer_id_str } }) { aggregate { count } }
+        workspaces_aggregate(where: { orgnizer_id: { _eq: $organizer_id_uuid } }) { aggregate { count } }
         organizer_invoices_aggregate(where: { organizer_id: { _eq: $organizer_id_str } }) { aggregate { count } }
-        workspace_users_aggregate(where: { organizer_id: { _eq: $organizer_id_str } }) { aggregate { count } }
-        events_aggregate(where: { workspaces: { orgnizer_id: { _eq: $organizer_id_str } } }) { aggregate { count } }
-        custom_forms_aggregate(where: { workspace: { orgnizer_id: { _eq: $organizer_id_str } } }) { aggregate { count } }
-        workspace_tasks_aggregate(where: { workspace: { orgnizer_id: { _eq: $organizer_id_str } } }) { aggregate { count } }
-        rsvps_aggregate(where: { custom_form: { workspace: { orgnizer_id: { _eq: $organizer_id_str } } } }) { aggregate { count } }
-        venue_projects_aggregate(where: { workspace: { orgnizer_id: { _eq: $organizer_id_str } } }) { aggregate { count } }
-        products_aggregate(where: { workspace: { orgnizer_id: { _eq: $organizer_id_str } } }) { aggregate { count } }
-        cinema_movies_aggregate(where: { workspace: { orgnizer_id: { _eq: $organizer_id_str } } }) { aggregate { count } }
-        cinema_screens_aggregate(where: { cinema: { workspace: { orgnizer_id: { _eq: $organizer_id_str } } } }) { aggregate { count } }
-        event_post_comments_aggregate(where: { event_post: { workspace: { orgnizer_id: { _eq: $organizer_id_str } } } }) { aggregate { count } }
+        workspace_users_aggregate(where: { organizer_id: { _eq: $organizer_id_uuid } }) { aggregate { count } }
       }
     `;
 
@@ -377,34 +431,12 @@ export const getOrganizerUsageStats = createServerFn({ method: "POST" })
       
       return {
         workspaces: res.workspaces_aggregate?.aggregate?.count || 0,
-        events: res.events_aggregate?.aggregate?.count || 0,
         invoices: res.organizer_invoices_aggregate?.aggregate?.count || 0,
         users: res.workspace_users_aggregate?.aggregate?.count || 0,
-        custom_forms: res.custom_forms_aggregate?.aggregate?.count || 0,
-        tasks: res.workspace_tasks_aggregate?.aggregate?.count || 0,
-        rsvps: res.rsvps_aggregate?.aggregate?.count || 0,
-        venue_designs: res.venue_projects_aggregate?.aggregate?.count || 0,
-        products: res.products_aggregate?.aggregate?.count || 0,
-        movies: res.cinema_movies_aggregate?.aggregate?.count || 0,
-        screens: res.cinema_screens_aggregate?.aggregate?.count || 0,
-        comments: res.event_post_comments_aggregate?.aggregate?.count || 0,
       };
     } catch (e) {
-      console.error("Failed to fetch usage stats", e);
-      return {
-        workspaces: 0,
-        events: 0,
-        invoices: 0,
-        users: 0,
-        custom_forms: 0,
-        tasks: 0,
-        rsvps: 0,
-        venue_designs: 0,
-        products: 0,
-        movies: 0,
-        screens: 0,
-        comments: 0,
-      };
+      console.error("Failed to fetch organizer usage stats", e);
+      return { workspaces: 0, invoices: 0, users: 0 };
     }
   });
 
@@ -415,25 +447,23 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
     const query = `
       query GetWorkspaceUsageStats($workspace_id_uuid: uuid!, $workspace_id_str: String!) {
         events_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
-        custom_forms_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
-        workspace_tasks_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
-        rsvps_aggregate(where: { custom_form: { workspace_id: { _eq: $workspace_id_uuid } } }) { aggregate { count } }
-        venue_projects_aggregate(where: { workspaceId: { _eq: $workspace_id_str } }) { aggregate { count } }
-        products_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
-        cinema_movies_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
-        cinema_screens_aggregate(where: { cinema: { workspace_id: { _eq: $workspace_id_uuid } } }) { aggregate { count } }
-        event_post_comments_aggregate(where: { event_post: { workspace_id: { _eq: $workspace_id_uuid } } }) { aggregate { count } }
-        badge_projects_aggregate(where: { events: { workspace_id: { _eq: $workspace_id_uuid } } }) { aggregate { count } }
-        ticket_projects_aggregate(where: { workspaceId: { _eq: $workspace_id_str } }) { aggregate { count } }
-        procurement_invoices_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
-        agatike_books_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
-        workspace_notes_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
-        spaces(where: { workspace_id: { _eq: $workspace_id_uuid } }) { locations plans }
         cinemas_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
         spaces_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
-        venue_listings_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
-        page_builders_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
-        experiences_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        custom_forms_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        workspace_tasks_aggregate(where: { workspace_id: { _eq: $workspace_id_str } }) { aggregate { count } }
+        rentable_venues_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        workspace_pages_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        products_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        cinema_movies_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        venue_projects_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        ticket_projects_aggregate(where: { workspaceId: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        badge_projects_aggregate(where: { events: { workspace_id: { _eq: $workspace_id_uuid } } }) { aggregate { count } }
+        workspace_notes_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        agatike_books_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        rsvps_aggregate(where: { custom_form: { workspace_id: { _eq: $workspace_id_uuid } } }) { aggregate { count } }
+        invoices_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        event_tickets_aggregate(where: { event: { workspace_id: { _eq: $workspace_id_uuid } } }) { aggregate { count } }
+        cinema_ticket_tiers_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
       }
     `;
 
@@ -442,46 +472,46 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         workspace_id_uuid: ctx.data.workspace_id,
         workspace_id_str: ctx.data.workspace_id
       });
-      
-      let locationsCount = 0;
-      let membershipPlansCount = 0;
-      if (res.spaces) {
-        for (const space of res.spaces) {
-          if (Array.isArray(space.locations)) locationsCount += space.locations.length;
-          if (Array.isArray(space.plans)) membershipPlansCount += space.plans.length;
-        }
-      }
 
       return {
         events: res.events_aggregate?.aggregate?.count || 0,
-        custom_forms: res.custom_forms_aggregate?.aggregate?.count || 0,
-        tasks: res.workspace_tasks_aggregate?.aggregate?.count || 0,
-        rsvps: res.rsvps_aggregate?.aggregate?.count || 0,
-        venue_designs: res.venue_projects_aggregate?.aggregate?.count || 0,
-        products: res.products_aggregate?.aggregate?.count || 0,
-        movies: res.cinema_movies_aggregate?.aggregate?.count || 0,
-        screens: res.cinema_screens_aggregate?.aggregate?.count || 0,
-        comments: res.event_post_comments_aggregate?.aggregate?.count || 0,
-        badge_designs: res.badge_projects_aggregate?.aggregate?.count || 0,
-        ticket_designs: res.ticket_projects_aggregate?.aggregate?.count || 0,
-        procurements: res.procurement_invoices_aggregate?.aggregate?.count || 0,
-        books: res.agatike_books_aggregate?.aggregate?.count || 0,
-        notes: res.workspace_notes_aggregate?.aggregate?.count || 0,
-        experiences: res.experiences_aggregate?.aggregate?.count || 0,
-        locations: locationsCount,
-        membership_plans: membershipPlansCount,
         cinemas: res.cinemas_aggregate?.aggregate?.count || 0,
         spaces: res.spaces_aggregate?.aggregate?.count || 0,
-        venues: res.venue_listings_aggregate?.aggregate?.count || 0,
-        page_builders: res.page_builders_aggregate?.aggregate?.count || 0,
+        venues: res.rentable_venues_aggregate?.aggregate?.count || 0,
+        page_builders: res.workspace_pages_aggregate?.aggregate?.count || 0,
+        custom_forms: res.custom_forms_aggregate?.aggregate?.count || 0,
+        tasks: res.workspace_tasks_aggregate?.aggregate?.count || 0,
+        products: res.products_aggregate?.aggregate?.count || 0,
+        movies: res.cinema_movies_aggregate?.aggregate?.count || 0,
+        venue_designs: res.venue_projects_aggregate?.aggregate?.count || 0,
+        ticket_designs: res.ticket_projects_aggregate?.aggregate?.count || 0,
+        badge_designs: res.badge_projects_aggregate?.aggregate?.count || 0,
+        notes: res.workspace_notes_aggregate?.aggregate?.count || 0,
+        books: res.agatike_books_aggregate?.aggregate?.count || 0,
+        rsvps: res.rsvps_aggregate?.aggregate?.count || 0,
+        procurements: res.invoices_aggregate?.aggregate?.count || 0, // Using invoices for finance/procurement for now
+        ticket_tiers: (res.event_tickets_aggregate?.aggregate?.count || 0) + (res.cinema_ticket_tiers_aggregate?.aggregate?.count || 0),
       };
     } catch (e) {
       console.error("Failed to fetch workspace usage stats", e);
       return {
-        events: 0, custom_forms: 0, tasks: 0, rsvps: 0, venue_designs: 0,
-        products: 0, movies: 0, screens: 0, comments: 0, badge_designs: 0,
-        ticket_designs: 0, procurements: 0, books: 0, notes: 0, experiences: 0,
-        locations: 0, membership_plans: 0, cinemas: 0, spaces: 0, venues: 0, page_builders: 0,
+        events: 0,
+        cinemas: 0,
+        spaces: 0,
+        venues: 0,
+        page_builders: 0,
+        custom_forms: 0,
+        tasks: 0,
+        products: 0,
+        movies: 0,
+        venue_designs: 0,
+        ticket_designs: 0,
+        badge_designs: 0,
+        notes: 0,
+        books: 0,
+        rsvps: 0,
+        procurements: 0,
+        ticket_tiers: 0,
       };
     }
   });
