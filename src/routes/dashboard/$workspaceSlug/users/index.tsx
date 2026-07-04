@@ -17,7 +17,10 @@ function UsersPage() {
   const navigate = useNavigate();
   const { workspaceSlug } = Route.useParams();
   const { workspaces, activeWorkspace } = useWorkspace();
-  const { canInviteUser } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canInviteUser } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const {
     data: users = [],
@@ -50,7 +53,8 @@ function UsersPage() {
             onClick={() => {
               if (!canInviteUser()) {
                 toast.error("User limit reached", {
-                  description: "Your current subscription plan does not allow adding more users. Please upgrade your plan."
+                  description:
+                    "Your current subscription plan does not allow adding more users. Please upgrade your plan.",
                 });
                 return;
               }

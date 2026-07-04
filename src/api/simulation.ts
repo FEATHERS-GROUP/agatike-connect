@@ -93,11 +93,17 @@ export const simulateTransaction = createServerFn({ method: "POST" })
 
       // --- CORE SYSTEM EQUATION & COST HIERARCHY ---
       // 1. Customer Fee Engine
-      const customerFee = (basePrice * (customerCollectionPct / 100)) + customerCollectionFixed + (basePrice * (customerServicePct / 100));
+      const customerFee =
+        basePrice * (customerCollectionPct / 100) +
+        customerCollectionFixed +
+        basePrice * (customerServicePct / 100);
       const totalCustomerCharge = basePrice + customerFee;
 
       // 2. Organizer Pricing Engine
-      const organizerFee = (basePrice * (organizerCollectionPct / 100)) + organizerCollectionFixed + (basePrice * (organizerPlatformContributionPct / 100));
+      const organizerFee =
+        basePrice * (organizerCollectionPct / 100) +
+        organizerCollectionFixed +
+        basePrice * (organizerPlatformContributionPct / 100);
 
       // 3. Platform Margin Buffer
       const platformBufferPct = planFees.platform_margin_buffer || 0; // Explicitly defined, not ad-hoc
@@ -163,12 +169,12 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       const isSubsidyEnabled = planFees.enable_subsidized_collection !== false;
 
       const finalSubsidyPct = Math.min(planMaxSubsidyPct, withdrawalFeePct * 0.7);
-      const maxAllowedSubsidy = isSubsidyEnabled ? (basePrice * (finalSubsidyPct / 100)) : 0;
+      const maxAllowedSubsidy = isSubsidyEnabled ? basePrice * (finalSubsidyPct / 100) : 0;
 
       let decision = "approved";
       let structuredError = null;
       let failureClassification = "OK";
-      
+
       const expectedMargin = guaranteedRevenue + optionalRevenue - providerCost;
 
       if (isSubsidized && shortfall > maxAllowedSubsidy) {
@@ -181,9 +187,10 @@ export const simulateTransaction = createServerFn({ method: "POST" })
             customerServiceFee: customerFee,
             organizerContribution: organizerFee,
             totalCost: totalCost,
-            message: "Transaction would result in a negative profit that exceeds the allowed subsidy threshold.",
-            shortfall: shortfall
-          }
+            message:
+              "Transaction would result in a negative profit that exceeds the allowed subsidy threshold.",
+            shortfall: shortfall,
+          },
         };
       } else if (isSubsidized) {
         failureClassification = "SUBSIDIZED_COLLECTION";
@@ -215,7 +222,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         provider_cost: providerCost,
         subsidy_amount: isSubsidized ? shortfall : 0,
         max_allowed_subsidy: maxAllowedSubsidy,
-        lifecycle_mode: isSubsidized ? "collection_subsidy_enabled" : "profitable"
+        lifecycle_mode: isSubsidized ? "collection_subsidy_enabled" : "profitable",
       });
 
       return {

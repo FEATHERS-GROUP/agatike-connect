@@ -33,14 +33,22 @@ function SpacesListingsPage() {
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/spaces/" });
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
-  const { canCreateSpace } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateSpace } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const handleCreate = () => {
     if (!canCreateSpace()) {
-      toast.error("You have reached the maximum number of spaces allowed on your plan. Please upgrade to create more.");
+      toast.error(
+        "You have reached the maximum number of spaces allowed on your plan. Please upgrade to create more.",
+      );
       return;
     }
-    navigate({ to: "/dashboard/$workspaceSlug/spaces/create-space", params: { workspaceSlug: workspaceSlug as string } });
+    navigate({
+      to: "/dashboard/$workspaceSlug/spaces/create-space",
+      params: { workspaceSlug: workspaceSlug as string },
+    });
   };
 
   const { data: spaces = [], isLoading } = useQuery({

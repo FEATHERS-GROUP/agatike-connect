@@ -84,14 +84,30 @@ function OrganizerEvents() {
           <table className="w-full text-left text-[13px] whitespace-nowrap">
             <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
               <tr>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Title</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Workspace</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Category</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Type</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Start Date</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Created</th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  ID
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Title
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Workspace
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Category
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Type
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Start Date
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Status
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Created
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
@@ -108,7 +124,10 @@ function OrganizerEvents() {
                   const isPast = startDate && startDate <= now;
 
                   return (
-                    <tr key={evt.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                    <tr
+                      key={evt.id}
+                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                    >
                       <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                         {String(evt.id).substring(0, 8)}...
                       </td>
@@ -152,7 +171,11 @@ function OrganizerEvents() {
                         {startDate ? (
                           <span
                             className={
-                              isUpcoming ? "text-[#84c87e]" : isPast ? "text-gray-600 dark:text-[#797775]" : ""
+                              isUpcoming
+                                ? "text-[#84c87e]"
+                                : isPast
+                                  ? "text-gray-600 dark:text-[#797775]"
+                                  : ""
                             }
                           >
                             {startDate.toLocaleDateString("en-US", {
@@ -165,7 +188,9 @@ function OrganizerEvents() {
                             </span>
                           </span>
                         ) : (
-                          <span className="text-gray-600 dark:text-[#797775] italic">No schedule</span>
+                          <span className="text-gray-600 dark:text-[#797775] italic">
+                            No schedule
+                          </span>
                         )}
                       </td>
                       <td className="py-2 px-4">

@@ -1,8 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Users, Shield, Plus, Edit, Trash2, X, Check, Loader2, CheckSquare, Square } from "lucide-react";
-import { getAdminUsers, getAdminGroups, createAdminGroup, updateAdminGroup, deleteAdminGroup, createAdminUser, updateAdminUser, deleteAdminUser } from "@/api/admin_users";
+import {
+  Users,
+  Shield,
+  Plus,
+  Edit,
+  Trash2,
+  X,
+  Check,
+  Loader2,
+  CheckSquare,
+  Square,
+} from "lucide-react";
+import {
+  getAdminUsers,
+  getAdminGroups,
+  createAdminGroup,
+  updateAdminGroup,
+  deleteAdminGroup,
+  createAdminUser,
+  updateAdminUser,
+  deleteAdminUser,
+} from "@/api/admin_users";
 import type { AdminUser, AdminGroup } from "@/api/admin_users";
 import { toast } from "sonner";
 
@@ -37,13 +57,17 @@ function AdminUsersPage() {
           <Users className="h-5 w-5 text-[#f97316]" />
           Users & Roles Management
         </h1>
-        <p className="text-[12px] text-gray-500 dark:text-[#888] mt-1">Manage global admin access and role-based permissions.</p>
+        <p className="text-[12px] text-gray-500 dark:text-[#888] mt-1">
+          Manage global admin access and role-based permissions.
+        </p>
 
         <div className="flex gap-4 mt-6">
           <button
             onClick={() => setActiveTab("users")}
             className={`pb-2 text-sm font-medium transition-colors border-b-2 ${
-              activeTab === "users" ? "border-[#f97316] text-gray-900 dark:text-white" : "border-transparent text-gray-500 dark:text-[#666] hover:text-gray-600 dark:text-[#aaa]"
+              activeTab === "users"
+                ? "border-[#f97316] text-gray-900 dark:text-white"
+                : "border-transparent text-gray-500 dark:text-[#666] hover:text-gray-600 dark:text-[#aaa]"
             }`}
           >
             Admin Users
@@ -51,7 +75,9 @@ function AdminUsersPage() {
           <button
             onClick={() => setActiveTab("groups")}
             className={`pb-2 text-sm font-medium transition-colors border-b-2 ${
-              activeTab === "groups" ? "border-[#f97316] text-gray-900 dark:text-white" : "border-transparent text-gray-500 dark:text-[#666] hover:text-gray-600 dark:text-[#aaa]"
+              activeTab === "groups"
+                ? "border-[#f97316] text-gray-900 dark:text-white"
+                : "border-transparent text-gray-500 dark:text-[#666] hover:text-gray-600 dark:text-[#aaa]"
             }`}
           >
             Groups & Permissions
@@ -90,13 +116,21 @@ function UsersTab() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin_users"] }),
   });
 
-  if (isLoading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin text-[#f97316]" /></div>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center p-10">
+        <Loader2 className="animate-spin text-[#f97316]" />
+      </div>
+    );
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
         <button
-          onClick={() => { setEditingUser(null); setIsModalOpen(true); }}
+          onClick={() => {
+            setEditingUser(null);
+            setIsModalOpen(true);
+          }}
           className="flex items-center gap-2 px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-sm font-medium rounded transition-colors"
         >
           <Plus className="h-4 w-4" /> Add User
@@ -114,9 +148,11 @@ function UsersTab() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-[#2a2a2a]">
-            {users?.map(user => (
+            {users?.map((user) => (
               <tr key={user.id} className="hover:bg-gray-100 dark:bg-[#1a1a1a]">
-                <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{user.email}</td>
+                <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                  {user.email}
+                </td>
                 <td className="px-4 py-3 text-gray-600 dark:text-[#aaa]">{user.name || "—"}</td>
                 <td className="px-4 py-3">
                   {user.is_super_admin ? (
@@ -133,10 +169,20 @@ function UsersTab() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button onClick={() => { setEditingUser(user); setIsModalOpen(true); }} className="p-1.5 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:bg-[#333] rounded transition-colors"><Edit className="h-4 w-4" /></button>
+                    <button
+                      onClick={() => {
+                        setEditingUser(user);
+                        setIsModalOpen(true);
+                      }}
+                      className="p-1.5 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:bg-[#333] rounded transition-colors"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
                     {!user.is_super_admin && (
-                      <button 
-                        onClick={() => { if(confirm("Delete this user?")) deleteMutation.mutate({ id: user.id }) }}
+                      <button
+                        onClick={() => {
+                          if (confirm("Delete this user?")) deleteMutation.mutate({ id: user.id });
+                        }}
                         className="p-1.5 text-red-500/70 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -150,12 +196,22 @@ function UsersTab() {
         </table>
       </div>
 
-      {isModalOpen && <UserModal user={editingUser} groups={groups || []} onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && (
+        <UserModal user={editingUser} groups={groups || []} onClose={() => setIsModalOpen(false)} />
+      )}
     </div>
   );
 }
 
-function UserModal({ user, groups, onClose }: { user: AdminUser | null; groups: AdminGroup[]; onClose: () => void }) {
+function UserModal({
+  user,
+  groups,
+  onClose,
+}: {
+  user: AdminUser | null;
+  groups: AdminGroup[];
+  onClose: () => void;
+}) {
   const queryClient = useQueryClient();
   const [email, setEmail] = useState(user?.email || "");
   const [name, setName] = useState(user?.name || "");
@@ -164,7 +220,8 @@ function UserModal({ user, groups, onClose }: { user: AdminUser | null; groups: 
   const [isSuperAdmin, setIsSuperAdmin] = useState(user?.is_super_admin || false);
 
   const mutation = useMutation({
-    mutationFn: (vars: any) => user ? updateAdminUser({ data: vars }) : createAdminUser({ data: vars }),
+    mutationFn: (vars: any) =>
+      user ? updateAdminUser({ data: vars }) : createAdminUser({ data: vars }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin_users"] });
       onClose();
@@ -172,7 +229,7 @@ function UserModal({ user, groups, onClose }: { user: AdminUser | null; groups: 
     onError: (error: any) => {
       console.error("Error saving user:", error);
       toast.error(error.message || "Failed to save user");
-    }
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -183,7 +240,7 @@ function UserModal({ user, groups, onClose }: { user: AdminUser | null; groups: 
       email,
       name,
       password: password || undefined,
-      admin_group_id: isSuperAdmin ? null : (groupId || null),
+      admin_group_id: isSuperAdmin ? null : groupId || null,
       is_super_admin: isSuperAdmin,
     } as any);
   };
@@ -192,36 +249,78 @@ function UserModal({ user, groups, onClose }: { user: AdminUser | null; groups: 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
       <div className="bg-gray-50 dark:bg-[#161616] border border-gray-200 dark:border-[#333] rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-200 dark:border-[#333] flex justify-between items-center bg-white dark:bg-[#111]">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">{user ? "Edit User" : "Add New User"}</h2>
-          <button onClick={onClose} className="p-1 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white transition-colors"><X className="h-5 w-5" /></button>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+            {user ? "Edit User" : "Add New User"}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">Email</label>
-            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none" />
+            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">
+              Email
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none"
+            />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">Name (Optional)</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none" />
+            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">
+              Name (Optional)
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none"
+            />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">Password {user && "(Leave blank to keep)"}</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none" />
+            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">
+              Password {user && "(Leave blank to keep)"}
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none"
+            />
           </div>
-          
+
           <div className="pt-2 border-t border-gray-200 dark:border-[#333]">
             <label className="flex items-center gap-2 cursor-pointer mb-4">
-              <input type="checkbox" checked={isSuperAdmin} onChange={e => setIsSuperAdmin(e.target.checked)} className="rounded bg-white dark:bg-[#111] border-gray-200 dark:border-[#333] text-[#f97316] focus:ring-0 focus:ring-offset-0 w-4 h-4" />
+              <input
+                type="checkbox"
+                checked={isSuperAdmin}
+                onChange={(e) => setIsSuperAdmin(e.target.checked)}
+                className="rounded bg-white dark:bg-[#111] border-gray-200 dark:border-[#333] text-[#f97316] focus:ring-0 focus:ring-offset-0 w-4 h-4"
+              />
               <span className="text-sm font-semibold text-red-400">Make Super Admin</span>
             </label>
 
             {!isSuperAdmin && (
               <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">Assign Group</label>
-                <select value={groupId} onChange={e => setGroupId(e.target.value)} className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none">
+                <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">
+                  Assign Group
+                </label>
+                <select
+                  value={groupId}
+                  onChange={(e) => setGroupId(e.target.value)}
+                  className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none"
+                >
                   <option value="">-- No Group --</option>
-                  {groups.map(g => (
-                    <option key={g.id} value={g.id}>{g.name}</option>
+                  {groups.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -229,8 +328,18 @@ function UserModal({ user, groups, onClose }: { user: AdminUser | null; groups: 
           </div>
 
           <div className="pt-4 flex justify-end gap-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-[#aaa] hover:bg-gray-200 dark:bg-[#333] rounded transition-colors">Cancel</button>
-            <button type="submit" disabled={mutation.isPending} className="px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-sm font-medium rounded transition-colors flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-[#aaa] hover:bg-gray-200 dark:bg-[#333] rounded transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={mutation.isPending}
+              className="px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-sm font-medium rounded transition-colors flex items-center gap-2"
+            >
               {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Save User
             </button>
           </div>
@@ -259,13 +368,21 @@ function GroupsTab() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin_groups"] }),
   });
 
-  if (isLoading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin text-[#f97316]" /></div>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center p-10">
+        <Loader2 className="animate-spin text-[#f97316]" />
+      </div>
+    );
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
         <button
-          onClick={() => { setEditingGroup(null); setIsModalOpen(true); }}
+          onClick={() => {
+            setEditingGroup(null);
+            setIsModalOpen(true);
+          }}
           className="flex items-center gap-2 px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-sm font-medium rounded transition-colors"
         >
           <Plus className="h-4 w-4" /> Add Group
@@ -273,24 +390,47 @@ function GroupsTab() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {groups?.map(group => (
-          <div key={group.id} className="bg-gray-50 dark:bg-[#161616] border border-gray-200 dark:border-[#333] rounded-lg p-5 flex flex-col hover:border-gray-300 dark:border-[#444] transition-colors">
+        {groups?.map((group) => (
+          <div
+            key={group.id}
+            className="bg-gray-50 dark:bg-[#161616] border border-gray-200 dark:border-[#333] rounded-lg p-5 flex flex-col hover:border-gray-300 dark:border-[#444] transition-colors"
+          >
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">{group.name}</h3>
-                <p className="text-[11px] text-gray-500 dark:text-[#666] mt-0.5">{group.permissions.length} pages granted</p>
+                <p className="text-[11px] text-gray-500 dark:text-[#666] mt-0.5">
+                  {group.permissions.length} pages granted
+                </p>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => { setEditingGroup(group); setIsModalOpen(true); }} className="p-1.5 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:bg-[#333] rounded transition-colors"><Edit className="h-4 w-4" /></button>
-                <button onClick={() => { if(confirm(`Delete ${group.name}?`)) deleteMutation.mutate({ id: group.id }); }} className="p-1.5 text-red-500/70 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"><Trash2 className="h-4 w-4" /></button>
+                <button
+                  onClick={() => {
+                    setEditingGroup(group);
+                    setIsModalOpen(true);
+                  }}
+                  className="p-1.5 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:bg-[#333] rounded transition-colors"
+                >
+                  <Edit className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Delete ${group.name}?`)) deleteMutation.mutate({ id: group.id });
+                  }}
+                  className="p-1.5 text-red-500/70 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
             </div>
 
             <div className="flex-1 flex flex-wrap gap-1.5 content-start">
-              {group.permissions.map(path => {
-                const page = AVAILABLE_PAGES.find(p => p.path === path);
+              {group.permissions.map((path) => {
+                const page = AVAILABLE_PAGES.find((p) => p.path === path);
                 return (
-                  <span key={path} className="inline-flex items-center px-2 py-1 rounded text-[10px] font-medium bg-gray-100 dark:bg-[#222] border border-gray-200 dark:border-[#333] text-gray-600 dark:text-[#aaa]">
+                  <span
+                    key={path}
+                    className="inline-flex items-center px-2 py-1 rounded text-[10px] font-medium bg-gray-100 dark:bg-[#222] border border-gray-200 dark:border-[#333] text-gray-600 dark:text-[#aaa]"
+                  >
                     {page?.label || path}
                   </span>
                 );
@@ -316,7 +456,8 @@ function GroupModal({ group, onClose }: { group: AdminGroup | null; onClose: () 
   const [perms, setPerms] = useState<string[]>(group?.permissions || []);
 
   const mutation = useMutation({
-    mutationFn: (vars: any) => group ? updateAdminGroup({ data: vars }) : createAdminGroup({ data: vars }),
+    mutationFn: (vars: any) =>
+      group ? updateAdminGroup({ data: vars }) : createAdminGroup({ data: vars }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin_groups"] });
       onClose();
@@ -324,16 +465,16 @@ function GroupModal({ group, onClose }: { group: AdminGroup | null; onClose: () 
     onError: (error: any) => {
       console.error("Error saving group:", error);
       toast.error(error.message || "Failed to save group");
-    }
+    },
   });
 
   const togglePerm = (path: string) => {
-    setPerms(prev => prev.includes(path) ? prev.filter(p => p !== path) : [...prev, path]);
+    setPerms((prev) => (prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path]));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (group) {
       mutation.mutate({ id: group.id, name, permissions: perms } as any);
     } else {
@@ -345,33 +486,63 @@ function GroupModal({ group, onClose }: { group: AdminGroup | null; onClose: () 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
       <div className="bg-gray-50 dark:bg-[#161616] border border-gray-200 dark:border-[#333] rounded-xl w-full max-w-xl shadow-2xl flex flex-col max-h-[85vh]">
         <div className="px-5 py-4 border-b border-gray-200 dark:border-[#333] flex justify-between items-center bg-white dark:bg-[#111] shrink-0">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">{group ? "Edit Group" : "Create Group"}</h2>
-          <button onClick={onClose} className="p-1 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white transition-colors"><X className="h-5 w-5" /></button>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+            {group ? "Edit Group" : "Create Group"}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
           <div className="p-5 border-b border-gray-200 dark:border-[#333] shrink-0">
-            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">Group Name</label>
-            <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Support Team" className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none" />
+            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">
+              Group Name
+            </label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Support Team"
+              className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none"
+            />
           </div>
 
           <div className="flex-1 overflow-y-auto p-5">
-            <label className="block text-xs font-bold text-gray-900 dark:text-white uppercase mb-4 tracking-wide border-b border-gray-200 dark:border-[#333] pb-2">Page Permissions</label>
+            <label className="block text-xs font-bold text-gray-900 dark:text-white uppercase mb-4 tracking-wide border-b border-gray-200 dark:border-[#333] pb-2">
+              Page Permissions
+            </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {AVAILABLE_PAGES.map(page => {
+              {AVAILABLE_PAGES.map((page) => {
                 const isSelected = perms.includes(page.path);
                 return (
                   <div
                     key={page.path}
                     onClick={() => togglePerm(page.path)}
                     className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      isSelected ? "bg-[#f97316]/10 border-[#f97316]/30" : "bg-white dark:bg-[#111] border-gray-200 dark:border-[#333] hover:border-gray-300 dark:hover:border-gray-300 dark:border-[#555]"
+                      isSelected
+                        ? "bg-[#f97316]/10 border-[#f97316]/30"
+                        : "bg-white dark:bg-[#111] border-gray-200 dark:border-[#333] hover:border-gray-300 dark:hover:border-gray-300 dark:border-[#555]"
                     }`}
                   >
-                    {isSelected ? <CheckSquare className="h-5 w-5 text-[#f97316]" /> : <Square className="h-5 w-5 text-gray-500 dark:text-[#555]" />}
+                    {isSelected ? (
+                      <CheckSquare className="h-5 w-5 text-[#f97316]" />
+                    ) : (
+                      <Square className="h-5 w-5 text-gray-500 dark:text-[#555]" />
+                    )}
                     <div className="flex-1">
-                      <div className={`text-sm font-medium ${isSelected ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-[#888]"}`}>{page.label}</div>
-                      <div className="text-[10px] text-gray-500 dark:text-[#555] truncate font-mono mt-0.5">{page.path}</div>
+                      <div
+                        className={`text-sm font-medium ${isSelected ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-[#888]"}`}
+                      >
+                        {page.label}
+                      </div>
+                      <div className="text-[10px] text-gray-500 dark:text-[#555] truncate font-mono mt-0.5">
+                        {page.path}
+                      </div>
                     </div>
                   </div>
                 );
@@ -380,8 +551,18 @@ function GroupModal({ group, onClose }: { group: AdminGroup | null; onClose: () 
           </div>
 
           <div className="px-5 py-4 border-t border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] flex justify-end gap-3 shrink-0">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-[#aaa] hover:bg-gray-200 dark:bg-[#333] rounded transition-colors">Cancel</button>
-            <button type="submit" disabled={mutation.isPending} className="px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-sm font-medium rounded transition-colors flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-[#aaa] hover:bg-gray-200 dark:bg-[#333] rounded transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={mutation.isPending}
+              className="px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-sm font-medium rounded transition-colors flex items-center gap-2"
+            >
               {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Save Group
             </button>
           </div>

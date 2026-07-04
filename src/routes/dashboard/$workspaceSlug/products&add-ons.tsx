@@ -42,7 +42,8 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/products&add-ons
 function AddCampaignModal() {
   const [open, setOpen] = useState(false);
   const { activeWorkspace } = useWorkspace();
-  const { canCreateProduct, canCreateCampaign, canCreateGiftCard, canCreatePunchCard } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateProduct, canCreateCampaign, canCreateGiftCard, canCreatePunchCard } =
+    useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState({
@@ -116,7 +117,7 @@ function AddCampaignModal() {
 
     if (!canCreate) {
       toast.error(`${limitType} Limit Reached`, {
-        description: `You have reached the maximum number of ${limitType}s allowed by your plan.`
+        description: `You have reached the maximum number of ${limitType}s allowed by your plan.`,
       });
       return;
     }

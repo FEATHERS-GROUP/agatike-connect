@@ -92,13 +92,27 @@ function OrganizerWorkspaces() {
           <table className="w-full text-left text-[13px] whitespace-nowrap">
             <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
               <tr>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Logo</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Name</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Location</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Type</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Created</th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  ID
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Logo
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Name
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Location
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Type
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Status
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Created
+                </th>
                 <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333] text-right">
                   Actions
                 </th>
@@ -113,7 +127,10 @@ function OrganizerWorkspaces() {
                 </tr>
               ) : (
                 filteredWorkspaces.map((w: any) => (
-                  <tr key={w.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                  <tr
+                    key={w.id}
+                    className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                  >
                     <td className="py-2 px-4 font-medium text-gray-600 dark:text-[#797775]">
                       {String(w.id).substring(0, 8)}...
                     </td>
@@ -130,7 +147,9 @@ function OrganizerWorkspaces() {
                         </div>
                       )}
                     </td>
-                    <td className="py-2 px-4 font-medium text-gray-900 dark:text-white">{w.name || "—"}</td>
+                    <td className="py-2 px-4 font-medium text-gray-900 dark:text-white">
+                      {w.name || "—"}
+                    </td>
                     <td className="py-2 px-4">
                       {w.city && w.country ? `${w.city}, ${w.country}` : w.city || w.country || "—"}
                     </td>
@@ -199,7 +218,9 @@ function OrganizerWorkspaces() {
                                         <Hash className="h-4 w-4" />
                                       </div>
                                       <div className="min-w-0">
-                                        <div className="text-xs text-gray-600 dark:text-[#797775]">Workspace ID</div>
+                                        <div className="text-xs text-gray-600 dark:text-[#797775]">
+                                          Workspace ID
+                                        </div>
                                         <div className="text-sm text-gray-900 dark:text-white font-mono truncate">
                                           {w.id}
                                         </div>
@@ -211,7 +232,9 @@ function OrganizerWorkspaces() {
                                         <MapPin className="h-4 w-4" />
                                       </div>
                                       <div>
-                                        <div className="text-xs text-gray-600 dark:text-[#797775]">City / Country</div>
+                                        <div className="text-xs text-gray-600 dark:text-[#797775]">
+                                          City / Country
+                                        </div>
                                         <div className="text-sm text-gray-900 dark:text-white">
                                           {w.city && w.country
                                             ? `${w.city}, ${w.country}`
@@ -225,7 +248,9 @@ function OrganizerWorkspaces() {
                                         <Map className="h-4 w-4" />
                                       </div>
                                       <div>
-                                        <div className="text-xs text-gray-600 dark:text-[#797775]">Address</div>
+                                        <div className="text-xs text-gray-600 dark:text-[#797775]">
+                                          Address
+                                        </div>
                                         <div className="text-sm text-gray-900 dark:text-white">
                                           {w.address || "Not specified"}
                                         </div>
@@ -237,7 +262,9 @@ function OrganizerWorkspaces() {
                                         <Tag className="h-4 w-4" />
                                       </div>
                                       <div>
-                                        <div className="text-xs text-gray-600 dark:text-[#797775]">Type</div>
+                                        <div className="text-xs text-gray-600 dark:text-[#797775]">
+                                          Type
+                                        </div>
                                         <div className="text-sm text-gray-900 dark:text-white capitalize">
                                           {w.type || "Not specified"}
                                         </div>
@@ -249,7 +276,9 @@ function OrganizerWorkspaces() {
                                         <Banknote className="h-4 w-4" />
                                       </div>
                                       <div>
-                                        <div className="text-xs text-gray-600 dark:text-[#797775]">Currency</div>
+                                        <div className="text-xs text-gray-600 dark:text-[#797775]">
+                                          Currency
+                                        </div>
                                         <div className="text-sm text-gray-900 dark:text-white uppercase">
                                           {w.currency || "Not specified"}
                                         </div>
@@ -261,7 +290,9 @@ function OrganizerWorkspaces() {
                                         <CalendarIcon className="h-4 w-4" />
                                       </div>
                                       <div>
-                                        <div className="text-xs text-gray-600 dark:text-[#797775]">Created At</div>
+                                        <div className="text-xs text-gray-600 dark:text-[#797775]">
+                                          Created At
+                                        </div>
                                         <div className="text-sm text-gray-900 dark:text-white">
                                           {w.created_at
                                             ? new Date(w.created_at).toLocaleDateString("en-US", {
@@ -277,7 +308,9 @@ function OrganizerWorkspaces() {
                                         <Clock className="h-4 w-4" />
                                       </div>
                                       <div>
-                                        <div className="text-xs text-gray-600 dark:text-[#797775]">Last Updated</div>
+                                        <div className="text-xs text-gray-600 dark:text-[#797775]">
+                                          Last Updated
+                                        </div>
                                         <div className="text-sm text-gray-900 dark:text-white">
                                           {w.updated_at
                                             ? new Date(w.updated_at).toLocaleString("en-US", {

@@ -424,9 +424,15 @@ function CheckoutPage() {
                               <SelectValue placeholder="Code" />
                             </SelectTrigger>
                             <SelectContent>
-                              {COUNTRIES.filter(c => c.dialCode).map((c) => (
+                              {COUNTRIES.filter((c) => c.dialCode).map((c) => (
                                 <SelectItem key={c.code} value={c.dialCode}>
-                                  {String.fromCodePoint(...c.code.toUpperCase().split('').map(char => 127397 + char.charCodeAt(0)))} {c.dialCode}
+                                  {String.fromCodePoint(
+                                    ...c.code
+                                      .toUpperCase()
+                                      .split("")
+                                      .map((char) => 127397 + char.charCodeAt(0)),
+                                  )}{" "}
+                                  {c.dialCode}
                                 </SelectItem>
                               ))}
                             </SelectContent>

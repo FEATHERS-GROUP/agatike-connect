@@ -140,18 +140,22 @@ function DashboardEvents() {
 
 function EventsHeader({ activeWorkspace }: { activeWorkspace: any }) {
   const navigate = useNavigate();
-  const { canCreateEvent } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateEvent } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const handleCreate = () => {
     if (!canCreateEvent()) {
       toast.error("Event limit reached", {
-        description: "Your current subscription plan does not allow creating more events. Please upgrade your plan."
+        description:
+          "Your current subscription plan does not allow creating more events. Please upgrade your plan.",
       });
       return;
     }
     navigate({
       to: "/dashboard/$workspaceSlug/events/create-event",
-      params: { workspaceSlug: activeWorkspace?.slug || "" }
+      params: { workspaceSlug: activeWorkspace?.slug || "" },
     });
   };
 
@@ -167,7 +171,7 @@ function EventsHeader({ activeWorkspace }: { activeWorkspace: any }) {
         className="rounded-full shadow-[var(--shadow-glow)] disabled:opacity-70"
         style={{ background: "var(--gradient-primary)" }}
       >
-        {canCreateEvent() ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} 
+        {canCreateEvent() ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />}
         Create Event
       </Button>
     </header>

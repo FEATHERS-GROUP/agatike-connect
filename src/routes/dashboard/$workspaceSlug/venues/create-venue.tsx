@@ -151,7 +151,10 @@ function NewVenueWizard() {
   const navigate = useNavigate();
   const { step } = useSearch({ strict: false }) as { step: number };
   const { activeWorkspace } = useWorkspace();
-  const { canCreateVenue, isLoading: limitsLoading } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateVenue, isLoading: limitsLoading } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const [isUploading, setIsUploading] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);

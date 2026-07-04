@@ -123,7 +123,11 @@ function TicketDesignerIndex() {
     enabled: !!activeWorkspace?.id,
   });
 
-  const { hasStudioAccess, canCreateTicketDesign, isLoading: limitsLoading } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const {
+    hasStudioAccess,
+    canCreateTicketDesign,
+    isLoading: limitsLoading,
+  } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -187,7 +191,7 @@ function TicketDesignerIndex() {
     e.preventDefault();
     if (!canCreateTicketDesign()) {
       toast.error("Ticket Design Limit Reached", {
-        description: "You have reached the maximum number of ticket designs for your plan."
+        description: "You have reached the maximum number of ticket designs for your plan.",
       });
       setIsModalOpen(false);
       return;
@@ -219,7 +223,7 @@ function TicketDesignerIndex() {
   const openSetupModal = (templateId: string) => {
     if (!canCreateTicketDesign()) {
       toast.error("Ticket Design Limit Reached", {
-        description: "You have reached the maximum number of ticket designs for your plan."
+        description: "You have reached the maximum number of ticket designs for your plan.",
       });
       return;
     }
@@ -233,8 +237,8 @@ function TicketDesignerIndex() {
   if (!hasStudioAccess()) {
     return (
       <div className="p-6 h-full flex flex-col justify-center">
-        <UpgradePrompt 
-          title="Upgrade to Access Ticket Designer" 
+        <UpgradePrompt
+          title="Upgrade to Access Ticket Designer"
           description="Ticket Designer is a premium feature available in higher tier plans. Upgrade your subscription to start designing beautiful custom tickets."
         />
       </div>

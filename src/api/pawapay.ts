@@ -131,7 +131,9 @@ export const getAllPaymentProviderFees = createServerFn({ method: "GET" }).handl
 });
 
 export const getProfitableNetworks = createServerFn({ method: "POST" })
-  .validator((d: { workspaceId: string; baseAmount: number; networks: string[]; countryCode?: string }) => d)
+  .validator(
+    (d: { workspaceId: string; baseAmount: number; networks: string[]; countryCode?: string }) => d,
+  )
   .handler(async (ctx) => {
     const { workspaceId, baseAmount, networks } = ctx.data;
     if (!workspaceId || !baseAmount || !networks || networks.length === 0) return networks;
@@ -150,7 +152,7 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
             is_tiered
             tiered_rules
           }
-        }`
+        }`,
       ),
       hasuraRequest<any>(
         `query GetWorkspaceOrg($workspace_id: uuid!) {
@@ -158,7 +160,7 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
             orgnizer_id
           }
         }`,
-        { workspace_id: workspaceId }
+        { workspace_id: workspaceId },
       ),
     ]);
 
@@ -168,32 +170,34 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
     // Fetch pricing plan using the billing service
     const plan = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
 
-    const custCollectionPct   = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
-    const custFixed           = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
-    const custServicePct      = parseFloat(plan.customer_service_fee_percentage as any) || 0;
+    const custCollectionPct = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
+    const custFixed = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
+    const custServicePct = parseFloat(plan.customer_service_fee_percentage as any) || 0;
 
-    const orgCollectionPct    = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
-    const orgFixed            = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
-    const orgPlatformPct      = parseFloat(plan.organizer_platform_contribution as any) || 0;
+    const orgCollectionPct = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
+    const orgFixed = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
+    const orgPlatformPct = parseFloat(plan.organizer_platform_contribution as any) || 0;
 
     const planMaxSubsidyPct = parseFloat(plan.max_collection_subsidy_percentage as any) ?? 1.0;
     const withdrawalFeePct = parseFloat(plan.withdrawal_fee_percentage as any) || 0;
     const isSubsidyEnabled = plan.enable_subsidized_collection !== false;
-    
+
     // Calculate final allowed subsidy amount
     // Option B + A hybrid: cap subsidy percentage at (withdrawal margin * 0.7)
     const finalSubsidyPct = Math.min(planMaxSubsidyPct, withdrawalFeePct * 0.7);
-    const maxAllowedSubsidyAmount = isSubsidyEnabled ? (baseAmount * (finalSubsidyPct / 100)) : 0;
+    const maxAllowedSubsidyAmount = isSubsidyEnabled ? baseAmount * (finalSubsidyPct / 100) : 0;
 
     const profitableNetworks = networks.filter((network) => {
       const providerFees = allFees.find((f: any) => f.network === network) || {};
       let collectionPercentage = parseFloat(providerFees.collection_percentage) || 0;
-      let collectionFixed      = parseFloat(providerFees.collection_fixed_fee) || 0;
+      let collectionFixed = parseFloat(providerFees.collection_fixed_fee) || 0;
 
       // Calculate Customer Fee and Organizer Fee based on baseAmount
-      const customerFee = (baseAmount * (custCollectionPct / 100)) + custFixed + (baseAmount * (custServicePct / 100));
+      const customerFee =
+        baseAmount * (custCollectionPct / 100) + custFixed + baseAmount * (custServicePct / 100);
       const grossAmount = baseAmount + customerFee;
-      const organizerFee = (baseAmount * (orgCollectionPct / 100)) + orgFixed + (baseAmount * (orgPlatformPct / 100));
+      const organizerFee =
+        baseAmount * (orgCollectionPct / 100) + orgFixed + baseAmount * (orgPlatformPct / 100);
 
       // Evaluate tiered rules based on grossAmount
       if (providerFees.is_tiered && providerFees.tiered_rules) {
@@ -217,7 +221,7 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
       }
 
       // Calculate Provider Cost
-      const providerCost = (grossAmount * (collectionPercentage / 100)) + collectionFixed;
+      const providerCost = grossAmount * (collectionPercentage / 100) + collectionFixed;
 
       // New Profit Logic (Lifecycle Engine)
       // The organizer and the customer share the collection fee, so both are used to cover the cost
@@ -306,7 +310,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       `query GetWorkspaceWallet($workspace_id: uuid!) {
         wallets(where: { workspace_id: { _eq: $workspace_id } }) { id }
       }`,
-      { workspace_id: workspaceId }
+      { workspace_id: workspaceId },
     );
     let walletId = walletRes.wallets?.[0]?.id;
 
@@ -315,7 +319,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         `mutation CreateWallet($workspace_id: uuid!, $currency: String!) {
           insert_wallets_one(object: { workspace_id: $workspace_id, amount: 0, currency: $currency, walletNumber: "Not setup" }) { id }
         }`,
-        { workspace_id: workspaceId, currency }
+        { workspace_id: workspaceId, currency },
       );
       walletId = createRes.insert_wallets_one?.id;
     }
@@ -331,7 +335,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
             tiered_rules
           }
         }`,
-        { network }
+        { network },
       ),
       hasuraRequest<any>(
         `query GetWorkspaceOrg($workspace_id: uuid!) {
@@ -339,7 +343,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
             orgnizer_id
           }
         }`,
-        { workspace_id: workspaceId }
+        { workspace_id: workspaceId },
       ),
     ]);
 
@@ -348,22 +352,23 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const plan = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
 
     // ── Pricing plan fees ────────────────────────────────────────────────────
-    const custCollectionPct   = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
-    const custFixed           = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
-    const custServicePct      = parseFloat(plan.customer_service_fee_percentage as any) || 0;
+    const custCollectionPct = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
+    const custFixed = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
+    const custServicePct = parseFloat(plan.customer_service_fee_percentage as any) || 0;
 
-    const orgCollectionPct    = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
-    const orgFixed            = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
-    const orgPlatformPct      = parseFloat(plan.organizer_platform_contribution as any) || 0;
+    const orgCollectionPct = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
+    const orgFixed = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
+    const orgPlatformPct = parseFloat(plan.organizer_platform_contribution as any) || 0;
 
     const grossAmount = parseFloat(amount);
-    const baseAmt     = parseFloat(baseAmount || amount);
-    const calculatedCustomerFee = (baseAmt * (custCollectionPct / 100)) + custFixed + (baseAmt * (custServicePct / 100));
-    const customerFee  = Math.max(grossAmount - baseAmt, calculatedCustomerFee);
+    const baseAmt = parseFloat(baseAmount || amount);
+    const calculatedCustomerFee =
+      baseAmt * (custCollectionPct / 100) + custFixed + baseAmt * (custServicePct / 100);
+    const customerFee = Math.max(grossAmount - baseAmt, calculatedCustomerFee);
 
     // ── Provider (PawaPay) cost ──────────────────────────────────────────────
     const pf = feeRes.payment_provider_fees?.[0] || {};
-    let providerPct   = parseFloat(pf.collection_percentage) || 0;
+    let providerPct = parseFloat(pf.collection_percentage) || 0;
     let providerFixed = parseFloat(pf.collection_fixed_fee) || 0;
 
     if (pf.is_tiered && pf.tiered_rules) {
@@ -386,16 +391,17 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       }
     }
 
-    const providerCost = (grossAmount * (providerPct / 100)) + providerFixed;
+    const providerCost = grossAmount * (providerPct / 100) + providerFixed;
 
     // Organizer fee = deducted from their wallet settlement
-    const organizerFee = (baseAmt * (orgCollectionPct / 100)) + orgFixed + (baseAmt * (orgPlatformPct / 100));
+    const organizerFee =
+      baseAmt * (orgCollectionPct / 100) + orgFixed + baseAmt * (orgPlatformPct / 100);
 
     // ── Platform revenue & profit ────────────────────────────────────────────
     // Platform Revenue = Customer Contribution + Organizer Contribution
     // Net Profit       = Platform Revenue − Provider (PawaPay) Cost
     const platformRevenue = customerFee + organizerFee;
-    const netProfit       = platformRevenue - providerCost;
+    const netProfit = platformRevenue - providerCost;
 
     // Organizer wallet receives base minus their contribution (and any shortfall)
     const organizerNetAmount = Math.max(0, baseAmt - organizerFee - (shortfall || 0));
@@ -446,17 +452,17 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         cust_fee: customerFee,
         org_fee: organizerFee,
         platform_fee: organizerFee,
-      }
+      },
     );
 
     // Link the earnings record to the wallet transaction via FK
-    const txId      = txRes.insert_wallet_transactions_one.id;
+    const txId = txRes.insert_wallet_transactions_one.id;
     const earningsId = txRes.insert_earnings_one.id;
     await hasuraRequest(
       `mutation LinkEarnings($id: uuid!, $txId: uuid!) {
         update_earnings_by_pk(pk_columns: {id: $id}, _set: {wallet_transaction_id: $txId}) { id }
       }`,
-      { id: earningsId, txId }
+      { id: earningsId, txId },
     );
 
     return { success: true, depositId };

@@ -23,7 +23,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/
   component: EventSectionsView,
 });
 
-function AddSectionModal({ eventId, canAccess }: { eventId: string, canAccess: boolean }) {
+function AddSectionModal({ eventId, canAccess }: { eventId: string; canAccess: boolean }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -65,7 +65,8 @@ function AddSectionModal({ eventId, canAccess }: { eventId: string, canAccess: b
             }
           }}
         >
-          {canAccess ? <Plus className="mr-2 h-4 w-4" /> : <Lock className="mr-2 h-4 w-4" />} Create Section
+          {canAccess ? <Plus className="mr-2 h-4 w-4" /> : <Lock className="mr-2 h-4 w-4" />} Create
+          Section
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -112,7 +113,10 @@ function AddSectionModal({ eventId, canAccess }: { eventId: string, canAccess: b
 function EventSectionsView() {
   const { eventId } = Route.useParams();
   const { activeWorkspace } = useWorkspace();
-  const { canCreateSection } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateSection } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: sections = [], isLoading } = useQuery({
     queryKey: ["event-sections", eventId],

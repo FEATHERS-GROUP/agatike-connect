@@ -23,7 +23,9 @@ export const Route = createFileRoute("/internal/control/admin")({
       }
 
       if (!session.is_super_admin && location.pathname !== "/internal/control/admin") {
-        const hasAccess = (session as any).permissions?.some((p: string) => location.pathname.startsWith(p));
+        const hasAccess = (session as any).permissions?.some((p: string) =>
+          location.pathname.startsWith(p),
+        );
         if (!hasAccess && location.pathname !== "/internal/control/admin/login") {
           throw redirect({ to: "/internal/control/admin" });
         }

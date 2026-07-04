@@ -222,7 +222,7 @@ function RequestWithdrawalPage() {
     onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ["wallet", activeWorkspace?.id] });
       queryClient.invalidateQueries({ queryKey: ["wallet-transactions", wallet?.id] });
-      
+
       setStep(5);
 
       setTimeout(() => {
@@ -500,10 +500,10 @@ function RequestWithdrawalPage() {
                       platformPercentage + netPercentage > 0
                         ? `${platformPercentage + netPercentage}%`
                         : null,
-                      (platformFixed + netFixed) > 0
+                      platformFixed + netFixed > 0
                         ? showExchange && !isExchangeLoading
                           ? formatCurrency((platformFixed + netFixed) * rate, targetCurrency)
-                          : formatCurrency((platformFixed + netFixed), wallet?.currency)
+                          : formatCurrency(platformFixed + netFixed, wallet?.currency)
                         : null,
                     ]
                       .filter(Boolean)
@@ -550,14 +550,19 @@ function RequestWithdrawalPage() {
                 <Button
                   size="lg"
                   className="w-2/3 h-14 rounded-xl text-lg"
-                  disabled={sendOtpMutation.isPending || withdrawMutation.isPending || !payoutAccount || netPayout <= 0}
+                  disabled={
+                    sendOtpMutation.isPending ||
+                    withdrawMutation.isPending ||
+                    !payoutAccount ||
+                    netPayout <= 0
+                  }
                   onClick={handleInitiateWithdrawal}
                 >
                   {sendOtpMutation.isPending || withdrawMutation.isPending
                     ? "Processing..."
                     : amountToWithdraw > ADMIN_APPROVAL_THRESHOLD
-                    ? "Submit for Admin Approval"
-                    : "Confirm Request"}
+                      ? "Submit for Admin Approval"
+                      : "Confirm Request"}
                 </Button>
               </div>
             </div>
@@ -569,8 +574,9 @@ function RequestWithdrawalPage() {
               <div className="bg-primary/10 p-5 rounded-2xl border border-primary/20 text-center space-y-2">
                 <h3 className="font-bold text-lg">Security Verification</h3>
                 <p className="text-sm text-muted-foreground">
-                  We've sent a 6-digit One-Time Password (OTP) via SMS to your registered phone number. Please
-                  enter it below along with your account password to authorize this payout.
+                  We've sent a 6-digit One-Time Password (OTP) via SMS to your registered phone
+                  number. Please enter it below along with your account password to authorize this
+                  payout.
                 </p>
               </div>
 

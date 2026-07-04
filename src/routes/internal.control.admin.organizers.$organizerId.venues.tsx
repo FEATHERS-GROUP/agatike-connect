@@ -45,7 +45,13 @@ function WorkspaceCell({ name }: { name: string }) {
   return (
     <div className="flex items-center gap-1.5">
       <Building2 className="h-3.5 w-3.5 text-gray-600 dark:text-[#797775] shrink-0" />
-      <span className={name && name !== "—" ? "text-gray-700 dark:text-[#cccccc]" : "text-gray-600 dark:text-[#797775] italic"}>
+      <span
+        className={
+          name && name !== "—"
+            ? "text-gray-700 dark:text-[#cccccc]"
+            : "text-gray-600 dark:text-[#797775] italic"
+        }
+      >
         {name || "—"}
       </span>
     </div>
@@ -164,14 +170,30 @@ function OrganizerVenuesAndSpaces() {
             <table className="w-full text-left text-[13px] whitespace-nowrap">
               <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
                 <tr>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Name</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Workspace</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Type</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Location</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Capacity</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Actions</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    ID
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Name
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Workspace
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Type
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Location
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Capacity
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Status
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
@@ -179,7 +201,10 @@ function OrganizerVenuesAndSpaces() {
                   <EmptyRow cols={8} label="No rentable venues found." />
                 ) : (
                   filteredVenues.map((v: any) => (
-                    <tr key={v.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                    <tr
+                      key={v.id}
+                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                    >
                       <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                         {String(v.id).substring(0, 8)}...
                       </td>
@@ -296,7 +321,9 @@ function OrganizerVenuesAndSpaces() {
                                     {v.capacity ? (
                                       `${v.capacity} people`
                                     ) : (
-                                      <span className="italic text-gray-600 dark:text-[#797775]">Not specified</span>
+                                      <span className="italic text-gray-600 dark:text-[#797775]">
+                                        Not specified
+                                      </span>
                                     )}
                                   </DetailBlock>
 
@@ -309,7 +336,9 @@ function OrganizerVenuesAndSpaces() {
                                     </div>
                                     <div className="capitalize">
                                       Type:{" "}
-                                      <span className="text-gray-700 dark:text-[#cccccc]">{v.rental_type || "—"}</span>
+                                      <span className="text-gray-700 dark:text-[#cccccc]">
+                                        {v.rental_type || "—"}
+                                      </span>
                                     </div>
                                     <div>
                                       Currency:{" "}
@@ -323,7 +352,9 @@ function OrganizerVenuesAndSpaces() {
                                         {v.opening_hours || "??:??"} — {v.closing_hours || "??:??"}
                                       </div>
                                     ) : (
-                                      <span className="italic text-gray-600 dark:text-[#797775]">Not specified</span>
+                                      <span className="italic text-gray-600 dark:text-[#797775]">
+                                        Not specified
+                                      </span>
                                     )}
                                   </DetailBlock>
 
@@ -362,7 +393,9 @@ function OrganizerVenuesAndSpaces() {
                                         ))}
                                       </div>
                                     ) : (
-                                      <span className="italic text-gray-600 dark:text-[#797775]">None listed</span>
+                                      <span className="italic text-gray-600 dark:text-[#797775]">
+                                        None listed
+                                      </span>
                                     )}
                                   </DetailBlock>
                                 </div>
@@ -383,13 +416,27 @@ function OrganizerVenuesAndSpaces() {
             <table className="w-full text-left text-[13px] whitespace-nowrap">
               <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
                 <tr>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Name</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Workspace</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Type</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Created</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Actions</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    ID
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Name
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Workspace
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Type
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Status
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Created
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
@@ -397,7 +444,10 @@ function OrganizerVenuesAndSpaces() {
                   <EmptyRow cols={7} label="No spaces found." />
                 ) : (
                   filteredSpaces.map((s: any) => (
-                    <tr key={s.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                    <tr
+                      key={s.id}
+                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                    >
                       <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                         {String(s.id).substring(0, 8)}...
                       </td>

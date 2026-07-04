@@ -1,7 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { getActiveSubscription, getOrganizerUsageStats, getWorkspaceUsageStats } from "@/api/billing";
+import {
+  getActiveSubscription,
+  getOrganizerUsageStats,
+  getWorkspaceUsageStats,
+} from "@/api/billing";
 
-export function useSubscriptionLimits(organizerId: string | undefined, workspaceId?: string | undefined) {
+export function useSubscriptionLimits(
+  organizerId: string | undefined,
+  workspaceId?: string | undefined,
+) {
   const { data: subscription, isLoading: subLoading } = useQuery({
     queryKey: ["active-subscription", organizerId],
     queryFn: () => getActiveSubscription({ data: { organizer_id: organizerId! } }),
@@ -22,9 +29,16 @@ export function useSubscriptionLimits(organizerId: string | undefined, workspace
 
   // usage_limits is stored as jsonb – may need parsing
   const rawLimits = subscription?.pricing_plan?.usage_limits;
-  const limits: Record<string, any> = typeof rawLimits === "string"
-    ? (() => { try { return JSON.parse(rawLimits); } catch { return {}; } })()
-    : (rawLimits || {});
+  const limits: Record<string, any> =
+    typeof rawLimits === "string"
+      ? (() => {
+          try {
+            return JSON.parse(rawLimits);
+          } catch {
+            return {};
+          }
+        })()
+      : rawLimits || {};
 
   const isLoading = subLoading || statsLoading || (!!workspaceId && wsStatsLoading);
 
@@ -33,7 +47,9 @@ export function useSubscriptionLimits(organizerId: string | undefined, workspace
     if (isLoading) return true;
     const limit = limits[limitKey];
     if (limit === -1 || limit === undefined || limit === null) return true;
-    const count = useWorkspace ? (workspaceStats?.[limitKey.replace("max_", "")] ?? 0) : (stats?.[limitKey.replace("max_", "")] ?? 0);
+    const count = useWorkspace
+      ? (workspaceStats?.[limitKey.replace("max_", "")] ?? 0)
+      : (stats?.[limitKey.replace("max_", "")] ?? 0);
     return count < limit;
   };
 
@@ -219,7 +235,8 @@ export function useSubscriptionLimits(organizerId: string | undefined, workspace
 
   const canCreateMembershipPlan = () => {
     if (isLoading) return true;
-    if (limits.max_membership_plans === -1 || limits.max_membership_plans === undefined) return true;
+    if (limits.max_membership_plans === -1 || limits.max_membership_plans === undefined)
+      return true;
     return (workspaceStats?.membership_plans || 0) < limits.max_membership_plans;
   };
 
@@ -373,4 +390,3 @@ export function useSubscriptionLimits(organizerId: string | undefined, workspace
     canAddPlanningItem,
   };
 }
-

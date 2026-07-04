@@ -124,14 +124,20 @@ function ModulesPage() {
             <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
               {paginatedModules.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-[#888888]">
+                  <td
+                    colSpan={6}
+                    className="px-6 py-8 text-center text-gray-500 dark:text-[#888888]"
+                  >
                     No modules found.{" "}
                     {searchQuery ? "Try a different search query." : "Create one to get started."}
                   </td>
                 </tr>
               ) : (
                 paginatedModules.map((mod) => (
-                  <tr key={mod.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
+                  <tr
+                    key={mod.id}
+                    className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-start gap-3">
                         <div className="p-2 rounded-lg bg-gray-200 dark:bg-[#333333]/50 text-gray-900 dark:text-white mt-0.5">
@@ -144,7 +150,9 @@ function ModulesPage() {
                           )}
                         </div>
                         <div>
-                          <div className="font-medium text-gray-900 dark:text-white">{mod.label}</div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {mod.label}
+                          </div>
                           <div
                             className="text-xs text-gray-500 dark:text-[#888888] mt-0.5 max-w-xs truncate"
                             title={mod.desc}
@@ -159,7 +167,9 @@ function ModulesPage() {
                         {mod.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-[#aaaaaa]">{mod.href}</td>
+                    <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-[#aaaaaa]">
+                      {mod.href}
+                    </td>
                     <td className="px-6 py-4">
                       {mod.mandatory ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2 py-1 text-xs font-medium text-red-500">
@@ -194,11 +204,16 @@ function ModulesPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
           <div className="text-sm text-gray-500 dark:text-[#888888]">
-            Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span> to{" "}
+            Showing{" "}
+            <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span> to{" "}
             <span className="font-medium text-gray-900 dark:text-white">
               {Math.min(startIndex + ITEMS_PER_PAGE, filteredModules.length)}
             </span>{" "}
-            of <span className="font-medium text-gray-900 dark:text-white">{filteredModules.length}</span> results
+            of{" "}
+            <span className="font-medium text-gray-900 dark:text-white">
+              {filteredModules.length}
+            </span>{" "}
+            results
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -361,7 +376,9 @@ function ModuleModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">Label (Name)</label>
+              <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">
+                Label (Name)
+              </label>
               <input
                 required
                 type="text"
@@ -373,7 +390,9 @@ function ModuleModal({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">Category</label>
+              <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">
+                Category
+              </label>
               <input
                 required
                 type="text"
@@ -386,7 +405,9 @@ function ModuleModal({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">Description</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">
+              Description
+            </label>
             <textarea
               required
               rows={2}
@@ -399,7 +420,9 @@ function ModuleModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">Path (href)</label>
+              <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">
+                Path (href)
+              </label>
               <input
                 required
                 type="text"
@@ -430,8 +453,12 @@ function ModuleModal({
               />
             </button>
             <div>
-              <div className="text-sm font-medium text-gray-900 dark:text-white">Mandatory Module</div>
-              <div className="text-xs text-gray-500 dark:text-[#888888]">Users cannot disable this module</div>
+              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                Mandatory Module
+              </div>
+              <div className="text-xs text-gray-500 dark:text-[#888888]">
+                Users cannot disable this module
+              </div>
             </div>
           </div>
 

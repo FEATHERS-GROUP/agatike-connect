@@ -43,7 +43,10 @@ export function EmbeddedForm({ formId }: { formId: string }) {
       }
     : fetchedForm;
 
-  const { canCreateRsvp } = useSubscriptionLimits(fetchedForm?.workspace?.orgnizer_id, fetchedForm?.workspace_id);
+  const { canCreateRsvp } = useSubscriptionLimits(
+    fetchedForm?.workspace?.orgnizer_id,
+    fetchedForm?.workspace_id,
+  );
 
   const mutation = useMutation({
     mutationFn: async (values: Record<string, any>) => {
@@ -86,7 +89,7 @@ export function EmbeddedForm({ formId }: { formId: string }) {
     e.preventDefault();
     if (!isPreview && !canCreateRsvp()) {
       toast.error("Form Limit Reached", {
-        description: "This form has reached its maximum number of allowed responses."
+        description: "This form has reached its maximum number of allowed responses.",
       });
       return;
     }

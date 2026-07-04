@@ -44,7 +44,11 @@ function PageBuilderGallery() {
     enabled: !!workspace_id,
   });
 
-  const { hasStudioAccess, canCreatePageBuilder, isLoading: limitsLoading } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const {
+    hasStudioAccess,
+    canCreatePageBuilder,
+    isLoading: limitsLoading,
+  } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const queryClient = useQueryClient();
 
@@ -116,8 +120,8 @@ function PageBuilderGallery() {
   if (!hasStudioAccess()) {
     return (
       <div className="p-6 h-full">
-        <UpgradePrompt 
-          title="Upgrade to Access Page Builder" 
+        <UpgradePrompt
+          title="Upgrade to Access Page Builder"
           description="Page Builder is a premium feature available in higher tier plans. Upgrade your subscription to start building custom portals."
         />
       </div>
@@ -152,7 +156,9 @@ function PageBuilderGallery() {
                   className="group relative flex flex-col items-center justify-center border-2 border-dashed border-border/60 rounded-2xl p-8 bg-card hover:bg-secondary/20 hover:border-primary/50 transition-colors cursor-pointer text-center h-64"
                   onClick={() => {
                     if (!canCreatePageBuilder()) {
-                      toast.error("Page Builder limit reached. Please upgrade your plan to create more pages.");
+                      toast.error(
+                        "Page Builder limit reached. Please upgrade your plan to create more pages.",
+                      );
                       return;
                     }
                     navigate({ to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor` });
@@ -174,7 +180,9 @@ function PageBuilderGallery() {
                     className="group border border-border/60 rounded-2xl overflow-hidden bg-card hover:shadow-md transition-all cursor-pointer flex flex-col h-64"
                     onClick={() => {
                       if (!canCreatePageBuilder()) {
-                        toast.error("Page Builder limit reached. Please upgrade your plan to create more pages.");
+                        toast.error(
+                          "Page Builder limit reached. Please upgrade your plan to create more pages.",
+                        );
                         return;
                       }
                       navigate({

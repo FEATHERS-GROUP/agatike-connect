@@ -20,7 +20,16 @@ export type TicketCategory =
   | "other";
 
 export type TicketPriority = "low" | "normal" | "high" | "urgent";
-export type TicketStatus = "open" | "in_progress" | "resolved" | "closed" | "troubleshooting" | "pending_customer_response" | "on_hold" | "suspended" | "under_development";
+export type TicketStatus =
+  | "open"
+  | "in_progress"
+  | "resolved"
+  | "closed"
+  | "troubleshooting"
+  | "pending_customer_response"
+  | "on_hold"
+  | "suspended"
+  | "under_development";
 
 export interface SupportTicket {
   id: string;
@@ -229,7 +238,13 @@ export const addOrganizerComment = createServerFn({ method: "POST" })
     const { ticketId, body } = ctx.data;
 
     // Verify ownership
-    const check = await hasuraRequest<{ support_tickets_by_pk: { organizer_id: string; assigned_to: string | null; subject: string } | null }>(
+    const check = await hasuraRequest<{
+      support_tickets_by_pk: {
+        organizer_id: string;
+        assigned_to: string | null;
+        subject: string;
+      } | null;
+    }>(
       `query Check($id: uuid!) { support_tickets_by_pk(id: $id) { organizer_id assigned_to subject } }`,
       { id: ticketId },
     );
@@ -354,7 +369,9 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
       let adminMap: Record<string, any> = {};
 
       try {
-        const orgRes = await hasuraRequest<{ organizers: { id: string; name: string; email: string }[] }>(
+        const orgRes = await hasuraRequest<{
+          organizers: { id: string; name: string; email: string }[];
+        }>(
           `query GetOrgs($ids: [uuid!]!) { organizers(where: { id: { _in: $ids } }) { id name email } }`,
           { ids: orgIds },
         );
@@ -367,9 +384,7 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
             `query GetAdmins($ids: [uuid!]!) { admin_users(where: { id: { _in: $ids } }) { id email } }`,
             { ids: adminIds },
           );
-          adminMap = Object.fromEntries(
-            (adminRes.admin_users || []).map((a: any) => [a.id, a]),
-          );
+          adminMap = Object.fromEntries((adminRes.admin_users || []).map((a: any) => [a.id, a]));
         } catch (_) {}
       }
 
@@ -426,10 +441,11 @@ export const getAdminTicketWithComments = createServerFn({ method: "POST" })
 
     // Enrich organizer info
     try {
-      const orgRes = await hasuraRequest<{ organizers_by_pk: { id: string; name: string; email: string } | null }>(
-        `query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { id name email } }`,
-        { id: ticket.organizer_id },
-      );
+      const orgRes = await hasuraRequest<{
+        organizers_by_pk: { id: string; name: string; email: string } | null;
+      }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { id name email } }`, {
+        id: ticket.organizer_id,
+      });
       (ticket as any).organizer = orgRes.organizers_by_pk;
     } catch (_) {}
 
@@ -473,7 +489,9 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
 
     const { ticketId, status } = ctx.data;
 
-    const res = await hasuraRequest<{ update_support_tickets_by_pk: { id: string; status: string } }>(
+    const res = await hasuraRequest<{
+      update_support_tickets_by_pk: { id: string; status: string };
+    }>(
       `mutation UpdateStatus($id: uuid!, $status: String!, $now: timestamptz!) {
         update_support_tickets_by_pk(
           pk_columns: { id: $id }
@@ -494,7 +512,9 @@ export const updateTicketPriority = createServerFn({ method: "POST" })
 
     const { ticketId, priority } = ctx.data;
 
-    const res = await hasuraRequest<{ update_support_tickets_by_pk: { id: string; priority: string } }>(
+    const res = await hasuraRequest<{
+      update_support_tickets_by_pk: { id: string; priority: string };
+    }>(
       `mutation UpdatePriority($id: uuid!, $priority: String!, $now: timestamptz!) {
         update_support_tickets_by_pk(
           pk_columns: { id: $id }
@@ -515,10 +535,11 @@ export const addAdminComment = createServerFn({ method: "POST" })
 
     const { ticketId, body } = ctx.data;
 
-    const ticketCheck = await hasuraRequest<{ support_tickets_by_pk: { organizer_id: string; subject: string } | null }>(
-      `query Check($id: uuid!) { support_tickets_by_pk(id: $id) { organizer_id subject } }`,
-      { id: ticketId },
-    );
+    const ticketCheck = await hasuraRequest<{
+      support_tickets_by_pk: { organizer_id: string; subject: string } | null;
+    }>(`query Check($id: uuid!) { support_tickets_by_pk(id: $id) { organizer_id subject } }`, {
+      id: ticketId,
+    });
     const orgId = ticketCheck.support_tickets_by_pk?.organizer_id;
     const subject = ticketCheck.support_tickets_by_pk?.subject || "Support Ticket";
 
@@ -566,7 +587,7 @@ export const addAdminComment = createServerFn({ method: "POST" })
           targetUsers: [orgId],
           createdAt: new Date().toISOString(),
           actorId: session.sub,
-          link: "/dashboard/support"
+          link: "/dashboard/support",
         });
       } catch (e) {
         console.error("Failed to push admin comment notification:", e);
@@ -638,7 +659,7 @@ export const bulkDeleteSupportTickets = createServerFn({ method: "POST" })
           delete_support_ticket_comments(where: { ticket: { ${whereClause} } }) {
             affected_rows
           }
-        }`
+        }`,
       );
     } catch (e) {
       console.warn("Failed to delete comments (maybe already deleted or not configured)", e);
@@ -649,7 +670,7 @@ export const bulkDeleteSupportTickets = createServerFn({ method: "POST" })
         delete_support_tickets(where: { ${whereClause} }) {
           affected_rows
         }
-      }`
+      }`,
     );
 
     return res.delete_support_tickets?.affected_rows || 0;

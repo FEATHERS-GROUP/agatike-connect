@@ -4,7 +4,15 @@ import { getEarningsAnalyticsAdmin, getEarningsLedgerAdmin } from "@/api/admin_f
 import { useState, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Loader2, TrendingUp, DollarSign, Wallet, ArrowRightLeft } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 export const Route = createFileRoute("/internal/control/admin/earnings")({
   component: AdminEarningsPage,
@@ -18,7 +26,7 @@ function AdminEarningsPage() {
   const filterDates = useMemo(() => {
     const now = new Date();
     if (dateFilter === "all") return { startDate: undefined, endDate: undefined };
-    
+
     let start = new Date();
     if (dateFilter === "7d") start.setDate(now.getDate() - 7);
     if (dateFilter === "1m") start.setMonth(now.getMonth() - 1);
@@ -36,12 +44,13 @@ function AdminEarningsPage() {
 
   const { data: ledgerData, isLoading: ledgerLoading } = useQuery({
     queryKey: ["admin-earnings-ledger", filterDates, page, limit],
-    queryFn: () => getEarningsLedgerAdmin({ data: { ...filterDates, limit, offset: (page - 1) * limit } }),
+    queryFn: () =>
+      getEarningsLedgerAdmin({ data: { ...filterDates, limit, offset: (page - 1) * limit } }),
   });
 
   const chartData = useMemo(() => {
     if (!data?.records) return [];
-    
+
     // Group by date (YYYY-MM-DD)
     const grouped = data.records.reduce((acc: any, r: any) => {
       const d = r.created_at.split("T")[0];
@@ -51,7 +60,7 @@ function AdminEarningsPage() {
       acc[d].cost += Number(r.provider_cost || 0);
       return acc;
     }, {});
-    
+
     return Object.values(grouped).sort((a: any, b: any) => a.date.localeCompare(b.date));
   }, [data]);
 
@@ -59,12 +68,14 @@ function AdminEarningsPage() {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Earnings Analytics</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+            Earnings Analytics
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Track platform revenue, provider costs, and net profitability.
           </p>
         </div>
-        
+
         <div className="flex bg-gray-50 dark:bg-[#1b1b1c] rounded-lg border border-gray-200 dark:border-[#333333] p-1">
           {[
             { id: "7d", label: "7 Days" },
@@ -72,7 +83,7 @@ function AdminEarningsPage() {
             { id: "3m", label: "3 Months" },
             { id: "1y", label: "This Year" },
             { id: "all", label: "All Time" },
-          ].map(f => (
+          ].map((f) => (
             <button
               key={f.id}
               onClick={() => {
@@ -94,58 +105,92 @@ function AdminEarningsPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard 
-              title="Total Gross Volume" 
-              value={data?.stats?.total_gross} 
-              icon={<ArrowRightLeft className="h-4 w-4 text-muted-foreground" />} 
+            <StatCard
+              title="Total Gross Volume"
+              value={data?.stats?.total_gross}
+              icon={<ArrowRightLeft className="h-4 w-4 text-muted-foreground" />}
             />
-            <StatCard 
-              title="Platform Revenue (Fees)" 
-              value={data?.stats?.total_revenue} 
-              icon={<DollarSign className="h-4 w-4 text-blue-400" />} 
+            <StatCard
+              title="Platform Revenue (Fees)"
+              value={data?.stats?.total_revenue}
+              icon={<DollarSign className="h-4 w-4 text-blue-400" />}
             />
-            <StatCard 
-              title="Provider Cost (PawaPay)" 
-              value={data?.stats?.total_provider_cost} 
-              icon={<Wallet className="h-4 w-4 text-red-400" />} 
+            <StatCard
+              title="Provider Cost (PawaPay)"
+              value={data?.stats?.total_provider_cost}
+              icon={<Wallet className="h-4 w-4 text-red-400" />}
             />
-            <StatCard 
-              title="Net Profit" 
-              value={data?.stats?.total_net_profit} 
-              icon={<TrendingUp className="h-4 w-4 text-[#f97316]" />} 
+            <StatCard
+              title="Net Profit"
+              value={data?.stats?.total_net_profit}
+              icon={<TrendingUp className="h-4 w-4 text-[#f97316]" />}
             />
           </div>
 
           <div className="bg-gray-50 dark:bg-[#1b1b1c] p-6 rounded-xl border border-gray-200 dark:border-[#333333] h-[400px]">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Revenue & Profit Over Time</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              Revenue & Profit Over Time
+            </h2>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="date" stroke="#666" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `RWF ${v}`} />
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#111', borderColor: '#333', borderRadius: '8px' }}
-                  itemStyle={{ color: '#ccc' }}
+                <XAxis
+                  dataKey="date"
+                  stroke="#666"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
                 />
-                <Area type="monotone" dataKey="revenue" name="Platform Revenue" stroke="#3b82f6" fillOpacity={1} fill="url(#colorRev)" />
-                <Area type="monotone" dataKey="profit" name="Net Profit" stroke="#f97316" fillOpacity={1} fill="url(#colorProfit)" />
+                <YAxis
+                  stroke="#666"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => `RWF ${v}`}
+                />
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#111",
+                    borderColor: "#333",
+                    borderRadius: "8px",
+                  }}
+                  itemStyle={{ color: "#ccc" }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  name="Platform Revenue"
+                  stroke="#3b82f6"
+                  fillOpacity={1}
+                  fill="url(#colorRev)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="profit"
+                  name="Net Profit"
+                  stroke="#f97316"
+                  fillOpacity={1}
+                  fill="url(#colorProfit)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
           <div className="bg-gray-50 dark:bg-[#1b1b1c] rounded-xl border border-gray-200 dark:border-[#333333] overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-[#333333]">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white">Transaction Ledger</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+                Transaction Ledger
+              </h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
@@ -167,32 +212,43 @@ function AdminEarningsPage() {
                         <Loader2 className="h-5 w-5 animate-spin mx-auto text-[#f97316]" />
                       </td>
                     </tr>
-                  ) : ledgerData?.records?.map((r: any) => (
-                    <tr key={r.id} className="hover:bg-gray-100 dark:hover:bg-[#252526]/50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-muted-foreground">
-                        {new Date(r.created_at).toLocaleDateString()} {new Date(r.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap capitalize text-gray-900 dark:text-white">
-                        {r.transaction_type}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap font-mono text-muted-foreground text-xs">
-                        {r.wallet_transaction?.id ? `Tx-${r.wallet_transaction.id.substring(0, 8)}` : "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
-                        {formatCurrency(r.gross_amount, r.currency)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-blue-400">
-                        {formatCurrency(r.platform_revenue, r.currency)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-red-400">
-                        -{formatCurrency(r.provider_cost, r.currency)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-[#f97316] font-bold">
-                        {formatCurrency(r.net_profit, r.currency)}
-                      </td>
-                    </tr>
-                  ))}
-                  
+                  ) : (
+                    ledgerData?.records?.map((r: any) => (
+                      <tr
+                        key={r.id}
+                        className="hover:bg-gray-100 dark:hover:bg-[#252526]/50 transition-colors"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-muted-foreground">
+                          {new Date(r.created_at).toLocaleDateString()}{" "}
+                          {new Date(r.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap capitalize text-gray-900 dark:text-white">
+                          {r.transaction_type}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap font-mono text-muted-foreground text-xs">
+                          {r.wallet_transaction?.id
+                            ? `Tx-${r.wallet_transaction.id.substring(0, 8)}`
+                            : "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
+                          {formatCurrency(r.gross_amount, r.currency)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-blue-400">
+                          {formatCurrency(r.platform_revenue, r.currency)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-red-400">
+                          -{formatCurrency(r.provider_cost, r.currency)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-[#f97316] font-bold">
+                          {formatCurrency(r.net_profit, r.currency)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+
                   {!ledgerLoading && (!ledgerData?.records || ledgerData.records.length === 0) && (
                     <tr>
                       <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
@@ -203,17 +259,21 @@ function AdminEarningsPage() {
                 </tbody>
               </table>
             </div>
-            
+
             {/* Pagination Controls */}
             {!ledgerLoading && ledgerData && ledgerData.totalCount > 0 && (
               <div className="px-6 py-4 border-t border-gray-200 dark:border-[#333333] flex items-center justify-between bg-white dark:bg-[#111111]/50">
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-muted-foreground">
-                    Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, ledgerData.totalCount)} of {ledgerData.totalCount}
+                    Showing {(page - 1) * limit + 1} to{" "}
+                    {Math.min(page * limit, ledgerData.totalCount)} of {ledgerData.totalCount}
                   </span>
-                  <select 
-                    value={limit} 
-                    onChange={e => { setLimit(Number(e.target.value)); setPage(1); }}
+                  <select
+                    value={limit}
+                    onChange={(e) => {
+                      setLimit(Number(e.target.value));
+                      setPage(1);
+                    }}
                     className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded px-2 py-1 text-xs text-gray-900 dark:text-white"
                   >
                     <option value={50}>50 per page</option>
@@ -223,15 +283,15 @@ function AdminEarningsPage() {
                   </select>
                 </div>
                 <div className="flex gap-2">
-                  <button 
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
                     className="px-3 py-1.5 text-xs font-medium rounded bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-[#333333] transition-colors"
                   >
                     Previous
                   </button>
-                  <button 
-                    onClick={() => setPage(p => p + 1)}
+                  <button
+                    onClick={() => setPage((p) => p + 1)}
                     disabled={page * limit >= ledgerData.totalCount}
                     className="px-3 py-1.5 text-xs font-medium rounded bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-[#333333] transition-colors"
                   >
@@ -247,7 +307,7 @@ function AdminEarningsPage() {
   );
 }
 
-function StatCard({ title, value, icon }: { title: string, value: number, icon: React.ReactNode }) {
+function StatCard({ title, value, icon }: { title: string; value: number; icon: React.ReactNode }) {
   return (
     <div className="bg-gray-50 dark:bg-[#1b1b1c] p-5 rounded-xl border border-gray-200 dark:border-[#333333] flex flex-col justify-between space-y-4">
       <div className="flex items-center justify-between">

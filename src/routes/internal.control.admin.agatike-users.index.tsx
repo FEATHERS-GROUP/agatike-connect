@@ -14,11 +14,12 @@ function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 12;
 
-  const filteredUsers = users.filter((u: any) => 
-    (u.username || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (u.handle || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (u.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (u.id || "").toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter(
+    (u: any) =>
+      (u.username || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (u.handle || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (u.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (u.id || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
@@ -37,11 +38,11 @@ function UsersPage() {
             Manage and view all registered users on the platform.
           </p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <div className="relative w-full sm:w-72">
             <LucideIcons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-[#888888]" />
-            <input 
+            <input
               type="text"
               placeholder="Search by username, email, or handle..."
               value={searchQuery}
@@ -52,9 +53,7 @@ function UsersPage() {
               className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-lg pl-9 pr-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#f97316] placeholder:text-gray-500 dark:text-[#666666]"
             />
           </div>
-          <button 
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#252526] hover:bg-gray-200 dark:hover:bg-[#2d2d30] border border-gray-200 dark:border-[#333333] rounded-lg text-sm font-medium text-gray-900 dark:text-white transition-colors w-full sm:w-auto shrink-0"
-          >
+          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#252526] hover:bg-gray-200 dark:hover:bg-[#2d2d30] border border-gray-200 dark:border-[#333333] rounded-lg text-sm font-medium text-gray-900 dark:text-white transition-colors w-full sm:w-auto shrink-0">
             <LucideIcons.Download className="w-4 h-4" />
             Export CSV
           </button>
@@ -76,20 +75,26 @@ function UsersPage() {
             <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
               {paginatedUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-[#888888]">
+                  <td
+                    colSpan={5}
+                    className="px-6 py-8 text-center text-gray-500 dark:text-[#888888]"
+                  >
                     No users found. {searchQuery && "Try a different search query."}
                   </td>
                 </tr>
               ) : (
                 paginatedUsers.map((user: any) => (
-                  <tr key={user.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
+                  <tr
+                    key={user.id}
+                    className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#333333] overflow-hidden shrink-0 border border-gray-300 dark:border-[#444444] flex items-center justify-center">
                           {user.profile?.avatar_url ? (
-                            <img 
-                              src={user.profile.avatar_url} 
-                              alt={user.username || "User"} 
+                            <img
+                              src={user.profile.avatar_url}
+                              alt={user.username || "User"}
                               className="w-full h-full object-cover"
                             />
                           ) : (
@@ -107,7 +112,9 @@ function UsersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 dark:text-white">{user.email || "No email"}</div>
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {user.email || "No email"}
+                      </div>
                       <div className="text-xs text-gray-500 dark:text-[#888888] mt-0.5 font-mono">
                         ID: {user.id.slice(0, 8)}...
                       </div>
@@ -123,12 +130,16 @@ function UsersPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-xs text-gray-600 dark:text-[#aaaaaa]">
-                      {user.created_at ? new Date(user.created_at).toLocaleDateString(undefined, {
-                        year: 'numeric', month: 'short', day: 'numeric'
-                      }) : "Unknown"}
+                      {user.created_at
+                        ? new Date(user.created_at).toLocaleDateString(undefined, {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })
+                        : "Unknown"}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link 
+                      <Link
                         to={`/internal/control/admin/agatike-users/${user.id}`}
                         className="p-2 text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-[#333333] rounded-lg transition-colors inline-block"
                         title="View User Details"
@@ -147,11 +158,16 @@ function UsersPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
           <div className="text-sm text-gray-500 dark:text-[#888888]">
-            Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span> to{" "}
+            Showing{" "}
+            <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span> to{" "}
             <span className="font-medium text-gray-900 dark:text-white">
               {Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)}
             </span>{" "}
-            of <span className="font-medium text-gray-900 dark:text-white">{filteredUsers.length}</span> users
+            of{" "}
+            <span className="font-medium text-gray-900 dark:text-white">
+              {filteredUsers.length}
+            </span>{" "}
+            users
           </div>
           <div className="flex items-center gap-2">
             <button

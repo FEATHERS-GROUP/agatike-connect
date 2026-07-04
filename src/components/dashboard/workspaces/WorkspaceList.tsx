@@ -26,7 +26,8 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
   const handleCreateClick = () => {
     if (!canCreateWorkspace()) {
       toast.error("Workspace limit reached", {
-        description: "Your current subscription plan does not allow creating more workspaces. Please upgrade your plan."
+        description:
+          "Your current subscription plan does not allow creating more workspaces. Please upgrade your plan.",
       });
       return;
     }

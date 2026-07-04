@@ -12,8 +12,8 @@ async function run() {
         type: "run_sql",
         args: {
           sql: "ALTER TABLE pricing_plans ADD COLUMN IF NOT EXISTS usage_limits jsonb DEFAULT '{}'::jsonb;",
-          cascade: true
-        }
+          cascade: true,
+        },
       }),
     });
     console.log(await res.json());
@@ -28,8 +28,8 @@ async function run() {
         type: "reload_metadata",
         args: {
           reload_remote_schemas: true,
-          reload_sources: true
-        }
+          reload_sources: true,
+        },
       }),
     });
     console.log(await res2.json());

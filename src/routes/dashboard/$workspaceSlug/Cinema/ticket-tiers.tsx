@@ -160,7 +160,10 @@ function CinemaTicketTiersPage() {
   const { workspaceSlug } = useParams({ strict: false }) as any;
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
-  const { canCreateTicketTier } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateTicketTier } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
   const queryClient = useQueryClient();
 
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -179,7 +182,7 @@ function CinemaTicketTiersPage() {
   const openCreate = () => {
     if (!canCreateTicketTier(tiers.length)) {
       toast.error("Ticket Tier Limit Reached", {
-        description: "You have reached the maximum number of ticket tiers allowed by your plan."
+        description: "You have reached the maximum number of ticket tiers allowed by your plan.",
       });
       return;
     }
@@ -263,7 +266,8 @@ function CinemaTicketTiersPage() {
             onClick={() => {
               if (!canCreateTicketTier(tiers.length)) {
                 toast.error("Ticket Tier Limit Reached", {
-                  description: "You have reached the maximum number of ticket tiers allowed by your plan."
+                  description:
+                    "You have reached the maximum number of ticket tiers allowed by your plan.",
                 });
                 return;
               }

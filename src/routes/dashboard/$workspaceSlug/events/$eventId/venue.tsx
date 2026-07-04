@@ -38,7 +38,10 @@ function VenueView() {
   const queryClient = useQueryClient();
   const venueImageRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const { activeWorkspace } = useWorkspace();
-  const { canUseVenueIntegration } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canUseVenueIntegration } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -492,7 +495,8 @@ function VenueView() {
                               if (!canUseVenueIntegration()) {
                                 e.preventDefault();
                                 toast.error("Venue Integration Locked", {
-                                  description: "Upgrade your plan to use advanced interactive seating layouts.",
+                                  description:
+                                    "Upgrade your plan to use advanced interactive seating layouts.",
                                 });
                                 e.target.value = "";
                                 return;

@@ -106,8 +106,12 @@ function ConfirmDialog({ modal, onClose }: { modal: ConfirmModal; onClose: () =>
           <AlertTriangle className="h-5 w-5" />
         </div>
 
-        <h3 className="text-gray-900 dark:text-white font-semibold text-base mb-2">{modal.title}</h3>
-        <p className="text-gray-600 dark:text-[#797775] text-sm mb-6 leading-relaxed">{modal.message}</p>
+        <h3 className="text-gray-900 dark:text-white font-semibold text-base mb-2">
+          {modal.title}
+        </h3>
+        <p className="text-gray-600 dark:text-[#797775] text-sm mb-6 leading-relaxed">
+          {modal.message}
+        </p>
 
         <div className="flex items-center gap-3 justify-end">
           <button
@@ -227,7 +231,9 @@ function OrganizerSettings() {
         {/* ── Page header ─────────────────────────────────── */}
         <div className="flex items-center gap-2 py-4 px-0 border-b border-gray-200 dark:border-[#333333] mb-0">
           <Settings className="h-5 w-5 text-gray-700 dark:text-[#cccccc]" />
-          <h2 className="text-base font-medium text-gray-900 dark:text-white">Organizer Settings</h2>
+          <h2 className="text-base font-medium text-gray-900 dark:text-white">
+            Organizer Settings
+          </h2>
         </div>
 
         {/* ── Account Status ──────────────────────────────── */}
@@ -238,7 +244,9 @@ function OrganizerSettings() {
                 <ShieldAlert className="h-4 w-4 text-[#f43f5e]" />
               </div>
               <div>
-                <h3 className="text-gray-900 dark:text-white font-medium text-sm">Account Access &amp; Status</h3>
+                <h3 className="text-gray-900 dark:text-white font-medium text-sm">
+                  Account Access &amp; Status
+                </h3>
                 <p className="text-gray-600 dark:text-[#797775] text-xs mt-0.5">
                   Control login access for this organizer.
                 </p>
@@ -289,7 +297,9 @@ function OrganizerSettings() {
                 <CreditCard className="h-4 w-4 text-[#84c87e]" />
               </div>
               <div>
-                <h3 className="text-gray-900 dark:text-white font-medium text-sm">Current Subscription</h3>
+                <h3 className="text-gray-900 dark:text-white font-medium text-sm">
+                  Current Subscription
+                </h3>
                 <p className="text-gray-600 dark:text-[#797775] text-xs mt-0.5">
                   Active billing plan and renewal schedule.
                 </p>
@@ -387,7 +397,9 @@ function OrganizerSettings() {
                 <Zap className="h-4 w-4 text-[#dcdcaa]" />
               </div>
               <div>
-                <h3 className="text-gray-900 dark:text-white font-medium text-sm">Change Subscription Plan</h3>
+                <h3 className="text-gray-900 dark:text-white font-medium text-sm">
+                  Change Subscription Plan
+                </h3>
                 <p className="text-gray-600 dark:text-[#797775] text-xs mt-0.5">
                   Select a plan then confirm to override. Cancels the current plan immediately.
                 </p>
@@ -425,7 +437,9 @@ function OrganizerSettings() {
                         <Check className="h-2.5 w-2.5 text-gray-900 dark:text-white" />
                       </div>
                     )}
-                    <p className="font-semibold text-gray-900 dark:text-white text-sm mb-1 pr-8">{plan.name}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm mb-1 pr-8">
+                      {plan.name}
+                    </p>
                     <p className="text-[#84c87e] font-medium">
                       {plan.price === 0 ? "Free" : `${plan.currency} ${plan.price}`}
                       <span className="text-gray-600 dark:text-[#797775] font-normal text-xs">
@@ -433,7 +447,9 @@ function OrganizerSettings() {
                         /{plan.billing_cycle}
                       </span>
                     </p>
-                    <p className="text-gray-600 dark:text-[#797775] text-xs mt-2 line-clamp-2">{plan.description}</p>
+                    <p className="text-gray-600 dark:text-[#797775] text-xs mt-2 line-clamp-2">
+                      {plan.description}
+                    </p>
                     <div className="mt-3 pt-2 border-t border-gray-200 dark:border-[#333333] space-y-1 text-xs text-gray-600 dark:text-[#797775]">
                       <div className="flex justify-between">
                         <span>Svc fee</span>
@@ -449,7 +465,9 @@ function OrganizerSettings() {
                       </div>
                       <div className="flex justify-between">
                         <span>Margin buffer</span>
-                        <span className="text-gray-700 dark:text-[#cccccc]">{plan.platform_margin_buffer ?? 0}%</span>
+                        <span className="text-gray-700 dark:text-[#cccccc]">
+                          {plan.platform_margin_buffer ?? 0}%
+                        </span>
                       </div>
                     </div>
                   </button>
@@ -491,7 +509,9 @@ function OrganizerSettings() {
                 <Globe className="h-4 w-4 text-[#c586c0]" />
               </div>
               <div>
-                <h3 className="text-gray-900 dark:text-white font-medium text-sm">Workspace Currencies</h3>
+                <h3 className="text-gray-900 dark:text-white font-medium text-sm">
+                  Workspace Currencies
+                </h3>
                 <p className="text-gray-600 dark:text-[#797775] text-xs mt-0.5">
                   Set the display currency per workspace. Affects ticket prices, invoices, and
                   wallet balances.
@@ -528,7 +548,9 @@ function OrganizerSettings() {
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="text-gray-900 dark:text-white font-medium text-sm truncate">{ws.name}</p>
+                          <p className="text-gray-900 dark:text-white font-medium text-sm truncate">
+                            {ws.name}
+                          </p>
                           <p className="text-gray-600 dark:text-[#797775] text-xs">
                             {ws.city}
                             {ws.country ? `, ${ws.country}` : ""}
@@ -544,7 +566,9 @@ function OrganizerSettings() {
                         </span>
                       </div>
 
-                      {hasChange && <div className="text-gray-600 dark:text-[#797775] text-xs shrink-0">→</div>}
+                      {hasChange && (
+                        <div className="text-gray-600 dark:text-[#797775] text-xs shrink-0">→</div>
+                      )}
 
                       {/* Currency selector */}
                       <div className="relative shrink-0">

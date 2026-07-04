@@ -49,7 +49,9 @@ function StatCard({
         <Icon className="h-6 w-6" />
       </div>
       <div>
-        <div className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider">{title}</div>
+        <div className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider">
+          {title}
+        </div>
         <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</div>
       </div>
     </div>
@@ -175,32 +177,44 @@ function OrganizerOverview() {
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
           <div>
-            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">Phone</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Phone
+            </p>
             <p className="text-gray-700 dark:text-[#cccccc]">{overview.phone || "—"}</p>
           </div>
           <div>
-            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">Gender</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Gender
+            </p>
             <p className="text-gray-700 dark:text-[#cccccc] capitalize">{overview.gender || "—"}</p>
           </div>
           <div>
-            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">Date of Birth</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Date of Birth
+            </p>
             <p className="text-gray-700 dark:text-[#cccccc]">
               {overview.dateOfBirth ? new Date(overview.dateOfBirth).toLocaleDateString() : "—"}
             </p>
           </div>
           <div>
-            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">Type</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Type
+            </p>
             <p className={overview.business ? "text-[#569cd6]" : "text-[#dcdcaa]"}>
               {overview.business ? "Business Entity" : "Individual"}
             </p>
           </div>
 
           <div>
-            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">Industry / Field</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Industry / Field
+            </p>
             <p className="text-gray-700 dark:text-[#cccccc] capitalize">{overview.field || "—"}</p>
           </div>
           <div className="col-span-2">
-            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">Bio</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Bio
+            </p>
             <p className="text-gray-700 dark:text-[#cccccc] truncate">{overview.bio || "—"}</p>
           </div>
         </div>
@@ -454,9 +468,15 @@ function OrganizerOverview() {
           <table className="w-full text-left text-[13px] whitespace-nowrap">
             <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
               <tr>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Title</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Start Date</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Title
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Start Date
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
@@ -468,7 +488,10 @@ function OrganizerOverview() {
                 </tr>
               ) : (
                 upcomingEvents.map((evt: any) => (
-                  <tr key={evt.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                  <tr
+                    key={evt.id}
+                    className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                  >
                     <td className="py-2 px-4 font-medium text-gray-900 dark:text-white">
                       {evt.title || "Untitled Event"}
                     </td>

@@ -52,24 +52,42 @@ function OrganizerAttendees() {
           <table className="w-full text-left text-[13px] whitespace-nowrap">
             <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
               <tr>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Ticket #</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Attendee</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Event</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Type / Qty</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Date</th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Ticket #
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Attendee
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Event
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Type / Qty
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Status
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Date
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
               {filteredAttendees.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-600 dark:text-[#797775] italic">
+                  <td
+                    colSpan={6}
+                    className="py-8 text-center text-gray-600 dark:text-[#797775] italic"
+                  >
                     No attendees found.
                   </td>
                 </tr>
               ) : (
                 filteredAttendees.map((a: any) => (
-                  <tr key={a.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                  <tr
+                    key={a.id}
+                    className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                  >
                     <td className="py-2 px-4">
                       <div className="flex items-center gap-1.5 font-mono text-[#569cd6]">
                         <Hash className="h-3 w-3 shrink-0" />
@@ -77,7 +95,9 @@ function OrganizerAttendees() {
                       </div>
                     </td>
                     <td className="py-2 px-4">
-                      <div className="font-medium text-gray-900 dark:text-white">{a.names || "Unknown"}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {a.names || "Unknown"}
+                      </div>
                       <div className="text-xs text-gray-600 dark:text-[#797775]">
                         {a.email || a.phone || "No Contact"}
                       </div>
@@ -98,7 +118,9 @@ function OrganizerAttendees() {
                       <div className="capitalize text-gray-700 dark:text-[#cccccc]">
                         {a.ticket_type === "ga" ? "General Admission" : a.ticket_type || "Standard"}
                       </div>
-                      <div className="text-xs text-gray-600 dark:text-[#797775]">Qty: {a.quanity || 1}</div>
+                      <div className="text-xs text-gray-600 dark:text-[#797775]">
+                        Qty: {a.quanity || 1}
+                      </div>
                     </td>
                     <td className="py-2 px-4">
                       {a.status === "completed" ||

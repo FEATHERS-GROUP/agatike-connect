@@ -23,7 +23,7 @@ async function run() {
       query,
       variables: {
         name: "Test Group",
-        permissions: ["/internal/control/admin/dashboard"]
+        permissions: ["/internal/control/admin/dashboard"],
       },
     }),
   });

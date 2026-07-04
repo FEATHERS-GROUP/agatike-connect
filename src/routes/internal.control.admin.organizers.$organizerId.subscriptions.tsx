@@ -151,13 +151,17 @@ function TxDrawer({ tx, onClose }: { tx: any; onClose: () => void }) {
     if (!value)
       return (
         <div>
-          <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-0.5">{label}</p>
+          <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-0.5">
+            {label}
+          </p>
           <p className="text-gray-500 dark:text-[#555555] text-xs italic">—</p>
         </div>
       );
     return (
       <div>
-        <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-0.5">{label}</p>
+        <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-0.5">
+          {label}
+        </p>
         <div className="flex items-start gap-1.5">
           <p
             className={`text-gray-700 dark:text-[#cccccc] text-sm break-all ${mono ? "font-mono text-xs text-[#569cd6]" : ""}`}
@@ -217,7 +221,9 @@ function TxDrawer({ tx, onClose }: { tx: any; onClose: () => void }) {
         {/* Amount hero */}
         <div className="px-5 py-5 border-b border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111] shrink-0">
           <p className="text-gray-600 dark:text-[#797775] text-xs mb-1">Amount</p>
-          <p className={`text-3xl font-bold mb-1 ${isCredit ? "text-[#84c87e]" : "text-gray-900 dark:text-white"}`}>
+          <p
+            className={`text-3xl font-bold mb-1 ${isCredit ? "text-[#84c87e]" : "text-gray-900 dark:text-white"}`}
+          >
             {isCredit ? "+" : "−"}
             {fmtAmt(tx.amount, tx.currency)}
           </p>
@@ -478,7 +484,10 @@ function OrganizerSubscriptions() {
                         "Svc Fee",
                         "Max Withdrawals/wk",
                       ].map((h) => (
-                        <th key={h} className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                        <th
+                          key={h}
+                          className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]"
+                        >
                           {h}
                         </th>
                       ))}
@@ -487,7 +496,10 @@ function OrganizerSubscriptions() {
                   <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                     {subscriptions.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-10 text-center text-gray-600 dark:text-[#797775] italic">
+                        <td
+                          colSpan={7}
+                          className="py-10 text-center text-gray-600 dark:text-[#797775] italic"
+                        >
                           No subscriptions.
                         </td>
                       </tr>
@@ -555,7 +567,9 @@ function OrganizerSubscriptions() {
         {activeTab === "transactions" && (
           <div className="py-5">
             <div className="flex flex-wrap items-center gap-3 mb-4">
-              <p className="text-xs text-gray-600 dark:text-[#797775]">{filteredTx.length} transactions</p>
+              <p className="text-xs text-gray-600 dark:text-[#797775]">
+                {filteredTx.length} transactions
+              </p>
               <div className="ml-auto relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-600 dark:text-[#797775]" />
                 <input
@@ -588,7 +602,10 @@ function OrganizerSubscriptions() {
                         "Date",
                         "",
                       ].map((h, i) => (
-                        <th key={i} className="py-2.5 px-4 font-medium border-b border-gray-200 dark:border-[#333333]">
+                        <th
+                          key={i}
+                          className="py-2.5 px-4 font-medium border-b border-gray-200 dark:border-[#333333]"
+                        >
                           {h}
                         </th>
                       ))}
@@ -597,7 +614,10 @@ function OrganizerSubscriptions() {
                   <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                     {txSlice.length === 0 ? (
                       <tr>
-                        <td colSpan={10} className="py-10 text-center text-gray-600 dark:text-[#797775] italic">
+                        <td
+                          colSpan={10}
+                          className="py-10 text-center text-gray-600 dark:text-[#797775] italic"
+                        >
                           {txSearch ? "No transactions match." : "No transactions found."}
                         </td>
                       </tr>
@@ -709,7 +729,9 @@ function OrganizerSubscriptions() {
         {activeTab === "simulations" && (
           <div className="py-5">
             <div className="flex flex-wrap items-center gap-3 mb-4">
-              <p className="text-xs text-gray-600 dark:text-[#797775]">{filteredSims.length} simulations</p>
+              <p className="text-xs text-gray-600 dark:text-[#797775]">
+                {filteredSims.length} simulations
+              </p>
               <div className="ml-auto relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-600 dark:text-[#797775]" />
                 <input
@@ -738,7 +760,10 @@ function OrganizerSubscriptions() {
                         "Net Margin",
                         "Date",
                       ].map((h) => (
-                        <th key={h} className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                        <th
+                          key={h}
+                          className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]"
+                        >
                           {h}
                         </th>
                       ))}
@@ -747,7 +772,10 @@ function OrganizerSubscriptions() {
                   <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                     {simSlice.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-10 text-center text-gray-600 dark:text-[#797775] italic">
+                        <td
+                          colSpan={6}
+                          className="py-10 text-center text-gray-600 dark:text-[#797775] italic"
+                        >
                           {simSearch ? "No simulations match." : "No fee simulations recorded."}
                         </td>
                       </tr>

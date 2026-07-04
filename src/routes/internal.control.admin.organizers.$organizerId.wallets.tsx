@@ -56,7 +56,9 @@ function OrganizerWallets() {
     <div className="font-sans text-sm pb-10">
       <div className="flex items-center gap-2 py-4 px-0 border-b border-gray-200 dark:border-[#333333] mb-5">
         <Wallet className="h-5 w-5 text-[#569cd6]" />
-        <h2 className="text-base font-medium text-gray-900 dark:text-white">Workspaces &amp; Wallets</h2>
+        <h2 className="text-base font-medium text-gray-900 dark:text-white">
+          Workspaces &amp; Wallets
+        </h2>
       </div>
 
       <div className="space-y-4">
@@ -88,7 +90,10 @@ function OrganizerWallets() {
           const currentNetworks = isEditing ? selectedNetworks : wallet.supported_networks || [];
 
           return (
-            <div key={ws.id} className="bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333333] overflow-hidden">
+            <div
+              key={ws.id}
+              className="bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333333] overflow-hidden"
+            >
               <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 dark:border-[#333333] bg-gray-50 dark:bg-[#252526]">
                 <div>
                   <h3 className="text-gray-900 dark:text-white font-medium flex items-center gap-2 text-base">
@@ -184,7 +189,9 @@ function OrganizerWallets() {
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {currentNetworks.length === 0 ? (
-                      <span className="text-gray-600 dark:text-[#797775] text-xs italic">No networks configured.</span>
+                      <span className="text-gray-600 dark:text-[#797775] text-xs italic">
+                        No networks configured.
+                      </span>
                     ) : (
                       currentNetworks.map((n: string) => {
                         const networkObj = pawaNetworks.find((pn: any) => pn.id === n);

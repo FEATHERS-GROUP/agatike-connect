@@ -84,7 +84,10 @@ function ExperienceDashboard() {
   const { experienceId: eventId, workspaceSlug } = useParams({ strict: false });
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
-  const { canCreateEventStory, canCreateEventPost } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateEventStory, canCreateEventPost } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   // ── Feedback ──────────────────────────────────────────────────────────────
   const { data: feedbackData, isLoading: isLoadingFeedback } = useQuery({
@@ -158,7 +161,7 @@ function ExperienceDashboard() {
   const handleStoryUpload = async (file: File) => {
     if (!canCreateEventStory(stories.length)) {
       toast.error("Story Limit Reached", {
-        description: "You have reached the maximum number of stories allowed by your plan."
+        description: "You have reached the maximum number of stories allowed by your plan.",
       });
       return;
     }
@@ -205,7 +208,11 @@ function ExperienceDashboard() {
   const createPostMutation = useMutation({
     mutationFn: () => {
       if (!canCreateEventPost(posts.length)) {
-        return Promise.reject(new Error("Post Limit Reached: You have reached the maximum number of posts allowed by your plan."));
+        return Promise.reject(
+          new Error(
+            "Post Limit Reached: You have reached the maximum number of posts allowed by your plan.",
+          ),
+        );
       }
       return createEventPost({
         data: {

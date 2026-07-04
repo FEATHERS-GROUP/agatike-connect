@@ -60,7 +60,7 @@ async function run() {
   } else {
     console.log("Track admin_groups success!");
   }
-  
+
   console.log("3. Creating Relationships...");
   const relRes = await fetch(`${API_BASE}/v1/metadata`, {
     method: "POST",
@@ -75,9 +75,9 @@ async function run() {
             table: "admin_users",
             name: "group",
             using: {
-              foreign_key_constraint_on: "admin_group_id"
-            }
-          }
+              foreign_key_constraint_on: "admin_group_id",
+            },
+          },
         },
         {
           type: "pg_create_array_relationship",
@@ -88,12 +88,12 @@ async function run() {
             using: {
               foreign_key_constraint_on: {
                 table: "admin_users",
-                column: "admin_group_id"
-              }
-            }
-          }
-        }
-      ]
+                column: "admin_group_id",
+              },
+            },
+          },
+        },
+      ],
     }),
   });
 

@@ -15,28 +15,28 @@ async function run() {
             type: "run_sql",
             args: {
               sql: "ALTER TABLE subscriptions DROP CONSTRAINT IF EXISTS subscriptions_workspace_id_fkey CASCADE;",
-              cascade: true
-            }
+              cascade: true,
+            },
           },
           {
             type: "run_sql",
             args: {
               sql: "ALTER TABLE subscriptions ALTER COLUMN workspace_id TYPE jsonb USING jsonb_build_array(workspace_id);",
-              cascade: true
-            }
+              cascade: true,
+            },
           },
           {
             type: "run_sql",
             args: {
               sql: "ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS modules jsonb DEFAULT '[]'::jsonb;",
-              cascade: true
-            }
-          }
-        ]
+              cascade: true,
+            },
+          },
+        ],
       }),
     });
     console.log(await res1.json());
-    
+
     const res2 = await fetch("https://open-languages.hasura.app/v1/metadata", {
       method: "POST",
       headers: {
@@ -47,8 +47,8 @@ async function run() {
         type: "reload_metadata",
         args: {
           reload_remote_schemas: true,
-          reload_sources: true
-        }
+          reload_sources: true,
+        },
       }),
     });
     console.log(await res2.json());

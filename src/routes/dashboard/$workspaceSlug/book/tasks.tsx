@@ -79,7 +79,10 @@ function TasksPage() {
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id;
   const queryClient = useQueryClient();
-  const { canCreateTask } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateTask } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const [view, setView] = useState<"kanban" | "list">("kanban");
   const [createOpen, setCreateOpen] = useState(false);
@@ -252,7 +255,8 @@ function TasksPage() {
             onClick={() => {
               if (!canCreateTask()) {
                 toast.error("Task Limit Reached", {
-                  description: "You have reached the maximum number of tasks. Please upgrade your plan."
+                  description:
+                    "You have reached the maximum number of tasks. Please upgrade your plan.",
                 });
                 return;
               }
@@ -316,7 +320,8 @@ function TasksPage() {
                     onClick={() => {
                       if (!canCreateTask()) {
                         toast.error("Task Limit Reached", {
-                          description: "You have reached the maximum number of tasks. Please upgrade your plan."
+                          description:
+                            "You have reached the maximum number of tasks. Please upgrade your plan.",
                         });
                         return;
                       }

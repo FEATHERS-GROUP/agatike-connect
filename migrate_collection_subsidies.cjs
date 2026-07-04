@@ -1,7 +1,9 @@
 const https = require("https");
 
 const HASURA_ENDPOINT = "https://open-languages.hasura.app/v2/query";
-const ADMIN_SECRET = process.env.HASURA_ADMIN_SECRET || "tbK6HLeobyLxHpgiwuMNUlKNSl4r7yrF3XOnSYWza9ocZQ57NKghx5xFFq7YNn9e";
+const ADMIN_SECRET =
+  process.env.HASURA_ADMIN_SECRET ||
+  "tbK6HLeobyLxHpgiwuMNUlKNSl4r7yrF3XOnSYWza9ocZQ57NKghx5xFFq7YNn9e";
 
 async function executeMigration() {
   console.log("Starting DB migration for collection subsidies...");
@@ -44,14 +46,14 @@ async function executeMigration() {
                 reject(new Error(`Hasura Error (${res.statusCode}): ${data}`));
               }
             });
-          }
+          },
         );
         req.on("error", reject);
         req.write(
           JSON.stringify({
             type: "run_sql",
             args: { sql, cascade: false },
-          })
+          }),
         );
         req.end();
       });
@@ -83,7 +85,7 @@ async function executeMigration() {
             reject(new Error(`Failed to reload metadata: ${data}`));
           }
         });
-      }
+      },
     );
     req.on("error", reject);
     req.write(JSON.stringify({ type: "reload_metadata", args: { reload_remote_schemas: true } }));

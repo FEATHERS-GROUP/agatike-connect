@@ -112,7 +112,10 @@ export function PaymentModal({
   // Fetch profitability check for all supported networks
   const { data: profitableNetworksData, isLoading: isProfitableLoading } = useQuery({
     queryKey: ["profitableNetworks", workspaceId, baseAmount, supportedNetworks],
-    queryFn: () => getProfitableNetworks({ data: { workspaceId, baseAmount, networks: supportedNetworks } } as any),
+    queryFn: () =>
+      getProfitableNetworks({
+        data: { workspaceId, baseAmount, networks: supportedNetworks },
+      } as any),
     enabled: isOpen && !!workspaceId && supportedNetworks.length > 0 && !!baseAmount,
   });
 

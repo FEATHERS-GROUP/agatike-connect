@@ -56,7 +56,7 @@ const AVAILABLE_FIELDS = [
   "Gaming & E-Sports",
   "Charity & Causes",
   "Film & Media",
-  "Web3 & Crypto"
+  "Web3 & Crypto",
 ];
 
 const AVAILABLE_SPECIALITIES = [
@@ -77,7 +77,7 @@ const AVAILABLE_SPECIALITIES = [
   "Webinars",
   "Masterclasses",
   "Trade Shows",
-  "R&B / Soul"
+  "R&B / Soul",
 ];
 
 const formSchema = z
@@ -394,8 +394,11 @@ function CreateOrganizerPage() {
               {Array.from({ length: totalSteps }).map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1.5 flex-1 rounded-full transition-all duration-700 ease-in-out ${i + 1 <= step ? "bg-primary shadow-[0_0_12px_rgba(242,87,29,0.8)]" : "bg-gray-200 dark:bg-white/10"
-                    }`}
+                  className={`h-1.5 flex-1 rounded-full transition-all duration-700 ease-in-out ${
+                    i + 1 <= step
+                      ? "bg-primary shadow-[0_0_12px_rgba(242,87,29,0.8)]"
+                      : "bg-gray-200 dark:bg-white/10"
+                  }`}
                 />
               ))}
             </div>
@@ -405,18 +408,23 @@ function CreateOrganizerPage() {
               {step === 1 && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold mb-3 text-gray-900 dark:text-white">Choose Account Type</h2>
-                    <p className="text-gray-600 dark:text-white/60">Select how you will be operating on Agatike.</p>
+                    <h2 className="text-3xl font-bold mb-3 text-gray-900 dark:text-white">
+                      Choose Account Type
+                    </h2>
+                    <p className="text-gray-600 dark:text-white/60">
+                      Select how you will be operating on Agatike.
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Personal */}
                     <div
                       onClick={() => setValue("business", false)}
-                      className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${!isBusiness
+                      className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${
+                        !isBusiness
                           ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(242,87,29,0.2)] scale-[1.02]"
                           : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:bg-white/10"
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div
@@ -428,7 +436,9 @@ function CreateOrganizerPage() {
                           <CheckCircle2 className="h-6 w-6 text-primary drop-shadow-[0_0_10px_rgba(242,87,29,0.6)]" />
                         )}
                       </div>
-                      <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Personal</h3>
+                      <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
+                        Personal
+                      </h3>
                       <p className="text-sm text-gray-600 dark:text-white/60">
                         For individuals, freelancers, and independent event organizers.
                       </p>
@@ -437,10 +447,11 @@ function CreateOrganizerPage() {
                     {/* Business */}
                     <div
                       onClick={() => setValue("business", true)}
-                      className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${isBusiness
+                      className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${
+                        isBusiness
                           ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(242,87,29,0.2)] scale-[1.02]"
                           : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:bg-white/10"
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div
@@ -452,7 +463,9 @@ function CreateOrganizerPage() {
                           <CheckCircle2 className="h-6 w-6 text-primary drop-shadow-[0_0_10px_rgba(242,87,29,0.6)]" />
                         )}
                       </div>
-                      <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Registered Business</h3>
+                      <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
+                        Registered Business
+                      </h3>
                       <p className="text-sm text-gray-600 dark:text-white/60">
                         For registered companies, venues, and professional agencies.
                       </p>
@@ -460,7 +473,8 @@ function CreateOrganizerPage() {
                   </div>
 
                   <div className="pt-8 flex justify-end">
-                    <Button type="button"
+                    <Button
+                      type="button"
                       onClick={nextStep}
                       className="h-14 w-full md:w-auto px-10 rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                       style={{ background: "var(--gradient-primary)" }}
@@ -478,7 +492,9 @@ function CreateOrganizerPage() {
                     <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/20 text-primary grid place-items-center mb-6 shadow-[0_0_20px_rgba(242,87,29,0.3)]">
                       <ShieldCheck className="h-8 w-8" />
                     </div>
-                    <h2 className="text-3xl font-bold mb-3 text-gray-900 dark:text-white">Already on Agatike?</h2>
+                    <h2 className="text-3xl font-bold mb-3 text-gray-900 dark:text-white">
+                      Already on Agatike?
+                    </h2>
                     <p className="text-gray-600 dark:text-white/60 max-w-md mx-auto">
                       If you already have a standard user account, you can sync it to your new
                       organizer profile. This is completely optional.
@@ -498,7 +514,8 @@ function CreateOrganizerPage() {
                         />
                       </div>
                       {syncUserId ? (
-                        <Button type="button"
+                        <Button
+                          type="button"
                           variant="outline"
                           className="h-14 rounded-xl px-8 bg-transparent border-gray-300 dark:border-white/20 text-gray-900 dark:text-white hover:bg-gray-200 dark:bg-white/10 hover:text-gray-900 dark:text-white"
                           onClick={() => {
@@ -509,13 +526,18 @@ function CreateOrganizerPage() {
                           Unlink
                         </Button>
                       ) : (
-                        <Button type="button"
+                        <Button
+                          type="button"
                           variant="secondary"
                           className="h-14 rounded-xl px-8 bg-gray-200 dark:bg-white/10 text-gray-900 dark:text-white hover:bg-gray-300 dark:bg-white/20 border-0"
                           onClick={handleLookup}
                           disabled={isLookingUpUser || !syncHandle}
                         >
-                          {isLookingUpUser ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify"}
+                          {isLookingUpUser ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
+                            "Verify"
+                          )}
                         </Button>
                       )}
                     </div>
@@ -529,14 +551,16 @@ function CreateOrganizerPage() {
                   </div>
 
                   <div className="flex gap-4 pt-10 max-w-md mx-auto">
-                    <Button type="button"
+                    <Button
+                      type="button"
                       variant="outline"
                       onClick={prevStep}
                       className="h-14 flex-1 rounded-xl bg-transparent border-gray-300 dark:border-white/20 text-gray-900 dark:text-white hover:bg-gray-200 dark:bg-white/10 hover:text-gray-900 dark:text-white"
                     >
                       Back
                     </Button>
-                    <Button type="button"
+                    <Button
+                      type="button"
                       onClick={nextStep}
                       className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                       style={{ background: "var(--gradient-primary)" }}
@@ -555,14 +579,20 @@ function CreateOrganizerPage() {
                       <User className="h-6 w-6 text-primary drop-shadow-[0_0_8px_rgba(242,87,29,0.6)]" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Basic Information</h2>
-                      <p className="text-sm text-gray-600 dark:text-white/60">Tell us who you are.</p>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Basic Information
+                      </h2>
+                      <p className="text-sm text-gray-600 dark:text-white/60">
+                        Tell us who you are.
+                      </p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label className="text-gray-700 dark:text-white/80">Full Name / Organization Name *</Label>
+                      <Label className="text-gray-700 dark:text-white/80">
+                        Full Name / Organization Name *
+                      </Label>
                       <Input
                         {...register("name")}
                         className="h-12 rounded-xl bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 focus-visible:ring-primary focus-visible:border-primary"
@@ -600,7 +630,9 @@ function CreateOrganizerPage() {
                         className="h-12 rounded-xl bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 focus-visible:ring-primary focus-visible:border-primary"
                         placeholder="hello@example.com"
                       />
-                      {errors.email && <p className="text-xs text-red-400">{errors.email.message}</p>}
+                      {errors.email && (
+                        <p className="text-xs text-red-400">{errors.email.message}</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -611,12 +643,16 @@ function CreateOrganizerPage() {
                         className="h-12 rounded-xl bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 focus-visible:ring-primary focus-visible:border-primary"
                         placeholder="+250 700 000 000"
                       />
-                      {errors.phone && <p className="text-xs text-red-400">{errors.phone.message}</p>}
+                      {errors.phone && (
+                        <p className="text-xs text-red-400">{errors.phone.message}</p>
+                      )}
                     </div>
 
                     {!isBusiness && (
                       <div className="space-y-2 md:col-span-2">
-                        <Label className="text-gray-700 dark:text-white/80">National ID / Passport (Optional)</Label>
+                        <Label className="text-gray-700 dark:text-white/80">
+                          National ID / Passport (Optional)
+                        </Label>
                         <label className="flex h-20 w-full cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:bg-white/10 transition-colors">
                           <input
                             type="file"
@@ -636,7 +672,8 @@ function CreateOrganizerPage() {
                           <span className="text-sm font-medium text-gray-600 dark:text-white/70 flex items-center gap-2">
                             {watch("national_id") ? (
                               <>
-                                <CheckCircle2 className="h-5 w-5 text-green-400" /> Document Attached
+                                <CheckCircle2 className="h-5 w-5 text-green-400" /> Document
+                                Attached
                               </>
                             ) : (
                               "Click to upload ID/Passport"
@@ -647,7 +684,9 @@ function CreateOrganizerPage() {
                     )}
 
                     <div className="space-y-2 md:col-span-2">
-                      <Label className="text-gray-700 dark:text-white/80">Profile Picture / Logo (Optional)</Label>
+                      <Label className="text-gray-700 dark:text-white/80">
+                        Profile Picture / Logo (Optional)
+                      </Label>
                       <label className="flex h-20 w-full cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:bg-white/10 transition-colors">
                         <input
                           type="file"
@@ -677,7 +716,9 @@ function CreateOrganizerPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-gray-700 dark:text-white/80">{isBusiness ? "Date of Registration" : "Date of Birth"}</Label>
+                      <Label className="text-gray-700 dark:text-white/80">
+                        {isBusiness ? "Date of Registration" : "Date of Birth"}
+                      </Label>
                       <Input
                         {...register("dateOfBirth")}
                         type="date"
@@ -686,10 +727,14 @@ function CreateOrganizerPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-gray-700 dark:text-white/80">{isBusiness ? "Organization Type" : "Gender"}</Label>
+                      <Label className="text-gray-700 dark:text-white/80">
+                        {isBusiness ? "Organization Type" : "Gender"}
+                      </Label>
                       <Select onValueChange={(v) => setValue("gender", v)}>
                         <SelectTrigger className="h-12 rounded-xl bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white focus:ring-primary focus:border-transparent">
-                          <SelectValue placeholder={isBusiness ? "Select organization type" : "Select gender"} />
+                          <SelectValue
+                            placeholder={isBusiness ? "Select organization type" : "Select gender"}
+                          />
                         </SelectTrigger>
                         <SelectContent className="bg-gray-50 dark:bg-[#111] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white">
                           {isBusiness ? (
@@ -698,7 +743,9 @@ function CreateOrganizerPage() {
                               <SelectItem value="Corp">Corporation</SelectItem>
                               <SelectItem value="Non-Profit">Non-Profit Organization</SelectItem>
                               <SelectItem value="Partnership">Partnership</SelectItem>
-                              <SelectItem value="SoleProprietorship">Sole Proprietorship</SelectItem>
+                              <SelectItem value="SoleProprietorship">
+                                Sole Proprietorship
+                              </SelectItem>
                               <SelectItem value="Other">Other</SelectItem>
                             </>
                           ) : (
@@ -714,14 +761,16 @@ function CreateOrganizerPage() {
                   </div>
 
                   <div className="flex gap-4 pt-10">
-                    <Button type="button"
+                    <Button
+                      type="button"
                       variant="outline"
                       onClick={prevStep}
                       className="h-14 flex-1 rounded-xl bg-transparent border-gray-300 dark:border-white/20 text-gray-900 dark:text-white hover:bg-gray-200 dark:bg-white/10 hover:text-gray-900 dark:text-white"
                     >
                       Back
                     </Button>
-                    <Button type="button"
+                    <Button
+                      type="button"
                       onClick={nextStep}
                       className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                       style={{ background: "var(--gradient-primary)" }}
@@ -740,8 +789,12 @@ function CreateOrganizerPage() {
                       <Briefcase className="h-6 w-6 text-primary drop-shadow-[0_0_8px_rgba(242,87,29,0.6)]" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Expertise & Details</h2>
-                      <p className="text-sm text-gray-600 dark:text-white/60">What kind of events do you host?</p>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Expertise & Details
+                      </h2>
+                      <p className="text-sm text-gray-600 dark:text-white/60">
+                        What kind of events do you host?
+                      </p>
                     </div>
                   </div>
 
@@ -766,15 +819,20 @@ function CreateOrganizerPage() {
                                     { shouldValidate: true },
                                   );
                                 } else {
-                                  setValue("field", [...currentFields, f], { shouldValidate: true });
+                                  setValue("field", [...currentFields, f], {
+                                    shouldValidate: true,
+                                  });
                                 }
                               }}
-                              className={`flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 border ${isSelected
+                              className={`flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 border ${
+                                isSelected
                                   ? "bg-primary text-white border-primary shadow-[0_0_15px_rgba(242,87,29,0.4)] scale-[1.02]"
                                   : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-white/70 border-gray-200 dark:border-white/10 hover:bg-gray-200 dark:bg-white/10 hover:text-gray-900 dark:text-white"
-                                }`}
+                              }`}
                             >
-                              {isSelected && <Check className="w-4 h-4 mr-2 text-gray-900 dark:text-white" />}
+                              {isSelected && (
+                                <Check className="w-4 h-4 mr-2 text-gray-900 dark:text-white" />
+                              )}
                               {f}
                             </div>
                           );
@@ -786,7 +844,9 @@ function CreateOrganizerPage() {
                     </div>
 
                     <div className="space-y-3 md:col-span-2">
-                      <Label className="text-gray-700 dark:text-white/80">Speciality Tags (Optional)</Label>
+                      <Label className="text-gray-700 dark:text-white/80">
+                        Speciality Tags (Optional)
+                      </Label>
                       <p className="text-sm text-gray-500 dark:text-white/50 mt-0">
                         Select specific niches you excel in.
                       </p>
@@ -810,12 +870,15 @@ function CreateOrganizerPage() {
                                   });
                                 }
                               }}
-                              className={`flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 border ${isSelected
+                              className={`flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-300 border ${
+                                isSelected
                                   ? "bg-primary text-white border-primary shadow-[0_0_15px_rgba(242,87,29,0.4)] scale-[1.02]"
                                   : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-white/70 border-gray-200 dark:border-white/10 hover:bg-gray-200 dark:bg-white/10 hover:text-gray-900 dark:text-white"
-                                }`}
+                              }`}
                             >
-                              {isSelected && <Check className="w-4 h-4 mr-2 text-gray-900 dark:text-white" />}
+                              {isSelected && (
+                                <Check className="w-4 h-4 mr-2 text-gray-900 dark:text-white" />
+                              )}
                               {s}
                             </div>
                           );
@@ -825,14 +888,16 @@ function CreateOrganizerPage() {
                   </div>
 
                   <div className="flex gap-4 pt-10">
-                    <Button type="button"
+                    <Button
+                      type="button"
                       variant="outline"
                       onClick={prevStep}
                       className="h-14 flex-1 rounded-xl bg-transparent border-gray-300 dark:border-white/20 text-gray-900 dark:text-white hover:bg-gray-200 dark:bg-white/10 hover:text-gray-900 dark:text-white"
                     >
                       Back
                     </Button>
-                    <Button type="button"
+                    <Button
+                      type="button"
                       onClick={nextStep}
                       className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                       style={{ background: "var(--gradient-primary)" }}
@@ -851,16 +916,24 @@ function CreateOrganizerPage() {
                       <User className="h-6 w-6 text-primary drop-shadow-[0_0_8px_rgba(242,87,29,0.6)]" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Organizer Details</h2>
-                      <p className="text-sm text-gray-600 dark:text-white/60">Tell us a bit more about your brand.</p>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Organizer Details
+                      </h2>
+                      <p className="text-sm text-gray-600 dark:text-white/60">
+                        Tell us a bit more about your brand.
+                      </p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2 md:col-span-2">
-                      <Label className="text-gray-700 dark:text-white/80">Estimated Events Per Year *</Label>
+                      <Label className="text-gray-700 dark:text-white/80">
+                        Estimated Events Per Year *
+                      </Label>
                       <Select
-                        onValueChange={(v) => setValue("numberOfEvents", v, { shouldValidate: true })}
+                        onValueChange={(v) =>
+                          setValue("numberOfEvents", v, { shouldValidate: true })
+                        }
                       >
                         <SelectTrigger className="h-12 rounded-xl bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white focus:ring-primary focus:border-transparent">
                           <SelectValue placeholder="Select volume" />
@@ -886,10 +959,14 @@ function CreateOrganizerPage() {
                     </div>
 
                     <div className="space-y-4 md:col-span-2 mt-2">
-                      <Label className="text-gray-700 dark:text-white/80">Social Media Links (Optional)</Label>
+                      <Label className="text-gray-700 dark:text-white/80">
+                        Social Media Links (Optional)
+                      </Label>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
-                          <Label className="text-xs text-gray-500 dark:text-white/50">Instagram</Label>
+                          <Label className="text-xs text-gray-500 dark:text-white/50">
+                            Instagram
+                          </Label>
                           <Input
                             {...register("instagram")}
                             placeholder="@handle"
@@ -905,7 +982,9 @@ function CreateOrganizerPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs text-gray-500 dark:text-white/50">YouTube</Label>
+                          <Label className="text-xs text-gray-500 dark:text-white/50">
+                            YouTube
+                          </Label>
                           <Input
                             {...register("youtube")}
                             placeholder="Channel URL"
@@ -952,14 +1031,16 @@ function CreateOrganizerPage() {
                   </div>
 
                   <div className="flex gap-4 pt-10">
-                    <Button type="button"
+                    <Button
+                      type="button"
                       variant="outline"
                       onClick={prevStep}
                       className="h-14 flex-1 rounded-xl bg-transparent border-gray-300 dark:border-white/20 text-gray-900 dark:text-white hover:bg-gray-200 dark:bg-white/10 hover:text-gray-900 dark:text-white"
                     >
                       Back
                     </Button>
-                    <Button type="button"
+                    <Button
+                      type="button"
                       onClick={nextStep}
                       className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                       style={{ background: "var(--gradient-primary)" }}
@@ -979,10 +1060,12 @@ function CreateOrganizerPage() {
                         <div className="mx-auto w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(242,87,29,0.3)]">
                           <CheckCircle2 className="h-8 w-8 drop-shadow-[0_0_8px_rgba(242,87,29,0.6)]" />
                         </div>
-                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">Verify your email</h3>
+                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
+                          Verify your email
+                        </h3>
                         <p className="text-base text-gray-600 dark:text-white/60">
-                          We've sent a 6-digit code to <strong>{watch("email")}</strong>. Please enter
-                          it below to launch your profile.
+                          We've sent a 6-digit code to <strong>{watch("email")}</strong>. Please
+                          enter it below to launch your profile.
                         </p>
                       </div>
                       <div className="max-w-xs mx-auto mt-8">
@@ -1001,7 +1084,8 @@ function CreateOrganizerPage() {
                         />
                       </div>
                       <div className="max-w-xs mx-auto pt-6 flex gap-3">
-                        <Button type="button"
+                        <Button
+                          type="button"
                           variant="outline"
                           onClick={() => {
                             setOtpStep(false);
@@ -1012,7 +1096,8 @@ function CreateOrganizerPage() {
                         >
                           Back
                         </Button>
-                        <Button type="button"
+                        <Button
+                          type="button"
                           onClick={handleSubmit(onSubmit)}
                           className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                           style={{ background: "var(--gradient-primary)" }}
@@ -1033,14 +1118,20 @@ function CreateOrganizerPage() {
                           <ShieldCheck className="h-6 w-6 text-primary drop-shadow-[0_0_8px_rgba(242,87,29,0.6)]" />
                         </div>
                         <div>
-                          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Security & Agreement</h2>
-                          <p className="text-sm text-gray-600 dark:text-white/60">Secure your organizer account.</p>
+                          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            Security & Agreement
+                          </h2>
+                          <p className="text-sm text-gray-600 dark:text-white/60">
+                            Secure your organizer account.
+                          </p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label className="text-gray-700 dark:text-white/80">Secure Password *</Label>
+                          <Label className="text-gray-700 dark:text-white/80">
+                            Secure Password *
+                          </Label>
                           <Input
                             {...register("password")}
                             type="password"
@@ -1053,7 +1144,9 @@ function CreateOrganizerPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <Label className="text-gray-700 dark:text-white/80">Confirm Password *</Label>
+                          <Label className="text-gray-700 dark:text-white/80">
+                            Confirm Password *
+                          </Label>
                           <Input
                             {...register("confirm_password")}
                             type="password"
@@ -1061,7 +1154,9 @@ function CreateOrganizerPage() {
                             placeholder="••••••••"
                           />
                           {errors.confirm_password && (
-                            <p className="text-xs text-red-400">{errors.confirm_password.message}</p>
+                            <p className="text-xs text-red-400">
+                              {errors.confirm_password.message}
+                            </p>
                           )}
                         </div>
 
@@ -1092,7 +1187,8 @@ function CreateOrganizerPage() {
                       </div>
 
                       <div className="flex gap-4 pt-10">
-                        <Button type="button"
+                        <Button
+                          type="button"
                           variant="outline"
                           onClick={prevStep}
                           className="h-14 flex-1 rounded-xl bg-transparent border-gray-300 dark:border-white/20 text-gray-900 dark:text-white hover:bg-gray-200 dark:bg-white/10 hover:text-gray-900 dark:text-white"
@@ -1100,7 +1196,8 @@ function CreateOrganizerPage() {
                         >
                           Back
                         </Button>
-                        <Button type="button"
+                        <Button
+                          type="button"
                           onClick={handleSubmit(onSubmit)}
                           className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
                           style={{ background: "var(--gradient-primary)" }}
@@ -1157,7 +1254,8 @@ function CreateOrganizerPage() {
                   <Building2 className="text-primary w-5 h-5" /> Join the Platform
                 </h3>
                 <p className="text-gray-600 dark:text-white/70 text-sm leading-relaxed">
-                  Powering the next generation of live experiences. Manage your events, analyze data, and engage your audience all in one place.
+                  Powering the next generation of live experiences. Manage your events, analyze
+                  data, and engage your audience all in one place.
                 </p>
               </div>
             </div>

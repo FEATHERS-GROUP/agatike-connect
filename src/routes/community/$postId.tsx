@@ -73,7 +73,10 @@ function PostCommunityPage() {
     queryFn: () => getPostComments({ data: { post_id: postId } }),
   });
 
-  const { canCreatePostComment } = useSubscriptionLimits(post?.organizerId, post?.workspaceId || post?.workspace_id);
+  const { canCreatePostComment } = useSubscriptionLimits(
+    post?.organizerId,
+    post?.workspaceId || post?.workspace_id,
+  );
 
   const [commentText, setCommentText] = useState("");
   const [isLiked, setIsLiked] = useState(false);
@@ -388,7 +391,8 @@ function PostCommunityPage() {
               if (commentText.trim()) {
                 if (!canCreatePostComment()) {
                   toast.error("Comment Limit Reached", {
-                    description: "The organizer has reached their comment limit for their current plan."
+                    description:
+                      "The organizer has reached their comment limit for their current plan.",
                   });
                   return;
                 }

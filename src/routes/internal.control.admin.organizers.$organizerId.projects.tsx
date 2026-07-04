@@ -39,7 +39,13 @@ function WorkspaceCell({ name }: { name: string }) {
   return (
     <div className="flex items-center gap-1.5">
       <Building2 className="h-3.5 w-3.5 text-gray-600 dark:text-[#797775] shrink-0" />
-      <span className={name && name !== "—" ? "text-gray-700 dark:text-[#cccccc]" : "text-gray-600 dark:text-[#797775] italic"}>
+      <span
+        className={
+          name && name !== "—"
+            ? "text-gray-700 dark:text-[#cccccc]"
+            : "text-gray-600 dark:text-[#797775] italic"
+        }
+      >
         {name || "—"}
       </span>
     </div>
@@ -155,12 +161,24 @@ function OrganizerProjects() {
             <table className="w-full text-left text-[13px] whitespace-nowrap">
               <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
                 <tr>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Name</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Workspace</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Template</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Created</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    ID
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Name
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Workspace
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Template
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Status
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Created
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
@@ -168,7 +186,10 @@ function OrganizerProjects() {
                   <EmptyRow cols={6} label="No ticket projects found." />
                 ) : (
                   filteredTickets.map((t: any) => (
-                    <tr key={t.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                    <tr
+                      key={t.id}
+                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                    >
                       <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                         {String(t.id).substring(0, 8)}...
                       </td>
@@ -208,14 +229,24 @@ function OrganizerProjects() {
             <table className="w-full text-left text-[13px] whitespace-nowrap">
               <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
                 <tr>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Logo Text</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    ID
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Logo Text
+                  </th>
                   <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
                     Linked Event
                   </th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Workspace</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Theme</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Accent</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Workspace
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Theme
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Accent
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
@@ -223,7 +254,10 @@ function OrganizerProjects() {
                   <EmptyRow cols={6} label="No badge designs found." />
                 ) : (
                   filteredBadges.map((b: any) => (
-                    <tr key={b.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                    <tr
+                      key={b.id}
+                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                    >
                       <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                         {String(b.id).substring(0, 8)}...
                       </td>
@@ -233,7 +267,9 @@ function OrganizerProjects() {
                           {b.logo_text || "No Logo Text"}
                         </div>
                       </td>
-                      <td className="py-2 px-4 text-gray-700 dark:text-[#cccccc]">{b.eventTitle || "—"}</td>
+                      <td className="py-2 px-4 text-gray-700 dark:text-[#cccccc]">
+                        {b.eventTitle || "—"}
+                      </td>
                       <td className="py-2 px-4">
                         <WorkspaceCell name={b.workspaceName} />
                       </td>
@@ -265,9 +301,15 @@ function OrganizerProjects() {
             <table className="w-full text-left text-[13px] whitespace-nowrap">
               <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
                 <tr>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Venue Name</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Workspace</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    ID
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Venue Name
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Workspace
+                  </th>
                   <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
                     Dimensions (W × H)
                   </th>
@@ -278,7 +320,10 @@ function OrganizerProjects() {
                   <EmptyRow cols={4} label="No venue designs found." />
                 ) : (
                   filteredVenues.map((v: any) => (
-                    <tr key={v.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                    <tr
+                      key={v.id}
+                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                    >
                       <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                         {String(v.id).substring(0, 8)}...
                       </td>
@@ -297,7 +342,9 @@ function OrganizerProjects() {
                             {v.boundary_width} × {v.boundary_height}
                           </span>
                         ) : (
-                          <span className="text-gray-600 dark:text-[#797775] italic">Not configured</span>
+                          <span className="text-gray-600 dark:text-[#797775] italic">
+                            Not configured
+                          </span>
                         )}
                       </td>
                     </tr>
@@ -312,11 +359,21 @@ function OrganizerProjects() {
             <table className="w-full text-left text-[13px] whitespace-nowrap">
               <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
                 <tr>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Title</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Workspace</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Slug / URL</th>
-                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Published</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    ID
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Title
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Workspace
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Slug / URL
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Published
+                  </th>
                   <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
                     Last Updated
                   </th>
@@ -327,7 +384,10 @@ function OrganizerProjects() {
                   <EmptyRow cols={6} label="No pages found." />
                 ) : (
                   filteredPages.map((p: any) => (
-                    <tr key={p.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                    <tr
+                      key={p.id}
+                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                    >
                       <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                         {String(p.id).substring(0, 8)}...
                       </td>

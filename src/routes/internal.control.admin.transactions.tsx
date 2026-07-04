@@ -1,7 +1,13 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import * as LucideIcons from "lucide-react";
 import { useState } from "react";
-import { getAllPlatformTransactions, getAdminWithdrawals, sendAdminWithdrawalOtp, approveAdminPayout, rejectAdminPayout } from "@/api/admin_organizer_control";
+import {
+  getAllPlatformTransactions,
+  getAdminWithdrawals,
+  sendAdminWithdrawalOtp,
+  approveAdminPayout,
+  rejectAdminPayout,
+} from "@/api/admin_organizer_control";
 
 export const Route = createFileRoute("/internal/control/admin/transactions")({
   loader: async () => {
@@ -57,7 +63,9 @@ function ApprovalModal({
     }
     setIsApproving(true);
     try {
-      await approveAdminPayout({ data: { transactionId: tx.id, otpToken, otp, overrideNetworkId } } as any);
+      await approveAdminPayout({
+        data: { transactionId: tx.id, otpToken, otp, overrideNetworkId },
+      } as any);
       alert("Payout approved and submitted to PawaPay successfully!");
       onDone();
     } catch (err: any) {
@@ -96,7 +104,10 @@ function ApprovalModal({
             <LucideIcons.ShieldCheck className="w-5 h-5 text-[#f97316]" />
             Review Withdrawal Request
           </h2>
-          <button onClick={onClose} className="text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white transition-colors">
+          <button
+            onClick={onClose}
+            className="text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
             <LucideIcons.X className="w-5 h-5" />
           </button>
         </div>
@@ -113,34 +124,46 @@ function ApprovalModal({
                 )}
               </div>
               <div>
-                <div className="font-medium text-gray-900 dark:text-white">{org.name || "Unknown Organizer"}</div>
+                <div className="font-medium text-gray-900 dark:text-white">
+                  {org.name || "Unknown Organizer"}
+                </div>
                 <div className="text-xs text-gray-500 dark:text-[#888888]">{org.email}</div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 text-xs mb-3">
               <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg p-3">
                 <div className="text-gray-500 dark:text-[#888888] mb-1">Requested Amount</div>
-                <div className="text-xl font-bold text-gray-900 dark:text-white font-mono">{formatAmount(tx.amount)}</div>
+                <div className="text-xl font-bold text-gray-900 dark:text-white font-mono">
+                  {formatAmount(tx.amount)}
+                </div>
               </div>
               <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg p-3">
                 <div className="text-gray-500 dark:text-[#888888] mb-1">Net Payout</div>
-                <div className="text-xl font-bold text-green-400 font-mono">{formatAmount(tx.net_amount)}</div>
+                <div className="text-xl font-bold text-green-400 font-mono">
+                  {formatAmount(tx.net_amount)}
+                </div>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-3 text-xs mb-3 border-t border-gray-200 dark:border-[#333333] pt-3">
               <div>
                 <span className="text-gray-500 dark:text-[#888888]">Agatike Fee (Platform)</span>
-                <div className="font-mono text-gray-900 dark:text-white mt-1">{formatAmount(tx.platform_fee || 0)}</div>
+                <div className="font-mono text-gray-900 dark:text-white mt-1">
+                  {formatAmount(tx.platform_fee || 0)}
+                </div>
               </div>
               <div>
                 <span className="text-gray-500 dark:text-[#888888]">PawaPay Fee (Network)</span>
-                <div className="font-mono text-gray-900 dark:text-white mt-1">{formatAmount(tx.network_fee || 0)}</div>
+                <div className="font-mono text-gray-900 dark:text-white mt-1">
+                  {formatAmount(tx.network_fee || 0)}
+                </div>
               </div>
             </div>
 
             <div className="mb-3 border-t border-gray-200 dark:border-[#333333] pt-3">
-              <label className="text-xs text-gray-500 dark:text-[#888888] block mb-1">Target Payment Network</label>
+              <label className="text-xs text-gray-500 dark:text-[#888888] block mb-1">
+                Target Payment Network
+              </label>
               <select
                 value={overrideNetworkId}
                 onChange={(e) => setOverrideNetworkId(e.target.value)}
@@ -151,7 +174,9 @@ function ApprovalModal({
                 <option value="AIRTEL_OAPI_RWA">Airtel Rwanda (AIRTEL_OAPI_RWA)</option>
                 <option value="MTN_MOMO_UGA">MTN Uganda (MTN_MOMO_UGA)</option>
                 <option value="AIRTEL_OAPI_UGA">Airtel Uganda (AIRTEL_OAPI_UGA)</option>
-                <option value="SAFARICOM_M_PESA_KEN">Safaricom M-Pesa Kenya (SAFARICOM_M_PESA_KEN)</option>
+                <option value="SAFARICOM_M_PESA_KEN">
+                  Safaricom M-Pesa Kenya (SAFARICOM_M_PESA_KEN)
+                </option>
                 <option value="MTN_MOMO_ZMB">MTN Zambia (MTN_MOMO_ZMB)</option>
                 <option value="AIRTEL_OAPI_ZMB">Airtel Zambia (AIRTEL_OAPI_ZMB)</option>
                 <option value="MTN_MOMO_CMR">MTN Cameroon (MTN_MOMO_CMR)</option>
@@ -164,15 +189,35 @@ function ApprovalModal({
             </div>
 
             <div className="text-xs text-gray-500 dark:text-[#888888] grid grid-cols-2 gap-x-4 gap-y-1">
-              <div><span className="text-gray-500 dark:text-[#666]">Method:</span> <span className="text-gray-700 dark:text-[#cccccc]">{tx.payout_method?.toUpperCase()}</span></div>
-              <div><span className="text-gray-500 dark:text-[#666]">Account:</span> <span className="text-gray-700 dark:text-[#cccccc] font-mono">{tx.payout_account}</span></div>
-              <div><span className="text-gray-500 dark:text-[#666]">Phone:</span> <span className="text-gray-700 dark:text-[#cccccc]">{org.phone || "N/A"}</span></div>
-              <div><span className="text-gray-500 dark:text-[#666]">Date:</span> <span className="text-gray-700 dark:text-[#cccccc]">{new Date(tx.created_at).toLocaleDateString("en-GB")}</span></div>
+              <div>
+                <span className="text-gray-500 dark:text-[#666]">Method:</span>{" "}
+                <span className="text-gray-700 dark:text-[#cccccc]">
+                  {tx.payout_method?.toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500 dark:text-[#666]">Account:</span>{" "}
+                <span className="text-gray-700 dark:text-[#cccccc] font-mono">
+                  {tx.payout_account}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500 dark:text-[#666]">Phone:</span>{" "}
+                <span className="text-gray-700 dark:text-[#cccccc]">{org.phone || "N/A"}</span>
+              </div>
+              <div>
+                <span className="text-gray-500 dark:text-[#666]">Date:</span>{" "}
+                <span className="text-gray-700 dark:text-[#cccccc]">
+                  {new Date(tx.created_at).toLocaleDateString("en-GB")}
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Step 1: Verification Checklist */}
-          <div className={`rounded-xl p-4 border transition-colors ${calledCheck ? "bg-green-500/5 border-green-500/20" : "bg-gray-50 dark:bg-[#1b1b1c] border-gray-200 dark:border-[#333333]"}`}>
+          <div
+            className={`rounded-xl p-4 border transition-colors ${calledCheck ? "bg-green-500/5 border-green-500/20" : "bg-gray-50 dark:bg-[#1b1b1c] border-gray-200 dark:border-[#333333]"}`}
+          >
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -181,7 +226,17 @@ function ApprovalModal({
                 className="mt-0.5 w-4 h-4 accent-[#f97316] shrink-0"
               />
               <span className="text-sm text-gray-700 dark:text-[#cccccc]">
-                I have called {org.name ? <span className="text-gray-900 dark:text-white font-medium">{org.name}</span> : "the organizer"} (<span className="text-gray-900 dark:text-white font-mono">{org.phone || org.email || "N/A"}</span>) and verified their identity and the withdrawal details.
+                I have called{" "}
+                {org.name ? (
+                  <span className="text-gray-900 dark:text-white font-medium">{org.name}</span>
+                ) : (
+                  "the organizer"
+                )}{" "}
+                (
+                <span className="text-gray-900 dark:text-white font-mono">
+                  {org.phone || org.email || "N/A"}
+                </span>
+                ) and verified their identity and the withdrawal details.
               </span>
             </label>
           </div>
@@ -209,11 +264,14 @@ function ApprovalModal({
             <div className="space-y-3 animate-in fade-in duration-300">
               {sentToEmail ? (
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-xs text-blue-400">
-                  ✓ OTP sent to <strong>{sentToEmail}</strong>. Ask the organizer to check their email and read the code to you.
+                  ✓ OTP sent to <strong>{sentToEmail}</strong>. Ask the organizer to check their
+                  email and read the code to you.
                 </div>
               ) : null}
               <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-[#888888] mb-2">Enter OTP from Organizer</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-[#888888] mb-2">
+                  Enter OTP from Organizer
+                </label>
                 <input
                   type="text"
                   placeholder="Enter 6-digit OTP"
@@ -250,7 +308,9 @@ function ApprovalModal({
               </button>
             ) : (
               <div className="space-y-3 animate-in fade-in duration-200">
-                <label className="block text-xs font-medium text-gray-500 dark:text-[#888888]">Rejection Reason (required)</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-[#888888]">
+                  Rejection Reason (required)
+                </label>
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
@@ -365,7 +425,10 @@ function TransactionsPage() {
             type="text"
             placeholder="Search..."
             value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-lg pl-9 pr-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#f97316] placeholder:text-gray-500 dark:text-[#666666]"
           />
         </div>
@@ -379,7 +442,9 @@ function TransactionsPage() {
           </div>
           <div>
             <div className="text-xs text-gray-500 dark:text-[#888888]">Subscription Revenue</div>
-            <div className="text-lg font-semibold text-gray-900 dark:text-white font-mono">${totalRevenue.toFixed(2)}</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white font-mono">
+              ${totalRevenue.toFixed(2)}
+            </div>
           </div>
         </div>
         <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl p-4 flex items-center gap-4">
@@ -388,16 +453,26 @@ function TransactionsPage() {
           </div>
           <div>
             <div className="text-xs text-gray-500 dark:text-[#888888]">Total Paid Out</div>
-            <div className="text-lg font-semibold text-gray-900 dark:text-white font-mono">RWF {totalWithdrawals.toLocaleString()}</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white font-mono">
+              RWF {totalWithdrawals.toLocaleString()}
+            </div>
           </div>
         </div>
         <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl p-4 flex items-center gap-4">
-          <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${pendingCount > 0 ? "bg-yellow-500/10" : "bg-gray-200 dark:bg-[#333333]"}`}>
-            <LucideIcons.Clock className={`w-5 h-5 ${pendingCount > 0 ? "text-yellow-400" : "text-gray-500 dark:text-[#888888]"}`} />
+          <div
+            className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${pendingCount > 0 ? "bg-yellow-500/10" : "bg-gray-200 dark:bg-[#333333]"}`}
+          >
+            <LucideIcons.Clock
+              className={`w-5 h-5 ${pendingCount > 0 ? "text-yellow-400" : "text-gray-500 dark:text-[#888888]"}`}
+            />
           </div>
           <div>
             <div className="text-xs text-gray-500 dark:text-[#888888]">Pending Withdrawals</div>
-            <div className={`text-lg font-semibold font-mono ${pendingCount > 0 ? "text-yellow-400" : "text-gray-900 dark:text-white"}`}>{pendingCount}</div>
+            <div
+              className={`text-lg font-semibold font-mono ${pendingCount > 0 ? "text-yellow-400" : "text-gray-900 dark:text-white"}`}
+            >
+              {pendingCount}
+            </div>
           </div>
         </div>
       </div>
@@ -411,7 +486,9 @@ function TransactionsPage() {
           <LucideIcons.ArrowUpRight className="w-4 h-4" />
           Withdrawal Requests
           {pendingCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full bg-yellow-500 text-black text-[10px] font-bold">{pendingCount}</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-yellow-500 text-black text-[10px] font-bold">
+              {pendingCount}
+            </span>
           )}
         </button>
         <button
@@ -442,8 +519,13 @@ function TransactionsPage() {
               <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]">
-                      {searchQuery ? "No withdrawals match your search." : "No withdrawal requests found."}
+                    <td
+                      colSpan={7}
+                      className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]"
+                    >
+                      {searchQuery
+                        ? "No withdrawals match your search."
+                        : "No withdrawal requests found."}
                     </td>
                   </tr>
                 ) : (
@@ -451,21 +533,40 @@ function TransactionsPage() {
                     const org = tx.organizer || {};
                     const isAdminApproval = tx.raw_callback_data?.requires_admin_approval;
                     return (
-                      <tr key={tx.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
+                      <tr
+                        key={tx.id}
+                        className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
+                      >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
-                              {org.image ? <img src={org.image} alt="" className="w-full h-full object-cover" /> : <LucideIcons.Building2 className="w-4 h-4 text-gray-500 dark:text-[#888]" />}
+                              {org.image ? (
+                                <img
+                                  src={org.image}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <LucideIcons.Building2 className="w-4 h-4 text-gray-500 dark:text-[#888]" />
+                              )}
                             </div>
                             <div>
-                              <div className="font-medium text-gray-900 dark:text-white text-sm">{org.name || "Unknown"}</div>
-                              <div className="text-xs text-gray-500 dark:text-[#888888]">{org.email}</div>
+                              <div className="font-medium text-gray-900 dark:text-white text-sm">
+                                {org.name || "Unknown"}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-[#888888]">
+                                {org.email}
+                              </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-gray-900 dark:text-white text-sm font-medium">{tx.payout_method?.toUpperCase()}</div>
-                          <div className="text-xs text-gray-500 dark:text-[#888888] font-mono">{tx.payout_account}</div>
+                          <div className="text-gray-900 dark:text-white text-sm font-medium">
+                            {tx.payout_method?.toUpperCase()}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-[#888888] font-mono">
+                            {tx.payout_account}
+                          </div>
                         </td>
                         <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">
                           {tx.currency} {Number(tx.amount).toLocaleString()}
@@ -475,12 +576,17 @@ function TransactionsPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col gap-1">
-                            <span className={`px-2 py-0.5 rounded text-xs font-medium uppercase w-fit ${
-                              tx.status === "completed" ? "bg-green-500/10 text-green-500" :
-                              tx.status === "pending" ? "bg-yellow-500/10 text-yellow-400" :
-                              tx.status === "rejected" ? "bg-red-500/10 text-red-500" :
-                              "bg-gray-500/10 text-gray-400"
-                            }`}>
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs font-medium uppercase w-fit ${
+                                tx.status === "completed"
+                                  ? "bg-green-500/10 text-green-500"
+                                  : tx.status === "pending"
+                                    ? "bg-yellow-500/10 text-yellow-400"
+                                    : tx.status === "rejected"
+                                      ? "bg-red-500/10 text-red-500"
+                                      : "bg-gray-500/10 text-gray-400"
+                              }`}
+                            >
                               {tx.status}
                             </span>
                             {isAdminApproval && tx.status === "pending" && (
@@ -492,7 +598,11 @@ function TransactionsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-xs text-gray-500 dark:text-[#888888]">
-                          {new Date(tx.created_at).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" })}
+                          {new Date(tx.created_at).toLocaleDateString("en-GB", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </td>
                         <td className="px-6 py-4 text-right">
                           {tx.status === "pending" ? (
@@ -528,7 +638,10 @@ function TransactionsPage() {
               <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]">
+                    <td
+                      colSpan={6}
+                      className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]"
+                    >
                       {searchQuery ? "No invoices match your search." : "No invoices found."}
                     </td>
                   </tr>
@@ -538,39 +651,74 @@ function TransactionsPage() {
                     const sub = tx.subscription || {};
                     const plan = sub.pricing_plan || {};
                     return (
-                      <tr key={tx.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
+                      <tr
+                        key={tx.id}
+                        className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
+                      >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
-                              {org.image ? <img src={org.image} alt="" className="w-full h-full object-cover" /> : <LucideIcons.Building2 className="w-4 h-4 text-gray-500 dark:text-[#888]" />}
+                              {org.image ? (
+                                <img
+                                  src={org.image}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <LucideIcons.Building2 className="w-4 h-4 text-gray-500 dark:text-[#888]" />
+                              )}
                             </div>
                             <div>
-                              <div className="font-medium text-gray-900 dark:text-white">{org.name || "Unknown"}</div>
-                              <div className="text-xs text-gray-500 dark:text-[#888888]">{org.email}</div>
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {org.name || "Unknown"}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-[#888888]">
+                                {org.email}
+                              </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="font-medium text-gray-900 dark:text-white">{plan.name || "Custom Plan"}</div>
-                          <div className="text-xs text-gray-500 dark:text-[#888888]">Subscription</div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {plan.name || "Custom Plan"}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-[#888888]">
+                            Subscription
+                          </div>
                         </td>
                         <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">
                           {tx.amount === 0 ? "Free" : `${plan.currency || "USD"} ${tx.amount}`}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${
-                            tx.status === "paid" ? "bg-green-500/10 text-green-500" :
-                            tx.status === "pending" ? "bg-yellow-500/10 text-yellow-400" :
-                            "bg-red-500/10 text-red-500"
-                          }`}>
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${
+                              tx.status === "paid"
+                                ? "bg-green-500/10 text-green-500"
+                                : tx.status === "pending"
+                                  ? "bg-yellow-500/10 text-yellow-400"
+                                  : "bg-red-500/10 text-red-500"
+                            }`}
+                          >
                             {tx.status}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-xs text-gray-500 dark:text-[#888888]">
-                          {sub.next_billing_date ? new Date(sub.next_billing_date).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" }) : "—"}
+                          {sub.next_billing_date
+                            ? new Date(sub.next_billing_date).toLocaleDateString("en-GB", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })
+                            : "—"}
                         </td>
                         <td className="px-6 py-4 text-xs text-gray-500 dark:text-[#888888]">
-                          {tx.created_at ? new Date(tx.created_at).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" }) : "—"}
+                          {tx.created_at
+                            ? new Date(tx.created_at).toLocaleDateString("en-GB", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })
+                            : "—"}
                         </td>
                       </tr>
                     );
@@ -586,8 +734,12 @@ function TransactionsPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
           <div className="text-sm text-gray-500 dark:text-[#888888]">
-            Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>–
-            <span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + ITEMS_PER_PAGE, activeList.length)}</span> of{" "}
+            Showing{" "}
+            <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>–
+            <span className="font-medium text-gray-900 dark:text-white">
+              {Math.min(startIndex + ITEMS_PER_PAGE, activeList.length)}
+            </span>{" "}
+            of{" "}
             <span className="font-medium text-gray-900 dark:text-white">{activeList.length}</span>
           </div>
           <div className="flex items-center gap-2">
@@ -598,7 +750,9 @@ function TransactionsPage() {
             >
               <LucideIcons.ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-sm text-gray-600 dark:text-[#aaaaaa] px-2">Page {currentPage} of {totalPages}</span>
+            <span className="text-sm text-gray-600 dark:text-[#aaaaaa] px-2">
+              Page {currentPage} of {totalPages}
+            </span>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}

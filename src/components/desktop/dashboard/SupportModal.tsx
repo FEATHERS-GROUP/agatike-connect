@@ -6,7 +6,12 @@ import {
   getOrganizerTicketWithComments,
   addOrganizerComment,
 } from "@/api/support";
-import type { SupportTicket, SupportTicketComment, TicketCategory, TicketPriority } from "@/api/support";
+import type {
+  SupportTicket,
+  SupportTicketComment,
+  TicketCategory,
+  TicketPriority,
+} from "@/api/support";
 import {
   X,
   Send,
@@ -172,7 +177,9 @@ export function SupportModal({ isOpen, onClose }: SupportModalProps) {
   useEffect(() => {
     if (isOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -233,7 +240,9 @@ export function SupportModal({ isOpen, onClose }: SupportModalProps) {
 
         {/* Content */}
         <div className="flex-1 overflow-hidden">
-          {view === "list" && <TicketList onNewTicket={() => setView("new")} onTicketClick={handleTicketClick} />}
+          {view === "list" && (
+            <TicketList onNewTicket={() => setView("new")} onTicketClick={handleTicketClick} />
+          )}
           {view === "new" && (
             <NewTicketForm
               onSuccess={(ticketId) => {
@@ -243,9 +252,7 @@ export function SupportModal({ isOpen, onClose }: SupportModalProps) {
               onCancel={() => setView("list")}
             />
           )}
-          {view === "detail" && selectedTicketId && (
-            <TicketDetail ticketId={selectedTicketId} />
-          )}
+          {view === "detail" && selectedTicketId && <TicketDetail ticketId={selectedTicketId} />}
         </div>
       </div>
     </div>
@@ -302,7 +309,9 @@ function TicketList({
     );
   }
 
-  const openCount = tickets.filter((t: any) => t.status === "open" || t.status === "in_progress").length;
+  const openCount = tickets.filter(
+    (t: any) => t.status === "open" || t.status === "in_progress",
+  ).length;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -425,9 +434,18 @@ function NewTicketForm({
   });
 
   const handleSubmit = () => {
-    if (!subject.trim()) { setError("Please enter a subject."); return; }
-    if (!description.trim()) { setError("Please describe your issue."); return; }
-    if (!category) { setError("Please select a category."); return; }
+    if (!subject.trim()) {
+      setError("Please enter a subject.");
+      return;
+    }
+    if (!description.trim()) {
+      setError("Please describe your issue.");
+      return;
+    }
+    if (!category) {
+      setError("Please select a category.");
+      return;
+    }
     setError("");
     mutation.mutate();
   };
@@ -443,8 +461,8 @@ function NewTicketForm({
                 step === s
                   ? "bg-primary text-primary-foreground"
                   : step > s
-                  ? "bg-primary/20 text-primary"
-                  : "bg-secondary text-muted-foreground"
+                    ? "bg-primary/20 text-primary"
+                    : "bg-secondary text-muted-foreground"
               }`}
             >
               {s}
@@ -480,7 +498,9 @@ function NewTicketForm({
                       <Icon
                         className={`h-4 w-4 mb-1.5 ${selected ? "text-primary" : "text-muted-foreground"}`}
                       />
-                      <div className={`text-xs font-semibold ${selected ? "text-primary" : "text-foreground"}`}>
+                      <div
+                        className={`text-xs font-semibold ${selected ? "text-primary" : "text-foreground"}`}
+                      >
                         {cat.label}
                       </div>
                       <div className="text-[10px] text-muted-foreground mt-0.5">{cat.desc}</div>
@@ -565,7 +585,10 @@ function NewTicketForm({
             </button>
             <button
               onClick={() => {
-                if (!category) { setError("Please select a category."); return; }
+                if (!category) {
+                  setError("Please select a category.");
+                  return;
+                }
                 setError("");
                 setStep(2);
               }}
@@ -610,7 +633,11 @@ function TicketDetail({ ticketId }: { ticketId: string }) {
   const [reply, setReply] = useState("");
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
-  const { data: ticket, isLoading, refetch } = useQuery({
+  const {
+    data: ticket,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["organizer-ticket-detail", ticketId],
     queryFn: () => getOrganizerTicketWithComments({ data: { ticketId } }),
     refetchInterval: 15000,
@@ -698,16 +725,16 @@ function TicketDetail({ ticketId }: { ticketId: string }) {
               {/* Avatar */}
               <div
                 className={`h-8 w-8 rounded-full shrink-0 flex items-center justify-center text-xs font-bold ${
-                  isAdmin
-                    ? "bg-primary/15 text-primary"
-                    : "bg-secondary text-foreground"
+                  isAdmin ? "bg-primary/15 text-primary" : "bg-secondary text-foreground"
                 }`}
               >
                 {isAdmin ? "S" : comment.author_name?.[0]?.toUpperCase() || "O"}
               </div>
 
               {/* Bubble */}
-              <div className={`max-w-[80%] flex flex-col gap-1 ${isAdmin ? "items-start" : "items-end"}`}>
+              <div
+                className={`max-w-[80%] flex flex-col gap-1 ${isAdmin ? "items-start" : "items-end"}`}
+              >
                 <div className={`flex items-center gap-2 ${isAdmin ? "" : "flex-row-reverse"}`}>
                   <span className="text-[11px] font-medium text-foreground">
                     {isAdmin ? "Support Team" : "You"}

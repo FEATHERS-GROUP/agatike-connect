@@ -24,7 +24,9 @@ export function AdminHeader() {
           <div className="text-[#f97316]">
             <Grid className="h-5 w-5" />
           </div>
-          <span className="font-semibold text-gray-900 dark:text-white tracking-tight">Agatike</span>
+          <span className="font-semibold text-gray-900 dark:text-white tracking-tight">
+            Agatike
+          </span>
           <span className="text-gray-700 dark:text-[#cccccc] text-xs px-2 border-l border-gray-200 dark:border-[#333333] ml-2">
             Master Control
           </span>
@@ -41,20 +43,29 @@ export function AdminHeader() {
       </div>
 
       <div className="flex items-center gap-1 text-gray-700 dark:text-[#cccccc]">
-        <button 
+        <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="p-2 hover:bg-gray-200 dark:hover:bg-[#333333] rounded-sm transition-colors" 
+          className="p-2 hover:bg-gray-200 dark:hover:bg-[#333333] rounded-sm transition-colors"
           title="Toggle Theme"
         >
           {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </button>
-        <button className="p-2 hover:bg-gray-200 dark:hover:bg-[#333333] rounded-sm transition-colors" title="Filter">
+        <button
+          className="p-2 hover:bg-gray-200 dark:hover:bg-[#333333] rounded-sm transition-colors"
+          title="Filter"
+        >
           <Filter className="h-4 w-4" />
         </button>
-        <button className="p-2 hover:bg-gray-200 dark:hover:bg-[#333333] rounded-sm transition-colors" title="Settings">
+        <button
+          className="p-2 hover:bg-gray-200 dark:hover:bg-[#333333] rounded-sm transition-colors"
+          title="Settings"
+        >
           <Settings className="h-4 w-4" />
         </button>
-        <button className="p-2 hover:bg-gray-200 dark:hover:bg-[#333333] rounded-sm transition-colors" title="Help">
+        <button
+          className="p-2 hover:bg-gray-200 dark:hover:bg-[#333333] rounded-sm transition-colors"
+          title="Help"
+        >
           <HelpCircle className="h-4 w-4" />
         </button>
         <button

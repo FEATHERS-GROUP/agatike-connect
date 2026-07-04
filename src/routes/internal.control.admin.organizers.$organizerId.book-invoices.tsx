@@ -55,28 +55,46 @@ function OrganizerBookInvoices() {
                 <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
                   Invoice Number
                 </th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Customer</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Type</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Amount</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Date</th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Customer
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Type
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Amount
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Status
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Date
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
               {filteredInvoices.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-600 dark:text-[#797775] italic">
+                  <td
+                    colSpan={6}
+                    className="py-8 text-center text-gray-600 dark:text-[#797775] italic"
+                  >
                     No invoices found.
                   </td>
                 </tr>
               ) : (
                 filteredInvoices.map((inv: any) => (
-                  <tr key={inv.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                  <tr
+                    key={inv.id}
+                    className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                  >
                     <td className="py-2 px-4 font-mono text-[#569cd6] font-medium">
                       {inv.invoice_number}
                     </td>
                     <td className="py-2 px-4">
-                      <div className="font-medium text-gray-900 dark:text-white">{inv.customer_name || "Unknown"}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {inv.customer_name || "Unknown"}
+                      </div>
                       <div className="text-xs text-gray-600 dark:text-[#797775]">
                         {inv.customer_email || "No Email"}
                       </div>

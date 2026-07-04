@@ -119,7 +119,10 @@ function EditEventPage() {
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { canCreateTicketTier } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateTicketTier } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],

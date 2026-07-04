@@ -111,7 +111,10 @@ function OrganizerModules() {
           }
 
           return (
-            <div key={ws.id} className="bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333333] overflow-hidden">
+            <div
+              key={ws.id}
+              className="bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333333] overflow-hidden"
+            >
               {/* Header */}
               <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 dark:border-[#333333] bg-gray-50 dark:bg-[#252526]">
                 <h3 className="text-gray-900 dark:text-white font-medium flex items-center gap-2 text-base">
@@ -181,7 +184,9 @@ function OrganizerModules() {
                             className="p-2 border border-gray-200 dark:border-[#333333] bg-gray-100 dark:bg-[#2d2d30]/50 rounded-sm flex items-center gap-2"
                           >
                             <Check className="h-3.5 w-3.5 text-[#84c87e] shrink-0" />
-                            <span className="text-gray-700 dark:text-[#cccccc] text-xs">{mod.label}</span>
+                            <span className="text-gray-700 dark:text-[#cccccc] text-xs">
+                              {mod.label}
+                            </span>
                           </div>
                         );
                       })}

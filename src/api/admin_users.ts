@@ -137,7 +137,15 @@ export const getAdminUsers = createServerFn({ method: "POST" }).handler(async ()
 });
 
 export const createAdminUser = createServerFn({ method: "POST" })
-  .validator((d: { email: string; password?: string; name?: string; admin_group_id: string | null; is_super_admin: boolean }) => d)
+  .validator(
+    (d: {
+      email: string;
+      password?: string;
+      name?: string;
+      admin_group_id: string | null;
+      is_super_admin: boolean;
+    }) => d,
+  )
   .handler(async (ctx) => {
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
@@ -169,7 +177,15 @@ export const createAdminUser = createServerFn({ method: "POST" })
   });
 
 export const updateAdminUser = createServerFn({ method: "POST" })
-  .validator((d: { id: string; email: string; name?: string; admin_group_id: string | null; is_super_admin: boolean }) => d)
+  .validator(
+    (d: {
+      id: string;
+      email: string;
+      name?: string;
+      admin_group_id: string | null;
+      is_super_admin: boolean;
+    }) => d,
+  )
   .handler(async (ctx) => {
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");

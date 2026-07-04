@@ -183,7 +183,7 @@ function VenueDesignerIndex() {
     e.preventDefault();
     if (!canCreateVenueDesign()) {
       toast.error("Venue Design Limit Reached", {
-        description: "You have reached the maximum number of venue designs for your plan."
+        description: "You have reached the maximum number of venue designs for your plan.",
       });
       setIsModalOpen(false);
       return;
@@ -215,7 +215,7 @@ function VenueDesignerIndex() {
   const openSetupModal = (templateId: string) => {
     if (!canCreateVenueDesign()) {
       toast.error("Venue Design Limit Reached", {
-        description: "You have reached the maximum number of venue designs for your plan."
+        description: "You have reached the maximum number of venue designs for your plan.",
       });
       return;
     }
@@ -233,8 +233,8 @@ function VenueDesignerIndex() {
   if (!hasStudioAccess()) {
     return (
       <div className="p-6 h-full flex flex-col justify-center">
-        <UpgradePrompt 
-          title="Upgrade to Access Venue Designer" 
+        <UpgradePrompt
+          title="Upgrade to Access Venue Designer"
           description="Venue Designer is a premium feature available in higher tier plans. Upgrade your subscription to start mapping out your event spaces."
         />
       </div>

@@ -52,7 +52,10 @@ function CinemaScreensPage() {
   const { cinemaId } = Route.useParams();
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
-  const { canCreateCinemaScreen } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateCinemaScreen } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [form, setForm] = useState<any>(EMPTY_FORM);
@@ -70,7 +73,7 @@ function CinemaScreensPage() {
   const handleOpenCreate = () => {
     if (!canCreateCinemaScreen()) {
       toast.error("Screen Limit Reached", {
-        description: "You have reached the maximum number of screens allowed by your plan."
+        description: "You have reached the maximum number of screens allowed by your plan.",
       });
       return;
     }

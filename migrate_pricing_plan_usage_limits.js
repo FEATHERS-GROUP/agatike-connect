@@ -24,7 +24,7 @@ async function runSQL(sql, label) {
     console.log(`  ✓ Done`);
     if (json.result) {
       // Print column listing
-      json.result.slice(1).forEach(row => console.log("   ", row.join(" | ")));
+      json.result.slice(1).forEach((row) => console.log("   ", row.join(" | ")));
     }
   }
   return json;
@@ -39,7 +39,7 @@ async function run() {
      FROM information_schema.columns
      WHERE table_schema = 'public' AND table_name = 'pricing_plans'
      ORDER BY ordinal_position;`,
-    "Current pricing_plans columns"
+    "Current pricing_plans columns",
   );
 
   // 2. Add all columns that may be missing (using IF NOT EXISTS via DO block)
@@ -181,7 +181,7 @@ async function run() {
     can_invite_contributors: false,
     can_link_modules: false,
     support_type: "standard",
-    venue_design_type: "basic"
+    venue_design_type: "basic",
   });
 
   const defaultProLimits = JSON.stringify({
@@ -215,7 +215,7 @@ async function run() {
     can_invite_contributors: true,
     can_link_modules: true,
     support_type: "priority",
-    venue_design_type: "advanced"
+    venue_design_type: "advanced",
   });
 
   const defaultEnterpriseLimits = JSON.stringify({
@@ -250,7 +250,7 @@ async function run() {
     can_invite_contributors: true,
     can_link_modules: true,
     support_type: "dedicated",
-    venue_design_type: "custom"
+    venue_design_type: "custom",
   });
 
   const seedDefaultsSQL = `
@@ -282,7 +282,7 @@ async function run() {
       END AS usage_limits_status
      FROM pricing_plans
      ORDER BY price;`,
-    "Verify - pricing_plans usage_limits status"
+    "Verify - pricing_plans usage_limits status",
   );
 
   console.log("\n✅ Migration complete!\n");
@@ -291,7 +291,9 @@ async function run() {
   console.log("  2. Click any plan → Edit Plan → navigate to Step 5 (Usage Limits & Rules)");
   console.log("  3. Update the limits and click Save Changes");
   console.log("  4. The values will be stored in the usage_limits jsonb column in the DB.");
-  console.log("  5. The useSubscriptionLimits hook reads them from the DB via getActiveSubscription.");
+  console.log(
+    "  5. The useSubscriptionLimits hook reads them from the DB via getActiveSubscription.",
+  );
 }
 
 run().catch(console.error);

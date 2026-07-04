@@ -122,7 +122,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
       // 3. Handle Failed Withdrawals (Refund the wallet)
       if (tx && tx.status === "failed" && tx.type === "withdrawal") {
         if (tx.workspace_id && tx.amount) {
-          console.log(`[PawaPay Webhook] Withdrawal failed. Refunding ${tx.amount} to workspace ${tx.workspace_id}`);
+          console.log(
+            `[PawaPay Webhook] Withdrawal failed. Refunding ${tx.amount} to workspace ${tx.workspace_id}`,
+          );
           const { addMoneyToWorkspaceWallet } = await import("./wallet");
           await addMoneyToWorkspaceWallet({
             data: {

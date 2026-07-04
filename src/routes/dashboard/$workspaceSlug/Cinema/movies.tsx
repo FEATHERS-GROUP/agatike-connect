@@ -75,7 +75,10 @@ const RATING_COLORS: Record<string, string> = {
 
 function GlobalMoviesCatalog() {
   const { activeWorkspace } = useWorkspace();
-  const { canCreateMovie } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateMovie } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
 
@@ -165,20 +168,21 @@ function GlobalMoviesCatalog() {
             to="/dashboard/$workspaceSlug/Cinema/create-movie"
             params={{ workspaceSlug: activeWorkspace?.slug || "" }}
           >
-          <Button
-            onClick={(e) => {
-              if (!canCreateMovie()) {
-                e.preventDefault();
-                toast.error("Movie Limit Reached", {
-                  description: "You have reached the maximum number of movies allowed by your plan."
-                });
-              }
-            }}
-            className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)]"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            <Plus className="h-5 w-5" /> Add Movie
-          </Button>
+            <Button
+              onClick={(e) => {
+                if (!canCreateMovie()) {
+                  e.preventDefault();
+                  toast.error("Movie Limit Reached", {
+                    description:
+                      "You have reached the maximum number of movies allowed by your plan.",
+                  });
+                }
+              }}
+              className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)]"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Plus className="h-5 w-5" /> Add Movie
+            </Button>
           </Link>
         </div>
 
@@ -219,7 +223,8 @@ function GlobalMoviesCatalog() {
                   if (!canCreateMovie()) {
                     e.preventDefault();
                     toast.error("Movie Limit Reached", {
-                      description: "You have reached the maximum number of movies allowed by your plan."
+                      description:
+                        "You have reached the maximum number of movies allowed by your plan.",
                     });
                   }
                 }}

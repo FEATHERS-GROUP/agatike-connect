@@ -78,7 +78,7 @@ function PublicFormPage() {
     e.preventDefault();
     if (!canCreateRsvp()) {
       toast.error("Form Limit Reached", {
-        description: "This form has reached its maximum number of allowed responses."
+        description: "This form has reached its maximum number of allowed responses.",
       });
       return;
     }
@@ -379,7 +379,8 @@ function PublicFormPage() {
             <div className="pt-6 border-t border-border/60">
               {!canCreateRsvp() ? (
                 <div className="text-center p-4 bg-destructive/10 text-destructive rounded-xl text-sm font-semibold mb-4">
-                  This form has reached its maximum response capacity and is no longer accepting submissions.
+                  This form has reached its maximum response capacity and is no longer accepting
+                  submissions.
                 </div>
               ) : (
                 <Button
@@ -388,7 +389,11 @@ function PublicFormPage() {
                   style={{ background: "var(--gradient-primary)" }}
                   disabled={mutation.isPending}
                 >
-                  {mutation.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Submit"}
+                  {mutation.isPending ? (
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  ) : (
+                    "Submit"
+                  )}
                 </Button>
               )}
             </div>

@@ -98,7 +98,11 @@ function BadgeDesignerIndex() {
     enabled: !!activeWorkspace?.id,
   });
 
-  const { hasStudioAccess, canCreateBadgeDesign, isLoading: limitsLoading } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const {
+    hasStudioAccess,
+    canCreateBadgeDesign,
+    isLoading: limitsLoading,
+  } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const {
     data: dbProjects = [],
@@ -193,7 +197,7 @@ function BadgeDesignerIndex() {
     e.preventDefault();
     if (!canCreateBadgeDesign()) {
       toast.error("Badge Design Limit Reached", {
-        description: "You have reached the maximum number of badge designs for your plan."
+        description: "You have reached the maximum number of badge designs for your plan.",
       });
       setIsModalOpen(false);
       return;
@@ -208,7 +212,7 @@ function BadgeDesignerIndex() {
   const openSetupModal = (templateId: string) => {
     if (!canCreateBadgeDesign()) {
       toast.error("Badge Design Limit Reached", {
-        description: "You have reached the maximum number of badge designs for your plan."
+        description: "You have reached the maximum number of badge designs for your plan.",
       });
       return;
     }
@@ -222,8 +226,8 @@ function BadgeDesignerIndex() {
   if (!hasStudioAccess()) {
     return (
       <div className="p-6 h-full flex flex-col justify-center">
-        <UpgradePrompt 
-          title="Upgrade to Access Badge Designer" 
+        <UpgradePrompt
+          title="Upgrade to Access Badge Designer"
           description="Badge Designer is a premium feature available in higher tier plans. Upgrade your subscription to start designing digital credentials."
         />
       </div>

@@ -28,7 +28,10 @@ function CinemaDashboardList() {
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
-  const { canCreateCinema } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateCinema } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: cinemas = [], isLoading } = useQuery({
     queryKey: ["cinemas", activeWorkspace?.id],
@@ -48,7 +51,9 @@ function CinemaDashboardList() {
 
   const goCreate = () => {
     if (!canCreateCinema()) {
-      toast.error("You have reached the maximum number of cinemas allowed on your plan. Please upgrade to create more.");
+      toast.error(
+        "You have reached the maximum number of cinemas allowed on your plan. Please upgrade to create more.",
+      );
       return;
     }
     navigate({ to: "/dashboard/$workspaceSlug/Cinema/create", params: { workspaceSlug } });
@@ -73,7 +78,7 @@ function CinemaDashboardList() {
             className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)] disabled:opacity-70"
             style={{ background: "var(--gradient-primary)" }}
           >
-            {canCreateCinema() ? <Plus className="h-5 w-5" /> : <Lock className="h-5 w-5" />} 
+            {canCreateCinema() ? <Plus className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
             Add New Cinema
           </Button>
         </div>
@@ -93,8 +98,8 @@ function CinemaDashboardList() {
             <p className="text-muted-foreground mb-6">
               Create your first cinema or theater to start scheduling movies and selling tickets.
             </p>
-            <Button 
-              onClick={goCreate} 
+            <Button
+              onClick={goCreate}
               disabled={!canCreateCinema()}
               className="gap-2 rounded-xl h-11 px-6 font-bold disabled:opacity-70"
             >

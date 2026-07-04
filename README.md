@@ -2029,7 +2029,8 @@ The **Agatike Pricing Engine** is a highly dynamic financial routing system that
 
 **Route:** `/internal/control/admin/pricing`
 
-Administrators can dynamically create and edit subscription tiers (e.g., *Free*, *Pro*, *Enterprise*).
+Administrators can dynamically create and edit subscription tiers (e.g., _Free_, _Pro_, _Enterprise_).
+
 - **Core Cost:** Each plan has a configured monthly/yearly cost (stored in the `pricing_plans` table).
 - **Module Access Control:** Administrators dictate exactly which system features a Workspace gets by binding an array of `platformModules` (stored as IDs) to the `modules_included` JSONB field on the plan.
 - **Subscription Tracker:** The `subscriptions` table tracks active Workspaces attached to these plans, calculating the platform's Monthly Recurring Revenue (MRR).
@@ -2049,14 +2050,16 @@ Administrators can enable "Subsidized Collections" on premium tiers (e.g., Enter
 
 **Route:** `/internal/control/admin/providers`
 
-While Agatike collects margins, it also has to pay the underlying gateway (e.g., PawaPay, Stripe). 
+While Agatike collects margins, it also has to pay the underlying gateway (e.g., PawaPay, Stripe).
 The `payment_provider_fees` table acts as the unified cost center.
+
 - Tracks exactly what the gateway charges per transaction per country (Percentage + Fixed amounts for both Collections and Disbursements).
 - Includes **Tiered Rules** support for fluctuating Mobile Money rates (e.g., `< 100 RWF = 0%`, `< 500 RWF = 1%`).
 
 ### 27.4 The Live Simulation Engine
 
 To ensure the complex interplay between (1) the chosen Pricing Plan, (2) the Customer's Ticket Price, and (3) the Gateway's Provider Fees always results in a positive Net Profit, the system features a **Live Unit Economics Simulator**.
+
 - Built directly into the Pricing Plan Dashboard, administrators can plug in a mock ticket price and select a target provider network.
 - The Simulator calculates the exact **Customer Cost**, the **Organizer Deduction**, the **Provider Cost**, and outputs the exact **Agatike Net Profit**, preventing accidental configurations that result in negative unit economics on micro-transactions.
 
@@ -2065,10 +2068,10 @@ flowchart TD
     Ticket[Customer buys 5000 RWF Ticket] --> Plan[Active Organizer Pricing Plan]
     Plan -->|Customer Fee 2%| Gross[Gross Processed: 5100 RWF]
     Plan -->|Org Margin 3%| Wallet[Organizer Wallet Credited: 4850 RWF]
-    
+
     Gross --> Gateway[PawaPay Provider Fees]
     Gateway -->|Charges 1%| Net[Agatike Revenue: 5049 RWF]
-    
+
     Net --> ProfitCalc[Net Revenue 5049 - Organizer Payout 4850]
     ProfitCalc --> FinalProfit[Agatike Net Profit: +199 RWF]
 ```

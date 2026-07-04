@@ -70,7 +70,7 @@ export function AdminSidebar() {
   const permissions = session?.permissions || [];
   const isSuperAdmin = session?.is_super_admin;
 
-  const filteredNav = mainNav.filter(n => {
+  const filteredNav = mainNav.filter((n) => {
     if (n.type === "divider") return true;
     if (isSuperAdmin) return true;
     if (n.href === "/internal/control/admin") return true; // Everyone sees home
@@ -95,7 +95,9 @@ export function AdminSidebar() {
 
     return (
       <Link key={n.label} to={n.href as any} className={cls}>
-        <n.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#f97316]" : "text-gray-700 dark:text-[#cccccc]"}`} />
+        <n.icon
+          className={`h-4 w-4 shrink-0 ${isActive ? "text-[#f97316]" : "text-gray-700 dark:text-[#cccccc]"}`}
+        />
         <span className="truncate flex-1">{n.label}</span>
       </Link>
     );

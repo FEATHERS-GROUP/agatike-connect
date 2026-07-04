@@ -57,7 +57,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   model_issue: "bg-red-500/20 text-red-400 border-red-500/30",
   request: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   bug: "bg-rose-500/20 text-rose-400 border-rose-500/30",
-  other: "bg-gray-200 dark:bg-[#333]/60 text-gray-600 dark:text-[#999] border-gray-300 dark:border-[#444]",
+  other:
+    "bg-gray-200 dark:bg-[#333]/60 text-gray-600 dark:text-[#999] border-gray-300 dark:border-[#444]",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -142,14 +143,29 @@ function formatRelative(dateStr: string) {
   return date.toLocaleDateString();
 }
 
-function BulkDeleteModal({ isOpen, onClose, onComplete }: { isOpen: boolean; onClose: () => void; onComplete: () => void }) {
+function BulkDeleteModal({
+  isOpen,
+  onClose,
+  onComplete,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onComplete: () => void;
+}) {
   const [status, setStatus] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [confirmText, setConfirmText] = useState("");
 
   const deleteMutation = useMutation({
-    mutationFn: () => bulkDeleteSupportTickets({ data: { status, startDate: new Date(startDate).toISOString(), endDate: new Date(endDate).toISOString() } }),
+    mutationFn: () =>
+      bulkDeleteSupportTickets({
+        data: {
+          status,
+          startDate: new Date(startDate).toISOString(),
+          endDate: new Date(endDate).toISOString(),
+        },
+      }),
     onSuccess: () => {
       onComplete();
       onClose();
@@ -165,16 +181,24 @@ function BulkDeleteModal({ isOpen, onClose, onComplete }: { isOpen: boolean; onC
           <h2 className="text-lg font-bold text-red-500 flex items-center gap-2">
             <Trash2 className="h-5 w-5" /> Bulk Delete Tickets
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded hover:bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888] transition-colors"><X className="h-4 w-4" /></button>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded hover:bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888] transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
-        
+
         <div className="p-5 space-y-4">
           <p className="text-sm text-gray-500 dark:text-[#888]">
-            This action will permanently delete all matching tickets and their comments. This cannot be undone.
+            This action will permanently delete all matching tickets and their comments. This cannot
+            be undone.
           </p>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">Status</label>
+            <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
+              Status
+            </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
@@ -182,14 +206,18 @@ function BulkDeleteModal({ isOpen, onClose, onComplete }: { isOpen: boolean; onC
             >
               <option value="all">All Statuses</option>
               {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-                <option key={k} value={k}>{v.label}</option>
+                <option key={k} value={k}>
+                  {v.label}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">Start Date</label>
+              <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
+                Start Date
+              </label>
               <input
                 type="date"
                 value={startDate}
@@ -198,7 +226,9 @@ function BulkDeleteModal({ isOpen, onClose, onComplete }: { isOpen: boolean; onC
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">End Date</label>
+              <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
+                End Date
+              </label>
               <input
                 type="date"
                 value={endDate}
@@ -209,7 +239,9 @@ function BulkDeleteModal({ isOpen, onClose, onComplete }: { isOpen: boolean; onC
           </div>
 
           <div className="pt-4 border-t border-gray-200 dark:border-[#333] space-y-1.5">
-            <label className="text-[11px] font-semibold text-red-400 uppercase tracking-wider">Type "DELETE" to confirm</label>
+            <label className="text-[11px] font-semibold text-red-400 uppercase tracking-wider">
+              Type "DELETE" to confirm
+            </label>
             <input
               type="text"
               value={confirmText}
@@ -221,13 +253,24 @@ function BulkDeleteModal({ isOpen, onClose, onComplete }: { isOpen: boolean; onC
         </div>
 
         <div className="px-5 py-4 border-t border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#161616] flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-[#ccc] hover:bg-gray-200 dark:bg-[#333] rounded-md transition-colors">Cancel</button>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-[#ccc] hover:bg-gray-200 dark:bg-[#333] rounded-md transition-colors"
+          >
+            Cancel
+          </button>
           <button
             onClick={() => deleteMutation.mutate()}
-            disabled={confirmText !== "DELETE" || !startDate || !endDate || deleteMutation.isPending}
+            disabled={
+              confirmText !== "DELETE" || !startDate || !endDate || deleteMutation.isPending
+            }
             className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors disabled:opacity-50 flex items-center gap-2"
           >
-            {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete Permanently"}
+            {deleteMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "Delete Permanently"
+            )}
           </button>
         </div>
       </div>
@@ -254,7 +297,11 @@ function AdminSupportPage() {
     refetchInterval: 30000,
   });
 
-  const { data: tickets = [], isLoading, refetch } = useQuery({
+  const {
+    data: tickets = [],
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["admin-support-tickets", activeTab],
     queryFn: () => getAdminSupportTickets({ data: { status: tabToStatus(activeTab) } }),
     refetchInterval: 30000,
@@ -310,7 +357,10 @@ function AdminSupportPage() {
             { label: "Unassigned", value: stats?.unassigned ?? "—", color: "text-red-400" },
             { label: "Solved / Closed", value: stats?.closed ?? "—", color: "text-green-400" },
           ].map((s) => (
-            <div key={s.label} className="bg-gray-50 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333] rounded p-3">
+            <div
+              key={s.label}
+              className="bg-gray-50 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333] rounded p-3"
+            >
               <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
               <div className="text-[11px] text-gray-500 dark:text-[#666] mt-0.5">{s.label}</div>
             </div>
@@ -347,13 +397,15 @@ function AdminSupportPage() {
               </button>
             ))}
           </div>
-          
+
           {/* View Mode Toggle */}
           <div className="flex items-center gap-1 pr-2 pb-1">
             <button
               onClick={() => setViewMode("list")}
               className={`p-1.5 rounded transition-colors ${
-                viewMode === "list" ? "bg-gray-200 dark:bg-[#333] text-gray-900 dark:text-white" : "text-gray-500 dark:text-[#666] hover:text-gray-700 dark:text-[#ccc] hover:bg-gray-100 dark:bg-[#222]"
+                viewMode === "list"
+                  ? "bg-gray-200 dark:bg-[#333] text-gray-900 dark:text-white"
+                  : "text-gray-500 dark:text-[#666] hover:text-gray-700 dark:text-[#ccc] hover:bg-gray-100 dark:bg-[#222]"
               }`}
               title="List View"
             >
@@ -362,7 +414,9 @@ function AdminSupportPage() {
             <button
               onClick={() => setViewMode("table")}
               className={`p-1.5 rounded transition-colors ${
-                viewMode === "table" ? "bg-gray-200 dark:bg-[#333] text-gray-900 dark:text-white" : "text-gray-500 dark:text-[#666] hover:text-gray-700 dark:text-[#ccc] hover:bg-gray-100 dark:bg-[#222]"
+                viewMode === "table"
+                  ? "bg-gray-200 dark:bg-[#333] text-gray-900 dark:text-white"
+                  : "text-gray-500 dark:text-[#666] hover:text-gray-700 dark:text-[#ccc] hover:bg-gray-100 dark:bg-[#222]"
               }`}
               title="Table View"
             >
@@ -395,9 +449,7 @@ function AdminSupportPage() {
                     params={{ ticketId: ticket.id }}
                     className={`w-full text-left px-4 py-3 transition-colors flex gap-3 items-start hover:bg-gray-100 dark:bg-[#1a1a1a]`}
                   >
-                    <StatusIcon
-                      className={`h-4 w-4 shrink-0 mt-0.5 ${statusCfg.color}`}
-                    />
+                    <StatusIcon className={`h-4 w-4 shrink-0 mt-0.5 ${statusCfg.color}`} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <span className="text-[13px] font-medium text-gray-900 dark:text-[#e0e0e0] truncate">
@@ -464,9 +516,7 @@ function AdminSupportPage() {
                         </span>
                       </div>
                     </div>
-                    <ChevronRight
-                      className="h-4 w-4 shrink-0 text-gray-500 dark:text-[#444] mt-0.5 transition-transform"
-                    />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-gray-500 dark:text-[#444] mt-0.5 transition-transform" />
                   </Link>
                 );
               })}
@@ -491,27 +541,43 @@ function AdminSupportPage() {
                     const StatusIcon = statusCfg.icon;
 
                     return (
-                      <tr 
-                        key={ticket.id} 
-                        onClick={() => router.navigate({ to: "/internal/control/admin/support/$ticketId", params: { ticketId: ticket.id } })}
+                      <tr
+                        key={ticket.id}
+                        onClick={() =>
+                          router.navigate({
+                            to: "/internal/control/admin/support/$ticketId",
+                            params: { ticketId: ticket.id },
+                          })
+                        }
                         className="hover:bg-gray-100 dark:bg-[#1a1a1a] transition-colors cursor-pointer group"
                       >
                         <td className="px-4 py-3.5 text-center">
-                          <div className={`inline-flex items-center justify-center h-7 w-7 rounded border ${statusCfg.bg}`} title={statusCfg.label}>
+                          <div
+                            className={`inline-flex items-center justify-center h-7 w-7 rounded border ${statusCfg.bg}`}
+                            title={statusCfg.label}
+                          >
                             <StatusIcon className={`h-4 w-4 ${statusCfg.color}`} />
                           </div>
                         </td>
                         <td className="px-4 py-3.5 max-w-[200px]">
-                          <div className="font-medium text-[13px] truncate group-hover:text-[#f97316] transition-colors">{ticket.subject}</div>
-                          <div className="text-[11px] text-gray-500 dark:text-[#666] font-mono mt-0.5 truncate">#{ticket.id.slice(0, 8).toUpperCase()}</div>
+                          <div className="font-medium text-[13px] truncate group-hover:text-[#f97316] transition-colors">
+                            {ticket.subject}
+                          </div>
+                          <div className="text-[11px] text-gray-500 dark:text-[#666] font-mono mt-0.5 truncate">
+                            #{ticket.id.slice(0, 8).toUpperCase()}
+                          </div>
                         </td>
                         <td className="px-4 py-3.5">
-                          <span className={`inline-block text-[10px] px-1.5 py-0.5 rounded border font-medium whitespace-nowrap ${CATEGORY_COLORS[ticket.category] || CATEGORY_COLORS.other}`}>
+                          <span
+                            className={`inline-block text-[10px] px-1.5 py-0.5 rounded border font-medium whitespace-nowrap ${CATEGORY_COLORS[ticket.category] || CATEGORY_COLORS.other}`}
+                          >
                             {CATEGORY_LABELS[ticket.category] || ticket.category}
                           </span>
                         </td>
                         <td className="px-4 py-3.5">
-                          <span className={`text-[10px] font-semibold uppercase ${PRIORITY_COLORS[ticket.priority] || ""}`}>
+                          <span
+                            className={`text-[10px] font-semibold uppercase ${PRIORITY_COLORS[ticket.priority] || ""}`}
+                          >
                             {ticket.priority}
                           </span>
                         </td>
@@ -519,7 +585,9 @@ function AdminSupportPage() {
                           {ticket.assigned_to ? (
                             <div className="flex items-center gap-1.5">
                               <UserCheck className="h-3.5 w-3.5 text-green-500" />
-                              <span className="text-[11px] text-gray-600 dark:text-[#aaa]">{ticket.assignedAdmin?.email?.split('@')[0] || "Assigned"}</span>
+                              <span className="text-[11px] text-gray-600 dark:text-[#aaa]">
+                                {ticket.assignedAdmin?.email?.split("@")[0] || "Assigned"}
+                              </span>
                             </div>
                           ) : (
                             <span className="text-[11px] px-1.5 py-0.5 rounded border border-red-500/20 bg-red-500/10 text-red-400">
@@ -542,10 +610,10 @@ function AdminSupportPage() {
           )}
         </div>
       </div>
-      <BulkDeleteModal 
-        isOpen={isBulkDeleteOpen} 
-        onClose={() => setIsBulkDeleteOpen(false)} 
-        onComplete={handleRefresh} 
+      <BulkDeleteModal
+        isOpen={isBulkDeleteOpen}
+        onClose={() => setIsBulkDeleteOpen(false)}
+        onComplete={handleRefresh}
       />
     </div>
   );

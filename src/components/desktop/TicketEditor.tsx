@@ -136,7 +136,8 @@ export function TicketEditor({
             onClick={() => {
               if (canCreateTicketTier && !canCreateTicketTier(displayedTickets.length)) {
                 toast.error("Ticket Tier Limit Reached", {
-                  description: "You have reached the maximum number of ticket tiers for this event. Please upgrade to create more."
+                  description:
+                    "You have reached the maximum number of ticket tiers for this event. Please upgrade to create more.",
                 });
                 return;
               }

@@ -152,8 +152,12 @@ function ServiceCard({
             {service.category === "payment" && <LucideIcons.CreditCard className="w-5 h-5" />}
           </div>
           <div>
-            <h3 className="text-gray-900 dark:text-[#eeeeee] font-medium text-sm">{service.name}</h3>
-            <p className="text-gray-500 dark:text-[#888888] text-xs mt-0.5">{service.description}</p>
+            <h3 className="text-gray-900 dark:text-[#eeeeee] font-medium text-sm">
+              {service.name}
+            </h3>
+            <p className="text-gray-500 dark:text-[#888888] text-xs mt-0.5">
+              {service.description}
+            </p>
           </div>
         </div>
         <StatusBadge status={service.status} />
@@ -317,7 +321,9 @@ function HealthDashboard() {
             <div className="p-1.5 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400">
               <LucideIcons.Server className="w-4 h-4" />
             </div>
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Core APIs & Services</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+              Core APIs & Services
+            </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {apiServices.map((service) => (

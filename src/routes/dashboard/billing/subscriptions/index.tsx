@@ -1,15 +1,21 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getActiveSubscription, getPricingPlans, PricingPlan, Subscription, cancelSubscriptionAdmin } from "@/api/billing";
+import {
+  getActiveSubscription,
+  getPricingPlans,
+  PricingPlan,
+  Subscription,
+  cancelSubscriptionAdmin,
+} from "@/api/billing";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Zap, 
-  Check, 
-  Sparkles, 
-  Loader2, 
-  Plus, 
+import {
+  Zap,
+  Check,
+  Sparkles,
+  Loader2,
+  Plus,
   AlertTriangle,
   Layout,
   Crown,
@@ -30,7 +36,7 @@ import {
   Gift,
   BookOpen,
   PieChart,
-  Target
+  Target,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -66,7 +72,7 @@ const MODULE_NAMES: Record<string, string> = {
   "2023e384-e356-41d8-be1b-ce3344c0bbe7": "Spaces",
 };
 
-const GLOBAL_LIMITS: Record<string, { label: string, icon: React.FC<any> }> = {
+const GLOBAL_LIMITS: Record<string, { label: string; icon: React.FC<any> }> = {
   max_workspaces: { label: "Workspaces", icon: Globe },
   max_events: { label: "Events", icon: Calendar },
   max_cinemas: { label: "Cinemas", icon: Video },
@@ -91,7 +97,7 @@ const GLOBAL_LIMITS: Record<string, { label: string, icon: React.FC<any> }> = {
   max_contributors: { label: "Contributors", icon: Users },
 };
 
-const PER_EVENT_LIMITS: Record<string, { label: string, icon: React.FC<any> }> = {
+const PER_EVENT_LIMITS: Record<string, { label: string; icon: React.FC<any> }> = {
   max_event_staff: { label: "Event Staff", icon: Users },
   max_event_sections: { label: "Event Sections", icon: MapPin },
   max_event_vendors: { label: "Event Vendors", icon: ShoppingBag },
@@ -164,7 +170,8 @@ function SubscriptionsPage() {
           <Zap className="h-16 w-16 text-muted-foreground mb-6 opacity-30 group-hover:text-primary/60 transition-colors duration-500" />
           <h2 className="text-3xl font-bold mb-3">Ready to unlock your potential?</h2>
           <p className="text-muted-foreground mb-10 max-w-lg mx-auto text-lg leading-relaxed">
-            Get access to advanced modules, expanded limits, and powerful tools to manage your events and spaces more efficiently.
+            Get access to advanced modules, expanded limits, and powerful tools to manage your
+            events and spaces more efficiently.
           </p>
           <Button
             asChild
@@ -219,11 +226,26 @@ function SubscriptionsPage() {
     }
   }
 
-  const featuresArray = Array.isArray(plan.features) ? plan.features : typeof plan.features === "string" ? JSON.parse(plan.features) : [];
-  const modulesArray = Array.isArray(plan.modules_included) ? plan.modules_included : typeof plan.modules_included === "string" ? JSON.parse(plan.modules_included) : [];
-  const basicModules = basicPlan ? (Array.isArray(basicPlan.modules_included) ? basicPlan.modules_included : typeof basicPlan.modules_included === "string" ? JSON.parse(basicPlan.modules_included) : []) : [];
+  const featuresArray = Array.isArray(plan.features)
+    ? plan.features
+    : typeof plan.features === "string"
+      ? JSON.parse(plan.features)
+      : [];
+  const modulesArray = Array.isArray(plan.modules_included)
+    ? plan.modules_included
+    : typeof plan.modules_included === "string"
+      ? JSON.parse(plan.modules_included)
+      : [];
+  const basicModules = basicPlan
+    ? Array.isArray(basicPlan.modules_included)
+      ? basicPlan.modules_included
+      : typeof basicPlan.modules_included === "string"
+        ? JSON.parse(basicPlan.modules_included)
+        : []
+    : [];
   const lostModules = modulesArray.filter((m: string) => !basicModules.includes(m));
-  const ul = typeof plan.usage_limits === "string" ? JSON.parse(plan.usage_limits) : (plan.usage_limits || {});
+  const ul =
+    typeof plan.usage_limits === "string" ? JSON.parse(plan.usage_limits) : plan.usage_limits || {};
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 py-8 px-4 pb-20">
@@ -250,9 +272,13 @@ function SubscriptionsPage() {
             </p>
           </div>
           {!isTrialExpired && (
-             <Button asChild size="sm" className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90">
-               <Link to="/dashboard/billing/subscriptions/pricingplans">Upgrade Now</Link>
-             </Button>
+            <Button
+              asChild
+              size="sm"
+              className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Link to="/dashboard/billing/subscriptions/pricingplans">Upgrade Now</Link>
+            </Button>
           )}
         </div>
       )}
@@ -268,13 +294,11 @@ function SubscriptionsPage() {
           <div>
             <div className="flex flex-wrap items-center gap-4 mb-4">
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight">{plan.name}</h2>
-              <Badge
-                className="bg-primary/20 text-primary hover:bg-primary/30 border-transparent px-4 py-1.5 text-sm font-bold tracking-widest uppercase rounded-full shadow-sm"
-              >
+              <Badge className="bg-primary/20 text-primary hover:bg-primary/30 border-transparent px-4 py-1.5 text-sm font-bold tracking-widest uppercase rounded-full shadow-sm">
                 {subscription.status}
               </Badge>
             </div>
-            
+
             <div className="flex items-baseline gap-2 mt-4">
               <span className="text-4xl sm:text-6xl font-black text-foreground tracking-tighter">
                 {isFree
@@ -287,7 +311,7 @@ function SubscriptionsPage() {
                 </span>
               )}
             </div>
-            
+
             {!isFree && (
               <p className="text-sm text-muted-foreground mt-4 font-medium flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
@@ -321,7 +345,6 @@ function SubscriptionsPage() {
 
       {/* Bento Grid layout for Features, Permissions, Modules, Limits */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* Core Features */}
         <div className="bg-card border border-border/50 rounded-3xl p-8 flex flex-col h-full shadow-sm">
           <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6">
@@ -330,7 +353,10 @@ function SubscriptionsPage() {
           <div className="space-y-4 flex-1">
             {featuresArray.length > 0 ? (
               featuresArray.map((feature: string, i: number) => (
-                <div key={i} className="flex items-start gap-3 text-sm font-medium text-foreground/90">
+                <div
+                  key={i}
+                  className="flex items-start gap-3 text-sm font-medium text-foreground/90"
+                >
                   <div className="flex-shrink-0 h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center mt-0.5">
                     <Check className="h-3 w-3 text-primary" />
                   </div>
@@ -349,10 +375,13 @@ function SubscriptionsPage() {
             <ShieldCheck className="w-4 h-4 text-emerald-500" /> Permissions
           </h4>
           <div className="space-y-4 flex-1">
-            {Object.keys(PERMISSION_KEYS).map(key => {
+            {Object.keys(PERMISSION_KEYS).map((key) => {
               const hasAccess = !!ul[key];
               return (
-                <div key={key} className="flex items-center justify-between p-4 bg-secondary/30 rounded-2xl border border-border/40">
+                <div
+                  key={key}
+                  className="flex items-center justify-between p-4 bg-secondary/30 rounded-2xl border border-border/40"
+                >
                   <span className="text-sm font-semibold">{PERMISSION_KEYS[key]}</span>
                   {hasAccess ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -374,13 +403,21 @@ function SubscriptionsPage() {
             {modulesArray.length > 0 ? (
               modulesArray.map((mId: string) => {
                 const name = MODULE_NAMES[mId] || mId;
-                if (name === "ALL") return (
-                  <Badge key={mId} className="bg-primary/20 text-primary border-primary/30 px-3 py-1.5 rounded-xl font-semibold">
-                    All Platform Modules Included
-                  </Badge>
-                );
+                if (name === "ALL")
+                  return (
+                    <Badge
+                      key={mId}
+                      className="bg-primary/20 text-primary border-primary/30 px-3 py-1.5 rounded-xl font-semibold"
+                    >
+                      All Platform Modules Included
+                    </Badge>
+                  );
                 return (
-                  <Badge key={mId} variant="outline" className="bg-secondary/40 border-border/60 text-foreground px-3 py-1.5 rounded-xl">
+                  <Badge
+                    key={mId}
+                    variant="outline"
+                    className="bg-secondary/40 border-border/60 text-foreground px-3 py-1.5 rounded-xl"
+                  >
                     {name}
                   </Badge>
                 );
@@ -390,7 +427,6 @@ function SubscriptionsPage() {
             )}
           </div>
         </div>
-
       </div>
 
       {/* Global Limits */}
@@ -404,14 +440,23 @@ function SubscriptionsPage() {
             const Icon = config.icon;
             const isUnlimited = val === -1;
             return (
-              <div key={key} className="bg-secondary/20 rounded-2xl p-4 border border-border/40 flex flex-col items-start gap-3 hover:bg-secondary/40 transition-colors">
+              <div
+                key={key}
+                className="bg-secondary/20 rounded-2xl p-4 border border-border/40 flex flex-col items-start gap-3 hover:bg-secondary/40 transition-colors"
+              >
                 <div className="p-2 rounded-xl bg-background border border-border/60">
                   <Icon className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <div>
-                  <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-1 leading-tight">{config.label}</div>
+                  <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-1 leading-tight">
+                    {config.label}
+                  </div>
                   <div className="font-black text-xl sm:text-2xl text-foreground">
-                    {isUnlimited ? <span className="text-primary text-3xl leading-none">∞</span> : val}
+                    {isUnlimited ? (
+                      <span className="text-primary text-3xl leading-none">∞</span>
+                    ) : (
+                      val
+                    )}
                   </div>
                 </div>
               </div>
@@ -431,14 +476,23 @@ function SubscriptionsPage() {
             const Icon = config.icon;
             const isUnlimited = val === -1;
             return (
-              <div key={key} className="bg-secondary/20 rounded-2xl p-4 border border-border/40 flex flex-col items-start gap-3 hover:bg-secondary/40 transition-colors">
+              <div
+                key={key}
+                className="bg-secondary/20 rounded-2xl p-4 border border-border/40 flex flex-col items-start gap-3 hover:bg-secondary/40 transition-colors"
+              >
                 <div className="p-2 rounded-xl bg-background border border-border/60">
                   <Icon className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <div>
-                  <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-1 leading-tight">{config.label}</div>
+                  <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-1 leading-tight">
+                    {config.label}
+                  </div>
                   <div className="font-black text-xl sm:text-2xl text-foreground">
-                    {isUnlimited ? <span className="text-primary text-3xl leading-none">∞</span> : val}
+                    {isUnlimited ? (
+                      <span className="text-primary text-3xl leading-none">∞</span>
+                    ) : (
+                      val
+                    )}
                   </div>
                 </div>
               </div>
@@ -456,16 +510,23 @@ function SubscriptionsPage() {
             </div>
             <DialogTitle className="text-2xl font-bold">Cancel Premium Plan?</DialogTitle>
             <DialogDescription className="text-muted-foreground text-base pt-2">
-              If you cancel your plan, you will be downgraded to the <strong className="text-foreground">Basic</strong> plan immediately. 
+              If you cancel your plan, you will be downgraded to the{" "}
+              <strong className="text-foreground">Basic</strong> plan immediately.
             </DialogDescription>
           </DialogHeader>
 
           {lostModules.length > 0 && (
             <div className="bg-destructive/5 border border-destructive/20 rounded-2xl p-5 my-4">
-              <h4 className="text-sm font-bold text-destructive mb-3">You will instantly lose access to:</h4>
+              <h4 className="text-sm font-bold text-destructive mb-3">
+                You will instantly lose access to:
+              </h4>
               <div className="flex flex-wrap gap-2">
                 {lostModules.map((mId: string) => (
-                  <Badge key={mId} variant="outline" className="border-destructive/30 text-destructive/90 bg-destructive/5">
+                  <Badge
+                    key={mId}
+                    variant="outline"
+                    className="border-destructive/30 text-destructive/90 bg-destructive/5"
+                  >
                     {MODULE_NAMES[mId] || mId}
                   </Badge>
                 ))}
@@ -478,10 +539,15 @@ function SubscriptionsPage() {
 
           <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-3">
             <DialogClose asChild>
-              <Button variant="outline" className="w-full sm:w-auto h-12 rounded-xl font-bold border-border/80">Keep my plan</Button>
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto h-12 rounded-xl font-bold border-border/80"
+              >
+                Keep my plan
+              </Button>
             </DialogClose>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               className="w-full sm:w-auto h-12 rounded-xl font-bold"
               onClick={handleCancelPlan}
               disabled={isCanceling}

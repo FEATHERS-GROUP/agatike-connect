@@ -1,5 +1,5 @@
-import fs from 'fs';
-let content = fs.readFileSync('src/api/billing.ts', 'utf8');
+import fs from "fs";
+let content = fs.readFileSync("src/api/billing.ts", "utf8");
 
 const getWorkspaceUsageStats = `
 export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
@@ -71,5 +71,5 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
   });
 `;
 
-content = content + '\n' + getWorkspaceUsageStats;
-fs.writeFileSync('src/api/billing.ts', content);
+content = content + "\n" + getWorkspaceUsageStats;
+fs.writeFileSync("src/api/billing.ts", content);

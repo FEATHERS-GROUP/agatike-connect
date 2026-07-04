@@ -14,7 +14,7 @@ function BillingOverview() {
   const { activeWorkspace } = useWorkspace();
   const { limits, stats, workspaceStats, isLoading } = useSubscriptionLimits(
     activeWorkspace?.orgnizer_id,
-    activeWorkspace?.id
+    activeWorkspace?.id,
   );
 
   const paymentMethods = [
@@ -36,14 +36,34 @@ function BillingOverview() {
     { label: "Cinemas", limitKey: "max_cinemas", statVal: workspaceStats?.cinemas },
     { label: "Spaces", limitKey: "max_spaces", statVal: workspaceStats?.spaces },
     { label: "Venues", limitKey: "max_venues", statVal: workspaceStats?.venues },
-    { label: "Page Builders", limitKey: "max_page_builders", statVal: workspaceStats?.page_builders },
+    {
+      label: "Page Builders",
+      limitKey: "max_page_builders",
+      statVal: workspaceStats?.page_builders,
+    },
     { label: "Custom Forms", limitKey: "max_custom_forms", statVal: workspaceStats?.custom_forms },
     { label: "Tasks", limitKey: "max_tasks", statVal: workspaceStats?.tasks },
     { label: "RSVPs", limitKey: "max_rsvps", statVal: workspaceStats?.rsvps },
-    { label: "Ticket Tiers", limitKey: "max_ticket_tiers_per_event", statVal: workspaceStats?.ticket_tiers },
-    { label: "Venue Designs", limitKey: "max_ticket_designs", statVal: workspaceStats?.venue_designs },
-    { label: "Badge Designs", limitKey: "max_badge_designs", statVal: workspaceStats?.badge_designs },
-    { label: "Ticket Designs", limitKey: "max_ticket_designs", statVal: workspaceStats?.ticket_designs },
+    {
+      label: "Ticket Tiers",
+      limitKey: "max_ticket_tiers_per_event",
+      statVal: workspaceStats?.ticket_tiers,
+    },
+    {
+      label: "Venue Designs",
+      limitKey: "max_ticket_designs",
+      statVal: workspaceStats?.venue_designs,
+    },
+    {
+      label: "Badge Designs",
+      limitKey: "max_badge_designs",
+      statVal: workspaceStats?.badge_designs,
+    },
+    {
+      label: "Ticket Designs",
+      limitKey: "max_ticket_designs",
+      statVal: workspaceStats?.ticket_designs,
+    },
     { label: "Products", limitKey: "max_products", statVal: workspaceStats?.products },
     { label: "Campaigns", limitKey: "max_campaigns", statVal: workspaceStats?.campaigns },
     { label: "Gift Cards", limitKey: "max_gift_cards", statVal: workspaceStats?.gift_cards },
@@ -56,7 +76,11 @@ function BillingOverview() {
     { label: "Custom Books", limitKey: "max_customer_books", statVal: workspaceStats?.books },
     { label: "Notes", limitKey: "max_notes", statVal: workspaceStats?.notes },
     { label: "Experiences", limitKey: "max_experiences", statVal: workspaceStats?.experiences },
-    { label: "Membership Plans", limitKey: "max_membership_plans", statVal: workspaceStats?.membership_plans },
+    {
+      label: "Membership Plans",
+      limitKey: "max_membership_plans",
+      statVal: workspaceStats?.membership_plans,
+    },
     { label: "Locations", limitKey: "max_locations", statVal: workspaceStats?.locations },
   ];
 
@@ -128,7 +152,7 @@ function BillingOverview() {
           <Zap className="h-5 w-5 text-amber-500" />
           <h2 className="text-xl font-bold">Plan Usage & Limits</h2>
         </div>
-        
+
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -155,7 +179,9 @@ function BillingOverview() {
                     </div>
                     <div className="text-right">
                       <span className="text-xl font-black">{remaining}</span>
-                      <span className="text-[10px] uppercase tracking-wide text-muted-foreground block -mt-1">Left</span>
+                      <span className="text-[10px] uppercase tracking-wide text-muted-foreground block -mt-1">
+                        Left
+                      </span>
                     </div>
                   </div>
                   <Progress value={progress} className="h-2" />
@@ -182,7 +208,9 @@ function BillingOverview() {
               return (
                 <div key={key} className="rounded-xl border border-border/60 bg-secondary/20 p-4">
                   <div className="text-xs text-muted-foreground mb-1">{label}</div>
-                  <div className="text-xl font-bold">{isUnlimited ? "Unlimited" : `${limitVal} max`}</div>
+                  <div className="text-xl font-bold">
+                    {isUnlimited ? "Unlimited" : `${limitVal} max`}
+                  </div>
                 </div>
               );
             })}
@@ -193,42 +221,66 @@ function BillingOverview() {
           <h3 className="text-lg font-bold mb-4">Access & Permissions</h3>
           <div className="flex flex-wrap gap-3">
             {limits.has_studio_access !== undefined && (
-              <Badge variant={limits.has_studio_access ? "default" : "secondary"} className="py-1.5 px-3">
+              <Badge
+                variant={limits.has_studio_access ? "default" : "secondary"}
+                className="py-1.5 px-3"
+              >
                 {limits.has_studio_access ? "✓" : "✕"} Studio Access
               </Badge>
             )}
             {limits.can_invite_contributors !== undefined && (
-              <Badge variant={limits.can_invite_contributors ? "default" : "secondary"} className="py-1.5 px-3">
+              <Badge
+                variant={limits.can_invite_contributors ? "default" : "secondary"}
+                className="py-1.5 px-3"
+              >
                 {limits.can_invite_contributors ? "✓" : "✕"} Can Invite Contributors
               </Badge>
             )}
             {limits.can_link_modules !== undefined && (
-              <Badge variant={limits.can_link_modules ? "default" : "secondary"} className="py-1.5 px-3">
+              <Badge
+                variant={limits.can_link_modules ? "default" : "secondary"}
+                className="py-1.5 px-3"
+              >
                 {limits.can_link_modules ? "✓" : "✕"} Can Link Modules
               </Badge>
             )}
             {limits.can_import_staff !== undefined && (
-              <Badge variant={limits.can_import_staff ? "default" : "secondary"} className="py-1.5 px-3">
+              <Badge
+                variant={limits.can_import_staff ? "default" : "secondary"}
+                className="py-1.5 px-3"
+              >
                 {limits.can_import_staff ? "✓" : "✕"} Can Import Staff
               </Badge>
             )}
             {limits.can_use_form_integration !== undefined && (
-              <Badge variant={limits.can_use_form_integration ? "default" : "secondary"} className="py-1.5 px-3">
+              <Badge
+                variant={limits.can_use_form_integration ? "default" : "secondary"}
+                className="py-1.5 px-3"
+              >
                 {limits.can_use_form_integration ? "✓" : "✕"} Form Integration
               </Badge>
             )}
             {limits.can_access_event_sections !== undefined && (
-              <Badge variant={limits.can_access_event_sections ? "default" : "secondary"} className="py-1.5 px-3">
+              <Badge
+                variant={limits.can_access_event_sections ? "default" : "secondary"}
+                className="py-1.5 px-3"
+              >
                 {limits.can_access_event_sections ? "✓" : "✕"} Event Sections
               </Badge>
             )}
             {limits.can_use_venue_integration !== undefined && (
-              <Badge variant={limits.can_use_venue_integration ? "default" : "secondary"} className="py-1.5 px-3">
+              <Badge
+                variant={limits.can_use_venue_integration ? "default" : "secondary"}
+                className="py-1.5 px-3"
+              >
                 {limits.can_use_venue_integration ? "✓" : "✕"} Venue Integration
               </Badge>
             )}
             {limits.can_share_feedback_link !== undefined && (
-              <Badge variant={limits.can_share_feedback_link ? "default" : "secondary"} className="py-1.5 px-3">
+              <Badge
+                variant={limits.can_share_feedback_link ? "default" : "secondary"}
+                className="py-1.5 px-3"
+              >
                 {limits.can_share_feedback_link ? "✓" : "✕"} Share Feedback Link
               </Badge>
             )}

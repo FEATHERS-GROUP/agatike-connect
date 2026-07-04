@@ -54,32 +54,52 @@ function OrganizerMemberships() {
           <table className="w-full text-left text-[13px] whitespace-nowrap">
             <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
               <tr>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Member</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Plan / Type</th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  ID
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Member
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Plan / Type
+                </th>
                 <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
                   Location (Space)
                 </th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Joined</th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Status
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Joined
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
               {filteredMemberships.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-600 dark:text-[#797775] italic">
+                  <td
+                    colSpan={6}
+                    className="py-8 text-center text-gray-600 dark:text-[#797775] italic"
+                  >
                     No memberships found.
                   </td>
                 </tr>
               ) : (
                 filteredMemberships.map((m: any) => (
-                  <tr key={m.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                  <tr
+                    key={m.id}
+                    className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                  >
                     <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                       {String(m.id).substring(0, 8)}...
                     </td>
                     <td className="py-2 px-4">
-                      <div className="font-medium text-gray-900 dark:text-white">{m.customer_name || "Unknown"}</div>
-                      <div className="text-xs text-gray-600 dark:text-[#797775]">{m.customer_email || "No Email"}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {m.customer_name || "Unknown"}
+                      </div>
+                      <div className="text-xs text-gray-600 dark:text-[#797775]">
+                        {m.customer_email || "No Email"}
+                      </div>
                     </td>
                     <td className="py-2 px-4">
                       <div className="text-[#dcdcaa] font-medium">

@@ -27,7 +27,10 @@ function DashboardExperiences() {
     enabled: !!activeWorkspace?.id,
   });
 
-  const { canCreateExperience } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateExperience } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const [draft, setDraft] = useState<any>(null);
 
@@ -171,17 +174,23 @@ function DashboardExperiences() {
           onClick={() => {
             if (!canCreateExperience()) {
               toast.error("Experience Limit Reached", {
-                description: "You have reached the maximum number of experiences allowed by your plan."
+                description:
+                  "You have reached the maximum number of experiences allowed by your plan.",
               });
             } else {
               navigate({
                 to: "/dashboard/$workspaceSlug/experiences/create-experience",
-                params: { workspaceSlug: activeWorkspace?.slug || "workspace" }
+                params: { workspaceSlug: activeWorkspace?.slug || "workspace" },
               });
             }
           }}
         >
-          {canCreateExperience() ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} Create Experience
+          {canCreateExperience() ? (
+            <Plus className="mr-1 h-4 w-4" />
+          ) : (
+            <Lock className="mr-1 h-4 w-4" />
+          )}{" "}
+          Create Experience
         </Button>
       </header>
 
@@ -250,7 +259,8 @@ function DashboardExperiences() {
                 onClick={() => {
                   if (!canCreateExperience()) {
                     toast.error("Experience Limit Reached", {
-                      description: "You have reached the maximum number of experiences allowed by your plan."
+                      description:
+                        "You have reached the maximum number of experiences allowed by your plan.",
                     });
                   } else {
                     navigate({

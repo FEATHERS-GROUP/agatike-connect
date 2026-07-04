@@ -1216,12 +1216,11 @@ export const updateAdminWorkspaceModules = createServerFn({ method: "POST" })
 // ----------------------------------------------------
 // PLATFORM WIDE TRANSACTIONS
 // ----------------------------------------------------
-export const getAllPlatformTransactions = createServerFn({ method: "POST" })
-  .handler(async () => {
-    const session = await getAdminSession();
-    if (!session) throw new Error("unauthenticated");
+export const getAllPlatformTransactions = createServerFn({ method: "POST" }).handler(async () => {
+  const session = await getAdminSession();
+  if (!session) throw new Error("unauthenticated");
 
-    const query = `
+  const query = `
       query GetAllPlatformTransactions {
         organizer_invoices(order_by: {created_at: desc}) {
           id
@@ -1250,41 +1249,40 @@ export const getAllPlatformTransactions = createServerFn({ method: "POST" })
       }
     `;
 
-    try {
-      const data = await hasuraRequest<any>(query, {});
-      const invoices = data.organizer_invoices || [];
-      const organizers = data.organizers || [];
-      const subscriptions = data.subscriptions || [];
+  try {
+    const data = await hasuraRequest<any>(query, {});
+    const invoices = data.organizer_invoices || [];
+    const organizers = data.organizers || [];
+    const subscriptions = data.subscriptions || [];
 
-      const orgMap = new Map(organizers.map((o: any) => [o.id, o]));
-      const subMap = new Map(subscriptions.map((s: any) => [s.id, s]));
+    const orgMap = new Map(organizers.map((o: any) => [o.id, o]));
+    const subMap = new Map(subscriptions.map((s: any) => [s.id, s]));
 
-      return invoices.map((inv: any) => {
-        const org = orgMap.get(inv.organizer_id);
-        const sub = subMap.get(inv.subscription_id);
-        return {
-          ...inv,
-          organizer: org || null,
-          subscription: sub || null,
-        };
-      });
-    } catch (e) {
-      console.error("Failed to fetch platform transactions:", e);
-      return [];
-    }
-  });
+    return invoices.map((inv: any) => {
+      const org = orgMap.get(inv.organizer_id);
+      const sub = subMap.get(inv.subscription_id);
+      return {
+        ...inv,
+        organizer: org || null,
+        subscription: sub || null,
+      };
+    });
+  } catch (e) {
+    console.error("Failed to fetch platform transactions:", e);
+    return [];
+  }
+});
 
 // ----------------------------------------------------
 // ADMIN WITHDRAWAL MANAGEMENT
 // ----------------------------------------------------
 
-export const getAdminWithdrawals = createServerFn({ method: "POST" })
-  .handler(async () => {
-    const session = await getAdminSession();
-    if (!session) throw new Error("unauthenticated");
+export const getAdminWithdrawals = createServerFn({ method: "POST" }).handler(async () => {
+  const session = await getAdminSession();
+  if (!session) throw new Error("unauthenticated");
 
-    // Step 1: Fetch all withdrawal requests
-    const query = `
+  // Step 1: Fetch all withdrawal requests
+  const query = `
       query GetAdminWithdrawals {
         withdrawal_requests(
           order_by: { created_at: desc }
@@ -1303,19 +1301,19 @@ export const getAdminWithdrawals = createServerFn({ method: "POST" })
       }
     `;
 
-    try {
-      const data = await hasuraRequest<any>(query, {});
-      const transactions = data.withdrawal_requests || [];
-      if (transactions.length === 0) return [];
+  try {
+    const data = await hasuraRequest<any>(query, {});
+    const transactions = data.withdrawal_requests || [];
+    if (transactions.length === 0) return [];
 
-      // Step 2: Get unique workspace IDs, look up the organizer via workspaces
-      const wsIds = [...new Set(transactions.map((t: any) => t.workspace_id).filter(Boolean))];
+    // Step 2: Get unique workspace IDs, look up the organizer via workspaces
+    const wsIds = [...new Set(transactions.map((t: any) => t.workspace_id).filter(Boolean))];
 
-      let wsOrgMap = new Map<string, string>(); // workspace_id -> organizer_id
-      let orgMap = new Map<string, any>();       // organizer_id -> organizer
+    let wsOrgMap = new Map<string, string>(); // workspace_id -> organizer_id
+    let orgMap = new Map<string, any>(); // organizer_id -> organizer
 
-      if (wsIds.length > 0) {
-        const wsQuery = `
+    if (wsIds.length > 0) {
+      const wsQuery = `
           query GetWorkspacesForWithdrawals($ids: [uuid!]!) {
             workspaces(where: { id: { _in: $ids } }) {
               id
@@ -1324,13 +1322,13 @@ export const getAdminWithdrawals = createServerFn({ method: "POST" })
             }
           }
         `;
-        const wsData = await hasuraRequest<any>(wsQuery, { ids: wsIds });
-        const workspaces: any[] = wsData.workspaces || [];
-        workspaces.forEach((w: any) => wsOrgMap.set(w.id, w.orgnizer_id));
+      const wsData = await hasuraRequest<any>(wsQuery, { ids: wsIds });
+      const workspaces: any[] = wsData.workspaces || [];
+      workspaces.forEach((w: any) => wsOrgMap.set(w.id, w.orgnizer_id));
 
-        const orgIds = [...new Set(workspaces.map((w: any) => w.orgnizer_id).filter(Boolean))];
-        if (orgIds.length > 0) {
-          const orgQuery = `
+      const orgIds = [...new Set(workspaces.map((w: any) => w.orgnizer_id).filter(Boolean))];
+      if (orgIds.length > 0) {
+        const orgQuery = `
             query GetOrgsForWithdrawals($ids: [uuid!]!) {
               organizers(where: { id: { _in: $ids } }) {
                 id
@@ -1342,25 +1340,25 @@ export const getAdminWithdrawals = createServerFn({ method: "POST" })
               }
             }
           `;
-          const orgData = await hasuraRequest<any>(orgQuery, { ids: orgIds });
-          orgMap = new Map((orgData.organizers || []).map((o: any) => [o.id, o]));
-        }
+        const orgData = await hasuraRequest<any>(orgQuery, { ids: orgIds });
+        orgMap = new Map((orgData.organizers || []).map((o: any) => [o.id, o]));
       }
-
-      return transactions.map((tx: any) => {
-        const orgId = wsOrgMap.get(tx.workspace_id);
-        return {
-          ...tx,
-          // map to raw_callback_data so the UI badge "Admin approval needed" keeps working
-          raw_callback_data: { requires_admin_approval: true },
-          organizer: orgId ? (orgMap.get(orgId) || null) : null,
-        };
-      });
-    } catch (e) {
-      console.error("Failed to fetch admin withdrawals:", e);
-      return [];
     }
-  });
+
+    return transactions.map((tx: any) => {
+      const orgId = wsOrgMap.get(tx.workspace_id);
+      return {
+        ...tx,
+        // map to raw_callback_data so the UI badge "Admin approval needed" keeps working
+        raw_callback_data: { requires_admin_approval: true },
+        organizer: orgId ? orgMap.get(orgId) || null : null,
+      };
+    });
+  } catch (e) {
+    console.error("Failed to fetch admin withdrawals:", e);
+    return [];
+  }
+});
 
 export const sendAdminWithdrawalOtp = createServerFn({ method: "POST" })
   .validator((d: { transactionId: string }) => d)
@@ -1464,7 +1462,9 @@ export const sendAdminWithdrawalOtp = createServerFn({ method: "POST" })
   });
 
 export const approveAdminPayout = createServerFn({ method: "POST" })
-  .validator((d: { transactionId: string; otpToken: string; otp: string; overrideNetworkId?: string }) => d)
+  .validator(
+    (d: { transactionId: string; otpToken: string; otp: string; overrideNetworkId?: string }) => d,
+  )
   .handler(async (ctx) => {
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
@@ -1582,7 +1582,7 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
         exchange_rate: req.exchange_rate,
         requires_admin_approval: true,
       },
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     });
 
     if (execData.update_wallets.affected_rows === 0) {
@@ -1594,8 +1594,8 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
     // 3. Mark the withdrawal request as approved, link the transaction, and insert earnings
     // For withdrawals: customer pays nothing, organizer pays the total processing fee
     const platformRevenue = (req.platform_fee || 0) + (req.network_fee || 0); // Total fee collected from org
-    const providerCost    = req.network_fee || 0;
-    const netProfit       = req.platform_fee || 0; // Pure agatike margin
+    const providerCost = req.network_fee || 0;
+    const netProfit = req.platform_fee || 0; // Pure agatike margin
 
     const updateReqMutation = `
       mutation UpdateRequestAndEarnings(
@@ -1638,17 +1638,17 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
         }
       }
     `;
-    await hasuraRequest(updateReqMutation, { 
-      id: req.id, 
-      tx_id: newTxId, 
+    await hasuraRequest(updateReqMutation, {
+      id: req.id,
+      tx_id: newTxId,
       admin_id: session.sub,
       gross_amount: req.amount,
       provider_cost: providerCost,
       platform_revenue: platformRevenue,
       net_profit: netProfit,
-      cust_fee: 0,             // customer pays no withdrawal fee
+      cust_fee: 0, // customer pays no withdrawal fee
       org_fee: platformRevenue, // organizer pays the full withdrawal platform fee
-      currency: req.currency || "RWF"
+      currency: req.currency || "RWF",
     });
 
     // 4. Trigger the PawaPay payout with the newly created wallet transaction ID
@@ -1678,7 +1678,8 @@ export const rejectAdminPayout = createServerFn({ method: "POST" })
     const req = res.withdrawal_requests_by_pk;
 
     if (!req) throw new Error("Withdrawal request not found");
-    if (req.status !== "pending") throw new Error(`Request is already ${req.status}. Cannot reject.`);
+    if (req.status !== "pending")
+      throw new Error(`Request is already ${req.status}. Cannot reject.`);
 
     // Just mark as rejected — no wallet refund needed since it was never deducted
     const mutation = `
@@ -1705,5 +1706,3 @@ export const rejectAdminPayout = createServerFn({ method: "POST" })
 
     return { success: true };
   });
-
-

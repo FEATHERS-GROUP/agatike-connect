@@ -47,18 +47,33 @@ function OrganizerBooks() {
           <table className="w-full text-left text-[13px] whitespace-nowrap">
             <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
               <tr>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Name</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Workspace</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Records</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Fields</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Created</th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  ID
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Name
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Workspace
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Records
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Fields
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Created
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
               {filteredBooks.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-600 dark:text-[#797775] italic">
+                  <td
+                    colSpan={6}
+                    className="py-8 text-center text-gray-600 dark:text-[#797775] italic"
+                  >
                     No books found.
                   </td>
                 </tr>
@@ -66,7 +81,10 @@ function OrganizerBooks() {
                 filteredBooks.map((b: any) => {
                   const fields = Array.isArray(b.schema_fields) ? b.schema_fields : [];
                   return (
-                    <tr key={b.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                    <tr
+                      key={b.id}
+                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                    >
                       <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                         {String(b.id).substring(0, 8)}...
                       </td>
@@ -81,7 +99,9 @@ function OrganizerBooks() {
                           <Building2 className="h-3.5 w-3.5 text-gray-600 dark:text-[#797775] shrink-0" />
                           <span
                             className={
-                              b.workspaceName !== "—" ? "text-gray-700 dark:text-[#cccccc]" : "text-gray-600 dark:text-[#797775] italic"
+                              b.workspaceName !== "—"
+                                ? "text-gray-700 dark:text-[#cccccc]"
+                                : "text-gray-600 dark:text-[#797775] italic"
                             }
                           >
                             {b.workspaceName}

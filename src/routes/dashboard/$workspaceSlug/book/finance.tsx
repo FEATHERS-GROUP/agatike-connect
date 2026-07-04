@@ -53,7 +53,10 @@ function FinancePage() {
   const wsId = activeWorkspace?.id;
   const currency = activeWorkspace?.currency || "RWF";
   const queryClient = useQueryClient();
-  const { canCreateInvoice } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateInvoice } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const [addOpen, setAddOpen] = useState(false);
   const [entryType, setEntryType] = useState<EntryType>("income");
@@ -260,7 +263,8 @@ function FinancePage() {
   const handleAddEntry = async () => {
     if (!canCreateInvoice()) {
       toast.error("Invoice limit reached", {
-        description: "Your current subscription plan does not allow creating more financial entries. Please upgrade your plan."
+        description:
+          "Your current subscription plan does not allow creating more financial entries. Please upgrade your plan.",
       });
       return;
     }

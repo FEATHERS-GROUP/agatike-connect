@@ -164,13 +164,19 @@ function GenerateVendorFormModal({
             if (!canCreateCustomerForm) {
               e.preventDefault();
               toast.error("Custom Forms Limit Reached", {
-                description: "You have reached the maximum number of custom forms allowed by your plan.",
+                description:
+                  "You have reached the maximum number of custom forms allowed by your plan.",
               });
               return;
             }
           }}
         >
-          {canUseFormIntegration && canCreateCustomerForm ? <Plus className="mr-2 h-4 w-4" /> : <Lock className="mr-2 h-4 w-4" />} Generate Vendor Form
+          {canUseFormIntegration && canCreateCustomerForm ? (
+            <Plus className="mr-2 h-4 w-4" />
+          ) : (
+            <Lock className="mr-2 h-4 w-4" />
+          )}{" "}
+          Generate Vendor Form
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -258,7 +264,15 @@ function GenerateVendorFormModal({
   );
 }
 
-function AddStaffModal({ eventId, sections, canAddStaff }: { eventId: string; sections: any[], canAddStaff: boolean }) {
+function AddStaffModal({
+  eventId,
+  sections,
+  canAddStaff,
+}: {
+  eventId: string;
+  sections: any[];
+  canAddStaff: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const [registrationType, setRegistrationType] = useState("account"); // "account" or "no-account"
@@ -328,7 +342,8 @@ function AddStaffModal({ eventId, sections, canAddStaff }: { eventId: string; se
             }
           }}
         >
-          {canAddStaff ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} Add Staff Member
+          {canAddStaff ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} Add
+          Staff Member
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -525,7 +540,8 @@ function StaffView() {
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
-  const { canImportStaff, canUseFormIntegration, canAddEventStaff, canCreateCustomerForm } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canImportStaff, canUseFormIntegration, canAddEventStaff, canCreateCustomerForm } =
+    useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
   const queryClient = useQueryClient();
 
   const { data: badgeProject } = useQuery({
@@ -567,7 +583,11 @@ function StaffView() {
           </p>
         </div>
         <div className="flex gap-3">
-          <AddStaffModal eventId={eventId} sections={sections} canAddStaff={canAddEventStaff(staff.length)} />
+          <AddStaffModal
+            eventId={eventId}
+            sections={sections}
+            canAddStaff={canAddEventStaff(staff.length)}
+          />
         </div>
       </header>
 
@@ -733,7 +753,12 @@ function StaffView() {
               <Link to="/dashboard/$workspaceSlug/rsvps" params={{ workspaceSlug }}>
                 <Button variant="outline">View All Custom Forms</Button>
               </Link>
-              <GenerateVendorFormModal eventId={eventId} activeWorkspace={activeWorkspace} canUseFormIntegration={canUseFormIntegration()} canCreateCustomerForm={canCreateCustomerForm()} />
+              <GenerateVendorFormModal
+                eventId={eventId}
+                activeWorkspace={activeWorkspace}
+                canUseFormIntegration={canUseFormIntegration()}
+                canCreateCustomerForm={canCreateCustomerForm()}
+              />
             </div>
           </div>
         </TabsContent>

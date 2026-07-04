@@ -158,7 +158,6 @@ export const addMoneyToWorkspaceWallet = createServerFn({ method: "POST" }).hand
   return data.update_wallets?.returning?.[0] || null;
 });
 
-
 // Self-serve withdrawal (≤ 150,000) — deducts wallet + records in wallet_transactions immediately
 const REQUEST_WITHDRAWAL_MUTATION = `
   mutation RequestWithdrawal(
@@ -243,7 +242,6 @@ const INSERT_WITHDRAWAL_REQUEST = `
   }
 `;
 
-
 export const sendWithdrawalOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { organizer_id } = ctx.data as unknown as { organizer_id: string };
 
@@ -254,11 +252,15 @@ export const sendWithdrawalOtp = createServerFn({ method: "POST" }).handler(asyn
     if (session && session.sub) {
       if (session.type === "user") {
         const uQuery = `query GetUser($id: uuid!) { users_by_pk(id: $id) { email } }`;
-        const uRes = await hasuraRequest<{ users_by_pk: { email: string } }>(uQuery, { id: session.sub });
+        const uRes = await hasuraRequest<{ users_by_pk: { email: string } }>(uQuery, {
+          id: session.sub,
+        });
         if (uRes.users_by_pk?.email) email = uRes.users_by_pk.email;
       } else if (session.type === "workspace_user") {
         const wuQuery = `query GetWU($id: uuid!) { workspace_users_by_pk(id: $id) { email } }`;
-        const wuRes = await hasuraRequest<{ workspace_users_by_pk: { email: string } }>(wuQuery, { id: session.sub });
+        const wuRes = await hasuraRequest<{ workspace_users_by_pk: { email: string } }>(wuQuery, {
+          id: session.sub,
+        });
         if (wuRes.workspace_users_by_pk?.email) email = wuRes.workspace_users_by_pk.email;
       }
     }
@@ -431,7 +433,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
   const subRes = await hasuraRequest<{ subscriptions: any[] }>(subQuery);
   const plan = subRes.subscriptions?.[0]?.pricing_plan || {};
   const withdrawalFeePercentage = parseFloat(plan.organizer_platform_contribution) || 0;
-  const withdrawalFeeFixed      = parseFloat(plan.withdrawal_fee_fixed) || 0;
+  const withdrawalFeeFixed = parseFloat(plan.withdrawal_fee_fixed) || 0;
 
   const maxWeeklyLimitStr =
     subRes.subscriptions?.[0]?.pricing_plan?.max_withdrawals_per_week || "1";
@@ -466,7 +468,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     });
 
     const weeklyCount = txRes.wallet_transactions_aggregate?.aggregate?.count || 0;
-    
+
     // If maxWeeklyLimit is 0, we treat it as unlimited.
     if (maxWeeklyLimit > 0 && weeklyCount >= maxWeeklyLimit) {
       throw new Error(
@@ -524,11 +526,11 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
 
   // 7. Calculate Total Fee and Net Payout
   // Platform (Agatike) withdrawal fee — from the organizer's dedicated withdrawal plan fields
-  const agatikeFee = (amount * (withdrawalFeePercentage / 100)) + withdrawalFeeFixed;
+  const agatikeFee = amount * (withdrawalFeePercentage / 100) + withdrawalFeeFixed;
   // Provider (PawaPay) disbursement cost
   const networkFee = amount * (netPercentage / 100) + netFixed;
-  const totalFee   = agatikeFee + networkFee;
-  const netAmount  = amount - totalFee;
+  const totalFee = agatikeFee + networkFee;
+  const netAmount = amount - totalFee;
 
   if (netAmount <= 0) {
     throw new Error("Withdrawal amount is too low to cover the processing fees.");
@@ -632,8 +634,8 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       rev: totalFee,
       profit: netProfit,
       curr: currency || "RWF",
-      cust_fee: 0,        // customer pays no withdrawal fee
-      org_fee: totalFee // organizer pays the total fee
+      cust_fee: 0, // customer pays no withdrawal fee
+      org_fee: totalFee, // organizer pays the total fee
     });
 
     // Trigger PawaPay payout automatically
@@ -641,7 +643,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       await triggerPawaPayPayout({ data: { transactionId: txId } } as any);
     } catch (e) {
       console.error("Failed to automatically trigger PawaPay payout:", e);
-      // We do not throw here to avoid rolling back the DB insert, 
+      // We do not throw here to avoid rolling back the DB insert,
       // but it will remain 'pending' and admins can retry it.
     }
 
@@ -681,4 +683,3 @@ export const getPendingWithdrawals = createServerFn({ method: "GET" }).handler(a
   const res = await hasuraRequest<{ withdrawal_requests: any[] }>(query);
   return res.withdrawal_requests || [];
 });
-

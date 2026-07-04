@@ -41,7 +41,10 @@ function VenueListingsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
-  const { canCreateVenue } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateVenue } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const updateStatus = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
@@ -87,12 +90,13 @@ function VenueListingsPage() {
               onClick={(e) => {
                 if (!canCreateVenue()) {
                   toast.error("Venue Limit Reached", {
-                    description: "You have reached the maximum number of venues for your plan. Please upgrade to create more."
+                    description:
+                      "You have reached the maximum number of venues for your plan. Please upgrade to create more.",
                   });
                 } else {
                   navigate({
                     to: "/dashboard/$workspaceSlug/venues/create-venue",
-                    params: { workspaceSlug }
+                    params: { workspaceSlug },
                   });
                 }
               }}
@@ -158,12 +162,13 @@ function VenueListingsPage() {
               onClick={() => {
                 if (!canCreateVenue()) {
                   toast.error("Venue Limit Reached", {
-                    description: "You have reached the maximum number of venues for your plan. Please upgrade to create more."
+                    description:
+                      "You have reached the maximum number of venues for your plan. Please upgrade to create more.",
                   });
                 } else {
                   navigate({
                     to: "/dashboard/$workspaceSlug/venues/create-venue",
-                    params: { workspaceSlug }
+                    params: { workspaceSlug },
                   });
                 }
               }}

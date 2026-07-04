@@ -45,7 +45,10 @@ function SpaceIntegrationsPage() {
   const { spaceId, workspaceSlug } = useParams({ strict: false }) as any;
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
-  const { canAddIntegration } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canAddIntegration } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: space, isLoading: isSpaceLoading } = useQuery({
     queryKey: ["space", spaceId],
@@ -130,7 +133,7 @@ function SpaceIntegrationsPage() {
   const addForm = () => {
     if (!canAddIntegration(connectedForms.length)) {
       toast.error("Integration Limit Reached", {
-        description: "You have reached the maximum number of custom forms connected."
+        description: "You have reached the maximum number of custom forms connected.",
       });
       return;
     }

@@ -33,7 +33,10 @@ function RsvpsPage() {
   const [deleteConfirmForm, setDeleteConfirmForm] = useState<CustomForm | null>(null);
   const [isExportingBeforeDelete, setIsExportingBeforeDelete] = useState(false);
 
-  const { canCreateCustomerForm } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateCustomerForm } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: forms = [], isLoading } = useQuery<CustomForm[]>({
     queryKey: ["workspace-forms", activeWorkspace?.id],
@@ -171,7 +174,8 @@ function RsvpsPage() {
             onClick={() => {
               if (!canCreateCustomerForm()) {
                 toast.error("Form Limit Reached", {
-                  description: "You have reached the maximum number of custom forms for your plan. Please upgrade to create more."
+                  description:
+                    "You have reached the maximum number of custom forms for your plan. Please upgrade to create more.",
                 });
                 return;
               }
@@ -187,7 +191,9 @@ function RsvpsPage() {
                 <Plus className="mr-1 h-4 w-4" /> Create Form
               </Link>
             ) : (
-              <span><Plus className="mr-1 h-4 w-4" /> Create Form</span>
+              <span>
+                <Plus className="mr-1 h-4 w-4" /> Create Form
+              </span>
             )}
           </Button>
         </div>
@@ -223,12 +229,13 @@ function RsvpsPage() {
                 <p className="text-sm text-muted-foreground mt-1 mb-6">
                   You haven't created any custom RSVP forms yet.
                 </p>
-                <Button 
+                <Button
                   className="rounded-full"
                   onClick={() => {
                     if (!canCreateCustomerForm()) {
                       toast.error("Form Limit Reached", {
-                        description: "You have reached the maximum number of custom forms for your plan. Please upgrade to create more."
+                        description:
+                          "You have reached the maximum number of custom forms for your plan. Please upgrade to create more.",
                       });
                       return;
                     }
@@ -240,7 +247,9 @@ function RsvpsPage() {
                       <Plus className="mr-2 h-4 w-4" /> Create First Form
                     </Link>
                   ) : (
-                    <span><Plus className="mr-2 h-4 w-4" /> Create First Form</span>
+                    <span>
+                      <Plus className="mr-2 h-4 w-4" /> Create First Form
+                    </span>
                   )}
                 </Button>
               </div>

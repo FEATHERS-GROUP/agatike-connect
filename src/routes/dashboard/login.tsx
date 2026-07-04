@@ -8,7 +8,21 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Loader2, Ticket, Users, BarChart3, MousePointer2, CalendarHeart, ShoppingCart, LayoutTemplate, Film, Building2, Plane } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  Loader2,
+  Ticket,
+  Users,
+  BarChart3,
+  MousePointer2,
+  CalendarHeart,
+  ShoppingCart,
+  LayoutTemplate,
+  Film,
+  Building2,
+  Plane,
+} from "lucide-react";
 import { loginOrganizer, googleAuthOrganizer } from "@/api/auth";
 import { loginWorkspaceUser } from "@/api/workspace_users";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -26,11 +40,31 @@ const loginSchema = z.object({
 type LoginValues = z.infer<typeof loginSchema>;
 
 const features = [
-  { title: "Powerful Insights", desc: "Track your ticket sales, manage your attendees, and scale your events with our all-in-one organizer platform.", image: "/admin-dashboard-preview.png" },
-  { title: "Procurement & Finance", desc: "Create and manage purchase orders, track vendor deliveries, and automate your back-office procurement.", image: "/procurement-preview.png" },
-  { title: "Ticket Designer", desc: "Design stunning digital and printable tickets with our intuitive drag-and-drop builder.", image: "/ticket-designer-preview.png" },
-  { title: "Page Builder", desc: "Launch immersive event pages, registration forms, and beautiful websites instantly using our templates.", image: "/page-builder-preview.png" },
-  { title: "Venue Designer & Cinema", desc: "Design interactive seating charts, host movie screenings, and manage your arena layouts visually.", image: "/cinema-preview.png" }
+  {
+    title: "Powerful Insights",
+    desc: "Track your ticket sales, manage your attendees, and scale your events with our all-in-one organizer platform.",
+    image: "/admin-dashboard-preview.png",
+  },
+  {
+    title: "Procurement & Finance",
+    desc: "Create and manage purchase orders, track vendor deliveries, and automate your back-office procurement.",
+    image: "/procurement-preview.png",
+  },
+  {
+    title: "Ticket Designer",
+    desc: "Design stunning digital and printable tickets with our intuitive drag-and-drop builder.",
+    image: "/ticket-designer-preview.png",
+  },
+  {
+    title: "Page Builder",
+    desc: "Launch immersive event pages, registration forms, and beautiful websites instantly using our templates.",
+    image: "/page-builder-preview.png",
+  },
+  {
+    title: "Venue Designer & Cinema",
+    desc: "Design interactive seating charts, host movie screenings, and manage your arena layouts visually.",
+    image: "/cinema-preview.png",
+  },
 ];
 
 function DashboardLoginPage() {
@@ -188,7 +222,9 @@ function DashboardLoginPage() {
                     placeholder="••••••••"
                   />
                 </div>
-                {errors.password && <p className="text-xs text-red-400">{errors.password.message}</p>}
+                {errors.password && (
+                  <p className="text-xs text-red-400">{errors.password.message}</p>
+                )}
               </div>
 
               <Button
@@ -271,17 +307,17 @@ function DashboardLoginPage() {
           <div className="w-full relative rounded-2xl overflow-visible shadow-2xl group">
             {/* Dark overlay for aesthetic */}
             <div className="absolute inset-0 bg-gradient-to-t from-white/90 dark:from-[#0a0a0a]/90 via-white/20 dark:via-[#0a0a0a]/20 to-transparent z-10 pointer-events-none rounded-2xl"></div>
-            
+
             {features.map((feature, idx) => (
-              <img 
+              <img
                 key={idx}
-                src={feature.image} 
-                alt={feature.title} 
+                src={feature.image}
+                alt={feature.title}
                 onError={(e) => {
                   e.currentTarget.src = "/admin-dashboard-preview.png";
                 }}
                 className={`absolute inset-0 w-full h-full object-cover rounded-2xl border border-gray-200 dark:border-white/10 transition-opacity duration-1000 ${
-                  currentFeature === idx ? 'opacity-100 relative' : 'opacity-0 absolute'
+                  currentFeature === idx ? "opacity-100 relative" : "opacity-0 absolute"
                 }`}
               />
             ))}
@@ -290,7 +326,7 @@ function DashboardLoginPage() {
             <div className="absolute -top-8 -left-8 w-16 h-16 bg-blue-500/20 backdrop-blur-xl border border-blue-500/30 rounded-2xl flex items-center justify-center animate-[bounce_4s_infinite] z-20 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
               <CalendarHeart className="text-blue-400 w-8 h-8" />
             </div>
-            
+
             <div className="absolute top-1/4 -right-8 w-20 h-20 bg-orange-500/20 backdrop-blur-xl border border-orange-500/30 rounded-3xl flex items-center justify-center animate-[pulse_3s_infinite] z-20 rotate-12 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
               <LayoutTemplate className="text-orange-400 w-10 h-10" />
             </div>
@@ -302,7 +338,7 @@ function DashboardLoginPage() {
             <div className="absolute bottom-1/4 -right-10 w-24 h-24 bg-green-500/20 backdrop-blur-xl border border-green-500/30 rounded-[2rem] flex items-center justify-center animate-[bounce_6s_infinite] z-20 -rotate-12 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
               <ShoppingCart className="text-green-400 w-12 h-12" />
             </div>
-            
+
             <div className="absolute -bottom-10 left-1/4 w-16 h-16 bg-red-500/20 backdrop-blur-xl border border-red-500/30 rounded-2xl flex items-center justify-center animate-[pulse_4s_infinite_1s] z-20 rotate-45 shadow-[0_0_30px_rgba(239,68,68,0.3)]">
               <Film className="text-red-400 w-8 h-8" />
             </div>
@@ -316,49 +352,53 @@ function DashboardLoginPage() {
             </div>
 
             {/* Animated Cursor clicking */}
-            <div 
-              className="absolute z-30 pointer-events-none transition-all duration-1000 ease-in-out flex flex-col items-center" 
+            <div
+              className="absolute z-30 pointer-events-none transition-all duration-1000 ease-in-out flex flex-col items-center"
               style={{
-                top: currentFeature % 2 === 0 ? '30%' : '50%',
-                left: currentFeature % 3 === 0 ? '40%' : '60%',
+                top: currentFeature % 2 === 0 ? "30%" : "50%",
+                left: currentFeature % 3 === 0 ? "40%" : "60%",
               }}
             >
               <div className="relative">
                 <MousePointer2 className="w-8 h-8 text-gray-900 dark:text-white fill-black drop-shadow-2xl -rotate-12" />
-                <div 
-                  className="absolute top-0 left-0 w-8 h-8 rounded-full bg-gray-900/30 dark:bg-white/50 animate-ping" 
+                <div
+                  className="absolute top-0 left-0 w-8 h-8 rounded-full bg-gray-900/30 dark:bg-white/50 animate-ping"
                   key={currentFeature}
                 ></div>
               </div>
             </div>
-            
+
             {/* Dynamic Features Card */}
             <div className="absolute -bottom-8 left-10 right-10 z-20">
               <div className="bg-white/80 dark:bg-black/60 backdrop-blur-xl border border-gray-300 dark:border-white/20 p-6 rounded-2xl w-full max-w-md relative min-h-[140px] overflow-hidden shadow-2xl mx-auto lg:mx-0">
                 {features.map((feature, idx) => (
-                   <div 
-                     key={idx} 
-                     className={`transition-all duration-700 absolute inset-0 p-6 flex flex-col justify-center ${
-                       currentFeature === idx 
-                        ? 'opacity-100 translate-y-0 z-10' 
-                        : 'opacity-0 translate-y-4 z-0 pointer-events-none'
-                     }`}
-                   >
-                     <h3 className="text-gray-900 dark:text-white font-bold text-xl mb-2 flex items-center gap-2">
-                        {feature.title}
-                     </h3>
-                     <p className="text-gray-600 dark:text-white/70 text-sm leading-relaxed">{feature.desc}</p>
-                   </div>
+                  <div
+                    key={idx}
+                    className={`transition-all duration-700 absolute inset-0 p-6 flex flex-col justify-center ${
+                      currentFeature === idx
+                        ? "opacity-100 translate-y-0 z-10"
+                        : "opacity-0 translate-y-4 z-0 pointer-events-none"
+                    }`}
+                  >
+                    <h3 className="text-gray-900 dark:text-white font-bold text-xl mb-2 flex items-center gap-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-600 dark:text-white/70 text-sm leading-relaxed">
+                      {feature.desc}
+                    </p>
+                  </div>
                 ))}
-                
+
                 {/* Progress Indicators */}
                 <div className="absolute bottom-4 left-6 flex gap-1.5 z-20">
                   {features.map((_, idx) => (
-                    <div 
-                      key={idx} 
+                    <div
+                      key={idx}
                       className={`h-1 rounded-full transition-all duration-500 ${
-                        currentFeature === idx ? 'w-6 bg-primary' : 'w-2 bg-gray-300 dark:bg-white/20'
-                      }`} 
+                        currentFeature === idx
+                          ? "w-6 bg-primary"
+                          : "w-2 bg-gray-300 dark:bg-white/20"
+                      }`}
                     />
                   ))}
                 </div>

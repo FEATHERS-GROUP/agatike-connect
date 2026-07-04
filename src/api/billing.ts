@@ -323,12 +323,16 @@ export const cancelSubscriptionAdmin = createServerFn({ method: "POST" })
     const { organizer_id } = ctx.data;
 
     // 1. Fetch Basic Plan
-    const basicPlanRes = await hasuraRequest<{ pricing_plans: { id: string; modules_included: any[] }[] }>(GET_BASIC_PLAN);
+    const basicPlanRes = await hasuraRequest<{
+      pricing_plans: { id: string; modules_included: any[] }[];
+    }>(GET_BASIC_PLAN);
     const basicPlan = basicPlanRes.pricing_plans[0];
     if (!basicPlan) throw new Error("Basic plan not found");
 
     // 2. Cancel existing active subscription(s)
-    const activeSubRes = await hasuraRequest<{ subscriptions: { id: string }[] }>(GET_ACTIVE_SUB, { organizer_id });
+    const activeSubRes = await hasuraRequest<{ subscriptions: { id: string }[] }>(GET_ACTIVE_SUB, {
+      organizer_id,
+    });
     if (activeSubRes.subscriptions.length > 0) {
       for (const sub of activeSubRes.subscriptions) {
         await hasuraRequest(CANCEL_SUB, { id: sub.id });
@@ -339,18 +343,15 @@ export const cancelSubscriptionAdmin = createServerFn({ method: "POST" })
     const nextBillingDate = new Date();
     nextBillingDate.setDate(nextBillingDate.getDate() + 14); // Keep basic standard trial logic or just give them a placeholder expiration
 
-    await hasuraRequest<{ insert_subscriptions_one: { id: string } }>(
-      CREATE_SUB,
-      {
-        object: {
-          organizer_id,
-          plan_id: basicPlan.id,
-          amount: 0,
-          status: "active",
-          next_billing_date: nextBillingDate.toISOString(),
-        },
-      }
-    );
+    await hasuraRequest<{ insert_subscriptions_one: { id: string } }>(CREATE_SUB, {
+      object: {
+        organizer_id,
+        plan_id: basicPlan.id,
+        amount: 0,
+        status: "active",
+        next_billing_date: nextBillingDate.toISOString(),
+      },
+    });
 
     // 4. Update all workspaces' modules to basic modules
     await hasuraRequest(UPDATE_WORKSPACES_MODULES, {
@@ -425,11 +426,11 @@ export const getOrganizerUsageStats = createServerFn({ method: "POST" })
     `;
 
     try {
-      const res = await hasuraRequest<any>(query, { 
+      const res = await hasuraRequest<any>(query, {
         organizer_id_uuid: ctx.data.organizer_id,
-        organizer_id_str: ctx.data.organizer_id
+        organizer_id_str: ctx.data.organizer_id,
       });
-      
+
       return {
         workspaces: res.workspaces_aggregate?.aggregate?.count || 0,
         invoices: res.organizer_invoices_aggregate?.aggregate?.count || 0,
@@ -440,7 +441,6 @@ export const getOrganizerUsageStats = createServerFn({ method: "POST" })
       return { workspaces: 0, invoices: 0, users: 0 };
     }
   });
-
 
 export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
   .validator((d: { workspace_id: string }) => d)
@@ -474,9 +474,9 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
     `;
 
     try {
-      const res = await hasuraRequest<any>(query, { 
+      const res = await hasuraRequest<any>(query, {
         workspace_id_uuid: ctx.data.workspace_id,
-        workspace_id_str: ctx.data.workspace_id
+        workspace_id_str: ctx.data.workspace_id,
       });
 
       return {
@@ -501,7 +501,9 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         books: res.agatike_books_aggregate?.aggregate?.count || 0,
         rsvps: res.rsvps_aggregate?.aggregate?.count || 0,
         procurements: res.invoices_aggregate?.aggregate?.count || 0, // Using invoices for finance/procurement for now
-        ticket_tiers: (res.event_tickets_aggregate?.aggregate?.count || 0) + (res.cinema_ticket_tiers_aggregate?.aggregate?.count || 0),
+        ticket_tiers:
+          (res.event_tickets_aggregate?.aggregate?.count || 0) +
+          (res.cinema_ticket_tiers_aggregate?.aggregate?.count || 0),
         comments: 0,
         membership_plans: 0,
         locations: 0,

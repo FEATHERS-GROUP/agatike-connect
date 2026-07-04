@@ -287,7 +287,10 @@ function SpacePlansPage() {
   });
 
   const { activeWorkspace } = useWorkspace();
-  const { canCreateMembershipPlan } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateMembershipPlan } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);

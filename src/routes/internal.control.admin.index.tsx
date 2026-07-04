@@ -51,7 +51,9 @@ function AdminDashboard() {
         {/* Main Chart Area */}
         <div className="col-span-1 xl:col-span-2 bg-gray-50 dark:bg-[#252526] p-4 border border-gray-200 dark:border-transparent rounded-lg">
           <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200 dark:border-[#333333]">
-            <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc]">Revenue Analytics</h3>
+            <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc]">
+              Revenue Analytics
+            </h3>
             <select className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] text-[11px] text-gray-700 dark:text-[#cccccc] px-2 py-1 outline-none">
               <option>Last 30 Days</option>
               <option>This Year</option>
@@ -81,8 +83,12 @@ function AdminDashboard() {
                   <Activity className="h-4 w-4 text-[#f97316]" />
                 </div>
                 <div>
-                  <p className="text-[13px] text-gray-700 dark:text-[#cccccc]">Update Organizer Config</p>
-                  <p className="text-[11px] text-gray-600 dark:text-[#797775] mt-0.5">Succeeded • Global Admin</p>
+                  <p className="text-[13px] text-gray-700 dark:text-[#cccccc]">
+                    Update Organizer Config
+                  </p>
+                  <p className="text-[11px] text-gray-600 dark:text-[#797775] mt-0.5">
+                    Succeeded • Global Admin
+                  </p>
                 </div>
               </div>
             ))}

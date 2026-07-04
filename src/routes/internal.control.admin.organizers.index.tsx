@@ -59,11 +59,21 @@ function AdminOrganizers() {
                     className="rounded-sm border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111] accent-[#f97316]"
                   />
                 </th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Name</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Handle</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Email</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
-                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Followers</th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Name
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Handle
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Email
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Status
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Followers
+                </th>
                 <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]"></th>
               </tr>
             </thead>
@@ -76,7 +86,10 @@ function AdminOrganizers() {
                 </tr>
               ) : (
                 organizers.map((org) => (
-                  <tr key={org.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                  <tr
+                    key={org.id}
+                    className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                  >
                     <td className="py-2 px-4">
                       <input
                         type="checkbox"
@@ -129,10 +142,16 @@ function AdminOrganizers() {
         <div className="flex items-center justify-between p-2 border-t border-gray-200 dark:border-[#333333] bg-gray-50 dark:bg-[#252526] text-gray-600 dark:text-[#797775] text-[11px]">
           <div>Showing {organizers.length} items</div>
           <div className="flex items-center gap-4">
-            <button className="hover:text-gray-900 dark:hover:text-white transition-colors disabled:opacity-50" disabled>
+            <button
+              className="hover:text-gray-900 dark:hover:text-white transition-colors disabled:opacity-50"
+              disabled
+            >
               Previous
             </button>
-            <button className="hover:text-gray-900 dark:hover:text-white transition-colors disabled:opacity-50" disabled>
+            <button
+              className="hover:text-gray-900 dark:hover:text-white transition-colors disabled:opacity-50"
+              disabled
+            >
               Next
             </button>
           </div>

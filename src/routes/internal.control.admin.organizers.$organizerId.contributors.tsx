@@ -82,7 +82,9 @@ function ResourceTypePill({ type }: { type: string }) {
     venue_project: "text-[#c586c0] bg-[#c586c0]/10 border-[#c586c0]/30",
     badge_project: "text-[#84c87e] bg-[#84c87e]/10 border-[#84c87e]/30",
   };
-  const cls = colorMap[type] || "text-gray-600 dark:text-[#797775] bg-transparent border-gray-200 dark:border-[#333333]";
+  const cls =
+    colorMap[type] ||
+    "text-gray-600 dark:text-[#797775] bg-transparent border-gray-200 dark:border-[#333333]";
   return (
     <span className={`inline-flex items-center px-2 py-0.5 text-[11px] border capitalize ${cls}`}>
       {label || "—"}
@@ -168,7 +170,9 @@ function OrganizerContributors() {
           },
         ].map((k, i) => (
           <div key={i} className="bg-gray-100 dark:bg-[#1a1a1a] px-5 py-5">
-            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-2">{k.label}</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-2">
+              {k.label}
+            </p>
             <p className={`font-bold text-lg leading-tight mb-0.5 ${k.color}`}>{k.value}</p>
             <p className="text-gray-600 dark:text-[#797775] text-xs truncate">{k.sub}</p>
           </div>
@@ -182,7 +186,9 @@ function OrganizerContributors() {
             <Users2 className="h-4 w-4 text-[#c586c0]" />
             <h2 className="text-sm font-medium text-gray-900 dark:text-white">
               Contributors
-              <span className="ml-2 text-gray-600 dark:text-[#797775] font-normal">({contributors.length})</span>
+              <span className="ml-2 text-gray-600 dark:text-[#797775] font-normal">
+                ({contributors.length})
+              </span>
             </h2>
           </div>
 
@@ -241,23 +247,36 @@ function OrganizerContributors() {
             <table className="w-full text-left text-[13px] whitespace-nowrap">
               <thead>
                 <tr className="bg-gray-100 dark:bg-[#2d2d30] text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider">
-                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">Email</th>
-                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">Workspace</th>
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                    Email
+                  </th>
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                    Workspace
+                  </th>
                   <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
                     Resource Type
                   </th>
-                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">Resource ID</th>
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                    Resource ID
+                  </th>
                   <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
                     Access Level
                   </th>
-                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">Status</th>
-                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">Added</th>
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                    Status
+                  </th>
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                    Added
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                 {slice.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-gray-600 dark:text-[#797775] italic">
+                    <td
+                      colSpan={7}
+                      className="py-12 text-center text-gray-600 dark:text-[#797775] italic"
+                    >
                       {search || filterType !== "all" || filterAccess !== "all"
                         ? "No contributors match your filters."
                         : "No contributors found."}

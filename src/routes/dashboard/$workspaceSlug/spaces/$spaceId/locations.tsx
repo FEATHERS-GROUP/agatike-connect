@@ -14,7 +14,10 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/$spaceId/
 function SpaceLocationsPage() {
   const { spaceId } = useParams({ strict: false }) as any;
   const { activeWorkspace } = useWorkspace();
-  const { canCreateLocation } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateLocation } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: space, isLoading } = useQuery({
     queryKey: ["space", spaceId],

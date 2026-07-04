@@ -369,7 +369,12 @@ function PricingPlansPage() {
                   What's included:
                 </h4>
                 <ul className="space-y-3 mb-6">
-                  {(Array.isArray(plan.features) ? plan.features : typeof plan.features === "string" ? JSON.parse(plan.features) : []).map((feature: string, i: number) => (
+                  {(Array.isArray(plan.features)
+                    ? plan.features
+                    : typeof plan.features === "string"
+                      ? JSON.parse(plan.features)
+                      : []
+                  ).map((feature: string, i: number) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
                       <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                       <span>{feature}</span>

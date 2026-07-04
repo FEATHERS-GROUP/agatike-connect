@@ -14,9 +14,9 @@ const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_
 export const loginAdmin = createServerFn({ method: "POST" })
   .validator((d: { email: string; password: string }) => d)
   .handler(async (ctx) => {
-  const { email, password } = ctx.data;
+    const { email, password } = ctx.data;
 
-  const query = `
+    const query = `
       query GetAdmin($email: String!) {
         admin_users(where: { email: { _ilike: $email } }) {
           id
@@ -30,42 +30,48 @@ export const loginAdmin = createServerFn({ method: "POST" })
       }
     `;
 
-  const result = await hasuraRequest<{
-    admin_users: { id: string; password: string; role: string; is_super_admin: boolean; group?: { permissions: string[] } }[];
-  }>(query, {
-    email,
+    const result = await hasuraRequest<{
+      admin_users: {
+        id: string;
+        password: string;
+        role: string;
+        is_super_admin: boolean;
+        group?: { permissions: string[] };
+      }[];
+    }>(query, {
+      email,
+    });
+    const admin = result.admin_users[0];
+
+    if (!admin) {
+      throw new Error("Invalid email or password");
+    }
+
+    const isValid = await bcrypt.compare(password, admin.password);
+    if (!isValid) {
+      throw new Error("Invalid email or password");
+    }
+
+    const token = await new SignJWT({
+      sub: admin.id,
+      type: "global_admin",
+      role: admin.role,
+      is_super_admin: admin.is_super_admin,
+      permissions: admin.group?.permissions || [],
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setExpirationTime("24h") // 24 hours as requested
+      .sign(SECRET);
+
+    setCookie("agatike_admin_auth", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/", // Must be / for TanStack Start server functions to receive it
+      maxAge: 60 * 60 * 24, // 24 hours
+    });
+
+    return { success: true, id: admin.id, role: admin.role };
   });
-  const admin = result.admin_users[0];
-
-  if (!admin) {
-    throw new Error("Invalid email or password");
-  }
-
-  const isValid = await bcrypt.compare(password, admin.password);
-  if (!isValid) {
-    throw new Error("Invalid email or password");
-  }
-
-  const token = await new SignJWT({
-    sub: admin.id,
-    type: "global_admin",
-    role: admin.role,
-    is_super_admin: admin.is_super_admin,
-    permissions: admin.group?.permissions || [],
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("24h") // 24 hours as requested
-    .sign(SECRET);
-
-  setCookie("agatike_admin_auth", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    path: "/", // Must be / for TanStack Start server functions to receive it
-    maxAge: 60 * 60 * 24, // 24 hours
-  });
-
-  return { success: true, id: admin.id, role: admin.role };
-});
 
 export const getAdminSession = createServerFn({ method: "POST" }).handler(async () => {
   const token = getCookie("agatike_admin_auth");
