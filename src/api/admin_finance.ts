@@ -220,6 +220,45 @@ export const createPricingPlanAdmin = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const getPricingPlanStatsAdmin = createServerFn({ method: "POST" })
+  .validator((d: { planId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("Unauthorized");
+
+    const query = `
+      query GetPlanStats($planId: uuid!) {
+        subscriptions(where: { plan_id: { _eq: $planId } }) {
+          id
+          status
+          amount
+          created_at
+          workspace {
+            id
+            name
+          }
+          organizer {
+            id
+            name
+          }
+        }
+      }
+    `;
+
+    const data = await hasuraRequest<any>(query, { planId: ctx.data.planId });
+    const subs = data.subscriptions || [];
+
+    const activeSubs = subs.filter((s: any) => s.status === 'active' || s.status === 'ACTIVE');
+    const mrr = activeSubs.reduce((acc: number, curr: any) => acc + (parseFloat(curr.amount) || 0), 0);
+
+    return {
+      totalSubscribers: subs.length,
+      activeSubscribers: activeSubs.length,
+      monthlyRecurringRevenue: mrr,
+      subscriptions: subs
+    };
+  });
+
 // --- Earnings ---
 
 export const getEarningsAnalyticsAdmin = createServerFn({ method: "POST" })
@@ -253,9 +292,8 @@ export const getEarningsAnalyticsAdmin = createServerFn({ method: "POST" })
           status
           created_at
           wallet_transaction {
-            wallet {
-              walletNumber
-            }
+            id
+            workspace_id
           }
         }
       }
@@ -279,6 +317,58 @@ export const getEarningsAnalyticsAdmin = createServerFn({ method: "POST" })
     });
 
     return { records, stats };
+  });
+
+export const getEarningsLedgerAdmin = createServerFn({ method: "POST" })
+  .validator((d: { startDate?: string; endDate?: string; limit: number; offset: number }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("Unauthorized");
+
+    const { startDate, endDate, limit, offset } = ctx.data;
+
+    let dateFilter = "";
+    if (startDate && endDate) {
+      dateFilter = `created_at: { _gte: "${startDate}", _lte: "${endDate}" }`;
+    } else if (startDate) {
+      dateFilter = `created_at: { _gte: "${startDate}" }`;
+    }
+
+    const query = `
+      query GetEarningsLedger($limit: Int!, $offset: Int!) {
+        earnings(
+          ${dateFilter ? `where: { ${dateFilter} }` : ""}
+          order_by: { created_at: desc }
+          limit: $limit
+          offset: $offset
+        ) {
+          id
+          transaction_type
+          gross_amount
+          provider_cost
+          platform_revenue
+          net_profit
+          currency
+          status
+          created_at
+          wallet_transaction {
+            id
+            workspace_id
+          }
+        }
+        earnings_aggregate(${dateFilter ? `where: { ${dateFilter} }` : ""}) {
+          aggregate {
+            count
+          }
+        }
+      }
+    `;
+
+    const data = await hasuraRequest<any>(query, { limit, offset });
+    return {
+      records: data.earnings || [],
+      totalCount: data.earnings_aggregate?.aggregate?.count || 0
+    };
   });
 
 // --- Platform Modules ---

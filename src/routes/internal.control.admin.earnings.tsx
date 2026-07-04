@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { getEarningsAnalyticsAdmin } from "@/api/admin_finance";
+import { getEarningsAnalyticsAdmin, getEarningsLedgerAdmin } from "@/api/admin_finance";
 import { useState, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Loader2, TrendingUp, DollarSign, Wallet, ArrowRightLeft } from "lucide-react";
@@ -12,6 +12,8 @@ export const Route = createFileRoute("/internal/control/admin/earnings")({
 
 function AdminEarningsPage() {
   const [dateFilter, setDateFilter] = useState<"7d" | "1m" | "3m" | "1y" | "all">("1m");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(100);
 
   const filterDates = useMemo(() => {
     const now = new Date();
@@ -27,9 +29,14 @@ function AdminEarningsPage() {
     return { startDate: start.toISOString(), endDate: now.toISOString() };
   }, [dateFilter]);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading: statsLoading } = useQuery({
     queryKey: ["admin-earnings", filterDates],
     queryFn: () => getEarningsAnalyticsAdmin({ data: filterDates }),
+  });
+
+  const { data: ledgerData, isLoading: ledgerLoading } = useQuery({
+    queryKey: ["admin-earnings-ledger", filterDates, page, limit],
+    queryFn: () => getEarningsLedgerAdmin({ data: { ...filterDates, limit, offset: (page - 1) * limit } }),
   });
 
   const chartData = useMemo(() => {
@@ -68,7 +75,10 @@ function AdminEarningsPage() {
           ].map(f => (
             <button
               key={f.id}
-              onClick={() => setDateFilter(f.id as any)}
+              onClick={() => {
+                setDateFilter(f.id as any);
+                setPage(1);
+              }}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${dateFilter === f.id ? "bg-[#333333] text-white" : "text-muted-foreground hover:text-white"}`}
             >
               {f.label}
@@ -77,7 +87,7 @@ function AdminEarningsPage() {
         </div>
       </div>
 
-      {isLoading ? (
+      {statsLoading ? (
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-[#f97316]" />
         </div>
@@ -143,7 +153,7 @@ function AdminEarningsPage() {
                   <tr>
                     <th className="px-6 py-4 font-medium">Date</th>
                     <th className="px-6 py-4 font-medium">Type</th>
-                    <th className="px-6 py-4 font-medium">Wallet Number</th>
+                    <th className="px-6 py-4 font-medium">Reference</th>
                     <th className="px-6 py-4 font-medium">Gross</th>
                     <th className="px-6 py-4 font-medium">Revenue</th>
                     <th className="px-6 py-4 font-medium">Cost</th>
@@ -151,7 +161,13 @@ function AdminEarningsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#333333]">
-                  {data?.records.map((r: any) => (
+                  {ledgerLoading ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin mx-auto text-[#f97316]" />
+                      </td>
+                    </tr>
+                  ) : ledgerData?.records?.map((r: any) => (
                     <tr key={r.id} className="hover:bg-[#252526]/50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-muted-foreground">
                         {new Date(r.created_at).toLocaleDateString()} {new Date(r.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
@@ -159,8 +175,8 @@ function AdminEarningsPage() {
                       <td className="px-6 py-4 whitespace-nowrap capitalize text-white">
                         {r.transaction_type}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap font-mono text-muted-foreground">
-                        {r.wallet_transaction?.wallet?.walletNumber || "-"}
+                      <td className="px-6 py-4 whitespace-nowrap font-mono text-muted-foreground text-xs">
+                        {r.wallet_transaction?.id ? `Tx-${r.wallet_transaction.id.substring(0, 8)}` : "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-white">
                         {formatCurrency(r.gross_amount, r.currency)}
@@ -177,7 +193,7 @@ function AdminEarningsPage() {
                     </tr>
                   ))}
                   
-                  {(!data?.records || data.records.length === 0) && (
+                  {!ledgerLoading && (!ledgerData?.records || ledgerData.records.length === 0) && (
                     <tr>
                       <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
                         No transactions found for the selected period.
@@ -187,6 +203,43 @@ function AdminEarningsPage() {
                 </tbody>
               </table>
             </div>
+            
+            {/* Pagination Controls */}
+            {!ledgerLoading && ledgerData && ledgerData.totalCount > 0 && (
+              <div className="px-6 py-4 border-t border-[#333333] flex items-center justify-between bg-[#111111]/50">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-muted-foreground">
+                    Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, ledgerData.totalCount)} of {ledgerData.totalCount}
+                  </span>
+                  <select 
+                    value={limit} 
+                    onChange={e => { setLimit(Number(e.target.value)); setPage(1); }}
+                    className="bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1 text-xs text-white"
+                  >
+                    <option value={50}>50 per page</option>
+                    <option value={100}>100 per page</option>
+                    <option value={250}>250 per page</option>
+                    <option value={500}>500 per page</option>
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-3 py-1.5 text-xs font-medium rounded bg-[#1b1b1c] border border-[#333333] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#333333] transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button 
+                    onClick={() => setPage(p => p + 1)}
+                    disabled={page * limit >= ledgerData.totalCount}
+                    className="px-3 py-1.5 text-xs font-medium rounded bg-[#1b1b1c] border border-[#333333] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#333333] transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}
