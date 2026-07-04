@@ -186,7 +186,7 @@ function AdminPricingDetailsPage() {
     return (
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="text-center py-12">
-          <h2 className="text-xl font-bold text-white">Plan not found</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Plan not found</h2>
           <Link to="/internal/control/admin/pricing" className="text-[#f97316] hover:underline mt-4 inline-block">Go back to pricing plans</Link>
         </div>
       </div>
@@ -195,19 +195,19 @@ function AdminPricingDetailsPage() {
 
   const renderEditModal = () => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-        <div className="flex justify-between items-center p-6 border-b border-[#333333] bg-[#111111]">
+      <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111]">
           <div>
-            <h2 className="text-lg font-bold text-white">Edit Pricing Plan: {plan.name}</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Edit Pricing Plan: {plan.name}</h2>
             <p className="text-xs text-muted-foreground mt-0.5">Step {currentStep} of {TOTAL_STEPS} — {STEP_TITLES[currentStep - 1]}</p>
           </div>
-          <button onClick={() => setIsEditModalOpen(false)} className="text-muted-foreground hover:text-white transition-colors">
+          <button onClick={() => setIsEditModalOpen(false)} className="text-muted-foreground hover:text-gray-900 dark:hover:text-white transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Step Indicator */}
-        <div className="px-6 pt-5 pb-2 border-b border-[#333333] bg-[#111111]/40">
+        <div className="px-6 pt-5 pb-2 border-b border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111]/40">
           <div className="flex items-start gap-0">
             {STEP_TITLES.map((title, idx) => {
               const stepNum = idx + 1;
@@ -216,17 +216,17 @@ function AdminPricingDetailsPage() {
               return (
                 <div key={title} className="flex flex-col items-center flex-1">
                   <div className="flex items-center w-full">
-                    <div className={`h-0.5 flex-1 transition-colors ${idx === 0 ? 'invisible' : isCompleted || isActive ? 'bg-[#f97316]' : 'bg-[#333333]'}`} />
+                    <div className={`h-0.5 flex-1 transition-colors ${idx === 0 ? 'invisible' : isCompleted || isActive ? 'bg-[#f97316]' : 'bg-gray-200 dark:bg-[#333333]'}`} />
                     <button
                       type="button"
                       onClick={() => setCurrentStep(stepNum)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all shrink-0 ${isActive ? 'bg-[#f97316] text-white ring-2 ring-[#f97316]/30' : isCompleted ? 'bg-[#f97316]/20 text-[#f97316]' : 'bg-[#333333] text-muted-foreground hover:bg-[#444444]'}`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all shrink-0 ${isActive ? 'bg-[#f97316] text-white ring-2 ring-[#f97316]/30' : isCompleted ? 'bg-[#f97316]/20 text-[#f97316]' : 'bg-gray-200 dark:bg-[#333333] text-muted-foreground hover:bg-gray-200 dark:hover:bg-[#444444]'}`}
                     >
                       {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : stepNum}
                     </button>
-                    <div className={`h-0.5 flex-1 transition-colors ${idx === TOTAL_STEPS - 1 ? 'invisible' : isCompleted ? 'bg-[#f97316]' : 'bg-[#333333]'}`} />
+                    <div className={`h-0.5 flex-1 transition-colors ${idx === TOTAL_STEPS - 1 ? 'invisible' : isCompleted ? 'bg-[#f97316]' : 'bg-gray-200 dark:bg-[#333333]'}`} />
                   </div>
-                  <span className={`text-[10px] mt-2 text-center leading-tight ${isActive ? 'text-white font-medium' : isCompleted ? 'text-[#f97316]/80' : 'text-muted-foreground'}`}>{title}</span>
+                  <span className={`text-[10px] mt-2 text-center leading-tight ${isActive ? 'text-gray-900 dark:text-white font-medium' : isCompleted ? 'text-[#f97316]/80' : 'text-muted-foreground'}`}>{title}</span>
                 </div>
               );
             })}
@@ -241,12 +241,12 @@ function AdminPricingDetailsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">Plan Name</label>
-                  <input type="text" value={formState.name || ""} onChange={e => setFormState({...formState, name: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                  <input type="text" value={formState.name || ""} onChange={e => setFormState({...formState, name: e.target.value})} className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white" />
                   <p className="text-[10px] text-muted-foreground">The public facing name of the subscription.</p>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">Billing Cycle</label>
-                  <select value={formState.billing_cycle || "monthly"} onChange={e => setFormState({...formState, billing_cycle: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white">
+                  <select value={formState.billing_cycle || "monthly"} onChange={e => setFormState({...formState, billing_cycle: e.target.value})} className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white">
                     <option value="monthly">Monthly</option>
                     <option value="yearly">Yearly</option>
                     <option value="one-time">One-time</option>
@@ -255,12 +255,12 @@ function AdminPricingDetailsPage() {
                 </div>
                 <div className="space-y-1.5 col-span-2">
                   <label className="text-xs font-medium text-muted-foreground">Description</label>
-                  <input type="text" value={formState.description || ""} onChange={e => setFormState({...formState, description: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                  <input type="text" value={formState.description || ""} onChange={e => setFormState({...formState, description: e.target.value})} className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white" />
                   <p className="text-[10px] text-muted-foreground">A short marketing description shown on the pricing page.</p>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">Active Status</label>
-                  <select value={formState.active} onChange={e => setFormState({...formState, active: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white">
+                  <select value={formState.active} onChange={e => setFormState({...formState, active: e.target.value})} className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white">
                     <option value="true">Active (Visible)</option>
                     <option value="false">Inactive (Hidden)</option>
                   </select>
@@ -268,7 +268,7 @@ function AdminPricingDetailsPage() {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground">Is Popular (Badge)</label>
-                  <select value={formState.is_popular} onChange={e => setFormState({...formState, is_popular: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white">
+                  <select value={formState.is_popular} onChange={e => setFormState({...formState, is_popular: e.target.value})} className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white">
                     <option value="true">Yes</option>
                     <option value="false">No</option>
                   </select>
@@ -282,21 +282,21 @@ function AdminPricingDetailsPage() {
           {currentStep === 2 && (
             <div className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-white border-b border-[#333333] pb-2">Subscription Pricing</h3>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-[#333333] pb-2">Subscription Pricing</h3>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-muted-foreground">Currency</label>
-                    <input type="text" value={formState.currency || "RWF"} onChange={e => setFormState({...formState, currency: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                    <input type="text" value={formState.currency || "RWF"} onChange={e => setFormState({...formState, currency: e.target.value})} className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white" />
                     <p className="text-[10px] text-muted-foreground">Base currency (e.g. RWF, USD).</p>
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-muted-foreground">Monthly Price</label>
-                    <input type="number" step="1" value={formState.price || ""} onChange={e => setFormState({...formState, price: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                    <input type="number" step="1" value={formState.price || ""} onChange={e => setFormState({...formState, price: e.target.value})} className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white" />
                     <p className="text-[10px] text-muted-foreground">Cost per month.</p>
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-muted-foreground">Yearly Price (Optional)</label>
-                    <input type="number" step="1" value={formState.yearly_price || ""} onChange={e => setFormState({...formState, yearly_price: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                    <input type="number" step="1" value={formState.yearly_price || ""} onChange={e => setFormState({...formState, yearly_price: e.target.value})} className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white" />
                     <p className="text-[10px] text-muted-foreground">Discounted yearly cost.</p>
                   </div>
                 </div>
@@ -307,12 +307,12 @@ function AdminPricingDetailsPage() {
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-blue-400/80">Organizer Platform Contribution (%)</label>
-                    <input type="number" step="0.01" value={formState.organizer_platform_contribution || ""} onChange={e => setFormState({...formState, organizer_platform_contribution: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                    <input type="number" step="0.01" value={formState.organizer_platform_contribution || ""} onChange={e => setFormState({...formState, organizer_platform_contribution: e.target.value})} className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white" />
                     <p className="text-[10px] text-blue-400/60">Percentage taken from the Organizer on ticket sales and withdrawals.</p>
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-blue-400/80">Customer Service Fee (%)</label>
-                    <input type="number" step="0.01" value={formState.customer_service_fee_percentage || ""} onChange={e => setFormState({...formState, customer_service_fee_percentage: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                    <input type="number" step="0.01" value={formState.customer_service_fee_percentage || ""} onChange={e => setFormState({...formState, customer_service_fee_percentage: e.target.value})} className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white" />
                     <p className="text-[10px] text-blue-400/60">Percentage passed directly to the end customer when buying tickets.</p>
                   </div>
                 </div>
@@ -323,32 +323,32 @@ function AdminPricingDetailsPage() {
           {/* Step 3 – Advanced Overrides */}
           {currentStep === 3 && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-white border-b border-[#333333] pb-2">Advanced Routing &amp; Fee Overrides</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-[#333333] pb-2">Advanced Routing &amp; Fee Overrides</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-4 p-4 bg-[#111111] rounded-lg border border-[#333333]">
+                <div className="space-y-4 p-4 bg-white dark:bg-[#111111] rounded-lg border border-gray-200 dark:border-[#333333]">
                   <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Collections (Ticket Sales)</h4>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-medium text-muted-foreground">Cust. Override (%)</label>
-                      <input type="number" step="0.01" value={formState.customer_collection_fee_percentage || ""} onChange={e => setFormState({...formState, customer_collection_fee_percentage: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                      <input type="number" step="0.01" value={formState.customer_collection_fee_percentage || ""} onChange={e => setFormState({...formState, customer_collection_fee_percentage: e.target.value})} className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded px-2 py-1.5 text-xs text-gray-900 dark:text-white" />
                       <p className="text-[9px] text-muted-foreground leading-tight">Overrides the Customer Service Fee if set.</p>
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-medium text-muted-foreground">Cust. Override (Fixed)</label>
-                      <input type="number" step="1" value={formState.customer_collection_fee_fixed || ""} onChange={e => setFormState({...formState, customer_collection_fee_fixed: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                      <input type="number" step="1" value={formState.customer_collection_fee_fixed || ""} onChange={e => setFormState({...formState, customer_collection_fee_fixed: e.target.value})} className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded px-2 py-1.5 text-xs text-gray-900 dark:text-white" />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-medium text-muted-foreground">Org. Override (%)</label>
-                      <input type="number" step="0.01" value={formState.organizer_collection_fee_percentage || ""} onChange={e => setFormState({...formState, organizer_collection_fee_percentage: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                      <input type="number" step="0.01" value={formState.organizer_collection_fee_percentage || ""} onChange={e => setFormState({...formState, organizer_collection_fee_percentage: e.target.value})} className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded px-2 py-1.5 text-xs text-gray-900 dark:text-white" />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-medium text-muted-foreground">Org. Override (Fixed)</label>
-                      <input type="number" step="1" value={formState.organizer_collection_fee_fixed || ""} onChange={e => setFormState({...formState, organizer_collection_fee_fixed: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                      <input type="number" step="1" value={formState.organizer_collection_fee_fixed || ""} onChange={e => setFormState({...formState, organizer_collection_fee_fixed: e.target.value})} className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded px-2 py-1.5 text-xs text-gray-900 dark:text-white" />
                     </div>
                   </div>
-                  <div className="space-y-1.5 pt-2 border-t border-[#333333]">
+                  <div className="space-y-1.5 pt-2 border-t border-gray-200 dark:border-[#333333]">
                     <label className="text-xs font-medium text-muted-foreground">Enable Subsidized Collections?</label>
-                    <select value={formState.enable_subsidized_collection} onChange={e => setFormState({...formState, enable_subsidized_collection: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white">
+                    <select value={formState.enable_subsidized_collection} onChange={e => setFormState({...formState, enable_subsidized_collection: e.target.value})} className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded px-2 py-1.5 text-xs text-gray-900 dark:text-white">
                       <option value="true">Yes</option>
                       <option value="false">No</option>
                     </select>
@@ -356,21 +356,21 @@ function AdminPricingDetailsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-4 p-4 bg-[#111111] rounded-lg border border-[#333333]">
+                <div className="space-y-4 p-4 bg-white dark:bg-[#111111] rounded-lg border border-gray-200 dark:border-[#333333]">
                   <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Withdrawals</h4>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-medium text-muted-foreground">Withdraw Override (%)</label>
-                      <input type="number" step="0.01" value={formState.withdrawal_fee_percentage || ""} onChange={e => setFormState({...formState, withdrawal_fee_percentage: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                      <input type="number" step="0.01" value={formState.withdrawal_fee_percentage || ""} onChange={e => setFormState({...formState, withdrawal_fee_percentage: e.target.value})} className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded px-2 py-1.5 text-xs text-gray-900 dark:text-white" />
                       <p className="text-[9px] text-muted-foreground leading-tight">Overrides the Organizer Platform Contribution for withdrawals.</p>
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-medium text-muted-foreground">Withdraw Override (Fixed)</label>
-                      <input type="number" step="1" value={formState.withdrawal_fee_fixed || ""} onChange={e => setFormState({...formState, withdrawal_fee_fixed: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                      <input type="number" step="1" value={formState.withdrawal_fee_fixed || ""} onChange={e => setFormState({...formState, withdrawal_fee_fixed: e.target.value})} className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded px-2 py-1.5 text-xs text-gray-900 dark:text-white" />
                     </div>
                     <div className="space-y-1.5 col-span-2">
                       <label className="text-[10px] font-medium text-muted-foreground">Max Withdrawals/Week</label>
-                      <input type="text" value={formState.max_withdrawals_per_week || "unlimited"} onChange={e => setFormState({...formState, max_withdrawals_per_week: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                      <input type="text" value={formState.max_withdrawals_per_week || "unlimited"} onChange={e => setFormState({...formState, max_withdrawals_per_week: e.target.value})} className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded px-2 py-1.5 text-xs text-gray-900 dark:text-white" />
                     </div>
                   </div>
                 </div>
@@ -383,8 +383,8 @@ function AdminPricingDetailsPage() {
             <div className="grid grid-cols-2 gap-8">
               {/* Features Array */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-[#333333] pb-2">
-                  <h3 className="text-sm font-semibold text-white">Features List</h3>
+                <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#333333] pb-2">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Features List</h3>
                   <button onClick={addFeature} className="text-xs flex items-center gap-1 text-[#f97316] hover:text-[#ea580c] transition-colors">
                     <Plus className="h-3 w-3" /> Add Feature
                   </button>
@@ -397,7 +397,7 @@ function AdminPricingDetailsPage() {
                         type="text"
                         value={feature}
                         onChange={(e) => updateFeature(idx, e.target.value)}
-                        className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-xs text-white"
+                        className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-xs text-gray-900 dark:text-white"
                         placeholder="e.g. Unlimited tickets"
                       />
                       <button onClick={() => removeFeature(idx)} className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors">
@@ -406,7 +406,7 @@ function AdminPricingDetailsPage() {
                     </div>
                   ))}
                   {(!formState.features || formState.features.length === 0) && (
-                    <div className="text-xs text-muted-foreground text-center py-4 border border-dashed border-[#333333] rounded-lg">
+                    <div className="text-xs text-muted-foreground text-center py-4 border border-dashed border-gray-200 dark:border-[#333333] rounded-lg">
                       No features added yet.
                     </div>
                   )}
@@ -415,21 +415,21 @@ function AdminPricingDetailsPage() {
 
               {/* Modules Array */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-white border-b border-[#333333] pb-2">Included Modules</h3>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-[#333333] pb-2">Included Modules</h3>
                 <p className="text-[10px] text-muted-foreground">Select the system modules granted by this subscription.</p>
                 <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
                   {platformModules.map((module: any) => {
                     const isIncluded = (formState.modules_included || []).includes(module.id);
                     return (
-                      <label key={module.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${isIncluded ? 'bg-blue-500/10 border-blue-500/30' : 'bg-[#111111] border-[#333333] hover:border-[#444444]'}`}>
+                      <label key={module.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${isIncluded ? 'bg-blue-500/10 border-blue-500/30' : 'bg-white dark:bg-[#111111] border-gray-200 dark:border-[#333333] hover:border-gray-300 dark:hover:border-[#444444]'}`}>
                         <input
                           type="checkbox"
                           checked={isIncluded}
                           onChange={() => toggleModule(module.id)}
-                          className="accent-blue-500 h-4 w-4 rounded bg-[#1b1b1c] border-[#333333]"
+                          className="accent-blue-500 h-4 w-4 rounded bg-gray-50 dark:bg-[#1b1b1c] border-gray-200 dark:border-[#333333]"
                         />
                         <div>
-                          <div className={`text-sm font-medium ${isIncluded ? 'text-blue-400' : 'text-white'}`}>{module.label}</div>
+                          <div className={`text-sm font-medium ${isIncluded ? 'text-blue-400' : 'text-gray-900 dark:text-white'}`}>{module.label}</div>
                           <div className="text-[10px] text-muted-foreground uppercase">{module.category || "Uncategorized"}</div>
                         </div>
                       </label>
@@ -640,7 +640,7 @@ function AdminPricingDetailsPage() {
             return (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-bold text-white">Usage Limits & Rules</h3>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Usage Limits & Rules</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     Define what features and structural limits this plan enforces on the Organizer dashboard.
                     Toggle <span className="text-[#f97316] font-semibold">∞ Unlimited</span> to remove a restriction entirely — the organizer won't be blocked.
@@ -649,9 +649,9 @@ function AdminPricingDetailsPage() {
                 </div>
 
                 {/* Structural Limits */}
-                <div className="p-4 bg-[#111111] border border-[#333333] rounded-xl space-y-5">
+                <div className="p-4 bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-xl space-y-5">
                   <div>
-                    <h4 className="text-sm font-bold text-white">Structural Limits</h4>
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">Structural Limits</h4>
                     <p className="text-xs text-muted-foreground mt-1">
                       Set a number to cap usage per workspace. Enable <strong className="text-[#f97316]">∞ Unlimited</strong> to remove the limit (stored as -1).
                     </p>
@@ -660,10 +660,10 @@ function AdminPricingDetailsPage() {
                     {LIMIT_FIELDS.map(({ key, label, desc }) => {
                       const isUnlimited = ul[key] === -1;
                       return (
-                        <div key={key} className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 space-y-2">
+                        <div key={key} className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl p-4 space-y-2">
                           <div className="flex items-center justify-between">
                             <div>
-                              <div className="text-sm font-semibold text-white">{label}</div>
+                              <div className="text-sm font-semibold text-gray-900 dark:text-white">{label}</div>
                               <div className="text-[11px] text-muted-foreground leading-tight mt-0.5">{desc}</div>
                             </div>
                             {/* Unlimited toggle */}
@@ -673,7 +673,7 @@ function AdminPricingDetailsPage() {
                               className={`ml-3 shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all border ${
                                 isUnlimited
                                   ? "bg-[#f97316]/15 border-[#f97316]/40 text-[#f97316]"
-                                  : "bg-[#111111] border-[#333333] text-muted-foreground hover:border-[#f97316]/40 hover:text-[#f97316]/70"
+                                  : "bg-white dark:bg-[#111111] border-gray-200 dark:border-[#333333] text-muted-foreground hover:border-[#f97316]/40 hover:text-[#f97316]/70"
                               }`}
                             >
                               <span>∞</span>
@@ -686,7 +686,7 @@ function AdminPricingDetailsPage() {
                               min="0"
                               value={ul[key] ?? 0}
                               onChange={e => setUL(key, Number(e.target.value))}
-                              className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white focus:border-[#f97316]/50 focus:outline-none transition-colors"
+                              className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316]/50 focus:outline-none transition-colors"
                               placeholder="0"
                             />
                           )}
@@ -703,9 +703,9 @@ function AdminPricingDetailsPage() {
                 </div>
 
                 {/* Access & Permissions */}
-                <div className="p-4 bg-[#111111] border border-[#333333] rounded-xl space-y-4">
+                <div className="p-4 bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-xl space-y-4">
                   <div>
-                    <h4 className="text-sm font-bold text-white">Access & Permissions</h4>
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">Access & Permissions</h4>
                     <p className="text-xs text-muted-foreground mt-1">
                       Toggle features that are unlocked for organizers on this plan. Disabled features show an upgrade prompt.
                     </p>
@@ -719,12 +719,12 @@ function AdminPricingDetailsPage() {
                           className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
                             checked
                               ? "bg-green-500/5 border-green-500/30"
-                              : "bg-[#1b1b1c] border-[#333333] hover:border-[#444444]"
+                              : "bg-gray-50 dark:bg-[#1b1b1c] border-gray-200 dark:border-[#333333] hover:border-gray-300 dark:hover:border-[#444444]"
                           }`}
                         >
                           <div className="mt-0.5">
                             <div
-                              className={`w-10 h-6 rounded-full relative transition-colors flex-shrink-0 ${checked ? "bg-green-500" : "bg-[#333333]"}`}
+                              className={`w-10 h-6 rounded-full relative transition-colors flex-shrink-0 ${checked ? "bg-green-500" : "bg-gray-200 dark:bg-[#333333]"}`}
                               style={{ minWidth: 40 }}
                             >
                               <div
@@ -739,7 +739,7 @@ function AdminPricingDetailsPage() {
                             />
                           </div>
                           <div>
-                            <div className={`text-sm font-semibold ${checked ? "text-green-400" : "text-white"}`}>{label}</div>
+                            <div className={`text-sm font-semibold ${checked ? "text-green-400" : "text-gray-900 dark:text-white"}`}>{label}</div>
                             <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{desc}</div>
                           </div>
                         </label>
@@ -748,15 +748,15 @@ function AdminPricingDetailsPage() {
                   </div>
 
                   {/* Support Type */}
-                  <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 space-y-2">
+                  <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl p-4 space-y-2">
                     <div>
-                      <div className="text-sm font-semibold text-white">Support Type</div>
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white">Support Type</div>
                       <div className="text-[11px] text-muted-foreground mt-0.5">The level of support access this plan includes. Shown on the organizer's settings and contact pages.</div>
                     </div>
                     <select
                       value={ul.support_type || "standard"}
                       onChange={e => setUL("support_type", e.target.value)}
-                      className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#f97316]/50 focus:outline-none"
+                      className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2.5 text-sm text-gray-900 dark:text-white focus:border-[#f97316]/50 focus:outline-none"
                     >
                       <option value="email">Email Only — Async responses within 48h</option>
                       <option value="standard">Standard — Business hours via email & chat</option>
@@ -766,15 +766,15 @@ function AdminPricingDetailsPage() {
                   </div>
 
                   {/* Venue Design Type */}
-                  <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 space-y-2">
+                  <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl p-4 space-y-2">
                     <div>
-                      <div className="text-sm font-semibold text-white">Venue Design Type</div>
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white">Venue Design Type</div>
                       <div className="text-[11px] text-muted-foreground mt-0.5">Controls which venue design editor features are available in Agatike Studio for this plan.</div>
                     </div>
                     <select
                       value={ul.venue_design_type || "basic"}
                       onChange={e => setUL("venue_design_type", e.target.value)}
-                      className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#f97316]/50 focus:outline-none"
+                      className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2.5 text-sm text-gray-900 dark:text-white focus:border-[#f97316]/50 focus:outline-none"
                     >
                       <option value="basic">Basic — Standard templates, limited customization</option>
                       <option value="advanced">Advanced — Full editor, custom branding</option>
@@ -788,19 +788,19 @@ function AdminPricingDetailsPage() {
         </div>
 
         {/* Footer Navigation */}
-        <div className="p-4 border-t border-[#333333] bg-[#111111] flex justify-between items-center gap-3">
+        <div className="p-4 border-t border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111] flex justify-between items-center gap-3">
           <div>
             {currentStep > 1 && (
               <button
                 onClick={() => setCurrentStep(prev => prev - 1)}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#333333] hover:bg-[#444444] rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-[#333333] hover:bg-gray-200 dark:hover:bg-[#444444] rounded-lg transition-colors"
               >
                 ← Back
               </button>
             )}
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-white transition-colors">
+            <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-gray-900 dark:hover:text-white transition-colors">
               Cancel
             </button>
             {currentStep < TOTAL_STEPS ? (
@@ -830,12 +830,12 @@ function AdminPricingDetailsPage() {
       
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link to="/internal/control/admin/pricing" className="p-2 hover:bg-[#333333] rounded-lg transition-colors text-muted-foreground hover:text-white">
+        <Link to="/internal/control/admin/pricing" className="p-2 hover:bg-gray-200 dark:hover:bg-[#333333] rounded-lg transition-colors text-muted-foreground hover:text-gray-900 dark:hover:text-white">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight">{plan.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{plan.name}</h1>
             {!plan.active && <span className="bg-red-500/10 text-red-400 px-2 py-0.5 rounded text-xs uppercase font-bold border border-red-500/20">Inactive</span>}
             {plan.is_popular && <span className="bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded text-xs uppercase font-bold border border-blue-500/20">Popular</span>}
           </div>
@@ -843,7 +843,7 @@ function AdminPricingDetailsPage() {
         </div>
         <button
           onClick={handleOpenEdit}
-          className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] hover:bg-[#333333] text-white rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] hover:bg-gray-200 dark:hover:bg-[#333333] text-gray-900 dark:text-white rounded-lg text-sm font-medium transition-colors"
         >
           <Edit2 className="h-4 w-4" /> Edit Plan
         </button>
@@ -854,18 +854,18 @@ function AdminPricingDetailsPage() {
         {/* Left Column: Plan Details */}
         <div className="lg:col-span-2 space-y-6">
           
-          <div className="bg-[#1b1b1c] rounded-xl border border-[#333333] overflow-hidden">
-            <div className="p-6 border-b border-[#333333] bg-[#111111]/50 flex justify-between items-center">
-              <h2 className="text-lg font-bold text-white">Pricing & Margins</h2>
+          <div className="bg-gray-50 dark:bg-[#1b1b1c] rounded-xl border border-gray-200 dark:border-[#333333] overflow-hidden">
+            <div className="p-6 border-b border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111]/50 flex justify-between items-center">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Pricing & Margins</h2>
             </div>
             <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
               <div>
                 <div className="text-xs text-muted-foreground mb-1">Monthly Price</div>
-                <div className="text-xl font-bold text-white">{formatCurrency(plan.price, plan.currency || "USD")}</div>
+                <div className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(plan.price, plan.currency || "USD")}</div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1">Yearly Price</div>
-                <div className="text-xl font-bold text-white">{plan.yearly_price ? formatCurrency(plan.yearly_price, plan.currency || "USD") : "-"}</div>
+                <div className="text-xl font-bold text-gray-900 dark:text-white">{plan.yearly_price ? formatCurrency(plan.yearly_price, plan.currency || "USD") : "-"}</div>
               </div>
               <div>
                 <div className="text-xs text-blue-400/80 mb-1">Agatike Profit Margin</div>
@@ -878,13 +878,13 @@ function AdminPricingDetailsPage() {
             </div>
           </div>
 
-          <div className="bg-[#1b1b1c] rounded-xl border border-[#333333] overflow-hidden">
-            <div className="p-6 border-b border-[#333333] bg-[#111111]/50">
-              <h2 className="text-lg font-bold text-white">Included Features & Modules</h2>
+          <div className="bg-gray-50 dark:bg-[#1b1b1c] rounded-xl border border-gray-200 dark:border-[#333333] overflow-hidden">
+            <div className="p-6 border-b border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111]/50">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Included Features & Modules</h2>
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <h3 className="text-sm font-semibold text-white mb-4">Features List</h3>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Features List</h3>
                 <ul className="space-y-2">
                   {(!plan.features || plan.features.length === 0) ? (
                     <li className="text-sm text-muted-foreground">No features defined.</li>
@@ -899,7 +899,7 @@ function AdminPricingDetailsPage() {
                 </ul>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white mb-4">Unlocked Modules</h3>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Unlocked Modules</h3>
                 <ul className="space-y-2">
                   {(!plan.modules_included || plan.modules_included.length === 0) ? (
                     <li className="text-sm text-muted-foreground">No modules unlocked.</li>
@@ -956,9 +956,9 @@ function AdminPricingDetailsPage() {
               { key: 'max_contributors', label: 'Contributors' },
             ];
             return (
-              <div className="bg-[#1b1b1c] rounded-xl border border-[#333333] overflow-hidden">
-                <div className="p-6 border-b border-[#333333] bg-[#111111]/50 flex justify-between items-center">
-                  <h2 className="text-lg font-bold text-white">Usage Limits & Rules</h2>
+              <div className="bg-gray-50 dark:bg-[#1b1b1c] rounded-xl border border-gray-200 dark:border-[#333333] overflow-hidden">
+                <div className="p-6 border-b border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111]/50 flex justify-between items-center">
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Usage Limits & Rules</h2>
                   <button onClick={handleOpenEdit} className="text-xs text-[#f97316] hover:underline">Edit limits →</button>
                 </div>
                 <div className="p-6 space-y-6">
@@ -969,8 +969,8 @@ function AdminPricingDetailsPage() {
                         const val = ul[key];
                         const display = val === -1 || val === undefined ? "∞" : String(val ?? 0);
                         return (
-                          <div key={key} className="bg-[#111111] border border-[#333333] rounded-lg p-3 text-center">
-                            <div className="text-xl font-bold text-white">{display}</div>
+                          <div key={key} className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg p-3 text-center">
+                            <div className="text-xl font-bold text-gray-900 dark:text-white">{display}</div>
                             <div className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide leading-tight">{label}</div>
                           </div>
                         );
@@ -985,7 +985,7 @@ function AdminPricingDetailsPage() {
                         { key: 'can_invite_contributors', label: 'Invite Contributors' },
                         { key: 'can_link_modules', label: 'Link Modules' },
                       ].map(({ key, label }) => (
-                        <span key={key} className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${ul[key] ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-[#111111] text-muted-foreground border-[#333333]'}`}>
+                        <span key={key} className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${ul[key] ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-white dark:bg-[#111111] text-muted-foreground border-gray-200 dark:border-[#333333]'}`}>
                           {ul[key] ? '✓' : '✗'} {label}
                         </span>
                       ))}
@@ -1006,9 +1006,9 @@ function AdminPricingDetailsPage() {
 
         {/* Right Column: Organizer Stats */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-[#1b1b1c] rounded-xl border border-[#333333] overflow-hidden">
-            <div className="p-6 border-b border-[#333333] bg-[#111111]/50">
-              <h2 className="text-lg font-bold text-white">Adoption Stats</h2>
+          <div className="bg-gray-50 dark:bg-[#1b1b1c] rounded-xl border border-gray-200 dark:border-[#333333] overflow-hidden">
+            <div className="p-6 border-b border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111]/50">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Adoption Stats</h2>
             </div>
             
             <div className="p-6 space-y-6">
@@ -1018,7 +1018,7 @@ function AdminPricingDetailsPage() {
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Active Subscribers</div>
-                  <div className="text-2xl font-bold text-white">{stats?.activeSubscribers || 0}</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.activeSubscribers || 0}</div>
                 </div>
               </div>
 
@@ -1028,20 +1028,20 @@ function AdminPricingDetailsPage() {
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Monthly Recurring Revenue</div>
-                  <div className="text-2xl font-bold text-white">{formatCurrency(stats?.monthlyRecurringRevenue || 0, plan.currency || "USD")}</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats?.monthlyRecurringRevenue || 0, plan.currency || "USD")}</div>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-[#333333] bg-[#111111]/50 p-4">
+            <div className="border-t border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111]/50 p-4">
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Subscribed Workspaces</h3>
               <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
                 {stats?.subscriptions?.length === 0 ? (
                   <div className="text-xs text-muted-foreground text-center py-4">No active subscriptions.</div>
                 ) : (
                   stats?.subscriptions?.map((sub: any) => (
-                    <div key={sub.id} className="flex justify-between items-center p-2 rounded-lg bg-[#1b1b1c] border border-[#333333]">
-                      <div className="text-sm text-white truncate max-w-[150px]">{sub.workspace?.name || sub.organizer?.name || "Unknown Workspace"}</div>
+                    <div key={sub.id} className="flex justify-between items-center p-2 rounded-lg bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333]">
+                      <div className="text-sm text-gray-900 dark:text-white truncate max-w-[150px]">{sub.workspace?.name || sub.organizer?.name || "Unknown Workspace"}</div>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold ${sub.status === 'active' || sub.status === 'ACTIVE' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
                         {sub.status}
                       </span>

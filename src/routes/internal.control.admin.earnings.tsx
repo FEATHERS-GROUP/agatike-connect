@@ -59,13 +59,13 @@ function AdminEarningsPage() {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Earnings Analytics</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Earnings Analytics</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Track platform revenue, provider costs, and net profitability.
           </p>
         </div>
         
-        <div className="flex bg-[#1b1b1c] rounded-lg border border-[#333333] p-1">
+        <div className="flex bg-gray-50 dark:bg-[#1b1b1c] rounded-lg border border-gray-200 dark:border-[#333333] p-1">
           {[
             { id: "7d", label: "7 Days" },
             { id: "1m", label: "1 Month" },
@@ -79,7 +79,7 @@ function AdminEarningsPage() {
                 setDateFilter(f.id as any);
                 setPage(1);
               }}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${dateFilter === f.id ? "bg-[#333333] text-white" : "text-muted-foreground hover:text-white"}`}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${dateFilter === f.id ? "bg-gray-200 dark:bg-[#333333] text-gray-900 dark:text-white" : "text-muted-foreground hover:text-gray-900 dark:hover:text-white"}`}
             >
               {f.label}
             </button>
@@ -116,8 +116,8 @@ function AdminEarningsPage() {
             />
           </div>
 
-          <div className="bg-[#1b1b1c] p-6 rounded-xl border border-[#333333] h-[400px]">
-            <h2 className="text-lg font-medium text-white mb-4">Revenue & Profit Over Time</h2>
+          <div className="bg-gray-50 dark:bg-[#1b1b1c] p-6 rounded-xl border border-gray-200 dark:border-[#333333] h-[400px]">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Revenue & Profit Over Time</h2>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
@@ -143,13 +143,13 @@ function AdminEarningsPage() {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-[#1b1b1c] rounded-xl border border-[#333333] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#333333]">
-              <h2 className="text-lg font-medium text-white">Transaction Ledger</h2>
+          <div className="bg-gray-50 dark:bg-[#1b1b1c] rounded-xl border border-gray-200 dark:border-[#333333] overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-[#333333]">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white">Transaction Ledger</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="text-xs text-muted-foreground uppercase bg-[#111111]/50 border-b border-[#333333]">
+                <thead className="text-xs text-muted-foreground uppercase bg-white dark:bg-[#111111]/50 border-b border-gray-200 dark:border-[#333333]">
                   <tr>
                     <th className="px-6 py-4 font-medium">Date</th>
                     <th className="px-6 py-4 font-medium">Type</th>
@@ -160,7 +160,7 @@ function AdminEarningsPage() {
                     <th className="px-6 py-4 font-medium text-[#f97316]">Profit</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#333333]">
+                <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                   {ledgerLoading ? (
                     <tr>
                       <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
@@ -168,17 +168,17 @@ function AdminEarningsPage() {
                       </td>
                     </tr>
                   ) : ledgerData?.records?.map((r: any) => (
-                    <tr key={r.id} className="hover:bg-[#252526]/50 transition-colors">
+                    <tr key={r.id} className="hover:bg-gray-100 dark:hover:bg-[#252526]/50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-muted-foreground">
                         {new Date(r.created_at).toLocaleDateString()} {new Date(r.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap capitalize text-white">
+                      <td className="px-6 py-4 whitespace-nowrap capitalize text-gray-900 dark:text-white">
                         {r.transaction_type}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap font-mono text-muted-foreground text-xs">
                         {r.wallet_transaction?.id ? `Tx-${r.wallet_transaction.id.substring(0, 8)}` : "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
                         {formatCurrency(r.gross_amount, r.currency)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-blue-400">
@@ -206,7 +206,7 @@ function AdminEarningsPage() {
             
             {/* Pagination Controls */}
             {!ledgerLoading && ledgerData && ledgerData.totalCount > 0 && (
-              <div className="px-6 py-4 border-t border-[#333333] flex items-center justify-between bg-[#111111]/50">
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-[#333333] flex items-center justify-between bg-white dark:bg-[#111111]/50">
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-muted-foreground">
                     Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, ledgerData.totalCount)} of {ledgerData.totalCount}
@@ -214,7 +214,7 @@ function AdminEarningsPage() {
                   <select 
                     value={limit} 
                     onChange={e => { setLimit(Number(e.target.value)); setPage(1); }}
-                    className="bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1 text-xs text-white"
+                    className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded px-2 py-1 text-xs text-gray-900 dark:text-white"
                   >
                     <option value={50}>50 per page</option>
                     <option value={100}>100 per page</option>
@@ -226,14 +226,14 @@ function AdminEarningsPage() {
                   <button 
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="px-3 py-1.5 text-xs font-medium rounded bg-[#1b1b1c] border border-[#333333] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#333333] transition-colors"
+                    className="px-3 py-1.5 text-xs font-medium rounded bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-[#333333] transition-colors"
                   >
                     Previous
                   </button>
                   <button 
                     onClick={() => setPage(p => p + 1)}
                     disabled={page * limit >= ledgerData.totalCount}
-                    className="px-3 py-1.5 text-xs font-medium rounded bg-[#1b1b1c] border border-[#333333] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#333333] transition-colors"
+                    className="px-3 py-1.5 text-xs font-medium rounded bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-[#333333] transition-colors"
                   >
                     Next
                   </button>
@@ -249,12 +249,12 @@ function AdminEarningsPage() {
 
 function StatCard({ title, value, icon }: { title: string, value: number, icon: React.ReactNode }) {
   return (
-    <div className="bg-[#1b1b1c] p-5 rounded-xl border border-[#333333] flex flex-col justify-between space-y-4">
+    <div className="bg-gray-50 dark:bg-[#1b1b1c] p-5 rounded-xl border border-gray-200 dark:border-[#333333] flex flex-col justify-between space-y-4">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-muted-foreground">{title}</span>
         {icon}
       </div>
-      <div className="text-2xl font-bold text-white">
+      <div className="text-2xl font-bold text-gray-900 dark:text-white">
         {formatCurrency(value || 0, "RWF")}
       </div>
     </div>

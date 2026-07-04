@@ -34,8 +34,8 @@ function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0d0e15] font-sans">
-      <div className="w-full max-w-sm bg-[#161821] border border-[#2b2e40] rounded-md shadow-2xl p-8">
+    <div className="flex min-h-screen items-center justify-center bg-white dark:bg-[#0d0e15] font-sans">
+      <div className="w-full max-w-sm bg-gray-50 dark:bg-[#161821] border border-gray-300 dark:border-[#2b2e40] rounded-md shadow-2xl p-8">
         <div className="flex flex-col items-center mb-8">
           <div className="bg-blue-600/10 p-3 rounded-lg mb-4 border border-blue-600/20">
             <Shield className="h-8 w-8 text-blue-500" />
@@ -61,7 +61,7 @@ function AdminLogin() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="username"
-                className="w-full h-10 bg-[#0f111a] border border-[#2b2e40] rounded-md pl-10 pr-3 text-sm text-slate-200 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder:text-slate-600"
+                className="w-full h-10 bg-white dark:bg-[#0f111a] border border-gray-300 dark:border-[#2b2e40] rounded-md pl-10 pr-3 text-sm text-slate-200 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder:text-slate-600"
                 placeholder="admin@agatike.com"
               />
             </div>
@@ -77,7 +77,7 @@ function AdminLogin() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full h-10 bg-[#0f111a] border border-[#2b2e40] rounded-md pl-10 pr-3 text-sm text-slate-200 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder:text-slate-600"
+                className="w-full h-10 bg-white dark:bg-[#0f111a] border border-gray-300 dark:border-[#2b2e40] rounded-md pl-10 pr-3 text-sm text-slate-200 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder:text-slate-600"
                 placeholder="••••••••"
               />
             </div>
@@ -92,7 +92,7 @@ function AdminLogin() {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-[#2b2e40] text-center">
+        <div className="mt-8 pt-6 border-t border-gray-300 dark:border-[#2b2e40] text-center">
           <p className="text-[11px] text-slate-500">Secure access provided by Agatike Core</p>
         </div>
       </div>

@@ -79,7 +79,7 @@ export function AdminSidebar() {
 
   const renderNavItem = (n: any, idx: number) => {
     if (n.type === "divider") {
-      return <div key={`div-${idx}`} className="h-px bg-[#333333] my-2 mx-3" />;
+      return <div key={`div-${idx}`} className="h-px bg-gray-200 dark:bg-[#333333] my-2 mx-3" />;
     }
 
     const isActive =
@@ -89,20 +89,20 @@ export function AdminSidebar() {
 
     const cls = `flex w-full items-center gap-3 px-4 py-2 text-xs transition-colors border-l-2 ${
       isActive
-        ? "border-[#f97316] bg-[#252526] text-white"
-        : "border-transparent text-[#cccccc] hover:bg-[#2d2d30] hover:text-white"
+        ? "border-[#f97316] bg-gray-200 dark:bg-[#252526] text-gray-900 dark:text-white"
+        : "border-transparent text-gray-700 dark:text-[#cccccc] hover:bg-gray-200 dark:hover:bg-[#2d2d30] hover:text-gray-900 dark:hover:text-white"
     }`;
 
     return (
       <Link key={n.label} to={n.href as any} className={cls}>
-        <n.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#f97316]" : "text-[#cccccc]"}`} />
+        <n.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#f97316]" : "text-gray-700 dark:text-[#cccccc]"}`} />
         <span className="truncate flex-1">{n.label}</span>
       </Link>
     );
   };
 
   return (
-    <aside className="hidden w-52 shrink-0 border-r border-[#333333] bg-[#1b1b1c] py-2 flex-col md:flex overflow-y-auto font-sans">
+    <aside className="hidden w-52 shrink-0 border-r border-gray-200 dark:border-[#333333] bg-gray-50 dark:bg-[#1b1b1c] py-2 flex-col md:flex overflow-y-auto font-sans">
       <nav className="space-y-0 text-sm flex-1">
         {filteredNav.map((n, idx) => renderNavItem(n, idx))}
       </nav>

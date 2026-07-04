@@ -57,11 +57,11 @@ const CATEGORY_COLORS: Record<string, string> = {
   model_issue: "bg-red-500/20 text-red-400 border-red-500/30",
   request: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   bug: "bg-rose-500/20 text-rose-400 border-rose-500/30",
-  other: "bg-[#333]/60 text-[#999] border-[#444]",
+  other: "bg-gray-200 dark:bg-[#333]/60 text-gray-600 dark:text-[#999] border-gray-300 dark:border-[#444]",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  low: "text-[#888]",
+  low: "text-gray-500 dark:text-[#888]",
   normal: "text-blue-400",
   high: "text-amber-400",
   urgent: "text-red-400",
@@ -119,8 +119,8 @@ const STATUS_CONFIG: Record<string, { label: string; icon: any; color: string; b
   closed: {
     label: "Closed",
     icon: XCircle,
-    color: "text-[#888]",
-    bg: "bg-[#222] border-[#333]",
+    color: "text-gray-500 dark:text-[#888]",
+    bg: "bg-gray-100 dark:bg-[#222] border-gray-200 dark:border-[#333]",
   },
 };
 
@@ -160,25 +160,25 @@ function BulkDeleteModal({ isOpen, onClose, onComplete }: { isOpen: boolean; onC
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-[#111] border border-[#333] rounded-xl w-full max-w-md overflow-hidden shadow-2xl">
-        <div className="px-5 py-4 border-b border-[#333] flex items-center justify-between bg-[#161616]">
+      <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl w-full max-w-md overflow-hidden shadow-2xl">
+        <div className="px-5 py-4 border-b border-gray-200 dark:border-[#333] flex items-center justify-between bg-gray-50 dark:bg-[#161616]">
           <h2 className="text-lg font-bold text-red-500 flex items-center gap-2">
             <Trash2 className="h-5 w-5" /> Bulk Delete Tickets
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded hover:bg-[#333] text-[#888] transition-colors"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded hover:bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888] transition-colors"><X className="h-4 w-4" /></button>
         </div>
         
         <div className="p-5 space-y-4">
-          <p className="text-sm text-[#888]">
+          <p className="text-sm text-gray-500 dark:text-[#888]">
             This action will permanently delete all matching tickets and their comments. This cannot be undone.
           </p>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-[#888] uppercase tracking-wider">Status</label>
+            <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">Status</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-[#333] text-sm text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
+              className="w-full bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333] text-sm text-gray-900 dark:text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
             >
               <option value="all">All Statuses</option>
               {Object.entries(STATUS_CONFIG).map(([k, v]) => (
@@ -189,39 +189,39 @@ function BulkDeleteModal({ isOpen, onClose, onComplete }: { isOpen: boolean; onC
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-[#888] uppercase tracking-wider">Start Date</label>
+              <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">Start Date</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full bg-[#1a1a1a] border border-[#333] text-sm text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
+                className="w-full bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333] text-sm text-gray-900 dark:text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-[#888] uppercase tracking-wider">End Date</label>
+              <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">End Date</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full bg-[#1a1a1a] border border-[#333] text-sm text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
+                className="w-full bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333] text-sm text-gray-900 dark:text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#333] space-y-1.5">
+          <div className="pt-4 border-t border-gray-200 dark:border-[#333] space-y-1.5">
             <label className="text-[11px] font-semibold text-red-400 uppercase tracking-wider">Type "DELETE" to confirm</label>
             <input
               type="text"
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
               placeholder="DELETE"
-              className="w-full bg-[#1a1a1a] border border-red-500/50 text-sm text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
+              className="w-full bg-gray-100 dark:bg-[#1a1a1a] border border-red-500/50 text-sm text-gray-900 dark:text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
             />
           </div>
         </div>
 
-        <div className="px-5 py-4 border-t border-[#333] bg-[#161616] flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-[#ccc] hover:bg-[#333] rounded-md transition-colors">Cancel</button>
+        <div className="px-5 py-4 border-t border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#161616] flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-[#ccc] hover:bg-gray-200 dark:bg-[#333] rounded-md transition-colors">Cancel</button>
           <button
             onClick={() => deleteMutation.mutate()}
             disabled={confirmText !== "DELETE" || !startDate || !endDate || deleteMutation.isPending}
@@ -277,10 +277,10 @@ function AdminSupportPage() {
       {/* Left panel */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#333333] mb-4 shrink-0">
+        <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-[#333333] mb-4 shrink-0">
           <div>
-            <h1 className="text-xl font-semibold text-white">Support Tickets</h1>
-            <p className="text-[11px] text-[#666] mt-0.5">
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Support Tickets</h1>
+            <p className="text-[11px] text-gray-500 dark:text-[#666] mt-0.5">
               Manage and respond to organizer support requests
             </p>
           </div>
@@ -294,7 +294,7 @@ function AdminSupportPage() {
             </button>
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-[#333333] text-[#cccccc] text-[12px] transition-colors rounded"
+              className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-gray-200 dark:hover:bg-[#333333] text-gray-700 dark:text-[#cccccc] text-[12px] transition-colors rounded"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               Refresh
@@ -305,20 +305,20 @@ function AdminSupportPage() {
         {/* Stats bar */}
         <div className="grid grid-cols-4 gap-3 mb-4 shrink-0">
           {[
-            { label: "Total", value: stats?.total ?? "—", color: "text-white" },
+            { label: "Total", value: stats?.total ?? "—", color: "text-gray-900 dark:text-white" },
             { label: "Open", value: stats?.open ?? "—", color: "text-amber-400" },
             { label: "Unassigned", value: stats?.unassigned ?? "—", color: "text-red-400" },
             { label: "Solved / Closed", value: stats?.closed ?? "—", color: "text-green-400" },
           ].map((s) => (
-            <div key={s.label} className="bg-[#1e1e1e] border border-[#333] rounded p-3">
+            <div key={s.label} className="bg-gray-50 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333] rounded p-3">
               <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
-              <div className="text-[11px] text-[#666] mt-0.5">{s.label}</div>
+              <div className="text-[11px] text-gray-500 dark:text-[#666] mt-0.5">{s.label}</div>
             </div>
           ))}
         </div>
 
         {/* Tabs and Controls */}
-        <div className="flex items-center justify-between border-b border-[#333] mb-0 shrink-0">
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#333] mb-0 shrink-0">
           <div className="flex">
             {TABS.map((tab) => (
               <button
@@ -328,8 +328,8 @@ function AdminSupportPage() {
                 }}
                 className={`px-4 py-2 text-[12px] font-medium transition-colors border-b-2 -mb-px flex items-center gap-1.5 ${
                   activeTab === tab.id
-                    ? "border-[#f97316] text-white"
-                    : "border-transparent text-[#888] hover:text-[#ccc]"
+                    ? "border-[#f97316] text-gray-900 dark:text-white"
+                    : "border-transparent text-gray-500 dark:text-[#888] hover:text-gray-700 dark:text-[#ccc]"
                 }`}
               >
                 {tab.label}
@@ -338,7 +338,7 @@ function AdminSupportPage() {
                     className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
                       activeTab === tab.id
                         ? "bg-[#f97316]/20 text-[#f97316]"
-                        : "bg-[#333] text-[#888]"
+                        : "bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888]"
                     }`}
                   >
                     {tab.count}
@@ -353,7 +353,7 @@ function AdminSupportPage() {
             <button
               onClick={() => setViewMode("list")}
               className={`p-1.5 rounded transition-colors ${
-                viewMode === "list" ? "bg-[#333] text-white" : "text-[#666] hover:text-[#ccc] hover:bg-[#222]"
+                viewMode === "list" ? "bg-gray-200 dark:bg-[#333] text-gray-900 dark:text-white" : "text-gray-500 dark:text-[#666] hover:text-gray-700 dark:text-[#ccc] hover:bg-gray-100 dark:bg-[#222]"
               }`}
               title="List View"
             >
@@ -362,7 +362,7 @@ function AdminSupportPage() {
             <button
               onClick={() => setViewMode("table")}
               className={`p-1.5 rounded transition-colors ${
-                viewMode === "table" ? "bg-[#333] text-white" : "text-[#666] hover:text-[#ccc] hover:bg-[#222]"
+                viewMode === "table" ? "bg-gray-200 dark:bg-[#333] text-gray-900 dark:text-white" : "text-gray-500 dark:text-[#666] hover:text-gray-700 dark:text-[#ccc] hover:bg-gray-100 dark:bg-[#222]"
               }`}
               title="Table View"
             >
@@ -379,11 +379,11 @@ function AdminSupportPage() {
             </div>
           ) : tickets.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <InboxIcon className="h-10 w-10 text-[#444] mb-3" />
-              <p className="text-[#888] text-sm">No tickets in this category</p>
+              <InboxIcon className="h-10 w-10 text-gray-500 dark:text-[#444] mb-3" />
+              <p className="text-gray-500 dark:text-[#888] text-sm">No tickets in this category</p>
             </div>
           ) : viewMode === "list" ? (
-            <div className="divide-y divide-[#2a2a2a]">
+            <div className="divide-y divide-gray-200 dark:divide-[#2a2a2a]">
               {tickets.map((ticket: any) => {
                 const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.open;
                 const StatusIcon = statusCfg.icon;
@@ -393,17 +393,17 @@ function AdminSupportPage() {
                     key={ticket.id}
                     to="/internal/control/admin/support/$ticketId"
                     params={{ ticketId: ticket.id }}
-                    className={`w-full text-left px-4 py-3 transition-colors flex gap-3 items-start hover:bg-[#1a1a1a]`}
+                    className={`w-full text-left px-4 py-3 transition-colors flex gap-3 items-start hover:bg-gray-100 dark:bg-[#1a1a1a]`}
                   >
                     <StatusIcon
                       className={`h-4 w-4 shrink-0 mt-0.5 ${statusCfg.color}`}
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <span className="text-[13px] font-medium text-[#e0e0e0] truncate">
+                        <span className="text-[13px] font-medium text-gray-900 dark:text-[#e0e0e0] truncate">
                           {ticket.subject}
                         </span>
-                        <span className="text-[11px] text-[#555] shrink-0">
+                        <span className="text-[11px] text-gray-500 dark:text-[#555] shrink-0">
                           {formatRelative(ticket.created_at)}
                         </span>
                       </div>
@@ -433,14 +433,14 @@ function AdminSupportPage() {
                         )}
                         {/* Organizer */}
                         {ticket.organizer && (
-                          <span className="text-[10px] text-[#666]">
+                          <span className="text-[10px] text-gray-500 dark:text-[#666]">
                             {ticket.organizer.name || ticket.organizer.email}
                           </span>
                         )}
                       </div>
                       {/* Last comment preview */}
                       {ticket.lastComment && (
-                        <p className="text-[11px] text-[#555] mt-1.5 truncate">
+                        <p className="text-[11px] text-gray-500 dark:text-[#555] mt-1.5 truncate">
                           {ticket.lastComment.author_type === "admin" ? "▸ " : "← "}
                           {ticket.lastComment.body}
                         </p>
@@ -448,7 +448,7 @@ function AdminSupportPage() {
                       {/* Assignment */}
                       <div className="mt-1.5 flex items-center gap-1">
                         {ticket.assigned_to ? (
-                          <span className="text-[10px] text-[#555] flex items-center gap-1">
+                          <span className="text-[10px] text-gray-500 dark:text-[#555] flex items-center gap-1">
                             <UserCheck className="h-3 w-3 text-green-500" />
                             {ticket.assignedAdmin?.email || "Assigned"}
                           </span>
@@ -458,14 +458,14 @@ function AdminSupportPage() {
                             Unassigned
                           </span>
                         )}
-                        <span className="text-[10px] text-[#555] ml-auto flex items-center gap-0.5">
+                        <span className="text-[10px] text-gray-500 dark:text-[#555] ml-auto flex items-center gap-0.5">
                           <MessageSquare className="h-3 w-3" />
                           {ticket.commentCount || 0}
                         </span>
                       </div>
                     </div>
                     <ChevronRight
-                      className="h-4 w-4 shrink-0 text-[#444] mt-0.5 transition-transform"
+                      className="h-4 w-4 shrink-0 text-gray-500 dark:text-[#444] mt-0.5 transition-transform"
                     />
                   </Link>
                 );
@@ -473,8 +473,8 @@ function AdminSupportPage() {
             </div>
           ) : (
             <div className="w-full overflow-x-auto pb-6">
-              <table className="w-full text-left text-sm text-[#e0e0e0] border-collapse">
-                <thead className="text-[11px] uppercase bg-[#111] border-b border-[#333] text-[#888] sticky top-0 z-10 shadow-sm">
+              <table className="w-full text-left text-sm text-gray-900 dark:text-[#e0e0e0] border-collapse">
+                <thead className="text-[11px] uppercase bg-white dark:bg-[#111] border-b border-gray-200 dark:border-[#333] text-gray-500 dark:text-[#888] sticky top-0 z-10 shadow-sm">
                   <tr>
                     <th className="px-4 py-3 font-semibold w-12 text-center">Status</th>
                     <th className="px-4 py-3 font-semibold">Subject</th>
@@ -485,7 +485,7 @@ function AdminSupportPage() {
                     <th className="px-4 py-3 font-semibold text-right">Created</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#2a2a2a] bg-transparent">
+                <tbody className="divide-y divide-gray-200 dark:divide-[#2a2a2a] bg-transparent">
                   {tickets.map((ticket: any) => {
                     const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.open;
                     const StatusIcon = statusCfg.icon;
@@ -494,7 +494,7 @@ function AdminSupportPage() {
                       <tr 
                         key={ticket.id} 
                         onClick={() => router.navigate({ to: "/internal/control/admin/support/$ticketId", params: { ticketId: ticket.id } })}
-                        className="hover:bg-[#1a1a1a] transition-colors cursor-pointer group"
+                        className="hover:bg-gray-100 dark:bg-[#1a1a1a] transition-colors cursor-pointer group"
                       >
                         <td className="px-4 py-3.5 text-center">
                           <div className={`inline-flex items-center justify-center h-7 w-7 rounded border ${statusCfg.bg}`} title={statusCfg.label}>
@@ -503,7 +503,7 @@ function AdminSupportPage() {
                         </td>
                         <td className="px-4 py-3.5 max-w-[200px]">
                           <div className="font-medium text-[13px] truncate group-hover:text-[#f97316] transition-colors">{ticket.subject}</div>
-                          <div className="text-[11px] text-[#666] font-mono mt-0.5 truncate">#{ticket.id.slice(0, 8).toUpperCase()}</div>
+                          <div className="text-[11px] text-gray-500 dark:text-[#666] font-mono mt-0.5 truncate">#{ticket.id.slice(0, 8).toUpperCase()}</div>
                         </td>
                         <td className="px-4 py-3.5">
                           <span className={`inline-block text-[10px] px-1.5 py-0.5 rounded border font-medium whitespace-nowrap ${CATEGORY_COLORS[ticket.category] || CATEGORY_COLORS.other}`}>
@@ -519,7 +519,7 @@ function AdminSupportPage() {
                           {ticket.assigned_to ? (
                             <div className="flex items-center gap-1.5">
                               <UserCheck className="h-3.5 w-3.5 text-green-500" />
-                              <span className="text-[11px] text-[#aaa]">{ticket.assignedAdmin?.email?.split('@')[0] || "Assigned"}</span>
+                              <span className="text-[11px] text-gray-600 dark:text-[#aaa]">{ticket.assignedAdmin?.email?.split('@')[0] || "Assigned"}</span>
                             </div>
                           ) : (
                             <span className="text-[11px] px-1.5 py-0.5 rounded border border-red-500/20 bg-red-500/10 text-red-400">
@@ -527,10 +527,10 @@ function AdminSupportPage() {
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3.5 text-[11px] text-[#aaa]">
+                        <td className="px-4 py-3.5 text-[11px] text-gray-600 dark:text-[#aaa]">
                           {ticket.organizer?.name || ticket.organizer?.email || "—"}
                         </td>
-                        <td className="px-4 py-3.5 text-right text-[11px] text-[#777] whitespace-nowrap">
+                        <td className="px-4 py-3.5 text-right text-[11px] text-gray-600 dark:text-[#777] whitespace-nowrap">
                           {formatRelative(ticket.created_at)}
                         </td>
                       </tr>

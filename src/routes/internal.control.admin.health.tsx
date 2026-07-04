@@ -135,16 +135,16 @@ function ServiceCard({
   onRefresh: (id: string) => void;
 }) {
   return (
-    <div className="flex flex-col p-4 rounded-xl border border-[#333333] bg-[#1b1b1c] hover:border-[#444444] transition-colors group">
+    <div className="flex flex-col p-4 rounded-xl border border-gray-200 dark:border-[#333333] bg-gray-50 dark:bg-[#1b1b1c] hover:border-gray-300 dark:hover:border-[#444444] transition-colors group">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div
-            className={`p-2 rounded-lg bg-[#252526] border border-[#333333] ${
+            className={`p-2 rounded-lg bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] ${
               service.category === "database"
-                ? "text-indigo-400"
+                ? "text-indigo-600 dark:text-indigo-400"
                 : service.category === "api"
-                  ? "text-sky-400"
-                  : "text-orange-400"
+                  ? "text-sky-600 dark:text-sky-400"
+                  : "text-orange-600 dark:text-orange-400"
             }`}
           >
             {service.category === "database" && <LucideIcons.Database className="w-5 h-5" />}
@@ -152,21 +152,21 @@ function ServiceCard({
             {service.category === "payment" && <LucideIcons.CreditCard className="w-5 h-5" />}
           </div>
           <div>
-            <h3 className="text-[#eeeeee] font-medium text-sm">{service.name}</h3>
-            <p className="text-[#888888] text-xs mt-0.5">{service.description}</p>
+            <h3 className="text-gray-900 dark:text-[#eeeeee] font-medium text-sm">{service.name}</h3>
+            <p className="text-gray-500 dark:text-[#888888] text-xs mt-0.5">{service.description}</p>
           </div>
         </div>
         <StatusBadge status={service.status} />
       </div>
 
-      <div className="mt-auto pt-4 border-t border-[#333333]/50 flex items-center justify-between">
+      <div className="mt-auto pt-4 border-t border-gray-200 dark:border-[#333333]/50 flex items-center justify-between">
         <div className="flex items-center gap-4 text-xs">
-          <div className="flex items-center gap-1.5 text-[#aaaaaa]">
+          <div className="flex items-center gap-1.5 text-gray-600 dark:text-[#aaaaaa]">
             <LucideIcons.Activity className="w-3.5 h-3.5" />
             <span>{service.uptime} uptime</span>
           </div>
           {service.latency !== undefined && (
-            <div className="flex items-center gap-1.5 text-[#aaaaaa]">
+            <div className="flex items-center gap-1.5 text-gray-600 dark:text-[#aaaaaa]">
               <LucideIcons.Zap className="w-3.5 h-3.5" />
               <span>{service.latency}ms</span>
             </div>
@@ -175,7 +175,7 @@ function ServiceCard({
         <button
           onClick={() => onRefresh(service.id)}
           disabled={service.status === "checking"}
-          className="text-[#666666] hover:text-white transition-colors disabled:opacity-50"
+          className="text-gray-500 dark:text-[#666666] hover:text-gray-900 dark:hover:text-white transition-colors disabled:opacity-50"
           title="Refresh status"
         >
           <LucideIcons.RefreshCw
@@ -252,18 +252,18 @@ function HealthDashboard() {
     <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             System Health
             <LucideIcons.ShieldCheck className="w-6 h-6 text-[#f97316]" />
           </h1>
-          <p className="text-[#888888] mt-1 text-sm">
+          <p className="text-gray-500 dark:text-[#888888] mt-1 text-sm">
             Real-time monitoring of database, APIs, and payment gateways.
           </p>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="text-right text-sm">
-            <div className="text-[#aaaaaa]">System Status</div>
+            <div className="text-gray-600 dark:text-[#aaaaaa]">System Status</div>
             <div className="font-medium flex items-center justify-end gap-2 mt-0.5">
               {globalStatus === "operational" && (
                 <span className="text-emerald-500">All Systems Normal</span>
@@ -281,7 +281,7 @@ function HealthDashboard() {
           <button
             onClick={runSystemCheck}
             disabled={globalStatus === "checking"}
-            className="flex items-center gap-2 px-4 py-2 bg-[#252526] hover:bg-[#2d2d30] border border-[#333333] rounded-lg text-sm font-medium text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#252526] hover:bg-gray-200 dark:hover:bg-[#2d2d30] border border-gray-200 dark:border-[#333333] rounded-lg text-sm font-medium text-gray-900 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <LucideIcons.RefreshCw
               className={`w-4 h-4 ${globalStatus === "checking" ? "animate-spin" : ""}`}
@@ -292,7 +292,7 @@ function HealthDashboard() {
       </div>
 
       {lastSystemCheck && (
-        <div className="text-xs text-[#666666]">
+        <div className="text-xs text-gray-500 dark:text-[#666666]">
           Last checked: {lastSystemCheck.toLocaleTimeString()}
         </div>
       )}
@@ -300,10 +300,10 @@ function HealthDashboard() {
       <div className="grid gap-6">
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <div className="p-1.5 rounded bg-indigo-500/10 text-indigo-400">
+            <div className="p-1.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <LucideIcons.Database className="w-4 h-4" />
             </div>
-            <h2 className="text-lg font-medium text-white">Database Cluster</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Database Cluster</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {databaseServices.map((service) => (
@@ -314,10 +314,10 @@ function HealthDashboard() {
 
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <div className="p-1.5 rounded bg-sky-500/10 text-sky-400">
+            <div className="p-1.5 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400">
               <LucideIcons.Server className="w-4 h-4" />
             </div>
-            <h2 className="text-lg font-medium text-white">Core APIs & Services</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Core APIs & Services</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {apiServices.map((service) => (
@@ -328,10 +328,10 @@ function HealthDashboard() {
 
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <div className="p-1.5 rounded bg-orange-500/10 text-orange-400">
+            <div className="p-1.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400">
               <LucideIcons.CreditCard className="w-4 h-4" />
             </div>
-            <h2 className="text-lg font-medium text-white">Payment Gateways</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Payment Gateways</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {paymentServices.map((service) => (
@@ -345,7 +345,7 @@ function HealthDashboard() {
         <LucideIcons.CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
         <div>
           <h4 className="text-sm font-medium text-emerald-500">Incident History</h4>
-          <p className="text-xs text-[#888888] mt-1">
+          <p className="text-xs text-gray-500 dark:text-[#888888] mt-1">
             No incidents reported in the last 30 days. All systems have maintained 99.9% uptime SLA.
           </p>
         </div>

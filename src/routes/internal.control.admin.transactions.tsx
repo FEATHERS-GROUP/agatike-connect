@@ -90,61 +90,61 @@ function ApprovalModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#111111] border border-[#333333] rounded-2xl w-full max-w-lg shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300">
-        <div className="p-5 border-b border-[#333333] flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+      <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-2xl w-full max-w-lg shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="p-5 border-b border-gray-200 dark:border-[#333333] flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <LucideIcons.ShieldCheck className="w-5 h-5 text-[#f97316]" />
             Review Withdrawal Request
           </h2>
-          <button onClick={onClose} className="text-[#888888] hover:text-white transition-colors">
+          <button onClick={onClose} className="text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white transition-colors">
             <LucideIcons.X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-5 space-y-4">
           {/* Summary */}
-          <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 space-y-2 text-sm">
+          <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl p-4 space-y-2 text-sm">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-[#333333] border border-[#444444] flex items-center justify-center overflow-hidden shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444444] flex items-center justify-center overflow-hidden shrink-0">
                 {org.image ? (
                   <img src={org.image} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <LucideIcons.Building2 className="w-5 h-5 text-[#888888]" />
+                  <LucideIcons.Building2 className="w-5 h-5 text-gray-500 dark:text-[#888888]" />
                 )}
               </div>
               <div>
-                <div className="font-medium text-white">{org.name || "Unknown Organizer"}</div>
-                <div className="text-xs text-[#888888]">{org.email}</div>
+                <div className="font-medium text-gray-900 dark:text-white">{org.name || "Unknown Organizer"}</div>
+                <div className="text-xs text-gray-500 dark:text-[#888888]">{org.email}</div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 text-xs mb-3">
-              <div className="bg-[#111111] border border-[#333333] rounded-lg p-3">
-                <div className="text-[#888888] mb-1">Requested Amount</div>
-                <div className="text-xl font-bold text-white font-mono">{formatAmount(tx.amount)}</div>
+              <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg p-3">
+                <div className="text-gray-500 dark:text-[#888888] mb-1">Requested Amount</div>
+                <div className="text-xl font-bold text-gray-900 dark:text-white font-mono">{formatAmount(tx.amount)}</div>
               </div>
-              <div className="bg-[#111111] border border-[#333333] rounded-lg p-3">
-                <div className="text-[#888888] mb-1">Net Payout</div>
+              <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg p-3">
+                <div className="text-gray-500 dark:text-[#888888] mb-1">Net Payout</div>
                 <div className="text-xl font-bold text-green-400 font-mono">{formatAmount(tx.net_amount)}</div>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-3 text-xs mb-3 border-t border-[#333333] pt-3">
+            <div className="grid grid-cols-2 gap-3 text-xs mb-3 border-t border-gray-200 dark:border-[#333333] pt-3">
               <div>
-                <span className="text-[#888888]">Agatike Fee (Platform)</span>
-                <div className="font-mono text-white mt-1">{formatAmount(tx.platform_fee || 0)}</div>
+                <span className="text-gray-500 dark:text-[#888888]">Agatike Fee (Platform)</span>
+                <div className="font-mono text-gray-900 dark:text-white mt-1">{formatAmount(tx.platform_fee || 0)}</div>
               </div>
               <div>
-                <span className="text-[#888888]">PawaPay Fee (Network)</span>
-                <div className="font-mono text-white mt-1">{formatAmount(tx.network_fee || 0)}</div>
+                <span className="text-gray-500 dark:text-[#888888]">PawaPay Fee (Network)</span>
+                <div className="font-mono text-gray-900 dark:text-white mt-1">{formatAmount(tx.network_fee || 0)}</div>
               </div>
             </div>
 
-            <div className="mb-3 border-t border-[#333333] pt-3">
-              <label className="text-xs text-[#888888] block mb-1">Target Payment Network</label>
+            <div className="mb-3 border-t border-gray-200 dark:border-[#333333] pt-3">
+              <label className="text-xs text-gray-500 dark:text-[#888888] block mb-1">Target Payment Network</label>
               <select
                 value={overrideNetworkId}
                 onChange={(e) => setOverrideNetworkId(e.target.value)}
-                className="w-full bg-[#111111] border border-[#444444] rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-[#f97316]"
+                className="w-full bg-white dark:bg-[#111111] border border-gray-300 dark:border-[#444444] rounded-lg px-3 py-2 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-[#f97316]"
               >
                 <option value="">-- Verify & Select Network --</option>
                 <option value="MTN_MOMO_RWA">MTN Rwanda (MTN_MOMO_RWA)</option>
@@ -163,16 +163,16 @@ function ApprovalModal({
               </select>
             </div>
 
-            <div className="text-xs text-[#888888] grid grid-cols-2 gap-x-4 gap-y-1">
-              <div><span className="text-[#666]">Method:</span> <span className="text-[#cccccc]">{tx.payout_method?.toUpperCase()}</span></div>
-              <div><span className="text-[#666]">Account:</span> <span className="text-[#cccccc] font-mono">{tx.payout_account}</span></div>
-              <div><span className="text-[#666]">Phone:</span> <span className="text-[#cccccc]">{org.phone || "N/A"}</span></div>
-              <div><span className="text-[#666]">Date:</span> <span className="text-[#cccccc]">{new Date(tx.created_at).toLocaleDateString("en-GB")}</span></div>
+            <div className="text-xs text-gray-500 dark:text-[#888888] grid grid-cols-2 gap-x-4 gap-y-1">
+              <div><span className="text-gray-500 dark:text-[#666]">Method:</span> <span className="text-gray-700 dark:text-[#cccccc]">{tx.payout_method?.toUpperCase()}</span></div>
+              <div><span className="text-gray-500 dark:text-[#666]">Account:</span> <span className="text-gray-700 dark:text-[#cccccc] font-mono">{tx.payout_account}</span></div>
+              <div><span className="text-gray-500 dark:text-[#666]">Phone:</span> <span className="text-gray-700 dark:text-[#cccccc]">{org.phone || "N/A"}</span></div>
+              <div><span className="text-gray-500 dark:text-[#666]">Date:</span> <span className="text-gray-700 dark:text-[#cccccc]">{new Date(tx.created_at).toLocaleDateString("en-GB")}</span></div>
             </div>
           </div>
 
           {/* Step 1: Verification Checklist */}
-          <div className={`rounded-xl p-4 border transition-colors ${calledCheck ? "bg-green-500/5 border-green-500/20" : "bg-[#1b1b1c] border-[#333333]"}`}>
+          <div className={`rounded-xl p-4 border transition-colors ${calledCheck ? "bg-green-500/5 border-green-500/20" : "bg-gray-50 dark:bg-[#1b1b1c] border-gray-200 dark:border-[#333333]"}`}>
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -180,8 +180,8 @@ function ApprovalModal({
                 onChange={(e) => setCalledCheck(e.target.checked)}
                 className="mt-0.5 w-4 h-4 accent-[#f97316] shrink-0"
               />
-              <span className="text-sm text-[#cccccc]">
-                I have called {org.name ? <span className="text-white font-medium">{org.name}</span> : "the organizer"} (<span className="text-white font-mono">{org.phone || org.email || "N/A"}</span>) and verified their identity and the withdrawal details.
+              <span className="text-sm text-gray-700 dark:text-[#cccccc]">
+                I have called {org.name ? <span className="text-gray-900 dark:text-white font-medium">{org.name}</span> : "the organizer"} (<span className="text-gray-900 dark:text-white font-mono">{org.phone || org.email || "N/A"}</span>) and verified their identity and the withdrawal details.
               </span>
             </label>
           </div>
@@ -213,14 +213,14 @@ function ApprovalModal({
                 </div>
               ) : null}
               <div>
-                <label className="block text-xs font-medium text-[#888888] mb-2">Enter OTP from Organizer</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-[#888888] mb-2">Enter OTP from Organizer</label>
                 <input
                   type="text"
                   placeholder="Enter 6-digit OTP"
                   value={otp}
                   maxLength={6}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                  className="w-full bg-[#252526] border border-[#444444] rounded-xl px-4 py-3 text-center text-2xl font-mono font-bold tracking-widest text-white focus:outline-none focus:border-[#f97316]"
+                  className="w-full bg-gray-50 dark:bg-[#252526] border border-gray-300 dark:border-[#444444] rounded-xl px-4 py-3 text-center text-2xl font-mono font-bold tracking-widest text-gray-900 dark:text-white focus:outline-none focus:border-[#f97316]"
                 />
               </div>
               <button
@@ -239,7 +239,7 @@ function ApprovalModal({
           )}
 
           {/* Reject Section */}
-          <div className="border-t border-[#333333] pt-4">
+          <div className="border-t border-gray-200 dark:border-[#333333] pt-4">
             {!showRejectInput ? (
               <button
                 onClick={() => setShowRejectInput(true)}
@@ -250,18 +250,18 @@ function ApprovalModal({
               </button>
             ) : (
               <div className="space-y-3 animate-in fade-in duration-200">
-                <label className="block text-xs font-medium text-[#888888]">Rejection Reason (required)</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-[#888888]">Rejection Reason (required)</label>
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="e.g. Could not verify identity, suspicious activity..."
                   rows={3}
-                  className="w-full bg-[#252526] border border-[#444444] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500 resize-none"
+                  className="w-full bg-gray-50 dark:bg-[#252526] border border-gray-300 dark:border-[#444444] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-red-500 resize-none"
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowRejectInput(false)}
-                    className="flex-1 py-2.5 rounded-xl border border-[#444444] text-[#888888] hover:text-white text-sm transition-colors"
+                    className="flex-1 py-2.5 rounded-xl border border-gray-300 dark:border-[#444444] text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white text-sm transition-colors"
                   >
                     Cancel
                   </button>
@@ -351,62 +351,62 @@ function TransactionsPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             Platform Transactions
             <LucideIcons.BarChart3 className="w-6 h-6 text-[#f97316]" />
           </h1>
-          <p className="text-[#888888] mt-1 text-sm">
+          <p className="text-gray-500 dark:text-[#888888] mt-1 text-sm">
             Manage subscription invoices and organizer withdrawal requests.
           </p>
         </div>
         <div className="relative w-full sm:w-72">
-          <LucideIcons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888888]" />
+          <LucideIcons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-[#888888]" />
           <input
             type="text"
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            className="w-full bg-[#1b1b1c] border border-[#333333] rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-[#f97316] placeholder:text-[#666666]"
+            className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-lg pl-9 pr-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#f97316] placeholder:text-gray-500 dark:text-[#666666]"
           />
         </div>
       </div>
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 flex items-center gap-4">
+        <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl p-4 flex items-center gap-4">
           <div className="w-11 h-11 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
             <LucideIcons.DollarSign className="w-5 h-5 text-green-500" />
           </div>
           <div>
-            <div className="text-xs text-[#888888]">Subscription Revenue</div>
-            <div className="text-lg font-semibold text-white font-mono">${totalRevenue.toFixed(2)}</div>
+            <div className="text-xs text-gray-500 dark:text-[#888888]">Subscription Revenue</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white font-mono">${totalRevenue.toFixed(2)}</div>
           </div>
         </div>
-        <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 flex items-center gap-4">
+        <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl p-4 flex items-center gap-4">
           <div className="w-11 h-11 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
             <LucideIcons.ArrowUpRight className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <div className="text-xs text-[#888888]">Total Paid Out</div>
-            <div className="text-lg font-semibold text-white font-mono">RWF {totalWithdrawals.toLocaleString()}</div>
+            <div className="text-xs text-gray-500 dark:text-[#888888]">Total Paid Out</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-white font-mono">RWF {totalWithdrawals.toLocaleString()}</div>
           </div>
         </div>
-        <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 flex items-center gap-4">
-          <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${pendingCount > 0 ? "bg-yellow-500/10" : "bg-[#333333]"}`}>
-            <LucideIcons.Clock className={`w-5 h-5 ${pendingCount > 0 ? "text-yellow-400" : "text-[#888888]"}`} />
+        <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl p-4 flex items-center gap-4">
+          <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${pendingCount > 0 ? "bg-yellow-500/10" : "bg-gray-200 dark:bg-[#333333]"}`}>
+            <LucideIcons.Clock className={`w-5 h-5 ${pendingCount > 0 ? "text-yellow-400" : "text-gray-500 dark:text-[#888888]"}`} />
           </div>
           <div>
-            <div className="text-xs text-[#888888]">Pending Withdrawals</div>
-            <div className={`text-lg font-semibold font-mono ${pendingCount > 0 ? "text-yellow-400" : "text-white"}`}>{pendingCount}</div>
+            <div className="text-xs text-gray-500 dark:text-[#888888]">Pending Withdrawals</div>
+            <div className={`text-lg font-semibold font-mono ${pendingCount > 0 ? "text-yellow-400" : "text-gray-900 dark:text-white"}`}>{pendingCount}</div>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-[#333333]">
+      <div className="flex border-b border-gray-200 dark:border-[#333333]">
         <button
           onClick={() => handleTabChange("withdrawals")}
-          className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === "withdrawals" ? "border-[#f97316] text-[#f97316]" : "border-transparent text-[#888888] hover:text-white"}`}
+          className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === "withdrawals" ? "border-[#f97316] text-[#f97316]" : "border-transparent text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white"}`}
         >
           <LucideIcons.ArrowUpRight className="w-4 h-4" />
           Withdrawal Requests
@@ -416,7 +416,7 @@ function TransactionsPage() {
         </button>
         <button
           onClick={() => handleTabChange("invoices")}
-          className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === "invoices" ? "border-[#f97316] text-[#f97316]" : "border-transparent text-[#888888] hover:text-white"}`}
+          className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === "invoices" ? "border-[#f97316] text-[#f97316]" : "border-transparent text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white"}`}
         >
           <LucideIcons.FileText className="w-4 h-4" />
           Subscription Invoices
@@ -424,11 +424,11 @@ function TransactionsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl overflow-hidden">
+      <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           {activeTab === "withdrawals" ? (
-            <table className="w-full text-left text-sm text-[#cccccc]">
-              <thead className="bg-[#252526] text-[#888888] border-b border-[#333333]">
+            <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
+              <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
                 <tr>
                   <th className="px-6 py-4 font-medium">Organizer</th>
                   <th className="px-6 py-4 font-medium">Payout Details</th>
@@ -439,10 +439,10 @@ function TransactionsPage() {
                   <th className="px-6 py-4 font-medium text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#333333]">
+              <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-[#888888]">
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]">
                       {searchQuery ? "No withdrawals match your search." : "No withdrawal requests found."}
                     </td>
                   </tr>
@@ -451,23 +451,23 @@ function TransactionsPage() {
                     const org = tx.organizer || {};
                     const isAdminApproval = tx.raw_callback_data?.requires_admin_approval;
                     return (
-                      <tr key={tx.id} className="hover:bg-[#252526] transition-colors">
+                      <tr key={tx.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-[#333333] border border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
-                              {org.image ? <img src={org.image} alt="" className="w-full h-full object-cover" /> : <LucideIcons.Building2 className="w-4 h-4 text-[#888]" />}
+                            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
+                              {org.image ? <img src={org.image} alt="" className="w-full h-full object-cover" /> : <LucideIcons.Building2 className="w-4 h-4 text-gray-500 dark:text-[#888]" />}
                             </div>
                             <div>
-                              <div className="font-medium text-white text-sm">{org.name || "Unknown"}</div>
-                              <div className="text-xs text-[#888888]">{org.email}</div>
+                              <div className="font-medium text-gray-900 dark:text-white text-sm">{org.name || "Unknown"}</div>
+                              <div className="text-xs text-gray-500 dark:text-[#888888]">{org.email}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-white text-sm font-medium">{tx.payout_method?.toUpperCase()}</div>
-                          <div className="text-xs text-[#888888] font-mono">{tx.payout_account}</div>
+                          <div className="text-gray-900 dark:text-white text-sm font-medium">{tx.payout_method?.toUpperCase()}</div>
+                          <div className="text-xs text-gray-500 dark:text-[#888888] font-mono">{tx.payout_account}</div>
                         </td>
-                        <td className="px-6 py-4 font-mono font-medium text-white">
+                        <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">
                           {tx.currency} {Number(tx.amount).toLocaleString()}
                         </td>
                         <td className="px-6 py-4 font-mono text-green-400">
@@ -491,7 +491,7 @@ function TransactionsPage() {
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-xs text-[#888888]">
+                        <td className="px-6 py-4 text-xs text-gray-500 dark:text-[#888888]">
                           {new Date(tx.created_at).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" })}
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -504,7 +504,7 @@ function TransactionsPage() {
                               Review
                             </button>
                           ) : (
-                            <span className="text-xs text-[#555555]">—</span>
+                            <span className="text-xs text-gray-500 dark:text-[#555555]">—</span>
                           )}
                         </td>
                       </tr>
@@ -514,8 +514,8 @@ function TransactionsPage() {
               </tbody>
             </table>
           ) : (
-            <table className="w-full text-left text-sm text-[#cccccc]">
-              <thead className="bg-[#252526] text-[#888888] border-b border-[#333333]">
+            <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
+              <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
                 <tr>
                   <th className="px-6 py-4 font-medium">Organizer</th>
                   <th className="px-6 py-4 font-medium">Plan</th>
@@ -525,10 +525,10 @@ function TransactionsPage() {
                   <th className="px-6 py-4 font-medium">Invoice Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#333333]">
+              <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-[#888888]">
+                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]">
                       {searchQuery ? "No invoices match your search." : "No invoices found."}
                     </td>
                   </tr>
@@ -538,23 +538,23 @@ function TransactionsPage() {
                     const sub = tx.subscription || {};
                     const plan = sub.pricing_plan || {};
                     return (
-                      <tr key={tx.id} className="hover:bg-[#252526] transition-colors">
+                      <tr key={tx.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-[#333333] border border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
-                              {org.image ? <img src={org.image} alt="" className="w-full h-full object-cover" /> : <LucideIcons.Building2 className="w-4 h-4 text-[#888]" />}
+                            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
+                              {org.image ? <img src={org.image} alt="" className="w-full h-full object-cover" /> : <LucideIcons.Building2 className="w-4 h-4 text-gray-500 dark:text-[#888]" />}
                             </div>
                             <div>
-                              <div className="font-medium text-white">{org.name || "Unknown"}</div>
-                              <div className="text-xs text-[#888888]">{org.email}</div>
+                              <div className="font-medium text-gray-900 dark:text-white">{org.name || "Unknown"}</div>
+                              <div className="text-xs text-gray-500 dark:text-[#888888]">{org.email}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="font-medium text-white">{plan.name || "Custom Plan"}</div>
-                          <div className="text-xs text-[#888888]">Subscription</div>
+                          <div className="font-medium text-gray-900 dark:text-white">{plan.name || "Custom Plan"}</div>
+                          <div className="text-xs text-gray-500 dark:text-[#888888]">Subscription</div>
                         </td>
-                        <td className="px-6 py-4 font-mono font-medium text-white">
+                        <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">
                           {tx.amount === 0 ? "Free" : `${plan.currency || "USD"} ${tx.amount}`}
                         </td>
                         <td className="px-6 py-4">
@@ -566,10 +566,10 @@ function TransactionsPage() {
                             {tx.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-xs text-[#888888]">
+                        <td className="px-6 py-4 text-xs text-gray-500 dark:text-[#888888]">
                           {sub.next_billing_date ? new Date(sub.next_billing_date).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" }) : "—"}
                         </td>
-                        <td className="px-6 py-4 text-xs text-[#888888]">
+                        <td className="px-6 py-4 text-xs text-gray-500 dark:text-[#888888]">
                           {tx.created_at ? new Date(tx.created_at).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" }) : "—"}
                         </td>
                       </tr>
@@ -585,24 +585,24 @@ function TransactionsPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
-          <div className="text-sm text-[#888888]">
-            Showing <span className="font-medium text-white">{startIndex + 1}</span>–
-            <span className="font-medium text-white">{Math.min(startIndex + ITEMS_PER_PAGE, activeList.length)}</span> of{" "}
-            <span className="font-medium text-white">{activeList.length}</span>
+          <div className="text-sm text-gray-500 dark:text-[#888888]">
+            Showing <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span>–
+            <span className="font-medium text-gray-900 dark:text-white">{Math.min(startIndex + ITEMS_PER_PAGE, activeList.length)}</span> of{" "}
+            <span className="font-medium text-gray-900 dark:text-white">{activeList.length}</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-2 rounded-lg bg-[#1b1b1c] border border-[#333333] text-[#aaaaaa] hover:text-white disabled:opacity-40 transition-colors"
+              className="p-2 rounded-lg bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-[#aaaaaa] hover:text-gray-900 dark:hover:text-white disabled:opacity-40 transition-colors"
             >
               <LucideIcons.ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-sm text-[#aaaaaa] px-2">Page {currentPage} of {totalPages}</span>
+            <span className="text-sm text-gray-600 dark:text-[#aaaaaa] px-2">Page {currentPage} of {totalPages}</span>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-2 rounded-lg bg-[#1b1b1c] border border-[#333333] text-[#aaaaaa] hover:text-white disabled:opacity-40 transition-colors"
+              className="p-2 rounded-lg bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-[#aaaaaa] hover:text-gray-900 dark:hover:text-white disabled:opacity-40 transition-colors"
             >
               <LucideIcons.ChevronRight className="w-4 h-4" />
             </button>

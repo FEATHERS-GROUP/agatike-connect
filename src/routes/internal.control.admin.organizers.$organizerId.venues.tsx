@@ -34,7 +34,7 @@ type Tab = "venues" | "spaces";
 function EmptyRow({ cols, label }: { cols: number; label: string }) {
   return (
     <tr>
-      <td colSpan={cols} className="py-8 text-center text-[#797775] italic">
+      <td colSpan={cols} className="py-8 text-center text-gray-600 dark:text-[#797775] italic">
         {label}
       </td>
     </tr>
@@ -44,8 +44,8 @@ function EmptyRow({ cols, label }: { cols: number; label: string }) {
 function WorkspaceCell({ name }: { name: string }) {
   return (
     <div className="flex items-center gap-1.5">
-      <Building2 className="h-3.5 w-3.5 text-[#797775] shrink-0" />
-      <span className={name && name !== "—" ? "text-[#cccccc]" : "text-[#797775] italic"}>
+      <Building2 className="h-3.5 w-3.5 text-gray-600 dark:text-[#797775] shrink-0" />
+      <span className={name && name !== "—" ? "text-gray-700 dark:text-[#cccccc]" : "text-gray-600 dark:text-[#797775] italic"}>
         {name || "—"}
       </span>
     </div>
@@ -63,10 +63,10 @@ function DetailBlock({
 }) {
   return (
     <div className="flex gap-3">
-      <Icon className="h-4 w-4 text-[#797775] shrink-0 mt-0.5" />
+      <Icon className="h-4 w-4 text-gray-600 dark:text-[#797775] shrink-0 mt-0.5" />
       <div className="flex-1">
-        <div className="text-xs text-[#797775] mb-1">{label}</div>
-        <div className="text-sm text-white break-words">{children}</div>
+        <div className="text-xs text-gray-600 dark:text-[#797775] mb-1">{label}</div>
+        <div className="text-sm text-gray-900 dark:text-white break-words">{children}</div>
       </div>
     </div>
   );
@@ -109,8 +109,8 @@ function OrganizerVenuesAndSpaces() {
   return (
     <div className="space-y-4 font-sans text-sm pb-10">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-[#333333] gap-4">
-        <h2 className="text-lg font-medium text-white flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-gray-200 dark:border-[#333333] gap-4">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
           {activeTab === "venues" ? (
             <MapPin className="h-5 w-5 text-[#569cd6]" />
           ) : (
@@ -121,20 +121,20 @@ function OrganizerVenuesAndSpaces() {
 
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-[#797775]" />
+            <Search className="h-4 w-4 text-gray-600 dark:text-[#797775]" />
           </div>
           <input
             type="text"
             placeholder={`Search ${activeTab}...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full sm:w-64 bg-[#1e1e1e] border border-[#333333] rounded-sm py-1.5 pl-9 pr-3 text-sm text-white placeholder-[#797775] focus:outline-none focus:border-[#569cd6] transition-colors"
+            className="w-full sm:w-64 bg-gray-50 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-sm py-1.5 pl-9 pr-3 text-sm text-gray-900 dark:text-white placeholder-[#797775] focus:outline-none focus:border-[#569cd6] transition-colors"
           />
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-[#333333]">
+      <div className="flex gap-1 border-b border-gray-200 dark:border-[#333333]">
         {tabs.map(({ key, label, icon: Icon, count, color }) => (
           <button
             key={key}
@@ -142,13 +142,13 @@ function OrganizerVenuesAndSpaces() {
             className={`flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors border-b-2 -mb-px ${
               activeTab === key
                 ? `border-current ${color}`
-                : "border-transparent text-[#797775] hover:text-[#cccccc]"
+                : "border-transparent text-gray-600 dark:text-[#797775] hover:text-gray-700 dark:text-[#cccccc]"
             }`}
           >
             <Icon className="h-3.5 w-3.5" />
             {label}
             <span
-              className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === key ? "bg-current/10" : "bg-[#2d2d30]"}`}
+              className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === key ? "bg-current/10" : "bg-gray-100 dark:bg-[#2d2d30]"}`}
             >
               {count}
             </span>
@@ -157,33 +157,33 @@ function OrganizerVenuesAndSpaces() {
       </div>
 
       {/* Tables */}
-      <div className="bg-[#252526] border border-[#333333]">
+      <div className="bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333]">
         <div className="overflow-x-auto">
           {/* Rentable Venues */}
           {activeTab === "venues" && (
             <table className="w-full text-left text-[13px] whitespace-nowrap">
-              <thead className="bg-[#2d2d30] text-[#cccccc]">
+              <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
                 <tr>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">ID</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Name</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Workspace</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Type</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Location</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Capacity</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Status</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Actions</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Name</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Workspace</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Type</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Location</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Capacity</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#333333] text-[#cccccc]">
+              <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
                 {filteredVenues.length === 0 ? (
                   <EmptyRow cols={8} label="No rentable venues found." />
                 ) : (
                   filteredVenues.map((v: any) => (
-                    <tr key={v.id} className="hover:bg-[#2d2d30] transition-colors">
-                      <td className="py-2 px-4 font-mono text-[#797775] text-xs">
+                    <tr key={v.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                      <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                         {String(v.id).substring(0, 8)}...
                       </td>
-                      <td className="py-2 px-4 font-medium text-white">
+                      <td className="py-2 px-4 font-medium text-gray-900 dark:text-white">
                         <div className="flex items-center gap-2">
                           <MapPin className="h-3.5 w-3.5 text-[#569cd6] shrink-0" />
                           {v.name || "Untitled"}
@@ -193,13 +193,13 @@ function OrganizerVenuesAndSpaces() {
                         <WorkspaceCell name={v.workspaceName} />
                       </td>
                       <td className="py-2 px-4 capitalize text-[#dcdcaa]">{v.type || "—"}</td>
-                      <td className="py-2 px-4 text-[#cccccc]">
+                      <td className="py-2 px-4 text-gray-700 dark:text-[#cccccc]">
                         {[v.city, v.country].filter(Boolean).join(", ") || "—"}
                       </td>
                       <td className="py-2 px-4">
                         {v.capacity ? (
-                          <div className="flex items-center gap-1.5 text-[#cccccc]">
-                            <Users className="h-3.5 w-3.5 text-[#797775]" />
+                          <div className="flex items-center gap-1.5 text-gray-700 dark:text-[#cccccc]">
+                            <Users className="h-3.5 w-3.5 text-gray-600 dark:text-[#797775]" />
                             {v.capacity}
                           </div>
                         ) : (
@@ -212,7 +212,7 @@ function OrganizerVenuesAndSpaces() {
                             Active
                           </span>
                         ) : (
-                          <span className="text-xs px-2 py-0.5 rounded-sm bg-[#797775]/10 text-[#797775]">
+                          <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#797775]/10 text-gray-600 dark:text-[#797775]">
                             {v.status || "—"}
                           </span>
                         )}
@@ -220,14 +220,14 @@ function OrganizerVenuesAndSpaces() {
                       <td className="py-2 px-4">
                         <Sheet>
                           <SheetTrigger asChild>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#333333] hover:bg-[#444444] text-white text-xs rounded transition-colors">
+                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-200 dark:bg-[#333333] hover:bg-gray-200 dark:hover:bg-[#444444] text-gray-900 dark:text-white text-xs rounded transition-colors">
                               <Eye className="h-3.5 w-3.5" />
                               View
                             </button>
                           </SheetTrigger>
-                          <SheetContent className="bg-[#1e1e1e] border-[#333333] text-white w-full sm:max-w-md p-0 flex flex-col font-sans">
-                            <SheetHeader className="p-6 pb-4 border-b border-[#333333]">
-                              <SheetTitle className="text-white flex items-center gap-2">
+                          <SheetContent className="bg-gray-50 dark:bg-[#1e1e1e] border-gray-200 dark:border-[#333333] text-gray-900 dark:text-white w-full sm:max-w-md p-0 flex flex-col font-sans">
+                            <SheetHeader className="p-6 pb-4 border-b border-gray-200 dark:border-[#333333]">
+                              <SheetTitle className="text-gray-900 dark:text-white flex items-center gap-2">
                                 <MapPin className="h-5 w-5 text-[#569cd6]" />
                                 Rentable Venue Details
                               </SheetTitle>
@@ -241,22 +241,22 @@ function OrganizerVenuesAndSpaces() {
                                     <img
                                       src={v.cover_url}
                                       alt="Cover"
-                                      className="h-16 w-16 rounded-md object-cover bg-[#2d2d30]"
+                                      className="h-16 w-16 rounded-md object-cover bg-gray-100 dark:bg-[#2d2d30]"
                                     />
                                   ) : (
-                                    <div className="h-16 w-16 rounded-md bg-[#2d2d30] flex items-center justify-center">
-                                      <MapPin className="h-6 w-6 text-[#797775]" />
+                                    <div className="h-16 w-16 rounded-md bg-gray-100 dark:bg-[#2d2d30] flex items-center justify-center">
+                                      <MapPin className="h-6 w-6 text-gray-600 dark:text-[#797775]" />
                                     </div>
                                   )}
                                   <div>
-                                    <h3 className="text-lg font-medium text-white">
+                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                                       {v.name || "Untitled Venue"}
                                     </h3>
-                                    <div className="text-sm text-[#797775] capitalize">
+                                    <div className="text-sm text-gray-600 dark:text-[#797775] capitalize">
                                       {v.type || "Uncategorized"}
                                     </div>
                                     <div className="mt-1 flex items-center gap-2">
-                                      <span className="text-xs px-2 py-0.5 rounded-sm bg-[#333333] text-[#cccccc] font-mono">
+                                      <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#333333] text-gray-700 dark:text-[#cccccc] font-mono">
                                         {String(v.id).substring(0, 8)}
                                       </span>
                                       {v.is_venue_private && (
@@ -269,7 +269,7 @@ function OrganizerVenuesAndSpaces() {
                                   </div>
                                 </div>
 
-                                <div className="h-px bg-[#333333]" />
+                                <div className="h-px bg-gray-200 dark:bg-[#333333]" />
 
                                 {/* Details Grid */}
                                 <div className="grid grid-cols-1 gap-6">
@@ -281,12 +281,12 @@ function OrganizerVenuesAndSpaces() {
                                     {v.address ? (
                                       <>
                                         <div>{v.address}</div>
-                                        <div className="text-[#cccccc]">
+                                        <div className="text-gray-700 dark:text-[#cccccc]">
                                           {[v.city, v.country].filter(Boolean).join(", ")}
                                         </div>
                                       </>
                                     ) : (
-                                      <span className="italic text-[#797775]">
+                                      <span className="italic text-gray-600 dark:text-[#797775]">
                                         No address provided
                                       </span>
                                     )}
@@ -296,20 +296,20 @@ function OrganizerVenuesAndSpaces() {
                                     {v.capacity ? (
                                       `${v.capacity} people`
                                     ) : (
-                                      <span className="italic text-[#797775]">Not specified</span>
+                                      <span className="italic text-gray-600 dark:text-[#797775]">Not specified</span>
                                     )}
                                   </DetailBlock>
 
                                   <DetailBlock icon={Banknote} label="Rental Information">
                                     <div className="capitalize">
                                       Model:{" "}
-                                      <span className="text-[#cccccc]">
+                                      <span className="text-gray-700 dark:text-[#cccccc]">
                                         {v.rental_model || "—"}
                                       </span>
                                     </div>
                                     <div className="capitalize">
                                       Type:{" "}
-                                      <span className="text-[#cccccc]">{v.rental_type || "—"}</span>
+                                      <span className="text-gray-700 dark:text-[#cccccc]">{v.rental_type || "—"}</span>
                                     </div>
                                     <div>
                                       Currency:{" "}
@@ -319,21 +319,21 @@ function OrganizerVenuesAndSpaces() {
 
                                   <DetailBlock icon={Clock} label="Operating Hours">
                                     {v.opening_hours || v.closing_hours ? (
-                                      <div className="text-[#cccccc]">
+                                      <div className="text-gray-700 dark:text-[#cccccc]">
                                         {v.opening_hours || "??:??"} — {v.closing_hours || "??:??"}
                                       </div>
                                     ) : (
-                                      <span className="italic text-[#797775]">Not specified</span>
+                                      <span className="italic text-gray-600 dark:text-[#797775]">Not specified</span>
                                     )}
                                   </DetailBlock>
 
                                   <DetailBlock icon={Info} label="Description">
                                     {v.description ? (
-                                      <div className="whitespace-pre-wrap text-[#cccccc] leading-relaxed">
+                                      <div className="whitespace-pre-wrap text-gray-700 dark:text-[#cccccc] leading-relaxed">
                                         {v.description}
                                       </div>
                                     ) : (
-                                      <span className="italic text-[#797775]">
+                                      <span className="italic text-gray-600 dark:text-[#797775]">
                                         No description provided
                                       </span>
                                     )}
@@ -341,7 +341,7 @@ function OrganizerVenuesAndSpaces() {
 
                                   {v.instructions && (
                                     <DetailBlock icon={FileText} label="Instructions">
-                                      <div className="whitespace-pre-wrap text-[#cccccc] leading-relaxed">
+                                      <div className="whitespace-pre-wrap text-gray-700 dark:text-[#cccccc] leading-relaxed">
                                         {v.instructions}
                                       </div>
                                     </DetailBlock>
@@ -355,14 +355,14 @@ function OrganizerVenuesAndSpaces() {
                                         {v.amenities.map((a: string, i: number) => (
                                           <span
                                             key={i}
-                                            className="px-2 py-0.5 rounded-full bg-[#2d2d30] text-xs text-[#cccccc] capitalize"
+                                            className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-[#2d2d30] text-xs text-gray-700 dark:text-[#cccccc] capitalize"
                                           >
                                             {a}
                                           </span>
                                         ))}
                                       </div>
                                     ) : (
-                                      <span className="italic text-[#797775]">None listed</span>
+                                      <span className="italic text-gray-600 dark:text-[#797775]">None listed</span>
                                     )}
                                   </DetailBlock>
                                 </div>
@@ -381,27 +381,27 @@ function OrganizerVenuesAndSpaces() {
           {/* Spaces */}
           {activeTab === "spaces" && (
             <table className="w-full text-left text-[13px] whitespace-nowrap">
-              <thead className="bg-[#2d2d30] text-[#cccccc]">
+              <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
                 <tr>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">ID</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Name</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Workspace</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Type</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Status</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Created</th>
-                  <th className="font-semibold py-2 px-4 border-b border-[#333333]">Actions</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">ID</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Name</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Workspace</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Type</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Status</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Created</th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#333333] text-[#cccccc]">
+              <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
                 {filteredSpaces.length === 0 ? (
                   <EmptyRow cols={7} label="No spaces found." />
                 ) : (
                   filteredSpaces.map((s: any) => (
-                    <tr key={s.id} className="hover:bg-[#2d2d30] transition-colors">
-                      <td className="py-2 px-4 font-mono text-[#797775] text-xs">
+                    <tr key={s.id} className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors">
+                      <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                         {String(s.id).substring(0, 8)}...
                       </td>
-                      <td className="py-2 px-4 font-medium text-white">
+                      <td className="py-2 px-4 font-medium text-gray-900 dark:text-white">
                         <div className="flex items-center gap-2">
                           <LayoutGrid className="h-3.5 w-3.5 text-[#c586c0] shrink-0" />
                           {s.name || "Untitled"}
@@ -417,25 +417,25 @@ function OrganizerVenuesAndSpaces() {
                             Active
                           </span>
                         ) : (
-                          <span className="text-xs px-2 py-0.5 rounded-sm bg-[#797775]/10 text-[#797775]">
+                          <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#797775]/10 text-gray-600 dark:text-[#797775]">
                             {s.status || "—"}
                           </span>
                         )}
                       </td>
-                      <td className="py-2 px-4 text-[#797775]">
+                      <td className="py-2 px-4 text-gray-600 dark:text-[#797775]">
                         {s.created_at ? new Date(s.created_at).toLocaleDateString("en-US") : "—"}
                       </td>
                       <td className="py-2 px-4">
                         <Sheet>
                           <SheetTrigger asChild>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#333333] hover:bg-[#444444] text-white text-xs rounded transition-colors">
+                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-200 dark:bg-[#333333] hover:bg-gray-200 dark:hover:bg-[#444444] text-gray-900 dark:text-white text-xs rounded transition-colors">
                               <Eye className="h-3.5 w-3.5" />
                               View
                             </button>
                           </SheetTrigger>
-                          <SheetContent className="bg-[#1e1e1e] border-[#333333] text-white w-full sm:max-w-md p-0 flex flex-col font-sans">
-                            <SheetHeader className="p-6 pb-4 border-b border-[#333333]">
-                              <SheetTitle className="text-white flex items-center gap-2">
+                          <SheetContent className="bg-gray-50 dark:bg-[#1e1e1e] border-gray-200 dark:border-[#333333] text-gray-900 dark:text-white w-full sm:max-w-md p-0 flex flex-col font-sans">
+                            <SheetHeader className="p-6 pb-4 border-b border-gray-200 dark:border-[#333333]">
+                              <SheetTitle className="text-gray-900 dark:text-white flex items-center gap-2">
                                 <LayoutGrid className="h-5 w-5 text-[#c586c0]" />
                                 Space Details
                               </SheetTitle>
@@ -449,29 +449,29 @@ function OrganizerVenuesAndSpaces() {
                                     <img
                                       src={s.cover_url}
                                       alt="Cover"
-                                      className="h-16 w-16 rounded-md object-cover bg-[#2d2d30]"
+                                      className="h-16 w-16 rounded-md object-cover bg-gray-100 dark:bg-[#2d2d30]"
                                     />
                                   ) : (
-                                    <div className="h-16 w-16 rounded-md bg-[#2d2d30] flex items-center justify-center">
-                                      <LayoutGrid className="h-6 w-6 text-[#797775]" />
+                                    <div className="h-16 w-16 rounded-md bg-gray-100 dark:bg-[#2d2d30] flex items-center justify-center">
+                                      <LayoutGrid className="h-6 w-6 text-gray-600 dark:text-[#797775]" />
                                     </div>
                                   )}
                                   <div>
-                                    <h3 className="text-lg font-medium text-white">
+                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                                       {s.name || "Untitled Space"}
                                     </h3>
-                                    <div className="text-sm text-[#797775] capitalize">
+                                    <div className="text-sm text-gray-600 dark:text-[#797775] capitalize">
                                       {s.type || "Uncategorized"}
                                     </div>
                                     <div className="mt-1 flex items-center gap-2">
-                                      <span className="text-xs px-2 py-0.5 rounded-sm bg-[#333333] text-[#cccccc] font-mono">
+                                      <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#333333] text-gray-700 dark:text-[#cccccc] font-mono">
                                         {String(s.id).substring(0, 8)}
                                       </span>
                                     </div>
                                   </div>
                                 </div>
 
-                                <div className="h-px bg-[#333333]" />
+                                <div className="h-px bg-gray-200 dark:bg-[#333333]" />
 
                                 {/* Details Grid */}
                                 <div className="grid grid-cols-1 gap-6">
@@ -483,14 +483,14 @@ function OrganizerVenuesAndSpaces() {
                                     {s.locations &&
                                     Array.isArray(s.locations) &&
                                     s.locations.length > 0 ? (
-                                      <ul className="list-disc pl-4 space-y-1 text-[#cccccc]">
+                                      <ul className="list-disc pl-4 space-y-1 text-gray-700 dark:text-[#cccccc]">
                                         {s.locations.map((loc: any, i: number) => (
                                           <li key={i}>
-                                            <span className="font-medium text-white">
+                                            <span className="font-medium text-gray-900 dark:text-white">
                                               {loc.name}
                                             </span>
                                             {loc.address && (
-                                              <div className="text-xs text-[#797775]">
+                                              <div className="text-xs text-gray-600 dark:text-[#797775]">
                                                 {loc.address}
                                               </div>
                                             )}
@@ -498,7 +498,7 @@ function OrganizerVenuesAndSpaces() {
                                         ))}
                                       </ul>
                                     ) : (
-                                      <span className="italic text-[#797775]">
+                                      <span className="italic text-gray-600 dark:text-[#797775]">
                                         No locations provided
                                       </span>
                                     )}
@@ -510,9 +510,9 @@ function OrganizerVenuesAndSpaces() {
                                         {s.plans.map((plan: any, i: number) => (
                                           <div
                                             key={i}
-                                            className="bg-[#2d2d30] p-2 rounded border border-[#333333] text-xs"
+                                            className="bg-gray-100 dark:bg-[#2d2d30] p-2 rounded border border-gray-200 dark:border-[#333333] text-xs"
                                           >
-                                            <div className="font-medium text-white">
+                                            <div className="font-medium text-gray-900 dark:text-white">
                                               {plan.name}
                                             </div>
                                             <div className="text-[#dcdcaa]">
@@ -522,7 +522,7 @@ function OrganizerVenuesAndSpaces() {
                                         ))}
                                       </div>
                                     ) : (
-                                      <span className="italic text-[#797775]">
+                                      <span className="italic text-gray-600 dark:text-[#797775]">
                                         No plans configured
                                       </span>
                                     )}
@@ -530,11 +530,11 @@ function OrganizerVenuesAndSpaces() {
 
                                   <DetailBlock icon={Info} label="Description">
                                     {s.description ? (
-                                      <div className="whitespace-pre-wrap text-[#cccccc] leading-relaxed">
+                                      <div className="whitespace-pre-wrap text-gray-700 dark:text-[#cccccc] leading-relaxed">
                                         {s.description}
                                       </div>
                                     ) : (
-                                      <span className="italic text-[#797775]">
+                                      <span className="italic text-gray-600 dark:text-[#797775]">
                                         No description provided
                                       </span>
                                     )}
@@ -543,11 +543,11 @@ function OrganizerVenuesAndSpaces() {
                                   {(s.rsvp_form_id || s.show_rsvp_form_button) && (
                                     <DetailBlock icon={List} label="RSVP Form">
                                       <div className="flex items-center gap-2">
-                                        <span className="text-[#cccccc]">
+                                        <span className="text-gray-700 dark:text-[#cccccc]">
                                           {s.rsvp_form_button_text || "RSVP"}
                                         </span>
                                         {s.rsvp_form_id && (
-                                          <span className="text-[10px] bg-[#333333] px-1.5 py-0.5 rounded font-mono text-[#797775]">
+                                          <span className="text-[10px] bg-gray-200 dark:bg-[#333333] px-1.5 py-0.5 rounded font-mono text-gray-600 dark:text-[#797775]">
                                             ID: {s.rsvp_form_id.substring(0, 8)}
                                           </span>
                                         )}

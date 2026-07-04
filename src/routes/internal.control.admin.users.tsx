@@ -30,19 +30,19 @@ function AdminUsersPage() {
   const [activeTab, setActiveTab] = useState<"users" | "groups">("users");
 
   return (
-    <div className="flex flex-col h-full bg-[#111] text-[#ccc]">
-      <div className="p-6 border-b border-[#333] shrink-0 bg-[#161616]">
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
+    <div className="flex flex-col h-full bg-white dark:bg-[#111] text-gray-700 dark:text-[#ccc]">
+      <div className="p-6 border-b border-gray-200 dark:border-[#333] shrink-0 bg-gray-50 dark:bg-[#161616]">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <Users className="h-5 w-5 text-[#f97316]" />
           Users & Roles Management
         </h1>
-        <p className="text-[12px] text-[#888] mt-1">Manage global admin access and role-based permissions.</p>
+        <p className="text-[12px] text-gray-500 dark:text-[#888] mt-1">Manage global admin access and role-based permissions.</p>
 
         <div className="flex gap-4 mt-6">
           <button
             onClick={() => setActiveTab("users")}
             className={`pb-2 text-sm font-medium transition-colors border-b-2 ${
-              activeTab === "users" ? "border-[#f97316] text-white" : "border-transparent text-[#666] hover:text-[#aaa]"
+              activeTab === "users" ? "border-[#f97316] text-gray-900 dark:text-white" : "border-transparent text-gray-500 dark:text-[#666] hover:text-gray-600 dark:text-[#aaa]"
             }`}
           >
             Admin Users
@@ -50,7 +50,7 @@ function AdminUsersPage() {
           <button
             onClick={() => setActiveTab("groups")}
             className={`pb-2 text-sm font-medium transition-colors border-b-2 ${
-              activeTab === "groups" ? "border-[#f97316] text-white" : "border-transparent text-[#666] hover:text-[#aaa]"
+              activeTab === "groups" ? "border-[#f97316] text-gray-900 dark:text-white" : "border-transparent text-gray-500 dark:text-[#666] hover:text-gray-600 dark:text-[#aaa]"
             }`}
           >
             Groups & Permissions
@@ -102,9 +102,9 @@ function UsersTab() {
         </button>
       </div>
 
-      <div className="bg-[#161616] border border-[#333] rounded-lg overflow-hidden">
+      <div className="bg-gray-50 dark:bg-[#161616] border border-gray-200 dark:border-[#333] rounded-lg overflow-hidden">
         <table className="w-full text-left text-sm">
-          <thead className="bg-[#111] border-b border-[#333] text-[#888] uppercase text-[11px]">
+          <thead className="bg-white dark:bg-[#111] border-b border-gray-200 dark:border-[#333] text-gray-500 dark:text-[#888] uppercase text-[11px]">
             <tr>
               <th className="px-4 py-3 font-semibold">Email</th>
               <th className="px-4 py-3 font-semibold">Name</th>
@@ -112,27 +112,27 @@ function UsersTab() {
               <th className="px-4 py-3 font-semibold text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#2a2a2a]">
+          <tbody className="divide-y divide-gray-200 dark:divide-[#2a2a2a]">
             {users?.map(user => (
-              <tr key={user.id} className="hover:bg-[#1a1a1a]">
-                <td className="px-4 py-3 font-medium text-white">{user.email}</td>
-                <td className="px-4 py-3 text-[#aaa]">{user.name || "—"}</td>
+              <tr key={user.id} className="hover:bg-gray-100 dark:bg-[#1a1a1a]">
+                <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{user.email}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-[#aaa]">{user.name || "—"}</td>
                 <td className="px-4 py-3">
                   {user.is_super_admin ? (
                     <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold uppercase bg-red-500/10 text-red-500 border border-red-500/20">
                       <Shield className="h-3 w-3" /> Super Admin
                     </span>
                   ) : user.group ? (
-                    <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium bg-[#333] text-[#ddd]">
+                    <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium bg-gray-200 dark:bg-[#333] text-gray-900 dark:text-[#ddd]">
                       {user.group.name}
                     </span>
                   ) : (
-                    <span className="text-[#666] text-xs">No Group</span>
+                    <span className="text-gray-500 dark:text-[#666] text-xs">No Group</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button onClick={() => { setEditingUser(user); setIsModalOpen(true); }} className="p-1.5 text-[#666] hover:text-white hover:bg-[#333] rounded transition-colors"><Edit className="h-4 w-4" /></button>
+                    <button onClick={() => { setEditingUser(user); setIsModalOpen(true); }} className="p-1.5 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:bg-[#333] rounded transition-colors"><Edit className="h-4 w-4" /></button>
                     {!user.is_super_admin && (
                       <button 
                         onClick={() => { if(confirm("Delete this user?")) deleteMutation.mutate({ id: user.id }) }}
@@ -188,35 +188,35 @@ function UserModal({ user, groups, onClose }: { user: AdminUser | null; groups: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="bg-[#161616] border border-[#333] rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#333] flex justify-between items-center bg-[#111]">
-          <h2 className="text-lg font-bold text-white">{user ? "Edit User" : "Add New User"}</h2>
-          <button onClick={onClose} className="p-1 text-[#666] hover:text-white transition-colors"><X className="h-5 w-5" /></button>
+      <div className="bg-gray-50 dark:bg-[#161616] border border-gray-200 dark:border-[#333] rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-200 dark:border-[#333] flex justify-between items-center bg-white dark:bg-[#111]">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">{user ? "Edit User" : "Add New User"}</h2>
+          <button onClick={onClose} className="p-1 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white transition-colors"><X className="h-5 w-5" /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#888] uppercase mb-1.5">Email</label>
-            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-[#111] border border-[#333] rounded-md px-3 py-2 text-sm text-white focus:border-[#f97316] outline-none" />
+            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">Email</label>
+            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#888] uppercase mb-1.5">Name (Optional)</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full bg-[#111] border border-[#333] rounded-md px-3 py-2 text-sm text-white focus:border-[#f97316] outline-none" />
+            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">Name (Optional)</label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#888] uppercase mb-1.5">Password {user && "(Leave blank to keep)"}</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-[#111] border border-[#333] rounded-md px-3 py-2 text-sm text-white focus:border-[#f97316] outline-none" />
+            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">Password {user && "(Leave blank to keep)"}</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none" />
           </div>
           
-          <div className="pt-2 border-t border-[#333]">
+          <div className="pt-2 border-t border-gray-200 dark:border-[#333]">
             <label className="flex items-center gap-2 cursor-pointer mb-4">
-              <input type="checkbox" checked={isSuperAdmin} onChange={e => setIsSuperAdmin(e.target.checked)} className="rounded bg-[#111] border-[#333] text-[#f97316] focus:ring-0 focus:ring-offset-0 w-4 h-4" />
+              <input type="checkbox" checked={isSuperAdmin} onChange={e => setIsSuperAdmin(e.target.checked)} className="rounded bg-white dark:bg-[#111] border-gray-200 dark:border-[#333] text-[#f97316] focus:ring-0 focus:ring-offset-0 w-4 h-4" />
               <span className="text-sm font-semibold text-red-400">Make Super Admin</span>
             </label>
 
             {!isSuperAdmin && (
               <div>
-                <label className="block text-xs font-medium text-[#888] uppercase mb-1.5">Assign Group</label>
-                <select value={groupId} onChange={e => setGroupId(e.target.value)} className="w-full bg-[#111] border border-[#333] rounded-md px-3 py-2 text-sm text-white focus:border-[#f97316] outline-none">
+                <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">Assign Group</label>
+                <select value={groupId} onChange={e => setGroupId(e.target.value)} className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none">
                   <option value="">-- No Group --</option>
                   {groups.map(g => (
                     <option key={g.id} value={g.id}>{g.name}</option>
@@ -227,7 +227,7 @@ function UserModal({ user, groups, onClose }: { user: AdminUser | null; groups: 
           </div>
 
           <div className="pt-4 flex justify-end gap-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-[#aaa] hover:bg-[#333] rounded transition-colors">Cancel</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-[#aaa] hover:bg-gray-200 dark:bg-[#333] rounded transition-colors">Cancel</button>
             <button type="submit" disabled={mutation.isPending} className="px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-sm font-medium rounded transition-colors flex items-center gap-2">
               {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Save User
             </button>
@@ -272,14 +272,14 @@ function GroupsTab() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {groups?.map(group => (
-          <div key={group.id} className="bg-[#161616] border border-[#333] rounded-lg p-5 flex flex-col hover:border-[#444] transition-colors">
+          <div key={group.id} className="bg-gray-50 dark:bg-[#161616] border border-gray-200 dark:border-[#333] rounded-lg p-5 flex flex-col hover:border-gray-300 dark:border-[#444] transition-colors">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-lg font-bold text-white">{group.name}</h3>
-                <p className="text-[11px] text-[#666] mt-0.5">{group.permissions.length} pages granted</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{group.name}</h3>
+                <p className="text-[11px] text-gray-500 dark:text-[#666] mt-0.5">{group.permissions.length} pages granted</p>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => { setEditingGroup(group); setIsModalOpen(true); }} className="p-1.5 text-[#666] hover:text-white hover:bg-[#333] rounded transition-colors"><Edit className="h-4 w-4" /></button>
+                <button onClick={() => { setEditingGroup(group); setIsModalOpen(true); }} className="p-1.5 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:bg-[#333] rounded transition-colors"><Edit className="h-4 w-4" /></button>
                 <button onClick={() => { if(confirm(`Delete ${group.name}?`)) deleteMutation.mutate({ id: group.id }); }} className="p-1.5 text-red-500/70 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"><Trash2 className="h-4 w-4" /></button>
               </div>
             </div>
@@ -288,7 +288,7 @@ function GroupsTab() {
               {group.permissions.map(path => {
                 const page = AVAILABLE_PAGES.find(p => p.path === path);
                 return (
-                  <span key={path} className="inline-flex items-center px-2 py-1 rounded text-[10px] font-medium bg-[#222] border border-[#333] text-[#aaa]">
+                  <span key={path} className="inline-flex items-center px-2 py-1 rounded text-[10px] font-medium bg-gray-100 dark:bg-[#222] border border-gray-200 dark:border-[#333] text-gray-600 dark:text-[#aaa]">
                     {page?.label || path}
                   </span>
                 );
@@ -297,7 +297,7 @@ function GroupsTab() {
           </div>
         ))}
         {groups?.length === 0 && (
-          <div className="col-span-full py-16 text-center text-[#666] border border-dashed border-[#333] rounded-lg">
+          <div className="col-span-full py-16 text-center text-gray-500 dark:text-[#666] border border-dashed border-gray-200 dark:border-[#333] rounded-lg">
             No groups created yet.
           </div>
         )}
@@ -339,20 +339,20 @@ function GroupModal({ group, onClose }: { group: AdminGroup | null; onClose: () 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="bg-[#161616] border border-[#333] rounded-xl w-full max-w-xl shadow-2xl flex flex-col max-h-[85vh]">
-        <div className="px-5 py-4 border-b border-[#333] flex justify-between items-center bg-[#111] shrink-0">
-          <h2 className="text-lg font-bold text-white">{group ? "Edit Group" : "Create Group"}</h2>
-          <button onClick={onClose} className="p-1 text-[#666] hover:text-white transition-colors"><X className="h-5 w-5" /></button>
+      <div className="bg-gray-50 dark:bg-[#161616] border border-gray-200 dark:border-[#333] rounded-xl w-full max-w-xl shadow-2xl flex flex-col max-h-[85vh]">
+        <div className="px-5 py-4 border-b border-gray-200 dark:border-[#333] flex justify-between items-center bg-white dark:bg-[#111] shrink-0">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">{group ? "Edit Group" : "Create Group"}</h2>
+          <button onClick={onClose} className="p-1 text-gray-500 dark:text-[#666] hover:text-gray-900 dark:hover:text-white transition-colors"><X className="h-5 w-5" /></button>
         </div>
         
         <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
-          <div className="p-5 border-b border-[#333] shrink-0">
-            <label className="block text-xs font-medium text-[#888] uppercase mb-1.5">Group Name</label>
-            <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Support Team" className="w-full bg-[#111] border border-[#333] rounded-md px-3 py-2 text-sm text-white focus:border-[#f97316] outline-none" />
+          <div className="p-5 border-b border-gray-200 dark:border-[#333] shrink-0">
+            <label className="block text-xs font-medium text-gray-500 dark:text-[#888] uppercase mb-1.5">Group Name</label>
+            <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Support Team" className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-md px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-[#f97316] outline-none" />
           </div>
 
           <div className="flex-1 overflow-y-auto p-5">
-            <label className="block text-xs font-bold text-white uppercase mb-4 tracking-wide border-b border-[#333] pb-2">Page Permissions</label>
+            <label className="block text-xs font-bold text-gray-900 dark:text-white uppercase mb-4 tracking-wide border-b border-gray-200 dark:border-[#333] pb-2">Page Permissions</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {AVAILABLE_PAGES.map(page => {
                 const isSelected = perms.includes(page.path);
@@ -361,13 +361,13 @@ function GroupModal({ group, onClose }: { group: AdminGroup | null; onClose: () 
                     key={page.path}
                     onClick={() => togglePerm(page.path)}
                     className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      isSelected ? "bg-[#f97316]/10 border-[#f97316]/30" : "bg-[#111] border-[#333] hover:border-[#555]"
+                      isSelected ? "bg-[#f97316]/10 border-[#f97316]/30" : "bg-white dark:bg-[#111] border-gray-200 dark:border-[#333] hover:border-gray-300 dark:hover:border-gray-300 dark:border-[#555]"
                     }`}
                   >
-                    {isSelected ? <CheckSquare className="h-5 w-5 text-[#f97316]" /> : <Square className="h-5 w-5 text-[#555]" />}
+                    {isSelected ? <CheckSquare className="h-5 w-5 text-[#f97316]" /> : <Square className="h-5 w-5 text-gray-500 dark:text-[#555]" />}
                     <div className="flex-1">
-                      <div className={`text-sm font-medium ${isSelected ? "text-white" : "text-[#888]"}`}>{page.label}</div>
-                      <div className="text-[10px] text-[#555] truncate font-mono mt-0.5">{page.path}</div>
+                      <div className={`text-sm font-medium ${isSelected ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-[#888]"}`}>{page.label}</div>
+                      <div className="text-[10px] text-gray-500 dark:text-[#555] truncate font-mono mt-0.5">{page.path}</div>
                     </div>
                   </div>
                 );
@@ -375,8 +375,8 @@ function GroupModal({ group, onClose }: { group: AdminGroup | null; onClose: () 
             </div>
           </div>
 
-          <div className="px-5 py-4 border-t border-[#333] bg-[#111] flex justify-end gap-3 shrink-0">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-[#aaa] hover:bg-[#333] rounded transition-colors">Cancel</button>
+          <div className="px-5 py-4 border-t border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] flex justify-end gap-3 shrink-0">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-[#aaa] hover:bg-gray-200 dark:bg-[#333] rounded transition-colors">Cancel</button>
             <button type="submit" disabled={mutation.isPending} className="px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white text-sm font-medium rounded transition-colors flex items-center gap-2">
               {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Save Group
             </button>
