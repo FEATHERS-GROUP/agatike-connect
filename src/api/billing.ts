@@ -446,7 +446,8 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const query = `
       query GetWorkspaceUsageStats($workspace_id_uuid: uuid!, $workspace_id_str: String!) {
-        events_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        events_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid }, event_type: { _neq: "experience" } }) { aggregate { count } }
+        experiences_aggregate: events_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid }, event_type: { _eq: "experience" } }) { aggregate { count } }
         cinemas_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
         spaces_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
         custom_forms_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
@@ -454,6 +455,9 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         rentable_venues_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
         workspace_pages_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
         products_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        campaigns_aggregate: products_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid }, type: { _eq: "merch" } }) { aggregate { count } }
+        gift_cards_aggregate: products_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid }, type: { _eq: "voucher" } }) { aggregate { count } }
+        punch_cards_aggregate: products_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid }, type: { _in: ["punch_card", "loyalty_card"] } }) { aggregate { count } }
         cinema_movies_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
         cinema_screens_aggregate(where: { cinema: { workspace_id: { _eq: $workspace_id_uuid } } }) { aggregate { count } }
         venue_projects_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
@@ -476,6 +480,7 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
 
       return {
         events: res.events_aggregate?.aggregate?.count || 0,
+        experiences: res.experiences_aggregate?.aggregate?.count || 0,
         cinemas: res.cinemas_aggregate?.aggregate?.count || 0,
         screens: res.cinema_screens_aggregate?.aggregate?.count || 0,
         spaces: res.spaces_aggregate?.aggregate?.count || 0,
@@ -484,6 +489,9 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         custom_forms: res.custom_forms_aggregate?.aggregate?.count || 0,
         tasks: res.workspace_tasks_aggregate?.aggregate?.count || 0,
         products: res.products_aggregate?.aggregate?.count || 0,
+        campaigns: res.campaigns_aggregate?.aggregate?.count || 0,
+        gift_cards: res.gift_cards_aggregate?.aggregate?.count || 0,
+        punch_cards: res.punch_cards_aggregate?.aggregate?.count || 0,
         movies: res.cinema_movies_aggregate?.aggregate?.count || 0,
         venue_designs: res.venue_projects_aggregate?.aggregate?.count || 0,
         ticket_designs: res.ticket_projects_aggregate?.aggregate?.count || 0,
@@ -493,18 +501,26 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         rsvps: res.rsvps_aggregate?.aggregate?.count || 0,
         procurements: res.invoices_aggregate?.aggregate?.count || 0, // Using invoices for finance/procurement for now
         ticket_tiers: (res.event_tickets_aggregate?.aggregate?.count || 0) + (res.cinema_ticket_tiers_aggregate?.aggregate?.count || 0),
+        comments: 0,
+        membership_plans: 0,
+        locations: 0,
       };
     } catch (e) {
       console.error("Failed to fetch workspace usage stats", e);
       return {
         events: 0,
+        experiences: 0,
         cinemas: 0,
+        screens: 0,
         spaces: 0,
         venues: 0,
         page_builders: 0,
         custom_forms: 0,
         tasks: 0,
         products: 0,
+        campaigns: 0,
+        gift_cards: 0,
+        punch_cards: 0,
         movies: 0,
         venue_designs: 0,
         ticket_designs: 0,
@@ -514,6 +530,9 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         rsvps: 0,
         procurements: 0,
         ticket_tiers: 0,
+        comments: 0,
+        membership_plans: 0,
+        locations: 0,
       };
     }
   });

@@ -151,6 +151,24 @@ export function useSubscriptionLimits(organizerId: string | undefined, workspace
     return (workspaceStats?.products || 0) < limits.max_products;
   };
 
+  const canCreateCampaign = () => {
+    if (isLoading) return true;
+    if (limits.max_campaigns === -1 || limits.max_campaigns === undefined) return true;
+    return (workspaceStats?.campaigns || 0) < limits.max_campaigns;
+  };
+
+  const canCreateGiftCard = () => {
+    if (isLoading) return true;
+    if (limits.max_gift_cards === -1 || limits.max_gift_cards === undefined) return true;
+    return (workspaceStats?.gift_cards || 0) < limits.max_gift_cards;
+  };
+
+  const canCreatePunchCard = () => {
+    if (isLoading) return true;
+    if (limits.max_punch_cards === -1 || limits.max_punch_cards === undefined) return true;
+    return (workspaceStats?.punch_cards || 0) < limits.max_punch_cards;
+  };
+
   const canCreateMovie = () => {
     if (isLoading) return true;
     if (limits.max_movies === -1 || limits.max_movies === undefined) return true;
@@ -251,25 +269,25 @@ export function useSubscriptionLimits(organizerId: string | undefined, workspace
     return !!limits.can_share_feedback_link;
   };
 
-  const canAddEventStaff = (currentStaffCount: number) => {
+  const canAddEventStaff = (currentStaffCount: number, quantityToAdd = 1) => {
     if (isLoading) return true;
     const limit = limits.max_event_staff;
     if (limit === -1 || limit === undefined || limit === null) return true;
-    return currentStaffCount < limit;
+    return currentStaffCount + quantityToAdd <= limit;
   };
 
-  const canCreateEventStory = (currentStoriesCount: number) => {
+  const canCreateEventStory = (currentStoriesCount: number, quantityToAdd = 1) => {
     if (isLoading) return true;
     const limit = limits.max_event_stories;
     if (limit === -1 || limit === undefined || limit === null) return true;
-    return currentStoriesCount < limit;
+    return currentStoriesCount + quantityToAdd <= limit;
   };
 
-  const canCreateEventPost = (currentPostsCount: number) => {
+  const canCreateEventPost = (currentPostsCount: number, quantityToAdd = 1) => {
     if (isLoading) return true;
     const limit = limits.max_event_posts;
     if (limit === -1 || limit === undefined || limit === null) return true;
-    return currentPostsCount < limit;
+    return currentPostsCount + quantityToAdd <= limit;
   };
 
   const canAddPlanningItem = (currentItemsCount: number) => {
@@ -277,6 +295,27 @@ export function useSubscriptionLimits(organizerId: string | undefined, workspace
     const limit = limits.max_planning_items;
     if (limit === -1 || limit === undefined || limit === null) return true;
     return currentItemsCount < limit;
+  };
+
+  const canCreateSection = (currentCount: number, quantityToAdd = 1) => {
+    if (isLoading) return true;
+    const limit = limits.max_event_sections;
+    if (limit === -1 || limit === undefined || limit === null) return true;
+    return currentCount + quantityToAdd <= limit;
+  };
+
+  const canCreateVendor = (currentCount: number, quantityToAdd = 1) => {
+    if (isLoading) return true;
+    const limit = limits.max_event_vendors;
+    if (limit === -1 || limit === undefined || limit === null) return true;
+    return currentCount + quantityToAdd <= limit;
+  };
+
+  const canCreateVoucher = (currentCount: number, quantityToAdd = 1) => {
+    if (isLoading) return true;
+    const limit = limits.max_event_vouchers;
+    if (limit === -1 || limit === undefined || limit === null) return true;
+    return currentCount + quantityToAdd <= limit;
   };
 
   return {
@@ -303,6 +342,9 @@ export function useSubscriptionLimits(organizerId: string | undefined, workspace
     canCreateBadgeDesign,
     canCreateTicketDesign,
     canCreateProduct,
+    canCreateCampaign,
+    canCreateGiftCard,
+    canCreatePunchCard,
     canCreateMovie,
     canCreateCinemaScreen,
     canCreatePostComment,
@@ -323,6 +365,9 @@ export function useSubscriptionLimits(organizerId: string | undefined, workspace
     canUseVenueIntegration,
     canShareFeedbackLink,
     canAddEventStaff,
+    canCreateSection,
+    canCreateVendor,
+    canCreateVoucher,
     canCreateEventStory,
     canCreateEventPost,
     canAddPlanningItem,

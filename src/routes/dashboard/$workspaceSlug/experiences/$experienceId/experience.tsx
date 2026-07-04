@@ -15,6 +15,7 @@ import {
   deleteEventHighlight,
 } from "@/api/experience";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,6 +84,7 @@ function ExperienceDashboard() {
   const { experienceId: eventId, workspaceSlug } = useParams({ strict: false });
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
+  const { canCreateEventStory, canCreateEventPost } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   // ── Feedback ──────────────────────────────────────────────────────────────
   const { data: feedbackData, isLoading: isLoadingFeedback } = useQuery({
@@ -154,6 +156,13 @@ function ExperienceDashboard() {
   const MAX_STORY_SIZE_MB = 6;
 
   const handleStoryUpload = async (file: File) => {
+    if (!canCreateEventStory(stories.length)) {
+      toast.error("Story Limit Reached", {
+        description: "You have reached the maximum number of stories allowed by your plan."
+      });
+      return;
+    }
+
     if (file.size > MAX_STORY_SIZE_MB * 1024 * 1024) {
       toast.error(`Image too large`, {
         description: `Max size is ${MAX_STORY_SIZE_MB}MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`,
@@ -194,15 +203,19 @@ function ExperienceDashboard() {
   const [isUploadingPostMedia, setIsUploadingPostMedia] = useState(false);
 
   const createPostMutation = useMutation({
-    mutationFn: () =>
-      createEventPost({
+    mutationFn: () => {
+      if (!canCreateEventPost(posts.length)) {
+        return Promise.reject(new Error("Post Limit Reached: You have reached the maximum number of posts allowed by your plan."));
+      }
+      return createEventPost({
         data: {
           event_id: eventId,
           workspace_id: activeWorkspace?.id,
           content: postContent,
           media_urls: postMedia,
         },
-      } as any),
+      } as any);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["event-posts", eventId] });
       setPostContent("");

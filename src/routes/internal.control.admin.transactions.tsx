@@ -34,6 +34,7 @@ function ApprovalModal({
   const [isRejecting, setIsRejecting] = useState(false);
   const [sentToEmail, setSentToEmail] = useState("");
   const [showRejectInput, setShowRejectInput] = useState(false);
+  const [overrideNetworkId, setOverrideNetworkId] = useState("");
 
   const sendOtp = async () => {
     setIsSendingOtp(true);

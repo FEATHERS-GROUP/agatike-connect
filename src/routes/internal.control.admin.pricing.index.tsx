@@ -36,6 +36,7 @@ const defaultFormState = {
   usage_limits: {
     max_workspaces: 1,
     max_events: 5,
+    max_experiences: 0,
     max_cinemas: 0,
     max_cinema_screens: 0,
     max_spaces: 0,
@@ -47,12 +48,19 @@ const defaultFormState = {
     max_tasks: 10,
     max_custom_forms: 1,
     max_rsvps: 100,
+    max_customer_books: 1,
+    max_campaigns: 0,
+    max_gift_cards: 0,
+    max_punch_cards: 0,
+    max_event_staff: 1,
+    max_event_sections: 1,
+    max_event_vendors: 0,
+    max_event_vouchers: 0,
+    max_event_stories: 0,
+    max_event_posts: 0,
     max_ticket_tiers_per_event: 2,
     max_workspace_users: 2,
     max_contributors: 0,
-    max_event_staff: 10,
-    max_event_stories: 10,
-    max_event_posts: 10,
     max_planning_items: 20,
     has_studio_access: false,
     can_invite_contributors: false,
@@ -97,7 +105,7 @@ function AdminPricingPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: Record<string, any>) => createPricingPlanAdmin({ data }),
+    mutationFn: (data: Record<string, any>) => createPricingPlanAdmin({ data } as any),
     onSuccess: () => {
       toast.success("Pricing plan created");
       queryClient.invalidateQueries({ queryKey: ["admin-pricing-plans"] });
@@ -455,6 +463,11 @@ function AdminPricingPage() {
               desc: "Total events per workspace. Includes all published and draft events.",
             },
             {
+              key: "max_experiences",
+              label: "Max Experiences",
+              desc: "Total experiences (tours, activities) per workspace.",
+            },
+            {
               key: "max_cinemas",
               label: "Max Cinemas",
               desc: "How many Cinema modules the organizer can create per workspace.",
@@ -505,9 +518,29 @@ function AdminPricingPage() {
               desc: "Number of custom forms (RSVPs, registrations) per workspace.",
             },
             {
+              key: "max_campaigns",
+              label: "Max Campaigns",
+              desc: "Total merch/campaigns per workspace.",
+            },
+            {
+              key: "max_gift_cards",
+              label: "Max Gift Cards",
+              desc: "Total gift cards per workspace.",
+            },
+            {
+              key: "max_punch_cards",
+              label: "Max Punch Cards",
+              desc: "Total punch cards per workspace.",
+            },
+            {
+              key: "max_customer_books",
+              label: "Max Customer Books",
+              desc: "Total custom books per workspace.",
+            },
+            {
               key: "max_rsvps",
               label: "Max RSVPs",
-              desc: "Total RSVP submissions collected across all forms per workspace.",
+              desc: "How many RSVPs can be submitted across all custom forms.",
             },
             {
               key: "max_ticket_tiers_per_event",
@@ -528,6 +561,21 @@ function AdminPricingPage() {
               key: "max_event_staff",
               label: "Max Event Staff",
               desc: "Total staff members that can be added to an individual event.",
+            },
+            {
+              key: "max_event_sections",
+              label: "Max Event Sections",
+              desc: "Total sections per event map.",
+            },
+            {
+              key: "max_event_vendors",
+              label: "Max Event Vendors",
+              desc: "Total vendors per event.",
+            },
+            {
+              key: "max_event_vouchers",
+              label: "Max Event Vouchers",
+              desc: "Total sponsored vouchers per event.",
             },
             {
               key: "max_event_stories",

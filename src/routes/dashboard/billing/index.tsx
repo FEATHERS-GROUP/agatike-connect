@@ -32,6 +32,7 @@ function BillingOverview() {
     { label: "Team Members", limitKey: "max_workspace_users", statVal: stats?.users },
     { label: "Invoices", limitKey: "max_invoices", statVal: stats?.invoices },
     { label: "Events", limitKey: "max_events", statVal: workspaceStats?.events },
+    { label: "Experiences", limitKey: "max_experiences", statVal: workspaceStats?.experiences },
     { label: "Cinemas", limitKey: "max_cinemas", statVal: workspaceStats?.cinemas },
     { label: "Spaces", limitKey: "max_spaces", statVal: workspaceStats?.spaces },
     { label: "Venues", limitKey: "max_venues", statVal: workspaceStats?.venues },
@@ -44,6 +45,9 @@ function BillingOverview() {
     { label: "Badge Designs", limitKey: "max_badge_designs", statVal: workspaceStats?.badge_designs },
     { label: "Ticket Designs", limitKey: "max_ticket_designs", statVal: workspaceStats?.ticket_designs },
     { label: "Products", limitKey: "max_products", statVal: workspaceStats?.products },
+    { label: "Campaigns", limitKey: "max_campaigns", statVal: workspaceStats?.campaigns },
+    { label: "Gift Cards", limitKey: "max_gift_cards", statVal: workspaceStats?.gift_cards },
+    { label: "Punch Cards", limitKey: "max_punch_cards", statVal: workspaceStats?.punch_cards },
     { label: "Movies", limitKey: "max_movies", statVal: workspaceStats?.movies },
     { label: "Cinema Screens", limitKey: "max_cinema_screens", statVal: workspaceStats?.screens },
     { label: "Comments", limitKey: "max_comments", statVal: workspaceStats?.comments },
@@ -160,6 +164,30 @@ function BillingOverview() {
             })}
           </div>
         )}
+
+        <div className="mt-12 pt-8 border-t border-border/40">
+          <h3 className="text-lg font-bold mb-4">Per-Event Limitations</h3>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: "Event Staff", key: "max_event_staff" },
+              { label: "Event Sections", key: "max_event_sections" },
+              { label: "Event Vendors", key: "max_event_vendors" },
+              { label: "Event Vouchers", key: "max_event_vouchers" },
+              { label: "Event Stories", key: "max_event_stories" },
+              { label: "Event Posts", key: "max_event_posts" },
+            ].map(({ label, key }) => {
+              const limitVal = limits[key];
+              if (limitVal === undefined) return null;
+              const isUnlimited = limitVal === -1;
+              return (
+                <div key={key} className="rounded-xl border border-border/60 bg-secondary/20 p-4">
+                  <div className="text-xs text-muted-foreground mb-1">{label}</div>
+                  <div className="text-xl font-bold">{isUnlimited ? "Unlimited" : `${limitVal} max`}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
         <div className="mt-12 pt-8 border-t border-border/40">
           <h3 className="text-lg font-bold mb-4">Access & Permissions</h3>

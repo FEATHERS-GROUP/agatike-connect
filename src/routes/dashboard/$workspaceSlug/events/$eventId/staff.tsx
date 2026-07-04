@@ -248,7 +248,7 @@ function GenerateVendorFormModal({
   );
 }
 
-function AddStaffModal({ eventId, sections, canImportStaff }: { eventId: string; sections: any[], canImportStaff: boolean }) {
+function AddStaffModal({ eventId, sections, canAddStaff }: { eventId: string; sections: any[], canAddStaff: boolean }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const [registrationType, setRegistrationType] = useState("account"); // "account" or "no-account"
@@ -308,17 +308,17 @@ function AddStaffModal({ eventId, sections, canImportStaff }: { eventId: string;
         <Button
           className="rounded-full shadow-[var(--shadow-glow)]"
           style={{ background: "var(--gradient-primary)" }}
-          disabled={!canImportStaff}
+          disabled={!canAddStaff}
           onClick={(e) => {
-            if (!canImportStaff) {
+            if (!canAddStaff) {
               e.preventDefault();
               toast.error("Staff Limit Reached", {
-                description: "Upgrade your plan to import or add more staff members.",
+                description: "Upgrade your plan to add more staff members.",
               });
             }
           }}
         >
-          {canImportStaff ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} Add Staff Member
+          {canAddStaff ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} Add Staff Member
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -566,7 +566,7 @@ function StaffView() {
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
-  const { canImportStaff, canUseFormIntegration } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canImportStaff, canUseFormIntegration, canAddEventStaff } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const { data: badgeProject } = useQuery({
     queryKey: ["badge-project", eventId],
@@ -607,7 +607,7 @@ function StaffView() {
           </p>
         </div>
         <div className="flex gap-3">
-          <AddStaffModal eventId={eventId} sections={sections} canImportStaff={canImportStaff()} />
+          <AddStaffModal eventId={eventId} sections={sections} canAddStaff={canAddEventStaff(staff.length)} />
         </div>
       </header>
 

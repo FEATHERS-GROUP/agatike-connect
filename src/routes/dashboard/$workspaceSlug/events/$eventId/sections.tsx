@@ -59,8 +59,8 @@ function AddSectionModal({ eventId, canAccess }: { eventId: string, canAccess: b
           onClick={(e) => {
             if (!canAccess) {
               e.preventDefault();
-              toast.error("Event Sections Locked", {
-                description: "Upgrade your plan to create and manage event sections.",
+              toast.error("Section Limit Reached", {
+                description: "Upgrade your plan to create more event sections.",
               });
             }
           }}
@@ -112,7 +112,7 @@ function AddSectionModal({ eventId, canAccess }: { eventId: string, canAccess: b
 function EventSectionsView() {
   const { eventId } = Route.useParams();
   const { activeWorkspace } = useWorkspace();
-  const { canAccessEventSections } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateSection } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const { data: sections = [], isLoading } = useQuery({
     queryKey: ["event-sections", eventId],
@@ -135,7 +135,7 @@ function EventSectionsView() {
             badges.
           </p>
         </div>
-        <AddSectionModal eventId={eventId} canAccess={canAccessEventSections()} />
+        <AddSectionModal eventId={eventId} canAccess={canCreateSection(sections.length)} />
       </header>
 
       {isLoading ? (
