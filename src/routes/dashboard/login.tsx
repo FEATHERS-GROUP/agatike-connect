@@ -30,7 +30,7 @@ const features = [
   { title: "Procurement & Finance", desc: "Create and manage purchase orders, track vendor deliveries, and automate your back-office procurement.", image: "/procurement-preview.png" },
   { title: "Ticket Designer", desc: "Design stunning digital and printable tickets with our intuitive drag-and-drop builder.", image: "/ticket-designer-preview.png" },
   { title: "Page Builder", desc: "Launch immersive event pages, registration forms, and beautiful websites instantly using our templates.", image: "/page-builder-preview.png" },
-  { title: "Cinema & Theater", desc: "Host movie screenings and theater shows with interactive seating charts and showtime management.", image: "/cinema-preview.png" }
+  { title: "Venue Designer & Cinema", desc: "Design interactive seating charts, host movie screenings, and manage your arena layouts visually.", image: "/cinema-preview.png" }
 ];
 
 function DashboardLoginPage() {
