@@ -68,38 +68,38 @@ export function CreateExperienceDesktop({
       initialData?.itinerary?.length > 0
         ? initialData.itinerary
         : [
-            {
-              id: generateId(),
-              day: 1,
-              title: "Starting Point",
-              address: "",
-              time: "08:00",
-              lat: null,
-              lng: null,
-            },
-            {
-              id: generateId(),
-              day: 1,
-              title: "Stopping Point",
-              address: "",
-              time: "16:00",
-              lat: null,
-              lng: null,
-            },
-          ],
+          {
+            id: generateId(),
+            day: 1,
+            title: "Starting Point",
+            address: "",
+            time: "08:00",
+            lat: null,
+            lng: null,
+          },
+          {
+            id: generateId(),
+            day: 1,
+            title: "Stopping Point",
+            address: "",
+            time: "16:00",
+            lat: null,
+            lng: null,
+          },
+        ],
     tickets:
       initialData?.tickets?.length > 0
         ? initialData.tickets
         : [
-            {
-              id: generateId(),
-              name: "General Admission",
-              price: 45,
-              quantity: 20,
-              includes: [""],
-              form_id: "",
-            },
-          ],
+          {
+            id: generateId(),
+            name: "General Admission",
+            price: 45,
+            quantity: 20,
+            includes: [""],
+            form_id: "",
+          },
+        ],
     coverPreview: initialData?.cover || "",
     coverUrl: initialData?.cover || "",
     venueAddress: initialData?.venueAddress || "",
@@ -115,6 +115,7 @@ export function CreateExperienceDesktop({
   const [data, setData] = useState(defaultData);
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverError, setCoverError] = useState("");
+  const { canCreateExperience, canCreateTicketTier } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const { data: forms = [] } = useQuery({
     queryKey: ["workspace_forms", activeWorkspace?.id],
@@ -241,33 +242,33 @@ export function CreateExperienceDesktop({
           data: data.isUpcoming
             ? []
             : data.tickets.map((t: any) => ({
-                id: t.id,
-                type: t.name,
-                cost: t.price.toString(),
-                remaining: t.quantity.toString(),
-                sold: "0",
-                form_id: t.form_id || null,
-              })),
+              id: t.id,
+              type: t.name,
+              cost: t.price.toString(),
+              remaining: t.quantity.toString(),
+              sold: "0",
+              form_id: t.form_id || null,
+            })),
         },
         ...(data.date
           ? {
-              schedules: {
-                data: [
-                  {
-                    start_date: data.date,
-                    end_date: (() => {
-                      const d = new Date(data.date);
-                      d.setDate(d.getDate() + Math.max(1, data.numberOfDays || 1) - 1);
-                      return d.toISOString().split("T")[0];
-                    })(),
-                    total_spots: data.tickets.reduce(
-                      (sum: number, t: any) => sum + parseInt(t.quantity || 0),
-                      0,
-                    ),
-                  },
-                ],
-              },
-            }
+            schedules: {
+              data: [
+                {
+                  start_date: data.date,
+                  end_date: (() => {
+                    const d = new Date(data.date);
+                    d.setDate(d.getDate() + Math.max(1, data.numberOfDays || 1) - 1);
+                    return d.toISOString().split("T")[0];
+                  })(),
+                  total_spots: data.tickets.reduce(
+                    (sum: number, t: any) => sum + parseInt(t.quantity || 0),
+                    0,
+                  ),
+                },
+              ],
+            },
+          }
           : {}),
       };
 
@@ -683,6 +684,12 @@ export function CreateExperienceDesktop({
               size="sm"
               className="mt-4 rounded-full"
               onClick={() => {
+                if (!canCreateTicketTier(data.tickets.length)) {
+                  toast.error("Ticket Tier Limit Reached", {
+                    description: "You have reached the maximum number of ticket tiers for this event. Please upgrade to create more."
+                  });
+                  return;
+                }
                 updateField("tickets", [
                   ...data.tickets,
                   {
@@ -710,11 +717,10 @@ export function CreateExperienceDesktop({
               <strong>5 MB</strong>.
             </p>
             <label
-              className={`block aspect-[21/9] cursor-pointer overflow-hidden rounded-[2rem] border-2 border-dashed transition-all relative group ${
-                coverUploading
+              className={`block aspect-[21/9] cursor-pointer overflow-hidden rounded-[2rem] border-2 border-dashed transition-all relative group ${coverUploading
                   ? "border-primary/60 bg-primary/5"
                   : "border-border/60 bg-secondary/30 hover:border-primary hover:bg-secondary/50"
-              }`}
+                }`}
             >
               {data.coverPreview ? (
                 <>

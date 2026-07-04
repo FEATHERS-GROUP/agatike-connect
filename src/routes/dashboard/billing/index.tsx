@@ -179,6 +179,31 @@ function BillingOverview() {
                 {limits.can_link_modules ? "✓" : "✕"} Can Link Modules
               </Badge>
             )}
+            {limits.can_import_staff !== undefined && (
+              <Badge variant={limits.can_import_staff ? "default" : "secondary"} className="py-1.5 px-3">
+                {limits.can_import_staff ? "✓" : "✕"} Can Import Staff
+              </Badge>
+            )}
+            {limits.can_use_form_integration !== undefined && (
+              <Badge variant={limits.can_use_form_integration ? "default" : "secondary"} className="py-1.5 px-3">
+                {limits.can_use_form_integration ? "✓" : "✕"} Form Integration
+              </Badge>
+            )}
+            {limits.can_access_event_sections !== undefined && (
+              <Badge variant={limits.can_access_event_sections ? "default" : "secondary"} className="py-1.5 px-3">
+                {limits.can_access_event_sections ? "✓" : "✕"} Event Sections
+              </Badge>
+            )}
+            {limits.can_use_venue_integration !== undefined && (
+              <Badge variant={limits.can_use_venue_integration ? "default" : "secondary"} className="py-1.5 px-3">
+                {limits.can_use_venue_integration ? "✓" : "✕"} Venue Integration
+              </Badge>
+            )}
+            {limits.can_share_feedback_link !== undefined && (
+              <Badge variant={limits.can_share_feedback_link ? "default" : "secondary"} className="py-1.5 px-3">
+                {limits.can_share_feedback_link ? "✓" : "✕"} Share Feedback Link
+              </Badge>
+            )}
           </div>
         </div>
       </div>

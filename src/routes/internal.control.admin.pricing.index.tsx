@@ -49,9 +49,18 @@ const defaultFormState = {
     max_ticket_tiers_per_event: 2,
     max_workspace_users: 2,
     max_contributors: 0,
+    max_event_staff: 10,
+    max_event_stories: 10,
+    max_event_posts: 10,
+    max_planning_items: 20,
     has_studio_access: false,
     can_invite_contributors: false,
     can_link_modules: false,
+    can_import_staff: false,
+    can_use_form_integration: false,
+    can_access_event_sections: false,
+    can_use_venue_integration: false,
+    can_share_feedback_link: false,
     support_type: "standard",
     venue_design_type: "basic"
   }
@@ -509,6 +518,26 @@ function AdminPricingPage() {
               label: "Max Contributors",
               desc: "External contributors who can be linked to specific designer projects.",
             },
+            {
+              key: "max_event_staff",
+              label: "Max Event Staff",
+              desc: "Total staff members that can be added to an individual event.",
+            },
+            {
+              key: "max_event_stories",
+              label: "Max Event Stories",
+              desc: "Total stories that can be posted to an event's experience highlights.",
+            },
+            {
+              key: "max_event_posts",
+              label: "Max Event Posts",
+              desc: "Total text/image posts that can be added to an event's experience feed.",
+            },
+            {
+              key: "max_planning_items",
+              label: "Max Planning Items",
+              desc: "Total elements (tasks, notes, etc.) allowed inside the Experience Planner.",
+            },
           ];
 
           const ACCESS_FIELDS = [
@@ -526,6 +555,31 @@ function AdminPricingPage() {
               key: "can_link_modules",
               label: "Can Link Modules",
               desc: "Allows linking events, cinemas, spaces, and venues to each other within a workspace.",
+            },
+            {
+              key: "can_import_staff",
+              label: "Can Import Staff (CSV)",
+              desc: "Allows the organizer to bulk import staff members.",
+            },
+            {
+              key: "can_use_form_integration",
+              label: "Form Integrations",
+              desc: "Allows integrating custom forms for RSVPs and data collection on events.",
+            },
+            {
+              key: "can_access_event_sections",
+              label: "Event Sections Access",
+              desc: "Unlocks the advanced 'Sections' tool to segment event layouts and access control.",
+            },
+            {
+              key: "can_use_venue_integration",
+              label: "Venue Integration",
+              desc: "Allows integrating interactive digital venue maps with events for ticket selection.",
+            },
+            {
+              key: "can_share_feedback_link",
+              label: "Share Feedback Link",
+              desc: "Enables sharing a public feedback collection link on event experiences.",
             },
           ];
 

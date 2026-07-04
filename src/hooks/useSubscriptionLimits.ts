@@ -226,6 +226,59 @@ export function useSubscriptionLimits(organizerId: string | undefined, workspace
     return !!limits.can_link_modules;
   };
 
+  const canImportStaff = () => {
+    if (isLoading) return true;
+    return !!limits.can_import_staff;
+  };
+
+  const canUseFormIntegration = () => {
+    if (isLoading) return true;
+    return !!limits.can_use_form_integration;
+  };
+
+  const canAccessEventSections = () => {
+    if (isLoading) return true;
+    return !!limits.can_access_event_sections;
+  };
+
+  const canUseVenueIntegration = () => {
+    if (isLoading) return true;
+    return !!limits.can_use_venue_integration;
+  };
+
+  const canShareFeedbackLink = () => {
+    if (isLoading) return true;
+    return !!limits.can_share_feedback_link;
+  };
+
+  const canAddEventStaff = (currentStaffCount: number) => {
+    if (isLoading) return true;
+    const limit = limits.max_event_staff;
+    if (limit === -1 || limit === undefined || limit === null) return true;
+    return currentStaffCount < limit;
+  };
+
+  const canCreateEventStory = (currentStoriesCount: number) => {
+    if (isLoading) return true;
+    const limit = limits.max_event_stories;
+    if (limit === -1 || limit === undefined || limit === null) return true;
+    return currentStoriesCount < limit;
+  };
+
+  const canCreateEventPost = (currentPostsCount: number) => {
+    if (isLoading) return true;
+    const limit = limits.max_event_posts;
+    if (limit === -1 || limit === undefined || limit === null) return true;
+    return currentPostsCount < limit;
+  };
+
+  const canAddPlanningItem = (currentItemsCount: number) => {
+    if (isLoading) return true;
+    const limit = limits.max_planning_items;
+    if (limit === -1 || limit === undefined || limit === null) return true;
+    return currentItemsCount < limit;
+  };
+
   return {
     isLoading,
     subscription,
@@ -264,6 +317,15 @@ export function useSubscriptionLimits(organizerId: string | undefined, workspace
     hasStudioAccess,
     canInviteContributors,
     canLinkModules,
+    canImportStaff,
+    canUseFormIntegration,
+    canAccessEventSections,
+    canUseVenueIntegration,
+    canShareFeedbackLink,
+    canAddEventStaff,
+    canCreateEventStory,
+    canCreateEventPost,
+    canAddPlanningItem,
   };
 }
 

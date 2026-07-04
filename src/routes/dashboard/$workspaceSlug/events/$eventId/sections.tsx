@@ -15,12 +15,15 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { getEventSections, createEventSection } from "@/api/staff";
 import { toast } from "sonner";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { Lock } from "lucide-react";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/sections")({
   component: EventSectionsView,
 });
 
-function AddSectionModal({ eventId }: { eventId: string }) {
+function AddSectionModal({ eventId, canAccess }: { eventId: string, canAccess: boolean }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -52,8 +55,17 @@ function AddSectionModal({ eventId }: { eventId: string }) {
         <Button
           className="rounded-full shadow-[var(--shadow-glow)]"
           style={{ background: "var(--gradient-primary)" }}
+          disabled={!canAccess}
+          onClick={(e) => {
+            if (!canAccess) {
+              e.preventDefault();
+              toast.error("Event Sections Locked", {
+                description: "Upgrade your plan to create and manage event sections.",
+              });
+            }
+          }}
         >
-          <Plus className="mr-2 h-4 w-4" /> Create Section
+          {canAccess ? <Plus className="mr-2 h-4 w-4" /> : <Lock className="mr-2 h-4 w-4" />} Create Section
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -99,6 +111,8 @@ function AddSectionModal({ eventId }: { eventId: string }) {
 
 function EventSectionsView() {
   const { eventId } = Route.useParams();
+  const { activeWorkspace } = useWorkspace();
+  const { canAccessEventSections } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const { data: sections = [], isLoading } = useQuery({
     queryKey: ["event-sections", eventId],
@@ -121,7 +135,7 @@ function EventSectionsView() {
             badges.
           </p>
         </div>
-        <AddSectionModal eventId={eventId} />
+        <AddSectionModal eventId={eventId} canAccess={canAccessEventSections()} />
       </header>
 
       {isLoading ? (

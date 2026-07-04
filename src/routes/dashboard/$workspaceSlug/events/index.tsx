@@ -163,10 +163,12 @@ function EventsHeader({ activeWorkspace }: { activeWorkspace: any }) {
       </div>
       <Button
         onClick={handleCreate}
-        className="rounded-full shadow-[var(--shadow-glow)]"
+        disabled={!canCreateEvent()}
+        className="rounded-full shadow-[var(--shadow-glow)] disabled:opacity-70"
         style={{ background: "var(--gradient-primary)" }}
       >
-        <Plus className="mr-1 h-4 w-4" /> Create Event
+        {canCreateEvent() ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} 
+        Create Event
       </Button>
     </header>
   );

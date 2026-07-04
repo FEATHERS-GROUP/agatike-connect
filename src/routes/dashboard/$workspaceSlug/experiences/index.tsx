@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceEvents } from "@/api/events";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { Lock } from "lucide-react";
 
 // Stubbed mock data
 const experienceCategories: any[] = [];
@@ -23,6 +25,8 @@ function DashboardExperiences() {
     queryFn: () => getWorkspaceEvents({ data: { workspace_id: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
+
+  const { canCreateExperience } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const [draft, setDraft] = useState<any>(null);
 
@@ -163,12 +167,14 @@ function DashboardExperiences() {
         <Link
           to="/dashboard/$workspaceSlug/experiences/create-experience"
           params={{ workspaceSlug: activeWorkspace?.slug || "workspace" }}
+          disabled={!canCreateExperience()}
         >
           <Button
             className="rounded-full shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
+            disabled={!canCreateExperience()}
           >
-            <Plus className="mr-1 h-4 w-4" /> Create Experience
+            {canCreateExperience() ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} Create Experience
           </Button>
         </Link>
       </header>
