@@ -129,7 +129,7 @@ function DashboardLoginPage() {
   });
 
   return (
-    <div className="flex min-h-screen w-full bg-[#0a0a0a] font-sans">
+    <div className="flex min-h-screen w-full bg-white dark:bg-[#0a0a0a] font-sans">
       {/* Left side: Login Form */}
       <div className="w-full lg:w-[45%] flex flex-col justify-center px-6 sm:px-16 lg:px-20 z-10">
         <div className="w-full max-w-md mx-auto">
@@ -141,10 +141,10 @@ function DashboardLoginPage() {
                 className="h-12 w-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
               />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3 text-white">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3 text-gray-900 dark:text-white">
               Organizer Portal
             </h1>
-            <p className="text-white/60 text-lg">
+            <p className="text-gray-600 dark:text-white/60 text-lg">
               Sign in to manage your events, tickets, and attendees.
             </p>
           </div>
@@ -152,15 +152,15 @@ function DashboardLoginPage() {
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
-                <Label className="text-white/80">Email Address</Label>
+                <Label className="text-gray-700 dark:text-white/80">Email Address</Label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white/50">
                     <Mail className="h-5 w-5" />
                   </span>
                   <Input
                     {...register("email")}
                     type="email"
-                    className="pl-12 h-14 rounded-xl bg-white/[0.03] border-white/10 text-white placeholder-white/30 focus-visible:ring-primary focus-visible:border-primary transition-all"
+                    className="pl-12 h-14 rounded-xl bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 focus-visible:ring-primary focus-visible:border-primary transition-all"
                     placeholder="hello@example.com"
                   />
                 </div>
@@ -169,7 +169,7 @@ function DashboardLoginPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-white/80">Password</Label>
+                  <Label className="text-gray-700 dark:text-white/80">Password</Label>
                   <a
                     href="#"
                     className="text-sm font-medium text-primary hover:text-primary/80 transition-colors drop-shadow-[0_0_5px_rgba(242,87,29,0.3)]"
@@ -178,13 +178,13 @@ function DashboardLoginPage() {
                   </a>
                 </div>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white/50">
                     <Lock className="h-5 w-5" />
                   </span>
                   <Input
                     {...register("password")}
                     type="password"
-                    className="pl-12 h-14 rounded-xl bg-white/[0.03] border-white/10 text-white placeholder-white/30 focus-visible:ring-primary focus-visible:border-primary transition-all"
+                    className="pl-12 h-14 rounded-xl bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 focus-visible:ring-primary focus-visible:border-primary transition-all"
                     placeholder="••••••••"
                   />
                 </div>
@@ -206,10 +206,10 @@ function DashboardLoginPage() {
 
               <div className="relative py-2 mt-4">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-white/10" />
+                  <span className="w-full border-t border-gray-200 dark:border-white/10" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-[#0a0a0a] px-3 text-white/40 font-medium tracking-wider">
+                  <span className="bg-white dark:bg-[#0a0a0a] px-3 text-gray-500 dark:text-white/40 font-medium tracking-wider">
                     Or continue with
                   </span>
                 </div>
@@ -220,7 +220,7 @@ function DashboardLoginPage() {
                 type="button"
                 onClick={() => googleLogin()}
                 disabled={mutation.isPending || isRedirecting}
-                className="w-full h-14 rounded-xl bg-[#ffffff05] border-white/10 text-white hover:bg-white/10 transition-all font-medium flex items-center justify-center shadow-none"
+                className="w-full h-14 rounded-xl bg-gray-50 dark:bg-[#ffffff05] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white hover:bg-gray-200 dark:bg-white/10 transition-all font-medium flex items-center justify-center shadow-none"
               >
                 {isRedirecting && !mutation.isPending ? (
                   <Loader2 className="mr-3 h-5 w-5 animate-spin" />
@@ -248,7 +248,7 @@ function DashboardLoginPage() {
               </Button>
             </form>
 
-            <p className="mt-10 text-center text-sm text-white/50">
+            <p className="mt-10 text-center text-sm text-gray-500 dark:text-white/50">
               Don't have an organizer account?{" "}
               <Link
                 to="/dashboard/create-organizer"
@@ -262,7 +262,7 @@ function DashboardLoginPage() {
       </div>
 
       {/* Right side: Image showcase (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-[#111111] items-center justify-center p-12">
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-orange-50 dark:bg-[#111111] items-center justify-center p-12">
         {/* Glow Effects */}
         <div className="absolute top-1/4 -right-20 w-96 h-96 bg-primary/20 rounded-full blur-[120px]"></div>
         <div className="absolute bottom-0 -left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]"></div>
@@ -270,7 +270,7 @@ function DashboardLoginPage() {
         <div className="relative z-10 w-full h-full max-h-[85vh] flex flex-col items-center justify-center">
           <div className="w-full relative rounded-2xl overflow-visible shadow-2xl group">
             {/* Dark overlay for aesthetic */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/90 via-[#0a0a0a]/20 to-transparent z-10 pointer-events-none rounded-2xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-white/90 dark:from-[#0a0a0a]/90 via-white/20 dark:via-[#0a0a0a]/20 to-transparent z-10 pointer-events-none rounded-2xl"></div>
             
             {features.map((feature, idx) => (
               <img 
@@ -280,7 +280,7 @@ function DashboardLoginPage() {
                 onError={(e) => {
                   e.currentTarget.src = "/admin-dashboard-preview.png";
                 }}
-                className={`absolute inset-0 w-full h-full object-cover rounded-2xl border border-white/10 transition-opacity duration-1000 ${
+                className={`absolute inset-0 w-full h-full object-cover rounded-2xl border border-gray-200 dark:border-white/10 transition-opacity duration-1000 ${
                   currentFeature === idx ? 'opacity-100 relative' : 'opacity-0 absolute'
                 }`}
               />
@@ -324,9 +324,9 @@ function DashboardLoginPage() {
               }}
             >
               <div className="relative">
-                <MousePointer2 className="w-8 h-8 text-white fill-black drop-shadow-2xl -rotate-12" />
+                <MousePointer2 className="w-8 h-8 text-gray-900 dark:text-white fill-black drop-shadow-2xl -rotate-12" />
                 <div 
-                  className="absolute top-0 left-0 w-8 h-8 rounded-full bg-white/50 animate-ping" 
+                  className="absolute top-0 left-0 w-8 h-8 rounded-full bg-gray-900/30 dark:bg-white/50 animate-ping" 
                   key={currentFeature}
                 ></div>
               </div>
@@ -334,7 +334,7 @@ function DashboardLoginPage() {
             
             {/* Dynamic Features Card */}
             <div className="absolute -bottom-8 left-10 right-10 z-20">
-              <div className="bg-black/60 backdrop-blur-xl border border-white/20 p-6 rounded-2xl w-full max-w-md relative min-h-[140px] overflow-hidden shadow-2xl mx-auto lg:mx-0">
+              <div className="bg-white/80 dark:bg-black/60 backdrop-blur-xl border border-gray-300 dark:border-white/20 p-6 rounded-2xl w-full max-w-md relative min-h-[140px] overflow-hidden shadow-2xl mx-auto lg:mx-0">
                 {features.map((feature, idx) => (
                    <div 
                      key={idx} 
@@ -344,10 +344,10 @@ function DashboardLoginPage() {
                         : 'opacity-0 translate-y-4 z-0 pointer-events-none'
                      }`}
                    >
-                     <h3 className="text-white font-bold text-xl mb-2 flex items-center gap-2">
+                     <h3 className="text-gray-900 dark:text-white font-bold text-xl mb-2 flex items-center gap-2">
                         {feature.title}
                      </h3>
-                     <p className="text-white/70 text-sm leading-relaxed">{feature.desc}</p>
+                     <p className="text-gray-600 dark:text-white/70 text-sm leading-relaxed">{feature.desc}</p>
                    </div>
                 ))}
                 
@@ -357,7 +357,7 @@ function DashboardLoginPage() {
                     <div 
                       key={idx} 
                       className={`h-1 rounded-full transition-all duration-500 ${
-                        currentFeature === idx ? 'w-6 bg-primary' : 'w-2 bg-white/20'
+                        currentFeature === idx ? 'w-6 bg-primary' : 'w-2 bg-gray-300 dark:bg-white/20'
                       }`} 
                     />
                   ))}
