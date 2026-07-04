@@ -44,6 +44,7 @@ const GET_PLANS = `
       billing_cycle
       features
       modules_included
+      usage_limits
       is_popular
       yearly_price
       customer_service_fee_percentage

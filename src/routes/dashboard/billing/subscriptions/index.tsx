@@ -4,7 +4,34 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getActiveSubscription, getPricingPlans, PricingPlan, Subscription, cancelSubscriptionAdmin } from "@/api/billing";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Check, Sparkles, Loader2, Plus, AlertTriangle } from "lucide-react";
+import { 
+  Zap, 
+  Check, 
+  Sparkles, 
+  Loader2, 
+  Plus, 
+  AlertTriangle,
+  Layout,
+  Crown,
+  Settings,
+  ShieldCheck,
+  CheckCircle2,
+  XCircle,
+  Globe,
+  Calendar,
+  Layers,
+  MapPin,
+  Ticket,
+  FileText,
+  Users,
+  Video,
+  Monitor,
+  ShoppingBag,
+  Gift,
+  BookOpen,
+  PieChart,
+  Target
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -39,22 +66,41 @@ const MODULE_NAMES: Record<string, string> = {
   "2023e384-e356-41d8-be1b-ce3344c0bbe7": "Spaces",
 };
 
-const LIMIT_LABELS: Record<string, string> = {
-  max_workspaces: "Max Workspaces",
-  max_events: "Max Events",
-  max_cinemas: "Max Cinemas",
-  max_spaces: "Max Spaces",
-  max_venues: "Max Venue Listings",
-  max_ticket_designs: "Max Ticket Designs",
-  max_badge_designs: "Max Badge Designs",
-  max_page_builders: "Max Page Builders",
-  max_invoices: "Max Invoices",
-  max_tasks: "Max Tasks",
-  max_custom_forms: "Max Custom Forms",
-  max_rsvps: "Max RSVPs",
-  max_ticket_tiers_per_event: "Max Ticket Tiers / Event",
-  max_workspace_users: "Max Workspace Users",
-  max_contributors: "Max Contributors",
+const GLOBAL_LIMITS: Record<string, { label: string, icon: React.FC<any> }> = {
+  max_workspaces: { label: "Workspaces", icon: Globe },
+  max_events: { label: "Events", icon: Calendar },
+  max_cinemas: { label: "Cinemas", icon: Video },
+  max_spaces: { label: "Spaces", icon: Layers },
+  max_venues: { label: "Venue Listings", icon: MapPin },
+  max_movies: { label: "Movies", icon: Video },
+  max_cinema_screens: { label: "Cinema Screens", icon: Monitor },
+  max_products: { label: "Products", icon: ShoppingBag },
+  max_campaigns: { label: "Campaigns", icon: Target },
+  max_gift_cards: { label: "Gift Cards", icon: Gift },
+  max_punch_cards: { label: "Punch Cards", icon: Ticket },
+  max_customer_books: { label: "Custom Books", icon: BookOpen },
+  max_custom_forms: { label: "Custom Forms", icon: FileText },
+  max_rsvps: { label: "RSVPs", icon: CheckCircle2 },
+  max_ticket_tiers_per_event: { label: "Ticket Tiers / Event", icon: Ticket },
+  max_ticket_designs: { label: "Ticket Designs", icon: Layout },
+  max_badge_designs: { label: "Badge Designs", icon: ShieldCheck },
+  max_page_builders: { label: "Page Builders", icon: Layout },
+  max_invoices: { label: "Invoices", icon: FileText },
+  max_tasks: { label: "Tasks", icon: Check },
+  max_workspace_users: { label: "Workspace Users", icon: Users },
+  max_contributors: { label: "Contributors", icon: Users },
+};
+
+const PER_EVENT_LIMITS: Record<string, { label: string, icon: React.FC<any> }> = {
+  max_event_staff: { label: "Event Staff", icon: Users },
+  max_event_sections: { label: "Event Sections", icon: MapPin },
+  max_event_vendors: { label: "Event Vendors", icon: ShoppingBag },
+  max_event_vouchers: { label: "Event Vouchers", icon: Ticket },
+  max_event_stories: { label: "Event Stories", icon: Layout },
+  max_event_posts: { label: "Event Posts", icon: FileText },
+};
+
+const PERMISSION_KEYS: Record<string, string> = {
   has_studio_access: "Studio Access",
   can_invite_contributors: "Can Invite Contributors",
   can_link_modules: "Can Link Modules",
@@ -108,25 +154,26 @@ function SubscriptionsPage() {
 
   if (!subscription || !plan) {
     return (
-      <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 py-8 px-4">
+      <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 py-8 px-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Subscriptions</h1>
           <p className="text-muted-foreground mt-2">You don't have an active subscription yet.</p>
         </div>
-        <div className="flex flex-col items-center justify-center py-16 bg-card border border-border/60 rounded-3xl shadow-sm text-center px-4">
-          <Zap className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
-          <h2 className="text-2xl font-bold mb-2">Ready to upgrade?</h2>
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-            Get access to advanced tools to manage your events and spaces more efficiently.
+        <div className="flex flex-col items-center justify-center py-20 bg-card border border-border/60 rounded-[2.5rem] shadow-sm text-center px-4 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <Zap className="h-16 w-16 text-muted-foreground mb-6 opacity-30 group-hover:text-primary/60 transition-colors duration-500" />
+          <h2 className="text-3xl font-bold mb-3">Ready to unlock your potential?</h2>
+          <p className="text-muted-foreground mb-10 max-w-lg mx-auto text-lg leading-relaxed">
+            Get access to advanced modules, expanded limits, and powerful tools to manage your events and spaces more efficiently.
           </p>
           <Button
             asChild
             size="lg"
-            className="rounded-full px-8 shadow-md transition-transform hover:scale-105"
+            className="rounded-full px-10 h-14 text-lg shadow-[var(--shadow-glow)] transition-transform hover:-translate-y-1 hover:scale-105"
             style={{ background: "var(--gradient-primary)" }}
           >
             <Link to="/dashboard/billing/subscriptions/pricingplans">
-              <Plus className="mr-2 h-5 w-5" /> View Pricing Plans
+              <Sparkles className="mr-2 h-5 w-5" /> Explore Pricing Plans
             </Link>
           </Button>
         </div>
@@ -141,7 +188,6 @@ function SubscriptionsPage() {
       await cancelSubscriptionAdmin({ data: { organizer_id: activeWorkspace.orgnizer_id } });
       toast.success("Subscription canceled successfully. You are now on the Basic plan.");
       setShowCancelDialog(false);
-      // reload page to fetch fresh sub and workspace models
       window.location.reload();
     } catch (e) {
       toast.error("Failed to cancel subscription.");
@@ -158,7 +204,6 @@ function SubscriptionsPage() {
     : "N/A";
 
   const isFree = subscription.amount === 0;
-
   let daysLeft = 0;
   let isTrialExpired = false;
 
@@ -174,232 +219,270 @@ function SubscriptionsPage() {
     }
   }
 
-  // Defensively parse features and modules
   const featuresArray = Array.isArray(plan.features) ? plan.features : typeof plan.features === "string" ? JSON.parse(plan.features) : [];
   const modulesArray = Array.isArray(plan.modules_included) ? plan.modules_included : typeof plan.modules_included === "string" ? JSON.parse(plan.modules_included) : [];
-  
-  // Modules diff for cancellation warning
   const basicModules = basicPlan ? (Array.isArray(basicPlan.modules_included) ? basicPlan.modules_included : typeof basicPlan.modules_included === "string" ? JSON.parse(basicPlan.modules_included) : []) : [];
   const lostModules = modulesArray.filter((m: string) => !basicModules.includes(m));
-
-  // Parse usage limits
   const ul = typeof plan.usage_limits === "string" ? JSON.parse(plan.usage_limits) : (plan.usage_limits || {});
-  
-  // Structural limits to display
-  const limitKeys = [
-    "max_workspaces", "max_events", "max_cinemas", "max_spaces", "max_venues", "max_ticket_designs",
-    "max_badge_designs", "max_page_builders", "max_invoices", "max_tasks", "max_custom_forms", "max_rsvps",
-    "max_ticket_tiers_per_event", "max_workspace_users", "max_contributors"
-  ];
-  
-  // Access bools to display
-  const accessKeys = ["has_studio_access", "can_invite_contributors", "can_link_modules"];
 
   return (
-    <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 py-8 px-4">
+    <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 py-8 px-4 pb-20">
+      {/* Header section */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Subscriptions</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your active plans and explore available upgrades.
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Subscriptions & Billing</h1>
+        <p className="text-muted-foreground mt-2 text-lg">
+          Manage your active plan, view feature access, and monitor your usage limits.
         </p>
       </div>
 
       {isFree && plan.name !== "Basic" && (
         <div
-          className={`p-5 rounded-2xl border ${isTrialExpired ? "bg-destructive/10 border-destructive/20 text-destructive" : "bg-primary/10 border-primary/20 text-primary"}`}
+          className={`p-6 rounded-2xl border flex items-center justify-between gap-4 ${isTrialExpired ? "bg-destructive/10 border-destructive/20 text-destructive" : "bg-primary/10 border-primary/20 text-primary"}`}
         >
-          <h3 className="font-bold flex items-center gap-2 mb-1.5">
-            {isTrialExpired ? "⚠️ Trial Expired" : "🎁 14-Day Free Trial"}
-          </h3>
-          <p className="text-sm opacity-90 font-medium">
-            {isTrialExpired
-              ? "Your 14-day free access to premium modules has expired. Please upgrade to a premium plan to continue using advanced features."
-              : `You have ${daysLeft} day${daysLeft !== 1 ? "s" : ""} remaining in your free trial of premium modules.`}
-          </p>
+          <div>
+            <h3 className="font-bold text-lg flex items-center gap-2 mb-1.5">
+              {isTrialExpired ? "⚠️ Trial Expired" : "🎁 14-Day Free Trial"}
+            </h3>
+            <p className="text-sm opacity-90 font-medium">
+              {isTrialExpired
+                ? "Your 14-day free access to premium modules has expired. Please upgrade to a premium plan."
+                : `You have ${daysLeft} day${daysLeft !== 1 ? "s" : ""} remaining in your free trial of premium modules.`}
+            </p>
+          </div>
+          {!isTrialExpired && (
+             <Button asChild size="sm" className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90">
+               <Link to="/dashboard/billing/subscriptions/pricingplans">Upgrade Now</Link>
+             </Button>
+          )}
         </div>
       )}
 
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Zap className="h-5 w-5 text-amber-500" />
-          Active Plan
-        </h2>
-        <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-background to-secondary/30 shadow-sm flex flex-col md:flex-row">
-          
-          {/* Main Plan Info */}
-          <div className="p-8 sm:p-10 flex-1 relative">
-            <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
-              <Sparkles className="w-40 h-40 text-primary" />
-            </div>
+      {/* Hero Active Plan Card */}
+      <div className="relative overflow-hidden rounded-[2.5rem] border border-border/40 bg-card shadow-lg flex flex-col md:flex-row group">
+        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12">
+          <Crown className="w-64 h-64 text-primary" />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-background pointer-events-none" />
 
-            <div className="relative z-10 flex flex-col items-start gap-4 h-full">
-              <div className="flex flex-wrap items-center gap-3">
-                <h3 className="text-2xl sm:text-3xl font-bold break-words">{plan.name}</h3>
-                <Badge
-                  variant="secondary"
-                  className="bg-primary/15 text-primary hover:bg-primary/25 border-transparent px-3 py-1 font-bold tracking-wider"
-                >
-                  {subscription.status.toUpperCase()}
-                </Badge>
-              </div>
-              <p className="text-muted-foreground">
-                <span className="text-3xl font-medium text-foreground tracking-tight">
-                  {isFree
-                    ? "Free"
-                    : `${plan.currency === "USD" ? "$" : plan.currency + " "}${subscription.amount}`}
-                </span>
-                {!isFree && (
-                  <span className="text-lg">
-                    {" "}
-                    / {plan.billing_cycle === "yearly" ? "yr" : "mo"}
-                  </span>
-                )}
-              </p>
-              {!isFree && (
-                <p className="text-sm text-muted-foreground pt-1">
-                  Your next charge will be on{" "}
-                  <span className="font-medium text-foreground">{nextBillingDate}</span>.
-                </p>
-              )}
-              
-              <div className="mt-auto pt-8 flex flex-col sm:flex-row gap-3 w-full max-w-sm">
-                <Button
-                  asChild
-                  className="w-full rounded-full shadow-md transition-transform hover:scale-105 h-12 text-md font-medium"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  <Link to="/dashboard/billing/subscriptions/pricingplans">
-                    {isFree ? "Upgrade Plan" : "Change Plan"}
-                  </Link>
-                </Button>
-                {!isFree && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowCancelDialog(true)}
-                    className="w-full rounded-full border-border/60 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 h-12 text-md"
-                  >
-                    Cancel Plan
-                  </Button>
-                )}
-              </div>
+        <div className="p-8 sm:p-12 relative z-10 flex flex-col justify-between w-full">
+          <div>
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+              <h2 className="text-3xl sm:text-5xl font-black tracking-tight">{plan.name}</h2>
+              <Badge
+                className="bg-primary/20 text-primary hover:bg-primary/30 border-transparent px-4 py-1.5 text-sm font-bold tracking-widest uppercase rounded-full shadow-sm"
+              >
+                {subscription.status}
+              </Badge>
             </div>
+            
+            <div className="flex items-baseline gap-2 mt-4">
+              <span className="text-4xl sm:text-6xl font-black text-foreground tracking-tighter">
+                {isFree
+                  ? "Free"
+                  : `${plan.currency === "USD" ? "$" : plan.currency + " "}${subscription.amount}`}
+              </span>
+              {!isFree && (
+                <span className="text-xl text-muted-foreground font-medium">
+                  / {plan.billing_cycle === "yearly" ? "year" : "month"}
+                </span>
+              )}
+            </div>
+            
+            {!isFree && (
+              <p className="text-sm text-muted-foreground mt-4 font-medium flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Next charge on <span className="text-foreground">{nextBillingDate}</span>
+              </p>
+            )}
           </div>
 
-          {/* Breakdown / Privileges */}
-          <div className="w-full md:w-[45%] lg:w-[50%] bg-[#111111] border-t md:border-t-0 md:border-l border-border/40 p-8 sm:p-10 space-y-8 h-80 overflow-y-auto custom-scrollbar">
-            
-            {/* Features */}
-            {featuresArray.length > 0 && (
-              <div>
-                <h4 className="text-xs font-bold mb-4 uppercase tracking-wider text-muted-foreground">Features</h4>
-                <div className="space-y-3">
-                  {featuresArray.map((feature: string, i: number) => (
-                    <div key={i} className="flex items-start gap-3 text-sm font-medium text-muted-foreground">
-                      <div className="flex-shrink-0 h-5 w-5 rounded-full bg-primary/15 flex items-center justify-center mt-0.5">
-                        <Check className="h-3 w-3 text-primary" />
-                      </div>
-                      <span className="text-foreground/90">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          <div className="mt-12 flex flex-col sm:flex-row gap-4 w-full max-w-md">
+            <Button
+              asChild
+              className="w-full rounded-full shadow-[var(--shadow-glow)] transition-all hover:scale-105 hover:-translate-y-0.5 h-14 text-lg font-bold flex-1"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Link to="/dashboard/billing/subscriptions/pricingplans">
+                {isFree ? "Upgrade Plan" : "Change Plan"}
+              </Link>
+            </Button>
+            {!isFree && (
+              <Button
+                variant="outline"
+                onClick={() => setShowCancelDialog(true)}
+                className="w-full rounded-full border-border/80 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40 h-14 text-lg font-semibold flex-1"
+              >
+                Cancel Plan
+              </Button>
             )}
-
-            {/* Modules Included */}
-            {modulesArray.length > 0 && (
-              <div>
-                <h4 className="text-xs font-bold mb-4 uppercase tracking-wider text-muted-foreground">Premium Modules</h4>
-                <div className="flex flex-wrap gap-2">
-                  {modulesArray.map((mId: string) => {
-                    const name = MODULE_NAMES[mId] || mId;
-                    if (name === "ALL") return <Badge key={mId} className="bg-primary/20 text-primary border-primary/30">All Platform Modules</Badge>;
-                    return (
-                      <Badge key={mId} variant="outline" className="bg-[#1b1b1c] border-[#333333] text-foreground">
-                        {name}
-                      </Badge>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Usage Limits */}
-            <div>
-              <h4 className="text-xs font-bold mb-4 uppercase tracking-wider text-muted-foreground">Usage Limits</h4>
-              <div className="grid grid-cols-2 gap-4">
-                {limitKeys.map(key => {
-                  const val = ul[key];
-                  if (val === undefined) return null;
-                  return (
-                    <div key={key} className="bg-[#1b1b1c] rounded-lg p-3 border border-[#333333]">
-                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">{LIMIT_LABELS[key] || key}</div>
-                      <div className="font-bold text-lg text-white">
-                        {val === -1 ? <span className="text-primary text-xl">∞</span> : val}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Access & Permissions */}
-            <div>
-              <h4 className="text-xs font-bold mb-4 uppercase tracking-wider text-muted-foreground">Permissions</h4>
-              <div className="space-y-2">
-                {accessKeys.map(key => {
-                  const hasAccess = !!ul[key];
-                  return (
-                    <div key={key} className="flex items-center justify-between bg-[#1b1b1c] rounded-lg p-3 border border-[#333333]">
-                      <span className="text-sm font-medium text-white">{LIMIT_LABELS[key] || key}</span>
-                      {hasAccess ? (
-                        <Badge className="bg-green-500/20 text-green-500 border-green-500/30">Enabled</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-muted-foreground">Disabled</Badge>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
           </div>
         </div>
-      </section>
+      </div>
+
+      {/* Bento Grid layout for Features, Permissions, Modules, Limits */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Core Features */}
+        <div className="bg-card border border-border/50 rounded-3xl p-8 flex flex-col h-full shadow-sm">
+          <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6">
+            <Sparkles className="w-4 h-4 text-primary" /> Features
+          </h4>
+          <div className="space-y-4 flex-1">
+            {featuresArray.length > 0 ? (
+              featuresArray.map((feature: string, i: number) => (
+                <div key={i} className="flex items-start gap-3 text-sm font-medium text-foreground/90">
+                  <div className="flex-shrink-0 h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center mt-0.5">
+                    <Check className="h-3 w-3 text-primary" />
+                  </div>
+                  <span>{feature}</span>
+                </div>
+              ))
+            ) : (
+              <div className="text-sm text-muted-foreground">No specific features listed.</div>
+            )}
+          </div>
+        </div>
+
+        {/* Permissions & Access */}
+        <div className="bg-card border border-border/50 rounded-3xl p-8 flex flex-col h-full shadow-sm">
+          <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" /> Permissions
+          </h4>
+          <div className="space-y-4 flex-1">
+            {Object.keys(PERMISSION_KEYS).map(key => {
+              const hasAccess = !!ul[key];
+              return (
+                <div key={key} className="flex items-center justify-between p-4 bg-secondary/30 rounded-2xl border border-border/40">
+                  <span className="text-sm font-semibold">{PERMISSION_KEYS[key]}</span>
+                  {hasAccess ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-muted-foreground/40" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Premium Modules */}
+        <div className="bg-card border border-border/50 rounded-3xl p-8 flex flex-col h-full shadow-sm lg:col-span-1">
+          <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6">
+            <Layers className="w-4 h-4 text-blue-500" /> Premium Modules
+          </h4>
+          <div className="flex flex-wrap gap-2 flex-1 content-start">
+            {modulesArray.length > 0 ? (
+              modulesArray.map((mId: string) => {
+                const name = MODULE_NAMES[mId] || mId;
+                if (name === "ALL") return (
+                  <Badge key={mId} className="bg-primary/20 text-primary border-primary/30 px-3 py-1.5 rounded-xl font-semibold">
+                    All Platform Modules Included
+                  </Badge>
+                );
+                return (
+                  <Badge key={mId} variant="outline" className="bg-secondary/40 border-border/60 text-foreground px-3 py-1.5 rounded-xl">
+                    {name}
+                  </Badge>
+                );
+              })
+            ) : (
+              <div className="text-sm text-muted-foreground">No premium modules included.</div>
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Global Limits */}
+      <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm">
+        <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6">
+          <Globe className="w-4 h-4 text-indigo-500" /> Workspace & Global Limits
+        </h4>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {Object.entries(GLOBAL_LIMITS).map(([key, config]) => {
+            const val = ul[key] !== undefined ? ul[key] : -1;
+            const Icon = config.icon;
+            const isUnlimited = val === -1;
+            return (
+              <div key={key} className="bg-secondary/20 rounded-2xl p-4 border border-border/40 flex flex-col items-start gap-3 hover:bg-secondary/40 transition-colors">
+                <div className="p-2 rounded-xl bg-background border border-border/60">
+                  <Icon className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-1 leading-tight">{config.label}</div>
+                  <div className="font-black text-xl sm:text-2xl text-foreground">
+                    {isUnlimited ? <span className="text-primary text-3xl leading-none">∞</span> : val}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Per-Event Limits */}
+      <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm">
+        <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-muted-foreground mb-6">
+          <Target className="w-4 h-4 text-orange-500" /> Per-Event Limitations
+        </h4>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {Object.entries(PER_EVENT_LIMITS).map(([key, config]) => {
+            const val = ul[key] !== undefined ? ul[key] : -1;
+            const Icon = config.icon;
+            const isUnlimited = val === -1;
+            return (
+              <div key={key} className="bg-secondary/20 rounded-2xl p-4 border border-border/40 flex flex-col items-start gap-3 hover:bg-secondary/40 transition-colors">
+                <div className="p-2 rounded-xl bg-background border border-border/60">
+                  <Icon className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-1 leading-tight">{config.label}</div>
+                  <div className="font-black text-xl sm:text-2xl text-foreground">
+                    {isUnlimited ? <span className="text-primary text-3xl leading-none">∞</span> : val}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Cancel Confirmation Dialog */}
       <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <DialogContent className="max-w-md w-[90vw] rounded-3xl border-destructive/20">
+        <DialogContent className="max-w-md w-[90vw] rounded-3xl border-destructive/20 bg-background">
           <DialogHeader>
-            <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
-              <AlertTriangle className="h-6 w-6 text-destructive" />
+            <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mb-4 mx-auto sm:mx-0">
+              <AlertTriangle className="h-7 w-7 text-destructive" />
             </div>
-            <DialogTitle className="text-xl">Cancel Premium Plan?</DialogTitle>
-            <DialogDescription className="text-muted-foreground text-sm pt-2">
+            <DialogTitle className="text-2xl font-bold">Cancel Premium Plan?</DialogTitle>
+            <DialogDescription className="text-muted-foreground text-base pt-2">
               If you cancel your plan, you will be downgraded to the <strong className="text-foreground">Basic</strong> plan immediately. 
             </DialogDescription>
           </DialogHeader>
 
           {lostModules.length > 0 && (
-            <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 my-2">
-              <h4 className="text-sm font-bold text-destructive mb-2">You will instantly lose access to:</h4>
-              <ul className="list-disc pl-5 text-sm text-destructive/90 space-y-1">
+            <div className="bg-destructive/5 border border-destructive/20 rounded-2xl p-5 my-4">
+              <h4 className="text-sm font-bold text-destructive mb-3">You will instantly lose access to:</h4>
+              <div className="flex flex-wrap gap-2">
                 {lostModules.map((mId: string) => (
-                  <li key={mId}>{MODULE_NAMES[mId] || mId}</li>
+                  <Badge key={mId} variant="outline" className="border-destructive/30 text-destructive/90 bg-destructive/5">
+                    {MODULE_NAMES[mId] || mId}
+                  </Badge>
                 ))}
-              </ul>
-              <p className="text-xs text-destructive/70 mt-3 font-medium">
+              </div>
+              <p className="text-xs text-destructive/70 mt-4 font-medium">
                 These modules will be stripped from all your active workspaces.
               </p>
             </div>
           )}
 
-          <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-2">
+          <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-3">
             <DialogClose asChild>
-              <Button variant="outline" className="w-full sm:w-auto h-11 rounded-xl">Keep my plan</Button>
+              <Button variant="outline" className="w-full sm:w-auto h-12 rounded-xl font-bold border-border/80">Keep my plan</Button>
             </DialogClose>
             <Button 
               variant="destructive" 
-              className="w-full sm:w-auto h-11 rounded-xl"
+              className="w-full sm:w-auto h-12 rounded-xl font-bold"
               onClick={handleCancelPlan}
               disabled={isCanceling}
             >
@@ -412,4 +495,3 @@ function SubscriptionsPage() {
     </div>
   );
 }
-
