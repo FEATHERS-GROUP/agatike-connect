@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { COUNTRIES } from "@/lib/countries";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 import { CategorySelectStep } from "./CreateExperience/CategorySelectStep";
 import { ExperienceVenueStep } from "./CreateExperience/ExperienceVenueStep";
@@ -44,6 +45,7 @@ export function CreateExperienceDesktop({
   const { step: urlStep } = useSearch({ strict: false }) as { step?: number };
   const step = urlStep || 0;
   const { activeWorkspace } = useWorkspace();
+  const { canCreateExperience } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const dashboardUrl = workspaceSlug ? `/dashboard/${workspaceSlug}` : "/dashboard";
 
@@ -272,6 +274,10 @@ export function CreateExperienceDesktop({
       if (isEdit && initialData?.id) {
         return await updateEvent({ data: { id: initialData.id, ...payload } } as any);
       } else {
+        if (!canCreateExperience()) {
+          toast.error("You have reached the maximum number of experiences for your plan.");
+          throw new Error("Limit reached");
+        }
         return await createEvent({ data: payload } as any);
       }
     },

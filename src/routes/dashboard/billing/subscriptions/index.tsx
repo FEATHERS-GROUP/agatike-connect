@@ -201,7 +201,7 @@ function SubscriptionsPage() {
               What's Included
             </h4>
             <div className="grid lg:grid-cols-2 gap-y-4 gap-x-8">
-              {plan.features.map((feature: string, i: number) => (
+              {(Array.isArray(plan.features) ? plan.features : typeof plan.features === "string" ? JSON.parse(plan.features) : []).map((feature: string, i: number) => (
                 <div
                   key={i}
                   className="flex items-center gap-3 text-sm font-medium text-muted-foreground"

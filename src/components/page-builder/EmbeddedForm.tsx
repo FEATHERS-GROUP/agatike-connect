@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 export function EmbeddedForm({ formId }: { formId: string }) {
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -41,6 +42,8 @@ export function EmbeddedForm({ formId }: { formId: string }) {
         ],
       }
     : fetchedForm;
+
+  const { canCreateRsvp } = useSubscriptionLimits(fetchedForm?.workspace?.orgnizer_id, fetchedForm?.workspace_id);
 
   const mutation = useMutation({
     mutationFn: async (values: Record<string, any>) => {
@@ -81,6 +84,12 @@ export function EmbeddedForm({ formId }: { formId: string }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isPreview && !canCreateRsvp()) {
+      toast.error("Form Limit Reached", {
+        description: "This form has reached its maximum number of allowed responses."
+      });
+      return;
+    }
     mutation.mutate(formData);
   };
 
@@ -336,9 +345,15 @@ export function EmbeddedForm({ formId }: { formId: string }) {
         })}
 
         <div className="pt-4 mt-4 border-t border-border/60">
-          <Button type="submit" className="w-full" disabled={mutation.isPending}>
-            {mutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Submit"}
-          </Button>
+          {!isPreview && !canCreateRsvp() ? (
+            <div className="text-center p-3 bg-destructive/10 text-destructive rounded-lg text-sm font-semibold mb-4">
+              This form has reached its maximum response capacity.
+            </div>
+          ) : (
+            <Button type="submit" className="w-full" disabled={mutation.isPending}>
+              {mutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Submit"}
+            </Button>
+          )}
         </div>
       </form>
     </div>

@@ -10,6 +10,53 @@ export const Route = createFileRoute("/internal/control/admin/pricing/")({
   component: AdminPricingPage,
 });
 
+const defaultFormState = {
+  name: "",
+  description: "",
+  price: 0,
+  yearly_price: 0,
+  currency: "RWF",
+  billing_cycle: "monthly",
+  active: "true",
+  is_popular: "false",
+  customer_service_fee_percentage: 0,
+  organizer_platform_contribution: 2,
+  platform_margin_buffer: 0,
+  customer_collection_fee_percentage: 0,
+  customer_collection_fee_fixed: 0,
+  organizer_collection_fee_percentage: 0,
+  organizer_collection_fee_fixed: 0,
+  withdrawal_fee_percentage: 0,
+  withdrawal_fee_fixed: 0,
+  enable_subsidized_collection: "false",
+  withdrawal_dependency_required: "false",
+  max_withdrawals_per_week: "unlimited",
+  features: [],
+  modules_included: [],
+  usage_limits: {
+    max_workspaces: 1,
+    max_events: 5,
+    max_cinemas: 0,
+    max_spaces: 0,
+    max_venues: 0,
+    max_ticket_designs: 1,
+    max_badge_designs: 0,
+    max_page_builders: 0,
+    max_invoices: 10,
+    max_tasks: 10,
+    max_custom_forms: 1,
+    max_rsvps: 100,
+    max_ticket_tiers_per_event: 2,
+    max_workspace_users: 2,
+    max_contributors: 0,
+    has_studio_access: false,
+    can_invite_contributors: false,
+    can_link_modules: false,
+    support_type: "standard",
+    venue_design_type: "basic"
+  }
+};
+
 function AdminPricingPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"plans" | "sim-collections" | "sim-withdrawals">("plans");
@@ -17,7 +64,7 @@ function AdminPricingPage() {
   // Drawer/Wizard State
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [formState, setFormState] = useState<Record<string, any>>({});
+  const [formState, setFormState] = useState<Record<string, any>>(defaultFormState);
 
   // Simulator State
   const [simAmount, setSimAmount] = useState<number>(5000);
@@ -51,30 +98,7 @@ function AdminPricingPage() {
   });
 
   const handleOpenCreate = () => {
-    setFormState({
-      name: "",
-      description: "",
-      price: 0,
-      yearly_price: 0,
-      currency: "RWF",
-      billing_cycle: "monthly",
-      active: "true",
-      is_popular: "false",
-      customer_service_fee_percentage: 0,
-      organizer_platform_contribution: 2,
-      platform_margin_buffer: 0,
-      customer_collection_fee_percentage: 0,
-      customer_collection_fee_fixed: 0,
-      organizer_collection_fee_percentage: 0,
-      organizer_collection_fee_fixed: 0,
-      withdrawal_fee_percentage: 0,
-      withdrawal_fee_fixed: 0,
-      enable_subsidized_collection: "false",
-      withdrawal_dependency_required: "false",
-      max_withdrawals_per_week: "unlimited",
-      features: [],
-      modules_included: []
-    });
+    setFormState(defaultFormState);
     setCurrentStep(1);
     setIsCreateDrawerOpen(true);
   };
@@ -403,6 +427,256 @@ function AdminPricingPage() {
             </div>
           </div>
         );
+      case 5:
+        return (() => {
+          const ul = formState.usage_limits || {};
+          const setUL = (key: string, val: any) =>
+            setFormState({ ...formState, usage_limits: { ...ul, [key]: val } });
+
+          const LIMIT_FIELDS = [
+            {
+              key: "max_workspaces",
+              label: "Max Workspaces",
+              desc: "How many workspaces this organizer can create. Each workspace is a separate brand/event hub.",
+            },
+            {
+              key: "max_events",
+              label: "Max Events",
+              desc: "Total events per workspace. Includes all published and draft events.",
+            },
+            {
+              key: "max_cinemas",
+              label: "Max Cinemas",
+              desc: "How many Cinema modules the organizer can create per workspace.",
+            },
+            {
+              key: "max_spaces",
+              label: "Max Spaces",
+              desc: "How many Spaces (venue rental hubs) per workspace.",
+            },
+            {
+              key: "max_venues",
+              label: "Max Venue Listings",
+              desc: "Total venue listings the organizer can publish per workspace.",
+            },
+            {
+              key: "max_ticket_designs",
+              label: "Max Ticket Designs",
+              desc: "Number of custom ticket design templates per workspace.",
+            },
+            {
+              key: "max_badge_designs",
+              label: "Max Badge Designs",
+              desc: "Number of custom badge/accreditation templates per workspace.",
+            },
+            {
+              key: "max_page_builders",
+              label: "Max Page Builders",
+              desc: "How many custom landing pages the organizer can build per workspace.",
+            },
+            {
+              key: "max_invoices",
+              label: "Max Invoices",
+              desc: "Total procurement/supplier invoices allowed per workspace.",
+            },
+            {
+              key: "max_tasks",
+              label: "Max Tasks",
+              desc: "Total workspace task board items allowed per workspace.",
+            },
+            {
+              key: "max_custom_forms",
+              label: "Max Custom Forms",
+              desc: "Number of custom forms (RSVPs, registrations) per workspace.",
+            },
+            {
+              key: "max_rsvps",
+              label: "Max RSVPs",
+              desc: "Total RSVP submissions collected across all forms per workspace.",
+            },
+            {
+              key: "max_ticket_tiers_per_event",
+              label: "Max Ticket Tiers / Event",
+              desc: "How many ticket pricing tiers an organizer can add to a single event, cinema, space, or venue.",
+            },
+            {
+              key: "max_workspace_users",
+              label: "Max Workspace Users",
+              desc: "Team members that can be invited into any workspace under this organizer.",
+            },
+            {
+              key: "max_contributors",
+              label: "Max Contributors",
+              desc: "External contributors who can be linked to specific designer projects.",
+            },
+          ];
+
+          const ACCESS_FIELDS = [
+            {
+              key: "has_studio_access",
+              label: "Has Studio Access",
+              desc: "Unlocks Agatike Studio — advanced ticket, badge, and venue design editor.",
+            },
+            {
+              key: "can_invite_contributors",
+              label: "Can Invite Contributors",
+              desc: "Allows the organizer to invite external contributors to design projects.",
+            },
+            {
+              key: "can_link_modules",
+              label: "Can Link Modules",
+              desc: "Allows linking events, cinemas, spaces, and venues to each other within a workspace.",
+            },
+          ];
+
+          return (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-bold text-white">Usage Limits & Rules</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Define what features and structural limits this plan enforces on the Organizer dashboard.
+                  Toggle <span className="text-[#f97316] font-semibold">∞ Unlimited</span> to remove a restriction entirely — the organizer won't be blocked.
+                  Leave a number to set a hard cap.
+                </p>
+              </div>
+
+              {/* Structural Limits */}
+              <div className="p-4 bg-[#111111] border border-[#333333] rounded-xl space-y-5">
+                <div>
+                  <h4 className="text-sm font-bold text-white">Structural Limits</h4>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Set a number to cap usage per workspace. Enable <strong className="text-[#f97316]">∞ Unlimited</strong> to remove the limit (stored as -1).
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {LIMIT_FIELDS.map(({ key, label, desc }) => {
+                    const isUnlimited = ul[key] === -1;
+                    return (
+                      <div key={key} className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-sm font-semibold text-white">{label}</div>
+                            <div className="text-[11px] text-muted-foreground leading-tight mt-0.5">{desc}</div>
+                          </div>
+                          {/* Unlimited toggle */}
+                          <button
+                            type="button"
+                            onClick={() => setUL(key, isUnlimited ? 0 : -1)}
+                            className={`ml-3 shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all border ${
+                              isUnlimited
+                                ? "bg-[#f97316]/15 border-[#f97316]/40 text-[#f97316]"
+                                : "bg-[#111111] border-[#333333] text-muted-foreground hover:border-[#f97316]/40 hover:text-[#f97316]/70"
+                            }`}
+                          >
+                            <span>∞</span>
+                            <span>{isUnlimited ? "Unlimited" : "Set limit"}</span>
+                          </button>
+                        </div>
+                        {!isUnlimited && (
+                          <input
+                            type="number"
+                            min="0"
+                            value={ul[key] ?? 0}
+                            onChange={e => setUL(key, Number(e.target.value))}
+                            className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white focus:border-[#f97316]/50 focus:outline-none transition-colors"
+                            placeholder="0"
+                          />
+                        )}
+                        {isUnlimited && (
+                          <div className="flex items-center gap-2 px-3 py-2 bg-[#f97316]/5 border border-[#f97316]/20 rounded-lg">
+                            <span className="text-[#f97316] text-lg font-bold">∞</span>
+                            <span className="text-xs text-[#f97316]/80">No restriction — organizer can create without limit</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Access & Permissions */}
+              <div className="p-4 bg-[#111111] border border-[#333333] rounded-xl space-y-4">
+                <div>
+                  <h4 className="text-sm font-bold text-white">Access & Permissions</h4>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Toggle features that are unlocked for organizers on this plan. Disabled features show an upgrade prompt.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  {ACCESS_FIELDS.map(({ key, label, desc }) => {
+                    const checked = !!ul[key];
+                    return (
+                      <label
+                        key={key}
+                        className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                          checked
+                            ? "bg-green-500/5 border-green-500/30"
+                            : "bg-[#1b1b1c] border-[#333333] hover:border-[#444444]"
+                        }`}
+                      >
+                        <div className="mt-0.5">
+                          <div
+                            className={`w-10 h-6 rounded-full relative transition-colors flex-shrink-0 ${checked ? "bg-green-500" : "bg-[#333333]"}`}
+                            style={{ minWidth: 40 }}
+                          >
+                            <div
+                              className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${checked ? "translate-x-5" : "translate-x-1"}`}
+                            />
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={e => setUL(key, e.target.checked)}
+                            className="sr-only"
+                          />
+                        </div>
+                        <div>
+                          <div className={`text-sm font-semibold ${checked ? "text-green-400" : "text-white"}`}>{label}</div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{desc}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {/* Support Type */}
+                <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 space-y-2">
+                  <div>
+                    <div className="text-sm font-semibold text-white">Support Type</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">The level of support access this plan includes. Shown on the organizer's settings and contact pages.</div>
+                  </div>
+                  <select
+                    value={ul.support_type || "standard"}
+                    onChange={e => setUL("support_type", e.target.value)}
+                    className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#f97316]/50 focus:outline-none"
+                  >
+                    <option value="email">Email Only — Async responses within 48h</option>
+                    <option value="standard">Standard — Business hours via email & chat</option>
+                    <option value="priority">Priority — Faster response, priority queue</option>
+                    <option value="dedicated">24/7 Dedicated — Personal account manager</option>
+                  </select>
+                </div>
+
+                {/* Venue Design Type */}
+                <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 space-y-2">
+                  <div>
+                    <div className="text-sm font-semibold text-white">Venue Design Type</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">Controls which venue design editor features are available in Agatike Studio for this plan.</div>
+                  </div>
+                  <select
+                    value={ul.venue_design_type || "basic"}
+                    onChange={e => setUL("venue_design_type", e.target.value)}
+                    className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#f97316]/50 focus:outline-none"
+                  >
+                    <option value="basic">Basic — Standard templates, limited customization</option>
+                    <option value="advanced">Advanced — Full editor, custom branding</option>
+                    <option value="custom">Custom — White-label, API access, full control</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          );
+        })();
       default: return null;
     }
   };
@@ -635,7 +909,7 @@ function AdminPricingPage() {
           <div>
             <h2 className="text-xl font-bold text-white">Create New Pricing Plan</h2>
             <div className="flex gap-2 mt-2">
-              {[1, 2, 3, 4].map(step => (
+              {[1, 2, 3, 4, 5].map(step => (
                 <div key={step} className={`h-1.5 w-8 rounded-full ${currentStep === step ? 'bg-[#f97316]' : currentStep > step ? 'bg-green-500' : 'bg-[#333333]'}`} />
               ))}
             </div>
@@ -659,9 +933,9 @@ function AdminPricingPage() {
             <ChevronLeft className="h-4 w-4" /> Back
           </button>
           
-          {currentStep < 4 ? (
+          {currentStep < 5 ? (
             <button 
-              onClick={() => setCurrentStep(prev => Math.min(4, prev + 1))}
+              onClick={() => setCurrentStep(prev => Math.min(5, prev + 1))}
               className="flex items-center gap-2 px-6 py-2.5 bg-[#333333] hover:bg-[#444444] text-white rounded-lg text-sm font-medium transition-colors"
             >
               Continue <ChevronRight className="h-4 w-4" />

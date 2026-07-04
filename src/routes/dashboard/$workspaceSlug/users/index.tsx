@@ -6,6 +6,8 @@ import { UsersTable } from "@/components/dashboard/users/UsersTable";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/users/")({
   component: UsersPage,
@@ -14,7 +16,8 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/users/")({
 function UsersPage() {
   const navigate = useNavigate();
   const { workspaceSlug } = Route.useParams();
-  const { workspaces } = useWorkspace();
+  const { workspaces, activeWorkspace } = useWorkspace();
+  const { canInviteUser } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const {
     data: users = [],
@@ -44,7 +47,15 @@ function UsersPage() {
         </div>
         {isOrganizer && (
           <Button
-            onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/users/add-user` })}
+            onClick={() => {
+              if (!canInviteUser()) {
+                toast.error("User limit reached", {
+                  description: "Your current subscription plan does not allow adding more users. Please upgrade your plan."
+                });
+                return;
+              }
+              navigate({ to: `/dashboard/${workspaceSlug}/users/add-user` });
+            }}
             className="gap-2 rounded-xl shadow-sm"
             style={{ background: "var(--gradient-primary)" }}
           >

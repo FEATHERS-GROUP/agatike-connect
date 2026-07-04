@@ -21,6 +21,7 @@ import {
   deleteWorkspaceNote,
 } from "@/api/notes";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -40,6 +41,8 @@ function NotesPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate({ from: Route.id });
 
+  const { canCreateNote } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, wsId);
+
   const [search, setSearch] = useState("");
   const [activeNote, setActiveNote] = useState<any | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -54,8 +57,12 @@ function NotesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: () =>
-      createWorkspaceNote({
+    mutationFn: () => {
+      if (!canCreateNote()) {
+        toast.error("You have reached the maximum number of notes for your plan.");
+        throw new Error("Limit reached");
+      }
+      return createWorkspaceNote({
         data: {
           workspace_id: wsId,
           title: draftTitle || "Untitled Note",
@@ -63,7 +70,8 @@ function NotesPage() {
           pinned: false,
           tags: draftTags,
         },
-      } as any),
+      } as any);
+    },
     onSuccess: () => {
       toast.success("Note saved!");
       setIsCreating(false);

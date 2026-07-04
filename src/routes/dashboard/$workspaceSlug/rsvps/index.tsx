@@ -15,6 +15,7 @@ import { FolderManager } from "@/components/ui/FolderManager";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { RsvpSummaryCards } from "@/components/dashboard/rsvps/RsvpSummaryCards";
 import { RsvpSearchFilters } from "@/components/dashboard/rsvps/RsvpSearchFilters";
 import { FormCard } from "@/components/dashboard/rsvps/FormCard";
@@ -31,6 +32,8 @@ function RsvpsPage() {
   const queryClient = useQueryClient();
   const [deleteConfirmForm, setDeleteConfirmForm] = useState<CustomForm | null>(null);
   const [isExportingBeforeDelete, setIsExportingBeforeDelete] = useState(false);
+
+  const { canCreateCustomerForm } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const { data: forms = [], isLoading } = useQuery<CustomForm[]>({
     queryKey: ["workspace-forms", activeWorkspace?.id],
@@ -164,14 +167,29 @@ function RsvpsPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Link to="/dashboard/$workspaceSlug/rsvps/create" params={{ workspaceSlug }}>
-            <Button
-              className="rounded-full shadow-[var(--shadow-glow)]"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Plus className="mr-1 h-4 w-4" /> Create Form
-            </Button>
-          </Link>
+          <Button
+            onClick={() => {
+              if (!canCreateCustomerForm()) {
+                toast.error("Form Limit Reached", {
+                  description: "You have reached the maximum number of custom forms for your plan. Please upgrade to create more."
+                });
+                return;
+              }
+              // navigate programmatically or we can just use Link and preventDefault inside onClick
+              const router = (window as any).__router; // or use navigate from useRouteContext/useNavigate
+            }}
+            asChild={canCreateCustomerForm()}
+            className="rounded-full shadow-[var(--shadow-glow)]"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            {canCreateCustomerForm() ? (
+              <Link to="/dashboard/$workspaceSlug/rsvps/create" params={{ workspaceSlug }}>
+                <Plus className="mr-1 h-4 w-4" /> Create Form
+              </Link>
+            ) : (
+              <span><Plus className="mr-1 h-4 w-4" /> Create Form</span>
+            )}
+          </Button>
         </div>
       </header>
 
@@ -205,11 +223,26 @@ function RsvpsPage() {
                 <p className="text-sm text-muted-foreground mt-1 mb-6">
                   You haven't created any custom RSVP forms yet.
                 </p>
-                <Link to="/dashboard/$workspaceSlug/rsvps/create" params={{ workspaceSlug }}>
-                  <Button className="rounded-full">
-                    <Plus className="mr-2 h-4 w-4" /> Create First Form
-                  </Button>
-                </Link>
+                <Button 
+                  className="rounded-full"
+                  onClick={() => {
+                    if (!canCreateCustomerForm()) {
+                      toast.error("Form Limit Reached", {
+                        description: "You have reached the maximum number of custom forms for your plan. Please upgrade to create more."
+                      });
+                      return;
+                    }
+                  }}
+                  asChild={canCreateCustomerForm()}
+                >
+                  {canCreateCustomerForm() ? (
+                    <Link to="/dashboard/$workspaceSlug/rsvps/create" params={{ workspaceSlug }}>
+                      <Plus className="mr-2 h-4 w-4" /> Create First Form
+                    </Link>
+                  ) : (
+                    <span><Plus className="mr-2 h-4 w-4" /> Create First Form</span>
+                  )}
+                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

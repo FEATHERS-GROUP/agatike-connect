@@ -36,6 +36,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
 import { PitchType, TemplateId } from "@/components/venue-designer/types";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venue-designer/")({
   component: VenueDesignerIndex,
@@ -93,6 +95,12 @@ function VenueDesignerIndex() {
       getWorkspaceVenueProjects({ data: { workspace_id: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
+
+  const {
+    hasStudioAccess,
+    canCreateVenueDesign,
+    isLoading: limitsLoading,
+  } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -173,6 +181,14 @@ function VenueDesignerIndex() {
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canCreateVenueDesign()) {
+      toast.error("Venue Design Limit Reached", {
+        description: "You have reached the maximum number of venue designs for your plan."
+      });
+      setIsModalOpen(false);
+      return;
+    }
+
     if (!selectedTemplate || !selectedEventId) {
       toast.error("Please select a template and an event.");
       return;
@@ -206,6 +222,18 @@ function VenueDesignerIndex() {
     setPitchType("none");
     setIsModalOpen(true);
   };
+
+  if (limitsLoading) return null;
+  if (!hasStudioAccess()) {
+    return (
+      <div className="p-6 h-full flex flex-col justify-center">
+        <UpgradePrompt 
+          title="Upgrade to Access Venue Designer" 
+          description="Venue Designer is a premium feature available in higher tier plans. Upgrade your subscription to start mapping out your event spaces."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-secondary/30">

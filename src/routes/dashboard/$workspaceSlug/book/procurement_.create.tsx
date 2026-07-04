@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { uploadFormData } from "@/api/storage";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/procurement_/create")({
   component: CreateInvoicePage,
@@ -60,6 +61,8 @@ function CreateInvoicePage() {
   const queryClient = useQueryClient();
   const searchParams = Route.useSearch() as any;
   const folderId = searchParams?.folder || null;
+
+  const { canCreateProcurement } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, wsId);
 
   const [hasSelectedType, setHasSelectedType] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -169,8 +172,12 @@ function CreateInvoicePage() {
   };
 
   const createMutation = useMutation({
-    mutationFn: (status: "draft" | "sent") =>
-      createProcurementInvoice({
+    mutationFn: (status: "draft" | "sent") => {
+      if (!canCreateProcurement()) {
+        toast.error("You have reached the maximum number of procurements for your plan.");
+        throw new Error("Limit reached");
+      }
+      return createProcurementInvoice({
         data: {
           workspace_id: wsId,
           invoice_number: invoiceNumber,
@@ -199,7 +206,8 @@ function CreateInvoicePage() {
             })),
           },
         },
-      } as any),
+      } as any);
+    },
     onSuccess: (_, status) => {
       toast.success(status === "sent" ? "Invoice marked as sent!" : "Invoice saved as draft!");
       queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] });

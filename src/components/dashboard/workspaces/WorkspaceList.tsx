@@ -7,6 +7,8 @@ import { useState } from "react";
 import { WorkspaceModulesModal } from "./WorkspaceModulesModal";
 import { Workspace } from "@/contexts/WorkspaceContext";
 import { types } from "./constants";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { toast } from "sonner";
 
 interface WorkspaceListProps {
   onOpenWizard: () => void;
@@ -18,6 +20,18 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
   const navigate = useNavigate();
 
   const [modulesModalWorkspace, setModulesModalWorkspace] = useState<Workspace | null>(null);
+
+  const { canCreateWorkspace } = useSubscriptionLimits(currentUser?.id);
+
+  const handleCreateClick = () => {
+    if (!canCreateWorkspace()) {
+      toast.error("Workspace limit reached", {
+        description: "Your current subscription plan does not allow creating more workspaces. Please upgrade your plan."
+      });
+      return;
+    }
+    onOpenWizard();
+  };
 
   return (
     <div className="space-y-8 pb-24 px-4 md:px-8 max-w-7xl mx-auto pt-8">
@@ -31,7 +45,7 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
         </div>
         {currentUser?.role === "organizer" && (
           <Button
-            onClick={onOpenWizard}
+            onClick={handleCreateClick}
             className="rounded-full shadow-[var(--shadow-glow)] gap-2"
             style={{ background: "var(--gradient-primary)" }}
           >
@@ -54,7 +68,7 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
           </p>
           {currentUser?.role === "organizer" && (
             <Button
-              onClick={onOpenWizard}
+              onClick={handleCreateClick}
               className="rounded-full shadow-[var(--shadow-glow)] gap-2"
               style={{ background: "var(--gradient-primary)" }}
             >

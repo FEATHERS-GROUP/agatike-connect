@@ -26,6 +26,8 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder/")({
   component: PageBuilderGallery,
@@ -41,6 +43,8 @@ function PageBuilderGallery() {
     queryFn: () => getAllWorkspacePages({ data: { workspace_id } } as any),
     enabled: !!workspace_id,
   });
+
+  const { hasStudioAccess, isLoading: limitsLoading } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const queryClient = useQueryClient();
 
@@ -107,6 +111,18 @@ function PageBuilderGallery() {
         return <LayoutTemplate className="w-5 h-5 text-slate-500" />;
     }
   };
+
+  if (limitsLoading) return null;
+  if (!hasStudioAccess()) {
+    return (
+      <div className="p-6 h-full">
+        <UpgradePrompt 
+          title="Upgrade to Access Page Builder" 
+          description="Page Builder is a premium feature available in higher tier plans. Upgrade your subscription to start building custom portals."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-secondary/10">

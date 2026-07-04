@@ -40,6 +40,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/finance")({
   component: FinancePage,
@@ -52,6 +53,7 @@ function FinancePage() {
   const wsId = activeWorkspace?.id;
   const currency = activeWorkspace?.currency || "RWF";
   const queryClient = useQueryClient();
+  const { canCreateInvoice } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const [addOpen, setAddOpen] = useState(false);
   const [entryType, setEntryType] = useState<EntryType>("income");
@@ -256,6 +258,12 @@ function FinancePage() {
   };
 
   const handleAddEntry = async () => {
+    if (!canCreateInvoice()) {
+      toast.error("Invoice limit reached", {
+        description: "Your current subscription plan does not allow creating more financial entries. Please upgrade your plan."
+      });
+      return;
+    }
     if (!form.description || !form.amount) return;
     const bookName = entryType === "income" ? "__finance_income__" : "__finance_expense__";
     let book = entryType === "income" ? incomeBook : expenseBook;

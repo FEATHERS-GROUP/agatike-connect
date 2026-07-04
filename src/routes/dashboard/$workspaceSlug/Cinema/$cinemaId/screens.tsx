@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getScreens, createScreen, updateScreen, deleteScreen } from "@/api/cinema_management";
 import {
@@ -49,6 +51,8 @@ const EMPTY_FORM = {
 function CinemaScreensPage() {
   const { cinemaId } = Route.useParams();
   const queryClient = useQueryClient();
+  const { activeWorkspace } = useWorkspace();
+  const { canCreateCinemaScreen } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [form, setForm] = useState<any>(EMPTY_FORM);
@@ -64,6 +68,12 @@ function CinemaScreensPage() {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleOpenCreate = () => {
+    if (!canCreateCinemaScreen()) {
+      toast.error("Screen Limit Reached", {
+        description: "You have reached the maximum number of screens allowed by your plan."
+      });
+      return;
+    }
     setEditingId(null);
     setForm(EMPTY_FORM);
     setSheetOpen(true);

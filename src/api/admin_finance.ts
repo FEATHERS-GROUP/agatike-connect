@@ -110,6 +110,7 @@ export const getPricingPlansAdmin = createServerFn({ method: "GET" }).handler(as
         billing_cycle
         features
         modules_included
+        usage_limits
         is_popular
         created_at
         updated_at
@@ -144,19 +145,30 @@ export const updatePricingPlanAdmin = createServerFn({ method: "POST" })
     const { id, updates } = ctx.data;
     let formattedUpdates = { ...updates };
     
-    // JSON stringify for features and modules_included
-    if (formattedUpdates.features && typeof formattedUpdates.features !== "string") {
-      formattedUpdates.features = JSON.stringify(formattedUpdates.features);
+    // Let Hasura handle the jsonb objects directly
+    // Ensure they are arrays/objects if they came in as strings (e.g. from UI state if not parsed)
+    if (typeof formattedUpdates.features === "string") {
+      try { formattedUpdates.features = JSON.parse(formattedUpdates.features); } catch(e) {}
     }
-    if (formattedUpdates.modules_included && typeof formattedUpdates.modules_included !== "string") {
-      formattedUpdates.modules_included = JSON.stringify(formattedUpdates.modules_included);
+    if (typeof formattedUpdates.modules_included === "string") {
+      try { formattedUpdates.modules_included = JSON.parse(formattedUpdates.modules_included); } catch(e) {}
+    }
+    if (typeof formattedUpdates.usage_limits === "string") {
+      try { formattedUpdates.usage_limits = JSON.parse(formattedUpdates.usage_limits); } catch(e) {}
     }
 
     const updateKeys = Object.keys(formattedUpdates).filter(k => k !== "id");
     const setArgs = updateKeys.map(k => `${k}: $${k}`).join(", ");
 
+    const getType = (k: string, val: any) => {
+      if (['features', 'modules_included', 'usage_limits'].includes(k)) return 'jsonb';
+      if (typeof val === 'number') return 'numeric';
+      if (typeof val === 'boolean') return 'Boolean';
+      return 'String';
+    };
+
     const query = `
-      mutation UpdatePricingPlan($id: uuid!, ${updateKeys.map(k => `$${k}: ${typeof formattedUpdates[k] === 'number' ? 'numeric' : typeof formattedUpdates[k] === 'boolean' ? 'Boolean' : 'String'}`).join(', ')}) {
+      mutation UpdatePricingPlan($id: uuid!, ${updateKeys.map(k => `$${k}: ${getType(k, formattedUpdates[k])}`).join(', ')}) {
         update_pricing_plans_by_pk(
           pk_columns: { id: $id }
           _set: { ${setArgs} }
@@ -178,12 +190,16 @@ export const createPricingPlanAdmin = createServerFn({ method: "POST" })
 
     let formattedData = { ...ctx.data.data };
     
-    // JSON stringify for features and modules_included
-    if (formattedData.features && typeof formattedData.features !== "string") {
-      formattedData.features = JSON.stringify(formattedData.features);
+    // Let Hasura handle the jsonb objects directly
+    // Ensure they are arrays/objects if they came in as strings
+    if (typeof formattedData.features === "string") {
+      try { formattedData.features = JSON.parse(formattedData.features); } catch(e) {}
     }
-    if (formattedData.modules_included && typeof formattedData.modules_included !== "string") {
-      formattedData.modules_included = JSON.stringify(formattedData.modules_included);
+    if (typeof formattedData.modules_included === "string") {
+      try { formattedData.modules_included = JSON.parse(formattedData.modules_included); } catch(e) {}
+    }
+    if (typeof formattedData.usage_limits === "string") {
+      try { formattedData.usage_limits = JSON.parse(formattedData.usage_limits); } catch(e) {}
     }
 
     // Convert strings to numbers where appropriate
@@ -233,10 +249,8 @@ export const getPricingPlanStatsAdmin = createServerFn({ method: "POST" })
           status
           amount
           created_at
-          workspace {
-            id
-            name
-          }
+          workspace_id
+          modules
           organizer {
             id
             name

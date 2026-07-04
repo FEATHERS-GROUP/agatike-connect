@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 export const Route = createFileRoute("/f/$formId")({
   component: PublicFormPage,
@@ -32,6 +33,8 @@ function PublicFormPage() {
     queryFn: () => getFormDetails({ data: { id: formId } } as any),
     enabled: !!formId,
   });
+
+  const { canCreateRsvp } = useSubscriptionLimits(form?.workspace?.orgnizer_id, form?.workspace_id);
 
   const mutation = useMutation({
     mutationFn: async (values: Record<string, any>) => {
@@ -73,6 +76,12 @@ function PublicFormPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canCreateRsvp()) {
+      toast.error("Form Limit Reached", {
+        description: "This form has reached its maximum number of allowed responses."
+      });
+      return;
+    }
     mutation.mutate(formData);
   };
 
@@ -368,14 +377,20 @@ function PublicFormPage() {
             })}
 
             <div className="pt-6 border-t border-border/60">
-              <Button
-                type="submit"
-                className="w-full h-14 text-lg rounded-xl shadow-[var(--shadow-glow)]"
-                style={{ background: "var(--gradient-primary)" }}
-                disabled={mutation.isPending}
-              >
-                {mutation.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Submit"}
-              </Button>
+              {!canCreateRsvp() ? (
+                <div className="text-center p-4 bg-destructive/10 text-destructive rounded-xl text-sm font-semibold mb-4">
+                  This form has reached its maximum response capacity and is no longer accepting submissions.
+                </div>
+              ) : (
+                <Button
+                  type="submit"
+                  className="w-full h-14 text-lg rounded-xl shadow-[var(--shadow-glow)]"
+                  style={{ background: "var(--gradient-primary)" }}
+                  disabled={mutation.isPending}
+                >
+                  {mutation.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Submit"}
+                </Button>
+              )}
             </div>
           </form>
         </div>

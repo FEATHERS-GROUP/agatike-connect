@@ -16,6 +16,9 @@ function AdminPricingDetailsPage() {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formState, setFormState] = useState<Record<string, any>>({});
+  const [currentStep, setCurrentStep] = useState(1);
+  const TOTAL_STEPS = 5;
+  const STEP_TITLES = ["General Info", "Pricing & Margins", "Advanced Overrides", "Features & Modules", "Usage Limits & Rules"];
 
   const { data: plans = [], isLoading: plansLoading } = useQuery({
     queryKey: ["admin-pricing-plans"],
@@ -55,16 +58,45 @@ function AdminPricingDetailsPage() {
       try { modulesArr = JSON.parse(modulesArr); } catch { modulesArr = []; }
     }
 
+    let usageLimits = plan.usage_limits || {};
+    if (typeof usageLimits === "string") {
+      try { usageLimits = JSON.parse(usageLimits); } catch { usageLimits = {}; }
+    }
+
     setFormState({
       ...plan,
       features: featuresArr,
       modules_included: modulesArr,
+      usage_limits: {
+        max_workspaces: 1,
+        max_events: 5,
+        max_cinemas: 0,
+        max_spaces: 0,
+        max_venues: 0,
+        max_ticket_designs: 1,
+        max_badge_designs: 0,
+        max_page_builders: 0,
+        max_invoices: 10,
+        max_tasks: 10,
+        max_custom_forms: 1,
+        max_rsvps: 100,
+        max_ticket_tiers_per_event: 2,
+        max_workspace_users: 2,
+        max_contributors: 0,
+        has_studio_access: false,
+        can_invite_contributors: false,
+        can_link_modules: false,
+        support_type: "standard",
+        venue_design_type: "basic",
+        ...usageLimits,
+      },
       active: String(plan.active),
       is_popular: String(plan.is_popular),
       enable_subsidized_collection: String(plan.enable_subsidized_collection),
       withdrawal_dependency_required: String(plan.withdrawal_dependency_required)
     });
     setIsEditModalOpen(true);
+    setCurrentStep(1);
   };
 
   const handleSaveEdit = () => {
@@ -146,224 +178,534 @@ function AdminPricingDetailsPage() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-6 border-b border-[#333333] bg-[#111111]">
-          <h2 className="text-lg font-bold text-white">Edit Pricing Plan: {plan.name}</h2>
+          <div>
+            <h2 className="text-lg font-bold text-white">Edit Pricing Plan: {plan.name}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Step {currentStep} of {TOTAL_STEPS} — {STEP_TITLES[currentStep - 1]}</p>
+          </div>
           <button onClick={() => setIsEditModalOpen(false)} className="text-muted-foreground hover:text-white transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
-        
-        <div className="p-6 overflow-y-auto flex-1 space-y-8 custom-scrollbar">
-          {/* General Information */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-white border-b border-[#333333] pb-2">General Information</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Plan Name</label>
-                <input type="text" value={formState.name} onChange={e => setFormState({...formState, name: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
-                <p className="text-[10px] text-muted-foreground">The public facing name of the subscription.</p>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Billing Cycle</label>
-                <select value={formState.billing_cycle} onChange={e => setFormState({...formState, billing_cycle: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white">
-                  <option value="monthly">Monthly</option>
-                  <option value="yearly">Yearly</option>
-                  <option value="one-time">One-time</option>
-                </select>
-                <p className="text-[10px] text-muted-foreground">How often the user is charged.</p>
-              </div>
-              <div className="space-y-1.5 col-span-2">
-                <label className="text-xs font-medium text-muted-foreground">Description</label>
-                <input type="text" value={formState.description || ""} onChange={e => setFormState({...formState, description: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
-                <p className="text-[10px] text-muted-foreground">A short marketing description shown on the pricing page.</p>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Active Status</label>
-                <select value={formState.active} onChange={e => setFormState({...formState, active: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white">
-                  <option value="true">Active (Visible)</option>
-                  <option value="false">Inactive (Hidden)</option>
-                </select>
-                <p className="text-[10px] text-muted-foreground">If inactive, users cannot select this plan.</p>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Is Popular (Badge)</label>
-                <select value={formState.is_popular} onChange={e => setFormState({...formState, is_popular: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white">
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </select>
-                <p className="text-[10px] text-muted-foreground">Highlights this plan as 'Most Popular'.</p>
-              </div>
-            </div>
-          </div>
 
-          {/* Pricing */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-white border-b border-[#333333] pb-2">Subscription Pricing</h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Currency</label>
-                <input type="text" value={formState.currency || "RWF"} onChange={e => setFormState({...formState, currency: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
-                <p className="text-[10px] text-muted-foreground">Base currency (e.g. RWF, USD).</p>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Monthly Price</label>
-                <input type="number" step="1" value={formState.price} onChange={e => setFormState({...formState, price: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
-                <p className="text-[10px] text-muted-foreground">Cost per month.</p>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Yearly Price (Optional)</label>
-                <input type="number" step="1" value={formState.yearly_price || ""} onChange={e => setFormState({...formState, yearly_price: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
-                <p className="text-[10px] text-muted-foreground">Discounted yearly cost.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Margins */}
-          <div className="space-y-4 bg-blue-500/5 p-4 rounded-xl border border-blue-500/20">
-            <h3 className="text-sm font-semibold text-blue-400 border-b border-blue-500/20 pb-2">Core Platform Margins (Profit Settings)</h3>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-blue-400/80">Organizer Platform Contribution (%)</label>
-                <input type="number" step="0.01" value={formState.organizer_platform_contribution} onChange={e => setFormState({...formState, organizer_platform_contribution: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
-                <p className="text-[10px] text-blue-400/60">Percentage taken from the Organizer on ticket sales and withdrawals.</p>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-blue-400/80">Customer Service Fee (%)</label>
-                <input type="number" step="0.01" value={formState.customer_service_fee_percentage} onChange={e => setFormState({...formState, customer_service_fee_percentage: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
-                <p className="text-[10px] text-blue-400/60">Percentage passed directly to the end customer when buying tickets.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Advanced Fee Overrides */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-white border-b border-[#333333] pb-2">Advanced Routing & Fee Overrides</h3>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-4 p-4 bg-[#111111] rounded-lg border border-[#333333]">
-                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Collections (Ticket Sales)</h4>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-medium text-muted-foreground">Cust. Override (%)</label>
-                    <input type="number" step="0.01" value={formState.customer_collection_fee_percentage || ""} onChange={e => setFormState({...formState, customer_collection_fee_percentage: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
-                    <p className="text-[9px] text-muted-foreground leading-tight">Overrides the Customer Service Fee if set.</p>
+        {/* Step Indicator */}
+        <div className="px-6 pt-5 pb-2 border-b border-[#333333] bg-[#111111]/40">
+          <div className="flex items-start gap-0">
+            {STEP_TITLES.map((title, idx) => {
+              const stepNum = idx + 1;
+              const isActive = currentStep === stepNum;
+              const isCompleted = currentStep > stepNum;
+              return (
+                <div key={title} className="flex flex-col items-center flex-1">
+                  <div className="flex items-center w-full">
+                    <div className={`h-0.5 flex-1 transition-colors ${idx === 0 ? 'invisible' : isCompleted || isActive ? 'bg-[#f97316]' : 'bg-[#333333]'}`} />
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(stepNum)}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all shrink-0 ${isActive ? 'bg-[#f97316] text-white ring-2 ring-[#f97316]/30' : isCompleted ? 'bg-[#f97316]/20 text-[#f97316]' : 'bg-[#333333] text-muted-foreground hover:bg-[#444444]'}`}
+                    >
+                      {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : stepNum}
+                    </button>
+                    <div className={`h-0.5 flex-1 transition-colors ${idx === TOTAL_STEPS - 1 ? 'invisible' : isCompleted ? 'bg-[#f97316]' : 'bg-[#333333]'}`} />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-medium text-muted-foreground">Cust. Override (Fixed)</label>
-                    <input type="number" step="1" value={formState.customer_collection_fee_fixed || ""} onChange={e => setFormState({...formState, customer_collection_fee_fixed: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-medium text-muted-foreground">Org. Override (%)</label>
-                    <input type="number" step="0.01" value={formState.organizer_collection_fee_percentage || ""} onChange={e => setFormState({...formState, organizer_collection_fee_percentage: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-medium text-muted-foreground">Org. Override (Fixed)</label>
-                    <input type="number" step="1" value={formState.organizer_collection_fee_fixed || ""} onChange={e => setFormState({...formState, organizer_collection_fee_fixed: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
-                  </div>
+                  <span className={`text-[10px] mt-2 text-center leading-tight ${isActive ? 'text-white font-medium' : isCompleted ? 'text-[#f97316]/80' : 'text-muted-foreground'}`}>{title}</span>
                 </div>
-                
-                <div className="space-y-1.5 pt-2 border-t border-[#333333]">
-                  <label className="text-xs font-medium text-muted-foreground">Enable Subsidized Collections?</label>
-                  <select value={formState.enable_subsidized_collection} onChange={e => setFormState({...formState, enable_subsidized_collection: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white">
+              );
+            })}
+          </div>
+        </div>
+        
+        <div className="p-6 overflow-y-auto flex-1 custom-scrollbar min-h-[340px]">
+
+          {/* Step 1 – General Information */}
+          {currentStep === 1 && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Plan Name</label>
+                  <input type="text" value={formState.name || ""} onChange={e => setFormState({...formState, name: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                  <p className="text-[10px] text-muted-foreground">The public facing name of the subscription.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Billing Cycle</label>
+                  <select value={formState.billing_cycle || "monthly"} onChange={e => setFormState({...formState, billing_cycle: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white">
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                    <option value="one-time">One-time</option>
+                  </select>
+                  <p className="text-[10px] text-muted-foreground">How often the user is charged.</p>
+                </div>
+                <div className="space-y-1.5 col-span-2">
+                  <label className="text-xs font-medium text-muted-foreground">Description</label>
+                  <input type="text" value={formState.description || ""} onChange={e => setFormState({...formState, description: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                  <p className="text-[10px] text-muted-foreground">A short marketing description shown on the pricing page.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Active Status</label>
+                  <select value={formState.active} onChange={e => setFormState({...formState, active: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white">
+                    <option value="true">Active (Visible)</option>
+                    <option value="false">Inactive (Hidden)</option>
+                  </select>
+                  <p className="text-[10px] text-muted-foreground">If inactive, users cannot select this plan.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Is Popular (Badge)</label>
+                  <select value={formState.is_popular} onChange={e => setFormState({...formState, is_popular: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white">
                     <option value="true">Yes</option>
                     <option value="false">No</option>
                   </select>
-                  <p className="text-[9px] text-muted-foreground">If Yes, the Organizer absorbs the customer fee up to a limit.</p>
+                  <p className="text-[10px] text-muted-foreground">Highlights this plan as 'Most Popular'.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2 – Pricing & Margins */}
+          {currentStep === 2 && (
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-white border-b border-[#333333] pb-2">Subscription Pricing</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground">Currency</label>
+                    <input type="text" value={formState.currency || "RWF"} onChange={e => setFormState({...formState, currency: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                    <p className="text-[10px] text-muted-foreground">Base currency (e.g. RWF, USD).</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground">Monthly Price</label>
+                    <input type="number" step="1" value={formState.price || ""} onChange={e => setFormState({...formState, price: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                    <p className="text-[10px] text-muted-foreground">Cost per month.</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground">Yearly Price (Optional)</label>
+                    <input type="number" step="1" value={formState.yearly_price || ""} onChange={e => setFormState({...formState, yearly_price: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                    <p className="text-[10px] text-muted-foreground">Discounted yearly cost.</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-4 p-4 bg-[#111111] rounded-lg border border-[#333333]">
-                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Withdrawals</h4>
-                
-                <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-4 bg-blue-500/5 p-4 rounded-xl border border-blue-500/20">
+                <h3 className="text-sm font-semibold text-blue-400 border-b border-blue-500/20 pb-2">Core Platform Margins (Profit Settings)</h3>
+                <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-medium text-muted-foreground">Withdraw Override (%)</label>
-                    <input type="number" step="0.01" value={formState.withdrawal_fee_percentage || ""} onChange={e => setFormState({...formState, withdrawal_fee_percentage: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
-                    <p className="text-[9px] text-muted-foreground leading-tight">Overrides the Organizer Platform Contribution for withdrawals.</p>
+                    <label className="text-xs font-medium text-blue-400/80">Organizer Platform Contribution (%)</label>
+                    <input type="number" step="0.01" value={formState.organizer_platform_contribution || ""} onChange={e => setFormState({...formState, organizer_platform_contribution: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                    <p className="text-[10px] text-blue-400/60">Percentage taken from the Organizer on ticket sales and withdrawals.</p>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-medium text-muted-foreground">Withdraw Override (Fixed)</label>
-                    <input type="number" step="1" value={formState.withdrawal_fee_fixed || ""} onChange={e => setFormState({...formState, withdrawal_fee_fixed: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
-                  </div>
-                  <div className="space-y-1.5 col-span-2">
-                    <label className="text-[10px] font-medium text-muted-foreground">Max Withdrawals/Week</label>
-                    <input type="text" value={formState.max_withdrawals_per_week || "unlimited"} onChange={e => setFormState({...formState, max_withdrawals_per_week: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                    <label className="text-xs font-medium text-blue-400/80">Customer Service Fee (%)</label>
+                    <input type="number" step="0.01" value={formState.customer_service_fee_percentage || ""} onChange={e => setFormState({...formState, customer_service_fee_percentage: e.target.value})} className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white" />
+                    <p className="text-[10px] text-blue-400/60">Percentage passed directly to the end customer when buying tickets.</p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Features & Modules */}
-          <div className="grid grid-cols-2 gap-8">
-            {/* Features Array */}
+          {/* Step 3 – Advanced Overrides */}
+          {currentStep === 3 && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-[#333333] pb-2">
-                <h3 className="text-sm font-semibold text-white">Features List</h3>
-                <button onClick={addFeature} className="text-xs flex items-center gap-1 text-[#f97316] hover:text-[#ea580c] transition-colors">
-                  <Plus className="h-3 w-3" /> Add Feature
-                </button>
-              </div>
-              <p className="text-[10px] text-muted-foreground">These are bullet points displayed to customers.</p>
-              
-              <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
-                {(formState.features || []).map((feature: string, idx: number) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <input 
-                      type="text" 
-                      value={feature} 
-                      onChange={(e) => updateFeature(idx, e.target.value)}
-                      className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-xs text-white"
-                      placeholder="e.g. Unlimited tickets"
-                    />
-                    <button onClick={() => removeFeature(idx)} className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+              <h3 className="text-sm font-semibold text-white border-b border-[#333333] pb-2">Advanced Routing &amp; Fee Overrides</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4 p-4 bg-[#111111] rounded-lg border border-[#333333]">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Collections (Ticket Sales)</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-medium text-muted-foreground">Cust. Override (%)</label>
+                      <input type="number" step="0.01" value={formState.customer_collection_fee_percentage || ""} onChange={e => setFormState({...formState, customer_collection_fee_percentage: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                      <p className="text-[9px] text-muted-foreground leading-tight">Overrides the Customer Service Fee if set.</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-medium text-muted-foreground">Cust. Override (Fixed)</label>
+                      <input type="number" step="1" value={formState.customer_collection_fee_fixed || ""} onChange={e => setFormState({...formState, customer_collection_fee_fixed: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-medium text-muted-foreground">Org. Override (%)</label>
+                      <input type="number" step="0.01" value={formState.organizer_collection_fee_percentage || ""} onChange={e => setFormState({...formState, organizer_collection_fee_percentage: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-medium text-muted-foreground">Org. Override (Fixed)</label>
+                      <input type="number" step="1" value={formState.organizer_collection_fee_fixed || ""} onChange={e => setFormState({...formState, organizer_collection_fee_fixed: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                    </div>
                   </div>
-                ))}
-                {(!formState.features || formState.features.length === 0) && (
-                  <div className="text-xs text-muted-foreground text-center py-4 border border-dashed border-[#333333] rounded-lg">
-                    No features added yet.
+                  <div className="space-y-1.5 pt-2 border-t border-[#333333]">
+                    <label className="text-xs font-medium text-muted-foreground">Enable Subsidized Collections?</label>
+                    <select value={formState.enable_subsidized_collection} onChange={e => setFormState({...formState, enable_subsidized_collection: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white">
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                    <p className="text-[9px] text-muted-foreground">If Yes, the Organizer absorbs the customer fee up to a limit.</p>
                   </div>
-                )}
+                </div>
+
+                <div className="space-y-4 p-4 bg-[#111111] rounded-lg border border-[#333333]">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Withdrawals</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-medium text-muted-foreground">Withdraw Override (%)</label>
+                      <input type="number" step="0.01" value={formState.withdrawal_fee_percentage || ""} onChange={e => setFormState({...formState, withdrawal_fee_percentage: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                      <p className="text-[9px] text-muted-foreground leading-tight">Overrides the Organizer Platform Contribution for withdrawals.</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-medium text-muted-foreground">Withdraw Override (Fixed)</label>
+                      <input type="number" step="1" value={formState.withdrawal_fee_fixed || ""} onChange={e => setFormState({...formState, withdrawal_fee_fixed: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                    </div>
+                    <div className="space-y-1.5 col-span-2">
+                      <label className="text-[10px] font-medium text-muted-foreground">Max Withdrawals/Week</label>
+                      <input type="text" value={formState.max_withdrawals_per_week || "unlimited"} onChange={e => setFormState({...formState, max_withdrawals_per_week: e.target.value})} className="w-full bg-[#1b1b1c] border border-[#333333] rounded px-2 py-1.5 text-xs text-white" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+          )}
 
-            {/* Modules Array */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-white border-b border-[#333333] pb-2">Included Modules</h3>
-              <p className="text-[10px] text-muted-foreground">Select the system modules granted by this subscription.</p>
-              
-              <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
-                {platformModules.map((module: any) => {
-                  const isIncluded = (formState.modules_included || []).includes(module.id);
-                  return (
-                    <label key={module.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${isIncluded ? 'bg-blue-500/10 border-blue-500/30' : 'bg-[#111111] border-[#333333] hover:border-[#444444]'}`}>
-                      <input 
-                        type="checkbox" 
-                        checked={isIncluded}
-                        onChange={() => toggleModule(module.id)}
-                        className="accent-blue-500 h-4 w-4 rounded bg-[#1b1b1c] border-[#333333]"
+          {/* Step 4 – Features & Modules */}
+          {currentStep === 4 && (
+            <div className="grid grid-cols-2 gap-8">
+              {/* Features Array */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-[#333333] pb-2">
+                  <h3 className="text-sm font-semibold text-white">Features List</h3>
+                  <button onClick={addFeature} className="text-xs flex items-center gap-1 text-[#f97316] hover:text-[#ea580c] transition-colors">
+                    <Plus className="h-3 w-3" /> Add Feature
+                  </button>
+                </div>
+                <p className="text-[10px] text-muted-foreground">These are bullet points displayed to customers.</p>
+                <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                  {(formState.features || []).map((feature: string, idx: number) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={feature}
+                        onChange={(e) => updateFeature(idx, e.target.value)}
+                        className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-xs text-white"
+                        placeholder="e.g. Unlimited tickets"
                       />
-                      <div>
-                        <div className={`text-sm font-medium ${isIncluded ? 'text-blue-400' : 'text-white'}`}>{module.label}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase">{module.category || "Uncategorized"}</div>
-                      </div>
-                    </label>
-                  );
-                })}
+                      <button onClick={() => removeFeature(idx)} className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {(!formState.features || formState.features.length === 0) && (
+                    <div className="text-xs text-muted-foreground text-center py-4 border border-dashed border-[#333333] rounded-lg">
+                      No features added yet.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Modules Array */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-white border-b border-[#333333] pb-2">Included Modules</h3>
+                <p className="text-[10px] text-muted-foreground">Select the system modules granted by this subscription.</p>
+                <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                  {platformModules.map((module: any) => {
+                    const isIncluded = (formState.modules_included || []).includes(module.id);
+                    return (
+                      <label key={module.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${isIncluded ? 'bg-blue-500/10 border-blue-500/30' : 'bg-[#111111] border-[#333333] hover:border-[#444444]'}`}>
+                        <input
+                          type="checkbox"
+                          checked={isIncluded}
+                          onChange={() => toggleModule(module.id)}
+                          className="accent-blue-500 h-4 w-4 rounded bg-[#1b1b1c] border-[#333333]"
+                        />
+                        <div>
+                          <div className={`text-sm font-medium ${isIncluded ? 'text-blue-400' : 'text-white'}`}>{module.label}</div>
+                          <div className="text-[10px] text-muted-foreground uppercase">{module.category || "Uncategorized"}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Step 5 – Usage Limits & Rules */}
+          {currentStep === 5 && (() => {
+            const ul = formState.usage_limits || {};
+            const setUL = (key: string, val: any) =>
+              setFormState({ ...formState, usage_limits: { ...ul, [key]: val } });
+
+            const LIMIT_FIELDS = [
+              {
+                key: "max_workspaces",
+                label: "Max Workspaces",
+                desc: "How many workspaces this organizer can create. Each workspace is a separate brand/event hub.",
+              },
+              {
+                key: "max_events",
+                label: "Max Events",
+                desc: "Total events per workspace. Includes all published and draft events.",
+              },
+              {
+                key: "max_cinemas",
+                label: "Max Cinemas",
+                desc: "How many Cinema modules the organizer can create per workspace.",
+              },
+              {
+                key: "max_spaces",
+                label: "Max Spaces",
+                desc: "How many Spaces (venue rental hubs) per workspace.",
+              },
+              {
+                key: "max_venues",
+                label: "Max Venue Listings",
+                desc: "Total venue listings the organizer can publish per workspace.",
+              },
+              {
+                key: "max_ticket_designs",
+                label: "Max Ticket Designs",
+                desc: "Number of custom ticket design templates per workspace.",
+              },
+              {
+                key: "max_badge_designs",
+                label: "Max Badge Designs",
+                desc: "Number of custom badge/accreditation templates per workspace.",
+              },
+              {
+                key: "max_page_builders",
+                label: "Max Page Builders",
+                desc: "How many custom landing pages the organizer can build per workspace.",
+              },
+              {
+                key: "max_invoices",
+                label: "Max Invoices",
+                desc: "Total procurement/supplier invoices allowed per workspace.",
+              },
+              {
+                key: "max_tasks",
+                label: "Max Tasks",
+                desc: "Total workspace task board items allowed per workspace.",
+              },
+              {
+                key: "max_custom_forms",
+                label: "Max Custom Forms",
+                desc: "Number of custom forms (RSVPs, registrations) per workspace.",
+              },
+              {
+                key: "max_rsvps",
+                label: "Max RSVPs",
+                desc: "Total RSVP submissions collected across all forms per workspace.",
+              },
+              {
+                key: "max_ticket_tiers_per_event",
+                label: "Max Ticket Tiers / Event",
+                desc: "How many ticket pricing tiers an organizer can add to a single event, cinema, space, or venue.",
+              },
+              {
+                key: "max_workspace_users",
+                label: "Max Workspace Users",
+                desc: "Team members that can be invited into any workspace under this organizer.",
+              },
+              {
+                key: "max_contributors",
+                label: "Max Contributors",
+                desc: "External contributors who can be linked to specific designer projects.",
+              },
+            ];
+
+            const ACCESS_FIELDS = [
+              {
+                key: "has_studio_access",
+                label: "Has Studio Access",
+                desc: "Unlocks Agatike Studio — advanced ticket, badge, and venue design editor.",
+              },
+              {
+                key: "can_invite_contributors",
+                label: "Can Invite Contributors",
+                desc: "Allows the organizer to invite external contributors to design projects.",
+              },
+              {
+                key: "can_link_modules",
+                label: "Can Link Modules",
+                desc: "Allows linking events, cinemas, spaces, and venues to each other within a workspace.",
+              },
+            ];
+
+            return (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-white">Usage Limits & Rules</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Define what features and structural limits this plan enforces on the Organizer dashboard.
+                    Toggle <span className="text-[#f97316] font-semibold">∞ Unlimited</span> to remove a restriction entirely — the organizer won't be blocked.
+                    Leave a number to set a hard cap.
+                  </p>
+                </div>
+
+                {/* Structural Limits */}
+                <div className="p-4 bg-[#111111] border border-[#333333] rounded-xl space-y-5">
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Structural Limits</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Set a number to cap usage per workspace. Enable <strong className="text-[#f97316]">∞ Unlimited</strong> to remove the limit (stored as -1).
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {LIMIT_FIELDS.map(({ key, label, desc }) => {
+                      const isUnlimited = ul[key] === -1;
+                      return (
+                        <div key={key} className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-sm font-semibold text-white">{label}</div>
+                              <div className="text-[11px] text-muted-foreground leading-tight mt-0.5">{desc}</div>
+                            </div>
+                            {/* Unlimited toggle */}
+                            <button
+                              type="button"
+                              onClick={() => setUL(key, isUnlimited ? 0 : -1)}
+                              className={`ml-3 shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all border ${
+                                isUnlimited
+                                  ? "bg-[#f97316]/15 border-[#f97316]/40 text-[#f97316]"
+                                  : "bg-[#111111] border-[#333333] text-muted-foreground hover:border-[#f97316]/40 hover:text-[#f97316]/70"
+                              }`}
+                            >
+                              <span>∞</span>
+                              <span>{isUnlimited ? "Unlimited" : "Set limit"}</span>
+                            </button>
+                          </div>
+                          {!isUnlimited && (
+                            <input
+                              type="number"
+                              min="0"
+                              value={ul[key] ?? 0}
+                              onChange={e => setUL(key, Number(e.target.value))}
+                              className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white focus:border-[#f97316]/50 focus:outline-none transition-colors"
+                              placeholder="0"
+                            />
+                          )}
+                          {isUnlimited && (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-[#f97316]/5 border border-[#f97316]/20 rounded-lg">
+                              <span className="text-[#f97316] text-lg font-bold">∞</span>
+                              <span className="text-xs text-[#f97316]/80">No restriction — organizer can create without limit</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Access & Permissions */}
+                <div className="p-4 bg-[#111111] border border-[#333333] rounded-xl space-y-4">
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Access & Permissions</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Toggle features that are unlocked for organizers on this plan. Disabled features show an upgrade prompt.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    {ACCESS_FIELDS.map(({ key, label, desc }) => {
+                      const checked = !!ul[key];
+                      return (
+                        <label
+                          key={key}
+                          className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                            checked
+                              ? "bg-green-500/5 border-green-500/30"
+                              : "bg-[#1b1b1c] border-[#333333] hover:border-[#444444]"
+                          }`}
+                        >
+                          <div className="mt-0.5">
+                            <div
+                              className={`w-10 h-6 rounded-full relative transition-colors flex-shrink-0 ${checked ? "bg-green-500" : "bg-[#333333]"}`}
+                              style={{ minWidth: 40 }}
+                            >
+                              <div
+                                className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${checked ? "translate-x-5" : "translate-x-1"}`}
+                              />
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={e => setUL(key, e.target.checked)}
+                              className="sr-only"
+                            />
+                          </div>
+                          <div>
+                            <div className={`text-sm font-semibold ${checked ? "text-green-400" : "text-white"}`}>{label}</div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{desc}</div>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {/* Support Type */}
+                  <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 space-y-2">
+                    <div>
+                      <div className="text-sm font-semibold text-white">Support Type</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">The level of support access this plan includes. Shown on the organizer's settings and contact pages.</div>
+                    </div>
+                    <select
+                      value={ul.support_type || "standard"}
+                      onChange={e => setUL("support_type", e.target.value)}
+                      className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#f97316]/50 focus:outline-none"
+                    >
+                      <option value="email">Email Only — Async responses within 48h</option>
+                      <option value="standard">Standard — Business hours via email & chat</option>
+                      <option value="priority">Priority — Faster response, priority queue</option>
+                      <option value="dedicated">24/7 Dedicated — Personal account manager</option>
+                    </select>
+                  </div>
+
+                  {/* Venue Design Type */}
+                  <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl p-4 space-y-2">
+                    <div>
+                      <div className="text-sm font-semibold text-white">Venue Design Type</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">Controls which venue design editor features are available in Agatike Studio for this plan.</div>
+                    </div>
+                    <select
+                      value={ul.venue_design_type || "basic"}
+                      onChange={e => setUL("venue_design_type", e.target.value)}
+                      className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#f97316]/50 focus:outline-none"
+                    >
+                      <option value="basic">Basic — Standard templates, limited customization</option>
+                      <option value="advanced">Advanced — Full editor, custom branding</option>
+                      <option value="custom">Custom — White-label, API access, full control</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
-        <div className="p-4 border-t border-[#333333] bg-[#111111] flex justify-end gap-3">
-          <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-white transition-colors">
-            Cancel
-          </button>
-          <button onClick={handleSaveEdit} disabled={updateMutation.isPending} className="flex items-center gap-2 px-4 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
-            <Save className="h-4 w-4" /> Save Changes
-          </button>
+        {/* Footer Navigation */}
+        <div className="p-4 border-t border-[#333333] bg-[#111111] flex justify-between items-center gap-3">
+          <div>
+            {currentStep > 1 && (
+              <button
+                onClick={() => setCurrentStep(prev => prev - 1)}
+                className="px-4 py-2 text-sm font-medium text-white bg-[#333333] hover:bg-[#444444] rounded-lg transition-colors"
+              >
+                ← Back
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-white transition-colors">
+              Cancel
+            </button>
+            {currentStep < TOTAL_STEPS ? (
+              <button
+                onClick={() => setCurrentStep(prev => prev + 1)}
+                className="px-5 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Next →
+              </button>
+            ) : (
+              <button
+                onClick={handleSaveEdit}
+                disabled={updateMutation.isPending}
+                className="flex items-center gap-2 px-5 py-2 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                <Save className="h-4 w-4" /> {updateMutation.isPending ? "Saving…" : "Save Changes"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -462,6 +804,75 @@ function AdminPricingDetailsPage() {
               </div>
             </div>
           </div>
+
+          {/* Usage Limits Summary */}
+          {(() => {
+            const ul = typeof plan.usage_limits === "string"
+              ? (() => { try { return JSON.parse(plan.usage_limits); } catch { return {}; } })()
+              : (plan.usage_limits || {});
+            const limitKeys = [
+              { key: 'max_workspaces', label: 'Workspaces' },
+              { key: 'max_events', label: 'Events' },
+              { key: 'max_cinemas', label: 'Cinemas' },
+              { key: 'max_spaces', label: 'Spaces' },
+              { key: 'max_venues', label: 'Venues' },
+              { key: 'max_ticket_designs', label: 'Ticket Designs' },
+              { key: 'max_badge_designs', label: 'Badge Designs' },
+              { key: 'max_page_builders', label: 'Page Builders' },
+              { key: 'max_invoices', label: 'Invoices' },
+              { key: 'max_tasks', label: 'Tasks' },
+              { key: 'max_custom_forms', label: 'Custom Forms' },
+              { key: 'max_rsvps', label: 'RSVPs' },
+              { key: 'max_ticket_tiers_per_event', label: 'Ticket Tiers/Event' },
+              { key: 'max_workspace_users', label: 'Workspace Users' },
+              { key: 'max_contributors', label: 'Contributors' },
+            ];
+            return (
+              <div className="bg-[#1b1b1c] rounded-xl border border-[#333333] overflow-hidden">
+                <div className="p-6 border-b border-[#333333] bg-[#111111]/50 flex justify-between items-center">
+                  <h2 className="text-lg font-bold text-white">Usage Limits & Rules</h2>
+                  <button onClick={handleOpenEdit} className="text-xs text-[#f97316] hover:underline">Edit limits →</button>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Structural Limits</h3>
+                    <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                      {limitKeys.map(({ key, label }) => {
+                        const val = ul[key];
+                        const display = val === -1 || val === undefined ? "∞" : String(val ?? 0);
+                        return (
+                          <div key={key} className="bg-[#111111] border border-[#333333] rounded-lg p-3 text-center">
+                            <div className="text-xl font-bold text-white">{display}</div>
+                            <div className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wide leading-tight">{label}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Access & Permissions</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: 'has_studio_access', label: 'Studio Access' },
+                        { key: 'can_invite_contributors', label: 'Invite Contributors' },
+                        { key: 'can_link_modules', label: 'Link Modules' },
+                      ].map(({ key, label }) => (
+                        <span key={key} className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${ul[key] ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-[#111111] text-muted-foreground border-[#333333]'}`}>
+                          {ul[key] ? '✓' : '✗'} {label}
+                        </span>
+                      ))}
+                      <span className="px-3 py-1.5 rounded-lg text-xs font-semibold border bg-blue-500/10 text-blue-400 border-blue-500/20">
+                        Support: {ul.support_type || "standard"}
+                      </span>
+                      <span className="px-3 py-1.5 rounded-lg text-xs font-semibold border bg-violet-500/10 text-violet-400 border-violet-500/20">
+                        Venue Design: {ul.venue_design_type || "basic"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
         </div>
 

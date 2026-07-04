@@ -24,6 +24,7 @@ import {
 } from "@/api/tasks";
 import { getWorkspaceUsers } from "@/api/workspace_users";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,6 +79,7 @@ function TasksPage() {
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id;
   const queryClient = useQueryClient();
+  const { canCreateTask } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const [view, setView] = useState<"kanban" | "list">("kanban");
   const [createOpen, setCreateOpen] = useState(false);
@@ -248,6 +250,12 @@ function TasksPage() {
           </div>
           <Button
             onClick={() => {
+              if (!canCreateTask()) {
+                toast.error("Task Limit Reached", {
+                  description: "You have reached the maximum number of tasks. Please upgrade your plan."
+                });
+                return;
+              }
               setForm({ ...form, status: "todo" });
               setCreateOpen(true);
             }}
@@ -306,6 +314,12 @@ function TasksPage() {
                     variant="ghost"
                     className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                     onClick={() => {
+                      if (!canCreateTask()) {
+                        toast.error("Task Limit Reached", {
+                          description: "You have reached the maximum number of tasks. Please upgrade your plan."
+                        });
+                        return;
+                      }
                       setForm({ ...form, status: col.id as string });
                       setCreateOpen(true);
                     }}

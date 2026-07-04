@@ -3,6 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
 import { MapPin, Plus, MoreHorizontal, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/$spaceId/locations")({
   component: SpaceLocationsPage,
@@ -10,6 +13,8 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/$spaceId/
 
 function SpaceLocationsPage() {
   const { spaceId } = useParams({ strict: false }) as any;
+  const { activeWorkspace } = useWorkspace();
+  const { canCreateLocation } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const { data: space, isLoading } = useQuery({
     queryKey: ["space", spaceId],
@@ -35,6 +40,14 @@ function SpaceLocationsPage() {
           </p>
         </div>
         <Button
+          onClick={() => {
+            if (!canCreateLocation()) {
+              toast.error("You have reached the maximum number of locations for your plan.");
+              return;
+            }
+            // Add location logic goes here
+            toast.info("Add location dialog coming soon.");
+          }}
           className="gap-2 rounded-xl h-11 px-6 shadow-sm"
           style={{ background: "var(--gradient-primary)" }}
         >

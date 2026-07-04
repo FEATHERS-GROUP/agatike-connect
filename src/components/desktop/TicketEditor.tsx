@@ -1,4 +1,5 @@
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +45,9 @@ export function TicketEditor({
   activeTourStopIdx: number;
   setActiveTourStopIdx: (val: number) => void;
   forms?: any[];
+  forms?: any[];
   vipPrivileges?: any[];
+  canCreateTicketTier?: (currentTiersCount: number) => boolean;
 }) {
   const displayedTickets = tickets.filter((t) =>
     sameTicketsForAllLocations ? true : t.tour_stop_idx === activeTourStopIdx,
@@ -130,7 +133,15 @@ export function TicketEditor({
             variant="outline"
             size="sm"
             className="rounded-full"
-            onClick={() => add(t)}
+            onClick={() => {
+              if (canCreateTicketTier && !canCreateTicketTier(displayedTickets.length)) {
+                toast.error("Ticket Tier Limit Reached", {
+                  description: "You have reached the maximum number of ticket tiers for this event. Please upgrade to create more."
+                });
+                return;
+              }
+              add(t);
+            }}
           >
             <Plus className="mr-1 h-3.5 w-3.5" />{" "}
             {t === "paid" ? "Paid" : t === "free" ? "Free" : t === "early" ? "Early bird" : "VIP"}
