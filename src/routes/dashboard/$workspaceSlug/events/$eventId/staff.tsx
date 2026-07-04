@@ -57,6 +57,7 @@ function GenerateVendorFormModal({
   eventId: string;
   activeWorkspace: any;
   canUseFormIntegration: boolean;
+  canCreateCustomerForm: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [vendorName, setVendorName] = useState("");
@@ -150,17 +151,25 @@ function GenerateVendorFormModal({
       <DialogTrigger asChild>
         <Button 
           style={{ background: "var(--gradient-primary)", color: "white" }}
-          disabled={!canUseFormIntegration}
+          disabled={!canUseFormIntegration || !canCreateCustomerForm}
           onClick={(e) => {
             if (!canUseFormIntegration) {
               e.preventDefault();
               toast.error("Form Integration Locked", {
                 description: "Upgrade your plan to generate and use custom forms.",
               });
+              return;
+            }
+            if (!canCreateCustomerForm) {
+              e.preventDefault();
+              toast.error("Custom Forms Limit Reached", {
+                description: "You have reached the maximum number of custom forms allowed by your plan.",
+              });
+              return;
             }
           }}
         >
-          {canUseFormIntegration ? <Plus className="mr-2 h-4 w-4" /> : <Lock className="mr-2 h-4 w-4" />} Generate Vendor Form
+          {canUseFormIntegration && canCreateCustomerForm ? <Plus className="mr-2 h-4 w-4" /> : <Lock className="mr-2 h-4 w-4" />} Generate Vendor Form
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -566,7 +575,7 @@ function StaffView() {
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
-  const { canImportStaff, canUseFormIntegration, canAddEventStaff } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canImportStaff, canUseFormIntegration, canCreateCustomerForm, canAccessEventSections, canAddEventStaff } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const { data: badgeProject } = useQuery({
     queryKey: ["badge-project", eventId],
@@ -773,7 +782,7 @@ function StaffView() {
               <Link to="/dashboard/$workspaceSlug/rsvps" params={{ workspaceSlug }}>
                 <Button variant="outline">View All Custom Forms</Button>
               </Link>
-              <GenerateVendorFormModal eventId={eventId} activeWorkspace={activeWorkspace} canUseFormIntegration={canUseFormIntegration()} />
+              <GenerateVendorFormModal eventId={eventId} activeWorkspace={activeWorkspace} canUseFormIntegration={canUseFormIntegration()} canCreateCustomerForm={canCreateCustomerForm()} />
             </div>
           </div>
         </TabsContent>
