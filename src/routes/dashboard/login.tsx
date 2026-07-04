@@ -8,7 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2, Ticket, Users, BarChart3, MousePointer2, CalendarHeart, ShoppingCart, LayoutTemplate, Film, Building2, Plane } from "lucide-react";
 import { loginOrganizer, googleAuthOrganizer } from "@/api/auth";
 import { loginWorkspaceUser } from "@/api/workspace_users";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -25,11 +25,20 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
+const features = [
+  { title: "Powerful Insights", desc: "Track your ticket sales, manage your attendees, and scale your events with our all-in-one organizer platform.", image: "/admin-dashboard-preview.png" },
+  { title: "Procurement & Finance", desc: "Create and manage purchase orders, track vendor deliveries, and automate your back-office procurement.", image: "/procurement-preview.png" },
+  { title: "Ticket Designer", desc: "Design stunning digital and printable tickets with our intuitive drag-and-drop builder.", image: "/ticket-designer-preview.png" },
+  { title: "Page Builder", desc: "Launch immersive event pages, registration forms, and beautiful websites instantly using our templates.", image: "/page-builder-preview.png" },
+  { title: "Cinema & Theater", desc: "Host movie screenings and theater shows with interactive seating charts and showtime management.", image: "/cinema-preview.png" }
+];
+
 function DashboardLoginPage() {
   const navigate = useNavigate();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [currentFeature, setCurrentFeature] = useState(0);
   const { currentUser, isLoaded } = useWorkspace();
 
   useEffect(() => {
@@ -37,6 +46,13 @@ function DashboardLoginPage() {
       navigate({ to: "/dashboard", replace: true });
     }
   }, [isLoaded, currentUser, navigate]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentFeature((prev) => (prev + 1) % features.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   const {
     register,
@@ -252,22 +268,100 @@ function DashboardLoginPage() {
         <div className="absolute bottom-0 -left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]"></div>
 
         <div className="relative z-10 w-full h-full max-h-[85vh] flex flex-col items-center justify-center">
-          <div className="w-full relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 group perspective-[2000px]">
+          <div className="w-full relative rounded-2xl overflow-visible shadow-2xl group">
             {/* Dark overlay for aesthetic */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/80 via-transparent to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/90 via-[#0a0a0a]/20 to-transparent z-10 pointer-events-none rounded-2xl"></div>
             
-            <img 
-              src="/admin-dashboard-preview.png" 
-              alt="Dashboard Preview" 
-              className="w-full h-auto object-cover transform transition-transform duration-1000 group-hover:scale-105"
-            />
+            {features.map((feature, idx) => (
+              <img 
+                key={idx}
+                src={feature.image} 
+                alt={feature.title} 
+                onError={(e) => {
+                  e.currentTarget.src = "/admin-dashboard-preview.png";
+                }}
+                className={`absolute inset-0 w-full h-full object-cover rounded-2xl border border-white/10 transition-opacity duration-1000 ${
+                  currentFeature === idx ? 'opacity-100 relative' : 'opacity-0 absolute'
+                }`}
+              />
+            ))}
+
+            {/* Floating Animated Bubbles */}
+            <div className="absolute -top-8 -left-8 w-16 h-16 bg-blue-500/20 backdrop-blur-xl border border-blue-500/30 rounded-2xl flex items-center justify-center animate-[bounce_4s_infinite] z-20 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+              <CalendarHeart className="text-blue-400 w-8 h-8" />
+            </div>
             
-            <div className="absolute bottom-10 left-10 z-20">
-              <div className="bg-black/60 backdrop-blur-md border border-white/10 p-5 rounded-xl max-w-sm">
-                <h3 className="text-white font-semibold text-lg mb-2">Powerful Insights</h3>
-                <p className="text-white/70 text-sm">
-                  Track your ticket sales, manage your attendees, and scale your events with our all-in-one organizer platform.
-                </p>
+            <div className="absolute top-1/4 -right-8 w-20 h-20 bg-orange-500/20 backdrop-blur-xl border border-orange-500/30 rounded-3xl flex items-center justify-center animate-[pulse_3s_infinite] z-20 rotate-12 shadow-[0_0_30px_rgba(249,115,22,0.3)]">
+              <LayoutTemplate className="text-orange-400 w-10 h-10" />
+            </div>
+
+            <div className="absolute top-1/2 -left-6 w-14 h-14 bg-purple-500/20 backdrop-blur-xl border border-purple-500/30 rounded-full flex items-center justify-center animate-[bounce_5s_infinite_1s] z-20 shadow-[0_0_30px_rgba(168,85,247,0.3)]">
+              <Users className="text-purple-400 w-7 h-7" />
+            </div>
+
+            <div className="absolute bottom-1/4 -right-10 w-24 h-24 bg-green-500/20 backdrop-blur-xl border border-green-500/30 rounded-[2rem] flex items-center justify-center animate-[bounce_6s_infinite] z-20 -rotate-12 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+              <ShoppingCart className="text-green-400 w-12 h-12" />
+            </div>
+            
+            <div className="absolute -bottom-10 left-1/4 w-16 h-16 bg-red-500/20 backdrop-blur-xl border border-red-500/30 rounded-2xl flex items-center justify-center animate-[pulse_4s_infinite_1s] z-20 rotate-45 shadow-[0_0_30px_rgba(239,68,68,0.3)]">
+              <Film className="text-red-400 w-8 h-8" />
+            </div>
+
+            <div className="absolute top-5 left-1/3 w-14 h-14 bg-sky-500/20 backdrop-blur-xl border border-sky-500/30 rounded-full flex items-center justify-center animate-[bounce_3.5s_infinite_0.5s] z-20 shadow-[0_0_30px_rgba(14,165,233,0.3)]">
+              <Building2 className="text-sky-400 w-7 h-7" />
+            </div>
+
+            <div className="absolute -bottom-6 right-1/4 w-12 h-12 bg-pink-500/20 backdrop-blur-xl border border-pink-500/30 rounded-full flex items-center justify-center animate-[bounce_4.5s_infinite_0.2s] z-20 shadow-[0_0_30px_rgba(236,72,153,0.3)]">
+              <Plane className="text-pink-400 w-6 h-6" />
+            </div>
+
+            {/* Animated Cursor clicking */}
+            <div 
+              className="absolute z-30 pointer-events-none transition-all duration-1000 ease-in-out flex flex-col items-center" 
+              style={{
+                top: currentFeature % 2 === 0 ? '30%' : '50%',
+                left: currentFeature % 3 === 0 ? '40%' : '60%',
+              }}
+            >
+              <div className="relative">
+                <MousePointer2 className="w-8 h-8 text-white fill-black drop-shadow-2xl -rotate-12" />
+                <div 
+                  className="absolute top-0 left-0 w-8 h-8 rounded-full bg-white/50 animate-ping" 
+                  key={currentFeature}
+                ></div>
+              </div>
+            </div>
+            
+            {/* Dynamic Features Card */}
+            <div className="absolute -bottom-8 left-10 right-10 z-20">
+              <div className="bg-black/60 backdrop-blur-xl border border-white/20 p-6 rounded-2xl w-full max-w-md relative min-h-[140px] overflow-hidden shadow-2xl mx-auto lg:mx-0">
+                {features.map((feature, idx) => (
+                   <div 
+                     key={idx} 
+                     className={`transition-all duration-700 absolute inset-0 p-6 flex flex-col justify-center ${
+                       currentFeature === idx 
+                        ? 'opacity-100 translate-y-0 z-10' 
+                        : 'opacity-0 translate-y-4 z-0 pointer-events-none'
+                     }`}
+                   >
+                     <h3 className="text-white font-bold text-xl mb-2 flex items-center gap-2">
+                        {feature.title}
+                     </h3>
+                     <p className="text-white/70 text-sm leading-relaxed">{feature.desc}</p>
+                   </div>
+                ))}
+                
+                {/* Progress Indicators */}
+                <div className="absolute bottom-4 left-6 flex gap-1.5 z-20">
+                  {features.map((_, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`h-1 rounded-full transition-all duration-500 ${
+                        currentFeature === idx ? 'w-6 bg-primary' : 'w-2 bg-white/20'
+                      }`} 
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>

@@ -11,8 +11,10 @@ const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_
    Used for /internal/control/admin
    ───────────────────────────────────────────── */
 
-export const loginAdmin = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { email, password } = ctx.data as unknown as { email: string; password: string };
+export const loginAdmin = createServerFn({ method: "POST" })
+  .validator((d: { email: string; password: string }) => d)
+  .handler(async (ctx) => {
+  const { email, password } = ctx.data;
 
   const query = `
       query GetAdmin($email: String!) {
