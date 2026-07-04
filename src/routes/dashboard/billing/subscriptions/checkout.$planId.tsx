@@ -14,6 +14,7 @@ import {
   getExchangeRate,
 } from "@/api/pawapay";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { COUNTRIES } from "@/lib/countries";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -58,6 +59,7 @@ function CheckoutPage() {
   const [paymentStep, setPaymentStep] = useState(1);
   const [mobileNetwork, setMobileNetwork] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [countryCode, setCountryCode] = useState("+250");
   const [cardNumber, setCardNumber] = useState("");
   const [pawaPayNetworks, setPawaPayNetworks] = useState<
     { id: string; name: string; currency: string; country: string }[]
@@ -200,12 +202,19 @@ function CheckoutPage() {
     setIsProcessing(true);
     try {
       if (paymentMethod === "pawapay") {
+        let cleanCode = countryCode.replace(/\D/g, "");
+        let cleanPhone = phoneNumber.replace(/\D/g, "");
+        if (cleanPhone.startsWith("0")) {
+          cleanPhone = cleanPhone.substring(1);
+        }
+        let formattedPhone = cleanCode + cleanPhone;
+
         const pawaRes = await initiatePawaPayDeposit({
           data: {
             amount: Math.round(getConvertedAmount(finalUSDPrice)),
             baseAmount: finalUSDPrice,
             baseCurrency: "USD",
-            phone: phoneNumber,
+            phone: formattedPhone,
             network: mobileNetwork,
             currency: selectedCurrency,
             type: "subscription",
@@ -409,12 +418,27 @@ function CheckoutPage() {
                         <Label htmlFor="phone" className="text-xs">
                           Mobile Number
                         </Label>
-                        <Input
-                          id="phone"
-                          placeholder="e.g. 250788000000"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
-                        />
+                        <div className="flex gap-2">
+                          <Select value={countryCode} onValueChange={setCountryCode}>
+                            <SelectTrigger className="w-[100px]">
+                              <SelectValue placeholder="Code" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {COUNTRIES.filter(c => c.dialCode).map((c) => (
+                                <SelectItem key={c.code} value={c.dialCode}>
+                                  {String.fromCodePoint(...c.code.toUpperCase().split('').map(char => 127397 + char.charCodeAt(0)))} {c.dialCode}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Input
+                            id="phone"
+                            className="flex-1"
+                            placeholder="788 000 000"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                          />
+                        </div>
                       </div>
                     </div>
                   ) : (

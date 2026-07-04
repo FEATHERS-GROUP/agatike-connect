@@ -39,6 +39,8 @@ const defaultFormState = {
     max_experiences: 0,
     max_cinemas: 0,
     max_cinema_screens: 0,
+    max_movies: 0,
+    max_products: 0,
     max_spaces: 0,
     max_venues: 0,
     max_ticket_designs: 1,
@@ -476,6 +478,16 @@ function AdminPricingPage() {
               key: "max_cinema_screens",
               label: "Max Cinema Screens",
               desc: "Total screens/halls that can be added across all cinemas in the workspace.",
+            },
+            {
+              key: "max_movies",
+              label: "Max Movies",
+              desc: "Total movies that can be added across all cinemas in the workspace.",
+            },
+            {
+              key: "max_products",
+              label: "Max Products",
+              desc: "Total products and add-ons the organizer can create per workspace.",
             },
             {
               key: "max_spaces",
