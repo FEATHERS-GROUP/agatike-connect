@@ -39,7 +39,7 @@ function AdminProviderFeesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: Record<string, any>) => createPaymentProviderFeeAdmin({ data }),
+    mutationFn: (data: Record<string, any>) => createPaymentProviderFeeAdmin({ data: { data } }),
     onSuccess: () => {
       toast.success("Provider created successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-provider-fees"] });
