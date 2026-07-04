@@ -35,6 +35,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { COUNTRIES } from "@/lib/countries";
 import { getCoordinates, getPlacesAutocomplete } from "@/api/geocoding";
 import { Switch } from "@/components/ui/switch";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { lazy, Suspense, useState as _useState, useEffect as _useEffect } from "react";
 
 function ClientOnly({ children, fallback }: { children: any; fallback?: any }) {
@@ -150,6 +151,7 @@ function NewVenueWizard() {
   const navigate = useNavigate();
   const { step } = useSearch({ strict: false }) as { step: number };
   const { activeWorkspace } = useWorkspace();
+  const { canCreateVenue, isLoading: limitsLoading } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const [isUploading, setIsUploading] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
@@ -207,6 +209,13 @@ function NewVenueWizard() {
       } catch (e) {}
     }
   }, [workspaceSlug]); // Run once on mount
+
+  useEffect(() => {
+    if (!limitsLoading && !canCreateVenue()) {
+      toast.error("Venue Limit Reached");
+      navigate({ to: `/dashboard/${workspaceSlug}/venue-rent`, replace: true });
+    }
+  }, [limitsLoading, canCreateVenue, navigate, workspaceSlug]);
 
   useEffect(() => {
     if (!formData.address || !showAddressSuggestions) {

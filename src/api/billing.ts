@@ -455,6 +455,7 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         workspace_pages_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
         products_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
         cinema_movies_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        cinema_screens_aggregate(where: { cinema: { workspace_id: { _eq: $workspace_id_uuid } } }) { aggregate { count } }
         venue_projects_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
         ticket_projects_aggregate(where: { workspaceId: { _eq: $workspace_id_uuid } }) { aggregate { count } }
         badge_projects_aggregate(where: { events: { workspace_id: { _eq: $workspace_id_uuid } } }) { aggregate { count } }
@@ -476,6 +477,7 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
       return {
         events: res.events_aggregate?.aggregate?.count || 0,
         cinemas: res.cinemas_aggregate?.aggregate?.count || 0,
+        screens: res.cinema_screens_aggregate?.aggregate?.count || 0,
         spaces: res.spaces_aggregate?.aggregate?.count || 0,
         venues: res.rentable_venues_aggregate?.aggregate?.count || 0,
         page_builders: res.workspace_pages_aggregate?.aggregate?.count || 0,

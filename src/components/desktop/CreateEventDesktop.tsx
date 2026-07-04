@@ -226,7 +226,7 @@ export function CreateEventDesktop() {
   const step = urlStep || 0;
   const { activeWorkspace } = useWorkspace();
   const currencySymbol = getCurrencySymbol(activeWorkspace?.wallet?.currency);
-  const { canCreateTicketTier } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateTicketTier, canCreateEvent, isLoading: limitsLoading } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const { data: forms = [] } = useQuery({
     queryKey: ["workspace_forms", activeWorkspace?.id],
@@ -309,6 +309,15 @@ export function CreateEventDesktop() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (!limitsLoading && !canCreateEvent()) {
+      toast.error("Event Limit Reached", {
+        description: "You have reached the maximum number of events allowed by your plan."
+      });
+      navigate({ to: dashboardUrl, replace: true });
+    }
+  }, [limitsLoading, canCreateEvent, navigate, dashboardUrl]);
 
   const saveDraft = () => {
     const draftState = {

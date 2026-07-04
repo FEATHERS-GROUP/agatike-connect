@@ -45,7 +45,7 @@ export function CreateExperienceDesktop({
   const { step: urlStep } = useSearch({ strict: false }) as { step?: number };
   const step = urlStep || 0;
   const { activeWorkspace } = useWorkspace();
-  const { canCreateExperience } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateExperience, isLoading: limitsLoading } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const dashboardUrl = workspaceSlug ? `/dashboard/${workspaceSlug}` : "/dashboard";
 
@@ -115,7 +115,7 @@ export function CreateExperienceDesktop({
   const [data, setData] = useState(defaultData);
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverError, setCoverError] = useState("");
-  const { canCreateExperience, canCreateTicketTier } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { canCreateTicketTier } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const { data: forms = [] } = useQuery({
     queryKey: ["workspace_forms", activeWorkspace?.id],
@@ -136,6 +136,15 @@ export function CreateExperienceDesktop({
       }
     }
   }, [initialData]);
+
+  useEffect(() => {
+    if (!isEdit && !limitsLoading && !canCreateExperience()) {
+      toast.error("Experience Limit Reached", {
+        description: "You have reached the maximum number of experiences allowed by your plan."
+      });
+      navigate({ to: dashboardUrl, replace: true });
+    }
+  }, [limitsLoading, canCreateExperience, isEdit, navigate, dashboardUrl]);
 
   const saveDraft = () => {
     const draftState = { data };

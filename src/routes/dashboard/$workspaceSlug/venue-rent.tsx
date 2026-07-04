@@ -13,12 +13,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRentableVenues, updateRentableVenue } from "@/api/rentable_venues";
 import { getWorkspaceVenueBookings } from "@/api/venue_bookings";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatCurrency } from "@/lib/currency";
 import { toast } from "sonner";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +41,7 @@ function VenueListingsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
+  const { canCreateVenue } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const updateStatus = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
@@ -83,11 +84,20 @@ function VenueListingsPage() {
             <Button
               className="shrink-0 gap-2 rounded-full h-10 px-5 shadow-[var(--shadow-glow)]"
               style={{ background: "var(--gradient-primary)" }}
-              asChild
+              onClick={(e) => {
+                if (!canCreateVenue()) {
+                  toast.error("Venue Limit Reached", {
+                    description: "You have reached the maximum number of venues for your plan. Please upgrade to create more."
+                  });
+                } else {
+                  navigate({
+                    to: "/dashboard/$workspaceSlug/venues/create-venue",
+                    params: { workspaceSlug }
+                  });
+                }
+              }}
             >
-              <Link to="/dashboard/$workspaceSlug/venues/create-venue" params={{ workspaceSlug }}>
-                <Plus className="h-4 w-4" /> List New Venue
-              </Link>
+              <Plus className="h-4 w-4" /> List New Venue
             </Button>
           </div>
 
@@ -143,13 +153,22 @@ function VenueListingsPage() {
             <h3 className="text-xl font-semibold mb-2">No venues listed</h3>
             <p className="text-muted-foreground mb-6">You haven't added any rentable venues yet.</p>
             <Button
-              asChild
               style={{ background: "var(--gradient-primary)" }}
               className="shadow-[var(--shadow-glow)]"
+              onClick={() => {
+                if (!canCreateVenue()) {
+                  toast.error("Venue Limit Reached", {
+                    description: "You have reached the maximum number of venues for your plan. Please upgrade to create more."
+                  });
+                } else {
+                  navigate({
+                    to: "/dashboard/$workspaceSlug/venues/create-venue",
+                    params: { workspaceSlug }
+                  });
+                }
+              }}
             >
-              <Link to="/dashboard/$workspaceSlug/venues/create-venue" params={{ workspaceSlug }}>
-                List Your First Venue
-              </Link>
+              List Your First Venue
             </Button>
           </div>
         ) : (

@@ -8,6 +8,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceEvents } from "@/api/events";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { Lock } from "lucide-react";
+import { toast } from "sonner";
 
 // Stubbed mock data
 const experienceCategories: any[] = [];
@@ -164,19 +165,24 @@ function DashboardExperiences() {
             Manage your guided tours, activities, and special experiences.
           </p>
         </div>
-        <Link
-          to="/dashboard/$workspaceSlug/experiences/create-experience"
-          params={{ workspaceSlug: activeWorkspace?.slug || "workspace" }}
-          disabled={!canCreateExperience()}
+        <Button
+          className="rounded-full shadow-[var(--shadow-glow)]"
+          style={{ background: "var(--gradient-primary)" }}
+          onClick={() => {
+            if (!canCreateExperience()) {
+              toast.error("Experience Limit Reached", {
+                description: "You have reached the maximum number of experiences allowed by your plan."
+              });
+            } else {
+              navigate({
+                to: "/dashboard/$workspaceSlug/experiences/create-experience",
+                params: { workspaceSlug: activeWorkspace?.slug || "workspace" }
+              });
+            }
+          }}
         >
-          <Button
-            className="rounded-full shadow-[var(--shadow-glow)]"
-            style={{ background: "var(--gradient-primary)" }}
-            disabled={!canCreateExperience()}
-          >
-            {canCreateExperience() ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} Create Experience
-          </Button>
-        </Link>
+          {canCreateExperience() ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} Create Experience
+        </Button>
       </header>
 
       {/* KPI Cards */}
@@ -241,12 +247,18 @@ function DashboardExperiences() {
                 You have an unsaved experience draft. Click to resume editing.
               </p>
               <Button
-                onClick={() =>
-                  navigate({
-                    to: "/dashboard/$workspaceSlug/experiences/create-experience",
-                    params: { workspaceSlug: activeWorkspace?.slug || "workspace" },
-                  })
-                }
+                onClick={() => {
+                  if (!canCreateExperience()) {
+                    toast.error("Experience Limit Reached", {
+                      description: "You have reached the maximum number of experiences allowed by your plan."
+                    });
+                  } else {
+                    navigate({
+                      to: "/dashboard/$workspaceSlug/experiences/create-experience",
+                      params: { workspaceSlug: activeWorkspace?.slug || "workspace" },
+                    });
+                  }
+                }}
                 className="rounded-full shadow-sm"
               >
                 Resume Editing

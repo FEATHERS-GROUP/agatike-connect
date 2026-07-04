@@ -37,6 +37,7 @@ const defaultFormState = {
     max_workspaces: 1,
     max_events: 5,
     max_cinemas: 0,
+    max_cinema_screens: 0,
     max_spaces: 0,
     max_venues: 0,
     max_ticket_designs: 1,
@@ -457,6 +458,11 @@ function AdminPricingPage() {
               key: "max_cinemas",
               label: "Max Cinemas",
               desc: "How many Cinema modules the organizer can create per workspace.",
+            },
+            {
+              key: "max_cinema_screens",
+              label: "Max Cinema Screens",
+              desc: "Total screens/halls that can be added across all cinemas in the workspace.",
             },
             {
               key: "max_spaces",
