@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getAdminSupportTickets,
   getAdminSupportStats,
+  bulkDeleteSupportTickets,
 } from "@/api/support";
 import type { SupportTicket, SupportTicketComment, TicketStatus } from "@/api/support";
 import {
@@ -28,6 +29,9 @@ import {
   PauseCircle,
   MinusCircle,
   Code2,
+  Trash2,
+  List,
+  LayoutGrid,
 } from "lucide-react";
 
 export const Route = createFileRoute("/internal/control/admin/support/")({
@@ -138,8 +142,104 @@ function formatRelative(dateStr: string) {
   return date.toLocaleDateString();
 }
 
+function BulkDeleteModal({ isOpen, onClose, onComplete }: { isOpen: boolean; onClose: () => void; onComplete: () => void }) {
+  const [status, setStatus] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [confirmText, setConfirmText] = useState("");
+
+  const deleteMutation = useMutation({
+    mutationFn: () => bulkDeleteSupportTickets({ data: { status, startDate: new Date(startDate).toISOString(), endDate: new Date(endDate).toISOString() } }),
+    onSuccess: () => {
+      onComplete();
+      onClose();
+    },
+  });
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+      <div className="bg-[#111] border border-[#333] rounded-xl w-full max-w-md overflow-hidden shadow-2xl">
+        <div className="px-5 py-4 border-b border-[#333] flex items-center justify-between bg-[#161616]">
+          <h2 className="text-lg font-bold text-red-500 flex items-center gap-2">
+            <Trash2 className="h-5 w-5" /> Bulk Delete Tickets
+          </h2>
+          <button onClick={onClose} className="p-1.5 rounded hover:bg-[#333] text-[#888] transition-colors"><X className="h-4 w-4" /></button>
+        </div>
+        
+        <div className="p-5 space-y-4">
+          <p className="text-sm text-[#888]">
+            This action will permanently delete all matching tickets and their comments. This cannot be undone.
+          </p>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-[#888] uppercase tracking-wider">Status</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="w-full bg-[#1a1a1a] border border-[#333] text-sm text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
+            >
+              <option value="all">All Statuses</option>
+              {Object.entries(STATUS_CONFIG).map(([k, v]) => (
+                <option key={k} value={k}>{v.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-[#888] uppercase tracking-wider">Start Date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full bg-[#1a1a1a] border border-[#333] text-sm text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-[#888] uppercase tracking-wider">End Date</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full bg-[#1a1a1a] border border-[#333] text-sm text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
+              />
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-[#333] space-y-1.5">
+            <label className="text-[11px] font-semibold text-red-400 uppercase tracking-wider">Type "DELETE" to confirm</label>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="DELETE"
+              className="w-full bg-[#1a1a1a] border border-red-500/50 text-sm text-white px-3 py-2 rounded-md outline-none focus:border-red-500"
+            />
+          </div>
+        </div>
+
+        <div className="px-5 py-4 border-t border-[#333] bg-[#161616] flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-[#ccc] hover:bg-[#333] rounded-md transition-colors">Cancel</button>
+          <button
+            onClick={() => deleteMutation.mutate()}
+            disabled={confirmText !== "DELETE" || !startDate || !endDate || deleteMutation.isPending}
+            className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete Permanently"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdminSupportPage() {
   const [activeTab, setActiveTab] = useState<Tab>("unassigned");
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "table">("list");
+  const router = useRouter();
 
   const tabToStatus = (tab: Tab) => {
     if (tab === "unassigned") return "unassigned";
@@ -169,7 +269,7 @@ function AdminSupportPage() {
     { id: "unassigned", label: "Unassigned", count: stats?.unassigned },
     { id: "in_progress", label: "In Progress", count: stats?.in_progress },
     { id: "all", label: "All Tickets", count: stats?.total },
-    { id: "resolved", label: "Resolved", count: stats?.resolved },
+    { id: "resolved", label: "Solved / Closed", count: stats?.closed },
   ];
 
   return (
@@ -184,13 +284,22 @@ function AdminSupportPage() {
               Manage and respond to organizer support requests
             </p>
           </div>
-          <button
-            onClick={handleRefresh}
-            className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-[#333333] text-[#cccccc] text-[12px] transition-colors rounded"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsBulkDeleteOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[12px] transition-colors rounded border border-red-500/20"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Bulk Delete
+            </button>
+            <button
+              onClick={handleRefresh}
+              className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-[#333333] text-[#cccccc] text-[12px] transition-colors rounded"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* Stats bar */}
@@ -199,7 +308,7 @@ function AdminSupportPage() {
             { label: "Total", value: stats?.total ?? "—", color: "text-white" },
             { label: "Open", value: stats?.open ?? "—", color: "text-amber-400" },
             { label: "Unassigned", value: stats?.unassigned ?? "—", color: "text-red-400" },
-            { label: "Resolved", value: stats?.resolved ?? "—", color: "text-green-400" },
+            { label: "Solved / Closed", value: stats?.closed ?? "—", color: "text-green-400" },
           ].map((s) => (
             <div key={s.label} className="bg-[#1e1e1e] border border-[#333] rounded p-3">
               <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
@@ -208,34 +317,58 @@ function AdminSupportPage() {
           ))}
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-[#333] mb-0 shrink-0">
-          {TABS.map((tab) => (
+        {/* Tabs and Controls */}
+        <div className="flex items-center justify-between border-b border-[#333] mb-0 shrink-0">
+          <div className="flex">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                }}
+                className={`px-4 py-2 text-[12px] font-medium transition-colors border-b-2 -mb-px flex items-center gap-1.5 ${
+                  activeTab === tab.id
+                    ? "border-[#f97316] text-white"
+                    : "border-transparent text-[#888] hover:text-[#ccc]"
+                }`}
+              >
+                {tab.label}
+                {tab.count !== undefined && (
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                      activeTab === tab.id
+                        ? "bg-[#f97316]/20 text-[#f97316]"
+                        : "bg-[#333] text-[#888]"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-1 pr-2 pb-1">
             <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-              }}
-              className={`px-4 py-2 text-[12px] font-medium transition-colors border-b-2 -mb-px flex items-center gap-1.5 ${
-                activeTab === tab.id
-                  ? "border-[#f97316] text-white"
-                  : "border-transparent text-[#888] hover:text-[#ccc]"
+              onClick={() => setViewMode("list")}
+              className={`p-1.5 rounded transition-colors ${
+                viewMode === "list" ? "bg-[#333] text-white" : "text-[#666] hover:text-[#ccc] hover:bg-[#222]"
               }`}
+              title="List View"
             >
-              {tab.label}
-              {tab.count !== undefined && (
-                <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                    activeTab === tab.id
-                      ? "bg-[#f97316]/20 text-[#f97316]"
-                      : "bg-[#333] text-[#888]"
-                  }`}
-                >
-                  {tab.count}
-                </span>
-              )}
+              <List className="h-4 w-4" />
             </button>
-          ))}
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-1.5 rounded transition-colors ${
+                viewMode === "table" ? "bg-[#333] text-white" : "text-[#666] hover:text-[#ccc] hover:bg-[#222]"
+              }`}
+              title="Table View"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* Ticket list */}
@@ -249,7 +382,7 @@ function AdminSupportPage() {
               <InboxIcon className="h-10 w-10 text-[#444] mb-3" />
               <p className="text-[#888] text-sm">No tickets in this category</p>
             </div>
-          ) : (
+          ) : viewMode === "list" ? (
             <div className="divide-y divide-[#2a2a2a]">
               {tickets.map((ticket: any) => {
                 const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.open;
@@ -338,10 +471,82 @@ function AdminSupportPage() {
                 );
               })}
             </div>
+          ) : (
+            <div className="w-full overflow-x-auto pb-6">
+              <table className="w-full text-left text-sm text-[#e0e0e0] border-collapse">
+                <thead className="text-[11px] uppercase bg-[#111] border-b border-[#333] text-[#888] sticky top-0 z-10 shadow-sm">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold w-12 text-center">Status</th>
+                    <th className="px-4 py-3 font-semibold">Subject</th>
+                    <th className="px-4 py-3 font-semibold">Category</th>
+                    <th className="px-4 py-3 font-semibold">Priority</th>
+                    <th className="px-4 py-3 font-semibold">Assignee</th>
+                    <th className="px-4 py-3 font-semibold">Organizer</th>
+                    <th className="px-4 py-3 font-semibold text-right">Created</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#2a2a2a] bg-transparent">
+                  {tickets.map((ticket: any) => {
+                    const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.open;
+                    const StatusIcon = statusCfg.icon;
+
+                    return (
+                      <tr 
+                        key={ticket.id} 
+                        onClick={() => router.navigate({ to: "/internal/control/admin/support/$ticketId", params: { ticketId: ticket.id } })}
+                        className="hover:bg-[#1a1a1a] transition-colors cursor-pointer group"
+                      >
+                        <td className="px-4 py-3.5 text-center">
+                          <div className={`inline-flex items-center justify-center h-7 w-7 rounded border ${statusCfg.bg}`} title={statusCfg.label}>
+                            <StatusIcon className={`h-4 w-4 ${statusCfg.color}`} />
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5 max-w-[200px]">
+                          <div className="font-medium text-[13px] truncate group-hover:text-[#f97316] transition-colors">{ticket.subject}</div>
+                          <div className="text-[11px] text-[#666] font-mono mt-0.5 truncate">#{ticket.id.slice(0, 8).toUpperCase()}</div>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <span className={`inline-block text-[10px] px-1.5 py-0.5 rounded border font-medium whitespace-nowrap ${CATEGORY_COLORS[ticket.category] || CATEGORY_COLORS.other}`}>
+                            {CATEGORY_LABELS[ticket.category] || ticket.category}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <span className={`text-[10px] font-semibold uppercase ${PRIORITY_COLORS[ticket.priority] || ""}`}>
+                            {ticket.priority}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          {ticket.assigned_to ? (
+                            <div className="flex items-center gap-1.5">
+                              <UserCheck className="h-3.5 w-3.5 text-green-500" />
+                              <span className="text-[11px] text-[#aaa]">{ticket.assignedAdmin?.email?.split('@')[0] || "Assigned"}</span>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] px-1.5 py-0.5 rounded border border-red-500/20 bg-red-500/10 text-red-400">
+                              Unassigned
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3.5 text-[11px] text-[#aaa]">
+                          {ticket.organizer?.name || ticket.organizer?.email || "—"}
+                        </td>
+                        <td className="px-4 py-3.5 text-right text-[11px] text-[#777] whitespace-nowrap">
+                          {formatRelative(ticket.created_at)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
-
+      <BulkDeleteModal 
+        isOpen={isBulkDeleteOpen} 
+        onClose={() => setIsBulkDeleteOpen(false)} 
+        onComplete={handleRefresh} 
+      />
     </div>
   );
 }

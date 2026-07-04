@@ -304,11 +304,11 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
 
     let whereClause = "{}";
     if (status === "unassigned") {
-      whereClause = `{ assigned_to: { _is_null: true }, status: { _nin: ["resolved", "closed"] } }`;
+      whereClause = `{ assigned_to: { _is_null: true }, status: { _neq: "closed" } }`;
     } else if (status === "in_progress") {
-      whereClause = `{ assigned_to: { _is_null: false }, status: { _nin: ["resolved", "closed"] } }`;
-    } else if (status === "resolved") {
-      whereClause = `{ status: { _in: ["resolved", "closed"] } }`;
+      whereClause = `{ status: { _neq: "closed" } }`;
+    } else if (status === "resolved" || status === "closed") {
+      whereClause = `{ status: { _eq: "closed" } }`;
     }
     // 'all' => no filter
 
@@ -601,9 +601,9 @@ export const getAdminSupportStats = createServerFn({ method: "POST" }).handler(a
     query GetSupportStats {
       total: support_tickets_aggregate { aggregate { count } }
       open: support_tickets_aggregate(where: { status: { _eq: "open" } }) { aggregate { count } }
-      unassigned: support_tickets_aggregate(where: { assigned_to: { _is_null: true }, status: { _nin: ["resolved", "closed"] } }) { aggregate { count } }
-      in_progress: support_tickets_aggregate(where: { status: { _eq: "in_progress" } }) { aggregate { count } }
-      resolved: support_tickets_aggregate(where: { status: { _in: ["resolved", "closed"] } }) { aggregate { count } }
+      unassigned: support_tickets_aggregate(where: { assigned_to: { _is_null: true }, status: { _neq: "closed" } }) { aggregate { count } }
+      in_progress: support_tickets_aggregate(where: { status: { _neq: "closed" } }) { aggregate { count } }
+      closed: support_tickets_aggregate(where: { status: { _eq: "closed" } }) { aggregate { count } }
     }
   `;
 
@@ -614,6 +614,43 @@ export const getAdminSupportStats = createServerFn({ method: "POST" }).handler(a
     open: res.open?.aggregate?.count || 0,
     unassigned: res.unassigned?.aggregate?.count || 0,
     in_progress: res.in_progress?.aggregate?.count || 0,
-    resolved: res.resolved?.aggregate?.count || 0,
+    closed: res.closed?.aggregate?.count || 0,
   };
 });
+
+export const bulkDeleteSupportTickets = createServerFn({ method: "POST" })
+  .validator((d: { status: string; startDate: string; endDate: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const { status, startDate, endDate } = ctx.data;
+
+    let whereClause = `created_at: { _gte: "${startDate}", _lte: "${endDate}" }`;
+    if (status && status !== "all") {
+      whereClause += `, status: { _eq: "${status}" }`;
+    }
+
+    // Delete comments first to avoid foreign key constraints (if no cascade)
+    try {
+      await hasuraRequest(
+        `mutation BulkDeleteComments {
+          delete_support_ticket_comments(where: { ticket: { ${whereClause} } }) {
+            affected_rows
+          }
+        }`
+      );
+    } catch (e) {
+      console.warn("Failed to delete comments (maybe already deleted or not configured)", e);
+    }
+
+    const res = await hasuraRequest<{ delete_support_tickets: { affected_rows: number } }>(
+      `mutation BulkDeleteTickets {
+        delete_support_tickets(where: { ${whereClause} }) {
+          affected_rows
+        }
+      }`
+    );
+
+    return res.delete_support_tickets?.affected_rows || 0;
+  });
