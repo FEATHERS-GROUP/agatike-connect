@@ -35,6 +35,23 @@ export function AdminSidebar() {
       href: "/internal/control/admin/moderation",
       icon: LucideIcons.ShieldAlert,
     },
+    { type: "divider" },
+    {
+      label: "Provider Fees",
+      href: "/internal/control/admin/providers",
+      icon: LucideIcons.Percent,
+    },
+    {
+      label: "Pricing Plans",
+      href: "/internal/control/admin/pricing",
+      icon: LucideIcons.Tags,
+    },
+    {
+      label: "Earnings Analytics",
+      href: "/internal/control/admin/earnings",
+      icon: LucideIcons.LineChart,
+    },
+    { type: "divider" },
     { label: "Modules", href: "/internal/control/admin/modules", icon: LucideIcons.Package },
     { type: "divider" },
     {

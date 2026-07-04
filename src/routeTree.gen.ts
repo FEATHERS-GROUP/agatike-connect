@@ -88,9 +88,12 @@ import { Route as DashboardWorkspaceSlugBookIndexRouteImport } from './routes/da
 import { Route as DashboardWorkspaceSlugBadgeDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/index'
 import { Route as DashboardWorkspaceSlugCinemaIndexRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/index'
 import { Route as InternalControlAdminTransactionsRouteImport } from './routes/internal.control.admin.transactions'
+import { Route as InternalControlAdminProvidersRouteImport } from './routes/internal.control.admin.providers'
+import { Route as InternalControlAdminPricingRouteImport } from './routes/internal.control.admin.pricing'
 import { Route as InternalControlAdminModulesRouteImport } from './routes/internal.control.admin.modules'
 import { Route as InternalControlAdminLoginRouteImport } from './routes/internal.control.admin.login'
 import { Route as InternalControlAdminHealthRouteImport } from './routes/internal.control.admin.health'
+import { Route as InternalControlAdminEarningsRouteImport } from './routes/internal.control.admin.earnings'
 import { Route as DashboardWorkspaceUserEmailActivateRouteImport } from './routes/dashboard/workspace-user/$email.activate'
 import { Route as DashboardBillingSubscriptionsPricingplansRouteImport } from './routes/dashboard/billing/subscriptions/pricingplans'
 import { Route as DashboardWorkspaceSlugWithdrawalsRequestRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals/request'
@@ -608,6 +611,18 @@ const InternalControlAdminTransactionsRoute =
     path: '/transactions',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
+const InternalControlAdminProvidersRoute =
+  InternalControlAdminProvidersRouteImport.update({
+    id: '/providers',
+    path: '/providers',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminPricingRoute =
+  InternalControlAdminPricingRouteImport.update({
+    id: '/pricing',
+    path: '/pricing',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
 const InternalControlAdminModulesRoute =
   InternalControlAdminModulesRouteImport.update({
     id: '/modules',
@@ -624,6 +639,12 @@ const InternalControlAdminHealthRoute =
   InternalControlAdminHealthRouteImport.update({
     id: '/health',
     path: '/health',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminEarningsRoute =
+  InternalControlAdminEarningsRouteImport.update({
+    id: '/earnings',
+    path: '/earnings',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
 const DashboardWorkspaceUserEmailActivateRoute =
@@ -1299,9 +1320,12 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/pricing': typeof InternalControlAdminPricingRoute
+  '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
@@ -1476,9 +1500,12 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/pricing': typeof InternalControlAdminPricingRoute
+  '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/dashboard/$workspaceSlug/Cinema': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
@@ -1656,9 +1683,12 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/pricing': typeof InternalControlAdminPricingRoute
+  '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
@@ -1838,9 +1868,12 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
     | '/internal/control/admin/login'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/pricing'
+    | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
@@ -2015,9 +2048,12 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
     | '/internal/control/admin/login'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/pricing'
+    | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
     | '/dashboard/$workspaceSlug/Cinema'
     | '/dashboard/$workspaceSlug/badge-designer'
@@ -2194,9 +2230,12 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
     | '/internal/control/admin/login'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/pricing'
+    | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
@@ -2888,6 +2927,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalControlAdminTransactionsRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
+    '/internal/control/admin/providers': {
+      id: '/internal/control/admin/providers'
+      path: '/providers'
+      fullPath: '/internal/control/admin/providers'
+      preLoaderRoute: typeof InternalControlAdminProvidersRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/pricing': {
+      id: '/internal/control/admin/pricing'
+      path: '/pricing'
+      fullPath: '/internal/control/admin/pricing'
+      preLoaderRoute: typeof InternalControlAdminPricingRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
     '/internal/control/admin/modules': {
       id: '/internal/control/admin/modules'
       path: '/modules'
@@ -2907,6 +2960,13 @@ declare module '@tanstack/react-router' {
       path: '/health'
       fullPath: '/internal/control/admin/health'
       preLoaderRoute: typeof InternalControlAdminHealthRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/earnings': {
+      id: '/internal/control/admin/earnings'
+      path: '/earnings'
+      fullPath: '/internal/control/admin/earnings'
+      preLoaderRoute: typeof InternalControlAdminEarningsRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
     '/dashboard/workspace-user/$email/activate': {
@@ -3984,9 +4044,12 @@ const InternalControlAdminOrganizersOrganizerIdRouteWithChildren =
   )
 
 interface InternalControlAdminRouteChildren {
+  InternalControlAdminEarningsRoute: typeof InternalControlAdminEarningsRoute
   InternalControlAdminHealthRoute: typeof InternalControlAdminHealthRoute
   InternalControlAdminLoginRoute: typeof InternalControlAdminLoginRoute
   InternalControlAdminModulesRoute: typeof InternalControlAdminModulesRoute
+  InternalControlAdminPricingRoute: typeof InternalControlAdminPricingRoute
+  InternalControlAdminProvidersRoute: typeof InternalControlAdminProvidersRoute
   InternalControlAdminTransactionsRoute: typeof InternalControlAdminTransactionsRoute
   InternalControlAdminIndexRoute: typeof InternalControlAdminIndexRoute
   InternalControlAdminAgatikeUsersUserIdRoute: typeof InternalControlAdminAgatikeUsersUserIdRoute
@@ -3996,9 +4059,12 @@ interface InternalControlAdminRouteChildren {
 }
 
 const InternalControlAdminRouteChildren: InternalControlAdminRouteChildren = {
+  InternalControlAdminEarningsRoute: InternalControlAdminEarningsRoute,
   InternalControlAdminHealthRoute: InternalControlAdminHealthRoute,
   InternalControlAdminLoginRoute: InternalControlAdminLoginRoute,
   InternalControlAdminModulesRoute: InternalControlAdminModulesRoute,
+  InternalControlAdminPricingRoute: InternalControlAdminPricingRoute,
+  InternalControlAdminProvidersRoute: InternalControlAdminProvidersRoute,
   InternalControlAdminTransactionsRoute: InternalControlAdminTransactionsRoute,
   InternalControlAdminIndexRoute: InternalControlAdminIndexRoute,
   InternalControlAdminAgatikeUsersUserIdRoute:
