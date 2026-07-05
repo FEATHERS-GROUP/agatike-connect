@@ -76,6 +76,7 @@ export function TransportSidebar() {
       <Link
         // @ts-expect-error: Route not yet created
         to="/dashboard/$workspaceSlug/trips"
+        // @ts-expect-error: Route not yet created
         params={{ workspaceSlug: workspaceSlug || "" }}
         className="mb-5 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
       >
