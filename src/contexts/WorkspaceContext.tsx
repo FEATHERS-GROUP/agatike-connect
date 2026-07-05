@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserWorkspaces, createDatabaseWorkspace } from "@/api/workspaces";
 
-export type WorkspaceType = "VENUE" | "EVENT" | "CINEMA" | "EXPERIENCE" | string;
+export type WorkspaceType = "VENUE" | "EVENT" | "CINEMA" | "EXPERIENCE" | "SPACES" | "OFFICES" | "TRANSPORT" | string;
 
 export type Workspace = {
   id: string;

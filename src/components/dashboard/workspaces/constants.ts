@@ -1,4 +1,4 @@
-import { Building2, Film, Mountain, Trophy } from "lucide-react";
+import { Building2, Film, Mountain, Trophy, Bus } from "lucide-react";
 import { WorkspaceType } from "@/contexts/WorkspaceContext";
 
 export const types: {
@@ -36,7 +36,15 @@ export const types: {
     icon: Mountain,
     defaultModules: ["experiences", "attendees"],
   },
+  {
+    id: "TRANSPORT",
+    title: "Transport & Travel",
+    desc: "Manage bus/train stations, routes, trips, and ticketing.",
+    icon: Bus,
+    defaultModules: ["trips", "routes", "tickets", "passengers", "scanner", "vehicles"],
+  },
 ];
+
 
 export const COUNTRIES = [
   "Afghanistan",

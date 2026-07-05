@@ -5,6 +5,7 @@ import { CinemaDashboard } from "@/components/desktop/dashboard/views/CinemaDash
 import { VenueDashboard } from "@/components/desktop/dashboard/views/VenueDashboard";
 import { SpaceDashboard } from "@/components/desktop/dashboard/views/SpaceDashboard";
 import { ExperienceDashboard } from "@/components/desktop/dashboard/views/ExperienceDashboard";
+import { TransportDashboard } from "@/components/desktop/dashboard/views/TransportDashboard";
 import { BillingBanner } from "@/components/desktop/dashboard/BillingBanner";
 
 export const Route = routerCreateFileRoute("/dashboard/$workspaceSlug/")({
@@ -25,6 +26,8 @@ function DashboardIndex() {
         return <SpaceDashboard />;
       case "EXPERIENCE":
         return <ExperienceDashboard />;
+      case "TRANSPORT":
+        return <TransportDashboard />;
       case "EVENT":
       default:
         return <EventDashboard />;
@@ -38,3 +41,4 @@ function DashboardIndex() {
     </>
   );
 }
+
