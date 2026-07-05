@@ -1,4 +1,517 @@
 yarn run v1.22.22
-$ NODE_OPTIONS=--max_old_space_size=4096 vite build
+$ vite build
 vite v7.3.3 building client environment for production...
 transforming...
+[plugin vite:resolve] Module "fs" has been externalized for browser compatibility, imported by "/Users/apple/Desktop/agatike-connect/src/api/invoices.ts". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin vite:resolve] Module "path" has been externalized for browser compatibility, imported by "/Users/apple/Desktop/agatike-connect/src/api/invoices.ts". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+✓ 6666 modules transformed.
+rendering chunks...
+computing gzip size...
+.output/public/assets/inter-v12-latin-100-BQDzDElq.woff2                                           16.55 kB
+.output/public/assets/inter-v12-latin-regular-YtgfLPRn.woff2                                       16.71 kB
+.output/public/assets/inter-v12-latin-900-CMga-52B.woff2                                           17.18 kB
+.output/public/assets/inter-v12-latin-300-DEbyFmpd.woff2                                           17.33 kB
+.output/public/assets/inter-v12-latin-200-BxfrU12A.woff2                                           17.34 kB
+.output/public/assets/inter-v12-latin-500-DfX5FI9E.woff2                                           17.55 kB
+.output/public/assets/inter-v12-latin-600-BvOeHRLc.woff2                                           17.66 kB
+.output/public/assets/inter-v12-latin-800-Bdy4lAMa.woff2                                           17.76 kB
+.output/public/assets/inter-v12-latin-700-Bj1B9WKG.woff2                                           17.78 kB
+.output/public/assets/inter-v12-latin-100-46Mq0mOp.woff                                            21.24 kB
+.output/public/assets/inter-v12-latin-regular-CahmJf_6.woff                                        21.42 kB
+.output/public/assets/inter-v12-latin-900-ORHAl5ZU.woff                                            21.98 kB
+.output/public/assets/inter-v12-latin-300-f7r92Nkj.woff                                            22.16 kB
+.output/public/assets/inter-v12-latin-200-DXfqWPZg.woff                                            22.24 kB
+.output/public/assets/inter-v12-latin-500-BQ2gQN_M.woff                                            22.52 kB
+.output/public/assets/inter-v12-latin-600-D01NXWOK.woff                                            22.64 kB
+.output/public/assets/inter-v12-latin-700-B5TOIllR.woff                                            22.68 kB
+.output/public/assets/inter-v12-latin-800-DFVvDWwT.woff                                            22.71 kB
+.output/public/assets/hero-event-BC9UQCas.jpg                                                     135.26 kB
+.output/public/assets/leaflet-CIGW-MKW.css                                                         15.61 kB │ gzip:   6.46 kB
+.output/public/assets/index-BHQMAV_-.css                                                           42.90 kB │ gzip:   6.82 kB
+.output/public/assets/-BlockNoteEditor-CYvvJ0G7.css                                               223.64 kB │ gzip:  35.53 kB
+.output/public/assets/styles-DXci3ukE.css                                                         327.13 kB │ gzip:  41.49 kB
+.output/public/assets/hero-event-Cqx_3vn6.js                                                        0.06 kB │ gzip:   0.08 kB
+.output/public/assets/getRoundingMethod-D0I6Z7xl.js                                                 0.09 kB │ gzip:   0.11 kB
+.output/public/assets/hooks-B9oMUb-M.js                                                             0.11 kB │ gzip:   0.12 kB
+.output/public/assets/minus-CsxAIYu_.js                                                             0.12 kB │ gzip:   0.13 kB
+.output/public/assets/chevron-right-DIxPhHvA.js                                                     0.13 kB │ gzip:   0.14 kB
+.output/public/assets/chevron-left-8AJNGCvV.js                                                      0.13 kB │ gzip:   0.14 kB
+.output/public/assets/circle-DNomsOTV.js                                                            0.13 kB │ gzip:   0.13 kB
+.output/public/assets/mountain-B0Dx3aqQ.js                                                          0.14 kB │ gzip:   0.15 kB
+.output/public/assets/square-C99y_eyQ.js                                                            0.15 kB │ gzip:   0.15 kB
+.output/public/assets/navigation-BsnVRV7s.js                                                        0.15 kB │ gzip:   0.15 kB
+.output/public/assets/_venueId-CAx-3lxs.js                                                          0.15 kB │ gzip:   0.15 kB
+.output/public/assets/arrow-left-TpID62A3.js                                                        0.17 kB │ gzip:   0.16 kB
+.output/public/assets/arrow-right-AazLgLya.js                                                       0.17 kB │ gzip:   0.16 kB
+.output/public/assets/arrow-up-right-DpDSpQSf.js                                                    0.17 kB │ gzip:   0.16 kB
+.output/public/assets/user_tickets-Cya4U3iW.js                                                      0.17 kB │ gzip:   0.17 kB
+.output/public/assets/arrow-down-left-B0t2LBDl.js                                                   0.17 kB │ gzip:   0.16 kB
+.output/public/assets/clock-BXbLKNfA.js                                                             0.17 kB │ gzip:   0.17 kB
+.output/public/assets/push-9a0kNTKH.js                                                              0.17 kB │ gzip:   0.17 kB
+.output/public/assets/arrow-down-right-C55yUiFh.js                                                  0.17 kB │ gzip:   0.17 kB
+.output/public/assets/invoices-DLY6qXoY.js                                                          0.17 kB │ gzip:   0.17 kB
+.output/public/assets/music-2-Cj1-rCtC.js                                                           0.17 kB │ gzip:   0.17 kB
+.output/public/assets/search-Dq_n0yaD.js                                                            0.18 kB │ gzip:   0.17 kB
+.output/public/assets/trending-up-hZO6xd53.js                                                       0.18 kB │ gzip:   0.17 kB
+.output/public/assets/skeleton-Bu8VC3kT.js                                                          0.18 kB │ gzip:   0.17 kB
+.output/public/assets/facebook-CjT10XnW.js                                                          0.18 kB │ gzip:   0.18 kB
+.output/public/assets/trending-down-C1grt9Oj.js                                                     0.18 kB │ gzip:   0.17 kB
+.output/public/assets/_spaceId-BbXTb0TM.js                                                          0.18 kB │ gzip:   0.17 kB
+.output/public/assets/ban-nVlM2Y4Z.js                                                               0.18 kB │ gzip:   0.17 kB
+.output/public/assets/user-round-0RpPnOVb.js                                                        0.18 kB │ gzip:   0.18 kB
+.output/public/assets/play-D5kIIvOy.js                                                              0.19 kB │ gzip:   0.18 kB
+.output/public/assets/kanban-BtsGRhVi.js                                                            0.19 kB │ gzip:   0.16 kB
+.output/public/assets/circle-check-big-Dw1Gfrzb.js                                                  0.20 kB │ gzip:   0.18 kB
+.output/public/assets/smartphone-C6kNjNCn.js                                                        0.20 kB │ gzip:   0.18 kB
+.output/public/assets/text-align-end-D3dGGKGo.js                                                    0.20 kB │ gzip:   0.17 kB
+.output/public/assets/rotate-ccw-TlXJjrqE.js                                                        0.20 kB │ gzip:   0.18 kB
+.output/public/assets/text-align-start-Do6Z013F.js                                                  0.20 kB │ gzip:   0.17 kB
+.output/public/assets/info-5DiIt4HS.js                                                              0.21 kB │ gzip:   0.18 kB
+.output/public/assets/lock-DmWrlwkb.js                                                              0.21 kB │ gzip:   0.19 kB
+.output/public/assets/credit-card-qWwA5_2p.js                                                       0.21 kB │ gzip:   0.19 kB
+.output/public/assets/circle-x-Du5wqQdF.js                                                          0.21 kB │ gzip:   0.18 kB
+.output/public/assets/mail-8dd7EhZW.js                                                              0.22 kB │ gzip:   0.20 kB
+.output/public/assets/moon-C7P-Dm5W.js                                                              0.22 kB │ gzip:   0.20 kB
+.output/public/assets/music-IFhoF0b_.js                                                             0.22 kB │ gzip:   0.18 kB
+.output/public/assets/dollar-sign-DqvSuMhD.js                                                       0.22 kB │ gzip:   0.19 kB
+.output/public/assets/briefcase-ByeP5SwJ.js                                                         0.22 kB │ gzip:   0.20 kB
+.output/public/assets/type-YaiDSg70.js                                                              0.22 kB │ gzip:   0.18 kB
+.output/public/assets/ellipsis-CeUHi3zN.js                                                          0.23 kB │ gzip:   0.16 kB
+.output/public/assets/share-OjsZuhWQ.js                                                             0.23 kB │ gzip:   0.18 kB
+.output/public/assets/square-check-big-sKrciSiq.js                                                  0.23 kB │ gzip:   0.20 kB
+.output/public/assets/log-out-CQccNOpA.js                                                           0.23 kB │ gzip:   0.19 kB
+.output/public/assets/bookmark-Cv5_Dd5h.js                                                          0.23 kB │ gzip:   0.20 kB
+.output/public/assets/upload-Byp63Dt0.js                                                            0.23 kB │ gzip:   0.19 kB
+.output/public/assets/download-CV9CuJQ7.js                                                          0.23 kB │ gzip:   0.19 kB
+.output/public/assets/message-square-_DflMP0v.js                                                    0.24 kB │ gzip:   0.21 kB
+.output/public/assets/presentation-yI7TuY11.js                                                      0.24 kB │ gzip:   0.19 kB
+.output/public/assets/activity-DXmOc_Ow.js                                                          0.24 kB │ gzip:   0.20 kB
+.output/public/assets/mic-Cs4fgD32.js                                                               0.24 kB │ gzip:   0.20 kB
+.output/public/assets/ellipsis-vertical-CSkjaxWI.js                                                 0.24 kB │ gzip:   0.17 kB
+.output/public/assets/pen-w6w6_Ww_.js                                                               0.24 kB │ gzip:   0.20 kB
+.output/public/assets/copy-Gu-iQMj4.js                                                              0.24 kB │ gzip:   0.21 kB
+.output/public/assets/history-C8RkAJ-L.js                                                           0.24 kB │ gzip:   0.20 kB
+.output/public/assets/globe-D21_IGA8.js                                                             0.24 kB │ gzip:   0.19 kB
+.output/public/assets/user-check-BcRqHEhB.js                                                        0.25 kB │ gzip:   0.21 kB
+.output/public/assets/banknote-Cag1SCBk.js                                                          0.25 kB │ gzip:   0.21 kB
+.output/public/assets/twitter-Ovs67gEe.js                                                           0.25 kB │ gzip:   0.22 kB
+.output/public/assets/arrow-left-right-a_Uqil0V.js                                                  0.25 kB │ gzip:   0.20 kB
+.output/public/assets/arrow-right-left-BbiWYm8S.js                                                  0.25 kB │ gzip:   0.20 kB
+.output/public/assets/video-BlDA7Md5.js                                                             0.25 kB │ gzip:   0.22 kB
+.output/public/assets/chart-column-auWQ7wC1.js                                                      0.25 kB │ gzip:   0.19 kB
+.output/public/assets/cloud-upload-D7VsTJlq.js                                                      0.25 kB │ gzip:   0.21 kB
+.output/public/assets/external-link-MBvRBLDs.js                                                     0.25 kB │ gzip:   0.20 kB
+.output/public/assets/mouse-pointer-2-OF0ptgTf.js                                                   0.25 kB │ gzip:   0.22 kB
+.output/public/assets/users-round-O_d0A22z.js                                                       0.26 kB │ gzip:   0.22 kB
+.output/public/assets/eye-B0udXpra.js                                                               0.26 kB │ gzip:   0.20 kB
+.output/public/assets/link-BwVYYq0Y.js                                                              0.26 kB │ gzip:   0.19 kB
+.output/public/assets/funnel-DuYo86xg.js                                                            0.26 kB │ gzip:   0.22 kB
+.output/public/assets/calendar-DGcv1aFk.js                                                          0.26 kB │ gzip:   0.20 kB
+.output/public/assets/heart-B91b4qgB.js                                                             0.26 kB │ gzip:   0.22 kB
+.output/public/assets/monitor-BJY8RA_t.js                                                           0.26 kB │ gzip:   0.21 kB
+.output/public/assets/utensils-xKacIMh7.js                                                          0.26 kB │ gzip:   0.21 kB
+.output/public/assets/zap-Fyl_OzQt.js                                                               0.26 kB │ gzip:   0.21 kB
+.output/public/assets/triangle-alert-cc9tvFxj.js                                                    0.27 kB │ gzip:   0.22 kB
+.output/public/assets/blocks-CIE2a7OT.js                                                            0.27 kB │ gzip:   0.22 kB
+.output/public/assets/image-B8Y22Chj.js                                                             0.27 kB │ gzip:   0.22 kB
+.output/public/assets/file-COW2mGJp.js                                                              0.27 kB │ gzip:   0.21 kB
+.output/public/assets/shield-CbhK-nGF.js                                                            0.27 kB │ gzip:   0.23 kB
+.output/public/assets/pencil-VoWfJWa3.js                                                            0.28 kB │ gzip:   0.23 kB
+.output/public/assets/pen-line-p9hzJQc1.js                                                          0.28 kB │ gzip:   0.23 kB
+.output/public/assets/book-open-B84Jfj7z.js                                                         0.28 kB │ gzip:   0.21 kB
+.output/public/assets/sticky-note-VSD4Ff2d.js                                                       0.28 kB │ gzip:   0.21 kB
+.output/public/assets/inbox-DbtarQX2.js                                                             0.29 kB │ gzip:   0.23 kB
+.output/public/assets/send-DjoiVnvM.js                                                              0.29 kB │ gzip:   0.23 kB
+.output/public/assets/shopping-cart-rqM1ERhg.js                                                     0.29 kB │ gzip:   0.23 kB
+.output/public/assets/receipt-l-QP-i79.js                                                           0.29 kB │ gzip:   0.21 kB
+.output/public/assets/grid-3x3-BcrKxHzH.js                                                          0.30 kB │ gzip:   0.22 kB
+.output/public/assets/instagram-BcYwYtcb.js                                                         0.30 kB │ gzip:   0.24 kB
+.output/public/assets/hash-DBulnLve.js                                                              0.30 kB │ gzip:   0.19 kB
+.output/public/assets/list-CahxfFPG.js                                                              0.30 kB │ gzip:   0.19 kB
+.output/public/assets/endOfMonth-fatdHud_.js                                                        0.31 kB │ gzip:   0.22 kB
+.output/public/assets/user-plus-Ba3J5wQA.js                                                         0.31 kB │ gzip:   0.24 kB
+.output/public/assets/file-check-BE5Hre7X.js                                                        0.32 kB │ gzip:   0.24 kB
+.output/public/assets/printer-CYEh4RYI.js                                                           0.32 kB │ gzip:   0.24 kB
+.output/public/assets/square-pen-BzeOWohp.js                                                        0.32 kB │ gzip:   0.24 kB
+.output/public/assets/shield-check-Coo60hoU.js                                                      0.32 kB │ gzip:   0.25 kB
+.output/public/assets/refresh-cw-gsF5SIYM.js                                                        0.32 kB │ gzip:   0.23 kB
+.output/public/assets/stamp-BubQX3EM.js                                                             0.32 kB │ gzip:   0.23 kB
+.output/public/assets/phone-CK_a6NwK.js                                                             0.32 kB │ gzip:   0.23 kB
+.output/public/assets/use-mobile-CQwzOCzB.js                                                        0.33 kB │ gzip:   0.24 kB
+.output/public/assets/tag-COwbiEcT.js                                                               0.33 kB │ gzip:   0.25 kB
+.output/public/assets/save-CR0pZTDr.js                                                              0.33 kB │ gzip:   0.23 kB
+.output/public/assets/trash-2-BsAqFNZO.js                                                           0.33 kB │ gzip:   0.22 kB
+.output/public/assets/scan-line-KEDwpuy0.js                                                         0.33 kB │ gzip:   0.22 kB
+.output/public/assets/pin-off-BogV8TW7.js                                                           0.34 kB │ gzip:   0.25 kB
+.output/public/assets/camera-B7cB6gjb.js                                                            0.34 kB │ gzip:   0.25 kB
+.output/public/assets/layout-grid-DLbf-EUH.js                                                       0.35 kB │ gzip:   0.19 kB
+.output/public/assets/pin-D5WP7wdP.js                                                               0.35 kB │ gzip:   0.24 kB
+.output/public/assets/firebase-storage-BykY5Z6O.js                                                  0.35 kB │ gzip:   0.28 kB
+.output/public/assets/file-plus-Djceixsh.js                                                         0.35 kB │ gzip:   0.25 kB
+.output/public/assets/BarChart-vyOS4BY6.js                                                          0.35 kB │ gzip:   0.25 kB
+.output/public/assets/shield-alert-DznPULIs.js                                                      0.36 kB │ gzip:   0.26 kB
+.output/public/assets/file-down-CK7u0wgh.js                                                         0.36 kB │ gzip:   0.25 kB
+.output/public/assets/share-2-DeTS1Ean.js                                                           0.36 kB │ gzip:   0.23 kB
+.output/public/assets/crown-DMfM_RCA.js                                                             0.36 kB │ gzip:   0.26 kB
+.output/public/assets/grip-vertical-B2y4WokZ.js                                                     0.37 kB │ gzip:   0.20 kB
+.output/public/assets/package-D-IuiiUb.js                                                           0.37 kB │ gzip:   0.26 kB
+.output/public/assets/link-2-CjI19Skt.js                                                            0.38 kB │ gzip:   0.28 kB
+.output/public/assets/storage-BIcMQ7U4.js                                                           0.39 kB │ gzip:   0.27 kB
+.output/public/assets/file-text-B0_qKsoL.js                                                         0.39 kB │ gzip:   0.25 kB
+.output/public/assets/square-centerline-dashed-horizontal-CGwfVbuU.js                               0.40 kB │ gzip:   0.25 kB
+.output/public/assets/plane-takeoff-M5-M9gfP.js                                                     0.40 kB │ gzip:   0.28 kB
+.output/public/assets/power-LP5E3KPm.js                                                             0.41 kB │ gzip:   0.26 kB
+.output/public/assets/dices-RDJl6038.js                                                             0.41 kB │ gzip:   0.26 kB
+.output/public/assets/car-C7weAYOq.js                                                               0.41 kB │ gzip:   0.29 kB
+.output/public/assets/clipboard-list-C1nz01oL.js                                                    0.41 kB │ gzip:   0.26 kB
+.output/public/assets/layers-B52jTqyb.js                                                            0.42 kB │ gzip:   0.24 kB
+.output/public/assets/sliders-horizontal-Benhvu0S.js                                                0.43 kB │ gzip:   0.24 kB
+.output/public/assets/map-Ce_UANwD.js                                                               0.43 kB │ gzip:   0.27 kB
+.output/public/assets/file-spreadsheet-DU78bPK9.js                                                  0.43 kB │ gzip:   0.26 kB
+.output/public/assets/eye-off-DObAilRd.js                                                           0.43 kB │ gzip:   0.27 kB
+.output/public/assets/package-plus-BSnHX6tV.js                                                      0.46 kB │ gzip:   0.30 kB
+.output/public/assets/pen-tool-C4EHa2iP.js                                                          0.47 kB │ gzip:   0.30 kB
+.output/public/assets/sun-B7xPv6uA.js                                                               0.47 kB │ gzip:   0.26 kB
+.output/public/assets/text-align-center-CggbR3cd.js                                                 0.48 kB │ gzip:   0.28 kB
+.output/public/assets/trophy-BWk6iAcv.js                                                            0.48 kB │ gzip:   0.28 kB
+.output/public/assets/community-fktu4Vdl.js                                                         0.48 kB │ gzip:   0.31 kB
+.output/public/assets/settings-Np_enTGG.js                                                          0.49 kB │ gzip:   0.26 kB
+.output/public/assets/tasks-BMW0iJrc.js                                                             0.49 kB │ gzip:   0.31 kB
+.output/public/assets/sparkles-BRAyRa2l.js                                                          0.50 kB │ gzip:   0.28 kB
+.output/public/assets/store-zEzWL9f-.js                                                             0.50 kB │ gzip:   0.29 kB
+.output/public/assets/zoom-out-B3P_yum0.js                                                          0.50 kB │ gzip:   0.23 kB
+.output/public/assets/palette-D-WGZ_4u.js                                                           0.51 kB │ gzip:   0.28 kB
+.output/public/assets/wand-sparkles-Bm2KXJGg.js                                                     0.52 kB │ gzip:   0.29 kB
+.output/public/assets/user-x-CIomHBeM.js                                                            0.52 kB │ gzip:   0.27 kB
+.output/public/assets/refunds-0ywjZ5Wg.js                                                           0.53 kB │ gzip:   0.34 kB
+.output/public/assets/privacy-Ct23la54.js                                                           0.53 kB │ gzip:   0.34 kB
+.output/public/assets/unlink-BHc5BECS.js                                                            0.53 kB │ gzip:   0.30 kB
+.output/public/assets/calculator-BNPBXLCI.js                                                        0.53 kB │ gzip:   0.28 kB
+.output/public/assets/terms-DsarUItA.js                                                             0.54 kB │ gzip:   0.34 kB
+.output/public/assets/server-B4HouVsz.js                                                            0.54 kB │ gzip:   0.32 kB
+.output/public/assets/laptop-C_v0xCze.js                                                            0.56 kB │ gzip:   0.33 kB
+.output/public/assets/dumbbell-B38XFbi1.js                                                          0.56 kB │ gzip:   0.29 kB
+.output/public/assets/building-BDOsL57E.js                                                          0.57 kB │ gzip:   0.28 kB
+.output/public/assets/textarea-BDeORrX1.js                                                          0.57 kB │ gzip:   0.39 kB
+.output/public/assets/attendees-gP3P17qr.js                                                         0.59 kB │ gzip:   0.36 kB
+.output/public/assets/vip-XMV1JS-t.js                                                               0.60 kB │ gzip:   0.36 kB
+.output/public/assets/cinema_bookings-ByEqS3hn.js                                                   0.60 kB │ gzip:   0.36 kB
+.output/public/assets/notes-MebN4bSC.js                                                             0.60 kB │ gzip:   0.35 kB
+.output/public/assets/Popup-D-zjWbeg.js                                                             0.60 kB │ gzip:   0.36 kB
+.output/public/assets/move-right-sL5T-lUG.js                                                        0.61 kB │ gzip:   0.30 kB
+.output/public/assets/truck-CsP2uNm7.js                                                             0.61 kB │ gzip:   0.34 kB
+.output/public/assets/wine-DZrKD-f6.js                                                              0.64 kB │ gzip:   0.37 kB
+.output/public/assets/qr-code-CLlDQPjD.js                                                           0.65 kB │ gzip:   0.31 kB
+.output/public/assets/sticker-CW4cBM5z.js                                                           0.66 kB │ gzip:   0.36 kB
+.output/public/assets/receipt-text-Cb8C40r-.js                                                      0.67 kB │ gzip:   0.28 kB
+.output/public/assets/plane-D9FaTgsm.js                                                             0.68 kB │ gzip:   0.41 kB
+.output/public/assets/venue_bookings-CdRLfd2g.js                                                    0.70 kB │ gzip:   0.40 kB
+.output/public/assets/cinema_ticket_tiers-B8OYOZc9.js                                               0.70 kB │ gzip:   0.40 kB
+.output/public/assets/feedback-DGbtCIKl.js                                                          0.71 kB │ gzip:   0.41 kB
+.output/public/assets/staff-Ci5UIYKn.js                                                             0.71 kB │ gzip:   0.40 kB
+.output/public/assets/badges-DtCEjn5B.js                                                            0.71 kB │ gzip:   0.40 kB
+.output/public/assets/glasses-Ij1Wv7_Y.js                                                           0.71 kB │ gzip:   0.38 kB
+.output/public/assets/target-CCMbZHmQ.js                                                            0.71 kB │ gzip:   0.39 kB
+.output/public/assets/badge-BGftrfZx.js                                                             0.72 kB │ gzip:   0.38 kB
+.output/public/assets/settings-2-D-edcDJj.js                                                        0.78 kB │ gzip:   0.37 kB
+.output/public/assets/folder-open-DeEECbur.js                                                       0.78 kB │ gzip:   0.38 kB
+.output/public/assets/wrench-DA65jk-m.js                                                            0.79 kB │ gzip:   0.43 kB
+.output/public/assets/create-experience-Bs2EwuDo.js                                                 0.81 kB │ gzip:   0.46 kB
+.output/public/assets/nfc-iUXMnagA.js                                                               0.87 kB │ gzip:   0.46 kB
+.output/public/assets/mic-vocal-BLS3N4dP.js                                                         0.89 kB │ gzip:   0.50 kB
+.output/public/assets/rsvps-CPvS9KZi.js                                                             0.92 kB │ gzip:   0.48 kB
+.output/public/assets/procurement-BquEH3lY.js                                                       0.92 kB │ gzip:   0.48 kB
+.output/public/assets/wifi-Cr99_w-W.js                                                              0.98 kB │ gzip:   0.44 kB
+.output/public/assets/card-BmrQDbga.js                                                              1.00 kB │ gzip:   0.37 kB
+.output/public/assets/email-BD-aYNe2.js                                                             1.01 kB │ gzip:   0.51 kB
+.output/public/assets/map-Box1899X.js                                                               1.03 kB │ gzip:   0.52 kB
+.output/public/assets/UpgradePrompt-anPDJv38.js                                                     1.05 kB │ gzip:   0.54 kB
+.output/public/assets/admin_finance-aiAMzoNF.js                                                     1.13 kB │ gzip:   0.58 kB
+.output/public/assets/book-5rHWRFVy.js                                                              1.24 kB │ gzip:   0.62 kB
+.output/public/assets/life-buoy-C9NVwRon.js                                                         1.25 kB │ gzip:   0.56 kB
+.output/public/assets/useFollowedOrganizers-DLWMjnGD.js                                             1.40 kB │ gzip:   0.51 kB
+.output/public/assets/support-CkLiPX8K.js                                                           1.45 kB │ gzip:   0.70 kB
+.output/public/assets/internal.control.admin.organizers._organizerId-C42Tybhy.js                    1.45 kB │ gzip:   0.62 kB
+.output/public/assets/usePlatformModules-MpIv_wYN.js                                                1.51 kB │ gzip:   0.85 kB
+.output/public/assets/table-DtBFAny1.js                                                             1.56 kB │ gzip:   0.54 kB
+.output/public/assets/RefundPolicy-8oRo825I.js                                                      1.59 kB │ gzip:   0.83 kB
+.output/public/assets/cinema_management-Dpfsql63.js                                                 1.66 kB │ gzip:   0.78 kB
+.output/public/assets/FloatingComposerController-5A3GJtK4-XXVV0JnT.js                               1.85 kB │ gzip:   0.94 kB
+.output/public/assets/waves-Dui3-Nyx.js                                                             1.93 kB │ gzip:   0.85 kB
+.output/public/assets/ExperienceMap-B0QQB7FD.js                                                     1.98 kB │ gzip:   1.08 kB
+.output/public/assets/experience-DZ_hn7XT.js                                                        1.98 kB │ gzip:   0.92 kB
+.output/public/assets/edit-C6Sf9d1v.js                                                              1.99 kB │ gzip:   1.01 kB
+.output/public/assets/warehouse-DH2PIc68.js                                                         2.01 kB │ gzip:   0.93 kB
+.output/public/assets/formatDistanceToNow-RRvHxTCM.js                                               2.09 kB │ gzip:   0.90 kB
+.output/public/assets/LocationSearchInput-BJCKMbw0.js                                               2.12 kB │ gzip:   1.02 kB
+.output/public/assets/user-cog-C4-LEubu.js                                                          2.15 kB │ gzip:   0.93 kB
+.output/public/assets/address-autocomplete-ccZAiwZU.js                                              2.23 kB │ gzip:   1.06 kB
+.output/public/assets/Footer-CCgFZHUH.js                                                            2.25 kB │ gzip:   0.83 kB
+.output/public/assets/_email.activate-CSV3EEJ6.js                                                   2.26 kB │ gzip:   0.99 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.invoices-DRlRzrIQ.js           2.35 kB │ gzip:   0.82 kB
+.output/public/assets/sheet-C5T6sOyt.js                                                             2.38 kB │ gzip:   0.92 kB
+.output/public/assets/pricing-BoV-UbmL.js                                                           2.42 kB │ gzip:   1.11 kB
+.output/public/assets/parking-Dp5rR1vO.js                                                           2.43 kB │ gzip:   0.94 kB
+.output/public/assets/switch-ISd-yFJr.js                                                            2.46 kB │ gzip:   1.24 kB
+.output/public/assets/mock-bus-data-JqxdTTsF.js                                                     2.47 kB │ gzip:   0.84 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.users-ygZtqtO6.js              2.50 kB │ gzip:   0.79 kB
+.output/public/assets/StoryViewer-Bw9E42su.js                                                       2.56 kB │ gzip:   1.03 kB
+.output/public/assets/index-mxhm4W7Z.js                                                             2.60 kB │ gzip:   1.11 kB
+.output/public/assets/_spaceId-CYBar2Uj.js                                                          2.71 kB │ gzip:   1.08 kB
+.output/public/assets/Navbar-BDjaD8W-.js                                                            3.20 kB │ gzip:   1.09 kB
+.output/public/assets/useFirestoreUserMessages-B15vvD_R.js                                          3.25 kB │ gzip:   1.45 kB
+.output/public/assets/tabs-BVPFn02y.js                                                              3.27 kB │ gzip:   1.38 kB
+.output/public/assets/index-fOwb06UC.js                                                             3.46 kB │ gzip:   1.58 kB
+.output/public/assets/wallet-jTmOMz7M.js                                                            3.50 kB │ gzip:   1.23 kB
+.output/public/assets/locations-Bir3LaXd.js                                                         3.53 kB │ gzip:   1.42 kB
+.output/public/assets/ticket-tiers-8fF9ru80.js                                                      3.54 kB │ gzip:   1.45 kB
+.output/public/assets/_badgeId-K-Ew5JoQ.js                                                          3.78 kB │ gzip:   1.64 kB
+.output/public/assets/radio-group-BgvpgpDw.js                                                       3.95 kB │ gzip:   1.79 kB
+.output/public/assets/settings-BeHl-voz.js                                                          3.98 kB │ gzip:   1.57 kB
+.output/public/assets/invoices-EaG2DoCL.js                                                          4.03 kB │ gzip:   1.51 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.forms-BORXcseD.js              4.09 kB │ gzip:   1.24 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.book-invoices-Dyah-HRz.js      4.19 kB │ gzip:   1.32 kB
+.output/public/assets/sections-DdTGPIsn.js                                                          4.23 kB │ gzip:   1.76 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.book-BABhULSF.js               4.24 kB │ gzip:   1.30 kB
+.output/public/assets/VenueMap-M7vB0qho.js                                                          4.33 kB │ gzip:   1.94 kB
+.output/public/assets/internal.control.admin.index-CHCLyk4o.js                                      4.37 kB │ gzip:   1.25 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.rsvps-B_vaJTGg.js              4.51 kB │ gzip:   1.32 kB
+.output/public/assets/alert-dialog-BbvaZEKx.js                                                      4.69 kB │ gzip:   1.75 kB
+.output/public/assets/contact-qWg7A_l6.js                                                           4.72 kB │ gzip:   1.54 kB
+.output/public/assets/bookings-xzP9ee0D.js                                                          4.78 kB │ gzip:   1.73 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.memberships-_MrnflmV.js        4.81 kB │ gzip:   1.39 kB
+.output/public/assets/_bookingId-Dfvdv6Oz.js                                                        4.97 kB │ gzip:   1.72 kB
+.output/public/assets/activity-urzLdGD3.js                                                          4.97 kB │ gzip:   2.03 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.attendees-8pm737N6.js          4.98 kB │ gzip:   1.46 kB
+.output/public/assets/schedules-B12FGhSF.js                                                         5.09 kB │ gzip:   1.93 kB
+.output/public/assets/mock-movies-DcQiGmiS.js                                                       5.19 kB │ gzip:   1.58 kB
+.output/public/assets/useSubscriptionLimits-DmCwg1ne.js                                             5.27 kB │ gzip:   1.28 kB
+.output/public/assets/lineup-CBsdcPwB.js                                                            5.34 kB │ gzip:   2.16 kB
+.output/public/assets/MapClient-CcyatbrE.js                                                         5.41 kB │ gzip:   2.09 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.modules-48WXTbZo.js            5.44 kB │ gzip:   1.86 kB
+.output/public/assets/notes_._noteId-BCpDovWQ.js                                                    5.64 kB │ gzip:   2.05 kB
+.output/public/assets/internal.control.admin.login-Ca6rb5vv.js                                      5.67 kB │ gzip:   1.92 kB
+.output/public/assets/_qrString-BfXLjkNu.js                                                         5.80 kB │ gzip:   2.13 kB
+.output/public/assets/index-DG_dpluP.js                                                             5.86 kB │ gzip:   2.21 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.wallets-DEJPAktJ.js            5.86 kB │ gzip:   1.90 kB
+.output/public/assets/internal.control.admin.organizers.index-DMoJd9NE.js                           5.88 kB │ gzip:   1.42 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.events-pIy2b8J_.js             5.92 kB │ gzip:   1.62 kB
+.output/public/assets/pricing-CwhQAYdl.js                                                           6.17 kB │ gzip:   2.07 kB
+.output/public/assets/bookings-BnmsOoIf.js                                                          6.22 kB │ gzip:   2.04 kB
+.output/public/assets/index-Bbu3Oul6.js                                                             6.34 kB │ gzip:   2.00 kB
+.output/public/assets/archive-BYsw0pcF.js                                                           6.37 kB │ gzip:   2.18 kB
+.output/public/assets/TicketEditor-DvGiSxqO.js                                                      6.50 kB │ gzip:   2.20 kB
+.output/public/assets/index-DhBy20Ib.js                                                             6.50 kB │ gzip:   2.33 kB
+.output/public/assets/about-oI2mnCa_.js                                                             6.51 kB │ gzip:   2.51 kB
+.output/public/assets/popover-CEF5xcgs.js                                                           6.60 kB │ gzip:   2.44 kB
+.output/public/assets/internal.control.admin.agatike-users.index-yjwv21o0.js                        6.69 kB │ gzip:   1.96 kB
+.output/public/assets/settings-ClyR-OEs.js                                                          7.02 kB │ gzip:   2.48 kB
+.output/public/assets/PrivacyPolicy-CXpUSpvN.js                                                     7.16 kB │ gzip:   2.46 kB
+.output/public/assets/_qrString-CW0WLDAT.js                                                         7.22 kB │ gzip:   2.55 kB
+.output/public/assets/signin-C99N1-IR.js                                                            7.26 kB │ gzip:   2.80 kB
+.output/public/assets/index-C_-cnMmp.js                                                             7.45 kB │ gzip:   2.65 kB
+.output/public/assets/EmbeddedForm-iwbMANb2.js                                                      7.61 kB │ gzip:   2.67 kB
+.output/public/assets/integrations-B1lEAYUZ.js                                                      7.84 kB │ gzip:   2.50 kB
+.output/public/assets/integrations-CQ3MgQue.js                                                      8.00 kB │ gzip:   2.53 kB
+.output/public/assets/FeedCard-puLnUT0v.js                                                          8.10 kB │ gzip:   2.70 kB
+.output/public/assets/organizers-CA450slx.js                                                        8.24 kB │ gzip:   2.71 kB
+.output/public/assets/_facilityId-kTbICB7C.js                                                       8.31 kB │ gzip:   2.62 kB
+.output/public/assets/context-menu-Bi5j5XEq.js                                                      8.59 kB │ gzip:   2.35 kB
+.output/public/assets/FolderManager-Bx0XIeBp.js                                                     8.68 kB │ gzip:   2.92 kB
+.output/public/assets/analytics-l4UuVmTt.js                                                         8.69 kB │ gzip:   2.63 kB
+.output/public/assets/venue-rent-jo6f5AHQ.js                                                        8.73 kB │ gzip:   2.66 kB
+.output/public/assets/index-D7j7NemY.js                                                             8.84 kB │ gzip:   2.54 kB
+.output/public/assets/ChatConversation-DpLY3GZo.js                                                  8.92 kB │ gzip:   3.28 kB
+.output/public/assets/movies-DwIgoj96.js                                                            8.94 kB │ gzip:   3.03 kB
+.output/public/assets/settings-CGcgUL8R.js                                                          9.00 kB │ gzip:   2.52 kB
+.output/public/assets/page-templates-5ojPUOA4.js                                                    9.10 kB │ gzip:   3.21 kB
+.output/public/assets/internal.control.admin.health-CXZEjwiO.js                                     9.26 kB │ gzip:   2.53 kB
+.output/public/assets/BadgePreview-Gzdn15Ir.js                                                      9.27 kB │ gzip:   2.82 kB
+.output/public/assets/_ticketOtp-BiOz72uK.js                                                        9.30 kB │ gzip:   2.25 kB
+.output/public/assets/internal.control.admin.earnings-bATw1dbp.js                                   9.32 kB │ gzip:   2.85 kB
+.output/public/assets/internal.control.admin.leads-Bl6xmb5_.js                                      9.36 kB │ gzip:   2.65 kB
+.output/public/assets/index-DgXoB5Da.js                                                             9.39 kB │ gzip:   3.24 kB
+.output/public/assets/internal.control.admin-FcCn3Nwt.js                                            9.41 kB │ gzip:   2.70 kB
+.output/public/assets/_formId-DRb1Y3_u.js                                                           9.45 kB │ gzip:   3.08 kB
+.output/public/assets/message-DDF0r2PP.js                                                           9.48 kB │ gzip:   2.90 kB
+.output/public/assets/index-TZtbhpCo.js                                                             9.52 kB │ gzip:   3.22 kB
+.output/public/assets/signup-DCE_-C16.js                                                            9.56 kB │ gzip:   3.25 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.contributors-eMWq6l1l.js       9.66 kB │ gzip:   2.50 kB
+.output/public/assets/_cinemaId-_yhC8m-1.js                                                         9.77 kB │ gzip:   3.22 kB
+.output/public/assets/procurement_._id-C26GwXEb.js                                                  9.94 kB │ gzip:   2.63 kB
+.output/public/assets/index-B5CHORPv.js                                                             9.99 kB │ gzip:   3.04 kB
+.output/public/assets/facilities-wkdnNw1Y.js                                                       10.00 kB │ gzip:   3.15 kB
+.output/public/assets/_cinemaId-COViEWwB.js                                                        10.08 kB │ gzip:   3.28 kB
+.output/public/assets/ticket-designer-BsqZ6923.js                                                  10.15 kB │ gzip:   3.22 kB
+.output/public/assets/screens-BkD2xiwh.js                                                          10.20 kB │ gzip:   2.97 kB
+.output/public/assets/notes-42joTjRW.js                                                            10.21 kB │ gzip:   3.28 kB
+.output/public/assets/review-DY9d8Sws.js                                                           10.24 kB │ gzip:   3.63 kB
+.output/public/assets/checkout._planId-DqH4kMiJ.js                                                 10.42 kB │ gzip:   3.71 kB
+.output/public/assets/_postId-_DXQ-qPI.js                                                          10.45 kB │ gzip:   3.57 kB
+.output/public/assets/index-CvBsCVxz.js                                                            10.58 kB │ gzip:   2.90 kB
+.output/public/assets/onboarding-Bp_uRN7G.js                                                       10.77 kB │ gzip:   3.57 kB
+.output/public/assets/new-finance-request-DAFHSmaF.js                                              10.94 kB │ gzip:   3.41 kB
+.output/public/assets/AreaChart-D1MTbe3i.js                                                        11.02 kB │ gzip:   4.09 kB
+.output/public/assets/create-ticket-tier-wRRUktJ6.js                                               11.04 kB │ gzip:   3.23 kB
+.output/public/assets/plans-Br-ZfCDW.js                                                            11.04 kB │ gzip:   3.78 kB
+.output/public/assets/index-CAOQ1dWR.js                                                            11.10 kB │ gzip:   4.05 kB
+.output/public/assets/index-BbiEFU9T.js                                                            11.14 kB │ gzip:   3.68 kB
+.output/public/assets/pricing-C-Fmn38n.js                                                          11.34 kB │ gzip:   3.72 kB
+.output/public/assets/ticket-tiers-BTO849Cw.js                                                     11.34 kB │ gzip:   3.63 kB
+.output/public/assets/subscriptions-DxzSzpMX.js                                                    11.36 kB │ gzip:   3.55 kB
+.output/public/assets/PaymentModal-9tFinEH9.js                                                     11.46 kB │ gzip:   3.84 kB
+.output/public/assets/books-BWatzBJd.js                                                            11.46 kB │ gzip:   3.76 kB
+.output/public/assets/countries-C9ppu-gD.js                                                        11.46 kB │ gzip:   3.07 kB
+.output/public/assets/PieChart-CDLRq2rV.js                                                         11.61 kB │ gzip:   4.31 kB
+.output/public/assets/settings-m2G4kNxn.js                                                         11.64 kB │ gzip:   3.52 kB
+.output/public/assets/mobile-DHoEcgYn.js                                                           11.66 kB │ gzip:   2.72 kB
+.output/public/assets/edit-DCgzBjCV.js                                                             11.73 kB │ gzip:   3.75 kB
+.output/public/assets/index-DVcrnp7q.js                                                            11.78 kB │ gzip:   4.21 kB
+.output/public/assets/index-DxuUwVlQ.js                                                            11.86 kB │ gzip:   3.80 kB
+.output/public/assets/RadarChart-Brjc9YzD.js                                                       11.88 kB │ gzip:   3.80 kB
+.output/public/assets/feed-qMK9sahv.js                                                             11.88 kB │ gzip:   3.94 kB
+.output/public/assets/create-DyLj_pdw.js                                                           11.89 kB │ gzip:   3.41 kB
+.output/public/assets/dashboard._workspaceSlug.vip-access-BzTIvR2U.js                              11.98 kB │ gzip:   3.70 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.workspaces-CEBJ0XBo.js        12.21 kB │ gzip:   2.60 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.projects-BOgqf-Rr.js          12.26 kB │ gzip:   2.28 kB
+.output/public/assets/login-BcfZfS0d.js                                                            12.34 kB │ gzip:   4.13 kB
+.output/public/assets/scroll-area-DgDiTBrd.js                                                      12.39 kB │ gzip:   3.91 kB
+.output/public/assets/request-C7yZAWvN.js                                                          12.46 kB │ gzip:   4.12 kB
+.output/public/assets/bookings-BpwIvWWj.js                                                         12.86 kB │ gzip:   3.24 kB
+.output/public/assets/index-CTmFV8_f.js                                                            13.06 kB │ gzip:   5.20 kB
+.output/public/assets/overview-DKF628cz.js                                                         13.08 kB │ gzip:   3.83 kB
+.output/public/assets/venue---bQzkpk.js                                                            13.08 kB │ gzip:   4.22 kB
+.output/public/assets/overview-DmFxQxm7.js                                                         13.12 kB │ gzip:   3.60 kB
+.output/public/assets/venue-designer-BA6ZR85d.js                                                   13.21 kB │ gzip:   4.15 kB
+.output/public/assets/pricingplans-De9tft5m.js                                                     13.24 kB │ gzip:   4.66 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.index-ThsEPzMg.js             13.40 kB │ gzip:   3.53 kB
+.output/public/assets/movies-DLG4R7Qy.js                                                           13.42 kB │ gzip:   4.22 kB
+.output/public/assets/index-dEh3f-bG.js                                                            13.47 kB │ gzip:   4.62 kB
+.output/public/assets/TermsAndConditions-KDsRsQPW.js                                               13.49 kB │ gzip:   3.52 kB
+.output/public/assets/procurement-B5fZ_zDz.js                                                      13.55 kB │ gzip:   4.25 kB
+.output/public/assets/index-BGCixOIO.js                                                            14.22 kB │ gzip:   4.66 kB
+.output/public/assets/index-Cm9vkDlt.js                                                            14.24 kB │ gzip:   4.96 kB
+.output/public/assets/create-schedule-7UVqGjfH.js                                                  14.51 kB │ gzip:   4.06 kB
+.output/public/assets/PolarAngleAxis-Bz6jdG70.js                                                   14.58 kB │ gzip:   4.05 kB
+.output/public/assets/products_add-ons-fZTwqe3C.js                                                 14.83 kB │ gzip:   3.99 kB
+.output/public/assets/internal.control.admin.agatike-users._userId-vFTGEmhE.js                     15.52 kB │ gzip:   3.11 kB
+.output/public/assets/subscriptions-8XKZiOzO.js                                                    15.58 kB │ gzip:   4.17 kB
+.output/public/assets/tasks-C11MwVJf.js                                                            15.64 kB │ gzip:   4.18 kB
+.output/public/assets/internal.control.admin.support._ticketId-Ge-jvotc.js                         15.68 kB │ gzip:   3.92 kB
+.output/public/assets/index-Jv74CghN.js                                                            16.10 kB │ gzip:   5.12 kB
+.output/public/assets/PitchRenderer-D6Na7a2g.js                                                    16.19 kB │ gzip:   2.82 kB
+.output/public/assets/internal.control.admin.support.index-DOhwXtRz.js                             16.33 kB │ gzip:   4.30 kB
+.output/public/assets/create-eXjg-H6G.js                                                           16.51 kB │ gzip:   4.91 kB
+.output/public/assets/internal.control.admin.users-gLDQiNmb.js                                     16.54 kB │ gzip:   3.95 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.venues-BnuP0ktm.js            16.89 kB │ gzip:   3.15 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.settings-CAHijmyz.js          17.30 kB │ gzip:   4.39 kB
+.output/public/assets/-TagSelector-vSbdhbW3.js                                                     17.55 kB │ gzip:   6.44 kB
+.output/public/assets/scanner-Hzz0y0Gi.js                                                          18.02 kB │ gzip:   4.93 kB
+.output/public/assets/create-movie-B9hJf1Wz.js                                                     18.38 kB │ gzip:   5.02 kB
+.output/public/assets/internal.control.admin.modules-DVAClDNt.js                                   18.57 kB │ gzip:   5.52 kB
+.output/public/assets/_formId-CTCJ9E-M.js                                                          19.59 kB │ gzip:   5.77 kB
+.output/public/assets/VenueSeatSelector-B-iay4Jk.js                                                19.98 kB │ gzip:   7.02 kB
+.output/public/assets/movies-D_0EHWkJ.js                                                           20.00 kB │ gzip:   5.26 kB
+.output/public/assets/staff-BCGTEZHW.js                                                            20.16 kB │ gzip:   5.74 kB
+.output/public/assets/experience-z5z7sSWn.js                                                       20.61 kB │ gzip:   5.84 kB
+.output/public/assets/internal.control.admin.organizers._organizerId.subscriptions-CM81I8yB.js     20.77 kB │ gzip:   4.77 kB
+.output/public/assets/experience-CAB9vZ1R.js                                                       20.83 kB │ gzip:   5.93 kB
+.output/public/assets/_slug-DRZyWFAk.js                                                            21.04 kB │ gzip:   5.35 kB
+.output/public/assets/products_add-ons-CV3ggJpj.js                                                 21.10 kB │ gzip:   5.37 kB
+.output/public/assets/products_add-ons-C2THmQuW.js                                                 21.10 kB │ gzip:   5.37 kB
+.output/public/assets/attendees-DbVS7ont.js                                                        21.47 kB │ gzip:   6.12 kB
+.output/public/assets/mock-data-hhOAnvoo.js                                                        21.69 kB │ gzip:   7.57 kB
+.output/public/assets/staff-mhbBGr4A.js                                                            21.70 kB │ gzip:   5.96 kB
+.output/public/assets/internal.control.admin.providers-BiddBsyL.js                                 21.81 kB │ gzip:   3.56 kB
+.output/public/assets/attendees-D25sDA-H.js                                                        21.98 kB │ gzip:   6.21 kB
+.output/public/assets/procurement_.create-BbXNxywF.js                                              22.28 kB │ gzip:   5.62 kB
+.output/public/assets/dropdown-menu-ClEwX_ff.js                                                    22.55 kB │ gzip:   6.72 kB
+.output/public/assets/finance-RZlzHoYV.js                                                          23.12 kB │ gzip:   6.49 kB
+.output/public/assets/index-BtqF6IVr.js                                                            23.26 kB │ gzip:   5.98 kB
+.output/public/assets/_spaceId-CjRQ67L-.js                                                         23.28 kB │ gzip:   6.11 kB
+.output/public/assets/_venueId-D6zZA8qG.js                                                         23.35 kB │ gzip:   4.90 kB
+.output/public/assets/planning-DVS_UHDh.js                                                         23.66 kB │ gzip:   5.79 kB
+.output/public/assets/internal.control.admin.transactions-C48aVBfa.js                              24.14 kB │ gzip:   5.09 kB
+.output/public/assets/_tripId-D3Imk6ju.js                                                          24.22 kB │ gzip:   5.48 kB
+.output/public/assets/explore-NQCVtkgH.js                                                          24.37 kB │ gzip:   5.34 kB
+.output/public/assets/YAxis-lywPgAZD.js                                                            24.42 kB │ gzip:   6.27 kB
+.output/public/assets/create-space-pSQ3q7SJ.js                                                     25.06 kB │ gzip:   6.35 kB
+.output/public/assets/create-event-DTsH2MO3.js                                                     25.15 kB │ gzip:   7.41 kB
+.output/public/assets/purify.es-DSHCW8nm.js                                                        26.22 kB │ gzip:   9.82 kB
+.output/public/assets/profile-BIR0u2dz.js                                                          26.25 kB │ gzip:   6.58 kB
+.output/public/assets/_userId.edit-DMJeiqYj.js                                                     27.62 kB │ gzip:   7.97 kB
+.output/public/assets/settings-DZx63g4h.js                                                         29.29 kB │ gzip:   8.39 kB
+.output/public/assets/workspaces-DQlNKlf2.js                                                       29.37 kB │ gzip:   9.58 kB
+.output/public/assets/_spaceId-D3flwU6y.js                                                         29.38 kB │ gzip:   6.56 kB
+.output/public/assets/_projectId-DOmTWDdK.js                                                       29.76 kB │ gzip:   8.97 kB
+.output/public/assets/community-DLbNsccN.js                                                        29.86 kB │ gzip:   8.66 kB
+.output/public/assets/drawer-ClUT57N7.js                                                           30.24 kB │ gzip:   9.27 kB
+.output/public/assets/index-0enYH2P9.js                                                            30.53 kB │ gzip:   6.79 kB
+.output/public/assets/support-CXL0ZAub.js                                                          30.78 kB │ gzip:   7.14 kB
+.output/public/assets/memberships-CK26lcor.js                                                      30.96 kB │ gzip:   7.52 kB
+.output/public/assets/create-venue-D749AQVN.js                                                     31.71 kB │ gzip:   8.08 kB
+.output/public/assets/index-Drsrua0s.js                                                            32.40 kB │ gzip:   8.32 kB
+.output/public/assets/CreateExperienceDesktop-D0-KsRik.js                                          33.37 kB │ gzip:   9.17 kB
+.output/public/assets/_movieId-Dzsneaor.js                                                         34.78 kB │ gzip:   8.48 kB
+.output/public/assets/settings-CwD50LYZ.js                                                         35.21 kB │ gzip:   6.81 kB
+.output/public/assets/zod-BT26iCjT.js                                                              35.22 kB │ gzip:  12.80 kB
+.output/public/assets/create-organizer-RTmiUTkf.js                                                 35.31 kB │ gzip:   7.33 kB
+.output/public/assets/overview-CRHH0-0U.js                                                         36.14 kB │ gzip:   8.84 kB
+.output/public/assets/add-user-DeZeqy8f.js                                                         36.44 kB │ gzip:   9.62 kB
+.output/public/assets/_projectId-DPVZfqoj.js                                                       40.30 kB │ gzip:  11.91 kB
+.output/public/assets/_eventId-CmT78L-y.js                                                         41.64 kB │ gzip:  10.09 kB
+.output/public/assets/planning-CN64Xw-G.js                                                         41.89 kB │ gzip:   8.98 kB
+.output/public/assets/_venueId-LhSaXhuF.js                                                         42.18 kB │ gzip:   8.16 kB
+.output/public/assets/internal.control.admin.pricing._planId-BzBaO85P.js                           42.98 kB │ gzip:   8.40 kB
+.output/public/assets/internal.control.admin.pricing.index-Bkj6O4oe.js                             43.32 kB │ gzip:   8.67 kB
+.output/public/assets/calendar-C-iZhd4H.js                                                         52.87 kB │ gzip:  16.41 kB
+.output/public/assets/dashboard-DcbJEdeR.js                                                        53.38 kB │ gzip:  11.59 kB
+.output/public/assets/_eventId-Diyhn9uw.js                                                         54.39 kB │ gzip:  12.51 kB
+.output/public/assets/editor-Bl27MlAo.js                                                           55.43 kB │ gzip:  12.26 kB
+.output/public/assets/_projectId-CNQGlbzl.js                                                       68.57 kB │ gzip:  15.27 kB
+.output/public/assets/module-RjUF93sV.js                                                           77.27 kB │ gzip:  27.77 kB
+.output/public/assets/_ticketId-BxooRYkz.js                                                       101.46 kB │ gzip:  21.20 kB
+.output/public/assets/leaflet-C2Q31QGX.js                                                         153.82 kB │ gzip:  44.84 kB
+.output/public/assets/index.es-r4orqQXH.js                                                        158.36 kB │ gzip:  52.85 kB
+.output/public/assets/index-C37H4MOz.js                                                           199.15 kB │ gzip:  48.77 kB
+.output/public/assets/html2canvas.esm-DXEQVQnt.js                                                 201.04 kB │ gzip:  47.43 kB
+.output/public/assets/index-DBYjvPIY.js                                                           208.64 kB │ gzip:  62.38 kB
+.output/public/assets/generateCategoricalChart-B2Q8ZZlE.js                                        329.26 kB │ gzip:  88.97 kB
+.output/public/assets/SpreadsheetEntryForm-BHk50FUH.js                                            341.46 kB │ gzip: 116.96 kB
+.output/public/assets/index-D5O8lQHH.js                                                           404.97 kB │ gzip: 109.75 kB
+.output/public/assets/native-48B9X9Wg.js                                                          432.75 kB │ gzip:  82.80 kB
+.output/public/assets/TicketPreview-JV4ZtQdU.js                                                   433.77 kB │ gzip: 132.20 kB
+.output/public/assets/lucide-react-Dfk7n_SW.js                                                    541.33 kB │ gzip: 146.35 kB
+.output/public/assets/-BlockNoteEditor-CRH7aIGW.js                                                979.58 kB │ gzip: 294.79 kB
+.output/public/assets/index-Dx35ll6O.js                                                         1,283.66 kB │ gzip: 399.31 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1m 55s
+vite v7.3.3 building ssr environment for production...
+transforming...
+
+<--- Last few GCs --->
+
+[44611:0x7ff28570a000]   283915 ms: Scavenge 2022.4 (2075.6) -> 2016.6 (2091.9) MB, pooled: 0 MB, 12.68 / 0.00 ms  (average mu = 0.381, current mu = 0.396) allocation failure; 
+[44611:0x7ff28570a000]   285641 ms: Mark-Compact (reduce) 2030.4 (2091.9) -> 2001.7 (2060.1) MB, pooled: 0 MB, 187.40 / 0.02 ms  (+ 1231.4 ms in 0 steps since start of marking, biggest step 0.0 ms, walltime since start of marking 1727 ms) (average mu = 0.
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0x10f426313 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [/Users/apple/.nvm/versions/node/v22.22.3/bin/node]
+ 2: 0x10f62d538 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [/Users/apple/.nvm/versions/node/v22.22.3/bin/node]
+ 3: 0x10f852a17 v8::internal::Heap::FatalProcessOutOfMemory(char const*) [/Users/apple/.nvm/versions/node/v22.22.3/bin/node]
+ 4: 0x10f86c515 v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags)::$_1::operator()() const [/Users/apple/.nvm/versions/node/v22.22.3/bin/node]
+ 5: 0x10f86bd25 void heap::base::Stack::SetMarkerAndCallbackImpl<v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags)::$_1>(heap::base::Stack*, void*, void const*) [/Users/apple/.nvm/versions/node/v22.22.3/bin/node]
+ 6: 0x1100e0eb8 PushAllRegistersAndIterateStack [/Users/apple/.nvm/versions/node/v22.22.3/bin/node]
+ 7: 0x10f85099a v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [/Users/apple/.nvm/versions/node/v22.22.3/bin/node]
+ 8: 0x10f7d04df v8::internal::StackGuard::HandleInterrupts(v8::internal::StackGuard::InterruptLevel) [/Users/apple/.nvm/versions/node/v22.22.3/bin/node]
+ 9: 0x10fcc4f6f v8::internal::Runtime_HandleNoHeapWritesInterrupts(int, unsigned long*, v8::internal::Isolate*) [/Users/apple/.nvm/versions/node/v22.22.3/bin/node]
+10: 0x1101d2d36 Builtins_CEntry_Return1_ArgvOnStack_NoBuiltinExit [/Users/apple/.nvm/versions/node/v22.22.3/bin/node]
+error Command failed with signal "SIGABRT".
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
