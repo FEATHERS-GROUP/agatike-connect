@@ -3,7 +3,7 @@ import { getRentableVenueById } from "@/api/rentable_venues";
 import { createVenueBooking, getVenueBookings } from "@/api/venue_bookings";
 import { getUserSession } from "@/api/auth";
 import { useState, useMemo } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft,
   Calendar as CalendarIcon,
@@ -53,6 +53,7 @@ function FacilityCheckoutPage() {
   const venueId = params.venueId || params.venueId_;
   const facilityId = params.facilityId;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const facility = venue?.facilities_data?.find((f: any) => f.id === facilityId);
 
@@ -204,6 +205,8 @@ function FacilityCheckoutPage() {
       return { results, isPawaPay: false };
     },
     onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["venueBookings", venueId] });
+      
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
         setIsPollingPawaPay(true);
@@ -253,7 +256,7 @@ function FacilityCheckoutPage() {
     if (totalAmount > 0) {
       setIsPaymentModalOpen(true);
     } else {
-      bookingMutation.mutate();
+      bookingMutation.mutate(undefined);
     }
   };
 
@@ -289,7 +292,7 @@ function FacilityCheckoutPage() {
               : "Your booking is confirmed! We have sent the details to your email address."}
           </p>
           <Button
-            onClick={() => navigate({ to: `/venues/${venueId}` })}
+            onClick={() => navigate({ to: "/venues/$venueId", params: { venueId } })}
             className="rounded-xl h-12 px-8"
           >
             Return to Venue
@@ -305,7 +308,8 @@ function FacilityCheckoutPage() {
       <Navbar />
       <div className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8">
         <Link
-          to={`/venues/${venueId}`}
+          to="/venues/$venueId"
+          params={{ venueId }}
           className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6"
         >
           <ChevronLeft className="w-4 h-4 mr-1" /> Back to Venue
