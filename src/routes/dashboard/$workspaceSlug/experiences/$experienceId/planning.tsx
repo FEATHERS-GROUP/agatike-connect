@@ -49,6 +49,7 @@ import {
 } from "@/api/vouchers";
 import { getEventById } from "@/api/events";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { useState } from "react";
 import {
   Dialog,
@@ -122,6 +123,11 @@ function PlanningView() {
 
 function VendorsTab({ eventId }: { eventId: string }) {
   const queryClient = useQueryClient();
+  const { activeWorkspace } = useWorkspace();
+  const { canCreateVendor } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", description: "", contact_info: "" });
   const [selectedVendor, setSelectedVendor] = useState<any>(null);
@@ -204,6 +210,15 @@ function VendorsTab({ eventId }: { eventId: string }) {
             <Button
               className="rounded-full shadow-[var(--shadow-glow)]"
               style={{ background: "var(--gradient-primary)" }}
+              onClick={(e) => {
+                if (!canCreateVendor(vendors.length)) {
+                  e.preventDefault();
+                  toast.error("Vendor Limit Reached", {
+                    description:
+                      "You have reached the maximum number of vendors allowed by your plan.",
+                  });
+                }
+              }}
             >
               <Plus className="mr-1 h-4 w-4" /> Add Vendor
             </Button>
@@ -386,6 +401,10 @@ function VendorsTab({ eventId }: { eventId: string }) {
 function VouchersTab({ eventId }: { eventId: string }) {
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
+  const { canCreateVoucher } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     batch_name: "",
@@ -482,6 +501,19 @@ function VouchersTab({ eventId }: { eventId: string }) {
             <Button
               className="rounded-full shadow-[var(--shadow-glow)]"
               style={{ background: "var(--gradient-primary)" }}
+              onClick={(e) => {
+                if (
+                  !canCreateVoucher(
+                    vouchers.reduce((acc: number, v: any) => acc + (v.vouchers?.length || 0), 0),
+                  )
+                ) {
+                  e.preventDefault();
+                  toast.error("Voucher Limit Reached", {
+                    description:
+                      "You have reached the maximum number of sponsored vouchers allowed by your plan.",
+                  });
+                }
+              }}
             >
               <Plus className="mr-1 h-4 w-4" /> Generate Vouchers
             </Button>
@@ -496,6 +528,20 @@ function VouchersTab({ eventId }: { eventId: string }) {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                const totalExisting = vouchers.reduce(
+                  (acc: number, v: any) => acc + (v.vouchers?.length || 0),
+                  0,
+                );
+                const quantityToAdd =
+                  formData.generation_type === "manual"
+                    ? Number(formData.quantity)
+                    : formData.linked_ticket_ids.length; // Approximate for tickets
+                if (!canCreateVoucher(totalExisting, quantityToAdd)) {
+                  toast.error("Voucher Limit Exceeded", {
+                    description: `You cannot generate ${quantityToAdd} vouchers. Please upgrade your plan.`,
+                  });
+                  return;
+                }
                 createMutation.mutate();
               }}
               className="space-y-4 mt-2"
@@ -759,6 +805,11 @@ function VouchersTab({ eventId }: { eventId: string }) {
 
 function AgatikeBookTab({ eventId }: { eventId: string }) {
   const queryClient = useQueryClient();
+  const { activeWorkspace } = useWorkspace();
+  const { canCreateCustomerBook } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
   const [activeBook, setActiveBook] = useState<any>(null);
 
   // Create Book Builder State
@@ -1073,6 +1124,15 @@ function AgatikeBookTab({ eventId }: { eventId: string }) {
             <Button
               className="rounded-full shadow-[var(--shadow-glow)]"
               style={{ background: "var(--gradient-primary)" }}
+              onClick={(e) => {
+                if (!canCreateCustomerBook()) {
+                  e.preventDefault();
+                  toast.error("Customer Book Limit Reached", {
+                    description:
+                      "You have reached the maximum number of custom books allowed by your plan.",
+                  });
+                }
+              }}
             >
               <Plus className="mr-1 h-4 w-4" /> Create Custom Book
             </Button>

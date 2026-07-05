@@ -26,6 +26,8 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder/")({
   component: PageBuilderGallery,
@@ -41,6 +43,12 @@ function PageBuilderGallery() {
     queryFn: () => getAllWorkspacePages({ data: { workspace_id } } as any),
     enabled: !!workspace_id,
   });
+
+  const {
+    hasStudioAccess,
+    canCreatePageBuilder,
+    isLoading: limitsLoading,
+  } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const queryClient = useQueryClient();
 
@@ -108,6 +116,18 @@ function PageBuilderGallery() {
     }
   };
 
+  if (limitsLoading) return null;
+  if (!hasStudioAccess()) {
+    return (
+      <div className="p-6 h-full">
+        <UpgradePrompt
+          title="Upgrade to Access Page Builder"
+          description="Page Builder is a premium feature available in higher tier plans. Upgrade your subscription to start building custom portals."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full bg-secondary/10">
       <div className="flex-1 overflow-y-auto p-6">
@@ -134,9 +154,15 @@ function PageBuilderGallery() {
                 {/* Blank Page Card */}
                 <div
                   className="group relative flex flex-col items-center justify-center border-2 border-dashed border-border/60 rounded-2xl p-8 bg-card hover:bg-secondary/20 hover:border-primary/50 transition-colors cursor-pointer text-center h-64"
-                  onClick={() =>
-                    navigate({ to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor` })
-                  }
+                  onClick={() => {
+                    if (!canCreatePageBuilder()) {
+                      toast.error(
+                        "Page Builder limit reached. Please upgrade your plan to create more pages.",
+                      );
+                      return;
+                    }
+                    navigate({ to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor` });
+                  }}
                 >
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <Plus className="w-6 h-6 text-primary" />
@@ -152,12 +178,18 @@ function PageBuilderGallery() {
                   <div
                     key={template.id}
                     className="group border border-border/60 rounded-2xl overflow-hidden bg-card hover:shadow-md transition-all cursor-pointer flex flex-col h-64"
-                    onClick={() =>
+                    onClick={() => {
+                      if (!canCreatePageBuilder()) {
+                        toast.error(
+                          "Page Builder limit reached. Please upgrade your plan to create more pages.",
+                        );
+                        return;
+                      }
                       navigate({
                         to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor`,
                         search: { templateId: template.id },
-                      })
-                    }
+                      });
+                    }}
                   >
                     <div className="h-32 bg-secondary flex items-center justify-center relative overflow-hidden">
                       <img

@@ -33,6 +33,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createProduct } from "@/api/products";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/products&add-ons")({
   component: WorkspaceProductsView,
@@ -41,6 +42,8 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/products&add-ons
 function AddCampaignModal() {
   const [open, setOpen] = useState(false);
   const { activeWorkspace } = useWorkspace();
+  const { canCreateProduct, canCreateCampaign, canCreateGiftCard, canCreatePunchCard } =
+    useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState({
@@ -95,6 +98,30 @@ function AddCampaignModal() {
       toast.error("Please fill in the required fields");
       return;
     }
+
+    let canCreate = true;
+    let limitType = "Product";
+
+    if (formData.type === "physical") {
+      canCreate = canCreateCampaign();
+      limitType = "Campaign";
+    } else if (formData.type === "voucher") {
+      canCreate = canCreateGiftCard();
+      limitType = "Gift Card";
+    } else if (formData.type === "punch_card" || formData.type === "loyalty_card") {
+      canCreate = canCreatePunchCard();
+      limitType = "Punch Card";
+    } else {
+      canCreate = canCreateProduct();
+    }
+
+    if (!canCreate) {
+      toast.error(`${limitType} Limit Reached`, {
+        description: `You have reached the maximum number of ${limitType}s allowed by your plan.`,
+      });
+      return;
+    }
+
     mutation.mutate();
   };
 

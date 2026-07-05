@@ -20,6 +20,8 @@ import {
 } from "@/api/experience";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { toast } from "sonner";
 
 const COUNTRY_FLAGS: Record<string, string> = {
   Rwanda: "🇷🇼",
@@ -70,6 +72,11 @@ function PostCommunityPage() {
     queryKey: ["post-comments", postId],
     queryFn: () => getPostComments({ data: { post_id: postId } }),
   });
+
+  const { canCreatePostComment } = useSubscriptionLimits(
+    post?.organizerId,
+    post?.workspaceId || post?.workspace_id,
+  );
 
   const [commentText, setCommentText] = useState("");
   const [isLiked, setIsLiked] = useState(false);
@@ -381,7 +388,16 @@ function PostCommunityPage() {
             className="flex gap-3 items-center"
             onSubmit={(e) => {
               e.preventDefault();
-              if (commentText.trim()) addCommentMutation.mutate(commentText);
+              if (commentText.trim()) {
+                if (!canCreatePostComment()) {
+                  toast.error("Comment Limit Reached", {
+                    description:
+                      "The organizer has reached their comment limit for their current plan.",
+                  });
+                  return;
+                }
+                addCommentMutation.mutate(commentText);
+              }
             }}
           >
             <img

@@ -8,6 +8,7 @@ import {
   updateCinemaTicketTier,
   deleteCinemaTicketTier,
 } from "@/api/cinema_ticket_tiers";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import {
   Plus,
   Ticket,
@@ -159,6 +160,10 @@ function CinemaTicketTiersPage() {
   const { workspaceSlug } = useParams({ strict: false }) as any;
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
+  const { canCreateTicketTier } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
   const queryClient = useQueryClient();
 
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -175,6 +180,12 @@ function CinemaTicketTiersPage() {
   });
 
   const openCreate = () => {
+    if (!canCreateTicketTier(tiers.length)) {
+      toast.error("Ticket Tier Limit Reached", {
+        description: "You have reached the maximum number of ticket tiers allowed by your plan.",
+      });
+      return;
+    }
     setEditingTier(null);
     setForm({ ...EMPTY_FORM, currency: activeWorkspace?.currency || "RWF" });
     setSheetOpen(true);
@@ -252,12 +263,16 @@ function CinemaTicketTiersPage() {
             </p>
           </div>
           <Button
-            onClick={() =>
-              navigate({
-                to: "/dashboard/$workspaceSlug/Cinema/create-ticket-tier",
-                params: { workspaceSlug },
-              })
-            }
+            onClick={() => {
+              if (!canCreateTicketTier(tiers.length)) {
+                toast.error("Ticket Tier Limit Reached", {
+                  description:
+                    "You have reached the maximum number of ticket tiers allowed by your plan.",
+                });
+                return;
+              }
+              openCreate();
+            }}
             className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
           >

@@ -43,6 +43,7 @@ import { Route as PSlugRouteImport } from './routes/p/$slug'
 import { Route as FFormIdRouteImport } from './routes/f/$formId'
 import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
 import { Route as DashboardWorkspacesRouteImport } from './routes/dashboard/workspaces'
+import { Route as DashboardSupportRouteImport } from './routes/dashboard/support'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardPricingRouteImport } from './routes/dashboard/pricing'
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
@@ -87,9 +88,14 @@ import { Route as DashboardWorkspaceSlugEventsIndexRouteImport } from './routes/
 import { Route as DashboardWorkspaceSlugBookIndexRouteImport } from './routes/dashboard/$workspaceSlug/book/index'
 import { Route as DashboardWorkspaceSlugBadgeDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/index'
 import { Route as DashboardWorkspaceSlugCinemaIndexRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/index'
+import { Route as InternalControlAdminUsersRouteImport } from './routes/internal.control.admin.users'
+import { Route as InternalControlAdminTransactionsRouteImport } from './routes/internal.control.admin.transactions'
+import { Route as InternalControlAdminProvidersRouteImport } from './routes/internal.control.admin.providers'
 import { Route as InternalControlAdminModulesRouteImport } from './routes/internal.control.admin.modules'
 import { Route as InternalControlAdminLoginRouteImport } from './routes/internal.control.admin.login'
+import { Route as InternalControlAdminLeadsRouteImport } from './routes/internal.control.admin.leads'
 import { Route as InternalControlAdminHealthRouteImport } from './routes/internal.control.admin.health'
+import { Route as InternalControlAdminEarningsRouteImport } from './routes/internal.control.admin.earnings'
 import { Route as DashboardWorkspaceUserEmailActivateRouteImport } from './routes/dashboard/workspace-user/$email.activate'
 import { Route as DashboardBillingSubscriptionsPricingplansRouteImport } from './routes/dashboard/billing/subscriptions/pricingplans'
 import { Route as DashboardWorkspaceSlugWithdrawalsRequestRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals/request'
@@ -119,15 +125,24 @@ import { Route as DashboardWorkspaceSlugCinemaCreateMovieRouteImport } from './r
 import { Route as DashboardWorkspaceSlugCinemaCreateRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/create'
 import { Route as DashboardWorkspaceSlugCinemaAnalyticsRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/analytics'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId'
+import { Route as InternalControlAdminSupportIndexRouteImport } from './routes/internal.control.admin.support.index'
+import { Route as InternalControlAdminPricingIndexRouteImport } from './routes/internal.control.admin.pricing.index'
 import { Route as InternalControlAdminOrganizersIndexRouteImport } from './routes/internal.control.admin.organizers.index'
+import { Route as InternalControlAdminAgatikeUsersIndexRouteImport } from './routes/internal.control.admin.agatike-users.index'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/index'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/index'
 import { Route as DashboardWorkspaceSlugEventsEventIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/index'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/index'
+import { Route as VenuesVenueIdFacilitiesCheckoutFacilityIdRouteImport } from './routes/venues/$venueId_/facilities/checkout/$facilityId'
+import { Route as InternalControlAdminSupportTicketIdRouteImport } from './routes/internal.control.admin.support.$ticketId'
+import { Route as InternalControlAdminPricingPlanIdRouteImport } from './routes/internal.control.admin.pricing.$planId'
 import { Route as InternalControlAdminOrganizersOrganizerIdRouteImport } from './routes/internal.control.admin.organizers.$organizerId'
+import { Route as InternalControlAdminAgatikeUsersUserIdRouteImport } from './routes/internal.control.admin.agatike-users.$userId'
 import { Route as DashboardBillingSubscriptionsCheckoutPlanIdRouteImport } from './routes/dashboard/billing/subscriptions/checkout.$planId'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdSettingsRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/settings'
+import { Route as DashboardWorkspaceSlugVenuesVenueIdPricingRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/pricing'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdOverviewRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/overview'
+import { Route as DashboardWorkspaceSlugVenuesVenueIdFacilitiesRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/facilities'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdBookingsRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/bookings'
 import { Route as DashboardWorkspaceSlugUsersUserIdEditRouteImport } from './routes/dashboard/$workspaceSlug/users/$userId.edit'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions'
@@ -184,6 +199,7 @@ import { Route as InternalControlAdminOrganizersOrganizerIdBookInvoicesRouteImpo
 import { Route as InternalControlAdminOrganizersOrganizerIdBookRouteImport } from './routes/internal.control.admin.organizers.$organizerId.book'
 import { Route as InternalControlAdminOrganizersOrganizerIdAttendeesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.attendees'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
+import { Route as DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings'
 
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
@@ -353,6 +369,11 @@ const EventsEventIdRoute = EventsEventIdRouteImport.update({
 const DashboardWorkspacesRoute = DashboardWorkspacesRouteImport.update({
   id: '/workspaces',
   path: '/workspaces',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSupportRoute = DashboardSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
@@ -599,6 +620,24 @@ const DashboardWorkspaceSlugCinemaIndexRoute =
     path: '/$workspaceSlug/Cinema/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const InternalControlAdminUsersRoute =
+  InternalControlAdminUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminTransactionsRoute =
+  InternalControlAdminTransactionsRouteImport.update({
+    id: '/transactions',
+    path: '/transactions',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminProvidersRoute =
+  InternalControlAdminProvidersRouteImport.update({
+    id: '/providers',
+    path: '/providers',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
 const InternalControlAdminModulesRoute =
   InternalControlAdminModulesRouteImport.update({
     id: '/modules',
@@ -611,10 +650,22 @@ const InternalControlAdminLoginRoute =
     path: '/login',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
+const InternalControlAdminLeadsRoute =
+  InternalControlAdminLeadsRouteImport.update({
+    id: '/leads',
+    path: '/leads',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
 const InternalControlAdminHealthRoute =
   InternalControlAdminHealthRouteImport.update({
     id: '/health',
     path: '/health',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminEarningsRoute =
+  InternalControlAdminEarningsRouteImport.update({
+    id: '/earnings',
+    path: '/earnings',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
 const DashboardWorkspaceUserEmailActivateRoute =
@@ -791,10 +842,28 @@ const DashboardWorkspaceSlugCinemaCinemaIdRoute =
     path: '/$workspaceSlug/Cinema/$cinemaId',
     getParentRoute: () => DashboardRoute,
   } as any)
+const InternalControlAdminSupportIndexRoute =
+  InternalControlAdminSupportIndexRouteImport.update({
+    id: '/support/',
+    path: '/support/',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminPricingIndexRoute =
+  InternalControlAdminPricingIndexRouteImport.update({
+    id: '/pricing/',
+    path: '/pricing/',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
 const InternalControlAdminOrganizersIndexRoute =
   InternalControlAdminOrganizersIndexRouteImport.update({
     id: '/organizers/',
     path: '/organizers/',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminAgatikeUsersIndexRoute =
+  InternalControlAdminAgatikeUsersIndexRouteImport.update({
+    id: '/agatike-users/',
+    path: '/agatike-users/',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
 const DashboardWorkspaceSlugSpacesSpaceIdIndexRoute =
@@ -821,10 +890,34 @@ const DashboardWorkspaceSlugCinemaCinemaIdIndexRoute =
     path: '/',
     getParentRoute: () => DashboardWorkspaceSlugCinemaCinemaIdRoute,
   } as any)
+const VenuesVenueIdFacilitiesCheckoutFacilityIdRoute =
+  VenuesVenueIdFacilitiesCheckoutFacilityIdRouteImport.update({
+    id: '/venues/$venueId_/facilities/checkout/$facilityId',
+    path: '/venues/$venueId/facilities/checkout/$facilityId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const InternalControlAdminSupportTicketIdRoute =
+  InternalControlAdminSupportTicketIdRouteImport.update({
+    id: '/support/$ticketId',
+    path: '/support/$ticketId',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminPricingPlanIdRoute =
+  InternalControlAdminPricingPlanIdRouteImport.update({
+    id: '/pricing/$planId',
+    path: '/pricing/$planId',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
 const InternalControlAdminOrganizersOrganizerIdRoute =
   InternalControlAdminOrganizersOrganizerIdRouteImport.update({
     id: '/organizers/$organizerId',
     path: '/organizers/$organizerId',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminAgatikeUsersUserIdRoute =
+  InternalControlAdminAgatikeUsersUserIdRouteImport.update({
+    id: '/agatike-users/$userId',
+    path: '/agatike-users/$userId',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
 const DashboardBillingSubscriptionsCheckoutPlanIdRoute =
@@ -839,10 +932,22 @@ const DashboardWorkspaceSlugVenuesVenueIdSettingsRoute =
     path: '/settings',
     getParentRoute: () => DashboardWorkspaceSlugVenuesVenueIdRoute,
   } as any)
+const DashboardWorkspaceSlugVenuesVenueIdPricingRoute =
+  DashboardWorkspaceSlugVenuesVenueIdPricingRouteImport.update({
+    id: '/pricing',
+    path: '/pricing',
+    getParentRoute: () => DashboardWorkspaceSlugVenuesVenueIdRoute,
+  } as any)
 const DashboardWorkspaceSlugVenuesVenueIdOverviewRoute =
   DashboardWorkspaceSlugVenuesVenueIdOverviewRouteImport.update({
     id: '/overview',
     path: '/overview',
+    getParentRoute: () => DashboardWorkspaceSlugVenuesVenueIdRoute,
+  } as any)
+const DashboardWorkspaceSlugVenuesVenueIdFacilitiesRoute =
+  DashboardWorkspaceSlugVenuesVenueIdFacilitiesRouteImport.update({
+    id: '/facilities',
+    path: '/facilities',
     getParentRoute: () => DashboardWorkspaceSlugVenuesVenueIdRoute,
   } as any)
 const DashboardWorkspaceSlugVenuesVenueIdBookingsRoute =
@@ -1183,6 +1288,14 @@ const DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute =
     path: '/receipt/$bookingId',
     getParentRoute: () => DashboardWorkspaceSlugCinemaCinemaIdRoute,
   } as any)
+const DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute =
+  DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRouteImport.update(
+    {
+      id: '/facilities_/$facilityId/bookings',
+      path: '/facilities/$facilityId/bookings',
+      getParentRoute: () => DashboardWorkspaceSlugVenuesVenueIdRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -1221,6 +1334,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
@@ -1278,9 +1392,14 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
+  '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
+  '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
+  '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1332,15 +1451,24 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions': typeof DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRoute
   '/dashboard/$workspaceSlug/users/$userId/edit': typeof DashboardWorkspaceSlugUsersUserIdEditRoute
   '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/facilities': typeof DashboardWorkspaceSlugVenuesVenueIdFacilitiesRoute
   '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/pricing': typeof DashboardWorkspaceSlugVenuesVenueIdPricingRoute
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
   '/dashboard/billing/subscriptions/checkout/$planId': typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
+  '/internal/control/admin/agatike-users/$userId': typeof InternalControlAdminAgatikeUsersUserIdRoute
   '/internal/control/admin/organizers/$organizerId': typeof InternalControlAdminOrganizersOrganizerIdRouteWithChildren
+  '/internal/control/admin/pricing/$planId': typeof InternalControlAdminPricingPlanIdRoute
+  '/internal/control/admin/support/$ticketId': typeof InternalControlAdminSupportTicketIdRoute
+  '/venues/$venueId/facilities/checkout/$facilityId': typeof VenuesVenueIdFacilitiesCheckoutFacilityIdRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/': typeof DashboardWorkspaceSlugCinemaCinemaIdIndexRoute
   '/dashboard/$workspaceSlug/events/$eventId/': typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/': typeof DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/': typeof DashboardWorkspaceSlugSpacesSpaceIdIndexRoute
+  '/internal/control/admin/agatike-users/': typeof InternalControlAdminAgatikeUsersIndexRoute
   '/internal/control/admin/organizers/': typeof InternalControlAdminOrganizersIndexRoute
+  '/internal/control/admin/pricing/': typeof InternalControlAdminPricingIndexRoute
+  '/internal/control/admin/support/': typeof InternalControlAdminSupportIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
@@ -1360,6 +1488,7 @@ export interface FileRoutesByFullPath {
   '/internal/control/admin/organizers/$organizerId/wallets': typeof InternalControlAdminOrganizersOrganizerIdWalletsRoute
   '/internal/control/admin/organizers/$organizerId/workspaces': typeof InternalControlAdminOrganizersOrganizerIdWorkspacesRoute
   '/internal/control/admin/organizers/$organizerId/': typeof InternalControlAdminOrganizersOrganizerIdIndexRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/facilities/$facilityId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1398,6 +1527,7 @@ export interface FileRoutesByTo {
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
@@ -1452,9 +1582,14 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
+  '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
+  '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
+  '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
   '/dashboard/$workspaceSlug/Cinema': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1506,14 +1641,23 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions': typeof DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRoute
   '/dashboard/$workspaceSlug/users/$userId/edit': typeof DashboardWorkspaceSlugUsersUserIdEditRoute
   '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/facilities': typeof DashboardWorkspaceSlugVenuesVenueIdFacilitiesRoute
   '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/pricing': typeof DashboardWorkspaceSlugVenuesVenueIdPricingRoute
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
   '/dashboard/billing/subscriptions/checkout/$planId': typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
+  '/internal/control/admin/agatike-users/$userId': typeof InternalControlAdminAgatikeUsersUserIdRoute
+  '/internal/control/admin/pricing/$planId': typeof InternalControlAdminPricingPlanIdRoute
+  '/internal/control/admin/support/$ticketId': typeof InternalControlAdminSupportTicketIdRoute
+  '/venues/$venueId/facilities/checkout/$facilityId': typeof VenuesVenueIdFacilitiesCheckoutFacilityIdRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId': typeof DashboardWorkspaceSlugCinemaCinemaIdIndexRoute
   '/dashboard/$workspaceSlug/events/$eventId': typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId': typeof DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId': typeof DashboardWorkspaceSlugSpacesSpaceIdIndexRoute
+  '/internal/control/admin/agatike-users': typeof InternalControlAdminAgatikeUsersIndexRoute
   '/internal/control/admin/organizers': typeof InternalControlAdminOrganizersIndexRoute
+  '/internal/control/admin/pricing': typeof InternalControlAdminPricingIndexRoute
+  '/internal/control/admin/support': typeof InternalControlAdminSupportIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
@@ -1533,6 +1677,7 @@ export interface FileRoutesByTo {
   '/internal/control/admin/organizers/$organizerId/wallets': typeof InternalControlAdminOrganizersOrganizerIdWalletsRoute
   '/internal/control/admin/organizers/$organizerId/workspaces': typeof InternalControlAdminOrganizersOrganizerIdWorkspacesRoute
   '/internal/control/admin/organizers/$organizerId': typeof InternalControlAdminOrganizersOrganizerIdIndexRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/facilities/$facilityId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1572,6 +1717,7 @@ export interface FileRoutesById {
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
@@ -1629,9 +1775,14 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
+  '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
+  '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
+  '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1683,15 +1834,24 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions': typeof DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRoute
   '/dashboard/$workspaceSlug/users/$userId/edit': typeof DashboardWorkspaceSlugUsersUserIdEditRoute
   '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/facilities': typeof DashboardWorkspaceSlugVenuesVenueIdFacilitiesRoute
   '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/pricing': typeof DashboardWorkspaceSlugVenuesVenueIdPricingRoute
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
   '/dashboard/billing/subscriptions/checkout/$planId': typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
+  '/internal/control/admin/agatike-users/$userId': typeof InternalControlAdminAgatikeUsersUserIdRoute
   '/internal/control/admin/organizers/$organizerId': typeof InternalControlAdminOrganizersOrganizerIdRouteWithChildren
+  '/internal/control/admin/pricing/$planId': typeof InternalControlAdminPricingPlanIdRoute
+  '/internal/control/admin/support/$ticketId': typeof InternalControlAdminSupportTicketIdRoute
+  '/venues/$venueId_/facilities/checkout/$facilityId': typeof VenuesVenueIdFacilitiesCheckoutFacilityIdRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/': typeof DashboardWorkspaceSlugCinemaCinemaIdIndexRoute
   '/dashboard/$workspaceSlug/events/$eventId/': typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/': typeof DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/': typeof DashboardWorkspaceSlugSpacesSpaceIdIndexRoute
+  '/internal/control/admin/agatike-users/': typeof InternalControlAdminAgatikeUsersIndexRoute
   '/internal/control/admin/organizers/': typeof InternalControlAdminOrganizersIndexRoute
+  '/internal/control/admin/pricing/': typeof InternalControlAdminPricingIndexRoute
+  '/internal/control/admin/support/': typeof InternalControlAdminSupportIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
@@ -1711,6 +1871,7 @@ export interface FileRoutesById {
   '/internal/control/admin/organizers/$organizerId/wallets': typeof InternalControlAdminOrganizersOrganizerIdWalletsRoute
   '/internal/control/admin/organizers/$organizerId/workspaces': typeof InternalControlAdminOrganizersOrganizerIdWorkspacesRoute
   '/internal/control/admin/organizers/$organizerId/': typeof InternalControlAdminOrganizersOrganizerIdIndexRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1751,6 +1912,7 @@ export interface FileRouteTypes {
     | '/dashboard/login'
     | '/dashboard/pricing'
     | '/dashboard/settings'
+    | '/dashboard/support'
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
@@ -1808,9 +1970,14 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
+    | '/internal/control/admin/leads'
     | '/internal/control/admin/login'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/providers'
+    | '/internal/control/admin/transactions'
+    | '/internal/control/admin/users'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -1862,15 +2029,24 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions'
     | '/dashboard/$workspaceSlug/users/$userId/edit'
     | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
+    | '/dashboard/$workspaceSlug/venues/$venueId/facilities'
     | '/dashboard/$workspaceSlug/venues/$venueId/overview'
+    | '/dashboard/$workspaceSlug/venues/$venueId/pricing'
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
     | '/dashboard/billing/subscriptions/checkout/$planId'
+    | '/internal/control/admin/agatike-users/$userId'
     | '/internal/control/admin/organizers/$organizerId'
+    | '/internal/control/admin/pricing/$planId'
+    | '/internal/control/admin/support/$ticketId'
+    | '/venues/$venueId/facilities/checkout/$facilityId'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/'
     | '/dashboard/$workspaceSlug/events/$eventId/'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/'
+    | '/internal/control/admin/agatike-users/'
     | '/internal/control/admin/organizers/'
+    | '/internal/control/admin/pricing/'
+    | '/internal/control/admin/support/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
@@ -1890,6 +2066,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/organizers/$organizerId/wallets'
     | '/internal/control/admin/organizers/$organizerId/workspaces'
     | '/internal/control/admin/organizers/$organizerId/'
+    | '/dashboard/$workspaceSlug/venues/$venueId/facilities/$facilityId/bookings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1928,6 +2105,7 @@ export interface FileRouteTypes {
     | '/dashboard/login'
     | '/dashboard/pricing'
     | '/dashboard/settings'
+    | '/dashboard/support'
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
@@ -1982,9 +2160,14 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
+    | '/internal/control/admin/leads'
     | '/internal/control/admin/login'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/providers'
+    | '/internal/control/admin/transactions'
+    | '/internal/control/admin/users'
     | '/dashboard/$workspaceSlug/Cinema'
     | '/dashboard/$workspaceSlug/badge-designer'
     | '/dashboard/$workspaceSlug/book'
@@ -2036,14 +2219,23 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions'
     | '/dashboard/$workspaceSlug/users/$userId/edit'
     | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
+    | '/dashboard/$workspaceSlug/venues/$venueId/facilities'
     | '/dashboard/$workspaceSlug/venues/$venueId/overview'
+    | '/dashboard/$workspaceSlug/venues/$venueId/pricing'
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
     | '/dashboard/billing/subscriptions/checkout/$planId'
+    | '/internal/control/admin/agatike-users/$userId'
+    | '/internal/control/admin/pricing/$planId'
+    | '/internal/control/admin/support/$ticketId'
+    | '/venues/$venueId/facilities/checkout/$facilityId'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId'
     | '/dashboard/$workspaceSlug/events/$eventId'
     | '/dashboard/$workspaceSlug/experiences/$experienceId'
     | '/dashboard/$workspaceSlug/spaces/$spaceId'
+    | '/internal/control/admin/agatike-users'
     | '/internal/control/admin/organizers'
+    | '/internal/control/admin/pricing'
+    | '/internal/control/admin/support'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
@@ -2063,6 +2255,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/organizers/$organizerId/wallets'
     | '/internal/control/admin/organizers/$organizerId/workspaces'
     | '/internal/control/admin/organizers/$organizerId'
+    | '/dashboard/$workspaceSlug/venues/$venueId/facilities/$facilityId/bookings'
   id:
     | '__root__'
     | '/'
@@ -2101,6 +2294,7 @@ export interface FileRouteTypes {
     | '/dashboard/login'
     | '/dashboard/pricing'
     | '/dashboard/settings'
+    | '/dashboard/support'
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
@@ -2158,9 +2352,14 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
+    | '/internal/control/admin/leads'
     | '/internal/control/admin/login'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/providers'
+    | '/internal/control/admin/transactions'
+    | '/internal/control/admin/users'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -2212,15 +2411,24 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions'
     | '/dashboard/$workspaceSlug/users/$userId/edit'
     | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
+    | '/dashboard/$workspaceSlug/venues/$venueId/facilities'
     | '/dashboard/$workspaceSlug/venues/$venueId/overview'
+    | '/dashboard/$workspaceSlug/venues/$venueId/pricing'
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
     | '/dashboard/billing/subscriptions/checkout/$planId'
+    | '/internal/control/admin/agatike-users/$userId'
     | '/internal/control/admin/organizers/$organizerId'
+    | '/internal/control/admin/pricing/$planId'
+    | '/internal/control/admin/support/$ticketId'
+    | '/venues/$venueId_/facilities/checkout/$facilityId'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/'
     | '/dashboard/$workspaceSlug/events/$eventId/'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/'
+    | '/internal/control/admin/agatike-users/'
     | '/internal/control/admin/organizers/'
+    | '/internal/control/admin/pricing/'
+    | '/internal/control/admin/support/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
@@ -2240,6 +2448,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/organizers/$organizerId/wallets'
     | '/internal/control/admin/organizers/$organizerId/workspaces'
     | '/internal/control/admin/organizers/$organizerId/'
+    | '/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -2292,6 +2501,7 @@ export interface RootRouteChildren {
   SpacesSuccessSpaceIdRoute: typeof SpacesSuccessSpaceIdRoute
   VenuesCheckoutVenueIdRoute: typeof VenuesCheckoutVenueIdRoute
   AdminWithdrawalsIndexRoute: typeof AdminWithdrawalsIndexRoute
+  VenuesVenueIdFacilitiesCheckoutFacilityIdRoute: typeof VenuesVenueIdFacilitiesCheckoutFacilityIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2532,6 +2742,13 @@ declare module '@tanstack/react-router' {
       path: '/workspaces'
       fullPath: '/dashboard/workspaces'
       preLoaderRoute: typeof DashboardWorkspacesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/support': {
+      id: '/dashboard/support'
+      path: '/support'
+      fullPath: '/dashboard/support'
+      preLoaderRoute: typeof DashboardSupportRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/settings': {
@@ -2842,6 +3059,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugCinemaIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/internal/control/admin/users': {
+      id: '/internal/control/admin/users'
+      path: '/users'
+      fullPath: '/internal/control/admin/users'
+      preLoaderRoute: typeof InternalControlAdminUsersRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/transactions': {
+      id: '/internal/control/admin/transactions'
+      path: '/transactions'
+      fullPath: '/internal/control/admin/transactions'
+      preLoaderRoute: typeof InternalControlAdminTransactionsRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/providers': {
+      id: '/internal/control/admin/providers'
+      path: '/providers'
+      fullPath: '/internal/control/admin/providers'
+      preLoaderRoute: typeof InternalControlAdminProvidersRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
     '/internal/control/admin/modules': {
       id: '/internal/control/admin/modules'
       path: '/modules'
@@ -2856,11 +3094,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalControlAdminLoginRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
+    '/internal/control/admin/leads': {
+      id: '/internal/control/admin/leads'
+      path: '/leads'
+      fullPath: '/internal/control/admin/leads'
+      preLoaderRoute: typeof InternalControlAdminLeadsRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
     '/internal/control/admin/health': {
       id: '/internal/control/admin/health'
       path: '/health'
       fullPath: '/internal/control/admin/health'
       preLoaderRoute: typeof InternalControlAdminHealthRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/earnings': {
+      id: '/internal/control/admin/earnings'
+      path: '/earnings'
+      fullPath: '/internal/control/admin/earnings'
+      preLoaderRoute: typeof InternalControlAdminEarningsRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
     '/dashboard/workspace-user/$email/activate': {
@@ -3066,11 +3318,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/internal/control/admin/support/': {
+      id: '/internal/control/admin/support/'
+      path: '/support'
+      fullPath: '/internal/control/admin/support/'
+      preLoaderRoute: typeof InternalControlAdminSupportIndexRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/pricing/': {
+      id: '/internal/control/admin/pricing/'
+      path: '/pricing'
+      fullPath: '/internal/control/admin/pricing/'
+      preLoaderRoute: typeof InternalControlAdminPricingIndexRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
     '/internal/control/admin/organizers/': {
       id: '/internal/control/admin/organizers/'
       path: '/organizers'
       fullPath: '/internal/control/admin/organizers/'
       preLoaderRoute: typeof InternalControlAdminOrganizersIndexRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/agatike-users/': {
+      id: '/internal/control/admin/agatike-users/'
+      path: '/agatike-users'
+      fullPath: '/internal/control/admin/agatike-users/'
+      preLoaderRoute: typeof InternalControlAdminAgatikeUsersIndexRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
     '/dashboard/$workspaceSlug/spaces/$spaceId/': {
@@ -3101,11 +3374,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdIndexRouteImport
       parentRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdRoute
     }
+    '/venues/$venueId_/facilities/checkout/$facilityId': {
+      id: '/venues/$venueId_/facilities/checkout/$facilityId'
+      path: '/venues/$venueId/facilities/checkout/$facilityId'
+      fullPath: '/venues/$venueId/facilities/checkout/$facilityId'
+      preLoaderRoute: typeof VenuesVenueIdFacilitiesCheckoutFacilityIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/internal/control/admin/support/$ticketId': {
+      id: '/internal/control/admin/support/$ticketId'
+      path: '/support/$ticketId'
+      fullPath: '/internal/control/admin/support/$ticketId'
+      preLoaderRoute: typeof InternalControlAdminSupportTicketIdRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/pricing/$planId': {
+      id: '/internal/control/admin/pricing/$planId'
+      path: '/pricing/$planId'
+      fullPath: '/internal/control/admin/pricing/$planId'
+      preLoaderRoute: typeof InternalControlAdminPricingPlanIdRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
     '/internal/control/admin/organizers/$organizerId': {
       id: '/internal/control/admin/organizers/$organizerId'
       path: '/organizers/$organizerId'
       fullPath: '/internal/control/admin/organizers/$organizerId'
       preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/agatike-users/$userId': {
+      id: '/internal/control/admin/agatike-users/$userId'
+      path: '/agatike-users/$userId'
+      fullPath: '/internal/control/admin/agatike-users/$userId'
+      preLoaderRoute: typeof InternalControlAdminAgatikeUsersUserIdRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
     '/dashboard/billing/subscriptions/checkout/$planId': {
@@ -3122,11 +3423,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRouteImport
       parentRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRoute
     }
+    '/dashboard/$workspaceSlug/venues/$venueId/pricing': {
+      id: '/dashboard/$workspaceSlug/venues/$venueId/pricing'
+      path: '/pricing'
+      fullPath: '/dashboard/$workspaceSlug/venues/$venueId/pricing'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdPricingRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRoute
+    }
     '/dashboard/$workspaceSlug/venues/$venueId/overview': {
       id: '/dashboard/$workspaceSlug/venues/$venueId/overview'
       path: '/overview'
       fullPath: '/dashboard/$workspaceSlug/venues/$venueId/overview'
       preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRoute
+    }
+    '/dashboard/$workspaceSlug/venues/$venueId/facilities': {
+      id: '/dashboard/$workspaceSlug/venues/$venueId/facilities'
+      path: '/facilities'
+      fullPath: '/dashboard/$workspaceSlug/venues/$venueId/facilities'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdFacilitiesRouteImport
       parentRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRoute
     }
     '/dashboard/$workspaceSlug/venues/$venueId/bookings': {
@@ -3521,6 +3836,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRouteImport
       parentRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdRoute
     }
+    '/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings': {
+      id: '/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings'
+      path: '/facilities/$facilityId/bookings'
+      fullPath: '/dashboard/$workspaceSlug/venues/$venueId/facilities/$facilityId/bookings'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRoute
+    }
   }
 }
 
@@ -3607,18 +3929,27 @@ const DashboardWorkspaceSlugSpacesSpaceIdRouteWithChildren =
 
 interface DashboardWorkspaceSlugVenuesVenueIdRouteChildren {
   DashboardWorkspaceSlugVenuesVenueIdBookingsRoute: typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
+  DashboardWorkspaceSlugVenuesVenueIdFacilitiesRoute: typeof DashboardWorkspaceSlugVenuesVenueIdFacilitiesRoute
   DashboardWorkspaceSlugVenuesVenueIdOverviewRoute: typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
+  DashboardWorkspaceSlugVenuesVenueIdPricingRoute: typeof DashboardWorkspaceSlugVenuesVenueIdPricingRoute
   DashboardWorkspaceSlugVenuesVenueIdSettingsRoute: typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
+  DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute: typeof DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute
 }
 
 const DashboardWorkspaceSlugVenuesVenueIdRouteChildren: DashboardWorkspaceSlugVenuesVenueIdRouteChildren =
   {
     DashboardWorkspaceSlugVenuesVenueIdBookingsRoute:
       DashboardWorkspaceSlugVenuesVenueIdBookingsRoute,
+    DashboardWorkspaceSlugVenuesVenueIdFacilitiesRoute:
+      DashboardWorkspaceSlugVenuesVenueIdFacilitiesRoute,
     DashboardWorkspaceSlugVenuesVenueIdOverviewRoute:
       DashboardWorkspaceSlugVenuesVenueIdOverviewRoute,
+    DashboardWorkspaceSlugVenuesVenueIdPricingRoute:
+      DashboardWorkspaceSlugVenuesVenueIdPricingRoute,
     DashboardWorkspaceSlugVenuesVenueIdSettingsRoute:
       DashboardWorkspaceSlugVenuesVenueIdSettingsRoute,
+    DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute:
+      DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute,
   }
 
 const DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren =
@@ -3631,6 +3962,7 @@ interface DashboardRouteChildren {
   DashboardLoginRoute: typeof DashboardLoginRoute
   DashboardPricingRoute: typeof DashboardPricingRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
+  DashboardSupportRoute: typeof DashboardSupportRoute
   DashboardWorkspacesRoute: typeof DashboardWorkspacesRoute
   DashboardWorkspaceSlugCommunityRoute: typeof DashboardWorkspaceSlugCommunityRoute
   DashboardWorkspaceSlugMembershipsRoute: typeof DashboardWorkspaceSlugMembershipsRoute
@@ -3714,6 +4046,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardLoginRoute: DashboardLoginRoute,
   DashboardPricingRoute: DashboardPricingRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
+  DashboardSupportRoute: DashboardSupportRoute,
   DashboardWorkspacesRoute: DashboardWorkspacesRoute,
   DashboardWorkspaceSlugCommunityRoute: DashboardWorkspaceSlugCommunityRoute,
   DashboardWorkspaceSlugMembershipsRoute:
@@ -3924,23 +4257,49 @@ const InternalControlAdminOrganizersOrganizerIdRouteWithChildren =
   )
 
 interface InternalControlAdminRouteChildren {
+  InternalControlAdminEarningsRoute: typeof InternalControlAdminEarningsRoute
   InternalControlAdminHealthRoute: typeof InternalControlAdminHealthRoute
+  InternalControlAdminLeadsRoute: typeof InternalControlAdminLeadsRoute
   InternalControlAdminLoginRoute: typeof InternalControlAdminLoginRoute
   InternalControlAdminModulesRoute: typeof InternalControlAdminModulesRoute
+  InternalControlAdminProvidersRoute: typeof InternalControlAdminProvidersRoute
+  InternalControlAdminTransactionsRoute: typeof InternalControlAdminTransactionsRoute
+  InternalControlAdminUsersRoute: typeof InternalControlAdminUsersRoute
   InternalControlAdminIndexRoute: typeof InternalControlAdminIndexRoute
+  InternalControlAdminAgatikeUsersUserIdRoute: typeof InternalControlAdminAgatikeUsersUserIdRoute
   InternalControlAdminOrganizersOrganizerIdRoute: typeof InternalControlAdminOrganizersOrganizerIdRouteWithChildren
+  InternalControlAdminPricingPlanIdRoute: typeof InternalControlAdminPricingPlanIdRoute
+  InternalControlAdminSupportTicketIdRoute: typeof InternalControlAdminSupportTicketIdRoute
+  InternalControlAdminAgatikeUsersIndexRoute: typeof InternalControlAdminAgatikeUsersIndexRoute
   InternalControlAdminOrganizersIndexRoute: typeof InternalControlAdminOrganizersIndexRoute
+  InternalControlAdminPricingIndexRoute: typeof InternalControlAdminPricingIndexRoute
+  InternalControlAdminSupportIndexRoute: typeof InternalControlAdminSupportIndexRoute
 }
 
 const InternalControlAdminRouteChildren: InternalControlAdminRouteChildren = {
+  InternalControlAdminEarningsRoute: InternalControlAdminEarningsRoute,
   InternalControlAdminHealthRoute: InternalControlAdminHealthRoute,
+  InternalControlAdminLeadsRoute: InternalControlAdminLeadsRoute,
   InternalControlAdminLoginRoute: InternalControlAdminLoginRoute,
   InternalControlAdminModulesRoute: InternalControlAdminModulesRoute,
+  InternalControlAdminProvidersRoute: InternalControlAdminProvidersRoute,
+  InternalControlAdminTransactionsRoute: InternalControlAdminTransactionsRoute,
+  InternalControlAdminUsersRoute: InternalControlAdminUsersRoute,
   InternalControlAdminIndexRoute: InternalControlAdminIndexRoute,
+  InternalControlAdminAgatikeUsersUserIdRoute:
+    InternalControlAdminAgatikeUsersUserIdRoute,
   InternalControlAdminOrganizersOrganizerIdRoute:
     InternalControlAdminOrganizersOrganizerIdRouteWithChildren,
+  InternalControlAdminPricingPlanIdRoute:
+    InternalControlAdminPricingPlanIdRoute,
+  InternalControlAdminSupportTicketIdRoute:
+    InternalControlAdminSupportTicketIdRoute,
+  InternalControlAdminAgatikeUsersIndexRoute:
+    InternalControlAdminAgatikeUsersIndexRoute,
   InternalControlAdminOrganizersIndexRoute:
     InternalControlAdminOrganizersIndexRoute,
+  InternalControlAdminPricingIndexRoute: InternalControlAdminPricingIndexRoute,
+  InternalControlAdminSupportIndexRoute: InternalControlAdminSupportIndexRoute,
 }
 
 const InternalControlAdminRouteWithChildren =
@@ -3996,6 +4355,8 @@ const rootRouteChildren: RootRouteChildren = {
   SpacesSuccessSpaceIdRoute: SpacesSuccessSpaceIdRoute,
   VenuesCheckoutVenueIdRoute: VenuesCheckoutVenueIdRoute,
   AdminWithdrawalsIndexRoute: AdminWithdrawalsIndexRoute,
+  VenuesVenueIdFacilitiesCheckoutFacilityIdRoute:
+    VenuesVenueIdFacilitiesCheckoutFacilityIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

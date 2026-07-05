@@ -21,7 +21,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
     if (providerReference) {
       // 1. Update the wallet transaction status
       const updateQuery = `
-        mutation UpdateWalletTransaction($provider_reference: String!, $provider_status: String!, $status: String!, $raw_callback_data: jsonb) {
+        mutation UpdateWalletTransactionAndEarnings($provider_reference: String!, $provider_status: String!, $status: String!, $raw_callback_data: jsonb) {
           update_wallet_transactions(
             where: { provider_reference: { _eq: $provider_reference } }, 
             _set: { 
@@ -36,9 +36,19 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               status
               reference_id
               type
+              amount
               net_amount
               workspace_id
             }
+          }
+          update_earnings(
+            where: { wallet_transaction: { provider_reference: { _eq: $provider_reference } } },
+            _set: {
+              status: $status,
+              updated_at: "now()"
+            }
+          ) {
+            affected_rows
           }
         }
       `;
@@ -104,6 +114,22 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             data: {
               workspace_id: tx.workspace_id,
               amount: parseFloat(tx.net_amount),
+            },
+          } as any);
+        }
+      }
+
+      // 3. Handle Failed Withdrawals (Refund the wallet)
+      if (tx && tx.status === "failed" && tx.type === "withdrawal") {
+        if (tx.workspace_id && tx.amount) {
+          console.log(
+            `[PawaPay Webhook] Withdrawal failed. Refunding ${tx.amount} to workspace ${tx.workspace_id}`,
+          );
+          const { addMoneyToWorkspaceWallet } = await import("./wallet");
+          await addMoneyToWorkspaceWallet({
+            data: {
+              workspace_id: tx.workspace_id,
+              amount: parseFloat(tx.amount),
             },
           } as any);
         }

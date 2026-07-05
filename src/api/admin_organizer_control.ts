@@ -1212,3 +1212,497 @@ export const updateAdminWorkspaceModules = createServerFn({ method: "POST" })
     });
     return data.update_workspaces_by_pk;
   });
+
+// ----------------------------------------------------
+// PLATFORM WIDE TRANSACTIONS
+// ----------------------------------------------------
+export const getAllPlatformTransactions = createServerFn({ method: "POST" }).handler(async () => {
+  const session = await getAdminSession();
+  if (!session) throw new Error("unauthenticated");
+
+  const query = `
+      query GetAllPlatformTransactions {
+        organizer_invoices(order_by: {created_at: desc}) {
+          id
+          amount
+          status
+          created_at
+          organizer_id
+          subscription_id
+        }
+        organizers {
+          id
+          name
+          handle
+          email
+          image
+        }
+        subscriptions {
+          id
+          next_billing_date
+          plan_id
+          pricing_plan {
+            name
+            currency
+          }
+        }
+      }
+    `;
+
+  try {
+    const data = await hasuraRequest<any>(query, {});
+    const invoices = data.organizer_invoices || [];
+    const organizers = data.organizers || [];
+    const subscriptions = data.subscriptions || [];
+
+    const orgMap = new Map(organizers.map((o: any) => [o.id, o]));
+    const subMap = new Map(subscriptions.map((s: any) => [s.id, s]));
+
+    return invoices.map((inv: any) => {
+      const org = orgMap.get(inv.organizer_id);
+      const sub = subMap.get(inv.subscription_id);
+      return {
+        ...inv,
+        organizer: org || null,
+        subscription: sub || null,
+      };
+    });
+  } catch (e) {
+    console.error("Failed to fetch platform transactions:", e);
+    return [];
+  }
+});
+
+// ----------------------------------------------------
+// ADMIN WITHDRAWAL MANAGEMENT
+// ----------------------------------------------------
+
+export const getAdminWithdrawals = createServerFn({ method: "POST" }).handler(async () => {
+  const session = await getAdminSession();
+  if (!session) throw new Error("unauthenticated");
+
+  // Step 1: Fetch all withdrawal requests
+  const query = `
+      query GetAdminWithdrawals {
+        withdrawal_requests(
+          order_by: { created_at: desc }
+        ) {
+          id
+          amount
+          net_amount
+          currency
+          status
+          payout_method
+          payout_account
+          created_at
+          updated_at
+          workspace_id
+        }
+      }
+    `;
+
+  try {
+    const data = await hasuraRequest<any>(query, {});
+    const transactions = data.withdrawal_requests || [];
+    if (transactions.length === 0) return [];
+
+    // Step 2: Get unique workspace IDs, look up the organizer via workspaces
+    const wsIds = [...new Set(transactions.map((t: any) => t.workspace_id).filter(Boolean))];
+
+    let wsOrgMap = new Map<string, string>(); // workspace_id -> organizer_id
+    let orgMap = new Map<string, any>(); // organizer_id -> organizer
+
+    if (wsIds.length > 0) {
+      const wsQuery = `
+          query GetWorkspacesForWithdrawals($ids: [uuid!]!) {
+            workspaces(where: { id: { _in: $ids } }) {
+              id
+              name
+              orgnizer_id
+            }
+          }
+        `;
+      const wsData = await hasuraRequest<any>(wsQuery, { ids: wsIds });
+      const workspaces: any[] = wsData.workspaces || [];
+      workspaces.forEach((w: any) => wsOrgMap.set(w.id, w.orgnizer_id));
+
+      const orgIds = [...new Set(workspaces.map((w: any) => w.orgnizer_id).filter(Boolean))];
+      if (orgIds.length > 0) {
+        const orgQuery = `
+            query GetOrgsForWithdrawals($ids: [uuid!]!) {
+              organizers(where: { id: { _in: $ids } }) {
+                id
+                name
+                email
+                phone
+                image
+                handle
+              }
+            }
+          `;
+        const orgData = await hasuraRequest<any>(orgQuery, { ids: orgIds });
+        orgMap = new Map((orgData.organizers || []).map((o: any) => [o.id, o]));
+      }
+    }
+
+    return transactions.map((tx: any) => {
+      const orgId = wsOrgMap.get(tx.workspace_id);
+      return {
+        ...tx,
+        // map to raw_callback_data so the UI badge "Admin approval needed" keeps working
+        raw_callback_data: { requires_admin_approval: true },
+        organizer: orgId ? orgMap.get(orgId) || null : null,
+      };
+    });
+  } catch (e) {
+    console.error("Failed to fetch admin withdrawals:", e);
+    return [];
+  }
+});
+
+export const sendAdminWithdrawalOtp = createServerFn({ method: "POST" })
+  .validator((d: { transactionId: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const { transactionId } = ctx.data;
+
+    // Step 1: Get request
+    const txQuery = `
+      query GetTxForOtp($id: uuid!) {
+        withdrawal_requests_by_pk(id: $id) {
+          id
+          amount
+          currency
+          status
+          workspace_id
+        }
+      }
+    `;
+    const txData = await hasuraRequest<any>(txQuery, { id: transactionId });
+    const tx = txData.withdrawal_requests_by_pk;
+    if (!tx) throw new Error("Transaction not found");
+    if (tx.status !== "pending") throw new Error(`Transaction is already ${tx.status}`);
+
+    // Step 2: Get organizer via workspace
+    const wsQuery = `
+      query GetWsOrg($id: uuid!) {
+        workspaces_by_pk(id: $id) {
+          orgnizer_id
+        }
+      }
+    `;
+    const wsData = await hasuraRequest<any>(wsQuery, { id: tx.workspace_id });
+    const organizerId = wsData.workspaces_by_pk?.orgnizer_id;
+    if (!organizerId) throw new Error("Workspace or organizer not found");
+
+    const orgQuery = `
+      query GetOrgForOtp($id: uuid!) {
+        organizers_by_pk(id: $id) {
+          name
+          email
+          phone
+        }
+      }
+    `;
+    const orgData = await hasuraRequest<any>(orgQuery, { id: organizerId });
+    const organizer = orgData.organizers_by_pk;
+    if (!organizer) throw new Error("Organizer not found");
+    if (!organizer.email) throw new Error("Organizer has no email address on file");
+
+    // Step 3: Generate 6-digit OTP and sign a JWT
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const { default: bcrypt } = await import("bcryptjs");
+    const { SignJWT } = await import("jose");
+
+    const hashedOtp = await bcrypt.hash(otp, 10);
+    const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
+    const token = await new SignJWT({ otp: hashedOtp, transactionId, type: "admin_withdrawal_otp" })
+      .setProtectedHeader({ alg: "HS256" })
+      .setExpirationTime("10m")
+      .sign(SECRET_KEY);
+
+    // Step 4: Send via Resend email
+    if (!process.env.RESEND_API_KEY) {
+      console.log(`[DEV] Admin Withdrawal OTP for ${organizer.name} (${organizer.email}): ${otp}`);
+      return { success: true, token, email: organizer.email };
+    }
+
+    const emailRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "Agatike Connect <hello@agatike.rw>",
+        to: [organizer.email],
+        subject: `Your Withdrawal Authorization Code: ${otp}`,
+        html: `
+          <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px;border:1px solid #eee;border-radius:12px">
+            <h2 style="color:#f97316;margin-top:0">Withdrawal Authorization Code</h2>
+            <p style="color:#333">Hi <strong>${organizer.name}</strong>,</p>
+            <p style="color:#555">An Agatike admin is processing a withdrawal from your account. Please provide them with the following code:</p>
+            <div style="font-size:40px;font-weight:800;letter-spacing:8px;color:#f97316;padding:24px;background:#fff8f5;border:2px dashed #f97316;border-radius:10px;text-align:center;margin:24px 0">${otp}</div>
+            <p style="color:#555">This code is valid for <strong>10 minutes</strong>. Do not share it with anyone other than the Agatike admin you are speaking with.</p>
+            <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+            <p style="color:#999;font-size:13px">Withdrawal amount: <strong>${tx.currency} ${Number(tx.amount).toLocaleString()}</strong></p>
+          </div>
+        `,
+      }),
+    });
+
+    if (!emailRes.ok) {
+      const errBody = await emailRes.json().catch(() => ({}));
+      throw new Error(`Failed to send OTP email: ${errBody?.message || emailRes.status}`);
+    }
+
+    return { success: true, token, email: organizer.email };
+  });
+
+export const approveAdminPayout = createServerFn({ method: "POST" })
+  .validator(
+    (d: { transactionId: string; otpToken: string; otp: string; overrideNetworkId?: string }) => d,
+  )
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const { transactionId, otpToken, otp, overrideNetworkId } = ctx.data;
+
+    // Verify OTP
+    const { jwtVerify } = await import("jose");
+    const { default: bcrypt } = await import("bcryptjs");
+    const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
+
+    try {
+      const { payload } = await jwtVerify(otpToken, SECRET_KEY);
+      if (payload.type !== "admin_withdrawal_otp") throw new Error("Invalid token type");
+      if (payload.transactionId !== transactionId) throw new Error("Token mismatch");
+
+      const isValid = await bcrypt.compare(otp, payload.otp as string);
+      if (!isValid) throw new Error("Incorrect OTP");
+    } catch (err: any) {
+      throw new Error(err.message || "Invalid or expired OTP");
+    }
+
+    // 1. Fetch the withdrawal request
+    const reqQuery = `
+      query GetWithdrawalRequest($id: uuid!) {
+        withdrawal_requests_by_pk(id: $id) {
+          id
+          wallet_id
+          workspace_id
+          amount
+          net_amount
+          currency
+          payout_method
+          payout_account
+          network_id
+          country_code
+          status
+          target_currency
+          exchange_rate
+          platform_fee
+          network_fee
+        }
+      }
+    `;
+    const reqData = await hasuraRequest<any>(reqQuery, { id: transactionId });
+    const req = reqData.withdrawal_requests_by_pk;
+    if (!req) throw new Error("Withdrawal request not found");
+    if (req.status !== "pending") throw new Error(`Request is already ${req.status}`);
+
+    // 2. Deduct wallet & insert wallet_transaction
+    const totalFee = (req.platform_fee || 0) + (req.network_fee || 0);
+    const executeMutation = `
+      mutation ExecuteWithdrawal(
+        $wallet_id: uuid!
+        $workspace_id: uuid!
+        $amount: numeric!
+        $amount_str: String!
+        $deduct_amount: numeric!
+        $net_amount_str: String!
+        $currency: String!
+        $payout_method: String!
+        $payout_account: String!
+        $description: String!
+        $raw_callback_data: jsonb
+        $updated_at: timestamptz!
+      ) {
+        update_wallets(
+          where: { id: { _eq: $wallet_id }, amount: { _gte: $amount } }
+          _inc: { amount: $deduct_amount }
+          _set: { updated_at: $updated_at }
+        ) {
+          affected_rows
+        }
+        insert_wallet_transactions_one(object: {
+          wallet_id: $wallet_id
+          workspace_id: $workspace_id
+          amount: $amount_str
+          net_amount: $net_amount_str
+          currency: $currency
+          payout_method: $payout_method
+          payout_account: $payout_account
+          description: $description
+          status: "pending"
+          type: "withdrawal"
+          provider_reference: "PENDING"
+          provider_status: "PENDING"
+          raw_callback_data: $raw_callback_data
+        }) {
+          id
+        }
+      }
+    `;
+
+    const description = `[ADMIN APPROVED] Withdrawal to ${req.payout_method} (${req.payout_account}) | Base: ${req.amount} ${req.currency} | Fee: ${totalFee.toFixed(2)} ${req.currency}`;
+
+    const execData = await hasuraRequest<any>(executeMutation, {
+      wallet_id: req.wallet_id,
+      workspace_id: req.workspace_id,
+      amount: req.amount,
+      amount_str: String(req.amount),
+      deduct_amount: -req.amount,
+      net_amount_str: String(req.net_amount),
+      currency: req.currency,
+      payout_method: req.payout_method,
+      payout_account: req.payout_account,
+      description,
+      raw_callback_data: {
+        network_id: overrideNetworkId || req.network_id,
+        country_code: req.country_code,
+        payout_method: req.payout_method,
+        amount: req.amount,
+        netAmount: req.net_amount,
+        totalFee,
+        target_currency: req.target_currency,
+        exchange_rate: req.exchange_rate,
+        requires_admin_approval: true,
+      },
+      updated_at: new Date().toISOString(),
+    });
+
+    if (execData.update_wallets.affected_rows === 0) {
+      throw new Error("Failed to deduct from wallet. Insufficient balance.");
+    }
+
+    const newTxId = execData.insert_wallet_transactions_one.id;
+
+    // 3. Mark the withdrawal request as approved, link the transaction, and insert earnings
+    // For withdrawals: customer pays nothing, organizer pays the total processing fee
+    const platformRevenue = (req.platform_fee || 0) + (req.network_fee || 0); // Total fee collected from org
+    const providerCost = req.network_fee || 0;
+    const netProfit = req.platform_fee || 0; // Pure agatike margin
+
+    const updateReqMutation = `
+      mutation UpdateRequestAndEarnings(
+        $id: uuid!, 
+        $tx_id: uuid!, 
+        $admin_id: uuid!,
+        $gross_amount: numeric!,
+        $provider_cost: numeric!,
+        $platform_revenue: numeric!,
+        $net_profit: numeric!,
+        $cust_fee: numeric!,
+        $org_fee: numeric!,
+        $currency: String!
+      ) {
+        update_withdrawal_requests_by_pk(
+          pk_columns: { id: $id }
+          _set: { 
+            status: "approved", 
+            wallet_transaction_id: $tx_id,
+            admin_user_id: $admin_id,
+            approved_at: "now()"
+          }
+        ) {
+          id
+        }
+        insert_earnings_one(object: {
+          wallet_transaction_id: $tx_id
+          withdrawal_request_id: $id
+          transaction_type: "withdrawal"
+          gross_amount: $gross_amount
+          provider_cost: $provider_cost
+          platform_revenue: $platform_revenue
+          net_profit: $net_profit
+          customer_fee: $cust_fee
+          organizer_fee: $org_fee
+          currency: $currency
+          status: "pending"
+        }) {
+          id
+        }
+      }
+    `;
+    await hasuraRequest(updateReqMutation, {
+      id: req.id,
+      tx_id: newTxId,
+      admin_id: session.sub,
+      gross_amount: req.amount,
+      provider_cost: providerCost,
+      platform_revenue: platformRevenue,
+      net_profit: netProfit,
+      cust_fee: 0, // customer pays no withdrawal fee
+      org_fee: platformRevenue, // organizer pays the full withdrawal platform fee
+      currency: req.currency || "RWF",
+    });
+
+    // 4. Trigger the PawaPay payout with the newly created wallet transaction ID
+    const { triggerPawaPayPayout } = await import("./pawapay");
+    const result = await triggerPawaPayPayout({ data: { transactionId: newTxId } } as any);
+
+    return { success: true, pawapayResult: result };
+  });
+
+export const rejectAdminPayout = createServerFn({ method: "POST" })
+  .validator((d: { transactionId: string; reason?: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const { transactionId, reason } = ctx.data;
+
+    const query = `
+      query GetReq($id: uuid!) {
+        withdrawal_requests_by_pk(id: $id) {
+          id
+          status
+        }
+      }
+    `;
+    const res = await hasuraRequest<any>(query, { id: transactionId });
+    const req = res.withdrawal_requests_by_pk;
+
+    if (!req) throw new Error("Withdrawal request not found");
+    if (req.status !== "pending")
+      throw new Error(`Request is already ${req.status}. Cannot reject.`);
+
+    // Just mark as rejected — no wallet refund needed since it was never deducted
+    const mutation = `
+      mutation RejectRequest($id: uuid!, $reason: String, $admin_id: uuid!) {
+        update_withdrawal_requests_by_pk(
+          pk_columns: { id: $id }
+          _set: { 
+            status: "rejected", 
+            rejection_reason: $reason, 
+            admin_user_id: $admin_id,
+            updated_at: "now()" 
+          }
+        ) {
+          id
+        }
+      }
+    `;
+
+    await hasuraRequest<any>(mutation, {
+      id: transactionId,
+      reason: reason || "Rejected by admin",
+      admin_id: session.sub,
+    });
+
+    return { success: true };
+  });

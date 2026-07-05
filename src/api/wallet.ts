@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
+import { getSession } from "./auth";
+import { triggerPawaPayPayout } from "./pawapay";
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
 
@@ -77,17 +79,54 @@ const GET_WALLET_TRANSACTIONS = `
       payout_method
       reference_id
       workspace_id
+      platform_fee
+      raw_callback_data
+    }
+    withdrawal_requests(where: { wallet_id: { _eq: $wallet_id } }, order_by: { created_at: desc }) {
+      id
+      amount
+      net_amount
+      currency
+      payout_method
+      payout_account
+      status
+      created_at
+      updated_at
+      wallet_id
+      workspace_id
+      rejection_reason
+      platform_fee
+      network_fee
     }
   }
 `;
 
 export const getWalletTransactions = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { wallet_id } = ctx.data as unknown as { wallet_id: string };
-  const data = await hasuraRequest<{ wallet_transactions: any[] }>(GET_WALLET_TRANSACTIONS, {
+  const data = await hasuraRequest<any>(GET_WALLET_TRANSACTIONS, {
     wallet_id,
   });
 
-  return data.wallet_transactions || [];
+  const transactions = (data.wallet_transactions || []).map((tx: any) => ({
+    ...tx,
+    platform_fee: tx.platform_fee || tx.raw_callback_data?.platform_fee || 0,
+    network_fee: tx.raw_callback_data?.network_fee || 0,
+  }));
+  const requests = data.withdrawal_requests || [];
+
+  const mappedRequests = requests.map((req: any) => ({
+    ...req,
+    type: "withdrawal",
+    description: `[Agatike Team Review] Withdrawal Request to ${req.payout_method} (${req.payout_account})${req.status === "rejected" && req.rejection_reason ? ` - Rejected: ${req.rejection_reason}` : ""}`,
+    is_request: true,
+  }));
+
+  // Merge and sort descending by created_at
+  const all = [...transactions, ...mappedRequests].sort((a, b) => {
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  return all;
 });
 
 const ADD_MONEY_TO_WORKSPACE_WALLET = `
@@ -119,13 +158,15 @@ export const addMoneyToWorkspaceWallet = createServerFn({ method: "POST" }).hand
   return data.update_wallets?.returning?.[0] || null;
 });
 
+// Self-serve withdrawal (≤ 150,000) — deducts wallet + records in wallet_transactions immediately
 const REQUEST_WITHDRAWAL_MUTATION = `
   mutation RequestWithdrawal(
     $wallet_id: uuid!
     $workspace_id: uuid!
     $amount: numeric!
+    $amount_str: String!
     $deduct_amount: numeric!
-    $net_amount: numeric!
+    $net_amount_str: String!
     $currency: String!
     $payout_method: String!
     $payout_account: String!
@@ -141,23 +182,60 @@ const REQUEST_WITHDRAWAL_MUTATION = `
       _set: { updated_at: $updated_at }
     ) {
       affected_rows
-      returning {
-        id
-        amount
-      }
+      returning { id amount }
     }
     insert_wallet_transactions_one(object: {
       wallet_id: $wallet_id
       workspace_id: $workspace_id
-      amount: $amount
-      net_amount: $net_amount
+      amount: $amount_str
+      net_amount: $net_amount_str
       currency: $currency
       payout_method: $payout_method
       payout_account: $payout_account
       description: $description
       status: $status
       type: $type
+      provider_reference: "PENDING"
+      provider_status: "PENDING"
       raw_callback_data: $raw_callback_data
+    }) {
+      id
+    }
+  }
+`;
+
+// Admin-approval withdrawal (> 150,000) — records in withdrawal_requests only, NO wallet deduction yet
+const INSERT_WITHDRAWAL_REQUEST = `
+  mutation InsertWithdrawalRequest(
+    $workspace_id: uuid!
+    $wallet_id: uuid!
+    $amount: numeric!
+    $net_amount: numeric!
+    $currency: String!
+    $payout_method: String!
+    $payout_account: String!
+    $network_id: String
+    $country_code: String
+    $target_currency: String
+    $exchange_rate: numeric
+    $platform_fee: numeric
+    $network_fee: numeric
+  ) {
+    insert_withdrawal_requests_one(object: {
+      workspace_id: $workspace_id
+      wallet_id: $wallet_id
+      amount: $amount
+      net_amount: $net_amount
+      currency: $currency
+      payout_method: $payout_method
+      payout_account: $payout_account
+      network_id: $network_id
+      country_code: $country_code
+      target_currency: $target_currency
+      exchange_rate: $exchange_rate
+      platform_fee: $platform_fee
+      network_fee: $network_fee
+      status: "pending"
     }) {
       id
     }
@@ -167,26 +245,52 @@ const REQUEST_WITHDRAWAL_MUTATION = `
 export const sendWithdrawalOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { organizer_id } = ctx.data as unknown as { organizer_id: string };
 
-  const query = `
-    query GetOrganizer($id: uuid!) {
-      organizers_by_pk(id: $id) {
-        email
+  // 1. Try to get the email from the logged-in user's session
+  let email = "";
+  try {
+    const session = await getSession();
+    if (session && session.sub) {
+      if (session.type === "user") {
+        const uQuery = `query GetUser($id: uuid!) { users_by_pk(id: $id) { email } }`;
+        const uRes = await hasuraRequest<{ users_by_pk: { email: string } }>(uQuery, {
+          id: session.sub,
+        });
+        if (uRes.users_by_pk?.email) email = uRes.users_by_pk.email;
+      } else if (session.type === "workspace_user") {
+        const wuQuery = `query GetWU($id: uuid!) { workspace_users_by_pk(id: $id) { email } }`;
+        const wuRes = await hasuraRequest<{ workspace_users_by_pk: { email: string } }>(wuQuery, {
+          id: session.sub,
+        });
+        if (wuRes.workspace_users_by_pk?.email) email = wuRes.workspace_users_by_pk.email;
       }
     }
-  `;
-  const result = await hasuraRequest<{ organizers_by_pk: { email: string } }>(query, {
-    id: organizer_id,
-  });
-  const email = result.organizers_by_pk?.email;
-
-  if (!email) {
-    throw new Error("Organizer not found");
+  } catch (err) {
+    // ignore
   }
 
-  // Generate 8-character alphanumeric OTP
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  // 2. Fallback to the organizer's email if no session email was found
+  if (!email) {
+    const query = `
+      query GetOrganizer($id: uuid!) {
+        organizers_by_pk(id: $id) {
+          email
+        }
+      }
+    `;
+    const result = await hasuraRequest<{ organizers_by_pk: { email: string } }>(query, {
+      id: organizer_id,
+    });
+    email = result.organizers_by_pk?.email || "";
+  }
+
+  if (!email) {
+    throw new Error("Organizer email not found");
+  }
+
+  // Generate 6-digit numeric OTP
+  const chars = "0123456789";
   let otp = "";
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 6; i++) {
     otp += chars.charAt(Math.floor(Math.random() * chars.length));
   }
 
@@ -274,30 +378,34 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     converted_net_payout,
   } = ctx.data as any;
 
-  if (!otpToken || !otp || !password) {
-    throw new Error("Missing security verification details.");
+  const ADMIN_APPROVAL_THRESHOLD = 150000;
+  const requiresAdminApproval = amount > ADMIN_APPROVAL_THRESHOLD;
+
+  if (!requiresAdminApproval) {
+    // --- SELF-SERVE FLOW (≤ 150,000) ---
+    if (!otpToken || !otp || !password) {
+      throw new Error("Missing security verification details.");
+    }
+
+    // 1. Verify OTP JWT
+    try {
+      const { payload } = await jwtVerify(otpToken, SECRET);
+      if (payload.type !== "withdrawal_otp") throw new Error("Invalid token type");
+      const otpHash = payload.otp as string;
+      const isOtpValid = await bcrypt.compare(otp, otpHash);
+      if (!isOtpValid) throw new Error("Invalid or expired OTP");
+    } catch (err: any) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    // 2. Verify Password
+    const orgQuery = `query GetOrg { organizers_by_pk(id: "${organizer_id}") { password } }`;
+    const orgRes = await hasuraRequest<{ organizers_by_pk: { password: string } }>(orgQuery);
+    const orgData = orgRes.organizers_by_pk;
+    if (!orgData) throw new Error("Organizer not found");
+    const isPasswordValid = await bcrypt.compare(password, orgData.password);
+    if (!isPasswordValid) throw new Error("Incorrect password");
   }
-
-  // 1. Verify OTP JWT
-  try {
-    const { payload } = await jwtVerify(otpToken, SECRET);
-    if (payload.type !== "withdrawal_otp") throw new Error("Invalid token type");
-
-    const otpHash = payload.otp as string;
-    const isOtpValid = await bcrypt.compare(otp, otpHash);
-    if (!isOtpValid) throw new Error("Invalid or expired OTP");
-  } catch (err: any) {
-    throw new Error("Invalid or expired OTP");
-  }
-
-  // 2. Verify Password
-  const orgQuery = `query GetOrg { organizers_by_pk(id: "${organizer_id}") { password } }`;
-  const orgRes = await hasuraRequest<{ organizers_by_pk: { password: string } }>(orgQuery);
-  const orgData = orgRes.organizers_by_pk;
-  if (!orgData) throw new Error("Organizer not found");
-
-  const isPasswordValid = await bcrypt.compare(password, orgData.password);
-  if (!isPasswordValid) throw new Error("Incorrect password");
 
   // 3. Get Wallet Balance
   const walletQuery = `query GetWallet { wallets_by_pk(id: "${wallet_id}") { amount } }`;
@@ -306,7 +414,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     throw new Error("Insufficient wallet balance.");
   }
 
-  // 2. Get Platform Fee from Subscription
+  // 4. Get Withdrawal Fee Fields from active Subscription plan
   const subQuery = `
     query GetActiveSub {
       subscriptions(
@@ -316,14 +424,16 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       ) {
         pricing_plan {
           organizer_platform_contribution
+          withdrawal_fee_fixed
           max_withdrawals_per_week
         }
       }
     }
   `;
   const subRes = await hasuraRequest<{ subscriptions: any[] }>(subQuery);
-  const platformPercentage =
-    subRes.subscriptions?.[0]?.pricing_plan?.organizer_platform_contribution || 3.0; // fallback 3%
+  const plan = subRes.subscriptions?.[0]?.pricing_plan || {};
+  const withdrawalFeePercentage = parseFloat(plan.organizer_platform_contribution) || 0;
+  const withdrawalFeeFixed = parseFloat(plan.withdrawal_fee_fixed) || 0;
 
   const maxWeeklyLimitStr =
     subRes.subscriptions?.[0]?.pricing_plan?.max_withdrawals_per_week || "1";
@@ -331,41 +441,43 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     ? 1
     : parseInt(maxWeeklyLimitStr, 10);
 
-  // 2.5 Check Withdrawal Limits
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  // 5. Check Withdrawal Limits (only for self-serve)
+  if (!requiresAdminApproval) {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  const txQuery = `
-    query GetWeeklyWithdrawals($workspace_id: uuid!, $seven_days_ago: timestamptz!) {
-      wallet_transactions_aggregate(
-        where: {
-          workspace_id: { _eq: $workspace_id },
-          type: { _eq: "withdrawal" },
-          status: { _in: ["pending", "completed"] },
-          created_at: { _gte: $seven_days_ago }
-        }
-      ) {
-        aggregate {
-          count
+    const txQuery = `
+      query GetWeeklyWithdrawals($workspace_id: uuid!, $seven_days_ago: timestamptz!) {
+        wallet_transactions_aggregate(
+          where: {
+            workspace_id: { _eq: $workspace_id },
+            type: { _eq: "withdrawal" },
+            status: { _in: ["pending", "completed"] },
+            created_at: { _gte: $seven_days_ago }
+          }
+        ) {
+          aggregate { count }
         }
       }
-    }
-  `;
-  const txRes = await hasuraRequest<{
-    wallet_transactions_aggregate: { aggregate: { count: number } };
-  }>(txQuery, {
-    workspace_id,
-    seven_days_ago: sevenDaysAgo.toISOString(),
-  });
+    `;
+    const txRes = await hasuraRequest<{
+      wallet_transactions_aggregate: { aggregate: { count: number } };
+    }>(txQuery, {
+      workspace_id,
+      seven_days_ago: sevenDaysAgo.toISOString(),
+    });
 
-  const weeklyCount = txRes.wallet_transactions_aggregate?.aggregate?.count || 0;
-  if (weeklyCount >= maxWeeklyLimit) {
-    throw new Error(
-      `You have reached your limit of ${maxWeeklyLimit} withdrawal(s) per week for your current plan.`,
-    );
+    const weeklyCount = txRes.wallet_transactions_aggregate?.aggregate?.count || 0;
+
+    // If maxWeeklyLimit is 0, we treat it as unlimited.
+    if (maxWeeklyLimit > 0 && weeklyCount >= maxWeeklyLimit) {
+      throw new Error(
+        `You have reached your limit of ${maxWeeklyLimit} withdrawal(s) per week for your current plan.`,
+      );
+    }
   }
 
-  // 3. Get Network Disbursement Fee
+  // 6. Get Network Disbursement Fee
   let netPercentage = 0;
   let netFixed = 0;
   if (payout_method === "momo" && network_id) {
@@ -412,8 +524,10 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     }
   }
 
-  // 4. Calculate Total Fee and Net Payout
-  const agatikeFee = amount * (platformPercentage / 100);
+  // 7. Calculate Total Fee and Net Payout
+  // Platform (Agatike) withdrawal fee — from the organizer's dedicated withdrawal plan fields
+  const agatikeFee = amount * (withdrawalFeePercentage / 100) + withdrawalFeeFixed;
+  // Provider (PawaPay) disbursement cost
   const networkFee = amount * (netPercentage / 100) + netFixed;
   const totalFee = agatikeFee + networkFee;
   const netAmount = amount - totalFee;
@@ -422,52 +536,134 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     throw new Error("Withdrawal amount is too low to cover the processing fees.");
   }
 
-  // 5. Execute Transaction
-  const data = await hasuraRequest<any>(REQUEST_WITHDRAWAL_MUTATION, {
-    wallet_id,
-    workspace_id,
-    amount,
-    deduct_amount: -amount,
-    net_amount: netAmount,
-    currency,
-    payout_method,
-    payout_account,
-    description: `Withdrawal to ${payout_method} (${payout_account}) | Base: ${amount} ${currency} | Fee: ${totalFee.toFixed(2)} ${currency}`,
-    status: "pending",
-    type: "withdrawal",
-    raw_callback_data: {
-      network_id,
-      country_code,
-      payout_method,
+  // 8. Execute — two different paths based on amount
+  if (requiresAdminApproval) {
+    // --- ADMIN APPROVAL PATH (> 150,000) ---
+    // Insert a withdrawal REQUEST only. No wallet deduction yet.
+    // Admin will review, approve and then we deduct + trigger PawaPay.
+    const reqData = await hasuraRequest<any>(INSERT_WITHDRAWAL_REQUEST, {
+      workspace_id,
+      wallet_id,
       amount,
+      net_amount: netAmount,
+      currency,
+      payout_method,
+      payout_account,
+      network_id: network_id || null,
+      country_code: country_code || "RWA",
+      target_currency: target_currency || currency,
+      exchange_rate: exchange_rate || 1,
+      platform_fee: agatikeFee,
+      network_fee: networkFee,
+    });
+
+    return {
+      success: true,
+      requestId: reqData.insert_withdrawal_requests_one?.id,
       netAmount,
-      totalFee,
-      target_currency,
-      exchange_rate,
-      converted_amount,
-      converted_net_payout,
-    },
-    updated_at: new Date().toISOString(),
-  });
+      agatikeFee,
+      networkFee,
+      requiresAdminApproval: true,
+    };
+  } else {
+    // --- SELF-SERVE PATH (≤ 150,000) ---
+    // Deduct wallet and record directly in wallet_transactions.
+    const data = await hasuraRequest<any>(REQUEST_WITHDRAWAL_MUTATION, {
+      wallet_id,
+      workspace_id,
+      amount,
+      amount_str: String(amount),
+      deduct_amount: -amount,
+      net_amount_str: String(netAmount),
+      currency,
+      payout_method,
+      payout_account,
+      description: `Withdrawal to ${payout_method} (${payout_account}) | Base: ${amount} ${currency} | Fee: ${totalFee.toFixed(2)} ${currency}`,
+      status: "pending",
+      type: "withdrawal",
+      raw_callback_data: {
+        network_id,
+        country_code,
+        payout_method,
+        amount,
+        netAmount,
+        totalFee,
+        platform_fee: agatikeFee,
+        network_fee: networkFee,
+        target_currency,
+        exchange_rate,
+        converted_amount,
+        converted_net_payout,
+      },
+      updated_at: new Date().toISOString(),
+    });
 
-  if (data.update_wallets.affected_rows === 0) {
-    throw new Error("Failed to deduct from wallet. Please try again.");
+    if (data.update_wallets.affected_rows === 0) {
+      throw new Error("Failed to deduct from wallet. Please try again.");
+    }
+
+    const txId = data.insert_wallet_transactions_one.id;
+    const netProfit = agatikeFee; // Pure agatike margin
+
+    // For withdrawals: Platform Revenue = Total fee collected (agatikeFee + networkFee)
+    // Net Profit = Platform Revenue − Provider (PawaPay) payout cost = agatikeFee
+    const earningsQuery = `
+      mutation InsertEarnings(
+        $tx_id: uuid!, $gross: numeric!, $cost: numeric!,
+        $rev: numeric!, $profit: numeric!, $curr: String!,
+        $cust_fee: numeric!, $org_fee: numeric!
+      ) {
+        insert_earnings_one(object: {
+          wallet_transaction_id: $tx_id,
+          transaction_type: "withdrawal",
+          gross_amount: $gross,
+          provider_cost: $cost,
+          platform_revenue: $rev,
+          net_profit: $profit,
+          customer_fee: $cust_fee,
+          organizer_fee: $org_fee,
+          currency: $curr,
+          status: "pending"
+        }) { id }
+      }
+    `;
+    await hasuraRequest(earningsQuery, {
+      tx_id: txId,
+      gross: amount,
+      cost: networkFee,
+      rev: totalFee,
+      profit: netProfit,
+      curr: currency || "RWF",
+      cust_fee: 0, // customer pays no withdrawal fee
+      org_fee: totalFee, // organizer pays the total fee
+    });
+
+    // Trigger PawaPay payout automatically
+    try {
+      await triggerPawaPayPayout({ data: { transactionId: txId } } as any);
+    } catch (e) {
+      console.error("Failed to automatically trigger PawaPay payout:", e);
+      // We do not throw here to avoid rolling back the DB insert,
+      // but it will remain 'pending' and admins can retry it.
+    }
+
+    return {
+      success: true,
+      transactionId: txId,
+      netAmount,
+      agatikeFee,
+      networkFee,
+      requiresAdminApproval: false,
+    };
   }
-
-  return {
-    success: true,
-    transactionId: data.insert_wallet_transactions_one.id,
-    netAmount,
-    agatikeFee,
-    networkFee,
-  };
 });
 
 export const getPendingWithdrawals = createServerFn({ method: "GET" }).handler(async () => {
+  // This now reads from the dedicated withdrawal_requests table
   const query = `
     query GetPendingWithdrawals {
-      wallet_transactions(
-        where: { type: { _eq: "withdrawal" }, status: { _eq: "pending" } }
+      withdrawal_requests(
+        where: { status: { _eq: "pending" } }
         order_by: { created_at: desc }
       ) {
         id
@@ -478,13 +674,12 @@ export const getPendingWithdrawals = createServerFn({ method: "GET" }).handler(a
         status
         payout_method
         payout_account
-        raw_callback_data
-        workspace {
-          name
-        }
+        network_id
+        country_code
+        workspace_id
       }
     }
   `;
-  const res = await hasuraRequest<{ wallet_transactions: any[] }>(query);
-  return res.wallet_transactions || [];
+  const res = await hasuraRequest<{ withdrawal_requests: any[] }>(query);
+  return res.withdrawal_requests || [];
 });

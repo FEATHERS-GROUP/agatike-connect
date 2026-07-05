@@ -27,6 +27,7 @@ import { getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { uploadFile } from "@/api/storage";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 // Standard event categories
 const eventCategories: string[] = [
@@ -225,6 +226,11 @@ export function CreateEventDesktop() {
   const step = urlStep || 0;
   const { activeWorkspace } = useWorkspace();
   const currencySymbol = getCurrencySymbol(activeWorkspace?.wallet?.currency);
+  const {
+    canCreateTicketTier,
+    canCreateEvent,
+    isLoading: limitsLoading,
+  } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const { data: forms = [] } = useQuery({
     queryKey: ["workspace_forms", activeWorkspace?.id],
@@ -307,6 +313,15 @@ export function CreateEventDesktop() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (!limitsLoading && !canCreateEvent()) {
+      toast.error("Event Limit Reached", {
+        description: "You have reached the maximum number of events allowed by your plan.",
+      });
+      navigate({ to: dashboardUrl, replace: true });
+    }
+  }, [limitsLoading, canCreateEvent, navigate, dashboardUrl]);
 
   const saveDraft = () => {
     const draftState = {
@@ -687,6 +702,7 @@ export function CreateEventDesktop() {
             setActiveTourStopIdx={setActiveTourStopIdx}
             forms={forms}
             vipPrivileges={vipPrivileges}
+            canCreateTicketTier={canCreateTicketTier}
           />
         )}
 

@@ -183,7 +183,7 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
 
       if (basicPlanId) {
         const subMutation = `
-          mutation AutoSubscribeBasic($organizer_id: text!, $plan_id: uuid!) {
+          mutation AutoSubscribeBasic($organizer_id: uuid!, $plan_id: uuid!) {
             insert_subscriptions_one(object: {
               organizer_id: $organizer_id,
               plan_id: $plan_id,

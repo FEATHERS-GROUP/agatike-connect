@@ -36,6 +36,8 @@ import {
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/$spaceId/plans")({
   component: SpacePlansPage,
@@ -284,6 +286,12 @@ function SpacePlansPage() {
     enabled: !!spaceId,
   });
 
+  const { activeWorkspace } = useWorkspace();
+  const { canCreateMembershipPlan } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
+
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
@@ -302,6 +310,10 @@ function SpacePlansPage() {
 
   const handleAdd = async (plan: Plan) => {
     try {
+      if (!canCreateMembershipPlan()) {
+        toast.error("You have reached the maximum number of membership plans for your plan.");
+        throw new Error("Limit reached");
+      }
       await savePlans([...plans, plan]);
       toast.success(`"${plan.name}" plan added!`);
     } catch {

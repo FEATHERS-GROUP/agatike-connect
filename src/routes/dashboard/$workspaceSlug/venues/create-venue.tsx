@@ -35,6 +35,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { COUNTRIES } from "@/lib/countries";
 import { getCoordinates, getPlacesAutocomplete } from "@/api/geocoding";
 import { Switch } from "@/components/ui/switch";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { lazy, Suspense, useState as _useState, useEffect as _useEffect } from "react";
 
 function ClientOnly({ children, fallback }: { children: any; fallback?: any }) {
@@ -150,6 +151,10 @@ function NewVenueWizard() {
   const navigate = useNavigate();
   const { step } = useSearch({ strict: false }) as { step: number };
   const { activeWorkspace } = useWorkspace();
+  const { canCreateVenue, isLoading: limitsLoading } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const [isUploading, setIsUploading] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
@@ -177,9 +182,14 @@ function NewVenueWizard() {
     amenities: [] as string[],
     sections: [] as { name: string; image_url: string }[],
     images: [] as string[],
+    entrance_fee: 0,
+    entrance_type: "free",
+    consumable_value: 0,
+    requires_approval: false,
+    facilities_data: [] as any[],
   };
 
-  const [formData, setFormData] = useState(() => {
+  const [formData, setFormData] = useState<typeof DEFAULT_FORM_DATA>(() => {
     const saved = localStorage.getItem(DRAFT_KEY);
     if (saved) {
       try {
@@ -207,6 +217,13 @@ function NewVenueWizard() {
       } catch (e) {}
     }
   }, [workspaceSlug]); // Run once on mount
+
+  useEffect(() => {
+    if (!limitsLoading && !canCreateVenue()) {
+      toast.error("Venue Limit Reached");
+      navigate({ to: `/dashboard/${workspaceSlug}/venue-rent`, replace: true });
+    }
+  }, [limitsLoading, canCreateVenue, navigate, workspaceSlug]);
 
   useEffect(() => {
     if (!formData.address || !showAddressSuggestions) {
@@ -274,6 +291,11 @@ function NewVenueWizard() {
           sections: formData.sections,
           images: formData.images,
           cover_url: formData.images[0] || null,
+          entrance_fee: Number(formData.entrance_fee) || 0,
+          entrance_type: formData.entrance_type,
+          consumable_value: Number(formData.consumable_value) || 0,
+          requires_approval: formData.requires_approval,
+          facilities_data: formData.facilities_data,
         },
       });
     },
@@ -397,6 +419,59 @@ function NewVenueWizard() {
     setFormData((p) => ({ ...p, sections: p.sections.filter((_, i) => i !== idx) }));
   };
 
+  const addFacility = () => {
+    setFormData((p) => ({
+      ...p,
+      facilities_data: [
+        ...p.facilities_data,
+        {
+          id: `fac-${Date.now()}`,
+          name: "",
+          type: "exclusive_slot",
+          pricing: { hourly_rate: "", monthly_subscription: "" },
+          max_capacity: "",
+          requires_approval: false,
+          image_url: "",
+        },
+      ],
+    }));
+  };
+
+  const updateFacility = (idx: number, field: string, val: any) => {
+    setFormData((p) => ({
+      ...p,
+      facilities_data: p.facilities_data.map((f, i) => (i === idx ? { ...f, [field]: val } : f)),
+    }));
+  };
+
+  const updateFacilityPricing = (idx: number, field: string, val: any) => {
+    setFormData((p) => ({
+      ...p,
+      facilities_data: p.facilities_data.map((f, i) =>
+        i === idx ? { ...f, pricing: { ...f.pricing, [field]: val } } : f,
+      ),
+    }));
+  };
+
+  const removeFacility = (idx: number) => {
+    setFormData((p) => ({ ...p, facilities_data: p.facilities_data.filter((_, i) => i !== idx) }));
+  };
+
+  const handleFacilityImageUpload = async (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) return toast.error("File exceeds 5MB limit");
+    setIsUploading(true);
+    try {
+      const url = await uploadFileToStorage(file, "venues");
+      updateFacility(idx, "image_url", url);
+    } catch (err) {
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const addPricingTier = () => {
     setFormData((p) => ({ ...p, pricing_tiers: [...p.pricing_tiers, { name: "", amount: "" }] }));
   };
@@ -504,7 +579,8 @@ function NewVenueWizard() {
                   </div>
                   <h3 className="text-xl font-bold">Entire Venue Rental</h3>
                   <p className="text-muted-foreground mt-2">
-                    Users rent the entire space for their private events, weddings, or parties.
+                    Users rent the entire space. Best for private events, weddings, or palaces. No
+                    general admission.
                   </p>
                 </button>
 
@@ -526,9 +602,10 @@ function NewVenueWizard() {
                   <div className="bg-primary/10 p-3 rounded-full w-fit mb-4">
                     <CheckCircle2 className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold">Entrance Tickets Only</h3>
+                  <h3 className="text-xl font-bold">Entrance Tickets & Facilities</h3>
                   <p className="text-muted-foreground mt-2">
-                    Users buy tickets to enter your venue (e.g. Museum, Park, Public Pool).
+                    Users buy tickets to enter. You can also list specific sub-facilities (like
+                    Pitches or Pools) for people to book individually.
                   </p>
                 </button>
 
@@ -548,7 +625,8 @@ function NewVenueWizard() {
                   </div>
                   <h3 className="text-xl font-bold">Hybrid</h3>
                   <p className="text-muted-foreground mt-2">
-                    Both available. Users can rent it entirely OR buy entrance tickets.
+                    Both available. Rent the entire complex for massive events, OR allow general
+                    admission and bookable sub-facilities.
                   </p>
                 </button>
               </div>
@@ -653,13 +731,35 @@ function NewVenueWizard() {
                       )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-base">Maximum Capacity</Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-base">Maximum Capacity</Label>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="unlimited-capacity"
+                          checked={formData.capacity === "" || formData.capacity === "0"}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setFormData((p) => ({ ...p, capacity: "" }));
+                            } else {
+                              setFormData((p) => ({ ...p, capacity: "100" }));
+                            }
+                          }}
+                        />
+                        <Label
+                          htmlFor="unlimited-capacity"
+                          className="text-sm font-normal text-muted-foreground"
+                        >
+                          Unlimited
+                        </Label>
+                      </div>
+                    </div>
                     <Input
                       type="number"
                       className="h-12 text-lg rounded-xl"
                       value={formData.capacity}
                       onChange={(e) => setFormData((p) => ({ ...p, capacity: e.target.value }))}
                       placeholder="e.g. 5000"
+                      disabled={formData.capacity === "" || formData.capacity === "0"}
                     />
                   </div>
                 </div>
@@ -771,87 +871,172 @@ function NewVenueWizard() {
                       {activeWorkspace?.currency || "RWF"}
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-base">Pricing Preference</Label>
-                    <select
-                      className="w-full h-12 rounded-xl bg-secondary/50 border border-input px-4 text-base"
-                      value={formData.rental_type}
-                      onChange={(e) => setFormData((p) => ({ ...p, rental_type: e.target.value }))}
-                    >
-                      {formData.rental_model === "ENTIRE_VENUE" && (
-                        <>
-                          <option value="Per Day">Per Day</option>
-                          <option value="Per Hour">Per Hour</option>
-                          <option value="Per Week">Per Week</option>
-                          <option value="Annually">Annually</option>
-                        </>
+                  {formData.rental_model === "ENTIRE_VENUE" && (
+                    <div className="space-y-2">
+                      <Label className="text-base">Rental Rate Type</Label>
+                      <select
+                        className="w-full h-12 rounded-xl bg-secondary/50 border border-input px-4 text-base"
+                        value={formData.rental_type}
+                        onChange={(e) =>
+                          setFormData((p) => ({ ...p, rental_type: e.target.value }))
+                        }
+                      >
+                        <option value="Per Day">Per Day</option>
+                        <option value="Per Hour">Per Hour</option>
+                        <option value="Per Week">Per Week</option>
+                        <option value="Annually">Annually</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                {formData.rental_model !== "ENTIRE_VENUE" && (
+                  <div className="space-y-4 pt-4 border-t border-border/60">
+                    <Label className="text-xl font-semibold">Entrance & Admission</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Configure general admission fees to enter the venue complex.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+                      <div className="space-y-2">
+                        <Label className="text-base">Entrance Policy</Label>
+                        <select
+                          className="w-full h-12 rounded-xl bg-secondary/50 border border-input px-4 text-base"
+                          value={formData.entrance_type}
+                          onChange={(e) =>
+                            setFormData((p) => ({ ...p, entrance_type: e.target.value }))
+                          }
+                        >
+                          <option value="free">Free Entrance</option>
+                          <option value="standard">Standard Paid Entrance</option>
+                          <option value="consumable">Consumable Voucher (Credit)</option>
+                        </select>
+                      </div>
+
+                      {formData.entrance_type !== "free" && (
+                        <div className="space-y-2">
+                          <Label className="text-base">
+                            Entrance Fee ({activeWorkspace?.currency || "RWF"})
+                          </Label>
+                          <Input
+                            type="number"
+                            className="h-12 bg-background rounded-xl"
+                            value={formData.entrance_fee}
+                            onChange={(e) =>
+                              setFormData((p) => ({ ...p, entrance_fee: Number(e.target.value) }))
+                            }
+                            placeholder="e.g. 5000"
+                          />
+                        </div>
                       )}
-                      {formData.rental_model === "ENTRANCE_ONLY" && (
-                        <option value="Entrance Fee">Entrance Fee</option>
-                      )}
-                      {formData.rental_model === "HYBRID" && (
-                        <option value="Multiple">Multiple Options</option>
-                      )}
-                    </select>
+                    </div>
+
+                    {formData.entrance_type === "consumable" && (
+                      <div className="mt-4 p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
+                        <Label className="text-base text-orange-600 dark:text-orange-400">
+                          Voucher Value ({activeWorkspace?.currency || "RWF"})
+                        </Label>
+                        <p className="text-sm text-orange-600/80 dark:text-orange-400/80 mb-2">
+                          How much spendable credit does the customer get inside for paying the
+                          entrance fee?
+                        </p>
+                        <Input
+                          type="number"
+                          className="h-12 bg-background rounded-xl max-w-sm"
+                          value={formData.consumable_value}
+                          onChange={(e) =>
+                            setFormData((p) => ({ ...p, consumable_value: Number(e.target.value) }))
+                          }
+                          placeholder={`e.g. ${formData.entrance_fee || 10000}`}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="space-y-4 pt-4 border-t border-border/60">
+                  <Label className="text-xl font-semibold">Booking Approvals</Label>
+                  <div className="flex items-center justify-between p-6 bg-secondary/30 border border-border/60 rounded-2xl">
+                    <div className="space-y-1">
+                      <Label className="text-lg">Require Manual Approval</Label>
+                      <p className="text-sm text-muted-foreground">
+                        If enabled, organizers or users requesting this venue will be put in a
+                        "Pending" state until you manually approve the booking request.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.requires_approval}
+                      onCheckedChange={(v) => setFormData((p) => ({ ...p, requires_approval: v }))}
+                    />
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <Label className="text-xl font-semibold">Pricing Options</Label>
-                  <div className="space-y-4">
-                    {formData.pricing_tiers.map((tier, idx) => (
-                      <div
-                        key={idx}
-                        className="flex gap-4 items-start p-6 bg-secondary/20 rounded-2xl border border-border/60 relative"
-                      >
-                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-base">Option Name</Label>
-                            <Input
-                              className="h-12 bg-background rounded-xl"
-                              value={tier.name}
-                              onChange={(e) => updatePricingTier(idx, "name", e.target.value)}
-                              placeholder={
-                                formData.rental_model === "ENTIRE_VENUE"
-                                  ? "e.g. Full Day Rental"
-                                  : "e.g. Student Entrance"
-                              }
-                            />
+                {(formData.rental_model === "ENTIRE_VENUE" ||
+                  formData.entrance_type !== "free") && (
+                  <div className="space-y-4 pt-4 border-t border-border/60">
+                    <div>
+                      <Label className="text-xl font-semibold">Additional Pricing Options</Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        (Optional) Add different ticket tiers or rental packages. For example,
+                        "Student Entrance" vs "Adult Entrance", or "Half-Day Rental" vs "Full-Day
+                        Rental".
+                      </p>
+                    </div>
+                    <div className="space-y-4">
+                      {formData.pricing_tiers.map((tier, idx) => (
+                        <div
+                          key={idx}
+                          className="flex gap-4 items-start p-6 bg-secondary/20 rounded-2xl border border-border/60 relative"
+                        >
+                          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-base">Option Name</Label>
+                              <Input
+                                className="h-12 bg-background rounded-xl"
+                                value={tier.name}
+                                onChange={(e) => updatePricingTier(idx, "name", e.target.value)}
+                                placeholder={
+                                  formData.rental_model === "ENTIRE_VENUE"
+                                    ? "e.g. Full Day Rental"
+                                    : "e.g. Student Entrance"
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-base">
+                                Amount ({activeWorkspace?.currency || "RWF"})
+                              </Label>
+                              <Input
+                                type="number"
+                                className="h-12 bg-background rounded-xl"
+                                value={tier.amount}
+                                onChange={(e) => updatePricingTier(idx, "amount", e.target.value)}
+                                placeholder="0.00"
+                              />
+                            </div>
                           </div>
-                          <div className="space-y-2">
-                            <Label className="text-base">
-                              Amount ({activeWorkspace?.currency || "RWF"})
-                            </Label>
-                            <Input
-                              type="number"
-                              className="h-12 bg-background rounded-xl"
-                              value={tier.amount}
-                              onChange={(e) => updatePricingTier(idx, "amount", e.target.value)}
-                              placeholder="0.00"
-                            />
-                          </div>
+                          {formData.pricing_tiers.length > 1 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-500 absolute top-4 right-4"
+                              onClick={() => removePricingTier(idx)}
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </Button>
+                          )}
                         </div>
-                        {formData.pricing_tiers.length > 1 && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-red-500 absolute top-4 right-4"
-                            onClick={() => removePricingTier(idx)}
-                          >
-                            <Trash2 className="h-5 w-5" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                    <Button
-                      variant="outline"
-                      className="w-full h-14 border-dashed rounded-xl"
-                      onClick={addPricingTier}
-                    >
-                      <Plus className="h-5 w-5 mr-2" /> Add Pricing Option
-                    </Button>
+                      ))}
+                      <Button
+                        variant="outline"
+                        className="w-full h-14 border-dashed rounded-xl"
+                        onClick={addPricingTier}
+                      >
+                        <Plus className="h-5 w-5 mr-2" /> Add Pricing Option
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -911,50 +1096,115 @@ function NewVenueWizard() {
           {step === 6 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div>
-                <h2 className="text-3xl font-bold">Venue Sections (Optional)</h2>
+                <h2 className="text-3xl font-bold">Facilities & Sub-Venues (Optional)</h2>
                 <p className="text-muted-foreground mt-2 text-lg">
-                  List specific spaces within your venue (e.g., Main Hall, Private Room).
+                  Does your venue have distinct spaces to rent? (e.g. Pitch Fields, Tennis Courts,
+                  VIP Rooms, Swimming Pools)
                 </p>
               </div>
 
               <div className="space-y-6 mt-8">
-                {formData.sections.map((section, idx) => (
+                {formData.facilities_data.map((facility, idx) => (
                   <div
                     key={idx}
-                    className="flex gap-4 items-start p-6 bg-secondary/20 rounded-2xl border border-border/60 relative"
+                    className="flex flex-col gap-4 p-6 bg-secondary/20 rounded-2xl border border-border/60 relative"
                   >
-                    <div className="flex-1 space-y-4">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500 absolute top-4 right-4"
+                      onClick={() => removeFacility(idx)}
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full pr-10">
                       <div className="space-y-2">
-                        <Label className="text-base">Section Name</Label>
+                        <Label className="text-base">Facility Name</Label>
                         <Input
                           className="h-12 bg-background rounded-xl"
-                          value={section.name}
-                          onChange={(e) => updateSection(idx, "name", e.target.value)}
-                          placeholder="e.g. VIP Lounge"
+                          value={facility.name}
+                          onChange={(e) => updateFacility(idx, "name", e.target.value)}
+                          placeholder="e.g. Football Pitch A"
                         />
                       </div>
                       <div className="space-y-2">
+                        <Label className="text-base">Booking Type</Label>
+                        <select
+                          className="w-full h-12 rounded-xl bg-background border border-input px-4 text-base"
+                          value={facility.type}
+                          onChange={(e) => updateFacility(idx, "type", e.target.value)}
+                        >
+                          <option value="exclusive_slot">
+                            Exclusive Slot (Only 1 group per time)
+                          </option>
+                          <option value="shared_access">
+                            Shared Access (Passes per day up to capacity)
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                      <div className="space-y-2">
+                        <Label className="text-base">Hourly Rate (Optional)</Label>
+                        <Input
+                          type="number"
+                          className="h-12 bg-background rounded-xl"
+                          value={facility.pricing?.hourly_rate || ""}
+                          onChange={(e) =>
+                            updateFacilityPricing(idx, "hourly_rate", e.target.value)
+                          }
+                          placeholder="e.g. 15000"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-base">Daily Rate (Optional)</Label>
+                        <Input
+                          type="number"
+                          className="h-12 bg-background rounded-xl"
+                          value={facility.pricing?.daily_rate || ""}
+                          onChange={(e) => updateFacilityPricing(idx, "daily_rate", e.target.value)}
+                          placeholder="e.g. 50000"
+                        />
+                      </div>
+                      {facility.type === "shared_access" && (
+                        <div className="space-y-2">
+                          <Label className="text-base">Max Capacity</Label>
+                          <Input
+                            type="number"
+                            className="h-12 bg-background rounded-xl border-orange-500/50 focus-visible:ring-orange-500"
+                            value={facility.max_capacity}
+                            onChange={(e) => updateFacility(idx, "max_capacity", e.target.value)}
+                            placeholder="e.g. 100 people"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-2 border-t border-border/50 pt-4">
+                      <div className="space-y-2">
                         <Label className="text-base">Image (Optional)</Label>
-                        {section.image_url ? (
+                        {facility.image_url ? (
                           <div className="relative w-full h-32 rounded-xl overflow-hidden border">
                             <img
-                              src={section.image_url}
-                              alt={section.name}
+                              src={facility.image_url}
+                              alt={facility.name}
                               className="w-full h-full object-cover"
                             />
                             <button
-                              onClick={() => updateSection(idx, "image_url", "")}
+                              onClick={() => updateFacility(idx, "image_url", "")}
                               className="absolute top-2 right-2 bg-black/60 text-white p-1.5 rounded-full hover:bg-red-500"
                             >
                               <X className="h-4 w-4" />
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-center w-full h-12 bg-background rounded-xl border border-dashed relative hover:bg-secondary/30 transition-colors cursor-pointer">
+                          <div className="flex items-center justify-center w-full h-16 bg-background rounded-xl border border-dashed relative hover:bg-secondary/30 transition-colors cursor-pointer">
                             <input
                               type="file"
                               accept="image/*"
-                              onChange={(e) => handleSectionImageUpload(idx, e)}
+                              onChange={(e) => handleFacilityImageUpload(idx, e)}
                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                               disabled={isUploading}
                             />
@@ -969,24 +1219,28 @@ function NewVenueWizard() {
                           </div>
                         )}
                       </div>
+                      <div className="flex items-center justify-between p-4 bg-background border border-border/60 rounded-xl h-fit">
+                        <div className="space-y-1">
+                          <Label className="text-base">Require Admin Approval</Label>
+                          <p className="text-xs text-muted-foreground">
+                            If enabled, booking this facility is not instant.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={facility.requires_approval}
+                          onCheckedChange={(v) => updateFacility(idx, "requires_approval", v)}
+                        />
+                      </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-red-500 absolute top-4 right-4"
-                      onClick={() => removeSection(idx)}
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
                   </div>
                 ))}
 
                 <Button
                   variant="outline"
                   className="w-full h-14 border-dashed rounded-xl"
-                  onClick={addSection}
+                  onClick={addFacility}
                 >
-                  <Plus className="h-5 w-5 mr-2" /> Add Section
+                  <Plus className="h-5 w-5 mr-2" /> Add Facility / Space
                 </Button>
               </div>
             </div>

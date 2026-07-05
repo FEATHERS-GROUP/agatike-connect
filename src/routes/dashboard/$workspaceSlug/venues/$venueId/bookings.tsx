@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
-import { getVenueBookings, updateTicketStatus } from "@/api/venue_bookings";
+import { getVenueBookings, updateTicketStatus, approveVenueBooking } from "@/api/venue_bookings";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,6 +61,17 @@ function VenueBookingsPage() {
     },
     onError: (e: any) => {
       toast.error(e.message || "Failed to update ticket status");
+    },
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: (data: { booking_id: string }) => approveVenueBooking({ data }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["venue_bookings", venueId] });
+      toast.success("Booking approved successfully.");
+    },
+    onError: (e: any) => {
+      toast.error(e.message || "Failed to approve booking");
     },
   });
 
@@ -235,8 +246,21 @@ function VenueBookingsPage() {
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator className="bg-border/60" />
                           <DropdownMenuItem onClick={() => setSelectedViewTicket(b)}>
-                            View Ticket Details
+                            View Details
                           </DropdownMenuItem>
+                          {b.status === "Pending" && (
+                            <DropdownMenuItem
+                              className="text-green-500 focus:text-green-500 focus:bg-green-500/10"
+                              onClick={() => {
+                                if (confirm("Are you sure you want to approve this booking?")) {
+                                  approveMutation.mutate({ booking_id: b.id });
+                                }
+                              }}
+                              disabled={approveMutation.isPending}
+                            >
+                              Approve Booking
+                            </DropdownMenuItem>
+                          )}
                           {b.ticket && (!b.ticket.status || b.ticket.status === "Active") && (
                             <DropdownMenuItem
                               className="text-red-500 focus:text-red-500 focus:bg-red-500/10"

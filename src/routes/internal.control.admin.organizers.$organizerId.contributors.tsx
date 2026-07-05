@@ -45,7 +45,7 @@ function StatusPill({ status }: { status: string }) {
       </span>
     );
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] border bg-[#333333]/60 text-[#797775] border-[#333333] capitalize">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] border bg-gray-200 dark:bg-[#333333]/60 text-gray-600 dark:text-[#797775] border-gray-200 dark:border-[#333333] capitalize">
       {status || "—"}
     </span>
   );
@@ -68,7 +68,7 @@ function AccessBadge({ level }: { level: string }) {
       </span>
     );
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] border bg-[#797775]/10 text-[#797775] border-[#333333]">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] border bg-gray-200 dark:bg-[#797775]/10 text-gray-600 dark:text-[#797775] border-gray-200 dark:border-[#333333]">
       <Eye className="h-2.5 w-2.5" />
       View
     </span>
@@ -82,7 +82,9 @@ function ResourceTypePill({ type }: { type: string }) {
     venue_project: "text-[#c586c0] bg-[#c586c0]/10 border-[#c586c0]/30",
     badge_project: "text-[#84c87e] bg-[#84c87e]/10 border-[#84c87e]/30",
   };
-  const cls = colorMap[type] || "text-[#797775] bg-transparent border-[#333333]";
+  const cls =
+    colorMap[type] ||
+    "text-gray-600 dark:text-[#797775] bg-transparent border-gray-200 dark:border-[#333333]";
   return (
     <span className={`inline-flex items-center px-2 py-0.5 text-[11px] border capitalize ${cls}`}>
       {label || "—"}
@@ -140,13 +142,13 @@ function OrganizerContributors() {
   return (
     <div className="font-sans text-sm pb-10">
       {/* ── KPI Strip ─────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-[#333333] border border-[#333333] mb-0">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-gray-200 dark:bg-[#333333] border border-gray-200 dark:border-[#333333] mb-0">
         {[
           {
             label: "Total Contributors",
             value: contributors.length,
             sub: `${new Set(contributors.map((c: any) => c.email)).size} unique emails`,
-            color: "text-white",
+            color: "text-gray-900 dark:text-white",
           },
           {
             label: "Edit Access",
@@ -167,10 +169,12 @@ function OrganizerContributors() {
             color: "text-[#c586c0]",
           },
         ].map((k, i) => (
-          <div key={i} className="bg-[#1a1a1a] px-5 py-5">
-            <p className="text-[#797775] text-xs uppercase tracking-wider mb-2">{k.label}</p>
+          <div key={i} className="bg-gray-100 dark:bg-[#1a1a1a] px-5 py-5">
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-2">
+              {k.label}
+            </p>
             <p className={`font-bold text-lg leading-tight mb-0.5 ${k.color}`}>{k.value}</p>
-            <p className="text-[#797775] text-xs truncate">{k.sub}</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs truncate">{k.sub}</p>
           </div>
         ))}
       </div>
@@ -180,9 +184,11 @@ function OrganizerContributors() {
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <div className="flex items-center gap-2">
             <Users2 className="h-4 w-4 text-[#c586c0]" />
-            <h2 className="text-sm font-medium text-white">
+            <h2 className="text-sm font-medium text-gray-900 dark:text-white">
               Contributors
-              <span className="ml-2 text-[#797775] font-normal">({contributors.length})</span>
+              <span className="ml-2 text-gray-600 dark:text-[#797775] font-normal">
+                ({contributors.length})
+              </span>
             </h2>
           </div>
 
@@ -194,7 +200,7 @@ function OrganizerContributors() {
                 setFilterType(e.target.value);
                 setPage(1);
               }}
-              className="bg-[#1a1a1a] border border-[#333333] text-[#cccccc] text-xs px-2 py-1.5 focus:outline-none focus:border-[#569cd6] transition-colors"
+              className="bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333333] text-gray-700 dark:text-[#cccccc] text-xs px-2 py-1.5 focus:outline-none focus:border-[#569cd6] transition-colors"
             >
               {resourceTypes.map((t) => (
                 <option key={String(t)} value={String(t)}>
@@ -210,7 +216,7 @@ function OrganizerContributors() {
                 setFilterAccess(e.target.value);
                 setPage(1);
               }}
-              className="bg-[#1a1a1a] border border-[#333333] text-[#cccccc] text-xs px-2 py-1.5 focus:outline-none focus:border-[#569cd6] transition-colors"
+              className="bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333333] text-gray-700 dark:text-[#cccccc] text-xs px-2 py-1.5 focus:outline-none focus:border-[#569cd6] transition-colors"
             >
               {accessLevels.map((a) => (
                 <option key={String(a)} value={String(a)}>
@@ -221,7 +227,7 @@ function OrganizerContributors() {
 
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#797775]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-600 dark:text-[#797775]" />
               <input
                 type="text"
                 placeholder="Search by email or workspace…"
@@ -230,34 +236,47 @@ function OrganizerContributors() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="bg-[#1a1a1a] border border-[#333333] text-white text-xs pl-9 pr-4 py-1.5 w-56 focus:outline-none focus:border-[#569cd6] transition-colors placeholder-[#797775]"
+                className="bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333333] text-gray-900 dark:text-white text-xs pl-9 pr-4 py-1.5 w-56 focus:outline-none focus:border-[#569cd6] transition-colors placeholder-[#797775]"
               />
             </div>
           </div>
         </div>
 
-        <div className="border border-[#333333]">
+        <div className="border border-gray-200 dark:border-[#333333]">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[13px] whitespace-nowrap">
               <thead>
-                <tr className="bg-[#2d2d30] text-[#797775] text-xs uppercase tracking-wider">
-                  <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Email</th>
-                  <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Workspace</th>
-                  <th className="py-2.5 px-5 font-medium border-b border-[#333333]">
+                <tr className="bg-gray-100 dark:bg-[#2d2d30] text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider">
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                    Email
+                  </th>
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                    Workspace
+                  </th>
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
                     Resource Type
                   </th>
-                  <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Resource ID</th>
-                  <th className="py-2.5 px-5 font-medium border-b border-[#333333]">
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                    Resource ID
+                  </th>
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
                     Access Level
                   </th>
-                  <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Status</th>
-                  <th className="py-2.5 px-5 font-medium border-b border-[#333333]">Added</th>
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                    Status
+                  </th>
+                  <th className="py-2.5 px-5 font-medium border-b border-gray-200 dark:border-[#333333]">
+                    Added
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#333333]">
+              <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                 {slice.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-[#797775] italic">
+                    <td
+                      colSpan={7}
+                      className="py-12 text-center text-gray-600 dark:text-[#797775] italic"
+                    >
                       {search || filterType !== "all" || filterAccess !== "all"
                         ? "No contributors match your filters."
                         : "No contributors found."}
@@ -267,13 +286,13 @@ function OrganizerContributors() {
                   slice.map((c: any, i: number) => (
                     <tr
                       key={c.id}
-                      className={`transition-colors hover:bg-[#252526] ${i % 2 === 0 ? "bg-[#1a1a1a]" : "bg-[#111111]"}`}
+                      className={`transition-colors hover:bg-gray-100 dark:hover:bg-[#252526] ${i % 2 === 0 ? "bg-gray-100 dark:bg-[#1a1a1a]" : "bg-white dark:bg-[#111111]"}`}
                     >
                       <td className="py-3 px-5">
-                        <p className="text-white font-medium">{c.email}</p>
+                        <p className="text-gray-900 dark:text-white font-medium">{c.email}</p>
                       </td>
                       <td className="py-3 px-5">
-                        <div className="flex items-center gap-1.5 text-[#797775] text-xs">
+                        <div className="flex items-center gap-1.5 text-gray-600 dark:text-[#797775] text-xs">
                           <Building2 className="h-3 w-3 shrink-0" />
                           {c.workspaceName}
                         </div>
@@ -290,7 +309,7 @@ function OrganizerContributors() {
                       <td className="py-3 px-5">
                         <StatusPill status={c.status} />
                       </td>
-                      <td className="py-3 px-5 text-[#797775]">
+                      <td className="py-3 px-5 text-gray-600 dark:text-[#797775]">
                         {c.created_at ? new Date(c.created_at).toLocaleDateString("en-US") : "—"}
                       </td>
                     </tr>
@@ -302,8 +321,8 @@ function OrganizerContributors() {
 
           {/* Pagination */}
           {filtered.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between px-5 py-3 border-t border-[#333333] bg-[#111111]">
-              <span className="text-xs text-[#797775]">
+            <div className="flex items-center justify-between px-5 py-3 border-t border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111]">
+              <span className="text-xs text-gray-600 dark:text-[#797775]">
                 {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of{" "}
                 {filtered.length}
               </span>
@@ -311,17 +330,17 @@ function OrganizerContributors() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="p-1.5 border border-[#333333] text-[#797775] hover:text-white hover:border-[#555555] disabled:opacity-30 transition-colors"
+                  className="p-1.5 border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-[#797775] hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-[#555555] disabled:opacity-30 transition-colors"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </button>
-                <span className="text-xs text-[#797775]">
+                <span className="text-xs text-gray-600 dark:text-[#797775]">
                   {page} / {pages}
                 </span>
                 <button
                   onClick={() => setPage((p) => Math.min(pages, p + 1))}
                   disabled={page === pages}
-                  className="p-1.5 border border-[#333333] text-[#797775] hover:text-white hover:border-[#555555] disabled:opacity-30 transition-colors"
+                  className="p-1.5 border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-[#797775] hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-[#555555] disabled:opacity-30 transition-colors"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
                 </button>

@@ -35,6 +35,8 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { FolderManager } from "@/components/ui/FolderManager";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/badge-designer/")({
   component: BadgeDesignerIndex,
@@ -95,6 +97,12 @@ function BadgeDesignerIndex() {
     queryFn: () => getWorkspaceEvents({ data: { workspace_id: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
+
+  const {
+    hasStudioAccess,
+    canCreateBadgeDesign,
+    isLoading: limitsLoading,
+  } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const {
     data: dbProjects = [],
@@ -187,6 +195,13 @@ function BadgeDesignerIndex() {
 
   const handleCreateNew = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canCreateBadgeDesign()) {
+      toast.error("Badge Design Limit Reached", {
+        description: "You have reached the maximum number of badge designs for your plan.",
+      });
+      setIsModalOpen(false);
+      return;
+    }
     if (!selectedTemplate || !selectedEventId) {
       toast.error("Please select a template and an event.");
       return;
@@ -195,11 +210,29 @@ function BadgeDesignerIndex() {
   };
 
   const openSetupModal = (templateId: string) => {
+    if (!canCreateBadgeDesign()) {
+      toast.error("Badge Design Limit Reached", {
+        description: "You have reached the maximum number of badge designs for your plan.",
+      });
+      return;
+    }
     setSelectedTemplate(templateId);
     setNewProjectName("Untitled Badge");
     setSelectedEventId("");
     setIsModalOpen(true);
   };
+
+  if (limitsLoading) return null;
+  if (!hasStudioAccess()) {
+    return (
+      <div className="p-6 h-full flex flex-col justify-center">
+        <UpgradePrompt
+          title="Upgrade to Access Badge Designer"
+          description="Badge Designer is a premium feature available in higher tier plans. Upgrade your subscription to start designing digital credentials."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-secondary/30">

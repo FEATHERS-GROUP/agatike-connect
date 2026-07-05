@@ -82,12 +82,12 @@ function OrganizerModules() {
 
   return (
     <div className="font-sans text-sm pb-10">
-      <div className="flex items-center gap-2 py-4 px-0 border-b border-[#333333] mb-5">
+      <div className="flex items-center gap-2 py-4 px-0 border-b border-gray-200 dark:border-[#333333] mb-5">
         <Blocks className="h-5 w-5 text-[#dcdcaa]" />
-        <h2 className="text-base font-medium text-white">Workspace Modules</h2>
+        <h2 className="text-base font-medium text-gray-900 dark:text-white">Workspace Modules</h2>
       </div>
 
-      <p className="text-[#797775] text-xs mb-6 max-w-2xl">
+      <p className="text-gray-600 dark:text-[#797775] text-xs mb-6 max-w-2xl">
         Manage which platform modules are enabled for each workspace. Enabling a module grants
         access to its features in the workspace dashboard.
       </p>
@@ -111,15 +111,18 @@ function OrganizerModules() {
           }
 
           return (
-            <div key={ws.id} className="bg-[#1a1a1a] border border-[#333333] overflow-hidden">
+            <div
+              key={ws.id}
+              className="bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333333] overflow-hidden"
+            >
               {/* Header */}
-              <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#333333] bg-[#252526]">
-                <h3 className="text-white font-medium flex items-center gap-2 text-base">
+              <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 dark:border-[#333333] bg-gray-50 dark:bg-[#252526]">
+                <h3 className="text-gray-900 dark:text-white font-medium flex items-center gap-2 text-base">
                   <Building2 className="h-4 w-4 text-[#569cd6]" />
                   {ws.name}
                 </h3>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#797775] bg-[#111111] px-2 py-1 border border-[#333333] rounded-sm">
+                  <span className="text-xs text-gray-600 dark:text-[#797775] bg-white dark:bg-[#111111] px-2 py-1 border border-gray-200 dark:border-[#333333] rounded-sm">
                     {activeModuleIds.length} modules active
                   </span>
                   {!isEditing && (
@@ -137,7 +140,7 @@ function OrganizerModules() {
               <div className="p-5 space-y-6">
                 {Object.keys(categorizedModules).map((category) => (
                   <div key={category}>
-                    <h4 className="text-[#797775] text-[10px] uppercase tracking-widest mb-3 font-semibold border-b border-[#333333] pb-1">
+                    <h4 className="text-gray-600 dark:text-[#797775] text-[10px] uppercase tracking-widest mb-3 font-semibold border-b border-gray-200 dark:border-[#333333] pb-1">
                       {category}
                     </h4>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -151,20 +154,20 @@ function OrganizerModules() {
                               onClick={() => toggleModule(mod.id)}
                               className={`text-left p-3 border rounded-sm transition-colors flex items-start gap-2 ${
                                 isActive
-                                  ? "bg-[#84c87e]/10 border-[#84c87e]/40 text-white"
-                                  : "bg-[#111111] border-[#333333] text-[#797775] hover:border-[#555555] hover:text-[#cccccc]"
+                                  ? "bg-[#84c87e]/10 border-[#84c87e]/40 text-gray-900 dark:text-white"
+                                  : "bg-white dark:bg-[#111111] border-gray-200 dark:border-[#333333] text-gray-600 dark:text-[#797775] hover:border-gray-300 dark:hover:border-[#555555] hover:text-gray-700 dark:text-[#cccccc]"
                               }`}
                             >
                               <div className="mt-0.5 shrink-0">
                                 {isActive ? (
                                   <CheckSquare className="h-4 w-4 text-[#84c87e]" />
                                 ) : (
-                                  <Square className="h-4 w-4 text-[#555555]" />
+                                  <Square className="h-4 w-4 text-gray-500 dark:text-[#555555]" />
                                 )}
                               </div>
                               <div>
                                 <p
-                                  className={`text-sm font-medium ${isActive ? "text-[#84c87e]" : "text-[#cccccc]"}`}
+                                  className={`text-sm font-medium ${isActive ? "text-[#84c87e]" : "text-gray-700 dark:text-[#cccccc]"}`}
                                 >
                                   {mod.label}
                                 </p>
@@ -178,10 +181,12 @@ function OrganizerModules() {
                         return (
                           <div
                             key={mod.id}
-                            className="p-2 border border-[#333333] bg-[#2d2d30]/50 rounded-sm flex items-center gap-2"
+                            className="p-2 border border-gray-200 dark:border-[#333333] bg-gray-100 dark:bg-[#2d2d30]/50 rounded-sm flex items-center gap-2"
                           >
                             <Check className="h-3.5 w-3.5 text-[#84c87e] shrink-0" />
-                            <span className="text-[#cccccc] text-xs">{mod.label}</span>
+                            <span className="text-gray-700 dark:text-[#cccccc] text-xs">
+                              {mod.label}
+                            </span>
                           </div>
                         );
                       })}
@@ -190,7 +195,7 @@ function OrganizerModules() {
                 ))}
 
                 {!isEditing && activeModuleIds.length === 0 && (
-                  <div className="text-center py-6 text-[#797775] italic">
+                  <div className="text-center py-6 text-gray-600 dark:text-[#797775] italic">
                     No modules are assigned to this workspace.
                   </div>
                 )}
@@ -198,11 +203,11 @@ function OrganizerModules() {
 
               {/* Footer Actions */}
               {isEditing && (
-                <div className="p-4 border-t border-[#333333] bg-[#252526] flex items-center justify-end gap-3">
+                <div className="p-4 border-t border-gray-200 dark:border-[#333333] bg-gray-50 dark:bg-[#252526] flex items-center justify-end gap-3">
                   <button
                     onClick={() => setEditingWs(null)}
                     disabled={loading}
-                    className="px-4 py-2 text-xs border border-[#333333] text-[#797775] hover:text-white transition-colors flex items-center gap-1.5 rounded-sm disabled:opacity-50"
+                    className="px-4 py-2 text-xs border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-[#797775] hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-1.5 rounded-sm disabled:opacity-50"
                   >
                     <X className="h-3.5 w-3.5" /> Cancel
                   </button>
@@ -225,7 +230,7 @@ function OrganizerModules() {
         })}
 
         {workspaces.length === 0 && (
-          <div className="text-center py-10 text-[#797775] italic bg-[#1a1a1a] border border-[#333333]">
+          <div className="text-center py-10 text-gray-600 dark:text-[#797775] italic bg-gray-100 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333333]">
             No workspaces found for this organizer.
           </div>
         )}

@@ -103,6 +103,8 @@ export function getModulesForWorkspaceType(
     allowedCategories.push("VENUE");
   } else if (type === "CINEMA" || type === "THEATER") {
     allowedCategories.push("MOVIES");
+  } else if (type === "TRANSPORT") {
+    allowedCategories.push("TRANSPORT", "SALES");
   }
 
   return modules.filter((m) => {

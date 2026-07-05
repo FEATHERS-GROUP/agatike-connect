@@ -17,36 +17,51 @@ function OrganizerUsers() {
 
   return (
     <div className="space-y-4 font-sans text-sm pb-10">
-      <div className="flex items-center justify-between pb-2 border-b border-[#333333]">
-        <h2 className="text-lg font-medium text-white flex items-center gap-2">
+      <div className="flex items-center justify-between pb-2 border-b border-gray-200 dark:border-[#333333]">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
           <Users className="h-5 w-5 text-[#f97316]" />
           Workspace Users ({users.length})
         </h2>
       </div>
 
-      <div className="bg-[#252526] border border-[#333333]">
+      <div className="bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333]">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-[13px] whitespace-nowrap">
-            <thead className="bg-[#2d2d30] text-[#cccccc]">
+            <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
               <tr>
-                <th className="font-semibold py-2 px-4 border-b border-[#333333]">Name</th>
-                <th className="font-semibold py-2 px-4 border-b border-[#333333]">Email</th>
-                <th className="font-semibold py-2 px-4 border-b border-[#333333]">Role</th>
-                <th className="font-semibold py-2 px-4 border-b border-[#333333]">Status</th>
-                <th className="font-semibold py-2 px-4 border-b border-[#333333]">Created</th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Name
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Email
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Role
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Status
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Created
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#333333] text-[#cccccc]">
+            <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-[#797775]">
+                  <td colSpan={5} className="py-8 text-center text-gray-600 dark:text-[#797775]">
                     No users found.
                   </td>
                 </tr>
               ) : (
                 users.map((u: any) => (
-                  <tr key={u.id} className="hover:bg-[#2d2d30] transition-colors">
-                    <td className="py-2 px-4 font-medium text-white">{u.name || "—"}</td>
+                  <tr
+                    key={u.id}
+                    className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                  >
+                    <td className="py-2 px-4 font-medium text-gray-900 dark:text-white">
+                      {u.name || "—"}
+                    </td>
                     <td className="py-2 px-4">{u.email || "—"}</td>
                     <td className="py-2 px-4 capitalize">{u.role || "—"}</td>
                     <td className="py-2 px-4">
@@ -55,7 +70,9 @@ function OrganizerUsers() {
                       ) : u.status === "pending" ? (
                         <span className="text-[#f97316]">Pending</span>
                       ) : (
-                        <span className="text-[#797775] capitalize">{u.status || "—"}</span>
+                        <span className="text-gray-600 dark:text-[#797775] capitalize">
+                          {u.status || "—"}
+                        </span>
                       )}
                     </td>
                     <td className="py-2 px-4">

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Plus, UserCheck, MapPin, ShieldAlert, Loader2, QrCode, Palette } from "lucide-react";
+import { Plus, UserCheck, MapPin, ShieldAlert, Loader2, QrCode, Palette, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -42,6 +42,7 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getBadgeProjectByEventId } from "@/api/badges";
 import { BadgePreview } from "@/components/badge-designer/BadgePreview";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/experiences/$experienceId/staff")({
   component: StaffView,
@@ -50,9 +51,13 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/experiences/$exp
 function GenerateVendorFormModal({
   eventId,
   activeWorkspace,
+  canUseFormIntegration,
+  canCreateCustomerForm,
 }: {
   eventId: string;
   activeWorkspace: any;
+  canUseFormIntegration: boolean;
+  canCreateCustomerForm: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [vendorName, setVendorName] = useState("");
@@ -144,8 +149,34 @@ function GenerateVendorFormModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button style={{ background: "var(--gradient-primary)", color: "white" }}>
-          <Plus className="mr-2 h-4 w-4" /> Generate Vendor Form
+        <Button
+          className="rounded-full shadow-[var(--shadow-glow)]"
+          style={{ background: "var(--gradient-primary)", color: "white" }}
+          disabled={!canUseFormIntegration || !canCreateCustomerForm}
+          onClick={(e) => {
+            if (!canUseFormIntegration) {
+              e.preventDefault();
+              toast.error("Form Integration Locked", {
+                description: "Upgrade your plan to generate and use custom forms.",
+              });
+              return;
+            }
+            if (!canCreateCustomerForm) {
+              e.preventDefault();
+              toast.error("Custom Forms Limit Reached", {
+                description:
+                  "You have reached the maximum number of custom forms allowed by your plan.",
+              });
+              return;
+            }
+          }}
+        >
+          {canUseFormIntegration && canCreateCustomerForm ? (
+            <Plus className="mr-2 h-4 w-4" />
+          ) : (
+            <Lock className="mr-2 h-4 w-4" />
+          )}{" "}
+          Generate Vendor Form
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -233,7 +264,15 @@ function GenerateVendorFormModal({
   );
 }
 
-function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[] }) {
+function AddStaffModal({
+  eventId,
+  sections,
+  canAddStaff,
+}: {
+  eventId: string;
+  sections: any[];
+  canAddStaff: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const [registrationType, setRegistrationType] = useState("account"); // "account" or "no-account"
@@ -293,8 +332,18 @@ function AddStaffModal({ eventId, sections }: { eventId: string; sections: any[]
         <Button
           className="rounded-full shadow-[var(--shadow-glow)]"
           style={{ background: "var(--gradient-primary)" }}
+          disabled={!canAddStaff}
+          onClick={(e) => {
+            if (!canAddStaff) {
+              e.preventDefault();
+              toast.error("Staff Limit Reached", {
+                description: "Upgrade your plan to add more staff members.",
+              });
+            }
+          }}
         >
-          <Plus className="mr-1 h-4 w-4" /> Add Staff Member
+          {canAddStaff ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} Add
+          Staff Member
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -491,6 +540,8 @@ function StaffView() {
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
+  const { canImportStaff, canUseFormIntegration, canAddEventStaff, canCreateCustomerForm } =
+    useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
   const queryClient = useQueryClient();
 
   const { data: badgeProject } = useQuery({
@@ -532,7 +583,11 @@ function StaffView() {
           </p>
         </div>
         <div className="flex gap-3">
-          <AddStaffModal eventId={eventId} sections={sections} />
+          <AddStaffModal
+            eventId={eventId}
+            sections={sections}
+            canAddStaff={canAddEventStaff(staff.length)}
+          />
         </div>
       </header>
 
@@ -698,7 +753,12 @@ function StaffView() {
               <Link to="/dashboard/$workspaceSlug/rsvps" params={{ workspaceSlug }}>
                 <Button variant="outline">View All Custom Forms</Button>
               </Link>
-              <GenerateVendorFormModal eventId={eventId} activeWorkspace={activeWorkspace} />
+              <GenerateVendorFormModal
+                eventId={eventId}
+                activeWorkspace={activeWorkspace}
+                canUseFormIntegration={canUseFormIntegration()}
+                canCreateCustomerForm={canCreateCustomerForm()}
+              />
             </div>
           </div>
         </TabsContent>

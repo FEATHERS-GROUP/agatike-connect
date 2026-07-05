@@ -25,6 +25,7 @@ import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { AddressInput } from "./edit";
 import { formatCurrency } from "@/lib/currency";
 
@@ -37,6 +38,10 @@ function VenueView() {
   const queryClient = useQueryClient();
   const venueImageRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const { activeWorkspace } = useWorkspace();
+  const { canUseVenueIntegration } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -487,6 +492,15 @@ function VenueView() {
                           <select
                             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             onChange={(e) => {
+                              if (!canUseVenueIntegration()) {
+                                e.preventDefault();
+                                toast.error("Venue Integration Locked", {
+                                  description:
+                                    "Upgrade your plan to use advanced interactive seating layouts.",
+                                });
+                                e.target.value = "";
+                                return;
+                              }
                               const val = e.target.value;
                               if (val) {
                                 assignMutation.mutate({
@@ -495,6 +509,7 @@ function VenueView() {
                                 });
                               }
                             }}
+                            disabled={!canUseVenueIntegration()}
                             defaultValue=""
                           >
                             <option value="" disabled>

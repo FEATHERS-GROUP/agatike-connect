@@ -125,6 +125,15 @@ export function TransactionLedger({
                           </p>
                           <p className="text-xs text-muted-foreground capitalize">
                             {txn.type?.replace("_", " ")}
+                            {Number(txn.platform_fee || 0) + Number(txn.network_fee || 0) > 0 ? (
+                              <span className="ml-2 font-medium text-[#f97316]">
+                                · Processing Fee:{" "}
+                                {formatCurrency(
+                                  Number(txn.platform_fee || 0) + Number(txn.network_fee || 0),
+                                  txn.currency || "RWF",
+                                )}
+                              </span>
+                            ) : null}
                           </p>
                         </div>
                       </div>

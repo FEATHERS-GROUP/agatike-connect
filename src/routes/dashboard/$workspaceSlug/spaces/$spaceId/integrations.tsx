@@ -4,6 +4,8 @@ import { getSpaceById, updateSpace } from "@/api/spaces";
 import { getWorkspaceForms } from "@/api/rsvps";
 import { getAllWorkspacePages } from "@/api/workspace-pages";
 import { useState, useEffect } from "react";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +44,11 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/$spaceId/
 function SpaceIntegrationsPage() {
   const { spaceId, workspaceSlug } = useParams({ strict: false }) as any;
   const queryClient = useQueryClient();
+  const { activeWorkspace } = useWorkspace();
+  const { canAddIntegration } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: space, isLoading: isSpaceLoading } = useQuery({
     queryKey: ["space", spaceId],
@@ -124,6 +131,12 @@ function SpaceIntegrationsPage() {
   const pageUrl = selectedPage ? `${window.location.origin}/p/${selectedPage.slug}` : "";
 
   const addForm = () => {
+    if (!canAddIntegration(connectedForms.length)) {
+      toast.error("Integration Limit Reached", {
+        description: "You have reached the maximum number of custom forms connected.",
+      });
+      return;
+    }
     setConnectedForms([
       ...connectedForms,
       {

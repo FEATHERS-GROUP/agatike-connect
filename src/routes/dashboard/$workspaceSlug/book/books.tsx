@@ -13,6 +13,7 @@ import {
 } from "@/api/book";
 import { FolderManager } from "@/components/ui/FolderManager";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,6 +77,8 @@ function BooksPage() {
   const wsId = activeWorkspace?.id;
   const queryClient = useQueryClient();
 
+  const { canCreateCustomerBook } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, wsId);
+
   const [activeBook, setActiveBook] = useState<any | null>(null);
   const [showBuilder, setShowBuilder] = useState(false);
   const [builderStep, setBuilderStep] = useState(1);
@@ -94,10 +97,15 @@ function BooksPage() {
   const visibleBooks = (books as any[]).filter((b: any) => !b.name.startsWith("__finance_"));
 
   const createBookMutation = useMutation({
-    mutationFn: () =>
-      createAgatikeBook({
+    mutationFn: () => {
+      if (!canCreateCustomerBook()) {
+        toast.error("You have reached the maximum number of custom books for your plan.");
+        throw new Error("Limit reached");
+      }
+      return createAgatikeBook({
         data: { workspace_id: wsId, name: bookName, schema_fields: schemaFields },
-      } as any),
+      } as any);
+    },
     onSuccess: () => {
       toast.success("Book created!");
       setShowBuilder(false);

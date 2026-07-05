@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
 import {
   Plus,
   MapPin,
@@ -10,11 +10,14 @@ import {
   Clock,
   Star,
   Users,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaces } from "@/api/spaces";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/")({
   head: () => ({
@@ -28,7 +31,25 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/")({
 
 function SpacesListingsPage() {
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/spaces/" });
+  const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
+  const { canCreateSpace } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
+
+  const handleCreate = () => {
+    if (!canCreateSpace()) {
+      toast.error(
+        "You have reached the maximum number of spaces allowed on your plan. Please upgrade to create more.",
+      );
+      return;
+    }
+    navigate({
+      to: "/dashboard/$workspaceSlug/spaces/create-space",
+      params: { workspaceSlug: workspaceSlug as string },
+    });
+  };
 
   const { data: spaces = [], isLoading } = useQuery({
     queryKey: ["spaces", activeWorkspace?.id],
@@ -60,13 +81,13 @@ function SpacesListingsPage() {
             </p>
           </div>
           <Button
-            className="shrink-0 gap-2 rounded-full h-10 px-5 shadow-[var(--shadow-glow)]"
+            onClick={handleCreate}
+            disabled={!canCreateSpace()}
+            className="shrink-0 gap-2 rounded-full h-10 px-5 shadow-[var(--shadow-glow)] disabled:opacity-70"
             style={{ background: "var(--gradient-primary)" }}
-            asChild
           >
-            <Link to={`/dashboard/${workspaceSlug}/spaces/create-space`}>
-              <Plus className="h-4 w-4" /> Create Space
-            </Link>
+            {canCreateSpace() ? <Plus className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+            Create Space
           </Button>
         </div>
 
@@ -123,13 +144,13 @@ function SpacesListingsPage() {
               Create your first space to start managing plans and members.
             </p>
             <Button
-              asChild
+              onClick={handleCreate}
+              disabled={!canCreateSpace()}
               style={{ background: "var(--gradient-primary)" }}
-              className="shadow-[var(--shadow-glow)]"
+              className="shadow-[var(--shadow-glow)] gap-2 disabled:opacity-70"
             >
-              <Link to={`/dashboard/${workspaceSlug}/spaces/create-space`}>
-                Create Your First Space
-              </Link>
+              {canCreateSpace() ? <Plus className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+              Create Your First Space
             </Button>
           </div>
         ) : (

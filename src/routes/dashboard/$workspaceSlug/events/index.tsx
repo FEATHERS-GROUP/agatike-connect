@@ -29,6 +29,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/events/")({
   component: DashboardEvents,
@@ -137,23 +139,41 @@ function DashboardEvents() {
 }
 
 function EventsHeader({ activeWorkspace }: { activeWorkspace: any }) {
+  const navigate = useNavigate();
+  const { canCreateEvent } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
+
+  const handleCreate = () => {
+    if (!canCreateEvent()) {
+      toast.error("Event limit reached", {
+        description:
+          "Your current subscription plan does not allow creating more events. Please upgrade your plan.",
+      });
+      return;
+    }
+    navigate({
+      to: "/dashboard/$workspaceSlug/events/create-event",
+      params: { workspaceSlug: activeWorkspace?.slug || "" },
+    });
+  };
+
   return (
     <header className="flex flex-wrap items-center justify-between gap-4">
       <div>
         <h1 className="text-2xl font-semibold">Events</h1>
         <p className="text-sm text-muted-foreground">Manage and track your events.</p>
       </div>
-      <Link
-        to="/dashboard/$workspaceSlug/events/create-event"
-        params={{ workspaceSlug: activeWorkspace?.slug || "" }}
+      <Button
+        onClick={handleCreate}
+        disabled={!canCreateEvent()}
+        className="rounded-full shadow-[var(--shadow-glow)] disabled:opacity-70"
+        style={{ background: "var(--gradient-primary)" }}
       >
-        <Button
-          className="rounded-full shadow-[var(--shadow-glow)]"
-          style={{ background: "var(--gradient-primary)" }}
-        >
-          <Plus className="mr-1 h-4 w-4" /> Create Event
-        </Button>
-      </Link>
+        {canCreateEvent() ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />}
+        Create Event
+      </Button>
     </header>
   );
 }

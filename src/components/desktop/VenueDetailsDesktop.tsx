@@ -83,6 +83,65 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
             </div>
           )}
 
+          {venue.facilities_data && venue.facilities_data.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Facilities & Spaces</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {venue.facilities_data.map((facility: any, i: number) => (
+                  <div
+                    key={i}
+                    className="flex flex-col bg-secondary/20 rounded-2xl border border-border/60 overflow-hidden"
+                  >
+                    {facility.image_url && (
+                      <img
+                        src={facility.image_url}
+                        alt={facility.name}
+                        className="h-32 w-full object-cover"
+                      />
+                    )}
+                    <div className="p-4 flex flex-col flex-1">
+                      <h3 className="font-semibold text-lg">{facility.name}</h3>
+                      <p className="text-sm text-muted-foreground capitalize mt-1 mb-3">
+                        {facility.type.replace(/_/g, " ")}
+                      </p>
+                      <div className="text-sm font-medium space-y-1 mb-4">
+                        {facility.pricing?.hourly_rate && (
+                          <p>
+                            Hourly:{" "}
+                            {formatCurrency(facility.pricing.hourly_rate, venue.currency || "RWF")}
+                          </p>
+                        )}
+                        {facility.pricing?.daily_rate && (
+                          <p>
+                            Daily:{" "}
+                            {formatCurrency(facility.pricing.daily_rate, venue.currency || "RWF")}
+                          </p>
+                        )}
+                        {facility.type === "shared_access" && facility.max_capacity && (
+                          <p>Max Capacity: {facility.max_capacity} people</p>
+                        )}
+                      </div>
+                      <div className="mt-auto">
+                        <Link
+                          to="/venues/$venueId_/facilities/checkout/$facilityId"
+                          params={{ venueId: venue.id, facilityId: facility.id }}
+                          className="block w-full"
+                        >
+                          <Button
+                            className="w-full"
+                            variant={facility.requires_approval ? "outline" : "default"}
+                          >
+                            {facility.requires_approval ? "Request Booking" : "Book Now"}
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div>
             <h2 className="text-xl font-semibold mb-4">Amenities & Features</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -252,40 +311,44 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
         {/* Right Column: CTA Widget */}
         <aside className="lg:sticky lg:top-24 h-fit">
           <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
-            <h3 className="text-2xl font-bold tracking-tight mb-2">Entry Ticket</h3>
-            <p className="text-muted-foreground mb-6">Book your access in advance</p>
+            <h3 className="text-2xl font-bold tracking-tight mb-2">
+              {venue.entrance_type === "free" ? "Free Entry" : "Entry Ticket"}
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              {venue.entrance_type === "consumable"
+                ? `Includes a ${formatCurrency(venue.consumable_value || 0, venue.currency || "RWF")} consumable voucher.`
+                : venue.entrance_type === "free"
+                  ? "General admission is free."
+                  : "Book your access in advance"}
+            </p>
 
-            <div className="space-y-3 mb-8">
-              {(venue.pricing_tiers?.length > 0
-                ? venue.pricing_tiers
-                : [{ name: "Standard Entry", amount: 0 }]
-              ).map((tier: any, idx: number) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-secondary/30"
-                >
-                  <span className="text-muted-foreground font-medium">
-                    {tier.name || "Standard Entry"}
-                  </span>
+            {venue.entrance_type !== "free" && (
+              <div className="space-y-3 mb-8">
+                <div className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-secondary/30">
+                  <span className="text-muted-foreground font-medium">Standard Entrance</span>
                   <span className="text-xl font-bold">
-                    {tier.amount > 0 ? formatCurrency(tier.amount, venue.currency) : "Free"}
+                    {venue.entrance_fee > 0
+                      ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
+                      : "Free"}
                   </span>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
 
-            <Link
-              to="/venues/checkout/$venueId"
-              params={{ venueId: venue.id }}
-              className="block w-full"
-            >
-              <Button
-                className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                style={{ background: "var(--gradient-primary)" }}
+            {venue.entrance_type !== "free" && (
+              <Link
+                to="/venues/checkout/$venueId"
+                params={{ venueId: venue.id }}
+                className="block w-full"
               >
-                Book Ticket Now <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
+                <Button
+                  className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  Book Ticket Now <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            )}
           </div>
         </aside>
       </div>

@@ -28,6 +28,7 @@ import { uploadFileToStorage } from "@/lib/firebase-storage";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { TicketEditor, Ticket } from "@/components/desktop/TicketEditor";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 // Stubbed mock data
 const categories: any[] = [];
@@ -118,6 +119,10 @@ function EditEventPage() {
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { canCreateTicketTier } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -564,6 +569,7 @@ function EditEventPage() {
           setActiveTourStopIdx={setActiveTourStopIdx}
           forms={forms}
           vipPrivileges={vipPrivileges}
+          canCreateTicketTier={canCreateTicketTier}
         />
       </div>
 

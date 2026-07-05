@@ -35,6 +35,7 @@ export interface CustomForm {
   is_active: boolean;
   created_at: string;
   event_id?: string | null;
+  workspace?: { orgnizer_id: string };
   form_fields?: FormField[];
   rsvps?: { id: string; status: string }[] | Rsvp[];
 }
@@ -74,6 +75,9 @@ const GET_FORM_DETAILS = `
       is_active
       created_at
       workspace_id
+      workspace {
+        orgnizer_id
+      }
       event_id
       form_fields(order_by: { order: asc }) {
         id

@@ -7,6 +7,8 @@ import * as LucideIcons from "lucide-react";
 import { useState } from "react";
 import { CommunityBadge } from "./CommunityBadge";
 import { ExperienceBadge } from "./ExperienceBadge";
+import { NotificationBell } from "./NotificationBell";
+import { BillingBanner } from "./BillingBanner";
 
 export function DesktopSidebar() {
   const location = useRouterState({ select: (s) => s.location });
@@ -105,9 +107,12 @@ export function DesktopSidebar() {
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:flex md:flex-col overflow-y-auto">
-      <Link to="/" className="mb-5 flex items-center gap-2.5 px-1 shrink-0">
-        <img src="/agatike-logo.svg" alt="Agatike" className="h-7 w-auto object-contain" />
-      </Link>
+      <div className="mb-5 flex items-center justify-between px-1 shrink-0">
+        <Link to="/" className="flex items-center gap-2.5">
+          <img src="/agatike-logo.svg" alt="Agatike" className="h-7 w-auto object-contain" />
+        </Link>
+        <NotificationBell />
+      </div>
 
       <WorkspaceSwitcher />
 
@@ -278,6 +283,21 @@ export function DesktopSidebar() {
             </div>
           )}
         </div>
+
+        {/* Help & Support */}
+        <div className="mt-2 pt-2 border-t border-border/40">
+          <Link
+            to="/dashboard/support"
+            className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+              location.pathname === "/dashboard/support"
+                ? "bg-accent text-accent-foreground font-medium"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
+          >
+            <LucideIcons.LifeBuoy className="h-4 w-4 shrink-0" />
+            <span className="truncate flex-1">Help &amp; Support</span>
+          </Link>
+        </div>
       </nav>
 
       {currentUser &&
@@ -337,6 +357,11 @@ export function DesktopSidebar() {
             )}
           </div>
         )}
+
+      {/* Add Billing Banner to the bottom of the sidebar */}
+      <div className="mt-4 px-2 shrink-0">
+        <BillingBanner />
+      </div>
     </aside>
   );
 }

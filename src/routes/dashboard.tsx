@@ -12,10 +12,13 @@ import { VenueSidebar } from "@/components/desktop/dashboard/VenueSidebar";
 import { SpaceSidebar } from "@/components/desktop/dashboard/SpaceSidebar";
 import { CinemaSidebar } from "@/components/desktop/dashboard/CinemaSidebar";
 import { TheatresSidebar } from "@/components/desktop/dashboard/TheatresSidebar";
+import { TransportSidebar } from "@/components/desktop/dashboard/TransportSidebar";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
 import { useEffect } from "react";
-import { getSession } from "@/api/auth";
+import { getSession, logout } from "@/api/auth";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: async ({ location }) => {
@@ -61,6 +64,7 @@ function DashboardLayout() {
   const isSpaceWorkspace =
     location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/[^/]+/) &&
     !location.pathname.includes("create-space");
+  const isTransportWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/trips\/[^/]+/);
   // Cinema inside a specific cinema (has $cinemaId)
   const isCinemaWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\//);
   // Top-level Cinema section (list page + ticket-tiers) — no $cinemaId sub-route
@@ -84,6 +88,7 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\/create-schedule/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/trips\/create-trip/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/page-builder\/editor/);
 
   const isDesigner =
@@ -96,6 +101,7 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\/create-schedule/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/trips\/create-trip/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/page-builder/);
 
   useEffect(() => {
@@ -107,6 +113,7 @@ function DashboardLayout() {
       location.pathname === "/dashboard/create-organizer" ||
       location.pathname === "/dashboard/settings" ||
       location.pathname === "/dashboard/workspaces" ||
+      location.pathname === "/dashboard/support" ||
       location.pathname === "/dashboard/workspace-user/activate" ||
       location.pathname.startsWith("/dashboard/billing")
     )
@@ -124,6 +131,9 @@ function DashboardLayout() {
         urlSlug &&
         urlSlug !== "workspaces" &&
         urlSlug !== "workspace-user" &&
+        urlSlug !== "billing" &&
+        urlSlug !== "support" &&
+        urlSlug !== "settings" &&
         urlSlug !== activeWorkspace.slug
       ) {
         const workspaceFromUrl = workspaces.find((w: any) => w.slug === urlSlug);
@@ -150,14 +160,14 @@ function DashboardLayout() {
         users: "users",
         withdrawals: "withdrawals",
         "page-builder": "page_builder",
+        trips: "trips",
+        routes: "routes",
+        passengers: "passengers",
+        vehicles: "vehicles",
       };
 
       const isModuleAllowedForPath = (path: string) => {
         const pathParts = path.split("/");
-        // e.g. path is "/events" -> parts are ["", "events"] -> module string is "events"
-        // e.g. path is "/dashboard/slug/events" -> parts are ["", "dashboard", "slug", "events"]
-        // We need to handle both absolute paths and subPaths.
-        // For subPaths like "/events", the module is index 1.
         let modName = "";
         if (path.startsWith("/dashboard/")) {
           modName = pathParts[3];
@@ -192,6 +202,10 @@ function DashboardLayout() {
             "Page Builder": "page_builder",
             "Badge Designer": "badge_designer",
             "Ticket Designer": "ticket_designer",
+            Trips: "trips",
+            Routes: "routes",
+            Passengers: "passengers",
+            Vehicles: "vehicles",
           };
           return (
             legacyIdMap[p.label] === reqMod || legacyIdMap[p.label] === reqMod.replace("_", "-")
@@ -272,6 +286,27 @@ function DashboardLayout() {
     }
   }, [isLoaded, workspaces, activeWorkspace, location.pathname, navigate, currentUser]);
 
+  useEffect(() => {
+    if (!activeWorkspace?.orgnizer_id) return;
+
+    const docRef = doc(db, "organizer_sessions", activeWorkspace.orgnizer_id);
+    const unsubscribe = onSnapshot(docRef, async (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data.status === "force_logout") {
+          try {
+            await logout();
+            navigate({ to: "/dashboard/login", replace: true });
+          } catch (err) {
+            console.error("Logout failed", err);
+          }
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [activeWorkspace?.orgnizer_id, navigate]);
+
   return (
     <>
       <div className="md:hidden print:hidden flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">
@@ -308,6 +343,8 @@ function DashboardLayout() {
               <VenueSidebar />
             ) : isSpaceWorkspace ? (
               <SpaceSidebar />
+            ) : isTransportWorkspace ? (
+              <TransportSidebar />
             ) : isCinemaWorkspace ? (
               <CinemaSidebar />
             ) : isCinemaSection ? (

@@ -133,7 +133,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
               try {
                 let theme = localStorage.getItem('agatike-theme');
                 if (!theme) {
-                  theme = 'system';
+                  theme = 'light';
                 }
                 if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                   document.documentElement.classList.add('dark');
@@ -194,7 +194,7 @@ function RootComponent() {
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.GOOGLE_AUTH_CLIENT_ID || ""}>
-      <ThemeProvider defaultTheme="system" storageKey="agatike-theme">
+      <ThemeProvider defaultTheme="light" storageKey="agatike-theme">
         <AppProvider>
           <QueryClientProvider client={queryClient}>
             <UserAuthProvider>

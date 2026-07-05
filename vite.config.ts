@@ -1,14 +1,31 @@
-import { defineConfig } from "vite";
+import { defineConfig, createLogger } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
+const logger = createLogger();
+const originalWarn = logger.warn;
+logger.warn = (msg, options) => {
+  if (typeof msg === "string" && msg.includes("Module level directives cause errors when bundled")) return;
+  originalWarn(msg, options);
+};
 export default defineConfig({
+  customLogger: logger,
   server: {
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+    },
+  },
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
+          return;
+        }
+        warn(warning);
+      },
     },
   },
   envPrefix: ["FIREBASE_", "GIPHY_", "GOOGLE_", "SUPABASE_"],
@@ -23,6 +40,17 @@ export default defineConfig({
       "recharts",
       "react-day-picker",
       "react-quill-new",
+    ],
+  },
+  ssr: {
+    external: [
+      "react-big-calendar",
+      "@blocknote/react",
+      "@blocknote/mantine",
+      "@blocknote/core",
+      "recharts",
+      "html2canvas",
+      "lucide-react",
     ],
   },
   plugins: [
@@ -43,4 +71,4 @@ export default defineConfig({
   ],
 });
 
-// Trigger restart
+// Trigger restart 2

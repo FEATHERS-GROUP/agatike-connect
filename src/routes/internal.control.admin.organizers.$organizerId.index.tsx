@@ -44,13 +44,15 @@ function StatCard({
   colorClass: string;
 }) {
   return (
-    <div className="bg-[#252526] border border-[#333333] rounded-sm p-4 flex items-center gap-4">
+    <div className="bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] rounded-sm p-4 flex items-center gap-4">
       <div className={`p-3 rounded-sm ${colorClass}`}>
         <Icon className="h-6 w-6" />
       </div>
       <div>
-        <div className="text-[#797775] text-xs uppercase tracking-wider">{title}</div>
-        <div className="text-2xl font-bold text-white mt-1">{value}</div>
+        <div className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider">
+          {title}
+        </div>
+        <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</div>
       </div>
     </div>
   );
@@ -134,11 +136,11 @@ function OrganizerOverview() {
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="flex items-center justify-between pb-2 border-b border-[#333333]">
-        <h2 className="text-xl font-medium text-white">Organizer Dashboard</h2>
+      <div className="flex items-center justify-between pb-2 border-b border-gray-200 dark:border-[#333333]">
+        <h2 className="text-xl font-medium text-gray-900 dark:text-white">Organizer Dashboard</h2>
 
         <div className="flex items-center gap-3">
-          <span className="text-[#797775] text-sm">Status:</span>
+          <span className="text-gray-600 dark:text-[#797775] text-sm">Status:</span>
           <span
             className={
               overview.active ? "text-[#84c87e] font-medium" : "text-[#f43f5e] font-medium"
@@ -169,55 +171,67 @@ function OrganizerOverview() {
       </div>
 
       {/* ORGANIZER IDENTITY DETAILS */}
-      <div className="bg-[#1e1e1e] border border-[#333333] rounded-sm p-5 mb-6">
-        <h3 className="text-md font-medium text-white mb-4 flex items-center gap-2 border-b border-[#333333] pb-2">
+      <div className="bg-gray-50 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-sm p-5 mb-6">
+        <h3 className="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2 border-b border-gray-200 dark:border-[#333333] pb-2">
           Identity &amp; Business Details
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
           <div>
-            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Phone</p>
-            <p className="text-[#cccccc]">{overview.phone || "—"}</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Phone
+            </p>
+            <p className="text-gray-700 dark:text-[#cccccc]">{overview.phone || "—"}</p>
           </div>
           <div>
-            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Gender</p>
-            <p className="text-[#cccccc] capitalize">{overview.gender || "—"}</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Gender
+            </p>
+            <p className="text-gray-700 dark:text-[#cccccc] capitalize">{overview.gender || "—"}</p>
           </div>
           <div>
-            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Date of Birth</p>
-            <p className="text-[#cccccc]">
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Date of Birth
+            </p>
+            <p className="text-gray-700 dark:text-[#cccccc]">
               {overview.dateOfBirth ? new Date(overview.dateOfBirth).toLocaleDateString() : "—"}
             </p>
           </div>
           <div>
-            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Type</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Type
+            </p>
             <p className={overview.business ? "text-[#569cd6]" : "text-[#dcdcaa]"}>
               {overview.business ? "Business Entity" : "Individual"}
             </p>
           </div>
 
           <div>
-            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Industry / Field</p>
-            <p className="text-[#cccccc] capitalize">{overview.field || "—"}</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Industry / Field
+            </p>
+            <p className="text-gray-700 dark:text-[#cccccc] capitalize">{overview.field || "—"}</p>
           </div>
           <div className="col-span-2">
-            <p className="text-[#797775] text-xs uppercase tracking-wider mb-1">Bio</p>
-            <p className="text-[#cccccc] truncate">{overview.bio || "—"}</p>
+            <p className="text-gray-600 dark:text-[#797775] text-xs uppercase tracking-wider mb-1">
+              Bio
+            </p>
+            <p className="text-gray-700 dark:text-[#cccccc] truncate">{overview.bio || "—"}</p>
           </div>
         </div>
 
         {/* Documents */}
-        <div className="mt-6 pt-4 border-t border-[#333333] flex flex-wrap gap-4">
+        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-[#333333] flex flex-wrap gap-4">
           {overview.national_id ? (
             <a
               href={overview.national_id}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] hover:border-[#569cd6] text-[#569cd6] text-xs rounded-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] hover:border-[#569cd6] text-[#569cd6] text-xs rounded-sm transition-colors"
             >
               View National ID
             </a>
           ) : (
-            <span className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] text-[#797775] text-xs rounded-sm opacity-50 cursor-not-allowed">
+            <span className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-[#797775] text-xs rounded-sm opacity-50 cursor-not-allowed">
               No National ID
             </span>
           )}
@@ -227,12 +241,12 @@ function OrganizerOverview() {
               href={overview.business_cert}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] hover:border-[#c586c0] text-[#c586c0] text-xs rounded-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] hover:border-[#c586c0] text-[#c586c0] text-xs rounded-sm transition-colors"
             >
               View Business Certificate
             </a>
           ) : (
-            <span className="flex items-center gap-2 px-4 py-2 bg-[#111111] border border-[#333333] text-[#797775] text-xs rounded-sm opacity-50 cursor-not-allowed">
+            <span className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-[#797775] text-xs rounded-sm opacity-50 cursor-not-allowed">
               No Business Cert
             </span>
           )}
@@ -240,7 +254,7 @@ function OrganizerOverview() {
       </div>
 
       {/* EXHAUSTIVE STATS GRID */}
-      <h3 className="text-md font-medium text-[#cccccc]">Platform Usage</h3>
+      <h3 className="text-md font-medium text-gray-700 dark:text-[#cccccc]">Platform Usage</h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Events"
@@ -294,14 +308,14 @@ function OrganizerOverview() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         {/* REVENUE TIMELINE */}
-        <div className="bg-[#252526] border border-[#333333] rounded-sm p-5">
-          <h3 className="text-md font-medium text-white mb-6 flex items-center gap-2">
+        <div className="bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] rounded-sm p-5">
+          <h3 className="text-md font-medium text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <Banknote className="h-4 w-4 text-[#84c87e]" />
             Revenue by Source (Over Time)
           </h3>
           <div className="h-[250px] w-full">
             {revenueChartData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-[#797775]">
+              <div className="h-full flex items-center justify-center text-gray-600 dark:text-[#797775]">
                 No revenue data found
               </div>
             ) : (
@@ -388,14 +402,14 @@ function OrganizerOverview() {
         </div>
 
         {/* EVENTS TIMELINE */}
-        <div className="bg-[#252526] border border-[#333333] rounded-sm p-5">
-          <h3 className="text-md font-medium text-white mb-6 flex items-center gap-2">
+        <div className="bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] rounded-sm p-5">
+          <h3 className="text-md font-medium text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <Calendar className="h-4 w-4 text-[#f97316]" />
             Events Created (Over Time)
           </h3>
           <div className="h-[250px] w-full">
             {eventsChartData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-[#797775]">
+              <div className="h-full flex items-center justify-center text-gray-600 dark:text-[#797775]">
                 No event data found
               </div>
             ) : (
@@ -443,33 +457,42 @@ function OrganizerOverview() {
       </div>
 
       {/* UPCOMING EVENTS LIST */}
-      <div className="bg-[#252526] border border-[#333333] rounded-sm mt-6">
-        <div className="p-4 border-b border-[#333333] flex items-center gap-2">
-          <h3 className="text-md font-medium text-white">Upcoming Events</h3>
-          <span className="bg-[#333333] text-[#cccccc] text-xs px-2 py-0.5 rounded-full">
+      <div className="bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] rounded-sm mt-6">
+        <div className="p-4 border-b border-gray-200 dark:border-[#333333] flex items-center gap-2">
+          <h3 className="text-md font-medium text-gray-900 dark:text-white">Upcoming Events</h3>
+          <span className="bg-gray-200 dark:bg-[#333333] text-gray-700 dark:text-[#cccccc] text-xs px-2 py-0.5 rounded-full">
             {upcomingEvents.length}
           </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-[13px] whitespace-nowrap">
-            <thead className="bg-[#2d2d30] text-[#cccccc]">
+            <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
               <tr>
-                <th className="font-semibold py-2 px-4 border-b border-[#333333]">Title</th>
-                <th className="font-semibold py-2 px-4 border-b border-[#333333]">Start Date</th>
-                <th className="font-semibold py-2 px-4 border-b border-[#333333]">Status</th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Title
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Start Date
+                </th>
+                <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                  Status
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#333333] text-[#cccccc]">
+            <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
               {upcomingEvents.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="py-8 text-center text-[#797775]">
+                  <td colSpan={3} className="py-8 text-center text-gray-600 dark:text-[#797775]">
                     No upcoming events found.
                   </td>
                 </tr>
               ) : (
                 upcomingEvents.map((evt: any) => (
-                  <tr key={evt.id} className="hover:bg-[#2d2d30] transition-colors">
-                    <td className="py-2 px-4 font-medium text-white">
+                  <tr
+                    key={evt.id}
+                    className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                  >
+                    <td className="py-2 px-4 font-medium text-gray-900 dark:text-white">
                       {evt.title || "Untitled Event"}
                     </td>
                     <td className="py-2 px-4">

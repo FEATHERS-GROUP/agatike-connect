@@ -1,5 +1,14 @@
 import { Link, useRouterState, useParams, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, Users, Settings, ArrowLeft, Check, Sparkles } from "lucide-react";
+import {
+  CalendarDays,
+  Users,
+  Settings,
+  ArrowLeft,
+  Check,
+  Sparkles,
+  Banknote,
+  DoorOpen,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
 import { cn } from "@/lib/utils";
@@ -47,6 +56,16 @@ export function VenueSidebar() {
       label: "Bookings",
       href: `/dashboard/${workspaceSlug}/venues/${venueId}/bookings`,
       icon: Users,
+    },
+    {
+      label: "Sub-Venues",
+      href: `/dashboard/${workspaceSlug}/venues/${venueId}/facilities`,
+      icon: DoorOpen,
+    },
+    {
+      label: "Pricing",
+      href: `/dashboard/${workspaceSlug}/venues/${venueId}/pricing`,
+      icon: Banknote,
     },
     {
       label: "Settings",

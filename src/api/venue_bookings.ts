@@ -38,6 +38,12 @@ export const createVenueBooking = createServerFn({ method: "POST" })
       internal_notes,
       venue_name, // Extracted here
       venue_currency,
+      booking_type,
+      facility_id,
+      issued_voucher_amount,
+      deposit_paid,
+      total_amount,
+      event_id,
     } = ctx.data;
 
     let final_tickets_data = tickets_data;
@@ -116,6 +122,12 @@ export const createVenueBooking = createServerFn({ method: "POST" })
         tickets_data: final_tickets_data,
         attendees_info,
         internal_notes,
+        booking_type,
+        facility_id,
+        issued_voucher_amount,
+        deposit_paid,
+        total_amount,
+        event_id,
       },
     });
 
@@ -156,6 +168,12 @@ const GET_VENUE_BOOKINGS = `
       tickets_data
       attendees_info
       internal_notes
+      booking_type
+      facility_id
+      issued_voucher_amount
+      deposit_paid
+      total_amount
+      event_id
     }
   }
 `;
@@ -178,6 +196,10 @@ const GET_WORKSPACE_VENUE_BOOKINGS = `
       id
       status
       venue_id
+      booking_type
+      facility_id
+      start_time
+      end_time
     }
   }
 `;
@@ -324,4 +346,30 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
     });
 
     return { success: true };
+  });
+
+const APPROVE_VENUE_BOOKING = `
+  mutation ApproveVenueBooking($id: uuid!) {
+    update_venue_bookings_by_pk(pk_columns: {id: $id}, _set: {status: "Confirmed"}) {
+      id
+      status
+    }
+  }
+`;
+
+export const approveVenueBooking = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { booking_id } = ctx.data;
+    if (!booking_id) throw new Error("Booking ID is required");
+
+    const res = await hasuraRequest<{ update_venue_bookings_by_pk: any }>(APPROVE_VENUE_BOOKING, {
+      id: booking_id,
+    });
+
+    if (!res.update_venue_bookings_by_pk) {
+      throw new Error("Failed to approve booking");
+    }
+
+    return res.update_venue_bookings_by_pk;
   });

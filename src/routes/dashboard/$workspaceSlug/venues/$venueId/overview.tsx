@@ -41,6 +41,7 @@ function VenueOverviewPage() {
   const [currentView, setCurrentView] = useState<View>("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [facilityFilter, setFacilityFilter] = useState<string>("ALL");
 
   const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
   const [isBlockDateOpen, setIsBlockDateOpen] = useState(false);
@@ -57,18 +58,24 @@ function VenueOverviewPage() {
     enabled: !!venueId,
   });
 
-  const myEvents = bookings.map((b: any) => {
-    return {
-      title: b.customer_name,
-      start: new Date(b.start_time),
-      end: new Date(b.end_time),
-      allDay: false, // Could compute this if needed
-      data: {
-        paymentStatus: b.payment_status,
-        status: b.status,
-      },
-    };
-  });
+  const myEvents = bookings
+    .filter((b: any) => {
+      if (facilityFilter === "ALL") return true;
+      if (facilityFilter === "GENERAL") return !b.facility_id;
+      return b.facility_id === facilityFilter;
+    })
+    .map((b: any) => {
+      return {
+        title: b.customer_name,
+        start: new Date(b.start_time),
+        end: new Date(b.end_time),
+        allDay: false, // Could compute this if needed
+        data: {
+          paymentStatus: b.payment_status,
+          status: b.status,
+        },
+      };
+    });
 
   const CustomEvent = ({ event }: any) => {
     const isPaid = event.data.paymentStatus === "Paid";
@@ -135,8 +142,23 @@ function VenueOverviewPage() {
       <div className="space-y-6">
         {/* Top: Big Calendar */}
         <div className="bg-card rounded-3xl border border-border/60 p-6 h-[700px] flex flex-col shadow-sm">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <h3 className="font-semibold text-lg">Booking Calendar</h3>
+            {venue?.facilities_data?.length > 0 && (
+              <select
+                className="h-10 rounded-xl bg-secondary/50 border border-input px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring min-w-[200px]"
+                value={facilityFilter}
+                onChange={(e) => setFacilityFilter(e.target.value)}
+              >
+                <option value="ALL">All Bookings</option>
+                <option value="GENERAL">Main Venue / General</option>
+                {venue.facilities_data.map((f: any) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div className="flex-1 bg-background/50 rounded-2xl p-4 overflow-hidden border border-border/60 shadow-inner">
             {/* Custom styles to make react-big-calendar match our premium theme */}

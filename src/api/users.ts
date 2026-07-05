@@ -152,3 +152,118 @@ export const saveFCMToken = createServerFn({ method: "POST" })
       return { success: false };
     }
   });
+
+export const getAllUsers = createServerFn({ method: "GET" }).handler(async () => {
+  const query = `
+    query GetAllUsers {
+      users(order_by: {created_at: desc}, limit: 500) {
+        id
+        username
+        handle
+        email
+        country
+        created_at
+        profile
+      }
+    }
+  `;
+
+  try {
+    const result = await hasuraRequest<{ users: any[] }>(query);
+    return result.users || [];
+  } catch (err) {
+    console.error("Failed to fetch all users", err);
+    return [];
+  }
+});
+
+export const getUserDetailsForAdmin = createServerFn({ method: "POST" })
+  .validator((d: { userId: string }) => d)
+  .handler(async (ctx) => {
+    const { userId } = ctx.data;
+    if (!userId) return null;
+
+    const query = `
+      query GetUserDetailsForAdmin($id: uuid!) {
+        users_by_pk(id: $id) {
+          id
+          username
+          handle
+          email
+          country
+          created_at
+          profile
+          active
+          banned
+          agreed_to_terms
+        }
+        event_attendees(where: { user_id: { _eq: $id } }, order_by: { created_at: desc }) {
+          id
+          names
+          ticket_type
+          status
+          created_at
+          events {
+            title
+            cover
+          }
+        }
+        venue_bookings(where: { user_id: { _eq: $id } }, order_by: { created_at: desc }) {
+          id
+          customer_name
+          amount
+          status
+          start_time
+          rentable_venue {
+            name
+            cover_url
+          }
+        }
+        space_subscriptions(where: { user_id: { _eq: $id } }, order_by: { created_at: desc }) {
+          id
+          plan_name
+          price
+          status
+          billing_cycle
+          start_date
+          next_billing_date
+          space {
+            name
+            cover_url
+          }
+        }
+      }
+    `;
+
+    try {
+      const result = await hasuraRequest<any>(query, { id: userId });
+      return result;
+    } catch (err) {
+      console.error("Failed to fetch user details for admin", err);
+      return null;
+    }
+  });
+
+export const toggleUserActiveStatus = createServerFn({ method: "POST" })
+  .validator((d: { userId: string; active: boolean }) => d)
+  .handler(async (ctx) => {
+    const { userId, active } = ctx.data;
+    if (!userId) return { success: false };
+
+    const mutation = `
+      mutation ToggleUserActiveStatus($id: uuid!, $active: Boolean!) {
+        update_users_by_pk(pk_columns: { id: $id }, _set: { active: $active }) {
+          id
+          active
+        }
+      }
+    `;
+
+    try {
+      await hasuraRequest(mutation, { id: userId, active });
+      return { success: true };
+    } catch (err) {
+      console.error("Failed to toggle user active status", err);
+      return { success: false };
+    }
+  });

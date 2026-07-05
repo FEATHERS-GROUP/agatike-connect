@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getCinemas, deleteCinema } from "@/api/cinemas";
-import { Plus, MapPin, Film, MoreVertical, Building2, Loader2, Trash2 } from "lucide-react";
+import { Plus, MapPin, Film, MoreVertical, Building2, Loader2, Trash2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/")({
   component: CinemaDashboardList,
@@ -27,6 +28,10 @@ function CinemaDashboardList() {
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
+  const { canCreateCinema } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: cinemas = [], isLoading } = useQuery({
     queryKey: ["cinemas", activeWorkspace?.id],
@@ -44,8 +49,15 @@ function CinemaDashboardList() {
     }
   };
 
-  const goCreate = () =>
+  const goCreate = () => {
+    if (!canCreateCinema()) {
+      toast.error(
+        "You have reached the maximum number of cinemas allowed on your plan. Please upgrade to create more.",
+      );
+      return;
+    }
     navigate({ to: "/dashboard/$workspaceSlug/Cinema/create", params: { workspaceSlug } });
+  };
 
   return (
     <div className="animate-in fade-in duration-500">
@@ -62,10 +74,12 @@ function CinemaDashboardList() {
           </div>
           <Button
             onClick={goCreate}
-            className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)]"
+            disabled={!canCreateCinema()}
+            className="gap-2 rounded-xl h-11 px-6 font-bold shadow-[var(--shadow-glow)] disabled:opacity-70"
             style={{ background: "var(--gradient-primary)" }}
           >
-            <Plus className="h-5 w-5" /> Add New Cinema
+            {canCreateCinema() ? <Plus className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+            Add New Cinema
           </Button>
         </div>
 
@@ -84,8 +98,13 @@ function CinemaDashboardList() {
             <p className="text-muted-foreground mb-6">
               Create your first cinema or theater to start scheduling movies and selling tickets.
             </p>
-            <Button onClick={goCreate} className="gap-2 rounded-xl h-11 px-6 font-bold">
-              <Plus className="h-5 w-5" /> Create First Cinema
+            <Button
+              onClick={goCreate}
+              disabled={!canCreateCinema()}
+              className="gap-2 rounded-xl h-11 px-6 font-bold disabled:opacity-70"
+            >
+              {canCreateCinema() ? <Plus className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+              Create First Cinema
             </Button>
           </div>
         )}

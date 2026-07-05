@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { COUNTRIES } from "@/lib/countries";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 import { CategorySelectStep } from "./CreateExperience/CategorySelectStep";
 import { ExperienceVenueStep } from "./CreateExperience/ExperienceVenueStep";
@@ -44,6 +45,10 @@ export function CreateExperienceDesktop({
   const { step: urlStep } = useSearch({ strict: false }) as { step?: number };
   const step = urlStep || 0;
   const { activeWorkspace } = useWorkspace();
+  const { canCreateExperience, isLoading: limitsLoading } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const dashboardUrl = workspaceSlug ? `/dashboard/${workspaceSlug}` : "/dashboard";
 
@@ -113,6 +118,10 @@ export function CreateExperienceDesktop({
   const [data, setData] = useState(defaultData);
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverError, setCoverError] = useState("");
+  const { canCreateTicketTier } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id,
+  );
 
   const { data: forms = [] } = useQuery({
     queryKey: ["workspace_forms", activeWorkspace?.id],
@@ -133,6 +142,15 @@ export function CreateExperienceDesktop({
       }
     }
   }, [initialData]);
+
+  useEffect(() => {
+    if (!isEdit && !limitsLoading && !canCreateExperience()) {
+      toast.error("Experience Limit Reached", {
+        description: "You have reached the maximum number of experiences allowed by your plan.",
+      });
+      navigate({ to: dashboardUrl, replace: true });
+    }
+  }, [limitsLoading, canCreateExperience, isEdit, navigate, dashboardUrl]);
 
   const saveDraft = () => {
     const draftState = { data };
@@ -272,6 +290,10 @@ export function CreateExperienceDesktop({
       if (isEdit && initialData?.id) {
         return await updateEvent({ data: { id: initialData.id, ...payload } } as any);
       } else {
+        if (!canCreateExperience()) {
+          toast.error("You have reached the maximum number of experiences for your plan.");
+          throw new Error("Limit reached");
+        }
         return await createEvent({ data: payload } as any);
       }
     },
@@ -677,6 +699,13 @@ export function CreateExperienceDesktop({
               size="sm"
               className="mt-4 rounded-full"
               onClick={() => {
+                if (!canCreateTicketTier(data.tickets.length)) {
+                  toast.error("Ticket Tier Limit Reached", {
+                    description:
+                      "You have reached the maximum number of ticket tiers for this event. Please upgrade to create more.",
+                  });
+                  return;
+                }
                 updateField("tickets", [
                   ...data.tickets,
                   {

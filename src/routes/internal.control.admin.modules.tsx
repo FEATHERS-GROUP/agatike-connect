@@ -75,18 +75,18 @@ function ModulesPage() {
     <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             Platform Modules
             <LucideIcons.Package className="w-6 h-6 text-[#f97316]" />
           </h1>
-          <p className="text-[#888888] mt-1 text-sm">
+          <p className="text-gray-500 dark:text-[#888888] mt-1 text-sm">
             Manage all available modules and features across the platform.
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <div className="relative w-full sm:w-64">
-            <LucideIcons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888888]" />
+            <LucideIcons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-[#888888]" />
             <input
               type="text"
               placeholder="Search modules..."
@@ -95,7 +95,7 @@ function ModulesPage() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-[#1b1b1c] border border-[#333333] rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-[#f97316] placeholder:text-[#666666]"
+              className="w-full bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-lg pl-9 pr-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#f97316] placeholder:text-gray-500 dark:text-[#666666]"
             />
           </div>
           <button
@@ -108,10 +108,10 @@ function ModulesPage() {
         </div>
       </div>
 
-      <div className="bg-[#1b1b1c] border border-[#333333] rounded-xl overflow-hidden">
+      <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-[#cccccc]">
-            <thead className="bg-[#252526] text-[#888888] border-b border-[#333333]">
+          <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
+            <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
               <tr>
                 <th className="px-6 py-4 font-medium">Module</th>
                 <th className="px-6 py-4 font-medium">Category</th>
@@ -121,20 +121,26 @@ function ModulesPage() {
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#333333]">
+            <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
               {paginatedModules.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-[#888888]">
+                  <td
+                    colSpan={6}
+                    className="px-6 py-8 text-center text-gray-500 dark:text-[#888888]"
+                  >
                     No modules found.{" "}
                     {searchQuery ? "Try a different search query." : "Create one to get started."}
                   </td>
                 </tr>
               ) : (
                 paginatedModules.map((mod) => (
-                  <tr key={mod.id} className="hover:bg-[#252526] transition-colors">
+                  <tr
+                    key={mod.id}
+                    className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-lg bg-[#333333]/50 text-white mt-0.5">
+                        <div className="p-2 rounded-lg bg-gray-200 dark:bg-[#333333]/50 text-gray-900 dark:text-white mt-0.5">
                           {/* @ts-ignore */}
                           {LucideIcons[mod.icon] ? (
                             /* @ts-ignore */
@@ -144,9 +150,11 @@ function ModulesPage() {
                           )}
                         </div>
                         <div>
-                          <div className="font-medium text-white">{mod.label}</div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {mod.label}
+                          </div>
                           <div
-                            className="text-xs text-[#888888] mt-0.5 max-w-xs truncate"
+                            className="text-xs text-gray-500 dark:text-[#888888] mt-0.5 max-w-xs truncate"
                             title={mod.desc}
                           >
                             {mod.desc}
@@ -155,11 +163,13 @@ function ModulesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2 py-1 rounded-md bg-[#333333] text-xs">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-200 dark:bg-[#333333] text-xs">
                         {mod.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-mono text-xs text-[#aaaaaa]">{mod.href}</td>
+                    <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-[#aaaaaa]">
+                      {mod.href}
+                    </td>
                     <td className="px-6 py-4">
                       {mod.mandatory ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2 py-1 text-xs font-medium text-red-500">
@@ -171,13 +181,13 @@ function ModulesPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-xs text-[#888888]">
+                    <td className="px-6 py-4 text-xs text-gray-500 dark:text-[#888888]">
                       {new Date(mod.updated_at).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => setModalState({ isOpen: true, module: mod })}
-                        className="p-2 text-[#888888] hover:text-[#f97316] hover:bg-[#f97316]/10 rounded-lg transition-colors"
+                        className="p-2 text-gray-500 dark:text-[#888888] hover:text-[#f97316] hover:bg-[#f97316]/10 rounded-lg transition-colors"
                         title="Edit Module"
                       >
                         <LucideIcons.Edit2 className="w-4 h-4" />
@@ -193,28 +203,33 @@ function ModulesPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
-          <div className="text-sm text-[#888888]">
-            Showing <span className="font-medium text-white">{startIndex + 1}</span> to{" "}
-            <span className="font-medium text-white">
+          <div className="text-sm text-gray-500 dark:text-[#888888]">
+            Showing{" "}
+            <span className="font-medium text-gray-900 dark:text-white">{startIndex + 1}</span> to{" "}
+            <span className="font-medium text-gray-900 dark:text-white">
               {Math.min(startIndex + ITEMS_PER_PAGE, filteredModules.length)}
             </span>{" "}
-            of <span className="font-medium text-white">{filteredModules.length}</span> results
+            of{" "}
+            <span className="font-medium text-gray-900 dark:text-white">
+              {filteredModules.length}
+            </span>{" "}
+            results
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-2 rounded-lg bg-[#1b1b1c] border border-[#333333] text-[#aaaaaa] hover:text-white disabled:opacity-50 transition-colors"
+              className="p-2 rounded-lg bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-[#aaaaaa] hover:text-gray-900 dark:hover:text-white disabled:opacity-50 transition-colors"
             >
               <LucideIcons.ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-sm text-[#aaaaaa] px-2">
+            <span className="text-sm text-gray-600 dark:text-[#aaaaaa] px-2">
               Page {currentPage} of {totalPages}
             </span>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-2 rounded-lg bg-[#1b1b1c] border border-[#333333] text-[#aaaaaa] hover:text-white disabled:opacity-50 transition-colors"
+              className="p-2 rounded-lg bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-[#aaaaaa] hover:text-gray-900 dark:hover:text-white disabled:opacity-50 transition-colors"
             >
               <LucideIcons.ChevronRight className="w-4 h-4" />
             </button>
@@ -262,17 +277,17 @@ function IconPicker({ value, onChange }: { value: string; onChange: (val: string
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#f97316] transition-colors hover:border-[#444444]"
+        className="w-full flex items-center justify-between bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#f97316] transition-colors hover:border-gray-300 dark:hover:border-[#444444]"
       >
         <div className="flex items-center gap-2">
-          <DynamicIcon iconName={value} className="w-4 h-4 text-[#aaaaaa]" />
+          <DynamicIcon iconName={value} className="w-4 h-4 text-gray-600 dark:text-[#aaaaaa]" />
           <span>{value}</span>
         </div>
-        <LucideIcons.ChevronDown className="w-4 h-4 text-[#888888]" />
+        <LucideIcons.ChevronDown className="w-4 h-4 text-gray-500 dark:text-[#888888]" />
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 top-full left-0 mt-1 w-64 bg-[#1b1b1c] border border-[#333333] rounded-xl shadow-2xl p-2 max-h-60 overflow-y-auto grid grid-cols-4 gap-2 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute z-10 top-full left-0 mt-1 w-64 bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl shadow-2xl p-2 max-h-60 overflow-y-auto grid grid-cols-4 gap-2 animate-in fade-in slide-in-from-top-2 duration-150">
           {COMMON_ICONS.map((iconName) => (
             <button
               key={iconName}
@@ -284,7 +299,7 @@ function IconPicker({ value, onChange }: { value: string; onChange: (val: string
               className={`flex flex-col items-center justify-center p-2 rounded-lg gap-1 transition-colors ${
                 value === iconName
                   ? "bg-[#f97316]/20 text-[#f97316]"
-                  : "text-[#aaaaaa] hover:bg-[#333333] hover:text-white"
+                  : "text-gray-600 dark:text-[#aaaaaa] hover:bg-gray-200 dark:hover:bg-[#333333] hover:text-gray-900 dark:hover:text-white"
               }`}
               title={iconName}
             >
@@ -325,7 +340,7 @@ function ModuleModal({
 
     try {
       if (initialData) {
-        await updatePlatformModule({ id: initialData.id, data: formData });
+        await updatePlatformModule({ data: { id: initialData.id, data: formData } });
       } else {
         await createPlatformModule({ data: formData });
       }
@@ -339,14 +354,14 @@ function ModuleModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg bg-[#1b1b1c] border border-[#333333] rounded-xl shadow-2xl overflow-visible animate-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between p-4 border-b border-[#333333]">
-          <h2 className="text-lg font-medium text-white">
+      <div className="w-full max-w-lg bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl shadow-2xl overflow-visible animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-[#333333]">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">
             {initialData ? "Edit Module" : "Add New Module"}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 text-[#888888] hover:text-white rounded-md hover:bg-[#333333] transition-colors"
+            className="p-1 text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white rounded-md hover:bg-gray-200 dark:hover:bg-[#333333] transition-colors"
           >
             <LucideIcons.X className="w-5 h-5" />
           </button>
@@ -361,57 +376,65 @@ function ModuleModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#aaaaaa]">Label (Name)</label>
+              <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">
+                Label (Name)
+              </label>
               <input
                 required
                 type="text"
                 value={formData.label}
                 onChange={(e) => setFormData((f) => ({ ...f, label: e.target.value }))}
-                className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#f97316]"
+                className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#f97316]"
                 placeholder="e.g. Ticketing"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#aaaaaa]">Category</label>
+              <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">
+                Category
+              </label>
               <input
                 required
                 type="text"
                 value={formData.category}
                 onChange={(e) => setFormData((f) => ({ ...f, category: e.target.value }))}
-                className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#f97316]"
+                className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#f97316]"
                 placeholder="e.g. Core Features"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[#aaaaaa]">Description</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">
+              Description
+            </label>
             <textarea
               required
               rows={2}
               value={formData.desc}
               onChange={(e) => setFormData((f) => ({ ...f, desc: e.target.value }))}
-              className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#f97316] resize-none"
+              className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-[#f97316] resize-none"
               placeholder="Brief description of what this module does..."
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#aaaaaa]">Path (href)</label>
+              <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">
+                Path (href)
+              </label>
               <input
                 required
                 type="text"
                 value={formData.href}
                 onChange={(e) => setFormData((f) => ({ ...f, href: e.target.value }))}
-                className="w-full bg-[#111111] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-[#f97316]"
+                className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white font-mono focus:outline-none focus:border-[#f97316]"
                 placeholder="/path"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#aaaaaa]">Icon</label>
+              <label className="text-xs font-medium text-gray-600 dark:text-[#aaaaaa]">Icon</label>
               <IconPicker
                 value={formData.icon}
                 onChange={(val) => setFormData((f) => ({ ...f, icon: val }))}
@@ -423,23 +446,27 @@ function ModuleModal({
             <button
               type="button"
               onClick={() => setFormData((f) => ({ ...f, mandatory: !f.mandatory }))}
-              className={`w-10 h-5 rounded-full transition-colors relative ${formData.mandatory ? "bg-[#f97316]" : "bg-[#333333]"}`}
+              className={`w-10 h-5 rounded-full transition-colors relative ${formData.mandatory ? "bg-[#f97316]" : "bg-gray-200 dark:bg-[#333333]"}`}
             >
               <span
                 className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${formData.mandatory ? "translate-x-5" : "translate-x-0"}`}
               />
             </button>
             <div>
-              <div className="text-sm font-medium text-white">Mandatory Module</div>
-              <div className="text-xs text-[#888888]">Users cannot disable this module</div>
+              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                Mandatory Module
+              </div>
+              <div className="text-xs text-gray-500 dark:text-[#888888]">
+                Users cannot disable this module
+              </div>
             </div>
           </div>
 
-          <div className="pt-4 mt-2 border-t border-[#333333] flex items-center justify-end gap-3">
+          <div className="pt-4 mt-2 border-t border-gray-200 dark:border-[#333333] flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-[#aaaaaa] hover:text-white transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-[#aaaaaa] hover:text-gray-900 dark:hover:text-white transition-colors"
             >
               Cancel
             </button>

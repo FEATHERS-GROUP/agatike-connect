@@ -41,11 +41,12 @@ import {
 import { Folder, Trash2 } from "lucide-react";
 import { getRentableVenues } from "@/api/rentable_venues";
 import { getCinemas } from "@/api/cinemas";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 
 // Stubbed mock data
 const ticketProjects: any[] = [];
@@ -122,6 +123,12 @@ function TicketDesignerIndex() {
     enabled: !!activeWorkspace?.id,
   });
 
+  const {
+    hasStudioAccess,
+    canCreateTicketDesign,
+    isLoading: limitsLoading,
+  } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("Untitled Project");
@@ -182,6 +189,13 @@ function TicketDesignerIndex() {
 
   const handleCreateNew = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canCreateTicketDesign()) {
+      toast.error("Ticket Design Limit Reached", {
+        description: "You have reached the maximum number of ticket designs for your plan.",
+      });
+      setIsModalOpen(false);
+      return;
+    }
     if (!selectedTemplate || !selectedAssignment) {
       toast.error("Please select a template and an event or venue.");
       return;
@@ -207,11 +221,29 @@ function TicketDesignerIndex() {
   };
 
   const openSetupModal = (templateId: string) => {
+    if (!canCreateTicketDesign()) {
+      toast.error("Ticket Design Limit Reached", {
+        description: "You have reached the maximum number of ticket designs for your plan.",
+      });
+      return;
+    }
     setSelectedTemplate(templateId);
     setNewProjectName("Untitled Project");
     setSelectedAssignment("");
     setIsModalOpen(true);
   };
+
+  if (limitsLoading) return null;
+  if (!hasStudioAccess()) {
+    return (
+      <div className="p-6 h-full flex flex-col justify-center">
+        <UpgradePrompt
+          title="Upgrade to Access Ticket Designer"
+          description="Ticket Designer is a premium feature available in higher tier plans. Upgrade your subscription to start designing beautiful custom tickets."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-secondary/30">
