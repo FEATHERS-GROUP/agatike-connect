@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { getRentableVenueById } from "@/api/rentable_venues";
-import { createVenueBooking } from "@/api/venue_bookings";
+import { createVenueBooking, getVenueBookings } from "@/api/venue_bookings";
 import { getUserSession } from "@/api/auth";
 import { useState, useMemo } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ChevronLeft,
   Calendar as CalendarIcon,
@@ -18,7 +18,11 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { formatCurrency } from "@/lib/currency";
 import { toast } from "sonner";
-import { format, differenceInHours } from "date-fns";
+import { format, isBefore, startOfDay, addDays } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
 
 export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$facilityId")({
   beforeLoad: async ({ location }) => {
@@ -37,6 +41,8 @@ export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$fac
   component: FacilityCheckoutPage,
 });
 
+const SLOTS = Array.from({ length: 18 }, (_, i) => i + 6); // 06:00 to 23:00
+
 function FacilityCheckoutPage() {
   const { session } = Route.useRouteContext();
   const venue = Route.useLoaderData();
@@ -47,9 +53,8 @@ function FacilityCheckoutPage() {
 
   const facility = venue?.facilities_data?.find((f: any) => f.id === facilityId);
 
-  const [date, setDate] = useState("");
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("10:00");
+  const [date, setDate] = useState<DateRange | undefined>();
+  const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [name, setName] = useState(session?.username || "");
   const [email, setEmail] = useState(session?.email || "");
   const [phone, setPhone] = useState("");
@@ -58,21 +63,66 @@ function FacilityCheckoutPage() {
   const hourlyRate = Number(facility?.pricing?.hourly_rate) || 0;
   const currency = venue?.currency || "RWF";
 
-  // Calculate total price based on selected hours
-  const totalAmount = useMemo(() => {
-    if (!date || !startTime || !endTime) return 0;
-    try {
-      const start = new Date(`${date}T${startTime}`);
-      const end = new Date(`${date}T${endTime}`);
-      const hours = Math.max(0, differenceInHours(end, start));
-      return hours * hourlyRate;
-    } catch {
-      return 0;
+  const { data: bookings = [] } = useQuery({
+    queryKey: ["venueBookings", venueId],
+    queryFn: () => getVenueBookings({ data: { venue_id: venueId } }),
+  });
+
+  const facilityBookings = useMemo(() => {
+    return bookings.filter(
+      (b: any) => b.facility_id === facilityId && b.status !== "Cancelled"
+    );
+  }, [bookings, facilityId]);
+
+  const isSlotBooked = (dateToCheck: Date, startHour: number) => {
+    return facilityBookings.some((b: any) => {
+      const bStart = new Date(b.start_time);
+      const bEnd = new Date(b.end_time);
+      const slotStart = new Date(dateToCheck);
+      slotStart.setHours(startHour, 0, 0, 0);
+      const slotEnd = new Date(dateToCheck);
+      slotEnd.setHours(startHour + 1, 0, 0, 0);
+      
+      return bStart < slotEnd && slotStart < bEnd;
+    });
+  };
+
+  const isDateFullyBooked = (dateToCheck: Date) => {
+    return SLOTS.every((hour) => isSlotBooked(dateToCheck, hour));
+  };
+
+  const daysInRange = useMemo(() => {
+    const days = [];
+    if (date?.from) {
+      let current = new Date(date.from);
+      const end = date.to || date.from;
+      let safety = 0;
+      while (current <= end && safety < 365) {
+        days.push(new Date(current));
+        current.setDate(current.getDate() + 1);
+        safety++;
+      }
     }
-  }, [date, startTime, endTime, hourlyRate]);
+    return days;
+  }, [date]);
+
+  const isSlotBookedAcrossRange = (hour: number) => {
+    return daysInRange.some(d => isSlotBooked(d, hour));
+  };
+
+  const totalAmount = useMemo(() => {
+    if (daysInRange.length === 0 || selectedSlots.length === 0) return 0;
+    return daysInRange.length * selectedSlots.length * hourlyRate;
+  }, [daysInRange.length, selectedSlots.length, hourlyRate]);
 
   const bookingMutation = useMutation({
-    mutationFn: (data: any) => createVenueBooking({ data }),
+    mutationFn: async (dataList: any[]) => {
+      const results = [];
+      for (const data of dataList) {
+        results.push(await createVenueBooking({ data }));
+      }
+      return results;
+    },
     onSuccess: () => {
       setIsSuccess(true);
     },
@@ -81,19 +131,39 @@ function FacilityCheckoutPage() {
     },
   });
 
+  const handleSlotClick = (hour: number) => {
+    if (selectedSlots.includes(hour)) {
+      const newSlots = selectedSlots.filter(s => s !== hour).sort((a, b) => a - b);
+      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i-1] + 1);
+      if (isContiguous) {
+        setSelectedSlots(newSlots);
+      } else {
+        setSelectedSlots([hour]);
+      }
+    } else {
+      const newSlots = [...selectedSlots, hour].sort((a, b) => a - b);
+      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i-1] + 1);
+      if (isContiguous) {
+        setSelectedSlots(newSlots);
+      } else {
+        setSelectedSlots([hour]);
+      }
+    }
+  };
+
   const handleBook = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !startTime || !endTime || !name || !email) {
+    if (!date?.from || selectedSlots.length === 0 || !name || !email) {
       toast.error("Please fill in all required fields.");
       return;
     }
 
-    const startDateTime = new Date(`${date}T${startTime}`).toISOString();
-    const endDateTime = new Date(`${date}T${endTime}`).toISOString();
+    const minSlot = Math.min(...selectedSlots);
+    const maxSlot = Math.max(...selectedSlots);
 
     const bookingStatus = facility?.requires_approval ? "Pending" : "Confirmed";
 
-    bookingMutation.mutate({
+    const basePayload = {
       workspace_id: venue.workspace_id,
       venue_id: venue.id,
       user_id: session?.id,
@@ -101,17 +171,30 @@ function FacilityCheckoutPage() {
       customer_name: name,
       customer_email: email,
       customer_phone: phone,
-      start_time: startDateTime,
-      end_time: endDateTime,
       status: bookingStatus,
       payment_status: totalAmount > 0 ? "Pending" : "Paid",
-      amount: totalAmount,
-      total_amount: totalAmount,
+      amount: selectedSlots.length * hourlyRate, // Per-day amount
+      total_amount: selectedSlots.length * hourlyRate, // Keep total_amount as per-day for consistency with single records
       venue_name: venue.name,
       venue_currency: currency,
       booking_type: "facility",
       tickets_data: {},
+    };
+
+    const payloads = daysInRange.map(d => {
+      const startDateTime = new Date(d);
+      startDateTime.setHours(minSlot, 0, 0, 0);
+      const endDateTime = new Date(d);
+      endDateTime.setHours(maxSlot + 1, 0, 0, 0);
+      
+      return {
+        ...basePayload,
+        start_time: startDateTime.toISOString(),
+        end_time: endDateTime.toISOString(),
+      };
     });
+
+    bookingMutation.mutate(payloads);
   };
 
   if (!venue || !facility) {
@@ -164,54 +247,87 @@ function FacilityCheckoutPage() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight mb-2">Book {facility.name}</h1>
               <p className="text-muted-foreground">
-                Select your date, time, and enter your details to complete your booking.
+                Select your date(s), time, and enter your details to complete your booking.
               </p>
             </div>
 
             <form id="booking-form" onSubmit={handleBook} className="space-y-8">
               <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
                 <h2 className="text-xl font-semibold mb-6">1. Date & Time</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label>Select Date</Label>
-                    <div className="relative">
-                      <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        type="date"
-                        required
-                        min={new Date().toISOString().split("T")[0]}
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        className="pl-10 h-12 rounded-xl bg-secondary/30"
-                      />
-                    </div>
-                  </div>
+                <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-2">
-                    <Label>Start Time</Label>
-                    <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        type="time"
-                        required
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                        className="pl-10 h-12 rounded-xl bg-secondary/30"
-                      />
-                    </div>
+                    <Label>Select Date (Click to pick a single day or a range)</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full h-12 justify-start text-left font-normal rounded-xl bg-secondary/30",
+                            !date?.from && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {date?.from ? (
+                            date.to ? (
+                              <>
+                                {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
+                              </>
+                            ) : (
+                              format(date.from, "LLL dd, y")
+                            )
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="range"
+                          selected={date}
+                          onSelect={(d) => {
+                            setDate(d);
+                            setSelectedSlots([]);
+                          }}
+                          disabled={(d) => isBefore(d, startOfDay(new Date())) || isDateFullyBooked(d)}
+                          initialFocus
+                          numberOfMonths={1}
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
-                  <div className="space-y-2">
-                    <Label>End Time</Label>
-                    <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        type="time"
-                        required
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                        className="pl-10 h-12 rounded-xl bg-secondary/30"
-                      />
+
+                  {date?.from && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                      <Label>Available Time Slots (1 Hour)</Label>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Select one or more continuous hours. These hours will be booked for <strong>every day</strong> in your selected range.
+                      </p>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mt-2">
+                        {SLOTS.map((hour) => {
+                          const booked = isSlotBookedAcrossRange(hour);
+                          const isSelected = selectedSlots.includes(hour);
+                          const timeString = `${hour.toString().padStart(2, "0")}:00`;
+
+                          return (
+                            <Button
+                              key={hour}
+                              type="button"
+                              variant={isSelected ? "default" : "outline"}
+                              className={cn(
+                                "h-10 rounded-xl transition-all",
+                                booked && "opacity-50 cursor-not-allowed line-through",
+                                isSelected && "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30"
+                              )}
+                              disabled={booked}
+                              onClick={() => handleSlotClick(hour)}
+                            >
+                              {timeString}
+                            </Button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -276,19 +392,21 @@ function FacilityCheckoutPage() {
                 <span className="text-muted-foreground">Venue</span>
                 <span className="font-medium text-right">{venue.name}</span>
               </div>
-              {date && (
+              {date?.from && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Date</span>
+                  <span className="text-muted-foreground">Date Range</span>
                   <span className="font-medium text-right">
-                    {format(new Date(date), "MMM d, yyyy")}
+                    {date.to && date.to > date.from
+                      ? `${format(date.from, "MMM d")} - ${format(date.to, "MMM d, yyyy")}`
+                      : format(date.from, "MMM d, yyyy")}
                   </span>
                 </div>
               )}
-              {date && startTime && endTime && (
+              {date?.from && selectedSlots.length > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Time</span>
+                  <span className="text-muted-foreground">Time (Daily)</span>
                   <span className="font-medium text-right">
-                    {startTime} - {endTime}
+                    {`${Math.min(...selectedSlots).toString().padStart(2, "0")}:00`} - {`${(Math.max(...selectedSlots) + 1).toString().padStart(2, "0")}:00`}
                   </span>
                 </div>
               )}
@@ -299,6 +417,12 @@ function FacilityCheckoutPage() {
                 <span className="text-muted-foreground">Hourly Rate</span>
                 <span>{formatCurrency(hourlyRate, currency)} / hr</span>
               </div>
+              {daysInRange.length > 1 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Days</span>
+                  <span>{daysInRange.length} days</span>
+                </div>
+              )}
               <div className="flex justify-between items-end">
                 <span className="font-bold text-lg">Total Due</span>
                 <span className="text-2xl font-black text-primary">
@@ -310,7 +434,7 @@ function FacilityCheckoutPage() {
             <Button
               type="submit"
               form="booking-form"
-              disabled={bookingMutation.isPending || !date || !startTime || !endTime}
+              disabled={bookingMutation.isPending || !date?.from || selectedSlots.length === 0}
               className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
               style={{ background: "var(--gradient-primary)" }}
             >
