@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { getRentableVenueById } from "@/api/rentable_venues";
 import { createVenueBooking, getVenueBookings } from "@/api/venue_bookings";
+import { sendVenueBookingEmail } from "@/api/email";
 import { getUserSession } from "@/api/auth";
 import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -199,13 +200,39 @@ function FacilityCheckoutPage() {
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { results, isPawaPay: true, depositId: pawaRes.depositId };
+        return { results, isPawaPay: true, depositId: pawaRes.depositId, bookingRef: currentRef };
       }
 
-      return { results, isPawaPay: false };
+      return { results, isPawaPay: false, bookingRef: currentRef };
     },
-    onSuccess: (data: any) => {
+    onSuccess: async (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["venueBookings", venueId] });
+      
+      const sendEmail = async () => {
+        try {
+          const dateRangeStr = date?.from 
+            ? (date.to ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}` : format(date.from, "LLL dd, y"))
+            : "";
+          const minSlot = Math.min(...selectedSlots);
+          const maxSlot = Math.max(...selectedSlots);
+          const timeRangeStr = `${minSlot}:00 - ${maxSlot + 1}:00`;
+
+          await sendVenueBookingEmail({
+            data: {
+              to: email,
+              customerName: name,
+              facilityName: facility?.name || "Facility",
+              venueName: venue.name,
+              venueLocation: venue.address || venue.city || "Venue Location",
+              dateRange: dateRangeStr,
+              timeRange: timeRangeStr,
+              bookingRef: data.bookingRef
+            }
+          } as any);
+        } catch (e) {
+          console.error("Failed to send booking confirmation email:", e);
+        }
+      };
       
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
@@ -213,13 +240,15 @@ function FacilityCheckoutPage() {
         setIsPaymentModalOpen(false);
         // Polling logic would go here via a separate useEffect or websocket.
         // For now we simulate success after short delay since webhooks handle DB.
-        setTimeout(() => {
+        setTimeout(async () => {
           setIsPollingPawaPay(false);
           setIsSuccess(true);
+          await sendEmail();
         }, 5000);
         return;
       }
       setIsSuccess(true);
+      await sendEmail();
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to create booking.");
