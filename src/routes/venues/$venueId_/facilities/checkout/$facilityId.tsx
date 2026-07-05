@@ -26,7 +26,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { PaymentModal } from "@/components/shared/PaymentModal";
-import { initiatePawaPayDeposit } from "@/api/pawapay";
+import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
+import { useEffect } from "react";
+import * as htmlToImage from "html-to-image";
+import jsPDF from "jspdf";
+import { sendTicketsEmail } from "@/api/email";
+import { getTicketProjects } from "@/api/ticket_designer";
+import { TicketDesign } from "@/components/venue-designer/TicketDesign";
+import { Ticket, Plus, Minus } from "lucide-react";
 
 export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$facilityId")({
   beforeLoad: async ({ location }) => {
@@ -59,8 +66,19 @@ function FacilityCheckoutPage() {
   const queryClient = useQueryClient();
 
   const facility = venue?.facilities_data?.find((f: any) => f.id === facilityId);
+  const isSharedAccess = facility?.type === "shared_access";
+
+  const { data: ticketProjects } = useQuery({
+    queryKey: ["ticket_projects", venue?.workspace_id],
+    queryFn: () => getTicketProjects({ data: { workspace_id: venue?.workspace_id } }),
+    enabled: !!venue?.workspace_id,
+  });
+  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue?.id) || ticketProjects?.[0];
 
   const [date, setDate] = useState<DateRange | undefined>();
+  const [quantity, setQuantity] = useState(1);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [name, setName] = useState(session?.username || "");
   const [email, setEmail] = useState(session?.email || "");
@@ -75,6 +93,7 @@ function FacilityCheckoutPage() {
   const [bookingRef, setBookingRef] = useState<string>("");
 
   const hourlyRate = Number(facility?.pricing?.hourly_rate) || 0;
+  const dailyRate = Number(facility?.pricing?.daily_rate) || hourlyRate;
   const currency = venue?.currency || "RWF";
 
   const { data: bookings = [] } = useQuery({
@@ -123,9 +142,13 @@ function FacilityCheckoutPage() {
   };
 
   const totalAmount = useMemo(() => {
-    if (daysInRange.length === 0 || selectedSlots.length === 0) return 0;
+    if (daysInRange.length === 0) return 0;
+    if (isSharedAccess) {
+      return daysInRange.length * quantity * dailyRate;
+    }
+    if (selectedSlots.length === 0) return 0;
     return daysInRange.length * selectedSlots.length * hourlyRate;
-  }, [daysInRange.length, selectedSlots.length, hourlyRate]);
+  }, [daysInRange.length, selectedSlots.length, hourlyRate, isSharedAccess, quantity, dailyRate]);
 
   const bookingMutation = useMutation({
     mutationFn: async (paymentDetails?: {
@@ -160,13 +183,13 @@ function FacilityCheckoutPage() {
         customer_phone: phone,
         status: isPawaPay ? "Pending" : bookingStatus,
         payment_status: isPawaPay ? "Pending" : totalAmount > 0 ? "Pending" : "Paid",
-        amount: selectedSlots.length * hourlyRate, // Per-day amount
-        total_amount: selectedSlots.length * hourlyRate,
+        amount: isSharedAccess ? (quantity * dailyRate) : (selectedSlots.length * hourlyRate),
+        total_amount: isSharedAccess ? (quantity * dailyRate) : (selectedSlots.length * hourlyRate),
         venue_name: venue.name,
         venue_currency: currency,
         booking_type: "facility",
         tickets_data: {
-          "Facility Access": 1,
+          "Facility Access": isSharedAccess ? quantity : 1,
           booking_ref: currentRef,
           payment_ref: paymentRef,
         },
@@ -174,9 +197,9 @@ function FacilityCheckoutPage() {
 
       const payloads = daysInRange.map((d) => {
         const startDateTime = new Date(d);
-        startDateTime.setHours(minSlot, 0, 0, 0);
+        startDateTime.setHours(isSharedAccess ? 6 : minSlot, 0, 0, 0);
         const endDateTime = new Date(d);
-        endDateTime.setHours(maxSlot + 1, 0, 0, 0);
+        endDateTime.setHours(isSharedAccess ? 23 : maxSlot + 1, 0, 0, 0);
 
         return {
           ...basePayload,
@@ -212,6 +235,11 @@ function FacilityCheckoutPage() {
       return { results, isPawaPay: false, bookingRef: currentRef };
     },
     onSuccess: async (data: any) => {
+      const res = data.results?.[0];
+      const td = res?.tickets_data;
+      if (td?.issued) {
+        setIssuedTickets(td.issued);
+      }
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venueId] });
 
       const sendEmail = async () => {
@@ -246,22 +274,148 @@ function FacilityCheckoutPage() {
         setPawapayDepositId(data.depositId);
         setIsPollingPawaPay(true);
         setIsPaymentModalOpen(false);
-        // Polling logic would go here via a separate useEffect or websocket.
-        // For now we simulate success after short delay since webhooks handle DB.
-        setTimeout(async () => {
-          setIsPollingPawaPay(false);
-          setIsSuccess(true);
-          await sendEmail();
-        }, 5000);
         return;
       }
-      setIsSuccess(true);
-      await sendEmail();
+      
+      if (isSharedAccess && td?.issued && td.issued.length > 0 && venueProject) {
+        setIsGenerating(true);
+      } else {
+        setIsSuccess(true);
+        await sendEmail();
+      }
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to create booking.");
     },
   });
+
+
+  useEffect(() => {
+    if (!isPollingPawaPay || !pawapayDepositId) return;
+
+    const intervalId = setInterval(async () => {
+      try {
+        const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
+        if (
+          res?.status?.toLowerCase() === "completed" ||
+          res?.status?.toLowerCase() === "success"
+        ) {
+          setIsPollingPawaPay(false);
+          if (isSharedAccess && issuedTickets.length > 0 && venueProject) {
+            setIsGenerating(true);
+          } else {
+            setIsSuccess(true);
+            const dateRangeStr = date?.from
+              ? date.to
+                ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
+                : format(date.from, "LLL dd, y")
+              : "";
+            const minSlot = Math.min(...selectedSlots);
+            const maxSlot = Math.max(...selectedSlots);
+            const timeRangeStr = `${minSlot}:00 - ${maxSlot + 1}:00`;
+            await sendVenueBookingEmail({
+              data: {
+                to: email,
+                customerName: name,
+                facilityName: facility?.name || "Facility",
+                venueName: venue.name,
+                venueLocation: venue.address || venue.city || "Venue Location",
+                dateRange: dateRangeStr,
+                timeRange: timeRangeStr,
+                bookingRef: bookingRef,
+              },
+            } as any).catch(console.error);
+          }
+        } else if (res?.status?.toLowerCase() === "failed") {
+          setIsPollingPawaPay(false);
+          toast.error("Mobile Money payment failed or was cancelled.");
+        }
+      } catch (err) {
+        console.error("Polling error", err);
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [isPollingPawaPay, pawapayDepositId, issuedTickets, venueProject, isSharedAccess, date, selectedSlots, email, name, facility, venue, bookingRef]);
+
+  useEffect(() => {
+    if (isGenerating && issuedTickets.length > 0 && venueProject) {
+      const generatePDFs = async () => {
+        try {
+          const attachments = [];
+
+          const coverUrl = venueProject.coverImage;
+          if (coverUrl) {
+            await new Promise((resolve) => {
+              const img = new Image();
+              img.crossOrigin = "anonymous";
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+              img.src = coverUrl;
+            });
+          }
+
+          await new Promise((r) => setTimeout(r, 600));
+
+          for (const ticket of issuedTickets) {
+            const el = document.getElementById(`ticket-render-${ticket.id}`);
+            if (!el) continue;
+
+            await new Promise((r) => setTimeout(r, 100));
+
+            const imgData = await htmlToImage.toJpeg(el, {
+              pixelRatio: 1.5,
+              quality: 0.8,
+              backgroundColor: "#ffffff",
+              width: 720,
+              height: 260,
+            });
+            if (!imgData || imgData === "data:,") {
+              throw new Error("htmlToImage returned an empty image.");
+            }
+
+            const rect = el.getBoundingClientRect();
+            const width = rect.width || 720;
+            const height = rect.height || 260;
+
+            const pdf = new jsPDF({
+              orientation: "landscape",
+              unit: "px",
+              format: [width, height],
+            });
+            pdf.addImage(imgData, "JPEG", 0, 0, width, height);
+            const base64 = pdf.output("datauristring").split(",")[1];
+
+            attachments.push({
+              filename: `Ticket_${ticket.tier?.replace(/\s+/g, "_") || "Pass"}_${ticket.otp}.pdf`,
+              content: base64,
+            });
+          }
+
+          if (attachments.length > 0 && email) {
+            await sendTicketsEmail({
+              data: {
+                to: email,
+                customerName: name,
+                venueName: venue.name || "the Venue",
+                attachments,
+              } as any,
+            });
+            toast.success("Booking confirmed and tickets emailed!");
+          } else {
+            toast.success("Booking confirmed!");
+          }
+          setIsGenerating(false);
+          setIsSuccess(true);
+        } catch (e) {
+          console.error("PDF generation error:", e);
+          toast.error(`Ticket generation failed: ${e.message || "Unknown error"}. Please try again.`);
+          setIsGenerating(false);
+        }
+      };
+      setTimeout(generatePDFs, 1000);
+    }
+  }, [isGenerating, issuedTickets, venueProject, email, name, venue?.name]);
 
   const handleSlotClick = (hour: number) => {
     if (selectedSlots.includes(hour)) {
@@ -285,9 +439,16 @@ function FacilityCheckoutPage() {
 
   const handlePaymentStart = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date?.from || selectedSlots.length === 0 || !name || !email) {
-      toast.error("Please fill in all required fields.");
-      return;
+    if (isSharedAccess) {
+      if (!date?.from || quantity < 1 || !name || !email) {
+        toast.error("Please fill in all required fields.");
+        return;
+      }
+    } else {
+      if (!date?.from || selectedSlots.length === 0 || !name || !email) {
+        toast.error("Please fill in all required fields.");
+        return;
+      }
     }
 
     if (totalAmount > 0) {
@@ -410,7 +571,35 @@ function FacilityCheckoutPage() {
                     </Popover>
                   </div>
 
-                  {date?.from && (
+                  {date?.from && isSharedAccess && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                      <Label>Quantity (Passes)</Label>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Select the number of passes you need per day.
+                      </p>
+                      <div className="flex items-center gap-4 mt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xl font-bold w-12 text-center">{quantity}</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setQuantity(q => Math.min(facility.max_capacity || 100, q + 1))}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {date?.from && !isSharedAccess && (
                     <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
                       <Label>Available Time Slots (1 Hour)</Label>
                       <p className="text-sm text-muted-foreground mb-2">
@@ -553,7 +742,7 @@ function FacilityCheckoutPage() {
             <Button
               type="submit"
               form="booking-form"
-              disabled={bookingMutation.isPending || !date?.from || selectedSlots.length === 0}
+              disabled={bookingMutation.isPending || !date?.from || (!isSharedAccess && selectedSlots.length === 0) || (isSharedAccess && quantity < 1)}
               className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
               style={{ background: "var(--gradient-primary)" }}
             >
@@ -584,7 +773,7 @@ function FacilityCheckoutPage() {
         isProcessing={bookingMutation.isPending || isPollingPawaPay}
         isGenerating={false}
         workspaceId={venue.workspace_id}
-        itemLabel={`${daysInRange.length} day(s) × ${selectedSlots.length} hour(s)`}
+        itemLabel={isSharedAccess ? `${daysInRange.length} day(s) × ${quantity} pass(es)` : `${daysInRange.length} day(s) × ${selectedSlots.length} hour(s)`}
         baseCurrency={currency}
         userPhone={phone}
       />
@@ -616,6 +805,61 @@ function FacilityCheckoutPage() {
       )}
 
       <Footer />
+      {isGenerating && issuedTickets.length > 0 && venueProject && (
+        <div style={{ position: "absolute", left: "-9999px", top: 0, opacity: 0 }}>
+          {issuedTickets.map((ticket: any) => (
+            <div key={ticket.id} id={`ticket-render-${ticket.id}`} style={{ display: "inline-block" }}>
+              <TicketDesign
+                ticket={{
+                  ...ticket,
+                  qrData: `${window.location.origin}/v/${ticket.otp}`,
+                  venueName: venue.name,
+                  dateString: format(new Date(ticket.start_time), "MMM d, yyyy"),
+                  timeString: "Full Day Access",
+                }}
+                template={venueProject.template}
+                palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+                blur={Number(venueProject.blur || 0)}
+                brightness={Number(venueProject.brightness || 100)}
+                contrast={Number(venueProject.contrast || 100)}
+                grayscale={Number(venueProject.grayscale || 0)}
+                cover={venueProject.coverImage || ""}
+                logoText={venueProject.logoText || "Agatike"}
+                logoImage={venueProject.logoImage}
+                logoScale={Number(venueProject.logoScale || 24)}
+                logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+                logoColorMode={venueProject.logoColorMode || "original"}
+                designOverrides={{
+                  layout:
+                    venueProject.design_overrides?.layout || {
+                      qrPosition: "bottom-right",
+                      qrSize: 120,
+                      contentAlign: "left",
+                      titleSize: "large",
+                    },
+                  front:
+                    venueProject.design_overrides?.front || {
+                      showTitle: true,
+                      showDate: true,
+                      showTime: true,
+                      showVenue: true,
+                      showLocation: true,
+                      showAdmit: true,
+                    },
+                  back:
+                    venueProject.design_overrides?.back || {
+                      showQr: true,
+                      showBarcode: false,
+                      showTerms: true,
+                      termsText: venueProject.terms || "Standard venue terms apply.",
+                    },
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
