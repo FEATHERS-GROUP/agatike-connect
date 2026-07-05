@@ -1,6 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { getRentableVenueById } from "@/api/rentable_venues";
 import { createVenueBooking } from "@/api/venue_bookings";
+import { getUserSession } from "@/api/auth";
 import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ChevronLeft, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle2 } from "lucide-react";
@@ -14,6 +15,16 @@ import { toast } from "sonner";
 import { format, differenceInHours } from "date-fns";
 
 export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$facilityId")({
+  beforeLoad: async ({ location }) => {
+    const session = await getUserSession();
+    if (!session) {
+      throw redirect({
+        to: "/signin",
+        search: { redirect: location.href } as any,
+      });
+    }
+    return { session };
+  },
   loader: async ({ params }) => {
     return await getRentableVenueById({ data: { id: params.venueId } });
   },
@@ -21,6 +32,7 @@ export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$fac
 });
 
 function FacilityCheckoutPage() {
+  const { session } = Route.useRouteContext();
   const venue = Route.useLoaderData();
   const { venueId, facilityId } = Route.useParams();
   const navigate = useNavigate();
@@ -30,8 +42,8 @@ function FacilityCheckoutPage() {
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState(session?.username || "");
+  const [email, setEmail] = useState(session?.email || "");
   const [phone, setPhone] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -76,6 +88,7 @@ function FacilityCheckoutPage() {
     bookingMutation.mutate({
       workspace_id: venue.workspace_id,
       venue_id: venue.id,
+      user_id: session?.id,
       facility_id: facilityId,
       customer_name: name,
       customer_email: email,

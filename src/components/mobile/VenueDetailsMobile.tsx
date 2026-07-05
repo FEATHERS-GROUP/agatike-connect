@@ -84,6 +84,52 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
           <p className="text-muted-foreground text-sm leading-relaxed">{venue.description}</p>
         </div>
 
+        {venue.facilities_data && venue.facilities_data.length > 0 && (
+          <div className="border-t border-border/40 pt-6">
+            <h3 className="font-bold mb-4">Facilities & Spaces</h3>
+            <div className="flex flex-col gap-4">
+              {venue.facilities_data.map((facility: any, i: number) => (
+                <div key={i} className="flex flex-col bg-secondary/20 rounded-2xl border border-border/60 overflow-hidden">
+                  {facility.image_url && (
+                    <img src={facility.image_url} alt={facility.name} className="h-32 w-full object-cover" />
+                  )}
+                  <div className="p-4 flex flex-col flex-1">
+                    <h3 className="font-semibold text-lg">{facility.name}</h3>
+                    <p className="text-sm text-muted-foreground capitalize mt-1 mb-3">
+                      {facility.type.replace(/_/g, " ")}
+                    </p>
+                    <div className="text-sm font-medium space-y-1 mb-4">
+                      {facility.pricing?.hourly_rate && (
+                        <p>Hourly: {formatCurrency(facility.pricing.hourly_rate, venue.currency || "RWF")}</p>
+                      )}
+                      {facility.pricing?.daily_rate && (
+                        <p>Daily: {formatCurrency(facility.pricing.daily_rate, venue.currency || "RWF")}</p>
+                      )}
+                      {facility.type === "shared_access" && facility.max_capacity && (
+                        <p>Max Capacity: {facility.max_capacity} people</p>
+                      )}
+                    </div>
+                    <div className="mt-auto">
+                      <Link
+                        to="/venues/$venueId_/facilities/checkout/$facilityId"
+                        params={{ venueId: venue.id, facilityId: facility.id }}
+                        className="block w-full"
+                      >
+                        <Button 
+                          className="w-full" 
+                          variant={facility.requires_approval ? "outline" : "default"}
+                        >
+                          {facility.requires_approval ? "Request Booking" : "Book Now"}
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="border-t border-border/40 pt-6">
           <h3 className="font-bold mb-4">Amenities</h3>
           <div className="flex flex-wrap gap-2">
@@ -132,51 +178,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
           </div>
         </div>
 
-        {venue.facilities_data && venue.facilities_data.length > 0 && (
-          <div className="border-t border-border/40 pt-6">
-            <h3 className="font-bold mb-4">Facilities & Spaces</h3>
-            <div className="flex flex-col gap-4">
-              {venue.facilities_data.map((facility: any, i: number) => (
-                <div key={i} className="flex flex-col bg-secondary/20 rounded-2xl border border-border/60 overflow-hidden">
-                  {facility.image_url && (
-                    <img src={facility.image_url} alt={facility.name} className="h-32 w-full object-cover" />
-                  )}
-                  <div className="p-4 flex flex-col flex-1">
-                    <h3 className="font-semibold text-lg">{facility.name}</h3>
-                    <p className="text-sm text-muted-foreground capitalize mt-1 mb-3">
-                      {facility.type.replace(/_/g, " ")}
-                    </p>
-                    <div className="text-sm font-medium space-y-1 mb-4">
-                      {facility.pricing?.hourly_rate && (
-                        <p>Hourly: {formatCurrency(facility.pricing.hourly_rate, venue.currency || "RWF")}</p>
-                      )}
-                      {facility.pricing?.daily_rate && (
-                        <p>Daily: {formatCurrency(facility.pricing.daily_rate, venue.currency || "RWF")}</p>
-                      )}
-                      {facility.type === "shared_access" && facility.max_capacity && (
-                        <p>Max Capacity: {facility.max_capacity} people</p>
-                      )}
-                    </div>
-                    <div className="mt-auto">
-                      <Link
-                        to="/venues/$venueId_/facilities/checkout/$facilityId"
-                        params={{ venueId: venue.id, facilityId: facility.id }}
-                        className="block w-full"
-                      >
-                        <Button 
-                          className="w-full" 
-                          variant={facility.requires_approval ? "outline" : "default"}
-                        >
-                          {facility.requires_approval ? "Request Booking" : "Book Now"}
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+
 
         {venue.instructions && (
           <div className="border-t border-border/40 pt-6 prose prose-sm prose-neutral dark:prose-invert max-w-none break-words overflow-hidden">

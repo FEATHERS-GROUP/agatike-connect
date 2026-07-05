@@ -906,7 +906,7 @@ function NewVenueWizard() {
                           type="number"
                           className="h-12 bg-background rounded-xl"
                           value={formData.entrance_fee}
-                          onChange={(e) => setFormData((p) => ({ ...p, entrance_fee: e.target.value }))}
+                          onChange={(e) => setFormData((p) => ({ ...p, entrance_fee: Number(e.target.value) }))}
                           placeholder="e.g. 5000"
                         />
                       </div>
@@ -923,7 +923,7 @@ function NewVenueWizard() {
                           type="number"
                           className="h-12 bg-background rounded-xl max-w-sm"
                           value={formData.consumable_value}
-                          onChange={(e) => setFormData((p) => ({ ...p, consumable_value: e.target.value }))}
+                          onChange={(e) => setFormData((p) => ({ ...p, consumable_value: Number(e.target.value) }))}
                           placeholder={`e.g. ${formData.entrance_fee || 10000}`}
                         />
                       </div>
