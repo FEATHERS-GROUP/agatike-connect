@@ -158,15 +158,18 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                       )}
                     </div>
                     <div className="mt-auto">
-                      <Button 
-                        className="w-full" 
-                        variant={facility.requires_approval ? "outline" : "default"}
-                        onClick={() => {
-                          alert("Facility booking modal would open here to select Date & Time.");
-                        }}
+                      <Link
+                        to="/venues/$venueId_/facilities/checkout/$facilityId"
+                        params={{ venueId: venue.id, facilityId: facility.id }}
+                        className="block w-full"
                       >
-                        {facility.requires_approval ? "Request Booking" : "Book Now"}
-                      </Button>
+                        <Button 
+                          className="w-full" 
+                          variant={facility.requires_approval ? "outline" : "default"}
+                        >
+                          {facility.requires_approval ? "Request Booking" : "Book Now"}
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </div>

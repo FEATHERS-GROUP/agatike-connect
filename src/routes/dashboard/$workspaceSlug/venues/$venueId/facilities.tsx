@@ -196,7 +196,8 @@ function VenueFacilitiesPage() {
               
               <div className="mt-auto flex gap-2 pt-4 border-t border-border/50">
                 <Link
-                  to={`/dashboard/${workspaceSlug}/venues/${venueId}/facilities/${facility.id}/bookings`}
+                  to="/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings"
+                  params={{ workspaceSlug, venueId, facilityId: facility.id }}
                   className="flex-1"
                 >
                   <Button variant="outline" className="w-full gap-2 rounded-xl">

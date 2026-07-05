@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getServerConfig } from "../lib/config.server";
 
-export const getCoordinates = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const getCoordinates = createServerFn({ method: "POST" })
+  .validator((data: any) => data)
+  .handler(async (ctx) => {
   const payload = ctx.data as any;
   const address = payload?.data || payload;
   const config = getServerConfig();
@@ -31,7 +33,9 @@ export const getCoordinates = createServerFn({ method: "POST" }).handler(async (
   return { lat: null, lng: null };
 });
 
-export const getPlacesAutocomplete = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const getPlacesAutocomplete = createServerFn({ method: "POST" })
+  .validator((data: any) => data)
+  .handler(async (ctx) => {
   const payload = ctx.data as any;
   const query = payload?.data || payload;
   const config = getServerConfig();
@@ -82,7 +86,9 @@ export const getPlacesAutocomplete = createServerFn({ method: "POST" }).handler(
   }
 });
 
-export const getPlaceDetails = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const getPlaceDetails = createServerFn({ method: "POST" })
+  .validator((data: any) => data)
+  .handler(async (ctx) => {
   const payload = ctx.data as any;
   const placeId = payload?.data || payload;
   const config = getServerConfig();
@@ -120,7 +126,9 @@ function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon
   return R * c; // Distance in km
 }
 
-export const getRouteDistance = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const getRouteDistance = createServerFn({ method: "POST" })
+  .validator((data: any) => data)
+  .handler(async (ctx) => {
   const payload = ctx.data as any;
   const { origin, destination, waypoints } = payload?.data || payload;
 

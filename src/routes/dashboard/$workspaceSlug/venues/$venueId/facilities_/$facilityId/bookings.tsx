@@ -12,8 +12,10 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
+import enUS from "date-fns/locale/en-US";
+
 const locales = {
-  "en-US": require("date-fns/locale/en-US"),
+  "en-US": enUS,
 };
 
 const localizer = dateFnsLocalizer({
@@ -24,7 +26,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/facilities/$facilityId/bookings")({
+export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings")({
   component: FacilityBookingsPage,
 });
 
