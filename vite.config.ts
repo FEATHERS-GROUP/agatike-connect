@@ -1,11 +1,18 @@
-import { defineConfig } from "vite";
+import { defineConfig, createLogger } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
+const logger = createLogger();
+const originalWarn = logger.warn;
+logger.warn = (msg, options) => {
+  if (typeof msg === "string" && msg.includes("Module level directives cause errors when bundled")) return;
+  originalWarn(msg, options);
+};
 export default defineConfig({
+  customLogger: logger,
   server: {
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
