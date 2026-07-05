@@ -76,7 +76,7 @@ function FacilityCheckoutPage() {
   const currency = venue?.currency || "RWF";
 
   const { data: bookings = [] } = useQuery({
-    queryKey: ["venueBookings", venueId],
+    queryKey: ["venue_bookings", venueId],
     queryFn: () => getVenueBookings({ data: { venue_id: venueId } }),
   });
 
@@ -206,7 +206,7 @@ function FacilityCheckoutPage() {
       return { results, isPawaPay: false, bookingRef: currentRef };
     },
     onSuccess: async (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["venueBookings", venueId] });
+      queryClient.invalidateQueries({ queryKey: ["venue_bookings", venueId] });
       
       const sendEmail = async () => {
         try {
