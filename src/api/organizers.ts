@@ -333,7 +333,9 @@ export const changeOrganizerPassword = createServerFn({ method: "POST" }).handle
   return { success: true };
 });
 
-export const getOrganizers = createServerFn({ method: "GET" }).handler(async () => {
+export const getOrganizers = createServerFn({ method: "GET" })
+  .validator((d: any) => d)
+  .handler(async () => {
   const query = `
     query GetOrganizers {
       organizers {

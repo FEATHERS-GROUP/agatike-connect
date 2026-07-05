@@ -1557,6 +1557,13 @@ To ensure organizers and attendees never miss an important message, the app feat
 
 The Venues system allows organizers to list physical locations for rent or for entrance-fee ticketing (like Parks). It includes a robust manual booking engine, PDF ticket generation, and a calendar management system.
 
+### Facilities & Sub-Venues
+
+A venue can optionally contain multiple **Facilities** (e.g., individual courts in a sports center, or separate meeting rooms in a hotel).
+- Facilities have independent pricing structures (`hourly_rate`, `daily_rate`) and capacities.
+- Customers can browse a venue and choose to book a specific facility.
+- The checkout flow processes payments and records a `venue_booking` with `booking_type = "facility"` linked to the specific `facility_id`.
+
 ### Venue Rental Models
 
 Organizers can configure venues using three distinct business models (`rental_model`):
