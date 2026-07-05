@@ -96,8 +96,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           `;
           await hasuraRequest(activateSubQuery, { id: tx.reference_id });
         } else if (tx.type === "venue_booking") {
-          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tx.reference_id);
-          
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            tx.reference_id,
+          );
+
           if (isUuid) {
             const confirmQuery = `
               mutation ConfirmVenueBooking($id: uuid!) {

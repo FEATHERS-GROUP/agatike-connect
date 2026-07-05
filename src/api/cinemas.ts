@@ -212,13 +212,13 @@ export const deleteCinema = createServerFn({ method: "POST" })
 export const getPublicMovieSchedules = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async () => {
-  // Get local date string YYYY-MM-DD
-  const date = new Date().toISOString().split("T")[0];
-  const res = await hasuraRequest<any>(GET_PUBLIC_MOVIE_SCHEDULES, { date });
-  const schedules = res.cinema_schedules || [];
+    // Get local date string YYYY-MM-DD
+    const date = new Date().toISOString().split("T")[0];
+    const res = await hasuraRequest<any>(GET_PUBLIC_MOVIE_SCHEDULES, { date });
+    const schedules = res.cinema_schedules || [];
 
-  // Fetch workspaces to get currency
-  const workspaceRes = await hasuraRequest<{ workspaces: any[] }>(`
+    // Fetch workspaces to get currency
+    const workspaceRes = await hasuraRequest<{ workspaces: any[] }>(`
       query GetWorkspacesForSchedules {
         workspaces {
           id
@@ -226,17 +226,17 @@ export const getPublicMovieSchedules = createServerFn({ method: "POST" })
         }
       }
     `);
-  const workspaces = workspaceRes.workspaces || [];
-  const workspaceMap = new Map(workspaces.map((w) => [w.id, w]));
+    const workspaces = workspaceRes.workspaces || [];
+    const workspaceMap = new Map(workspaces.map((w) => [w.id, w]));
 
-  return schedules.map((s: any) => {
-    const workspace = workspaceMap.get(s.cinema?.workspace_id);
-    return {
-      ...s,
-      currency: workspace?.currency || "RWF",
-    };
+    return schedules.map((s: any) => {
+      const workspace = workspaceMap.get(s.cinema?.workspace_id);
+      return {
+        ...s,
+        currency: workspace?.currency || "RWF",
+      };
+    });
   });
-});
 
 const GET_MOVIE_SCHEDULES_BY_MOVIE_ID = `
   query GetMovieSchedulesByMovieId($movie_id: uuid!, $cinema_id: uuid!, $date: date!) {

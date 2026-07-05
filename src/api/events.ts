@@ -198,9 +198,9 @@ const GET_PUBLIC_EVENTS = `
 export const getPublicEvents = createServerFn({ method: "GET" })
   .validator((d: any) => d)
   .handler(async () => {
-  const data = await hasuraRequest<{ events: any[] }>(GET_PUBLIC_EVENTS, {});
-  return data.events || [];
-});
+    const data = await hasuraRequest<{ events: any[] }>(GET_PUBLIC_EVENTS, {});
+    return data.events || [];
+  });
 
 const GET_WORKSPACE_EVENTS = `
   query GetWorkspaceEvents($workspace_id: uuid!) {

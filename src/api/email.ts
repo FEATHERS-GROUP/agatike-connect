@@ -853,7 +853,16 @@ export const executeSendProjectAccessEmail = async (data: any) => {
 export const sendVenueBookingEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const { to, customerName, facilityName, venueName, venueLocation, dateRange, timeRange, bookingRef } = ctx.data;
+    const {
+      to,
+      customerName,
+      facilityName,
+      venueName,
+      venueLocation,
+      dateRange,
+      timeRange,
+      bookingRef,
+    } = ctx.data;
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaec; border-radius: 8px; overflow: hidden;">

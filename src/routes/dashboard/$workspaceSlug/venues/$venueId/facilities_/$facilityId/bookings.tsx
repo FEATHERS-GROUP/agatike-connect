@@ -9,7 +9,6 @@ const Calendar = lazy(() => import("@/components/lazy/LazyCalendar"));
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-
 export const Route = createFileRoute(
   "/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings",
 )({
@@ -90,8 +89,8 @@ function FacilityBookingsPage() {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-4 bg-card p-6 rounded-3xl border border-border/60 shadow-sm">
-        <Link 
-          to="/dashboard/$workspaceSlug/venues/$venueId/facilities" 
+        <Link
+          to="/dashboard/$workspaceSlug/venues/$venueId/facilities"
           params={{ workspaceSlug, venueId }}
         >
           <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-secondary">
@@ -228,7 +227,6 @@ function FacilityBookingsPage() {
           <Suspense fallback={<div className="animate-pulse bg-muted/20 h-96 rounded-xl" />}>
             <Calendar
               events={myEvents}
-
               startAccessor="start"
               endAccessor="end"
               view={currentView}

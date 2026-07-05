@@ -336,7 +336,7 @@ export const changeOrganizerPassword = createServerFn({ method: "POST" }).handle
 export const getOrganizers = createServerFn({ method: "GET" })
   .validator((d: any) => d)
   .handler(async () => {
-  const query = `
+    const query = `
     query GetOrganizers {
       organizers {
         id
@@ -352,9 +352,9 @@ export const getOrganizers = createServerFn({ method: "GET" })
       }
     }
   `;
-  const result = await hasuraRequest<{ organizers: any[] }>(query, {});
-  return result.organizers;
-});
+    const result = await hasuraRequest<{ organizers: any[] }>(query, {});
+    return result.organizers;
+  });
 
 export const getFollowedOrganizers = createServerFn({ method: "POST" }).handler(async () => {
   try {

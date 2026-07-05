@@ -1560,6 +1560,7 @@ The Venues system allows organizers to list physical locations for rent or for e
 ### Facilities & Sub-Venues
 
 A venue can optionally contain multiple **Facilities** (e.g., individual courts in a sports center, or separate meeting rooms in a hotel).
+
 - Facilities have independent pricing structures (`hourly_rate`, `daily_rate`) and capacities.
 - Customers can browse a venue and choose to book a specific facility.
 - The checkout flow processes payments and records a `venue_booking` with `booking_type = "facility"` linked to the specific `facility_id`.

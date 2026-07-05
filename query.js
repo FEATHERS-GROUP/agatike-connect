@@ -1,5 +1,5 @@
-const { request } = require('graphql-request');
-const endpoint = 'http://localhost:8080/v1/graphql';
+const { request } = require("graphql-request");
+const endpoint = "http://localhost:8080/v1/graphql";
 const query = `
   query {
     venue_bookings {
@@ -11,6 +11,6 @@ const query = `
     }
   }
 `;
-request(endpoint, query, {}, { 'x-hasura-admin-secret': 'myadminsecretkey' })
+request(endpoint, query, {}, { "x-hasura-admin-secret": "myadminsecretkey" })
   .then(console.log)
   .catch(console.error);

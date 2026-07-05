@@ -40,7 +40,9 @@ export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$fac
     return { session };
   },
   loader: async ({ params }) => {
-    return await getRentableVenueById({ data: { id: (params as any).venueId || (params as any).venueId_ } });
+    return await getRentableVenueById({
+      data: { id: (params as any).venueId || (params as any).venueId_ },
+    });
   },
   component: FacilityCheckoutPage,
 });
@@ -81,9 +83,7 @@ function FacilityCheckoutPage() {
   });
 
   const facilityBookings = useMemo(() => {
-    return bookings.filter(
-      (b: any) => b.facility_id === facilityId && b.status !== "Cancelled"
-    );
+    return bookings.filter((b: any) => b.facility_id === facilityId && b.status !== "Cancelled");
   }, [bookings, facilityId]);
 
   const isSlotBooked = (dateToCheck: Date, startHour: number) => {
@@ -94,7 +94,7 @@ function FacilityCheckoutPage() {
       slotStart.setHours(startHour, 0, 0, 0);
       const slotEnd = new Date(dateToCheck);
       slotEnd.setHours(startHour + 1, 0, 0, 0);
-      
+
       return bStart < slotEnd && slotStart < bEnd;
     });
   };
@@ -119,7 +119,7 @@ function FacilityCheckoutPage() {
   }, [date]);
 
   const isSlotBookedAcrossRange = (hour: number) => {
-    return daysInRange.some(d => isSlotBooked(d, hour));
+    return daysInRange.some((d) => isSlotBooked(d, hour));
   };
 
   const totalAmount = useMemo(() => {
@@ -137,10 +137,16 @@ function FacilityCheckoutPage() {
     }) => {
       const minSlot = Math.min(...selectedSlots);
       const maxSlot = Math.max(...selectedSlots);
-      
+
       const bookingStatus = facility?.requires_approval ? "Pending" : "Confirmed";
-      const isPawaPay = totalAmount > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
-      const paymentRef = isPawaPay ? Math.random().toString(36).substring(2, 12).toUpperCase() : undefined;
+      const isPawaPay =
+        totalAmount > 0 &&
+        paymentMethod === "momo" &&
+        paymentDetails?.phone &&
+        paymentDetails?.network;
+      const paymentRef = isPawaPay
+        ? Math.random().toString(36).substring(2, 12).toUpperCase()
+        : undefined;
       const currentRef = Math.random().toString(36).substring(2, 8).toUpperCase();
       setBookingRef(currentRef);
 
@@ -153,25 +159,25 @@ function FacilityCheckoutPage() {
         customer_email: email,
         customer_phone: phone,
         status: isPawaPay ? "Pending" : bookingStatus,
-        payment_status: isPawaPay ? "Pending" : (totalAmount > 0 ? "Pending" : "Paid"),
+        payment_status: isPawaPay ? "Pending" : totalAmount > 0 ? "Pending" : "Paid",
         amount: selectedSlots.length * hourlyRate, // Per-day amount
-        total_amount: selectedSlots.length * hourlyRate, 
+        total_amount: selectedSlots.length * hourlyRate,
         venue_name: venue.name,
         venue_currency: currency,
         booking_type: "facility",
-        tickets_data: { 
-          "Facility Access": 1, 
-          booking_ref: currentRef, 
-          payment_ref: paymentRef 
+        tickets_data: {
+          "Facility Access": 1,
+          booking_ref: currentRef,
+          payment_ref: paymentRef,
         },
       };
 
-      const payloads = daysInRange.map(d => {
+      const payloads = daysInRange.map((d) => {
         const startDateTime = new Date(d);
         startDateTime.setHours(minSlot, 0, 0, 0);
         const endDateTime = new Date(d);
         endDateTime.setHours(maxSlot + 1, 0, 0, 0);
-        
+
         return {
           ...basePayload,
           start_time: startDateTime.toISOString(),
@@ -207,11 +213,13 @@ function FacilityCheckoutPage() {
     },
     onSuccess: async (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venueId] });
-      
+
       const sendEmail = async () => {
         try {
-          const dateRangeStr = date?.from 
-            ? (date.to ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}` : format(date.from, "LLL dd, y"))
+          const dateRangeStr = date?.from
+            ? date.to
+              ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
+              : format(date.from, "LLL dd, y")
             : "";
           const minSlot = Math.min(...selectedSlots);
           const maxSlot = Math.max(...selectedSlots);
@@ -226,14 +234,14 @@ function FacilityCheckoutPage() {
               venueLocation: venue.address || venue.city || "Venue Location",
               dateRange: dateRangeStr,
               timeRange: timeRangeStr,
-              bookingRef: data.bookingRef
-            }
+              bookingRef: data.bookingRef,
+            },
           } as any);
         } catch (e) {
           console.error("Failed to send booking confirmation email:", e);
         }
       };
-      
+
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
         setIsPollingPawaPay(true);
@@ -257,8 +265,8 @@ function FacilityCheckoutPage() {
 
   const handleSlotClick = (hour: number) => {
     if (selectedSlots.includes(hour)) {
-      const newSlots = selectedSlots.filter(s => s !== hour).sort((a, b) => a - b);
-      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i-1] + 1);
+      const newSlots = selectedSlots.filter((s) => s !== hour).sort((a, b) => a - b);
+      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i - 1] + 1);
       if (isContiguous) {
         setSelectedSlots(newSlots);
       } else {
@@ -266,7 +274,7 @@ function FacilityCheckoutPage() {
       }
     } else {
       const newSlots = [...selectedSlots, hour].sort((a, b) => a - b);
-      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i-1] + 1);
+      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i - 1] + 1);
       if (isContiguous) {
         setSelectedSlots(newSlots);
       } else {
@@ -306,10 +314,12 @@ function FacilityCheckoutPage() {
             <CheckCircle2 className="w-12 h-12 text-green-500" />
           </div>
           <h1 className="text-3xl font-bold mb-4">Booking Submitted!</h1>
-          
+
           <div className="bg-secondary/30 border border-border/60 rounded-2xl p-6 mb-8 w-full max-w-sm">
             <p className="text-sm text-muted-foreground mb-2">Your Booking Reference (OTP)</p>
-            <p className="text-4xl font-mono font-bold tracking-widest text-primary">{bookingRef}</p>
+            <p className="text-4xl font-mono font-bold tracking-widest text-primary">
+              {bookingRef}
+            </p>
             <p className="text-xs text-muted-foreground mt-4">
               Please show this code at the facility.
             </p>
@@ -365,7 +375,7 @@ function FacilityCheckoutPage() {
                           variant="outline"
                           className={cn(
                             "w-full h-12 justify-start text-left font-normal rounded-xl bg-secondary/30",
-                            !date?.from && "text-muted-foreground"
+                            !date?.from && "text-muted-foreground",
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -390,7 +400,9 @@ function FacilityCheckoutPage() {
                             setDate(d);
                             setSelectedSlots([]);
                           }}
-                          disabled={(d) => isBefore(d, startOfDay(new Date())) || isDateFullyBooked(d)}
+                          disabled={(d) =>
+                            isBefore(d, startOfDay(new Date())) || isDateFullyBooked(d)
+                          }
                           initialFocus
                           numberOfMonths={1}
                         />
@@ -402,7 +414,8 @@ function FacilityCheckoutPage() {
                     <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
                       <Label>Available Time Slots (1 Hour)</Label>
                       <p className="text-sm text-muted-foreground mb-2">
-                        Select one or more continuous hours. These hours will be booked for <strong>every day</strong> in your selected range.
+                        Select one or more continuous hours. These hours will be booked for{" "}
+                        <strong>every day</strong> in your selected range.
                       </p>
                       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mt-2">
                         {SLOTS.map((hour) => {
@@ -418,7 +431,8 @@ function FacilityCheckoutPage() {
                               className={cn(
                                 "h-10 rounded-xl transition-all",
                                 booked && "opacity-50 cursor-not-allowed line-through",
-                                isSelected && "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30"
+                                isSelected &&
+                                  "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30",
                               )}
                               disabled={booked}
                               onClick={() => handleSlotClick(hour)}
@@ -508,7 +522,10 @@ function FacilityCheckoutPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Time (Daily)</span>
                   <span className="font-medium text-right">
-                    {`${Math.min(...selectedSlots).toString().padStart(2, "0")}:00`} - {`${(Math.max(...selectedSlots) + 1).toString().padStart(2, "0")}:00`}
+                    {`${Math.min(...selectedSlots)
+                      .toString()
+                      .padStart(2, "0")}:00`}{" "}
+                    - {`${(Math.max(...selectedSlots) + 1).toString().padStart(2, "0")}:00`}
                   </span>
                 </div>
               )}
