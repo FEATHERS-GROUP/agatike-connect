@@ -443,11 +443,13 @@ function NewVenueWizard() {
       facilities_data: p.facilities_data.map((f, i) => (i === idx ? { ...f, [field]: val } : f)),
     }));
   };
-  
+
   const updateFacilityPricing = (idx: number, field: string, val: any) => {
     setFormData((p) => ({
       ...p,
-      facilities_data: p.facilities_data.map((f, i) => (i === idx ? { ...f, pricing: { ...f.pricing, [field]: val } } : f)),
+      facilities_data: p.facilities_data.map((f, i) =>
+        i === idx ? { ...f, pricing: { ...f.pricing, [field]: val } } : f,
+      ),
     }));
   };
 
@@ -577,7 +579,8 @@ function NewVenueWizard() {
                   </div>
                   <h3 className="text-xl font-bold">Entire Venue Rental</h3>
                   <p className="text-muted-foreground mt-2">
-                    Users rent the entire space. Best for private events, weddings, or palaces. No general admission.
+                    Users rent the entire space. Best for private events, weddings, or palaces. No
+                    general admission.
                   </p>
                 </button>
 
@@ -601,7 +604,8 @@ function NewVenueWizard() {
                   </div>
                   <h3 className="text-xl font-bold">Entrance Tickets & Facilities</h3>
                   <p className="text-muted-foreground mt-2">
-                    Users buy tickets to enter. You can also list specific sub-facilities (like Pitches or Pools) for people to book individually.
+                    Users buy tickets to enter. You can also list specific sub-facilities (like
+                    Pitches or Pools) for people to book individually.
                   </p>
                 </button>
 
@@ -621,7 +625,8 @@ function NewVenueWizard() {
                   </div>
                   <h3 className="text-xl font-bold">Hybrid</h3>
                   <p className="text-muted-foreground mt-2">
-                    Both available. Rent the entire complex for massive events, OR allow general admission and bookable sub-facilities.
+                    Both available. Rent the entire complex for massive events, OR allow general
+                    admission and bookable sub-facilities.
                   </p>
                 </button>
               </div>
@@ -740,7 +745,12 @@ function NewVenueWizard() {
                             }
                           }}
                         />
-                        <Label htmlFor="unlimited-capacity" className="text-sm font-normal text-muted-foreground">Unlimited</Label>
+                        <Label
+                          htmlFor="unlimited-capacity"
+                          className="text-sm font-normal text-muted-foreground"
+                        >
+                          Unlimited
+                        </Label>
                       </div>
                     </div>
                     <Input
@@ -867,7 +877,9 @@ function NewVenueWizard() {
                       <select
                         className="w-full h-12 rounded-xl bg-secondary/50 border border-input px-4 text-base"
                         value={formData.rental_type}
-                        onChange={(e) => setFormData((p) => ({ ...p, rental_type: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((p) => ({ ...p, rental_type: e.target.value }))
+                        }
                       >
                         <option value="Per Day">Per Day</option>
                         <option value="Per Hour">Per Hour</option>
@@ -884,46 +896,57 @@ function NewVenueWizard() {
                     <p className="text-sm text-muted-foreground">
                       Configure general admission fees to enter the venue complex.
                     </p>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
-                    <div className="space-y-2">
-                      <Label className="text-base">Entrance Policy</Label>
-                      <select
-                        className="w-full h-12 rounded-xl bg-secondary/50 border border-input px-4 text-base"
-                        value={formData.entrance_type}
-                        onChange={(e) => setFormData((p) => ({ ...p, entrance_type: e.target.value }))}
-                      >
-                        <option value="free">Free Entrance</option>
-                        <option value="standard">Standard Paid Entrance</option>
-                        <option value="consumable">Consumable Voucher (Credit)</option>
-                      </select>
-                    </div>
 
-                    {formData.entrance_type !== "free" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
                       <div className="space-y-2">
-                        <Label className="text-base">Entrance Fee ({activeWorkspace?.currency || "RWF"})</Label>
-                        <Input
-                          type="number"
-                          className="h-12 bg-background rounded-xl"
-                          value={formData.entrance_fee}
-                          onChange={(e) => setFormData((p) => ({ ...p, entrance_fee: Number(e.target.value) }))}
-                          placeholder="e.g. 5000"
-                        />
+                        <Label className="text-base">Entrance Policy</Label>
+                        <select
+                          className="w-full h-12 rounded-xl bg-secondary/50 border border-input px-4 text-base"
+                          value={formData.entrance_type}
+                          onChange={(e) =>
+                            setFormData((p) => ({ ...p, entrance_type: e.target.value }))
+                          }
+                        >
+                          <option value="free">Free Entrance</option>
+                          <option value="standard">Standard Paid Entrance</option>
+                          <option value="consumable">Consumable Voucher (Credit)</option>
+                        </select>
                       </div>
-                    )}
-                  </div>
+
+                      {formData.entrance_type !== "free" && (
+                        <div className="space-y-2">
+                          <Label className="text-base">
+                            Entrance Fee ({activeWorkspace?.currency || "RWF"})
+                          </Label>
+                          <Input
+                            type="number"
+                            className="h-12 bg-background rounded-xl"
+                            value={formData.entrance_fee}
+                            onChange={(e) =>
+                              setFormData((p) => ({ ...p, entrance_fee: Number(e.target.value) }))
+                            }
+                            placeholder="e.g. 5000"
+                          />
+                        </div>
+                      )}
+                    </div>
 
                     {formData.entrance_type === "consumable" && (
                       <div className="mt-4 p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
-                        <Label className="text-base text-orange-600 dark:text-orange-400">Voucher Value ({activeWorkspace?.currency || "RWF"})</Label>
+                        <Label className="text-base text-orange-600 dark:text-orange-400">
+                          Voucher Value ({activeWorkspace?.currency || "RWF"})
+                        </Label>
                         <p className="text-sm text-orange-600/80 dark:text-orange-400/80 mb-2">
-                          How much spendable credit does the customer get inside for paying the entrance fee?
+                          How much spendable credit does the customer get inside for paying the
+                          entrance fee?
                         </p>
                         <Input
                           type="number"
                           className="h-12 bg-background rounded-xl max-w-sm"
                           value={formData.consumable_value}
-                          onChange={(e) => setFormData((p) => ({ ...p, consumable_value: Number(e.target.value) }))}
+                          onChange={(e) =>
+                            setFormData((p) => ({ ...p, consumable_value: Number(e.target.value) }))
+                          }
                           placeholder={`e.g. ${formData.entrance_fee || 10000}`}
                         />
                       </div>
@@ -937,7 +960,8 @@ function NewVenueWizard() {
                     <div className="space-y-1">
                       <Label className="text-lg">Require Manual Approval</Label>
                       <p className="text-sm text-muted-foreground">
-                        If enabled, organizers or users requesting this venue will be put in a "Pending" state until you manually approve the booking request.
+                        If enabled, organizers or users requesting this venue will be put in a
+                        "Pending" state until you manually approve the booking request.
                       </p>
                     </div>
                     <Switch
@@ -947,68 +971,71 @@ function NewVenueWizard() {
                   </div>
                 </div>
 
-                {(formData.rental_model === "ENTIRE_VENUE" || formData.entrance_type !== "free") && (
+                {(formData.rental_model === "ENTIRE_VENUE" ||
+                  formData.entrance_type !== "free") && (
                   <div className="space-y-4 pt-4 border-t border-border/60">
                     <div>
                       <Label className="text-xl font-semibold">Additional Pricing Options</Label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      (Optional) Add different ticket tiers or rental packages. For example, "Student Entrance" vs "Adult Entrance", or "Half-Day Rental" vs "Full-Day Rental".
-                    </p>
-                  </div>
-                  <div className="space-y-4">
-                    {formData.pricing_tiers.map((tier, idx) => (
-                      <div
-                        key={idx}
-                        className="flex gap-4 items-start p-6 bg-secondary/20 rounded-2xl border border-border/60 relative"
-                      >
-                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-base">Option Name</Label>
-                            <Input
-                              className="h-12 bg-background rounded-xl"
-                              value={tier.name}
-                              onChange={(e) => updatePricingTier(idx, "name", e.target.value)}
-                              placeholder={
-                                formData.rental_model === "ENTIRE_VENUE"
-                                  ? "e.g. Full Day Rental"
-                                  : "e.g. Student Entrance"
-                              }
-                            />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        (Optional) Add different ticket tiers or rental packages. For example,
+                        "Student Entrance" vs "Adult Entrance", or "Half-Day Rental" vs "Full-Day
+                        Rental".
+                      </p>
+                    </div>
+                    <div className="space-y-4">
+                      {formData.pricing_tiers.map((tier, idx) => (
+                        <div
+                          key={idx}
+                          className="flex gap-4 items-start p-6 bg-secondary/20 rounded-2xl border border-border/60 relative"
+                        >
+                          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-base">Option Name</Label>
+                              <Input
+                                className="h-12 bg-background rounded-xl"
+                                value={tier.name}
+                                onChange={(e) => updatePricingTier(idx, "name", e.target.value)}
+                                placeholder={
+                                  formData.rental_model === "ENTIRE_VENUE"
+                                    ? "e.g. Full Day Rental"
+                                    : "e.g. Student Entrance"
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-base">
+                                Amount ({activeWorkspace?.currency || "RWF"})
+                              </Label>
+                              <Input
+                                type="number"
+                                className="h-12 bg-background rounded-xl"
+                                value={tier.amount}
+                                onChange={(e) => updatePricingTier(idx, "amount", e.target.value)}
+                                placeholder="0.00"
+                              />
+                            </div>
                           </div>
-                          <div className="space-y-2">
-                            <Label className="text-base">
-                              Amount ({activeWorkspace?.currency || "RWF"})
-                            </Label>
-                            <Input
-                              type="number"
-                              className="h-12 bg-background rounded-xl"
-                              value={tier.amount}
-                              onChange={(e) => updatePricingTier(idx, "amount", e.target.value)}
-                              placeholder="0.00"
-                            />
-                          </div>
+                          {formData.pricing_tiers.length > 1 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-500 absolute top-4 right-4"
+                              onClick={() => removePricingTier(idx)}
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </Button>
+                          )}
                         </div>
-                        {formData.pricing_tiers.length > 1 && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-red-500 absolute top-4 right-4"
-                            onClick={() => removePricingTier(idx)}
-                          >
-                            <Trash2 className="h-5 w-5" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                    <Button
-                      variant="outline"
-                      className="w-full h-14 border-dashed rounded-xl"
-                      onClick={addPricingTier}
-                    >
-                      <Plus className="h-5 w-5 mr-2" /> Add Pricing Option
-                    </Button>
+                      ))}
+                      <Button
+                        variant="outline"
+                        className="w-full h-14 border-dashed rounded-xl"
+                        onClick={addPricingTier}
+                      >
+                        <Plus className="h-5 w-5 mr-2" /> Add Pricing Option
+                      </Button>
+                    </div>
                   </div>
-                </div>
                 )}
               </div>
             </div>
@@ -1071,7 +1098,8 @@ function NewVenueWizard() {
               <div>
                 <h2 className="text-3xl font-bold">Facilities & Sub-Venues (Optional)</h2>
                 <p className="text-muted-foreground mt-2 text-lg">
-                  Does your venue have distinct spaces to rent? (e.g. Pitch Fields, Tennis Courts, VIP Rooms, Swimming Pools)
+                  Does your venue have distinct spaces to rent? (e.g. Pitch Fields, Tennis Courts,
+                  VIP Rooms, Swimming Pools)
                 </p>
               </div>
 
@@ -1089,7 +1117,7 @@ function NewVenueWizard() {
                     >
                       <Trash2 className="h-5 w-5" />
                     </Button>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full pr-10">
                       <div className="space-y-2">
                         <Label className="text-base">Facility Name</Label>
@@ -1107,8 +1135,12 @@ function NewVenueWizard() {
                           value={facility.type}
                           onChange={(e) => updateFacility(idx, "type", e.target.value)}
                         >
-                          <option value="exclusive_slot">Exclusive Slot (Only 1 group per time)</option>
-                          <option value="shared_access">Shared Access (Passes per day up to capacity)</option>
+                          <option value="exclusive_slot">
+                            Exclusive Slot (Only 1 group per time)
+                          </option>
+                          <option value="shared_access">
+                            Shared Access (Passes per day up to capacity)
+                          </option>
                         </select>
                       </div>
                     </div>
@@ -1120,7 +1152,9 @@ function NewVenueWizard() {
                           type="number"
                           className="h-12 bg-background rounded-xl"
                           value={facility.pricing?.hourly_rate || ""}
-                          onChange={(e) => updateFacilityPricing(idx, "hourly_rate", e.target.value)}
+                          onChange={(e) =>
+                            updateFacilityPricing(idx, "hourly_rate", e.target.value)
+                          }
                           placeholder="e.g. 15000"
                         />
                       </div>
@@ -1147,43 +1181,43 @@ function NewVenueWizard() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-2 border-t border-border/50 pt-4">
                       <div className="space-y-2">
-                         <Label className="text-base">Image (Optional)</Label>
-                          {facility.image_url ? (
-                            <div className="relative w-full h-32 rounded-xl overflow-hidden border">
-                              <img
-                                src={facility.image_url}
-                                alt={facility.name}
-                                className="w-full h-full object-cover"
-                              />
-                              <button
-                                onClick={() => updateFacility(idx, "image_url", "")}
-                                className="absolute top-2 right-2 bg-black/60 text-white p-1.5 rounded-full hover:bg-red-500"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
+                        <Label className="text-base">Image (Optional)</Label>
+                        {facility.image_url ? (
+                          <div className="relative w-full h-32 rounded-xl overflow-hidden border">
+                            <img
+                              src={facility.image_url}
+                              alt={facility.name}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              onClick={() => updateFacility(idx, "image_url", "")}
+                              className="absolute top-2 right-2 bg-black/60 text-white p-1.5 rounded-full hover:bg-red-500"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center w-full h-16 bg-background rounded-xl border border-dashed relative hover:bg-secondary/30 transition-colors cursor-pointer">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleFacilityImageUpload(idx, e)}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              disabled={isUploading}
+                            />
+                            <div className="flex items-center text-muted-foreground text-sm">
+                              {isUploading ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <UploadCloud className="h-4 w-4 mr-2" />
+                              )}
+                              Upload Image
                             </div>
-                          ) : (
-                            <div className="flex items-center justify-center w-full h-16 bg-background rounded-xl border border-dashed relative hover:bg-secondary/30 transition-colors cursor-pointer">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleFacilityImageUpload(idx, e)}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                disabled={isUploading}
-                              />
-                              <div className="flex items-center text-muted-foreground text-sm">
-                                {isUploading ? (
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                ) : (
-                                  <UploadCloud className="h-4 w-4 mr-2" />
-                                )}
-                                Upload Image
-                              </div>
-                            </div>
-                          )}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center justify-between p-4 bg-background border border-border/60 rounded-xl h-fit">
                         <div className="space-y-1">

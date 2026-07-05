@@ -85,7 +85,10 @@ function VenuePricingPage() {
     return <div className="p-8 text-center text-red-500 font-semibold">Venue not found</div>;
 
   return (
-    <form onSubmit={handleSave} className="max-w-4xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <form
+      onSubmit={handleSave}
+      className="max-w-4xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-6 rounded-3xl border border-border/60 shadow-sm">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Pricing Management</h2>
@@ -131,7 +134,7 @@ function VenuePricingPage() {
         {venue.rental_model !== "ENTIRE_VENUE" && (
           <div className="space-y-4 pt-4 border-t border-border/60">
             <Label className="text-xl font-semibold">Entrance & Admission</Label>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
               <div className="space-y-2">
                 <Label className="text-base">Entrance Policy</Label>
@@ -148,7 +151,9 @@ function VenuePricingPage() {
 
               {entranceType !== "free" && (
                 <div className="space-y-2">
-                  <Label className="text-base">Entrance Fee ({activeWorkspace?.currency || "RWF"})</Label>
+                  <Label className="text-base">
+                    Entrance Fee ({activeWorkspace?.currency || "RWF"})
+                  </Label>
                   <Input
                     name="entrance_fee"
                     type="number"
@@ -162,7 +167,9 @@ function VenuePricingPage() {
 
             {entranceType === "consumable" && (
               <div className="mt-4 p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
-                <Label className="text-base text-orange-600 dark:text-orange-400">Voucher Value ({activeWorkspace?.currency || "RWF"})</Label>
+                <Label className="text-base text-orange-600 dark:text-orange-400">
+                  Voucher Value ({activeWorkspace?.currency || "RWF"})
+                </Label>
                 <Input
                   name="consumable_value"
                   type="number"
@@ -179,60 +186,62 @@ function VenuePricingPage() {
           <div className="space-y-4 pt-4 border-t border-border/60">
             <div>
               <Label className="text-xl font-semibold">Additional Pricing Options</Label>
-            <p className="text-sm text-muted-foreground mt-1">
-              (Optional) Add different ticket tiers or rental packages.
-            </p>
-          </div>
-          <div className="space-y-4">
-            {pricingTiers.map((tier, idx) => (
-              <div
-                key={idx}
-                className="flex gap-4 items-start p-6 bg-secondary/20 rounded-2xl border border-border/60 relative"
-              >
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-base">Option Name</Label>
-                    <Input
-                      className="h-12 bg-background rounded-xl"
-                      value={tier.name}
-                      onChange={(e) => updatePricingTier(idx, "name", e.target.value)}
-                      placeholder="e.g. VIP Access"
-                    />
+              <p className="text-sm text-muted-foreground mt-1">
+                (Optional) Add different ticket tiers or rental packages.
+              </p>
+            </div>
+            <div className="space-y-4">
+              {pricingTiers.map((tier, idx) => (
+                <div
+                  key={idx}
+                  className="flex gap-4 items-start p-6 bg-secondary/20 rounded-2xl border border-border/60 relative"
+                >
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-base">Option Name</Label>
+                      <Input
+                        className="h-12 bg-background rounded-xl"
+                        value={tier.name}
+                        onChange={(e) => updatePricingTier(idx, "name", e.target.value)}
+                        placeholder="e.g. VIP Access"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-base">
+                        Amount ({activeWorkspace?.currency || "RWF"})
+                      </Label>
+                      <Input
+                        type="number"
+                        className="h-12 bg-background rounded-xl"
+                        value={tier.amount}
+                        onChange={(e) => updatePricingTier(idx, "amount", e.target.value)}
+                        placeholder="0.00"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-base">Amount ({activeWorkspace?.currency || "RWF"})</Label>
-                    <Input
-                      type="number"
-                      className="h-12 bg-background rounded-xl"
-                      value={tier.amount}
-                      onChange={(e) => updatePricingTier(idx, "amount", e.target.value)}
-                      placeholder="0.00"
-                    />
-                  </div>
+                  {pricingTiers.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500 absolute top-4 right-4 hover:bg-red-500/10"
+                      onClick={() => setPricingTiers(pricingTiers.filter((_, i) => i !== idx))}
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  )}
                 </div>
-                {pricingTiers.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-red-500 absolute top-4 right-4 hover:bg-red-500/10"
-                    onClick={() => setPricingTiers(pricingTiers.filter((_, i) => i !== idx))}
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </Button>
-                )}
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-14 border-dashed rounded-xl"
-              onClick={() => setPricingTiers([...pricingTiers, { name: "", amount: "" }])}
-            >
-              <Plus className="h-5 w-5 mr-2" /> Add Pricing Option
-            </Button>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-14 border-dashed rounded-xl"
+                onClick={() => setPricingTiers([...pricingTiers, { name: "", amount: "" }])}
+              >
+                <Plus className="h-5 w-5 mr-2" /> Add Pricing Option
+              </Button>
+            </div>
           </div>
-        </div>
         )}
       </div>
     </form>

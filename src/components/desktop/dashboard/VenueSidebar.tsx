@@ -1,5 +1,14 @@
 import { Link, useRouterState, useParams, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, Users, Settings, ArrowLeft, Check, Sparkles, Banknote, DoorOpen } from "lucide-react";
+import {
+  CalendarDays,
+  Users,
+  Settings,
+  ArrowLeft,
+  Check,
+  Sparkles,
+  Banknote,
+  DoorOpen,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
 import { cn } from "@/lib/utils";

@@ -88,9 +88,16 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
               <h2 className="text-xl font-semibold mb-4">Facilities & Spaces</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {venue.facilities_data.map((facility: any, i: number) => (
-                  <div key={i} className="flex flex-col bg-secondary/20 rounded-2xl border border-border/60 overflow-hidden">
+                  <div
+                    key={i}
+                    className="flex flex-col bg-secondary/20 rounded-2xl border border-border/60 overflow-hidden"
+                  >
                     {facility.image_url && (
-                      <img src={facility.image_url} alt={facility.name} className="h-32 w-full object-cover" />
+                      <img
+                        src={facility.image_url}
+                        alt={facility.name}
+                        className="h-32 w-full object-cover"
+                      />
                     )}
                     <div className="p-4 flex flex-col flex-1">
                       <h3 className="font-semibold text-lg">{facility.name}</h3>
@@ -99,10 +106,16 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                       </p>
                       <div className="text-sm font-medium space-y-1 mb-4">
                         {facility.pricing?.hourly_rate && (
-                          <p>Hourly: {formatCurrency(facility.pricing.hourly_rate, venue.currency || "RWF")}</p>
+                          <p>
+                            Hourly:{" "}
+                            {formatCurrency(facility.pricing.hourly_rate, venue.currency || "RWF")}
+                          </p>
                         )}
                         {facility.pricing?.daily_rate && (
-                          <p>Daily: {formatCurrency(facility.pricing.daily_rate, venue.currency || "RWF")}</p>
+                          <p>
+                            Daily:{" "}
+                            {formatCurrency(facility.pricing.daily_rate, venue.currency || "RWF")}
+                          </p>
                         )}
                         {facility.type === "shared_access" && facility.max_capacity && (
                           <p>Max Capacity: {facility.max_capacity} people</p>
@@ -114,8 +127,8 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                           params={{ venueId: venue.id, facilityId: facility.id }}
                           className="block w-full"
                         >
-                          <Button 
-                            className="w-full" 
+                          <Button
+                            className="w-full"
                             variant={facility.requires_approval ? "outline" : "default"}
                           >
                             {facility.requires_approval ? "Request Booking" : "Book Now"}
@@ -293,8 +306,6 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
               )}
             </div>
           </div>
-
-
         </div>
 
         {/* Right Column: CTA Widget */}
@@ -304,7 +315,7 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
               {venue.entrance_type === "free" ? "Free Entry" : "Entry Ticket"}
             </h3>
             <p className="text-muted-foreground mb-6">
-              {venue.entrance_type === "consumable" 
+              {venue.entrance_type === "consumable"
                 ? `Includes a ${formatCurrency(venue.consumable_value || 0, venue.currency || "RWF")} consumable voucher.`
                 : venue.entrance_type === "free"
                   ? "General admission is free."
@@ -316,7 +327,9 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                 <div className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-secondary/30">
                   <span className="text-muted-foreground font-medium">Standard Entrance</span>
                   <span className="text-xl font-bold">
-                    {venue.entrance_fee > 0 ? formatCurrency(venue.entrance_fee, venue.currency || "RWF") : "Free"}
+                    {venue.entrance_fee > 0
+                      ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
+                      : "Free"}
                   </span>
                 </div>
               </div>

@@ -26,7 +26,9 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings")({
+export const Route = createFileRoute(
+  "/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings",
+)({
   component: FacilityBookingsPage,
 });
 
@@ -210,7 +212,9 @@ function FacilityBookingsPage() {
               eventTimeRangeFormat: () => "",
             }}
             popup
-            tooltipAccessor={(e) => `${e.title}\nStatus: ${e.data.status}\nPayment: ${e.data.paymentStatus}`}
+            tooltipAccessor={(e) =>
+              `${e.title}\nStatus: ${e.data.status}\nPayment: ${e.data.paymentStatus}`
+            }
           />
         </div>
       </div>

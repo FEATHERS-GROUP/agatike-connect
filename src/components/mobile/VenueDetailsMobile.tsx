@@ -89,9 +89,16 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
             <h3 className="font-bold mb-4">Facilities & Spaces</h3>
             <div className="flex flex-col gap-4">
               {venue.facilities_data.map((facility: any, i: number) => (
-                <div key={i} className="flex flex-col bg-secondary/20 rounded-2xl border border-border/60 overflow-hidden">
+                <div
+                  key={i}
+                  className="flex flex-col bg-secondary/20 rounded-2xl border border-border/60 overflow-hidden"
+                >
                   {facility.image_url && (
-                    <img src={facility.image_url} alt={facility.name} className="h-32 w-full object-cover" />
+                    <img
+                      src={facility.image_url}
+                      alt={facility.name}
+                      className="h-32 w-full object-cover"
+                    />
                   )}
                   <div className="p-4 flex flex-col flex-1">
                     <h3 className="font-semibold text-lg">{facility.name}</h3>
@@ -100,10 +107,16 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                     </p>
                     <div className="text-sm font-medium space-y-1 mb-4">
                       {facility.pricing?.hourly_rate && (
-                        <p>Hourly: {formatCurrency(facility.pricing.hourly_rate, venue.currency || "RWF")}</p>
+                        <p>
+                          Hourly:{" "}
+                          {formatCurrency(facility.pricing.hourly_rate, venue.currency || "RWF")}
+                        </p>
                       )}
                       {facility.pricing?.daily_rate && (
-                        <p>Daily: {formatCurrency(facility.pricing.daily_rate, venue.currency || "RWF")}</p>
+                        <p>
+                          Daily:{" "}
+                          {formatCurrency(facility.pricing.daily_rate, venue.currency || "RWF")}
+                        </p>
                       )}
                       {facility.type === "shared_access" && facility.max_capacity && (
                         <p>Max Capacity: {facility.max_capacity} people</p>
@@ -115,8 +128,8 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                         params={{ venueId: venue.id, facilityId: facility.id }}
                         className="block w-full"
                       >
-                        <Button 
-                          className="w-full" 
+                        <Button
+                          className="w-full"
                           variant={facility.requires_approval ? "outline" : "default"}
                         >
                           {facility.requires_approval ? "Request Booking" : "Book Now"}
@@ -178,8 +191,6 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
           </div>
         </div>
 
-
-
         {venue.instructions && (
           <div className="border-t border-border/40 pt-6 prose prose-sm prose-neutral dark:prose-invert max-w-none break-words overflow-hidden">
             <h3 className="font-bold mb-4">Instructions</h3>
@@ -193,7 +204,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
         <div className="border-t border-border/40 pt-6">
           <h3 className="font-bold mb-4">Entry Tickets</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            {venue.entrance_type === "consumable" 
+            {venue.entrance_type === "consumable"
               ? `Includes a ${formatCurrency(venue.consumable_value || 0, venue.currency || "RWF")} consumable voucher.`
               : venue.entrance_type === "free"
                 ? "General admission is free."
@@ -205,7 +216,9 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
               <div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30">
                 <span className="text-muted-foreground text-sm font-medium">Standard Entrance</span>
                 <span className="font-bold text-primary">
-                  {venue.entrance_fee > 0 ? formatCurrency(venue.entrance_fee, venue.currency || "RWF") : "Free"}
+                  {venue.entrance_fee > 0
+                    ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
+                    : "Free"}
                 </span>
               </div>
             </div>
@@ -329,7 +342,9 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
               <div className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150">
                 <span className="text-muted-foreground font-medium">Standard Entrance</span>
                 <span className="font-bold text-foreground">
-                  {venue.entrance_fee > 0 ? formatCurrency(venue.entrance_fee, venue.currency || "RWF") : "Free"}
+                  {venue.entrance_fee > 0
+                    ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
+                    : "Free"}
                 </span>
               </div>
             </div>
@@ -347,7 +362,11 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                     : "Free"}
                 </span>
               </div>
-              <Link to="/venues/checkout/$venueId" params={{ venueId: venue.id }} className="flex-1">
+              <Link
+                to="/venues/checkout/$venueId"
+                params={{ venueId: venue.id }}
+                className="flex-1"
+              >
                 <button
                   className="w-full h-12 rounded-xl text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform"
                   style={{ background: "var(--gradient-primary)" }}

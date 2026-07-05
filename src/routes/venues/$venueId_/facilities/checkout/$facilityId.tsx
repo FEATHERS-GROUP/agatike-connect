@@ -4,7 +4,13 @@ import { createVenueBooking } from "@/api/venue_bookings";
 import { getUserSession } from "@/api/auth";
 import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ChevronLeft, Calendar as CalendarIcon, Clock, ArrowRight, CheckCircle2 } from "lucide-react";
+import {
+  ChevronLeft,
+  Calendar as CalendarIcon,
+  Clock,
+  ArrowRight,
+  CheckCircle2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -128,7 +134,10 @@ function FacilityCheckoutPage() {
               ? "Your request has been sent to the venue for approval. You will receive an email once it is confirmed."
               : "Your booking is confirmed! We have sent the details to your email address."}
           </p>
-          <Button onClick={() => navigate({ to: `/venues/${venueId}` })} className="rounded-xl h-12 px-8">
+          <Button
+            onClick={() => navigate({ to: `/venues/${venueId}` })}
+            className="rounded-xl h-12 px-8"
+          >
             Return to Venue
           </Button>
         </div>
@@ -141,7 +150,10 @@ function FacilityCheckoutPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <div className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8">
-        <Link to={`/venues/${venueId}`} className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6">
+        <Link
+          to={`/venues/${venueId}`}
+          className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6"
+        >
           <ChevronLeft className="w-4 h-4 mr-1" /> Back to Venue
         </Link>
 
@@ -149,7 +161,9 @@ function FacilityCheckoutPage() {
           <div className="space-y-8">
             <div>
               <h1 className="text-3xl font-bold tracking-tight mb-2">Book {facility.name}</h1>
-              <p className="text-muted-foreground">Select your date, time, and enter your details to complete your booking.</p>
+              <p className="text-muted-foreground">
+                Select your date, time, and enter your details to complete your booking.
+              </p>
             </div>
 
             <form id="booking-form" onSubmit={handleBook} className="space-y-8">
@@ -241,11 +255,15 @@ function FacilityCheckoutPage() {
           {/* Order Summary Sidebar */}
           <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-[var(--shadow-card)] lg:sticky lg:top-24">
             <h3 className="text-xl font-semibold mb-6">Booking Summary</h3>
-            
+
             <div className="space-y-4 mb-6">
               {facility.image_url && (
                 <div className="w-full h-32 rounded-xl overflow-hidden mb-4">
-                  <img src={facility.image_url} alt={facility.name} className="w-full h-full object-cover" />
+                  <img
+                    src={facility.image_url}
+                    alt={facility.name}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               )}
               <div className="flex justify-between text-sm">
@@ -259,13 +277,17 @@ function FacilityCheckoutPage() {
               {date && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Date</span>
-                  <span className="font-medium text-right">{format(new Date(date), "MMM d, yyyy")}</span>
+                  <span className="font-medium text-right">
+                    {format(new Date(date), "MMM d, yyyy")}
+                  </span>
                 </div>
               )}
               {date && startTime && endTime && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Time</span>
-                  <span className="font-medium text-right">{startTime} - {endTime}</span>
+                  <span className="font-medium text-right">
+                    {startTime} - {endTime}
+                  </span>
                 </div>
               )}
             </div>
@@ -290,10 +312,14 @@ function FacilityCheckoutPage() {
               className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
               style={{ background: "var(--gradient-primary)" }}
             >
-              {bookingMutation.isPending ? "Processing..." : facility.requires_approval ? "Request Booking" : "Confirm Booking"} 
+              {bookingMutation.isPending
+                ? "Processing..."
+                : facility.requires_approval
+                  ? "Request Booking"
+                  : "Confirm Booking"}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
-            
+
             {facility.requires_approval && (
               <p className="text-xs text-center text-muted-foreground mt-4">
                 This facility requires manual approval from the venue.

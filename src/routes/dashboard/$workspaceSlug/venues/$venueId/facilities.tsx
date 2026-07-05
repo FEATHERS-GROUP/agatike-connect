@@ -27,7 +27,7 @@ function VenueFacilitiesPage() {
 
   const [facilities, setFacilities] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  
+
   // Sheet state
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -97,8 +97,8 @@ function VenueFacilitiesPage() {
     if (editingIndex === null) return;
     setFacilities(
       facilities.map((f, i) =>
-        i === editingIndex ? { ...f, pricing: { ...(f.pricing || {}), [field]: val } } : f
-      )
+        i === editingIndex ? { ...f, pricing: { ...(f.pricing || {}), [field]: val } } : f,
+      ),
     );
   };
 
@@ -107,7 +107,7 @@ function VenueFacilitiesPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) return toast.error("File exceeds 5MB limit");
-    
+
     setIsUploading(true);
     try {
       const url = await uploadFileToStorage(file, "venues");
@@ -164,17 +164,23 @@ function VenueFacilitiesPage() {
             )}
             <div className="h-40 w-full bg-secondary/30 relative">
               {facility.image_url ? (
-                <img src={facility.image_url} alt={facility.name} className="w-full h-full object-cover" />
+                <img
+                  src={facility.image_url}
+                  alt={facility.name}
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                   <span className="text-sm">No Image</span>
                 </div>
               )}
             </div>
-            
+
             <div className="p-5 flex-1 flex flex-col">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-lg leading-tight truncate pr-2">{facility.name || "Unnamed"}</h3>
+                <h3 className="font-bold text-lg leading-tight truncate pr-2">
+                  {facility.name || "Unnamed"}
+                </h3>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -184,16 +190,38 @@ function VenueFacilitiesPage() {
                   <Edit2 className="h-4 w-4" />
                 </Button>
               </div>
-              
+
               <div className="text-sm text-muted-foreground mb-4 space-y-1">
-                <p>Type: <span className="font-medium text-foreground">{facility.type === "exclusive_slot" ? "Exclusive Slot" : "Shared Access"}</span></p>
-                {facility.pricing?.hourly_rate && <p>Hourly: <span className="font-medium text-foreground">{activeWorkspace?.currency || "RWF"} {facility.pricing.hourly_rate}</span></p>}
-                {facility.pricing?.daily_rate && <p>Daily: <span className="font-medium text-foreground">{activeWorkspace?.currency || "RWF"} {facility.pricing.daily_rate}</span></p>}
+                <p>
+                  Type:{" "}
+                  <span className="font-medium text-foreground">
+                    {facility.type === "exclusive_slot" ? "Exclusive Slot" : "Shared Access"}
+                  </span>
+                </p>
+                {facility.pricing?.hourly_rate && (
+                  <p>
+                    Hourly:{" "}
+                    <span className="font-medium text-foreground">
+                      {activeWorkspace?.currency || "RWF"} {facility.pricing.hourly_rate}
+                    </span>
+                  </p>
+                )}
+                {facility.pricing?.daily_rate && (
+                  <p>
+                    Daily:{" "}
+                    <span className="font-medium text-foreground">
+                      {activeWorkspace?.currency || "RWF"} {facility.pricing.daily_rate}
+                    </span>
+                  </p>
+                )}
                 {facility.type === "shared_access" && facility.max_capacity && (
-                  <p>Capacity: <span className="font-medium text-foreground">{facility.max_capacity}</span></p>
+                  <p>
+                    Capacity:{" "}
+                    <span className="font-medium text-foreground">{facility.max_capacity}</span>
+                  </p>
                 )}
               </div>
-              
+
               <div className="mt-auto flex gap-2 pt-4 border-t border-border/50">
                 <Link
                   to="/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings"
@@ -222,7 +250,7 @@ function VenueFacilitiesPage() {
           <SheetHeader>
             <SheetTitle>{editingIndex !== null ? "Edit Sub-Venue" : "Add Sub-Venue"}</SheetTitle>
           </SheetHeader>
-          
+
           {activeFacility && (
             <div className="mt-6 space-y-6">
               <div className="space-y-4">
@@ -243,7 +271,9 @@ function VenueFacilitiesPage() {
                     onChange={(e) => updateActiveFacility("type", e.target.value)}
                   >
                     <option value="exclusive_slot">Exclusive Slot (Only 1 group per time)</option>
-                    <option value="shared_access">Shared Access (Passes per day up to capacity)</option>
+                    <option value="shared_access">
+                      Shared Access (Passes per day up to capacity)
+                    </option>
                   </select>
                 </div>
               </div>
@@ -344,7 +374,9 @@ function VenueFacilitiesPage() {
 
                   <div className="flex items-center justify-between p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl h-fit">
                     <div className="space-y-1">
-                      <Label className="text-base text-orange-600 dark:text-orange-400">Under Maintenance</Label>
+                      <Label className="text-base text-orange-600 dark:text-orange-400">
+                        Under Maintenance
+                      </Label>
                       <p className="text-xs text-orange-600/80 dark:text-orange-400/80">
                         Temporarily disable bookings.
                       </p>
@@ -358,8 +390,8 @@ function VenueFacilitiesPage() {
               </div>
 
               <div className="pt-6">
-                <Button 
-                  onClick={() => saveAll(facilities)} 
+                <Button
+                  onClick={() => saveAll(facilities)}
                   disabled={updateMutation.isPending || isUploading}
                   className="w-full h-12 rounded-xl text-base shadow-[var(--shadow-glow)]"
                   style={{ background: "var(--gradient-primary)" }}

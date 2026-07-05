@@ -65,17 +65,17 @@ function VenueOverviewPage() {
       return b.facility_id === facilityFilter;
     })
     .map((b: any) => {
-    return {
-      title: b.customer_name,
-      start: new Date(b.start_time),
-      end: new Date(b.end_time),
-      allDay: false, // Could compute this if needed
-      data: {
-        paymentStatus: b.payment_status,
-        status: b.status,
-      },
-    };
-  });
+      return {
+        title: b.customer_name,
+        start: new Date(b.start_time),
+        end: new Date(b.end_time),
+        allDay: false, // Could compute this if needed
+        data: {
+          paymentStatus: b.payment_status,
+          status: b.status,
+        },
+      };
+    });
 
   const CustomEvent = ({ event }: any) => {
     const isPaid = event.data.paymentStatus === "Paid";
