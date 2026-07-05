@@ -195,7 +195,9 @@ const GET_PUBLIC_EVENTS = `
   }
 `;
 
-export const getPublicEvents = createServerFn({ method: "GET" }).handler(async () => {
+export const getPublicEvents = createServerFn({ method: "GET" })
+  .validator((d: any) => d)
+  .handler(async () => {
   const data = await hasuraRequest<{ events: any[] }>(GET_PUBLIC_EVENTS, {});
   return data.events || [];
 });

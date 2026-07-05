@@ -209,7 +209,9 @@ export const deleteCinema = createServerFn({ method: "POST" })
     return res.delete_cinemas_by_pk;
   });
 
-export const getPublicMovieSchedules = createServerFn({ method: "POST" }).handler(async () => {
+export const getPublicMovieSchedules = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async () => {
   // Get local date string YYYY-MM-DD
   const date = new Date().toISOString().split("T")[0];
   const res = await hasuraRequest<any>(GET_PUBLIC_MOVIE_SCHEDULES, { date });

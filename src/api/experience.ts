@@ -293,7 +293,9 @@ export const getEventPosts = createServerFn({ method: "POST" }).handler(async (c
   });
 });
 
-export const getGlobalFeedPosts = createServerFn({ method: "GET" }).handler(async () => {
+export const getGlobalFeedPosts = createServerFn({ method: "GET" })
+  .validator((d: any) => d)
+  .handler(async () => {
   // Try to get the current user session so we can include liked_by_user
   let currentUserId: string | null = null;
   try {
@@ -798,7 +800,9 @@ export const deleteEventHighlight = createServerFn({ method: "POST" }).handler(a
   return data.delete_event_highlights_by_pk;
 });
 
-export const getCommunityMoments = createServerFn({ method: "GET" }).handler(async () => {
+export const getCommunityMoments = createServerFn({ method: "GET" })
+  .validator((d: any) => d)
+  .handler(async () => {
   const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
 
   const query = `

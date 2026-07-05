@@ -32,7 +32,7 @@ export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$fac
     return { session };
   },
   loader: async ({ params }) => {
-    return await getRentableVenueById({ data: { id: params.venueId } });
+    return await getRentableVenueById({ data: { id: params.venueId_ } });
   },
   component: FacilityCheckoutPage,
 });
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$fac
 function FacilityCheckoutPage() {
   const { session } = Route.useRouteContext();
   const venue = Route.useLoaderData();
-  const { venueId, facilityId } = Route.useParams();
+  const { venueId_: venueId, facilityId } = Route.useParams();
   const navigate = useNavigate();
 
   const facility = venue?.facilities_data?.find((f: any) => f.id === facilityId);

@@ -227,7 +227,9 @@ export const updateFeedback = createServerFn({ method: "POST" }).handler(async (
 });
 
 // ─── Get Ratings for All Organizers (across all their events) ─────────────────
-export const getOrganizersRatings = createServerFn({ method: "GET" }).handler(async () => {
+export const getOrganizersRatings = createServerFn({ method: "GET" })
+  .validator((d: any) => d)
+  .handler(async () => {
   // Query from event_feedback side — navigate up via events.workspaces to get orgnizer_id.
   // Hasura exposes this direction; event_feedback_aggregate on events does NOT exist.
   const query = `

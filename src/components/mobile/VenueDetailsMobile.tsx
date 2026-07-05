@@ -125,7 +125,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                     <div className="mt-auto">
                       <Link
                         to="/venues/$venueId_/facilities/checkout/$facilityId"
-                        params={{ venueId: venue.id, facilityId: facility.id }}
+                        params={{ venueId_: venue.id, facilityId: facility.id }}
                         className="block w-full"
                       >
                         <Button
