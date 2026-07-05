@@ -1,4 +1,5 @@
 {
   "$schema": "https://cdn.jsdelivr.net/npm/@tanstack/router-cli/schema.json",
-  "routeFileIgnorePattern": "^api$"
+  "routeFileIgnorePattern": "^api$",
+  "autoCodeSplit": true
 }

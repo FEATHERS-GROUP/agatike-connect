@@ -3,28 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
 import { getVenueBookings } from "@/api/venue_bookings";
 import { ArrowLeft } from "lucide-react";
-import { Calendar, dateFnsLocalizer, View } from "react-big-calendar";
-import format from "date-fns/format";
-import parse from "date-fns/parse";
-import startOfWeek from "date-fns/startOfWeek";
-import getDay from "date-fns/getDay";
-import "react-big-calendar/lib/css/react-big-calendar.css";
+import type { View } from "react-big-calendar";
+import { Suspense, lazy } from "react";
+const Calendar = lazy(() => import("@/components/lazy/LazyCalendar"));
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-import enUS from "date-fns/locale/en-US";
-
-const locales = {
-  "en-US": enUS,
-};
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
 
 export const Route = createFileRoute(
   "/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings",
@@ -196,26 +180,28 @@ function FacilityBookingsPage() {
               background-color: hsl(var(--primary));
             }
           `}</style>
-          <Calendar
-            localizer={localizer}
-            events={myEvents}
-            startAccessor="start"
-            endAccessor="end"
-            view={currentView}
-            date={currentDate}
-            onView={(view) => setCurrentView(view)}
-            onNavigate={(date) => setCurrentDate(date)}
-            components={{
-              event: CustomEvent,
-            }}
-            formats={{
-              eventTimeRangeFormat: () => "",
-            }}
-            popup
-            tooltipAccessor={(e) =>
-              `${e.title}\nStatus: ${e.data.status}\nPayment: ${e.data.paymentStatus}`
-            }
-          />
+          <Suspense fallback={<div className="animate-pulse bg-muted/20 h-96 rounded-xl" />}>
+            <Calendar
+              events={myEvents}
+
+              startAccessor="start"
+              endAccessor="end"
+              view={currentView}
+              date={currentDate}
+              onView={(view) => setCurrentView(view)}
+              onNavigate={(date) => setCurrentDate(date)}
+              components={{
+                event: CustomEvent,
+              }}
+              formats={{
+                eventTimeRangeFormat: () => "",
+              }}
+              popup
+              tooltipAccessor={(e) =>
+                `${e.title}\nStatus: ${e.data.status}\nPayment: ${e.data.paymentStatus}`
+              }
+            />
+          </Suspense>
         </div>
       </div>
     </div>

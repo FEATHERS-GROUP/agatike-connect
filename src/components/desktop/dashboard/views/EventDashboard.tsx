@@ -17,23 +17,9 @@ import {
   Users,
 } from "lucide-react";
 
-import { Calendar, dateFnsLocalizer } from "react-big-calendar";
-import { format, parse, startOfWeek, getDay } from "date-fns";
-import { enUS } from "date-fns/locale";
-import "react-big-calendar/lib/css/react-big-calendar.css";
+import { Suspense, lazy } from "react";
+const Calendar = lazy(() => import("@/components/lazy/LazyCalendar"));
 import { formatCurrency } from "@/lib/currency";
-
-// Configure Calendar Localizer
-const locales = {
-  "en-US": enUS,
-};
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
 
 export function EventDashboard() {
   const { activeWorkspace } = useWorkspace();
@@ -223,21 +209,22 @@ export function EventDashboard() {
             <CalendarDays className="h-5 w-5 text-primary" /> Workspace Schedule
           </h2>
           <div className="flex-1 bg-secondary/20 rounded-2xl overflow-hidden border border-border/40 p-2">
-            <Calendar
-              localizer={localizer}
-              events={calendarEvents}
-              startAccessor="start"
-              endAccessor="end"
-              style={{ height: "100%" }}
-              views={["month", "agenda"]}
-              className="text-sm font-sans"
-              eventPropGetter={() => ({
-                style: {
-                  background: "var(--gradient-primary)",
-                  color: "#fff",
-                },
-              })}
-            />
+            <Suspense fallback={<div className="animate-pulse bg-muted/20 h-full rounded-xl" />}>
+              <Calendar
+                events={calendarEvents}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ height: "100%" }}
+                views={["month", "agenda"]}
+                className="text-sm font-sans"
+                eventPropGetter={() => ({
+                  style: {
+                    background: "var(--gradient-primary)",
+                    color: "#fff",
+                  },
+                })}
+              />
+            </Suspense>
           </div>
         </section>
 

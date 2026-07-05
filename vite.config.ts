@@ -42,6 +42,17 @@ export default defineConfig({
       "react-quill-new",
     ],
   },
+  ssr: {
+    external: [
+      "react-big-calendar",
+      "@blocknote/react",
+      "@blocknote/mantine",
+      "@blocknote/core",
+      "recharts",
+      "html2canvas",
+      "lucide-react",
+    ],
+  },
   plugins: [
     tanstackStart({
       server: { entry: "server" },
@@ -60,4 +71,4 @@ export default defineConfig({
   ],
 });
 
-// Trigger restart
+// Trigger restart 2
