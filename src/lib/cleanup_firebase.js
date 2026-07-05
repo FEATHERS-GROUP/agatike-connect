@@ -17,6 +17,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 async function deleteMockFirebaseData() {
+  console.log("Starting cleanup...");
   // 1. Delete Mock Channels
   const channelsSnap = await getDocs(collection(db, "channels"));
   for (const document of channelsSnap.docs) {
@@ -36,8 +37,6 @@ async function deleteMockFirebaseData() {
       await deleteDoc(doc(db, "messages", document.id));
     }
   }
-
-  console.log("Cleanup complete!");
   process.exit(0);
 }
 
