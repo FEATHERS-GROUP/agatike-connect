@@ -13,12 +13,11 @@
  */
 
 import { defineEventHandler, getHeader, sendError, createError } from "h3";
+import { getApps, initializeApp, applicationDefault } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 
 export default defineEventHandler(async (event) => {
   // ── Vercel Cron secret guard ───────────────────────────────────────────────
-  // Vercel sets the "authorization" header with the CRON_SECRET value when
-  // invoking cron jobs.  On local / non-Vercel environments this check is
-  // skipped so you can test the endpoint manually.
   const cronSecret = process.env.CRON_SECRET;
   if (cronSecret) {
     const authHeader = getHeader(event, "authorization");
@@ -53,7 +52,9 @@ export default defineEventHandler(async (event) => {
           ]
         }
         _set: {
-          status: "on_hold"
+          status: "on_hold",
+          plan_name: "Basic",
+          price: "0"
         }
       ) {
         affected_rows
@@ -63,12 +64,18 @@ export default defineEventHandler(async (event) => {
           customer_email
           plan_name
           next_billing_date
+          space {
+            workspace {
+              orgnizer_id
+            }
+          }
         }
       }
     }
   `;
 
   let affected_rows = 0;
+  let returning = [];
   try {
     const response = await fetch(hasuraEndpoint, {
       method: "POST",
@@ -94,10 +101,46 @@ export default defineEventHandler(async (event) => {
     }
 
     affected_rows = json.data?.update_space_subscriptions?.affected_rows ?? 0;
+    returning = json.data?.update_space_subscriptions?.returning ?? [];
 
     console.log(
-      `[cron/update-subscriptions] ✅ ${affected_rows} subscription(s) moved to on_hold at ${new Date().toISOString()}`,
+      `[cron/update-subscriptions] ✅ ${affected_rows} subscription(s) moved to on_hold and downgraded to Basic at ${new Date().toISOString()}`,
     );
+    
+    // Force logout the organizers of the affected subscriptions
+    if (returning.length > 0) {
+      if (getApps().length === 0) {
+        try {
+          initializeApp({
+            credential: applicationDefault(),
+          });
+        } catch (error) {
+          console.warn("Firebase Admin Initialization Warning:", error);
+        }
+      }
+      
+      const db = getFirestore();
+      const organizerIds = new Set<string>();
+      
+      returning.forEach((sub: any) => {
+        const orgId = sub?.space?.workspace?.orgnizer_id;
+        if (orgId) {
+          organizerIds.add(orgId);
+        }
+      });
+      
+      const batch = db.batch();
+      for (const orgId of organizerIds) {
+        const docRef = db.collection("organizer_sessions").doc(orgId);
+        batch.set(docRef, { status: "force_logout", updated_at: new Date().toISOString() }, { merge: true });
+      }
+      
+      if (organizerIds.size > 0) {
+        await batch.commit();
+        console.log(`[cron/update-subscriptions] ✅ Forced logout for ${organizerIds.size} organizer(s).`);
+      }
+    }
+    
   } catch (err: any) {
     console.error("[cron/update-subscriptions] Fetch error:", err);
     sendError(event, createError({ statusCode: 500, statusMessage: err.message }));

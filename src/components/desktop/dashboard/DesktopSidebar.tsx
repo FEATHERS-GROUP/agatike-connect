@@ -8,6 +8,7 @@ import { useState } from "react";
 import { CommunityBadge } from "./CommunityBadge";
 import { ExperienceBadge } from "./ExperienceBadge";
 import { NotificationBell } from "./NotificationBell";
+import { BillingBanner } from "./BillingBanner";
 
 export function DesktopSidebar() {
   const location = useRouterState({ select: (s) => s.location });
@@ -356,6 +357,12 @@ export function DesktopSidebar() {
             )}
           </div>
         )}
+
+      {/* Add Billing Banner to the bottom of the sidebar */}
+      <div className="mt-4 px-2 shrink-0">
+        <BillingBanner />
+      </div>
     </aside>
   );
 }
+

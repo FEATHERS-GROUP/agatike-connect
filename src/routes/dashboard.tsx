@@ -15,7 +15,9 @@ import { TheatresSidebar } from "@/components/desktop/dashboard/TheatresSidebar"
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
 import { useEffect } from "react";
-import { getSession } from "@/api/auth";
+import { getSession, logout } from "@/api/auth";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: async ({ location }) => {
@@ -275,6 +277,27 @@ function DashboardLayout() {
       }
     }
   }, [isLoaded, workspaces, activeWorkspace, location.pathname, navigate, currentUser]);
+
+  useEffect(() => {
+    if (!activeWorkspace?.orgnizer_id) return;
+    
+    const docRef = doc(db, "organizer_sessions", activeWorkspace.orgnizer_id);
+    const unsubscribe = onSnapshot(docRef, async (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data.status === "force_logout") {
+          try {
+            await logout();
+            navigate({ to: "/dashboard/login", replace: true });
+          } catch (err) {
+            console.error("Logout failed", err);
+          }
+        }
+      }
+    });
+    
+    return () => unsubscribe();
+  }, [activeWorkspace?.orgnizer_id, navigate]);
 
   return (
     <>
