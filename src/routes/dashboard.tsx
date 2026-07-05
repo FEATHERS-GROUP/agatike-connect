@@ -288,7 +288,7 @@ function DashboardLayout() {
 
   useEffect(() => {
     if (!activeWorkspace?.orgnizer_id) return;
-    
+
     const docRef = doc(db, "organizer_sessions", activeWorkspace.orgnizer_id);
     const unsubscribe = onSnapshot(docRef, async (snapshot) => {
       if (snapshot.exists()) {
@@ -303,7 +303,7 @@ function DashboardLayout() {
         }
       }
     });
-    
+
     return () => unsubscribe();
   }, [activeWorkspace?.orgnizer_id, navigate]);
 

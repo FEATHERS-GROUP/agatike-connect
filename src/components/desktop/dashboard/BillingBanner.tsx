@@ -12,7 +12,9 @@ export function BillingBanner() {
     queryKey: ["workspace_subscriptions", activeWorkspace?.id],
     queryFn: async () => {
       if (!activeWorkspace?.id) return [];
-      return await getWorkspaceSubscriptionsByWorkspaceId({ data: { workspace_id: activeWorkspace.id } } as any);
+      return await getWorkspaceSubscriptionsByWorkspaceId({
+        data: { workspace_id: activeWorkspace.id },
+      } as any);
     },
     enabled: !!activeWorkspace?.id,
   });
@@ -20,9 +22,7 @@ export function BillingBanner() {
   if (!subscriptions || subscriptions.length === 0) return null;
 
   // Find the active subscription (the one that is not cancelled and has a next_billing_date)
-  const sub = subscriptions.find(
-    (s: any) => s.status !== "cancelled" && s.next_billing_date,
-  );
+  const sub = subscriptions.find((s: any) => s.status !== "cancelled" && s.next_billing_date);
 
   if (!sub) return null;
 

@@ -45,7 +45,6 @@ export const types: {
   },
 ];
 
-
 export const COUNTRIES = [
   "Afghanistan",
   "Albania",

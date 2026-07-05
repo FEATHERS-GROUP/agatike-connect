@@ -69,9 +69,7 @@ export function TransportDashboard() {
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to={`/dashboard/${activeWorkspace?.slug}/vehicles` as any}>
-              Add Vehicle
-            </Link>
+            <Link to={`/dashboard/${activeWorkspace?.slug}/vehicles` as any}>Add Vehicle</Link>
           </Button>
         </div>
       </div>

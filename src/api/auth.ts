@@ -56,20 +56,22 @@ export const loginOrganizer = createServerFn({ method: "POST" }).handler(async (
     path: "/",
     maxAge: 60 * 60 * 24 * 7, // 7 days
   });
-  
+
   try {
     if (getApps().length === 0) {
       initializeApp({ credential: applicationDefault() });
     }
     const db = getFirestore();
-    await db.collection("organizer_sessions").doc(organizer.id).set({ status: "active", updated_at: new Date().toISOString() }, { merge: true });
+    await db
+      .collection("organizer_sessions")
+      .doc(organizer.id)
+      .set({ status: "active", updated_at: new Date().toISOString() }, { merge: true });
   } catch (err) {
     console.warn("Failed to update Firebase session status:", err);
   }
 
   return { success: true, id: organizer.id };
 });
-
 
 export const getSession = createServerFn({ method: "POST" }).handler(async () => {
   const token = getCookie("agatike_auth");
@@ -723,7 +725,10 @@ export const googleAuthOrganizer = createServerFn({ method: "POST" }).handler(as
       initializeApp({ credential: applicationDefault() });
     }
     const db = getFirestore();
-    await db.collection("organizer_sessions").doc(organizer.id).set({ status: "active", updated_at: new Date().toISOString() }, { merge: true });
+    await db
+      .collection("organizer_sessions")
+      .doc(organizer.id)
+      .set({ status: "active", updated_at: new Date().toISOString() }, { merge: true });
   } catch (err) {
     console.warn("Failed to update Firebase session status:", err);
   }

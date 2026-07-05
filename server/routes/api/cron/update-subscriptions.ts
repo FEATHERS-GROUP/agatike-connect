@@ -106,7 +106,7 @@ export default defineEventHandler(async (event) => {
     console.log(
       `[cron/update-subscriptions] ✅ ${affected_rows} subscription(s) moved to on_hold and downgraded to Basic at ${new Date().toISOString()}`,
     );
-    
+
     // Force logout the organizers of the affected subscriptions
     if (returning.length > 0) {
       if (getApps().length === 0) {
@@ -118,29 +118,34 @@ export default defineEventHandler(async (event) => {
           console.warn("Firebase Admin Initialization Warning:", error);
         }
       }
-      
+
       const db = getFirestore();
       const organizerIds = new Set<string>();
-      
+
       returning.forEach((sub: any) => {
         const orgId = sub?.space?.workspace?.orgnizer_id;
         if (orgId) {
           organizerIds.add(orgId);
         }
       });
-      
+
       const batch = db.batch();
       for (const orgId of organizerIds) {
         const docRef = db.collection("organizer_sessions").doc(orgId);
-        batch.set(docRef, { status: "force_logout", updated_at: new Date().toISOString() }, { merge: true });
+        batch.set(
+          docRef,
+          { status: "force_logout", updated_at: new Date().toISOString() },
+          { merge: true },
+        );
       }
-      
+
       if (organizerIds.size > 0) {
         await batch.commit();
-        console.log(`[cron/update-subscriptions] ✅ Forced logout for ${organizerIds.size} organizer(s).`);
+        console.log(
+          `[cron/update-subscriptions] ✅ Forced logout for ${organizerIds.size} organizer(s).`,
+        );
       }
     }
-    
   } catch (err: any) {
     console.error("[cron/update-subscriptions] Fetch error:", err);
     sendError(event, createError({ statusCode: 500, statusMessage: err.message }));
