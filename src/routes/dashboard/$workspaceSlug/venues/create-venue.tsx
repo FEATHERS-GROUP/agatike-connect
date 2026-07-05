@@ -947,9 +947,10 @@ function NewVenueWizard() {
                   </div>
                 </div>
 
-                <div className="space-y-4 pt-4 border-t border-border/60">
-                  <div>
-                    <Label className="text-xl font-semibold">Additional Pricing Options</Label>
+                {(formData.rental_model === "ENTIRE_VENUE" || formData.entrance_type !== "free") && (
+                  <div className="space-y-4 pt-4 border-t border-border/60">
+                    <div>
+                      <Label className="text-xl font-semibold">Additional Pricing Options</Label>
                     <p className="text-sm text-muted-foreground mt-1">
                       (Optional) Add different ticket tiers or rental packages. For example, "Student Entrance" vs "Adult Entrance", or "Half-Day Rental" vs "Full-Day Rental".
                     </p>
@@ -1008,6 +1009,7 @@ function NewVenueWizard() {
                     </Button>
                   </div>
                 </div>
+                )}
               </div>
             </div>
           )}
