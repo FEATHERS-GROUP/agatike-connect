@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getRentableVenues, updateRentableVenue } from "@/api/rentable_venues";
+import { getRentableVenues, updateRentableVenue, deleteRentableVenue } from "@/api/rentable_venues";
 import { getWorkspaceVenueBookings } from "@/api/venue_bookings";
 import { formatCurrency } from "@/lib/currency";
 import { toast } from "sonner";
@@ -54,6 +54,18 @@ function VenueListingsPage() {
       queryClient.invalidateQueries({ queryKey: ["rentable_venues"] });
     },
     onError: () => toast.error("Failed to update status"),
+  });
+
+  const deleteVenueMutation = useMutation({
+    mutationFn: (id: string) => deleteRentableVenue({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Venue deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["rentable_venues"] });
+      queryClient.invalidateQueries({ queryKey: ["workspace_venue_bookings"] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to delete venue");
+    },
   });
 
   const { data: venues = [], isLoading } = useQuery({
@@ -228,6 +240,21 @@ function VenueListingsPage() {
                               }}
                             >
                               Set Active
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-red-500 focus:text-red-500"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (
+                                  window.confirm(
+                                    "Are you sure you want to delete this venue? All associated bookings will also be deleted.",
+                                  )
+                                ) {
+                                  deleteVenueMutation.mutate(venue.id);
+                                }
+                              }}
+                            >
+                              Delete Venue
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

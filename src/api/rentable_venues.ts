@@ -222,3 +222,26 @@ export const updateRentableVenue = createServerFn({ method: "POST" })
     );
     return res.update_rentable_venues_by_pk;
   });
+
+const DELETE_RENTABLE_VENUE = `
+  mutation DeleteRentableVenue($id: uuid!) {
+    delete_venue_bookings(where: { venue_id: { _eq: $id } }) {
+      affected_rows
+    }
+    delete_rentable_venues_by_pk(id: $id) {
+      id
+    }
+  }
+`;
+
+export const deleteRentableVenue = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { id } = ctx.data;
+    if (!id) throw new Error("id is required");
+    const res = await hasuraRequest<{ delete_rentable_venues_by_pk: { id: string } }>(
+      DELETE_RENTABLE_VENUE,
+      { id },
+    );
+    return res.delete_rentable_venues_by_pk;
+  });
