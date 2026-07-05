@@ -11,6 +11,19 @@ export default defineConfig({
       "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
     },
   },
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (
+          warning.code === "MODULE_LEVEL_DIRECTIVE" &&
+          warning.message.includes(`"use client"`)
+        ) {
+          return;
+        }
+        warn(warning);
+      },
+    },
+  },
   envPrefix: ["FIREBASE_", "GIPHY_", "GOOGLE_", "SUPABASE_"],
   optimizeDeps: {
     include: [
