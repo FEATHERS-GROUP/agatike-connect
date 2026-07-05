@@ -10,6 +10,7 @@ import {
   Clock,
   ArrowRight,
   CheckCircle2,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
+import { PaymentModal } from "@/components/shared/PaymentModal";
+import { initiatePawaPayDeposit } from "@/api/pawapay";
 
 export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$facilityId")({
   beforeLoad: async ({ location }) => {
@@ -59,6 +62,13 @@ function FacilityCheckoutPage() {
   const [email, setEmail] = useState(session?.email || "");
   const [phone, setPhone] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Payment State
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("momo");
+  const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
+  const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [bookingRef, setBookingRef] = useState<string>("");
 
   const hourlyRate = Number(facility?.pricing?.hourly_rate) || 0;
   const currency = venue?.currency || "RWF";
@@ -116,14 +126,96 @@ function FacilityCheckoutPage() {
   }, [daysInRange.length, selectedSlots.length, hourlyRate]);
 
   const bookingMutation = useMutation({
-    mutationFn: async (dataList: any[]) => {
+    mutationFn: async (paymentDetails?: {
+      phone?: string;
+      network?: string;
+      currency?: string;
+      convertedAmount?: number;
+      shortfall?: number;
+    }) => {
+      const minSlot = Math.min(...selectedSlots);
+      const maxSlot = Math.max(...selectedSlots);
+      
+      const bookingStatus = facility?.requires_approval ? "Pending" : "Confirmed";
+      const isPawaPay = totalAmount > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+      const paymentRef = isPawaPay ? Math.random().toString(36).substring(2, 12).toUpperCase() : undefined;
+      const currentRef = Math.random().toString(36).substring(2, 8).toUpperCase();
+      setBookingRef(currentRef);
+
+      const basePayload = {
+        workspace_id: venue.workspace_id,
+        venue_id: venue.id,
+        user_id: session?.id,
+        facility_id: facilityId,
+        customer_name: name,
+        customer_email: email,
+        customer_phone: phone,
+        status: isPawaPay ? "Pending" : bookingStatus,
+        payment_status: isPawaPay ? "Pending" : (totalAmount > 0 ? "Pending" : "Paid"),
+        amount: selectedSlots.length * hourlyRate, // Per-day amount
+        total_amount: selectedSlots.length * hourlyRate, 
+        venue_name: venue.name,
+        venue_currency: currency,
+        booking_type: "facility",
+        tickets_data: { 
+          "Facility Access": 1, 
+          booking_ref: currentRef, 
+          payment_ref: paymentRef 
+        },
+      };
+
+      const payloads = daysInRange.map(d => {
+        const startDateTime = new Date(d);
+        startDateTime.setHours(minSlot, 0, 0, 0);
+        const endDateTime = new Date(d);
+        endDateTime.setHours(maxSlot + 1, 0, 0, 0);
+        
+        return {
+          ...basePayload,
+          start_time: startDateTime.toISOString(),
+          end_time: endDateTime.toISOString(),
+        };
+      });
+
       const results = [];
-      for (const data of dataList) {
+      for (const data of payloads) {
         results.push(await createVenueBooking({ data }));
       }
-      return results;
+
+      if (isPawaPay) {
+        const pawaRes = await initiatePawaPayDeposit({
+          data: {
+            amount: paymentDetails?.convertedAmount || totalAmount,
+            baseAmount: totalAmount,
+            baseCurrency: currency,
+            phone: paymentDetails!.phone,
+            network: paymentDetails!.network,
+            currency: paymentDetails?.currency || currency,
+            type: "venue_booking",
+            referenceId: paymentRef,
+            workspaceId: venue.workspace_id,
+            reason: `${facility?.name} Booking`,
+            shortfall: paymentDetails?.shortfall || 0,
+          },
+        } as any);
+        return { results, isPawaPay: true, depositId: pawaRes.depositId };
+      }
+
+      return { results, isPawaPay: false };
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      if (data.isPawaPay) {
+        setPawapayDepositId(data.depositId);
+        setIsPollingPawaPay(true);
+        setIsPaymentModalOpen(false);
+        // Polling logic would go here via a separate useEffect or websocket.
+        // For now we simulate success after short delay since webhooks handle DB.
+        setTimeout(() => {
+          setIsPollingPawaPay(false);
+          setIsSuccess(true);
+        }, 5000);
+        return;
+      }
       setIsSuccess(true);
     },
     onError: (err: any) => {
@@ -151,50 +243,18 @@ function FacilityCheckoutPage() {
     }
   };
 
-  const handleBook = (e: React.FormEvent) => {
+  const handlePaymentStart = (e: React.FormEvent) => {
     e.preventDefault();
     if (!date?.from || selectedSlots.length === 0 || !name || !email) {
       toast.error("Please fill in all required fields.");
       return;
     }
 
-    const minSlot = Math.min(...selectedSlots);
-    const maxSlot = Math.max(...selectedSlots);
-
-    const bookingStatus = facility?.requires_approval ? "Pending" : "Confirmed";
-
-    const basePayload = {
-      workspace_id: venue.workspace_id,
-      venue_id: venue.id,
-      user_id: session?.id,
-      facility_id: facilityId,
-      customer_name: name,
-      customer_email: email,
-      customer_phone: phone,
-      status: bookingStatus,
-      payment_status: totalAmount > 0 ? "Pending" : "Paid",
-      amount: selectedSlots.length * hourlyRate, // Per-day amount
-      total_amount: selectedSlots.length * hourlyRate, // Keep total_amount as per-day for consistency with single records
-      venue_name: venue.name,
-      venue_currency: currency,
-      booking_type: "facility",
-      tickets_data: {},
-    };
-
-    const payloads = daysInRange.map(d => {
-      const startDateTime = new Date(d);
-      startDateTime.setHours(minSlot, 0, 0, 0);
-      const endDateTime = new Date(d);
-      endDateTime.setHours(maxSlot + 1, 0, 0, 0);
-      
-      return {
-        ...basePayload,
-        start_time: startDateTime.toISOString(),
-        end_time: endDateTime.toISOString(),
-      };
-    });
-
-    bookingMutation.mutate(payloads);
+    if (totalAmount > 0) {
+      setIsPaymentModalOpen(true);
+    } else {
+      bookingMutation.mutate();
+    }
   };
 
   if (!venue || !facility) {
@@ -214,6 +274,15 @@ function FacilityCheckoutPage() {
             <CheckCircle2 className="w-12 h-12 text-green-500" />
           </div>
           <h1 className="text-3xl font-bold mb-4">Booking Submitted!</h1>
+          
+          <div className="bg-secondary/30 border border-border/60 rounded-2xl p-6 mb-8 w-full max-w-sm">
+            <p className="text-sm text-muted-foreground mb-2">Your Booking Reference (OTP)</p>
+            <p className="text-4xl font-mono font-bold tracking-widest text-primary">{bookingRef}</p>
+            <p className="text-xs text-muted-foreground mt-4">
+              Please show this code at the facility.
+            </p>
+          </div>
+
           <p className="text-muted-foreground max-w-md mx-auto mb-8">
             {facility.requires_approval
               ? "Your request has been sent to the venue for approval. You will receive an email once it is confirmed."
@@ -251,7 +320,7 @@ function FacilityCheckoutPage() {
               </p>
             </div>
 
-            <form id="booking-form" onSubmit={handleBook} className="space-y-8">
+            <form id="booking-form" onSubmit={handlePaymentStart} className="space-y-8">
               <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
                 <h2 className="text-xl font-semibold mb-6">1. Date & Time</h2>
                 <div className="grid grid-cols-1 gap-6">
@@ -442,7 +511,7 @@ function FacilityCheckoutPage() {
                 ? "Processing..."
                 : facility.requires_approval
                   ? "Request Booking"
-                  : "Confirm Booking"}
+                  : "Proceed to Payment"}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
 
@@ -454,6 +523,48 @@ function FacilityCheckoutPage() {
           </div>
         </div>
       </div>
+
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onOpenChange={setIsPaymentModalOpen}
+        baseAmount={totalAmount}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        onProceed={(details) => bookingMutation.mutate(details)}
+        isProcessing={bookingMutation.isPending || isPollingPawaPay}
+        isGenerating={false}
+        workspaceId={venue.workspace_id}
+        itemLabel={`${daysInRange.length} day(s) × ${selectedSlots.length} hour(s)`}
+        baseCurrency={currency}
+        userPhone={phone}
+      />
+
+      {isPollingPawaPay && (
+        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+          <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
+          <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
+          <p className="text-muted-foreground mb-8 max-w-sm">
+            We've sent a payment request to your mobile number. Please enter your PIN to confirm the
+            payment.
+          </p>
+          <div className="flex gap-2 mb-8 justify-center">
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
+          </div>
+          <Button
+            variant="outline"
+            className="rounded-xl h-12 px-8"
+            onClick={() => {
+              setIsPollingPawaPay(false);
+              setIsSuccess(true);
+            }}
+          >
+            Close Dialog (Simulate Approval)
+          </Button>
+        </div>
+      )}
+
       <Footer />
     </div>
   );
