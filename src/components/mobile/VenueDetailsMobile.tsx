@@ -132,6 +132,49 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
           </div>
         </div>
 
+        {venue.facilities_data && venue.facilities_data.length > 0 && (
+          <div className="border-t border-border/40 pt-6">
+            <h3 className="font-bold mb-4">Facilities & Spaces</h3>
+            <div className="flex flex-col gap-4">
+              {venue.facilities_data.map((facility: any, i: number) => (
+                <div key={i} className="flex flex-col bg-secondary/20 rounded-2xl border border-border/60 overflow-hidden">
+                  {facility.image_url && (
+                    <img src={facility.image_url} alt={facility.name} className="h-32 w-full object-cover" />
+                  )}
+                  <div className="p-4 flex flex-col flex-1">
+                    <h3 className="font-semibold text-lg">{facility.name}</h3>
+                    <p className="text-sm text-muted-foreground capitalize mt-1 mb-3">
+                      {facility.type.replace(/_/g, " ")}
+                    </p>
+                    <div className="text-sm font-medium space-y-1 mb-4">
+                      {facility.pricing?.hourly_rate && (
+                        <p>Hourly: {formatCurrency(facility.pricing.hourly_rate, venue.currency || "RWF")}</p>
+                      )}
+                      {facility.pricing?.daily_rate && (
+                        <p>Daily: {formatCurrency(facility.pricing.daily_rate, venue.currency || "RWF")}</p>
+                      )}
+                      {facility.type === "shared_access" && facility.max_capacity && (
+                        <p>Max Capacity: {facility.max_capacity} people</p>
+                      )}
+                    </div>
+                    <div className="mt-auto">
+                      <Button 
+                        className="w-full" 
+                        variant={facility.requires_approval ? "outline" : "default"}
+                        onClick={() => {
+                          alert("Facility booking modal would open here to select Date & Time.");
+                        }}
+                      >
+                        {facility.requires_approval ? "Request Booking" : "Book Now"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {venue.instructions && (
           <div className="border-t border-border/40 pt-6 prose prose-sm prose-neutral dark:prose-invert max-w-none break-words overflow-hidden">
             <h3 className="font-bold mb-4">Instructions</h3>
@@ -144,24 +187,24 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
 
         <div className="border-t border-border/40 pt-6">
           <h3 className="font-bold mb-4">Entry Tickets</h3>
-          <div className="space-y-3">
-            {(venue.pricing_tiers?.length > 0
-              ? venue.pricing_tiers
-              : [{ name: "Standard Entry", amount: 0 }]
-            ).map((tier: any, idx: number) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30"
-              >
-                <span className="text-muted-foreground text-sm font-medium">
-                  {tier.name || "Standard Entry"}
-                </span>
+          <p className="text-sm text-muted-foreground mb-4">
+            {venue.entrance_type === "consumable" 
+              ? `Includes a ${formatCurrency(venue.consumable_value || 0, venue.currency || "RWF")} consumable voucher.`
+              : venue.entrance_type === "free"
+                ? "General admission is free."
+                : "Book your access in advance"}
+          </p>
+
+          {venue.entrance_type !== "free" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30">
+                <span className="text-muted-foreground text-sm font-medium">Standard Entrance</span>
                 <span className="font-bold text-primary">
-                  {tier.amount > 0 ? formatCurrency(tier.amount, venue.currency) : "Free"}
+                  {venue.entrance_fee > 0 ? formatCurrency(venue.entrance_fee, venue.currency || "RWF") : "Free"}
                 </span>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Community Reviews */}
@@ -276,49 +319,39 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
             {!isTicketsExpanded && <span className="text-xs text-primary font-bold">View All</span>}
           </div>
 
-          {/* Pricing Tiers List (Expanded) */}
-          {isTicketsExpanded && (
+          {isTicketsExpanded && venue.entrance_type !== "free" && (
             <div className="mb-4 space-y-2 max-h-48 overflow-y-auto pr-1 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
-              {(venue.pricing_tiers?.length > 0
-                ? venue.pricing_tiers
-                : [{ name: "Standard Entry", amount: 0 }]
-              ).map((tier: any, idx: number) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150"
-                >
-                  <span className="text-muted-foreground font-medium">
-                    {tier.name || "Standard Entry"}
-                  </span>
-                  <span className="font-bold text-foreground">
-                    {tier.amount > 0 ? formatCurrency(tier.amount, venue.currency) : "Free"}
-                  </span>
-                </div>
-              ))}
+              <div className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150">
+                <span className="text-muted-foreground font-medium">Standard Entrance</span>
+                <span className="font-bold text-foreground">
+                  {venue.entrance_fee > 0 ? formatCurrency(venue.entrance_fee, venue.currency || "RWF") : "Free"}
+                </span>
+              </div>
             </div>
           )}
 
-          {/* Action Row */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                Tickets from
-              </span>
-              <span className="text-xl font-bold text-foreground">
-                {venue.pricing_tiers?.[0]?.amount > 0
-                  ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency)
-                  : "Free"}
-              </span>
+          {venue.entrance_type !== "free" && (
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                  Tickets from
+                </span>
+                <span className="text-xl font-bold text-foreground">
+                  {venue.entrance_fee > 0
+                    ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
+                    : "Free"}
+                </span>
+              </div>
+              <Link to="/venues/checkout/$venueId" params={{ venueId: venue.id }} className="flex-1">
+                <button
+                  className="w-full h-12 rounded-xl text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  Book Ticket
+                </button>
+              </Link>
             </div>
-            <Link to="/venues/checkout/$venueId" params={{ venueId: venue.id }} className="flex-1">
-              <button
-                className="w-full h-12 rounded-xl text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                Book Ticket
-              </button>
-            </Link>
-          </div>
+          )}
         </div>
       </div>
     </div>
