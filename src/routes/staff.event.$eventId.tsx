@@ -100,9 +100,11 @@ function StaffEventDashboard() {
   const { user } = useUserAuth();
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const lastActive = localStorage.getItem(`staff_session_${eventId}`);
-    if (lastActive && Date.now() - parseInt(lastActive) < SESSION_TIMEOUT) {
-      return true;
+    if (typeof window !== "undefined") {
+      const lastActive = localStorage.getItem(`staff_session_${eventId}`);
+      if (lastActive && Date.now() - parseInt(lastActive) < SESSION_TIMEOUT) {
+        return true;
+      }
     }
     return false;
   });
@@ -209,17 +211,9 @@ function StaffEventDashboard() {
   // If we reach here, we are authenticated (or no PIN was required)
   
   if (showScanner) {
-    // For now we render the global ScannerMobile but ideally it should be tailored
-    // We can wrap it in a div that handles going back
     return (
-      <div className="relative h-[100dvh] w-full bg-black">
-        <button 
-          onClick={() => setShowScanner(false)}
-          className="absolute top-safe-top left-4 z-50 p-2 bg-black/50 backdrop-blur-md rounded-full text-white border border-white/10"
-        >
-          <ArrowLeft className="h-6 w-6" />
-        </button>
-        <ScannerMobile />
+      <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+        <ScannerMobile onClose={() => setShowScanner(false)} />
       </div>
     );
   }
