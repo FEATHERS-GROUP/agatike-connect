@@ -56,6 +56,25 @@ export const sendPushNotification = createServerFn({ method: "POST" })
         },
         data: data || {},
         tokens: tokens,
+        android: {
+          priority: "high",
+          notification: {
+            sound: "default",
+          },
+        },
+        webpush: {
+          headers: {
+            Urgency: "high",
+          },
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: "default",
+              contentAvailable: true,
+            },
+          },
+        },
       };
 
       const response = await getMessaging().sendEachForMulticast(message);
