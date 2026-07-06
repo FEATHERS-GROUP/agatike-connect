@@ -31,6 +31,7 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
     if (!me) throw new Error("User not found");
 
     currentUser = {
+      id: orgnizer_id,
       role: me.role,
       pages: me.pages || [],
       modules: me.modules || [],
@@ -45,6 +46,7 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
     }
   } else {
     currentUser = {
+      id: orgnizer_id,
       role: "organizer",
       pages: ["ALL"],
       modules: ["ALL"],
@@ -130,13 +132,19 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
           id
           label
         }
+        organizers_by_pk(id: $orgnizer_id) {
+          active
+        }
       }
     `;
 
   const data = await hasuraRequest<{
     workspaces: any[];
     platformModules: { id: string; label: string }[];
+    organizers_by_pk?: { active: boolean };
   }>(query, { orgnizer_id });
+
+  currentUser.isActive = data.organizers_by_pk?.active ?? true;
 
   let resultWorkspaces = data.workspaces;
 
@@ -291,6 +299,37 @@ export const createDatabaseWorkspace = createServerFn({ method: "POST" }).handle
       });
     } catch (err) {
       console.error("Failed to create wallet for workspace", err);
+    }
+
+    // Sync all workspaces to the organizer's active subscription workspace_id JSON array
+    try {
+      const syncQuery = `
+        query GetOrgWsAndSub($orgId: uuid!) {
+          workspaces(where: { orgnizer_id: { _eq: $orgId }, deleted: { _eq: false } }) {
+            id
+          }
+          subscriptions(where: { organizer_id: { _eq: $orgId }, status: { _eq: "active" } }, limit: 1) {
+            id
+          }
+        }
+      `;
+      const syncData = await hasuraRequest<{ workspaces: any[], subscriptions: any[] }>(syncQuery, { orgId: session.sub });
+      
+      if (syncData.subscriptions.length > 0) {
+        const subId = syncData.subscriptions[0].id;
+        const workspaceIds = syncData.workspaces.map((w) => w.id);
+        
+        const updateSubQuery = `
+          mutation UpdateSubWorkspaces($subId: uuid!, $workspaceIds: jsonb!) {
+            update_subscriptions_by_pk(pk_columns: { id: $subId }, _set: { workspace_id: $workspaceIds }) {
+              id
+            }
+          }
+        `;
+        await hasuraRequest(updateSubQuery, { subId, workspaceIds });
+      }
+    } catch (err) {
+      console.error("Failed to sync workspace IDs to subscription", err);
     }
   }
 

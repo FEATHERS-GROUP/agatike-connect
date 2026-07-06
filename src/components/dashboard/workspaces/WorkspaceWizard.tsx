@@ -9,15 +9,17 @@ import { usePlatformModules, getModulesForWorkspaceType } from "@/hooks/usePlatf
 import { useNavigate } from "@tanstack/react-router";
 import { types, COUNTRIES, CATEGORIES } from "./constants";
 import { GLOBAL_CURRENCIES } from "@/lib/currency";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 interface WorkspaceWizardProps {
   onClose: () => void;
 }
 
 export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
-  const { workspaces, createWorkspace } = useWorkspace();
+  const { workspaces, createWorkspace, currentUser } = useWorkspace() as any;
   const { data: allModules = [], isLoading: isLoadingModules } = usePlatformModules();
   const navigate = useNavigate();
+  const { canCreateWorkspace } = useSubscriptionLimits(currentUser?.id);
 
   const [step, setStep] = useState(1);
   const [type, setType] = useState<WorkspaceType>("EVENT");

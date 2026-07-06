@@ -296,16 +296,16 @@ export const getEventPosts = createServerFn({ method: "POST" }).handler(async (c
 export const getGlobalFeedPosts = createServerFn({ method: "GET" })
   .validator((d: any) => d)
   .handler(async () => {
-  // Try to get the current user session so we can include liked_by_user
-  let currentUserId: string | null = null;
-  try {
-    const session = await getUserSession();
-    if (session?.id) currentUserId = session.id;
-  } catch {
-    // Not logged in — liked_by_user will always be false
-  }
+    // Try to get the current user session so we can include liked_by_user
+    let currentUserId: string | null = null;
+    try {
+      const session = await getUserSession();
+      if (session?.id) currentUserId = session.id;
+    } catch {
+      // Not logged in — liked_by_user will always be false
+    }
 
-  const query = `
+    const query = `
     query GetGlobalFeedPosts {
       event_posts(
         where: { is_published: { _eq: true } },
@@ -333,53 +333,53 @@ export const getGlobalFeedPosts = createServerFn({ method: "GET" })
     }
   `;
 
-  const data = await hasuraRequest<{ event_posts: any[] }>(query, {});
-  return (data.event_posts || []).map((post) => {
-    let parsedMediaUrls: string[] = [];
-    try {
-      if (typeof post.media_urls === "string") {
-        let parsed = JSON.parse(post.media_urls);
-        if (typeof parsed === "string") parsed = JSON.parse(parsed);
-        if (Array.isArray(parsed)) parsedMediaUrls = parsed;
-      } else if (Array.isArray(post.media_urls)) {
-        parsedMediaUrls = post.media_urls;
+    const data = await hasuraRequest<{ event_posts: any[] }>(query, {});
+    return (data.event_posts || []).map((post) => {
+      let parsedMediaUrls: string[] = [];
+      try {
+        if (typeof post.media_urls === "string") {
+          let parsed = JSON.parse(post.media_urls);
+          if (typeof parsed === "string") parsed = JSON.parse(parsed);
+          if (Array.isArray(parsed)) parsedMediaUrls = parsed;
+        } else if (Array.isArray(post.media_urls)) {
+          parsedMediaUrls = post.media_urls;
+        }
+      } catch (e) {
+        console.error("Failed to parse media_urls for post", post.id, e);
       }
-    } catch (e) {
-      console.error("Failed to parse media_urls for post", post.id, e);
-    }
 
-    if (
-      parsedMediaUrls.length === 0 &&
-      typeof post.media_urls === "string" &&
-      post.media_urls.startsWith("http")
-    ) {
-      parsedMediaUrls = [post.media_urls];
-    }
+      if (
+        parsedMediaUrls.length === 0 &&
+        typeof post.media_urls === "string" &&
+        post.media_urls.startsWith("http")
+      ) {
+        parsedMediaUrls = [post.media_urls];
+      }
 
-    const organizer = post.workspace?.organizer || {};
-    const likedByUser = currentUserId
-      ? (post.event_post_likes || []).some((l: any) => l.user_id === currentUserId)
-      : false;
+      const organizer = post.workspace?.organizer || {};
+      const likedByUser = currentUserId
+        ? (post.event_post_likes || []).some((l: any) => l.user_id === currentUserId)
+        : false;
 
-    return {
-      id: post.id,
-      user: organizer.name || "Organizer",
-      handle: organizer.handle || "organizer",
-      avatar: organizer.image,
-      image: parsedMediaUrls[0] || null,
-      mediaUrls: parsedMediaUrls,
-      caption: post.content,
-      likes: post.likes_count,
-      comments: post.comments_count,
-      eventId: post.event_id,
-      createdAt: post.created_at,
-      organizerId: organizer.id,
-      created_at: post.created_at,
-      // Whether the currently logged-in user has liked this post
-      liked_by_user: likedByUser,
-    };
+      return {
+        id: post.id,
+        user: organizer.name || "Organizer",
+        handle: organizer.handle || "organizer",
+        avatar: organizer.image,
+        image: parsedMediaUrls[0] || null,
+        mediaUrls: parsedMediaUrls,
+        caption: post.content,
+        likes: post.likes_count,
+        comments: post.comments_count,
+        eventId: post.event_id,
+        createdAt: post.created_at,
+        organizerId: organizer.id,
+        created_at: post.created_at,
+        // Whether the currently logged-in user has liked this post
+        liked_by_user: likedByUser,
+      };
+    });
   });
-});
 
 export const togglePinPost = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const session = await getSession();
@@ -803,9 +803,9 @@ export const deleteEventHighlight = createServerFn({ method: "POST" }).handler(a
 export const getCommunityMoments = createServerFn({ method: "GET" })
   .validator((d: any) => d)
   .handler(async () => {
-  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
 
-  const query = `
+    const query = `
     query GetCommunityMoments($twoWeeksAgo: timestamptz!) {
       event_stories(
         where: { created_at: { _gte: $twoWeeksAgo } }
@@ -843,38 +843,38 @@ export const getCommunityMoments = createServerFn({ method: "GET" })
     }
   `;
 
-  const res = await hasuraRequest<{ event_stories: any[]; event_highlights: any[] }>(query, {
-    twoWeeksAgo,
-  });
+    const res = await hasuraRequest<{ event_stories: any[]; event_highlights: any[] }>(query, {
+      twoWeeksAgo,
+    });
 
-  const stories = (res.event_stories || []).map((s) => ({
-    id: s.id,
-    image: s.media_url,
-    handle:
-      s.workspaces?.organizer?.handle ||
-      s.workspaces?.name?.toLowerCase().replace(/\s+/g, "") ||
-      "organizer",
-    caption: s.caption || s.workspaces?.name || "Moment",
-    created_at: s.created_at,
-  }));
-
-  const highlights = (res.event_highlights || [])
-    .filter((h) => h.media_url) // only highlights with images
-    .map((h) => ({
-      id: h.id,
-      image: h.media_url,
+    const stories = (res.event_stories || []).map((s) => ({
+      id: s.id,
+      image: s.media_url,
       handle:
-        h.workspace?.organizer?.handle ||
-        h.workspace?.name?.toLowerCase().replace(/\s+/g, "") ||
+        s.workspaces?.organizer?.handle ||
+        s.workspaces?.name?.toLowerCase().replace(/\s+/g, "") ||
         "organizer",
-      caption: h.title || h.content || h.workspace?.name || "Highlight",
-      created_at: h.created_at,
+      caption: s.caption || s.workspaces?.name || "Moment",
+      created_at: s.created_at,
     }));
 
-  // Combine and sort by created_at desc
-  const combined = [...stories, ...highlights].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-  );
+    const highlights = (res.event_highlights || [])
+      .filter((h) => h.media_url) // only highlights with images
+      .map((h) => ({
+        id: h.id,
+        image: h.media_url,
+        handle:
+          h.workspace?.organizer?.handle ||
+          h.workspace?.name?.toLowerCase().replace(/\s+/g, "") ||
+          "organizer",
+        caption: h.title || h.content || h.workspace?.name || "Highlight",
+        created_at: h.created_at,
+      }));
 
-  return combined;
-});
+    // Combine and sort by created_at desc
+    const combined = [...stories, ...highlights].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
+
+    return combined;
+  });

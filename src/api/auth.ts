@@ -47,14 +47,14 @@ export const loginOrganizer = createServerFn({ method: "POST" }).handler(async (
 
   const token = await new SignJWT({ sub: organizer.id, type: "organizer" })
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("7d")
+    .setExpirationTime("3d")
     .sign(SECRET);
 
   setCookie("agatike_auth", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 3, // 3 days
   });
 
   try {
@@ -97,6 +97,25 @@ export const getSession = createServerFn({ method: "POST" }).handler(async () =>
       if (!user || user.status === "disabled" || user.status === "deleted") {
         deleteCookie("agatike_auth", { path: "/" });
         return null;
+      }
+    } else if (session.type === "organizer") {
+      // Sliding session: if token has less than 2.9 days left, refresh it back to 3 days
+      const timeLeft = (payload.exp as number) * 1000 - Date.now();
+      const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+      const bufferMs = 2.9 * 24 * 60 * 60 * 1000; // Only refresh if it's been at least ~2.4 hours
+
+      if (timeLeft < bufferMs) {
+        const refreshedToken = await new SignJWT({ sub: session.sub, type: "organizer" })
+          .setProtectedHeader({ alg: "HS256" })
+          .setExpirationTime("3d")
+          .sign(SECRET);
+
+        setCookie("agatike_auth", refreshedToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          path: "/",
+          maxAge: 60 * 60 * 24 * 3, // 3 days
+        });
       }
     }
 

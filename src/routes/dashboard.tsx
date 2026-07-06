@@ -55,7 +55,7 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardLayout() {
   const location = useRouterState({ select: (s) => s.location });
   const navigate = useNavigate();
-  const { workspaces, activeWorkspace, isLoaded, currentUser } = useWorkspace() as any;
+  const { workspaces, activeWorkspace, setActiveWorkspace, isLoaded, currentUser } = useWorkspace() as any;
   const { data: platformModules = [] } = usePlatformModules();
 
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
@@ -121,6 +121,26 @@ function DashboardLayout() {
 
     if (workspaces.length === 0) {
       navigate({ to: "/dashboard/workspaces" });
+    } else if (!activeWorkspace && location.pathname !== "/dashboard/workspaces") {
+      const pathParts = location.pathname.split("/");
+      const urlSlug = pathParts[2];
+      if (
+        urlSlug &&
+        urlSlug !== "workspaces" &&
+        urlSlug !== "workspace-user" &&
+        urlSlug !== "billing" &&
+        urlSlug !== "support" &&
+        urlSlug !== "settings"
+      ) {
+        const workspaceFromUrl = workspaces.find((w: any) => w.slug === urlSlug);
+        if (workspaceFromUrl) {
+          setActiveWorkspace(workspaceFromUrl);
+        } else {
+          navigate({ to: "/dashboard/workspaces" });
+        }
+      } else {
+        navigate({ to: "/dashboard/workspaces" });
+      }
     } else if (activeWorkspace && location.pathname === "/dashboard") {
       navigate({ to: `/dashboard/${activeWorkspace.slug}` });
     } else if (activeWorkspace) {
@@ -138,7 +158,7 @@ function DashboardLayout() {
       ) {
         const workspaceFromUrl = workspaces.find((w: any) => w.slug === urlSlug);
         if (workspaceFromUrl) {
-          // setActiveWorkspace(workspaceFromUrl);
+          setActiveWorkspace(workspaceFromUrl);
         } else {
           navigate({ to: `/dashboard/${activeWorkspace.slug}` });
         }
@@ -306,6 +326,33 @@ function DashboardLayout() {
 
     return () => unsubscribe();
   }, [activeWorkspace?.orgnizer_id, navigate]);
+
+  if (currentUser?.role === "organizer" && currentUser?.isActive === false) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">
+        <div className="bg-primary/10 p-4 rounded-full mb-4">
+          <svg
+            className="w-8 h-8 text-primary"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold mb-2">Account Pending Activation</h2>
+        <p className="text-muted-foreground text-sm max-w-md">
+          Your account is currently under review by the Agatike team. This process usually takes
+          between 2 to 24 hours depending on traffic. Once approved, you will be able to create workspaces and manage your Operations.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>

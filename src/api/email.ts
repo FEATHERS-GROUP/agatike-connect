@@ -129,7 +129,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
       body: JSON.stringify({
         from: "Agatike Connect <hello@agatike.rw>",
@@ -193,7 +193,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
       body: JSON.stringify({
         from: "Agatike Connect <hello@agatike.rw>",
@@ -253,7 +253,7 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
       body: JSON.stringify({
         from: "Agatike Connect <hello@agatike.rw>",
@@ -318,7 +318,7 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
       body: JSON.stringify({
         from: "Agatike Connect <hello@agatike.rw>",
@@ -434,7 +434,7 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
       body: JSON.stringify(emailPayload),
     });
@@ -565,7 +565,7 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
       body: JSON.stringify({
         from: "Agatike Connect <hello@agatike.rw>",
@@ -634,7 +634,7 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
       body: JSON.stringify({
         from: "Agatike Connect <hello@agatike.rw>",
@@ -716,7 +716,7 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
       body: JSON.stringify(emailPayload),
     });
@@ -773,7 +773,7 @@ export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
     },
     body: JSON.stringify({
       from: "Agatike Connect <hello@agatike.rw>",
@@ -835,7 +835,7 @@ export const executeSendProjectAccessEmail = async (data: any) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
     },
     body: JSON.stringify({
       from: "Agatike Connect <hello@agatike.rw>",
@@ -849,3 +849,62 @@ export const executeSendProjectAccessEmail = async (data: any) => {
   if (!res.ok) throw new Error(resData.message || "Failed to send project access email");
   return resData;
 };
+
+export const sendVenueBookingEmail = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const {
+      to,
+      customerName,
+      facilityName,
+      venueName,
+      venueLocation,
+      dateRange,
+      timeRange,
+      bookingRef,
+    } = ctx.data;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaec; border-radius: 8px; overflow: hidden;">
+        <div style="background-color: #f9fafb; padding: 24px; text-align: center; border-bottom: 1px solid #eaeaec;">
+          <h2 style="margin: 0; color: #111827; font-size: 24px;">Booking Confirmed!</h2>
+          <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 16px;">${venueName}</p>
+        </div>
+        <div style="padding: 32px 24px;">
+          <p style="color: #374151; font-size: 16px; margin-top: 0;">Hi ${customerName},</p>
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.5;">
+            Your booking for <strong>${facilityName}</strong> at <strong>${venueName}</strong> has been successfully confirmed.
+          </p>
+          
+          <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <p style="margin: 0 0 12px 0; color: #374151; font-size: 15px;"><strong>Date:</strong> ${dateRange}</p>
+            <p style="margin: 0 0 12px 0; color: #374151; font-size: 15px;"><strong>Time:</strong> ${timeRange}</p>
+            <p style="margin: 0 0 12px 0; color: #374151; font-size: 15px;"><strong>Location:</strong> ${venueLocation}</p>
+            <p style="margin: 0; color: #374151; font-size: 15px;"><strong>Booking Reference:</strong> <span style="font-family: monospace; background: #e5e7eb; padding: 2px 6px; border-radius: 4px;">${bookingRef}</span></p>
+          </div>
+          
+          <p style="color: #4b5563; font-size: 15px; margin-bottom: 0;">
+            Please keep your booking reference handy and show it at the venue when you arrive.
+          </p>
+        </div>
+      </div>
+    `;
+
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
+      },
+      body: JSON.stringify({
+        from: "Agatike Connect <hello@agatike.rw>",
+        to: [to],
+        subject: `Booking Confirmation: ${facilityName} at ${venueName}`,
+        html,
+      }),
+    });
+
+    const resData = await res.json();
+    if (!res.ok) throw new Error(resData.message || "Failed to send venue booking email");
+    return resData;
+  });

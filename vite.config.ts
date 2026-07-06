@@ -8,7 +8,8 @@ import { nitro } from "nitro/vite";
 const logger = createLogger();
 const originalWarn = logger.warn;
 logger.warn = (msg, options) => {
-  if (typeof msg === "string" && msg.includes("Module level directives cause errors when bundled")) return;
+  if (typeof msg === "string" && msg.includes("Module level directives cause errors when bundled"))
+    return;
   originalWarn(msg, options);
 };
 export default defineConfig({
@@ -19,6 +20,7 @@ export default defineConfig({
     },
   },
   build: {
+    minify: process.env.VERCEL ? false : "esbuild", // Turn off minification on Vercel to prevent memory/time limit crashes
     rollupOptions: {
       onwarn(warning, warn) {
         if (warning.code === "MODULE_LEVEL_DIRECTIVE") {

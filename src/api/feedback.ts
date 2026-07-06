@@ -230,9 +230,9 @@ export const updateFeedback = createServerFn({ method: "POST" }).handler(async (
 export const getOrganizersRatings = createServerFn({ method: "GET" })
   .validator((d: any) => d)
   .handler(async () => {
-  // Query from event_feedback side — navigate up via events.workspaces to get orgnizer_id.
-  // Hasura exposes this direction; event_feedback_aggregate on events does NOT exist.
-  const query = `
+    // Query from event_feedback side — navigate up via events.workspaces to get orgnizer_id.
+    // Hasura exposes this direction; event_feedback_aggregate on events does NOT exist.
+    const query = `
     query GetOrganizersRatings {
       event_feedback(where: { is_public: { _eq: true } }) {
         rating
@@ -245,38 +245,38 @@ export const getOrganizersRatings = createServerFn({ method: "GET" })
     }
   `;
 
-  const data = await hasuraRequest<{
-    event_feedback: Array<{
-      rating: number;
-      events: {
-        workspaces: { orgnizer_id: string | null } | null;
-      } | null;
-    }>;
-  }>(query, {});
+    const data = await hasuraRequest<{
+      event_feedback: Array<{
+        rating: number;
+        events: {
+          workspaces: { orgnizer_id: string | null } | null;
+        } | null;
+      }>;
+    }>(query, {});
 
-  // Aggregate ratings per organizer in JS
-  const accumulator: Record<string, { total: number; count: number }> = {};
+    // Aggregate ratings per organizer in JS
+    const accumulator: Record<string, { total: number; count: number }> = {};
 
-  for (const fb of data.event_feedback || []) {
-    const organizerId = fb.events?.workspaces?.orgnizer_id;
-    if (!organizerId || fb.rating == null) continue;
-    if (!accumulator[organizerId]) {
-      accumulator[organizerId] = { total: 0, count: 0 };
+    for (const fb of data.event_feedback || []) {
+      const organizerId = fb.events?.workspaces?.orgnizer_id;
+      if (!organizerId || fb.rating == null) continue;
+      if (!accumulator[organizerId]) {
+        accumulator[organizerId] = { total: 0, count: 0 };
+      }
+      accumulator[organizerId].total += fb.rating;
+      accumulator[organizerId].count += 1;
     }
-    accumulator[organizerId].total += fb.rating;
-    accumulator[organizerId].count += 1;
-  }
 
-  const ratingsMap: Record<string, { avg: number; count: number }> = {};
-  for (const [id, { total, count }] of Object.entries(accumulator)) {
-    ratingsMap[id] = {
-      avg: Math.round((total / count) * 10) / 10,
-      count,
-    };
-  }
+    const ratingsMap: Record<string, { avg: number; count: number }> = {};
+    for (const [id, { total, count }] of Object.entries(accumulator)) {
+      ratingsMap[id] = {
+        avg: Math.round((total / count) * 10) / 10,
+        count,
+      };
+    }
 
-  return ratingsMap;
-});
+    return ratingsMap;
+  });
 
 // ─── Check if user already submitted feedback ─────────────────────────────────
 export const checkFeedbackExists = createServerFn({ method: "POST" }).handler(async (ctx) => {

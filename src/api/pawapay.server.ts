@@ -96,15 +96,32 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           `;
           await hasuraRequest(activateSubQuery, { id: tx.reference_id });
         } else if (tx.type === "venue_booking") {
-          const confirmQuery = `
-            mutation ConfirmVenueBooking($id: uuid!) {
-              update_venue_bookings_by_pk(
-                pk_columns: { id: $id },
-                _set: { payment_status: "Paid", status: "Confirmed" }
-              ) { id }
-            }
-          `;
-          await hasuraRequest(confirmQuery, { id: tx.reference_id });
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            tx.reference_id,
+          );
+
+          if (isUuid) {
+            const confirmQuery = `
+              mutation ConfirmVenueBooking($id: uuid!) {
+                update_venue_bookings_by_pk(
+                  pk_columns: { id: $id },
+                  _set: { payment_status: "Paid", status: "Confirmed" }
+                ) { id }
+              }
+            `;
+            await hasuraRequest(confirmQuery, { id: tx.reference_id });
+          } else {
+            // It's a payment_ref string spanning multiple bookings (e.g. from facility checkout)
+            const confirmQuery = `
+              mutation ConfirmVenueBookings($ref: String!) {
+                update_venue_bookings(
+                  where: { tickets_data: { _contains: { payment_ref: $ref } } },
+                  _set: { payment_status: "Paid", status: "Confirmed" }
+                ) { affected_rows }
+              }
+            `;
+            await hasuraRequest(confirmQuery, { ref: tx.reference_id });
+          }
         }
 
         // Safely fund the workspace wallet using the exactly computed net_amount (which securely deducts shortfalls!)

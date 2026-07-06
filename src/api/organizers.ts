@@ -188,7 +188,9 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
               organizer_id: $organizer_id,
               plan_id: $plan_id,
               status: "active",
-              amount: 0
+              amount: 0,
+              modules: ["ALL"],
+              workspace_id: []
             }) {
               id
             }
@@ -336,7 +338,7 @@ export const changeOrganizerPassword = createServerFn({ method: "POST" }).handle
 export const getOrganizers = createServerFn({ method: "GET" })
   .validator((d: any) => d)
   .handler(async () => {
-  const query = `
+    const query = `
     query GetOrganizers {
       organizers {
         id
@@ -352,9 +354,9 @@ export const getOrganizers = createServerFn({ method: "GET" })
       }
     }
   `;
-  const result = await hasuraRequest<{ organizers: any[] }>(query, {});
-  return result.organizers;
-});
+    const result = await hasuraRequest<{ organizers: any[] }>(query, {});
+    return result.organizers;
+  });
 
 export const getFollowedOrganizers = createServerFn({ method: "POST" }).handler(async () => {
   try {

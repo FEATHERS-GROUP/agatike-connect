@@ -914,7 +914,7 @@ export const updateAdminOrganizerSubscriptionPlan = createServerFn({ method: "PO
           object: $object,
           on_conflict: {
             constraint: subscriptions_organizer_id_key,
-            update_columns: [plan_id, amount, status, next_billing_date, updated_at]
+            update_columns: [plan_id, amount, status, next_billing_date, workspace_id, modules, updated_at]
           }
         ) {
           id
@@ -924,6 +924,10 @@ export const updateAdminOrganizerSubscriptionPlan = createServerFn({ method: "PO
         }
       }
     `;
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id } }`;
+    const wsRes = await hasuraRequest<any>(wsQuery, { id: ctx.data.organizerId });
+    const workspaceIds = (wsRes.workspaces || []).map((w: any) => w.id);
+
     const data = await hasuraRequest<any>(createMutation, {
       object: {
         organizer_id: ctx.data.organizerId,
@@ -931,6 +935,8 @@ export const updateAdminOrganizerSubscriptionPlan = createServerFn({ method: "PO
         amount: ctx.data.amount,
         status: "active",
         next_billing_date: nextBillingDate.toISOString(),
+        workspace_id: workspaceIds,
+        modules: ["ALL"],
       },
     });
     return data.insert_subscriptions_one;
