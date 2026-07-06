@@ -96,9 +96,6 @@ export default defineConfig({
     nitro({
       preset: process.env.VERCEL ? "vercel" : "node-server",
       sourcemap: false,
-      rollupConfig: {
-        external: externalDeps,
-      },
     }),
     viteReact(),
     tsConfigPaths({
