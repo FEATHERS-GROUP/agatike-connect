@@ -71,10 +71,12 @@ function FacilityCheckoutPage() {
 
   const { data: ticketProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", venue?.workspace_id],
-    queryFn: () => getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id } } as any),
+    queryFn: () =>
+      getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id } } as any),
     enabled: !!venue?.workspace_id,
   });
-  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue?.id) || ticketProjects?.[0];
+  const venueProject =
+    ticketProjects?.find((p: any) => p.venueId === venue?.id) || ticketProjects?.[0];
 
   const [date, setDate] = useState<DateRange | undefined>();
   const [quantity, setQuantity] = useState(1);
@@ -184,8 +186,8 @@ function FacilityCheckoutPage() {
         customer_phone: phone,
         status: isPawaPay ? "Pending" : bookingStatus,
         payment_status: isPawaPay ? "Pending" : totalAmount > 0 ? "Pending" : "Paid",
-        amount: isSharedAccess ? (quantity * dailyRate) : (selectedSlots.length * hourlyRate),
-        total_amount: isSharedAccess ? (quantity * dailyRate) : (selectedSlots.length * hourlyRate),
+        amount: isSharedAccess ? quantity * dailyRate : selectedSlots.length * hourlyRate,
+        total_amount: isSharedAccess ? quantity * dailyRate : selectedSlots.length * hourlyRate,
         venue_name: venue.name,
         venue_currency: currency,
         booking_type: "facility",
@@ -277,8 +279,8 @@ function FacilityCheckoutPage() {
         setIsPaymentModalOpen(false);
         return;
       }
-      
-      if (isSharedAccess && td?.issued && td.issued.length > 0 ) {
+
+      if (isSharedAccess && td?.issued && td.issued.length > 0) {
         setIsGenerating(true);
       } else {
         setIsSuccess(true);
@@ -289,7 +291,6 @@ function FacilityCheckoutPage() {
       toast.error(err.message || "Failed to create booking.");
     },
   });
-
 
   useEffect(() => {
     if (!isPollingPawaPay || !pawapayDepositId) return;
@@ -302,8 +303,8 @@ function FacilityCheckoutPage() {
           res?.status?.toLowerCase() === "success"
         ) {
           setIsPollingPawaPay(false);
-          if (isSharedAccess && issuedTickets.length > 0 ) {
-        setIsGenerating(true);
+          if (isSharedAccess && issuedTickets.length > 0) {
+            setIsGenerating(true);
           } else {
             setIsSuccess(true);
             const dateRangeStr = date?.from
@@ -337,10 +338,23 @@ function FacilityCheckoutPage() {
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [isPollingPawaPay, pawapayDepositId, issuedTickets, venueProject, isSharedAccess, date, selectedSlots, email, name, facility, venue, bookingRef]);
+  }, [
+    isPollingPawaPay,
+    pawapayDepositId,
+    issuedTickets,
+    venueProject,
+    isSharedAccess,
+    date,
+    selectedSlots,
+    email,
+    name,
+    facility,
+    venue,
+    bookingRef,
+  ]);
 
   useEffect(() => {
-    if (isGenerating && issuedTickets.length > 0 ) {
+    if (isGenerating && issuedTickets.length > 0) {
       const generatePDFs = async () => {
         try {
           const attachments = [];
@@ -359,47 +373,47 @@ function FacilityCheckoutPage() {
           await new Promise<void>((r) => setTimeout(r, 600));
 
           if (venueProject) {
-for (const ticket of issuedTickets) {
-            const el = document.getElementById(`ticket-render-${ticket.id}`);
-            if (!el) continue;
+            for (const ticket of issuedTickets) {
+              const el = document.getElementById(`ticket-render-${ticket.id}`);
+              if (!el) continue;
 
-            await new Promise<void>((r) => setTimeout(r, 100));
+              await new Promise<void>((r) => setTimeout(r, 100));
 
-            const imgData = await htmlToImage.toJpeg(el, {
-              pixelRatio: 1.5,
-              quality: 0.8,
-              backgroundColor: "#ffffff",
-              width: 720,
-              height: 260,
-            });
-            if (!imgData || imgData === "data:,") {
-              throw new Error("htmlToImage returned an empty image.");
+              const imgData = await htmlToImage.toJpeg(el, {
+                pixelRatio: 1.5,
+                quality: 0.8,
+                backgroundColor: "#ffffff",
+                width: 720,
+                height: 260,
+              });
+              if (!imgData || imgData === "data:,") {
+                throw new Error("htmlToImage returned an empty image.");
+              }
+
+              const rect = el.getBoundingClientRect();
+              const width = rect.width || 720;
+              const height = rect.height || 260;
+
+              const pdf = new jsPDF({
+                orientation: "landscape",
+                unit: "px",
+                format: [width, height],
+              });
+              pdf.addImage(imgData, "JPEG", 0, 0, width, height);
+              const base64 = pdf.output("datauristring").split(",")[1];
+
+              attachments.push({
+                filename: `Ticket_${ticket.tier?.replace(/\s+/g, "_") || "Pass"}_${ticket.otp}.pdf`,
+                content: base64,
+              });
             }
-
-            const rect = el.getBoundingClientRect();
-            const width = rect.width || 720;
-            const height = rect.height || 260;
-
-            const pdf = new jsPDF({
-              orientation: "landscape",
-              unit: "px",
-              format: [width, height],
-            });
-            pdf.addImage(imgData, "JPEG", 0, 0, width, height);
-            const base64 = pdf.output("datauristring").split(",")[1];
-
-            attachments.push({
-              filename: `Ticket_${ticket.tier?.replace(/\s+/g, "_") || "Pass"}_${ticket.otp}.pdf`,
-              content: base64,
-            });
-          }
           } else {
             for (const ticket of issuedTickets) {
               const fallbackPdf = generateFallbackReceipt({
                 entityName: venue?.name || "Event/Venue",
                 ticket,
                 bookingRef: ticket.booking_ref || bookingRef,
-                customerName: name
+                customerName: name,
               });
               attachments.push(fallbackPdf);
             }
@@ -596,7 +610,7 @@ for (const ticket of issuedTickets) {
                           type="button"
                           variant="outline"
                           size="icon"
-                          onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                          onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -605,7 +619,9 @@ for (const ticket of issuedTickets) {
                           type="button"
                           variant="outline"
                           size="icon"
-                          onClick={() => setQuantity(q => Math.min(facility.max_capacity || 100, q + 1))}
+                          onClick={() =>
+                            setQuantity((q) => Math.min(facility.max_capacity || 100, q + 1))
+                          }
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -756,7 +772,12 @@ for (const ticket of issuedTickets) {
             <Button
               type="submit"
               form="booking-form"
-              disabled={bookingMutation.isPending || !date?.from || (!isSharedAccess && selectedSlots.length === 0) || (isSharedAccess && quantity < 1)}
+              disabled={
+                bookingMutation.isPending ||
+                !date?.from ||
+                (!isSharedAccess && selectedSlots.length === 0) ||
+                (isSharedAccess && quantity < 1)
+              }
               className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
               style={{ background: "var(--gradient-primary)" }}
             >
@@ -787,7 +808,11 @@ for (const ticket of issuedTickets) {
         isProcessing={bookingMutation.isPending || isPollingPawaPay}
         isGenerating={false}
         workspaceId={venue.workspace_id}
-        itemLabel={isSharedAccess ? `${daysInRange.length} day(s) × ${quantity} pass(es)` : `${daysInRange.length} day(s) × ${selectedSlots.length} hour(s)`}
+        itemLabel={
+          isSharedAccess
+            ? `${daysInRange.length} day(s) × ${quantity} pass(es)`
+            : `${daysInRange.length} day(s) × ${selectedSlots.length} hour(s)`
+        }
         baseCurrency={currency}
         userPhone={phone}
       />
@@ -822,7 +847,11 @@ for (const ticket of issuedTickets) {
       {isGenerating && issuedTickets.length > 0 && venueProject && (
         <div style={{ position: "absolute", left: "-9999px", top: 0, opacity: 0 }}>
           {issuedTickets.map((ticket: any) => (
-            <div key={ticket.id} id={`ticket-render-${ticket.id}`} style={{ display: "inline-block" }}>
+            <div
+              key={ticket.id}
+              id={`ticket-render-${ticket.id}`}
+              style={{ display: "inline-block" }}
+            >
               <TicketPreview
                 template={venueProject.template}
                 palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}

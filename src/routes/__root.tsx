@@ -197,10 +197,10 @@ function RootComponent() {
     try {
       const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
       if (manifestLink) {
-        if (location.pathname.startsWith('/dashboard')) {
-          manifestLink.href = '/manifest-dashboard.json';
+        if (location.pathname.startsWith("/dashboard")) {
+          manifestLink.href = "/manifest-dashboard.json";
         } else {
-          manifestLink.href = '/manifest.json';
+          manifestLink.href = "/manifest.json";
         }
       }
     } catch (_) {}

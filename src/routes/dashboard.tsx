@@ -55,7 +55,8 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardLayout() {
   const location = useRouterState({ select: (s) => s.location });
   const navigate = useNavigate();
-  const { workspaces, activeWorkspace, setActiveWorkspace, isLoaded, currentUser } = useWorkspace() as any;
+  const { workspaces, activeWorkspace, setActiveWorkspace, isLoaded, currentUser } =
+    useWorkspace() as any;
   const { data: platformModules = [] } = usePlatformModules();
 
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
@@ -348,7 +349,8 @@ function DashboardLayout() {
         <h2 className="text-2xl font-bold mb-2">Account Pending Activation</h2>
         <p className="text-muted-foreground text-sm max-w-md">
           Your account is currently under review by the Agatike team. This process usually takes
-          between 2 to 24 hours depending on traffic. Once approved, you will be able to create workspaces and manage your Operations.
+          between 2 to 24 hours depending on traffic. Once approved, you will be able to create
+          workspaces and manage your Operations.
         </p>
       </div>
     );

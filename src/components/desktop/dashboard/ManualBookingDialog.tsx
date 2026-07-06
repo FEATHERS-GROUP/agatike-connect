@@ -151,7 +151,7 @@ export function ManualBookingDialog({
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venue.id] });
 
       const ticketsData = res.tickets_data;
-      if (ticketsData?.issued && ticketsData.issued.length > 0 ) {
+      if (ticketsData?.issued && ticketsData.issued.length > 0) {
         setIsGenerating(true);
         setIssuedTickets(ticketsData.issued);
         setBookingRes(res);
@@ -168,47 +168,47 @@ export function ManualBookingDialog({
   });
 
   useEffect(() => {
-    if (isGenerating && issuedTickets.length > 0 ) {
+    if (isGenerating && issuedTickets.length > 0) {
       const generatePDFs = async () => {
         try {
           const attachments = [];
           if (eventProject) {
-for (const ticket of issuedTickets) {
-            const el = document.getElementById(`ticket-render-${ticket.id}`);
-            if (!el) continue;
+            for (const ticket of issuedTickets) {
+              const el = document.getElementById(`ticket-render-${ticket.id}`);
+              if (!el) continue;
 
-            const imgData = await htmlToImage.toJpeg(el, {
-              pixelRatio: 1.5,
-              quality: 0.8,
-              backgroundColor: "#ffffff",
-              width: 720,
-              height: 260,
-            });
+              const imgData = await htmlToImage.toJpeg(el, {
+                pixelRatio: 1.5,
+                quality: 0.8,
+                backgroundColor: "#ffffff",
+                width: 720,
+                height: 260,
+              });
 
-            const rect = el.getBoundingClientRect();
-            const width = rect.width || 720;
-            const height = rect.height || 260;
+              const rect = el.getBoundingClientRect();
+              const width = rect.width || 720;
+              const height = rect.height || 260;
 
-            const pdf = new jsPDF({
-              orientation: "landscape",
-              unit: "px",
-              format: [width, height],
-            });
-            pdf.addImage(imgData, "JPEG", 0, 0, width, height);
-            const base64 = pdf.output("datauristring").split(",")[1];
+              const pdf = new jsPDF({
+                orientation: "landscape",
+                unit: "px",
+                format: [width, height],
+              });
+              pdf.addImage(imgData, "JPEG", 0, 0, width, height);
+              const base64 = pdf.output("datauristring").split(",")[1];
 
-            attachments.push({
-              filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
-              content: base64,
-            });
-          }
+              attachments.push({
+                filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                content: base64,
+              });
+            }
           } else {
             for (const ticket of issuedTickets) {
               const fallbackPdf = generateFallbackReceipt({
                 entityName: event?.title || "Event/Venue",
                 ticket,
                 bookingRef: ticket.otp,
-                customerName: formData.customer_name
+                customerName: formData.customer_name,
               });
               attachments.push(fallbackPdf);
             }
