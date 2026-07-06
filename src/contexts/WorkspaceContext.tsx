@@ -71,8 +71,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
           ? Array.isArray(w.moduls)
             ? w.moduls
             : Object.keys(w.moduls)
-          : ["dashboard", "settings"],
-        currency: w.currency || "RWF",
+          : ["dashboard", "settings", "Support"],
+        currency: w.currency,
       })) as Workspace[];
       return { workspaces: mappedWorkspaces, currentUser };
     },
@@ -94,15 +94,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
           if (found) {
             setActiveWorkspaceState(found);
           } else {
-            setActiveWorkspaceState(workspaces[0]);
-            localStorage.setItem(ACTIVE_KEY, JSON.stringify(workspaces[0]));
+            setActiveWorkspaceState(null);
           }
         } catch {
-          setActiveWorkspaceState(workspaces[0]);
+          setActiveWorkspaceState(null);
         }
       } else {
-        setActiveWorkspaceState(workspaces[0]);
-        localStorage.setItem(ACTIVE_KEY, JSON.stringify(workspaces[0]));
+        setActiveWorkspaceState(null);
       }
     } else if (isSuccess && workspaces.length === 0) {
       setActiveWorkspaceState(null);
@@ -123,8 +121,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         country: workspaceData.country || "",
         address: workspaceData.address || "",
         logo: workspaceData.icon || "", // mapping UI icon to DB logo
-        moduls: workspaceData.modules || ["dashboard", "settings"],
-        currency: workspaceData.currency || "RWF",
+        moduls: workspaceData.modules || ["dashboard", "settings", "Support"],
+        currency: workspaceData.currency,
       };
 
       const newWorkspace = await createDatabaseWorkspace({ data: payload } as any);
@@ -139,8 +137,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
           ? Array.isArray(newWorkspace.moduls)
             ? newWorkspace.moduls
             : Object.keys(newWorkspace.moduls)
-          : ["dashboard", "settings"],
-        currency: newWorkspace.currency || "RWF",
+          : ["dashboard", "settings", "Support"],
+        currency: newWorkspace.currency,
       } as Workspace;
     },
     onSuccess: (newWorkspace) => {
@@ -155,10 +153,17 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     return await createMutation.mutateAsync(workspaceData);
   };
 
+  // Sort workspaces so the active one is always first
+  const sortedWorkspaces = [...workspaces].sort((a, b) => {
+    if (activeWorkspaceState && a.id === activeWorkspaceState.id) return -1;
+    if (activeWorkspaceState && b.id === activeWorkspaceState.id) return 1;
+    return 0;
+  });
+
   return (
     <WorkspaceContext.Provider
       value={{
-        workspaces,
+        workspaces: sortedWorkspaces,
         currentUser,
         activeWorkspace: activeWorkspaceState,
         setActiveWorkspace,

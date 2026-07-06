@@ -55,7 +55,7 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardLayout() {
   const location = useRouterState({ select: (s) => s.location });
   const navigate = useNavigate();
-  const { workspaces, activeWorkspace, isLoaded, currentUser } = useWorkspace() as any;
+  const { workspaces, activeWorkspace, setActiveWorkspace, isLoaded, currentUser } = useWorkspace() as any;
   const { data: platformModules = [] } = usePlatformModules();
 
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
@@ -121,6 +121,26 @@ function DashboardLayout() {
 
     if (workspaces.length === 0) {
       navigate({ to: "/dashboard/workspaces" });
+    } else if (!activeWorkspace && location.pathname !== "/dashboard/workspaces") {
+      const pathParts = location.pathname.split("/");
+      const urlSlug = pathParts[2];
+      if (
+        urlSlug &&
+        urlSlug !== "workspaces" &&
+        urlSlug !== "workspace-user" &&
+        urlSlug !== "billing" &&
+        urlSlug !== "support" &&
+        urlSlug !== "settings"
+      ) {
+        const workspaceFromUrl = workspaces.find((w: any) => w.slug === urlSlug);
+        if (workspaceFromUrl) {
+          setActiveWorkspace(workspaceFromUrl);
+        } else {
+          navigate({ to: "/dashboard/workspaces" });
+        }
+      } else {
+        navigate({ to: "/dashboard/workspaces" });
+      }
     } else if (activeWorkspace && location.pathname === "/dashboard") {
       navigate({ to: `/dashboard/${activeWorkspace.slug}` });
     } else if (activeWorkspace) {
@@ -138,7 +158,7 @@ function DashboardLayout() {
       ) {
         const workspaceFromUrl = workspaces.find((w: any) => w.slug === urlSlug);
         if (workspaceFromUrl) {
-          // setActiveWorkspace(workspaceFromUrl);
+          setActiveWorkspace(workspaceFromUrl);
         } else {
           navigate({ to: `/dashboard/${activeWorkspace.slug}` });
         }
