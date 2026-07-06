@@ -173,12 +173,9 @@ function ScannerManualEntryModal({ onScan, isPending }: { onScan: (qr: string) =
         ENTER CODE MANUALLY
       </button>
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" className="z-[150] bg-[#111] text-white border-t border-white/10 rounded-t-[2.5rem] p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+        <SheetContent side="bottom" aria-describedby={undefined} className="z-[150] bg-[#111] text-white border-t border-white/10 rounded-t-[2.5rem] p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
           <SheetHeader className="mb-6">
             <SheetTitle className="text-white text-left text-2xl font-black">Manual Entry</SheetTitle>
-            <div className="sr-only" aria-describedby="manual-entry-desc">
-              Enter the ticket or staff code manually to scan it into the system.
-            </div>
           </SheetHeader>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 pb-safe">
             <div className="space-y-2">
