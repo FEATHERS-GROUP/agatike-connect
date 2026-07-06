@@ -31,6 +31,7 @@ import { useEffect } from "react";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { sendTicketsEmail } from "@/api/email";
+import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import { getWorkspaceTicketProjects } from "@/api/events";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { Ticket, Plus, Minus } from "lucide-react";
@@ -277,7 +278,7 @@ function FacilityCheckoutPage() {
         return;
       }
       
-      if (isSharedAccess && td?.issued && td.issued.length > 0 && venueProject) {
+      if (isSharedAccess && td?.issued && td.issued.length > 0 ) {
         setIsGenerating(true);
       } else {
         setIsSuccess(true);
@@ -301,8 +302,8 @@ function FacilityCheckoutPage() {
           res?.status?.toLowerCase() === "success"
         ) {
           setIsPollingPawaPay(false);
-          if (isSharedAccess && issuedTickets.length > 0 && venueProject) {
-            setIsGenerating(true);
+          if (isSharedAccess && issuedTickets.length > 0 ) {
+        setIsGenerating(true);
           } else {
             setIsSuccess(true);
             const dateRangeStr = date?.from
@@ -339,14 +340,14 @@ function FacilityCheckoutPage() {
   }, [isPollingPawaPay, pawapayDepositId, issuedTickets, venueProject, isSharedAccess, date, selectedSlots, email, name, facility, venue, bookingRef]);
 
   useEffect(() => {
-    if (isGenerating && issuedTickets.length > 0 && venueProject) {
+    if (isGenerating && issuedTickets.length > 0 ) {
       const generatePDFs = async () => {
         try {
           const attachments = [];
 
           const coverUrl = venueProject.coverImage;
           if (coverUrl) {
-            await new Promise((resolve) => {
+            await new Promise<void>((resolve) => {
               const img = new Image();
               img.crossOrigin = "anonymous";
               img.onload = () => resolve();
@@ -355,13 +356,14 @@ function FacilityCheckoutPage() {
             });
           }
 
-          await new Promise((r) => setTimeout(r, 600));
+          await new Promise<void>((r) => setTimeout(r, 600));
 
-          for (const ticket of issuedTickets) {
+          if (venueProject) {
+for (const ticket of issuedTickets) {
             const el = document.getElementById(`ticket-render-${ticket.id}`);
             if (!el) continue;
 
-            await new Promise((r) => setTimeout(r, 100));
+            await new Promise<void>((r) => setTimeout(r, 100));
 
             const imgData = await htmlToImage.toJpeg(el, {
               pixelRatio: 1.5,
@@ -391,6 +393,17 @@ function FacilityCheckoutPage() {
               content: base64,
             });
           }
+          } else {
+            for (const ticket of issuedTickets) {
+              const fallbackPdf = generateFallbackReceipt({
+                entityName: venue?.name || "Event/Venue",
+                ticket,
+                bookingRef: ticket.booking_ref || bookingRef,
+                customerName: name
+              });
+              attachments.push(fallbackPdf);
+            }
+          }
 
           if (attachments.length > 0 && email) {
             await sendTicketsEmail({
@@ -409,7 +422,8 @@ function FacilityCheckoutPage() {
           setIsSuccess(true);
         } catch (e) {
           console.error("PDF generation error:", e);
-          toast.error(`Ticket generation failed: ${e.message || "Unknown error"}. Please try again.`);
+          const errorMessage = e instanceof Error ? e.message : "Unknown error";
+          toast.error(`Ticket generation failed: ${errorMessage}. Please try again.`);
           setIsGenerating(false);
         }
       };
