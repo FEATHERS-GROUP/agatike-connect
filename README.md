@@ -2048,41 +2048,45 @@ Administrators can dynamically create and edit subscription tiers (e.g., _Free_,
 
 Rather than having a single flat fee across the entire platform, the Agatike architecture ties transactional fee rules **directly to the Organizer's active Subscription Plan**.
 
-1. **Customer Service Fee (%)**: An explicit markup added on top of a ticket price, paid by the end customer during checkout.
-2. **Organizer Platform Contribution (%)**: A hidden deduction taken out of the Organizer's gross sales before it reaches their Wallet.
+1. **Customer Fees**: Explicit markups added on top of a ticket price, paid by the end customer during checkout. Configurable as both service and collection percentages/fixed fees.
+2. **Organizer Platform Contribution**: A hidden deduction taken out of the Organizer's gross sales before it reaches their Wallet.
 3. **Withdrawal Overrides**: Specialized margins applied only when the Organizer requests a payout to their bank or Mobile Money.
 
-**Subsidized Collections:**
-Administrators can enable "Subsidized Collections" on premium tiers (e.g., Enterprise). If enabled, the system bypasses the Customer Service Fee (allowing the attendee to checkout with 0 fees) and instead deducts the exact equivalent amount from the Organizer's gross revenue, allowing organizers to absorb the fees on behalf of their VIP attendees.
+**Subsidized Collections (Shortfall Protection):**
+When the underlying Payment Provider fee exceeds the combined Customer and Organizer fees (creating a "shortfall"), the system does not simply block the user. If "Subsidized Collections" is enabled on the Organizer's plan, the Organizer dynamically absorbs the shortfall up to a `maxAllowedSubsidy`. This maximum is calculated dynamically based on their withdrawal fee buffer (e.g., `withdrawalFeePct * 0.7`) and capped by the plan's `max_collection_subsidy_percentage`. This allows the checkout to proceed seamlessly for the customer while protecting platform economics.
 
 ### 27.3 Payment Provider Fees (The Cost Center)
 
 **Route:** `/internal/control/admin/providers`
 
-While Agatike collects margins, it also has to pay the underlying gateway (e.g., PawaPay, Stripe).
+While Agatike collects margins, it also has to pay the underlying gateway (e.g., PawaPay).
 The `payment_provider_fees` table acts as the unified cost center.
 
 - Tracks exactly what the gateway charges per transaction per country (Percentage + Fixed amounts for both Collections and Disbursements).
-- Includes **Tiered Rules** support for fluctuating Mobile Money rates (e.g., `< 100 RWF = 0%`, `< 500 RWF = 1%`).
+- Includes **Tiered Rules** support for fluctuating Mobile Money rates, allowing precise mapping of network costs at various transaction thresholds.
 
 ### 27.4 The Live Simulation Engine
 
 To ensure the complex interplay between (1) the chosen Pricing Plan, (2) the Customer's Ticket Price, and (3) the Gateway's Provider Fees always results in a positive Net Profit, the system features a **Live Unit Economics Simulator**.
 
-- Built directly into the Pricing Plan Dashboard, administrators can plug in a mock ticket price and select a target provider network.
-- The Simulator calculates the exact **Customer Cost**, the **Organizer Deduction**, the **Provider Cost**, and outputs the exact **Agatike Net Profit**, preventing accidental configurations that result in negative unit economics on micro-transactions.
+- **Checkout Pre-flight Check:** Integrated directly into the `PaymentModal`, the simulator runs a pre-flight check before every checkout.
+- **Profitability Enforcement:** It calculates the exact Customer Cost, Organizer Deduction, and Provider Cost. If the transaction results in a negative profit that exceeds the Organizer's `maxAllowedSubsidy`, the simulation engine explicitly blocks the transaction with an error message instead of letting it pass.
+- **Margin Protection:** It also ensures that the expected margin clears the plan's `platform_margin_buffer`, triggering a warning classification if margins are dangerously tight on micro-transactions.
 
 ```mermaid
 flowchart TD
-    Ticket["Customer buys 5000 RWF Ticket"] --> Plan["Active Organizer Pricing Plan"]
-    Plan -->|Customer Fee 2%| Gross["Gross Processed: 5100 RWF"]
-    Plan -->|Org Margin 3%| Wallet["Organizer Wallet Credited: 4850 RWF"]
-
-    Gross --> Gateway["PawaPay Provider Fees"]
-    Gateway -->|Charges 1%| Net["Agatike Revenue: 5049 RWF"]
-
-    Net --> ProfitCalc["Net Revenue 5049 - Organizer Payout 4850"]
-    ProfitCalc --> FinalProfit["Agatike Net Profit: +199 RWF"]
+    Checkout["Payment Modal Checkout"] --> Engine["Simulation Engine (simulateTransaction)"]
+    Engine --> GetFees["Fetch Plan Fees & Provider Tiered Rates"]
+    GetFees --> CalcRev["Calculate Customer & Organizer Fees"]
+    CalcRev --> CalcCost["Calculate PawaPay Collection Cost"]
+    
+    CalcCost --> CheckMargin{Cost > Revenue?}
+    CheckMargin -->|Yes| Shortfall["Calculate Shortfall"]
+    Shortfall --> SubsidyCheck{Shortfall > maxAllowedSubsidy?}
+    
+    SubsidyCheck -->|Yes| Blocked["❌ Block Transaction: Unprofitable"]
+    SubsidyCheck -->|No| Subsidized["✅ Subsidized: Organizer Absorbs"]
+    CheckMargin -->|No| Approved["✅ Approved: Profitable"]
 ```
 
 ---
