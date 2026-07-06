@@ -186,7 +186,7 @@ const CREATE_SUB = `
       object: $object,
       on_conflict: {
         constraint: subscriptions_organizer_id_key,
-        update_columns: [plan_id, amount, status, next_billing_date, updated_at]
+        update_columns: [plan_id, amount, status, next_billing_date, workspace_id, modules, updated_at]
       }
     ) {
       id
@@ -270,7 +270,12 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
       nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
     }
 
-    // 2. Create new sub
+    // 2. Fetch all workspace IDs for this organizer
+    const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id } }`;
+    const wsRes = await hasuraRequest<{ workspaces: { id: string }[] }>(wsQuery, { id: organizer_id });
+    const workspaceIds = wsRes.workspaces.map((w) => w.id);
+
+    // 3. Create new sub
     const newSubRes = await hasuraRequest<{ insert_subscriptions_one: { id: string } }>(
       CREATE_SUB,
       {
@@ -280,6 +285,8 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
           amount,
           status: "active",
           next_billing_date: nextBillingDate.toISOString(),
+          workspace_id: workspaceIds,
+          modules: ["ALL"],
         },
       },
     );

@@ -26,6 +26,8 @@ export async function hasuraRequest<T = any>(
 
   if (json.errors) {
     console.error("GraphQL Errors:", json.errors);
+    console.error("Failing Query:", query);
+    console.error("Variables:", variables);
     throw new Error(json.errors[0]?.message || "Failed to execute GraphQL query/mutation");
   }
 

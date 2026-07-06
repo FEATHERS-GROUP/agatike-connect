@@ -188,7 +188,9 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
               organizer_id: $organizer_id,
               plan_id: $plan_id,
               status: "active",
-              amount: 0
+              amount: 0,
+              modules: ["ALL"],
+              workspace_id: []
             }) {
               id
             }
