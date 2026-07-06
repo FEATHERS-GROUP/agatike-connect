@@ -12,6 +12,30 @@ logger.warn = (msg, options) => {
     return;
   originalWarn(msg, options);
 };
+const externalDeps = [
+  "react-big-calendar",
+  "@blocknote/react",
+  "@blocknote/mantine",
+  "@blocknote/core",
+  "recharts",
+  "html2canvas",
+  "lucide-react",
+  "jspdf",
+  "xlsx",
+  "firebase-admin",
+  "firebase-admin/app",
+  "firebase-admin/messaging",
+  "firebase-admin/firestore",
+  "firebase",
+  "google-auth-library",
+  "leaflet",
+  "react-leaflet",
+  "html-to-image",
+  "@yudiel/react-qr-scanner",
+  "react-qr-code",
+  "react-barcode",
+];
+
 export default defineConfig({
   customLogger: logger,
   server: {
@@ -29,6 +53,7 @@ export default defineConfig({
         warn(warning);
       },
     },
+    sourcemap: false,
   },
   envPrefix: ["FIREBASE_", "GIPHY_", "GOOGLE_", "SUPABASE_"],
   optimizeDeps: {
@@ -59,29 +84,7 @@ export default defineConfig({
     ],
   },
   ssr: {
-    external: [
-      "react-big-calendar",
-      "@blocknote/react",
-      "@blocknote/mantine",
-      "@blocknote/core",
-      "recharts",
-      "html2canvas",
-      "lucide-react",
-      "jspdf",
-      "xlsx",
-      "firebase-admin",
-      "firebase-admin/app",
-      "firebase-admin/messaging",
-      "firebase-admin/firestore",
-      "firebase",
-      "google-auth-library",
-      "leaflet",
-      "react-leaflet",
-      "html-to-image",
-      "@yudiel/react-qr-scanner",
-      "react-qr-code",
-      "react-barcode",
-    ],
+    external: externalDeps,
   },
   plugins: [
     tanstackStart({
@@ -92,6 +95,7 @@ export default defineConfig({
     }),
     nitro({
       preset: process.env.VERCEL ? "vercel" : "node-server",
+      sourcemap: false,
     }),
     viteReact(),
     tsConfigPaths({
