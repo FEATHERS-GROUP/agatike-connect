@@ -89,7 +89,7 @@ export function GlobalUserNotificationListener() {
                 .then((registration) => {
                   registration.showNotification(title, {
                     body,
-                    icon: "/icon.svg",
+                    icon: "/agatike-icon.png",
                     tag: `user-notif-${notifId}`,
                     data: { url: targetPath },
                   });
@@ -97,7 +97,7 @@ export function GlobalUserNotificationListener() {
                 .catch(() => {
                   const notif = new Notification(title, {
                     body,
-                    icon: "/icon.svg",
+                    icon: "/agatike-icon.png",
                     tag: `user-notif-${notifId}`,
                   });
                   notif.onclick = () => {
@@ -108,7 +108,7 @@ export function GlobalUserNotificationListener() {
             } else {
               const notif = new Notification(title, {
                 body,
-                icon: "/icon.svg",
+                icon: "/agatike-icon.png",
                 tag: `user-notif-${notifId}`,
               });
               notif.onclick = () => {

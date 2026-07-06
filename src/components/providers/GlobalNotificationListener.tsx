@@ -144,7 +144,7 @@ export function GlobalNotificationListener() {
                 .then((registration) => {
                   registration.showNotification(title, {
                     body,
-                    icon: avatar || "/icon.svg",
+                    icon: avatar || "/agatike-icon.png",
                     tag: `msg-${channelId}`, // Helps prevent duplicates at OS level
                     data: { url: targetUrl },
                   });
@@ -152,7 +152,7 @@ export function GlobalNotificationListener() {
                 .catch(() => {
                   const notif = new Notification(title, {
                     body,
-                    icon: avatar || "/icon.svg",
+                    icon: avatar || "/agatike-icon.png",
                     tag: `msg-${channelId}`,
                   });
                   notif.onclick = () => {
@@ -163,7 +163,7 @@ export function GlobalNotificationListener() {
             } else {
               const notif = new Notification(title, {
                 body,
-                icon: avatar || "/icon.svg",
+                icon: avatar || "/agatike-icon.png",
                 tag: `msg-${channelId}`,
               });
               notif.onclick = () => {
@@ -224,6 +224,11 @@ export function GlobalNotificationListener() {
 
           localStorage.setItem(storageKey, rawTimeMillis.toString());
 
+          if (data.type === "new_message") {
+            // Organizer dashboard listens to messages via agatike_channels, ignore these here
+            return;
+          }
+
           let title = "Notification";
           let body = "";
 
@@ -242,7 +247,7 @@ export function GlobalNotificationListener() {
                 .then((registration) => {
                   registration.showNotification(title, {
                     body,
-                    icon: "/icon.svg",
+                    icon: "/agatike-icon.png",
                     tag: `notif-${notifId}`,
                     data: { url: targetUrl },
                   });
@@ -250,7 +255,7 @@ export function GlobalNotificationListener() {
                 .catch(() => {
                   const notif = new Notification(title, {
                     body,
-                    icon: "/icon.svg",
+                    icon: "/agatike-icon.png",
                     tag: `notif-${notifId}`,
                   });
                   notif.onclick = () => {
@@ -260,7 +265,7 @@ export function GlobalNotificationListener() {
             } else {
               const notif = new Notification(title, {
                 body,
-                icon: "/icon.svg",
+                icon: "/agatike-icon.png",
                 tag: `notif-${notifId}`,
               });
               notif.onclick = () => {

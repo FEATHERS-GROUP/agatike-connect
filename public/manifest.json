@@ -6,12 +6,18 @@
   "display": "standalone",
   "background_color": "#f97316",
   "theme_color": "#f97316",
+  "gcm_sender_id": "103953800507",
   "icons": [
     {
       "src": "/icon.svg",
-      "sizes": "192x192 512x512",
+      "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/agatike-icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
     }
   ]
 }
