@@ -20,6 +20,7 @@ export default defineConfig({
     },
   },
   build: {
+    minify: process.env.VERCEL ? false : "esbuild", // Turn off minification on Vercel to prevent memory/time limit crashes
     rollupOptions: {
       onwarn(warning, warn) {
         if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
