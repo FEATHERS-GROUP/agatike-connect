@@ -213,7 +213,7 @@ function StaffEventDashboard() {
   if (showScanner) {
     return (
       <div className="fixed inset-0 z-[100] bg-black flex flex-col">
-        <ScannerMobile onClose={() => setShowScanner(false)} />
+        <ScannerMobile eventId={eventId} onClose={() => setShowScanner(false)} />
       </div>
     );
   }

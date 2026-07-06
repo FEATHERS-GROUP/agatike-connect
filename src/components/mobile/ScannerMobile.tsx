@@ -56,52 +56,9 @@ function ScannerHeader({ onClose, events, sections, selectedEventId, setSelected
         </div>
       </div>
       <div className="flex gap-2 items-center">
-        <Dialog>
-          <DialogTrigger asChild>
-            <button className="p-2 text-white/70 hover:text-white">
-              <Settings className="h-5 w-5" />
-            </button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Scanner Setup</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Select Event</Label>
-                <Select value={selectedEventId} onValueChange={setSelectedEventId}>
-                  <SelectTrigger><SelectValue placeholder="Choose event" /></SelectTrigger>
-                  <SelectContent>
-                    {events?.map((e: any) => (
-                      <SelectItem key={e.id} value={e.id}>{e.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Current Location (Gate/Section)</Label>
-                <Select value={currentSectionId} onValueChange={setCurrentSectionId}>
-                  <SelectTrigger><SelectValue placeholder="All Access Gate" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Anywhere (All Access Gate)</SelectItem>
-                    {sections?.map((s: any) => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Staff badges will be rejected if they are not allowed in this section.
-                </p>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-        <button onClick={() => setTorch(!torch)} className={`p-2 rounded-full transition-colors ${torch ? "bg-white text-black" : "text-white/70"}`}>
-          <Flashlight className="h-5 w-5" />
-        </button>
-        <button onClick={() => setOnline(!online)} className={`p-1.5 rounded-full transition-colors ${online ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>
+        <div className={`p-1.5 rounded-full transition-colors ${online ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>
           {online ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
-        </button>
+        </div>
       </div>
     </header>
   );
@@ -154,6 +111,7 @@ function ScannerViewport({ result, onScan }: { result: Result, onScan: (text: st
                     formats={["qr_code"]}
                     components={{
                       tracker: outline,
+                      torch: true,
                     }}
                     styles={{
                       container: { width: '100%', height: '100%', borderRadius: '2.5rem' },
@@ -206,53 +164,59 @@ function ScannerManualEntryModal({ onScan, isPending }: { onScan: (qr: string) =
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <button className="flex-none flex items-center justify-center gap-2 bg-white/10 text-white px-8 py-4 rounded-full text-sm font-black tracking-wide backdrop-blur-md border border-white/20 active:scale-95 transition-all shadow-xl hover:bg-white/20 mx-auto w-full max-w-sm">
-          <Keyboard className="h-5 w-5" />
-          ENTER CODE MANUALLY
-        </button>
-      </SheetTrigger>
-      <SheetContent side="bottom" className="bg-[#111] text-white border-t border-white/10 rounded-t-[2.5rem] p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
-        <SheetHeader className="mb-6">
-          <SheetTitle className="text-white text-left text-2xl font-black">Manual Entry</SheetTitle>
-        </SheetHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 pb-safe">
-          <div className="space-y-2">
-            <Label className="text-white/70 font-semibold ml-1">Ticket or Badge Code</Label>
-            <Input 
-              value={qrInput} 
-              onChange={e => setQrInput(e.target.value)} 
-              placeholder="e.g. STAFF-123 or TICKET-XYZ"
-              className="bg-black/60 border-white/20 focus:border-primary text-white h-16 rounded-[1.25rem] px-5 text-lg font-mono placeholder:text-white/20 placeholder:font-sans transition-colors"
-              autoFocus
-            />
-          </div>
-          <button 
-            type="submit" 
-            disabled={isPending || !qrInput.trim()}
-            className="h-16 mt-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:hover:bg-emerald-500 text-black font-black rounded-[1.25rem] text-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-[0_10px_20px_rgba(16,185,129,0.3)]"
-          >
-            {isPending ? "Verifying Code..." : "Check Code"}
-          </button>
-        </form>
-      </SheetContent>
-    </Sheet>
+    <>
+      <button 
+        onClick={() => setOpen(true)}
+        className="flex-none flex items-center justify-center gap-2 bg-white/10 text-white px-8 py-4 rounded-full text-sm font-black tracking-wide backdrop-blur-md border border-white/20 active:scale-95 transition-all shadow-xl hover:bg-white/20 mx-auto w-full max-w-sm"
+      >
+        <Keyboard className="h-5 w-5" />
+        ENTER CODE MANUALLY
+      </button>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="bottom" className="z-[150] bg-[#111] text-white border-t border-white/10 rounded-t-[2.5rem] p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-white text-left text-2xl font-black">Manual Entry</SheetTitle>
+            <div className="sr-only" aria-describedby="manual-entry-desc">
+              Enter the ticket or staff code manually to scan it into the system.
+            </div>
+          </SheetHeader>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 pb-safe">
+            <div className="space-y-2">
+              <Label className="text-white/70 font-semibold ml-1">Ticket or Badge Code</Label>
+              <Input 
+                value={qrInput} 
+                onChange={e => setQrInput(e.target.value)} 
+                placeholder="e.g. STAFF-123 or TICKET-XYZ"
+                className="bg-black/60 border-white/20 focus:border-primary text-white h-16 rounded-[1.25rem] px-5 text-lg font-mono placeholder:text-white/20 placeholder:font-sans transition-colors"
+                autoFocus
+              />
+            </div>
+            <button 
+              type="submit" 
+              disabled={isPending || !qrInput.trim()}
+              className="h-16 mt-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:hover:bg-emerald-500 text-black font-black rounded-[1.25rem] text-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-[0_10px_20px_rgba(16,185,129,0.3)]"
+            >
+              {isPending ? "Verifying Code..." : "Check Code"}
+            </button>
+          </form>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
 
 // --- MAIN COMPONENT ---
 
-export function ScannerMobile({ onClose }: { onClose?: () => void }) {
+export function ScannerMobile({ onClose, eventId }: { onClose?: () => void, eventId?: string }) {
   const [result, setResult] = useState<Result>("idle");
-  const [online, setOnline] = useState(true);
+  const [online, setOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
   const [torch, setTorch] = useState(false);
   const [failReason, setFailReason] = useState("");
   const [scannedStaff, setScannedStaff] = useState<any>(null);
   const [scannedTicket, setScannedTicket] = useState<any>(null);
 
   const { activeWorkspace } = useWorkspace();
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [selectedEventId, setSelectedEventId] = useState<string>(eventId || "");
   const [currentSectionId, setCurrentSectionId] = useState<string>("none");
 
   const { data: events = [] } = useQuery({
@@ -340,6 +304,20 @@ export function ScannerMobile({ onClose }: { onClose?: () => void }) {
       return () => clearTimeout(timer);
     }
   }, [result]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setOnline(navigator.onLine);
+      const handleOnline = () => setOnline(true);
+      const handleOffline = () => setOnline(false);
+      window.addEventListener("online", handleOnline);
+      window.addEventListener("offline", handleOffline);
+      return () => {
+        window.removeEventListener("online", handleOnline);
+        window.removeEventListener("offline", handleOffline);
+      };
+    }
+  }, []);
 
   const handleProcessTransaction = () => {
     setProcessingTx(true);
